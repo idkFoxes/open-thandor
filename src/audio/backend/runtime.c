@@ -185,30 +185,30 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
 
 {
   HINSTANCE module;
-  TH_LEGACY_HRESULT TVar1;
-  int iVar2;
-  DirectSoundVoiceSet **ppDVar3;
-  DynDllLoadEaxCf5 DVar4;
-  DynApiResolveEaxCf5 DVar5;
-  ArenaAllocEaxCf5 AVar6;
-  sdword local_1c;
+  TH_LEGACY_HRESULT directSoundResult;
+  int remainingCount;
+  DirectSoundVoiceSet **registryCursor;
+  DynDllLoadEaxCf5 dllLoadResult;
+  DynApiResolveEaxCf5 resolveResult;
+  ArenaAllocEaxCf5 registryAlloc;
+  sdword failedStage;
   
-  local_1c = 0;
-  DVar4 = DynDLL_Load(dynapi_4);
-  module = DVar4.moduleOrError;
-  if ((((!DVar4.carry) &&
-       (DVar5 = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20), !DVar5.carry)) &&
-      (DVar5 = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !DVar5.carry)) &&
-     ((DVar5 = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !DVar5.carry &&
-      (DVar5 = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !DVar5.carry)))) {
-    TVar1 = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
-    Thandor_Log("DirectSoundCreate -> 0x%08X", (dword)TVar1);
-    if (TVar1 != 0) {
+  failedStage = 0;
+  dllLoadResult = DynDLL_Load(dynapi_4);
+  module = dllLoadResult.moduleOrError;
+  if ((((!dllLoadResult.carry) &&
+       (resolveResult = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20), !resolveResult.carry)) &&
+      (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.carry)) &&
+     ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.carry &&
+      (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.carry)))) {
+    directSoundResult = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
+    Thandor_Log("DirectSoundCreate -> 0x%08X", (dword)directSoundResult);
+    if (directSoundResult != 0) {
       return false;
     }
-    TVar1 = (*g_DirectSound->lpVtbl->SetCooperativeLevel)(g_DirectSound,g_MainWindow,3);
-    if (TVar1 == 0) {
-      local_1c = 1;
+    directSoundResult = (*g_DirectSound->lpVtbl->SetCooperativeLevel)(g_DirectSound,g_MainWindow,3);
+    if (directSoundResult == 0) {
+      failedStage = 1;
       Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
       Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
       WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
@@ -219,36 +219,36 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
       WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;
       PrimarySoundBufferDesc.dwSize = 0x14;
       PrimarySoundBufferDesc.dwFlags = 0xc1;
-      TVar1 = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+      directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
                         (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,
                          (TH_LEGACY_LPVOID)0x0);
-      if (TVar1 == 0) {
-        local_1c = 2;
-        TVar1 = (*g_PrimarySoundBuffer->lpVtbl->SetFormat)
+      if (directSoundResult == 0) {
+        failedStage = 2;
+        directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetFormat)
                           (g_PrimarySoundBuffer,&WaveFormat_PCM_22050_Stereo16);
-        if (TVar1 == 0) {
-          local_1c = 3;
-          TVar1 = (*g_PrimarySoundBuffer->lpVtbl->GetVolume)(g_PrimarySoundBuffer,&g_PrimaryVolume);
-          if (TVar1 == 0) {
-            local_1c = 4;
-            TVar1 = (*g_PrimarySoundBuffer->lpVtbl->GetPan)(g_PrimarySoundBuffer,&g_PrimaryPan);
-            if (TVar1 == 0) {
-              local_1c = 5;
-              TVar1 = (*g_PrimarySoundBuffer->lpVtbl->SetVolume)(g_PrimarySoundBuffer,0);
-              if (TVar1 == 0) {
-                local_1c = 6;
-                TVar1 = (*g_PrimarySoundBuffer->lpVtbl->SetPan)(g_PrimarySoundBuffer,0);
-                if (TVar1 == 0) {
-                  local_1c = 7;
-                  TVar1 = (*g_PrimarySoundBuffer->lpVtbl->Play)(g_PrimarySoundBuffer,0,0,1);
-                  if (TVar1 == 0) {
-                    AVar6 = (*g_MemoryApi.alloc)(0x400);
-                    if (!AVar6.carry) {
-                      ppDVar3 = (DirectSoundVoiceSet **)AVar6.eax;
-                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)AVar6.eax;
-                      for (iVar2 = 0x100; iVar2 != 0; iVar2 = iVar2 + -1) {
-                        *ppDVar3 = (DirectSoundVoiceSet *)0x0;
-                        ppDVar3 = ppDVar3 + 1;
+        if (directSoundResult == 0) {
+          failedStage = 3;
+          directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->GetVolume)(g_PrimarySoundBuffer,&g_PrimaryVolume);
+          if (directSoundResult == 0) {
+            failedStage = 4;
+            directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->GetPan)(g_PrimarySoundBuffer,&g_PrimaryPan);
+            if (directSoundResult == 0) {
+              failedStage = 5;
+              directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetVolume)(g_PrimarySoundBuffer,0);
+              if (directSoundResult == 0) {
+                failedStage = 6;
+                directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->SetPan)(g_PrimarySoundBuffer,0);
+                if (directSoundResult == 0) {
+                  failedStage = 7;
+                  directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->Play)(g_PrimarySoundBuffer,0,0,1);
+                  if (directSoundResult == 0) {
+                    registryAlloc = (*g_MemoryApi.alloc)(0x400);
+                    if (!registryAlloc.carry) {
+                      registryCursor = (DirectSoundVoiceSet **)registryAlloc.eax;
+                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.eax;
+                      for (remainingCount = 0x100; remainingCount != 0; remainingCount = remainingCount + -1) {
+                        *registryCursor = (DirectSoundVoiceSet *)0x0;
+                        registryCursor = registryCursor + 1;
                       }
                       g_SoundCreateSampleVoiceSet = DirectSound_CreateSampleVoiceSet;
                       g_SoundReleaseSampleVoiceSet = DirectSound_ReleaseSampleVoiceSet;
@@ -273,8 +273,8 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
         }
       }
     }
-    Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", local_1c, (dword)TVar1);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,local_1c,g_PackageLastErrorPath);
+    Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (dword)directSoundResult);
+    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
   }
   else {
     Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
@@ -296,31 +296,31 @@ SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
-  DirectSoundVoiceSet **ppDVar1;
-  TH_LEGACY_HRESULT TVar2;
-  dword dVar3;
-  uint uVar4;
-  int iVar5;
-  DirectSoundVoiceSet **ppDVar6;
-  IDirectSoundBuffer **ppIVar7;
-  IDirectSoundBuffer **ppIVar8;
+  DirectSoundVoiceSet **registryGuard;
+  TH_LEGACY_HRESULT directSoundResult;
+  dword encodedBlockSize;
+  uint remainingBlocks;
+  int remainingCount;
+  DirectSoundVoiceSet **registryRemaining;
+  IDirectSoundBuffer **voiceSetOrErrorCode;
+  IDirectSoundBuffer **voiceCursor;
   SoundSampleAsset *encodedBlock;
   short *outputStereoPcm;
-  DirectSoundVoiceSet **ppDVar9;
-  ArenaAllocEaxCf5 AVar10;
-  SoundCreateSampleVoiceSetEaxCf5 SVar11;
-  sdword sStack_30;
-  TH_LEGACY_DWORD TStack_2c;
-  TH_LEGACY_LPVOID pvStack_28;
-  uint uStack_24;
-  short *psStack_20;
-  IDirectSoundBuffer *pIStack_1c;
+  DirectSoundVoiceSet **registryCursor;
+  ArenaAllocEaxCf5 voiceSetAlloc;
+  SoundCreateSampleVoiceSetEaxCf5 failureResult;
+  sdword failedStage;
+  TH_LEGACY_DWORD wrapByteCount;
+  TH_LEGACY_LPVOID wrapRegion;
+  uint lockedByteCount;
+  short *lockedPcm;
+  IDirectSoundBuffer *soundBuffer;
   
-  pIStack_1c = (IDirectSoundBuffer *)0x0;
-  sStack_30 = 100;
+  soundBuffer = (IDirectSoundBuffer *)0x0;
+  failedStage = 100;
   Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
   Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
-  ppIVar7 = (IDirectSoundBuffer **)0x4a;
+  voiceSetOrErrorCode = (IDirectSoundBuffer **)0x4a;
   if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == 0x10000)) {
     WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
     WaveFormat_PCM_22050_Stereo16.nChannels = 2;
@@ -332,68 +332,68 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
     PrimarySoundBufferDesc.dwSize = 0x14;
     PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
     PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-    TVar2 = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
-                      (g_DirectSound,&PrimarySoundBufferDesc,&pIStack_1c,(TH_LEGACY_LPVOID)0x0);
-    ppIVar7 = (IDirectSoundBuffer **)0x29;
-    if (TVar2 == 0) {
-      sStack_30 = 0x65;
-      TVar2 = (*pIStack_1c->lpVtbl->Lock)
-                        (pIStack_1c,0,0,&psStack_20,&uStack_24,&pvStack_28,&TStack_2c,2);
-      ppIVar7 = (IDirectSoundBuffer **)0x29;
-      if (TVar2 == 0) {
-        sStack_30 = 0x66;
+    directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+                      (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
+    voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+    if (directSoundResult == 0) {
+      failedStage = 0x65;
+      directSoundResult = (*soundBuffer->lpVtbl->Lock)
+                        (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
+      voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+      if (directSoundResult == 0) {
+        failedStage = 0x66;
         encodedBlock = sampleAsset + 1;
-        uVar4 = uStack_24 >> 10;
-        outputStereoPcm = psStack_20;
+        remainingBlocks = lockedByteCount >> 10;
+        outputStereoPcm = lockedPcm;
         do {
-          dVar3 = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(byte *)encodedBlock);
+          encodedBlockSize = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(byte *)encodedBlock);
           SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,(short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0));
-          encodedBlock = (SoundSampleAsset *)(encodedBlock->reserved04_0B + (dVar3 - 4));
+          encodedBlock = (SoundSampleAsset *)(encodedBlock->reserved04_0B + (encodedBlockSize - 4));
           outputStereoPcm = outputStereoPcm + 0x200;
-          uVar4 = uVar4 - 1;
-        } while (uVar4 != 0);
-        TVar2 = (*pIStack_1c->lpVtbl->Unlock)(pIStack_1c,psStack_20,uStack_24,pvStack_28,TStack_2c);
-        ppIVar7 = (IDirectSoundBuffer **)0x29;
-        if (TVar2 == 0) {
-          AVar10 = (*g_MemoryApi.alloc)(0x20);
-          ppIVar7 = (IDirectSoundBuffer **)AVar10.eax;
-          if (!AVar10.carry) {
-            iVar5 = 8;
-            ppIVar8 = ppIVar7;
+          remainingBlocks = remainingBlocks - 1;
+        } while (remainingBlocks != 0);
+        directSoundResult = (*soundBuffer->lpVtbl->Unlock)(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
+        voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+        if (directSoundResult == 0) {
+          voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
+          voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.eax;
+          if (!voiceSetAlloc.carry) {
+            remainingCount = 8;
+            voiceCursor = voiceSetOrErrorCode;
             do {
-              *ppIVar8 = (IDirectSoundBuffer *)0x0;
-              ppDVar9 = g_DirectSoundVoiceSetRegistry;
-              ppIVar8 = ppIVar8 + 1;
-              iVar5 = iVar5 + -1;
-            } while (iVar5 != 0);
-            ppDVar6 = (DirectSoundVoiceSet **)0x100;
-            *ppIVar7 = pIStack_1c;
-            ppDVar1 = ppDVar9;
+              *voiceCursor = (IDirectSoundBuffer *)0x0;
+              registryCursor = g_DirectSoundVoiceSetRegistry;
+              voiceCursor = voiceCursor + 1;
+              remainingCount = remainingCount + -1;
+            } while (remainingCount != 0);
+            registryRemaining = (DirectSoundVoiceSet **)0x100;
+            *voiceSetOrErrorCode = soundBuffer;
+            registryGuard = registryCursor;
             do {
-              if (ppDVar1 == (DirectSoundVoiceSet **)0x0) {
+              if (registryGuard == (DirectSoundVoiceSet **)0x0) {
 LAB_00583652:
-                return THANDOR_BITCAST(qword, SoundCreateSampleVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar10) & 0xFFFFFFFFFFull) & 0xffffffff));
+                return THANDOR_BITCAST(qword, SoundCreateSampleVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, voiceSetAlloc) & 0xFFFFFFFFFFull) & 0xffffffff));
               }
-              if (*ppDVar9 == (DirectSoundVoiceSet *)0x0) {
-                *ppDVar9 = (DirectSoundVoiceSet *)ppIVar7;
+              if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+                *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
                 goto LAB_00583652;
               }
-              ppDVar9 = ppDVar9 + 1;
-              ppDVar6 = (DirectSoundVoiceSet **)((int)ppDVar6 + -1);
-              ppDVar1 = ppDVar6;
+              registryCursor = registryCursor + 1;
+              registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+              registryGuard = registryRemaining;
             } while( true );
           }
         }
       }
     }
   }
-  if (pIStack_1c != (IDirectSoundBuffer *)0x0) {
-    (*pIStack_1c->lpVtbl->Release)(pIStack_1c);
+  if (soundBuffer != (IDirectSoundBuffer *)0x0) {
+    (*soundBuffer->lpVtbl->Release)(soundBuffer);
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,sStack_30,g_PackageLastErrorPath);
-  SVar11.carry = true;
-  SVar11.eax = (DirectSoundVoiceSet *)ppIVar7;
-  return SVar11;
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+  failureResult.carry = true;
+  failureResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+  return failureResult;
 }
 
 
@@ -406,9 +406,9 @@ void __thandor_void_preserve_eax_ecx_edx
 DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
-  DirectSoundVoiceSet **ppDVar1;
+  DirectSoundVoiceSet **registryGuard;
   int voicesRemaining;
-  DirectSoundVoiceSet **ppDVar2;
+  DirectSoundVoiceSet **registryRemaining;
   IDirectSoundBuffer **voiceCursor;
   DirectSoundVoiceSet **registryCursor;
   IDirectSoundBuffer *voiceBuffer;
@@ -425,17 +425,17 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
       voicesRemaining = voicesRemaining + -1;
     } while (voicesRemaining != 0);
     (*g_MemoryApi.free)(voiceSet);
-    ppDVar2 = (DirectSoundVoiceSet **)0x100;
+    registryRemaining = (DirectSoundVoiceSet **)0x100;
     registryCursor = g_DirectSoundVoiceSetRegistry;
-    ppDVar1 = g_DirectSoundVoiceSetRegistry;
-    while (ppDVar1 != (DirectSoundVoiceSet **)0x0) {
+    registryGuard = g_DirectSoundVoiceSetRegistry;
+    while (registryGuard != (DirectSoundVoiceSet **)0x0) {
       if (voiceSet == *registryCursor) {
         *registryCursor = (DirectSoundVoiceSet *)0x0;
         return;
       }
       registryCursor = registryCursor + 1;
-      ppDVar2 = (DirectSoundVoiceSet **)((int)ppDVar2 + -1);
-      ppDVar1 = ppDVar2;
+      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+      registryGuard = registryRemaining;
     }
   }
   return;
@@ -454,101 +454,101 @@ DirectSound_CreatePcmVoiceSet
           dword *pcmData)
 
 {
-  DirectSoundVoiceSet **ppDVar1;
-  sdword sVar2;
-  uint uVar3;
-  TH_LEGACY_HRESULT TVar4;
-  int iVar5;
-  DirectSoundVoiceSet **ppDVar6;
-  IDirectSoundBuffer **ppIVar7;
-  IDirectSoundBuffer **ppIVar8;
-  dword *pdVar9;
-  DirectSoundVoiceSet **ppDVar10;
-  ArenaAllocEaxCf5 AVar11;
-  SoundCreatePcmVoiceSetEaxCf5 SVar12;
-  sdword sStack_30;
-  TH_LEGACY_DWORD TStack_2c;
-  TH_LEGACY_LPVOID pvStack_28;
-  uint uStack_24;
-  dword *pdStack_20;
-  IDirectSoundBuffer *pIStack_1c;
+  DirectSoundVoiceSet **registryGuard;
+  sdword pendingStage;
+  uint blockAlignOrDwordCount;
+  TH_LEGACY_HRESULT directSoundResult;
+  int remainingCount;
+  DirectSoundVoiceSet **registryRemaining;
+  IDirectSoundBuffer **voiceSetOrErrorCode;
+  IDirectSoundBuffer **voiceCursor;
+  dword *destCursor;
+  DirectSoundVoiceSet **registryCursor;
+  ArenaAllocEaxCf5 voiceSetAlloc;
+  SoundCreatePcmVoiceSetEaxCf5 failureResult;
+  sdword failedStage;
+  TH_LEGACY_DWORD wrapByteCount;
+  TH_LEGACY_LPVOID wrapRegion;
+  uint lockedByteCount;
+  dword *lockedData;
+  IDirectSoundBuffer *soundBuffer;
   
-  pIStack_1c = (IDirectSoundBuffer *)0x0;
-  sStack_30 = 100;
+  soundBuffer = (IDirectSoundBuffer *)0x0;
+  failedStage = 100;
   Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
   Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
   WaveFormat_PCM_22050_Stereo16.nChannels = (AudioChannelCount)channelCount;
   WaveFormat_PCM_22050_Stereo16.wBitsPerSample = (AudioBitsPerSample)bitsPerSample;
-  uVar3 = bitsPerSample * channelCount >> 3;
+  blockAlignOrDwordCount = bitsPerSample * channelCount >> 3;
   PrimarySoundBufferDesc.dwBufferBytes = bufferByteCount;
-  WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)uVar3;
+  WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)blockAlignOrDwordCount;
   WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = sampleRateHz;
-  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = uVar3 * sampleRateHz;
+  WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = blockAlignOrDwordCount * sampleRateHz;
   WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
   PrimarySoundBufferDesc.dwSize = 0x14;
   PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
   PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
-  TVar4 = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
-                    (g_DirectSound,&PrimarySoundBufferDesc,&pIStack_1c,(TH_LEGACY_LPVOID)0x0);
-  ppIVar7 = (IDirectSoundBuffer **)0x29;
-  sVar2 = sStack_30;
-  if (TVar4 == 0) {
-    TVar4 = (*pIStack_1c->lpVtbl->Lock)
-                      (pIStack_1c,0,0,&pdStack_20,&uStack_24,&pvStack_28,&TStack_2c,2);
-    ppIVar7 = (IDirectSoundBuffer **)0x29;
-    sVar2 = 0x65;
-    if (TVar4 == 0) {
-      sStack_30 = 0x66;
-      pdVar9 = pdStack_20;
-      for (uVar3 = uStack_24 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
-        *pdVar9 = *pcmData;
+  directSoundResult = (*g_DirectSound->lpVtbl->CreateSoundBuffer)
+                    (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
+  voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+  pendingStage = failedStage;
+  if (directSoundResult == 0) {
+    directSoundResult = (*soundBuffer->lpVtbl->Lock)
+                      (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
+    voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+    pendingStage = 0x65;
+    if (directSoundResult == 0) {
+      failedStage = 0x66;
+      destCursor = lockedData;
+      for (blockAlignOrDwordCount = lockedByteCount >> 2; blockAlignOrDwordCount != 0; blockAlignOrDwordCount = blockAlignOrDwordCount - 1) {
+        *destCursor = *pcmData;
         pcmData = pcmData + 1;
-        pdVar9 = pdVar9 + 1;
+        destCursor = destCursor + 1;
       }
-      TVar4 = (*pIStack_1c->lpVtbl->Unlock)(pIStack_1c,pdStack_20,uStack_24,pvStack_28,TStack_2c);
-      ppIVar7 = (IDirectSoundBuffer **)0x29;
-      sVar2 = 0x66;
-      if (TVar4 == 0) {
-        AVar11 = (*g_MemoryApi.alloc)(0x20);
-        ppIVar7 = (IDirectSoundBuffer **)AVar11.eax;
-        sVar2 = sStack_30;
-        if (!AVar11.carry) {
-          iVar5 = 8;
-          ppIVar8 = ppIVar7;
+      directSoundResult = (*soundBuffer->lpVtbl->Unlock)(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
+      voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+      pendingStage = 0x66;
+      if (directSoundResult == 0) {
+        voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
+        voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.eax;
+        pendingStage = failedStage;
+        if (!voiceSetAlloc.carry) {
+          remainingCount = 8;
+          voiceCursor = voiceSetOrErrorCode;
           do {
-            *ppIVar8 = (IDirectSoundBuffer *)0x0;
-            ppDVar10 = g_DirectSoundVoiceSetRegistry;
-            ppIVar8 = ppIVar8 + 1;
-            iVar5 = iVar5 + -1;
-          } while (iVar5 != 0);
-          ppDVar6 = (DirectSoundVoiceSet **)0x100;
-          *ppIVar7 = pIStack_1c;
-          ppDVar1 = ppDVar10;
+            *voiceCursor = (IDirectSoundBuffer *)0x0;
+            registryCursor = g_DirectSoundVoiceSetRegistry;
+            voiceCursor = voiceCursor + 1;
+            remainingCount = remainingCount + -1;
+          } while (remainingCount != 0);
+          registryRemaining = (DirectSoundVoiceSet **)0x100;
+          *voiceSetOrErrorCode = soundBuffer;
+          registryGuard = registryCursor;
           do {
-            if (ppDVar1 == (DirectSoundVoiceSet **)0x0) {
+            if (registryGuard == (DirectSoundVoiceSet **)0x0) {
 LAB_00583892:
-              return THANDOR_BITCAST(qword, SoundCreatePcmVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, AVar11) & 0xFFFFFFFFFFull) & 0xffffffff));
+              return THANDOR_BITCAST(qword, SoundCreatePcmVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, voiceSetAlloc) & 0xFFFFFFFFFFull) & 0xffffffff));
             }
-            if (*ppDVar10 == (DirectSoundVoiceSet *)0x0) {
-              *ppDVar10 = (DirectSoundVoiceSet *)ppIVar7;
+            if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+              *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
               goto LAB_00583892;
             }
-            ppDVar10 = ppDVar10 + 1;
-            ppDVar6 = (DirectSoundVoiceSet **)((int)ppDVar6 + -1);
-            ppDVar1 = ppDVar6;
+            registryCursor = registryCursor + 1;
+            registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+            registryGuard = registryRemaining;
           } while( true );
         }
       }
     }
   }
-  sStack_30 = sVar2;
-  if (pIStack_1c != (IDirectSoundBuffer *)0x0) {
-    (*pIStack_1c->lpVtbl->Release)(pIStack_1c);
+  failedStage = pendingStage;
+  if (soundBuffer != (IDirectSoundBuffer *)0x0) {
+    (*soundBuffer->lpVtbl->Release)(soundBuffer);
   }
-  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,sStack_30,g_PackageLastErrorPath);
-  SVar12.carry = true;
-  SVar12.eax = (DirectSoundVoiceSet *)ppIVar7;
-  return SVar12;
+  (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+  failureResult.carry = true;
+  failureResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+  return failureResult;
 }
 
 
@@ -561,36 +561,36 @@ void __thandor_void_preserve_eax_ecx_edx
 DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 {
-  IDirectSoundBuffer *This;
-  DirectSoundVoiceSet **ppDVar1;
-  int iVar2;
-  DirectSoundVoiceSet **ppDVar3;
-  IDirectSoundBuffer **ppIVar4;
-  DirectSoundVoiceSet **ppDVar5;
+  IDirectSoundBuffer *voiceBuffer;
+  DirectSoundVoiceSet **registryGuard;
+  int voicesRemaining;
+  DirectSoundVoiceSet **registryRemaining;
+  IDirectSoundBuffer **voiceCursor;
+  DirectSoundVoiceSet **registryCursor;
   
-  iVar2 = 8;
-  ppIVar4 = voiceSet->voices;
+  voicesRemaining = 8;
+  voiceCursor = voiceSet->voices;
   if (voiceSet != (DirectSoundVoiceSet *)0x0) {
     do {
-      This = *ppIVar4;
-      if (This != (IDirectSoundBuffer *)0x0) {
-        (*This->lpVtbl->Release)(This);
+      voiceBuffer = *voiceCursor;
+      if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
+        (*voiceBuffer->lpVtbl->Release)(voiceBuffer);
       }
-      ppIVar4 = ppIVar4 + 1;
-      iVar2 = iVar2 + -1;
-    } while (iVar2 != 0);
+      voiceCursor = voiceCursor + 1;
+      voicesRemaining = voicesRemaining + -1;
+    } while (voicesRemaining != 0);
     (*g_MemoryApi.free)(voiceSet);
-    ppDVar3 = (DirectSoundVoiceSet **)0x100;
-    ppDVar5 = g_DirectSoundVoiceSetRegistry;
-    ppDVar1 = g_DirectSoundVoiceSetRegistry;
-    while (ppDVar1 != (DirectSoundVoiceSet **)0x0) {
-      if (voiceSet == *ppDVar5) {
-        *ppDVar5 = (DirectSoundVoiceSet *)0x0;
+    registryRemaining = (DirectSoundVoiceSet **)0x100;
+    registryCursor = g_DirectSoundVoiceSetRegistry;
+    registryGuard = g_DirectSoundVoiceSetRegistry;
+    while (registryGuard != (DirectSoundVoiceSet **)0x0) {
+      if (voiceSet == *registryCursor) {
+        *registryCursor = (DirectSoundVoiceSet *)0x0;
         return;
       }
-      ppDVar5 = ppDVar5 + 1;
-      ppDVar3 = (DirectSoundVoiceSet **)((int)ppDVar3 + -1);
-      ppDVar1 = ppDVar3;
+      registryCursor = registryCursor + 1;
+      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+      registryGuard = registryRemaining;
     }
   }
   return;
@@ -712,15 +712,15 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffe
 bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
-  bool bVar1;
+  bool notPlaying;
   TH_LEGACY_DWORD voiceStatusFlags;
   
-  bVar1 = true;
+  notPlaying = true;
   if (voice != (IDirectSoundBuffer *)0x0) {
     (*voice->lpVtbl->GetStatus)(voice,&voiceStatusFlags);
-    bVar1 = (voiceStatusFlags & 1) == 0;
+    notPlaying = (voiceStatusFlags & 1) == 0;
   }
-  return bVar1;
+  return notPlaying;
 }
 
 
@@ -732,33 +732,33 @@ bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBu
 void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
 
 {
-  IDirectSoundBuffer *This;
-  DirectSoundVoiceSet **ppDVar1;
-  IDirectSoundBuffer **ppIVar2;
-  DirectSoundVoiceSet **ppDVar3;
-  IDirectSoundBuffer **ppIVar4;
-  IDirectSoundBuffer **ppIVar5;
-  DirectSoundVoiceSet **ppDVar6;
+  IDirectSoundBuffer *voiceBuffer;
+  DirectSoundVoiceSet **registryGuard;
+  IDirectSoundBuffer **voiceGuard;
+  DirectSoundVoiceSet **registryRemaining;
+  IDirectSoundBuffer **voicesRemaining;
+  IDirectSoundBuffer **voiceCursor;
+  DirectSoundVoiceSet **registryCursor;
   
-  ppDVar3 = (DirectSoundVoiceSet **)0x100;
-  ppDVar6 = g_DirectSoundVoiceSetRegistry;
-  ppDVar1 = g_DirectSoundVoiceSetRegistry;
-  while (ppDVar1 != (DirectSoundVoiceSet **)0x0) {
-    ppIVar4 = (IDirectSoundBuffer **)0x8;
-    ppIVar5 = (*ppDVar6)->voices;
-    ppIVar2 = ppIVar5;
-    while (ppIVar2 != (IDirectSoundBuffer **)0x0) {
-      This = *ppIVar5;
-      if (This != (IDirectSoundBuffer *)0x0) {
-        (*This->lpVtbl->Stop)(This);
+  registryRemaining = (DirectSoundVoiceSet **)0x100;
+  registryCursor = g_DirectSoundVoiceSetRegistry;
+  registryGuard = g_DirectSoundVoiceSetRegistry;
+  while (registryGuard != (DirectSoundVoiceSet **)0x0) {
+    voicesRemaining = (IDirectSoundBuffer **)0x8;
+    voiceCursor = (*registryCursor)->voices;
+    voiceGuard = voiceCursor;
+    while (voiceGuard != (IDirectSoundBuffer **)0x0) {
+      voiceBuffer = *voiceCursor;
+      if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
+        (*voiceBuffer->lpVtbl->Stop)(voiceBuffer);
       }
-      ppIVar5 = ppIVar5 + 1;
-      ppIVar4 = (IDirectSoundBuffer **)((int)ppIVar4 + -1);
-      ppIVar2 = ppIVar4;
+      voiceCursor = voiceCursor + 1;
+      voicesRemaining = (IDirectSoundBuffer **)((int)voicesRemaining + -1);
+      voiceGuard = voicesRemaining;
     }
-    ppDVar6 = ppDVar6 + 1;
-    ppDVar3 = (DirectSoundVoiceSet **)((int)ppDVar3 + -1);
-    ppDVar1 = ppDVar3;
+    registryCursor = registryCursor + 1;
+    registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+    registryGuard = registryRemaining;
   }
   return;
 }

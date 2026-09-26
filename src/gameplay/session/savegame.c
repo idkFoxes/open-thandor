@@ -22,45 +22,45 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr catalogList)
 
 {
-  void **ppvVar1;
-  void *pvVar2;
+  void **rowSlotArray;
+  void *selectedRowRecord;
   TextResourceId resourceId;
-  UiListRowIndex UVar3;
+  UiListRowIndex selectedIndex;
   UiNodeBase *firstNode;
-  UiListRowIndex UVar4;
-  UiListRowIndexEaxCf5 UVar5;
-  TextResourceResolveEaxCf5 TVar6;
-  TextResourceResolveEaxCf5 TVar7;
+  UiListRowIndex lastRowIndex;
+  UiListRowIndexEaxCf5 selectionResult;
+  TextResourceResolveEaxCf5 descriptionText;
+  TextResourceResolveEaxCf5 fieldText;
   
-  ppvVar1 = catalogList->rowSlots;
-  UVar4 = catalogList->rowCount - 1;
-  UVar5 = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
-  UVar3 = UVar5.rowIndex;
-  pvVar2 = ppvVar1[UVar3];
-  if (UVar5.carry) {
-    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
-    if (UVar3 != UVar4) {
+  rowSlotArray = catalogList->rowSlots;
+  lastRowIndex = catalogList->rowCount - 1;
+  selectionResult = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
+  selectedIndex = selectionResult.rowIndex;
+  selectedRowRecord = rowSlotArray[selectedIndex];
+  if (selectionResult.carry) {
+    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
+    if (selectedIndex != lastRowIndex) {
       InGameSaveGame_SaveSelectedOrTypedName(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList));
       return;
     }
   }
   else {
-    UiPageStack_SetActiveIndex((uint)(UVar3 == UVar4),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
+    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
     THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215d;
-    if (UVar3 != UVar4) {
+    if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = *(TextResourceId *)((int)pvVar2 + 0x70);
-        TVar6 = TextResource_Resolve(resourceId);
-        *TVar6.eax = 0x8000;
+        resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
+        descriptionText = TextResource_Resolve(resourceId);
+        *descriptionText.eax = 0x8000;
         THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = resourceId;
       }
       else {
-        TVar6 = TextResource_Resolve(0x215e);
-        TVar7 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x70));
-        *TVar7.eax = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,TVar7.eax,TVar6.eax);
-        TVar7 = TextResource_Resolve(*(TextResourceId *)((int)pvVar2 + 0x90));
-        RichTextCommandStream_PatchPayloadBySelector(0,TVar7.eax,TVar6.eax);
+        descriptionText = TextResource_Resolve(0x215e);
+        fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x70));
+        *fieldText.eax = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,descriptionText.eax);
+        fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,descriptionText.eax);
         THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215e;
       }
       firstNode = UiNode_GetRoot(&(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack).base);
@@ -96,17 +96,17 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
 
 {
   word *leaf;
-  int iVar1;
+  int rowOrdinal;
   dword errorOrValue;
   bool carryIn;
-  UiListRowIndexEaxCf5 UVar2;
+  UiListRowIndexEaxCf5 selectionResult;
   
   (*g_GraphicsCursorSetFrame)(6);
-  UVar2 = UiPointerList_GetSelectedIndexVariantBCf
+  selectionResult = UiPointerList_GetSelectedIndexVariantBCf
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
-  iVar1 = UVar2.rowIndex + 1;
-  if (iVar1 != *(int *)(saveGamePageControl + 0x144)) {
-    leaf = *(word **)(*(int *)(saveGamePageControl + 0x140) + -4 + iVar1 * 4);
+  rowOrdinal = selectionResult.rowIndex + 1;
+  if (rowOrdinal != *(int *)(saveGamePageControl + 0x144)) {
+    leaf = *(word **)(*(int *)(saveGamePageControl + 0x140) + -4 + rowOrdinal * 4);
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
                (word *)&g_ExecutableDirectoryUtf16);
@@ -137,48 +137,48 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
 void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRootNode *savePageRoot)
 
 {
-  UiNodeBase *pUVar1;
+  UiNodeBase *parentOrSelectedRow;
   UiRootNode *firstNode;
-  UiNodeVtable *pUVar2;
+  UiNodeVtable *listRowCount;
   TextResourceId resourceId;
-  ScenarioCatalogHeader *pSVar3;
+  ScenarioCatalogHeader *rowPointerCursor;
   void *handle;
-  sdword *psVar4;
-  dword dVar5;
-  int iVar6;
+  sdword *controlPtr;
+  dword remainingCount;
+  int clearCount;
   word *leaf;
   ScenarioCatalogByteOffset *destination;
-  ScenarioCatalogByteOffset *pSVar7;
-  ArenaAllocEaxCf5 AVar8;
-  FileSystemOpenEaxCf5 FVar9;
-  TextResourceResolveEaxCf5 TVar10;
-  UiListRowIndexEaxCf5 UVar11;
-  TextResourceResolveEaxCf5 TVar12;
-  FileSystemEnumerationEaxEcxCf9 FVar13;
-  void *handle_00;
+  ScenarioCatalogByteOffset *clearCursor;
+  ArenaAllocEaxCf5 allocResult;
+  FileSystemOpenEaxCf5 openResult;
+  TextResourceResolveEaxCf5 resolvedText;
+  UiListRowIndexEaxCf5 selectionResult;
+  TextResourceResolveEaxCf5 fieldText;
+  FileSystemEnumerationEaxEcxCf9 enumResult;
+  void *closeHandle;
   dword rowCount;
   
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save___sve_0050d9c8,
              (word *)&g_ExecutableDirectoryUtf16);
-  FVar13 = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+  enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
-  dVar5 = FVar13.entryCount;
-  if (FVar13.carry) {
-    dVar5 = 0;
+  remainingCount = enumResult.entryCount;
+  if (enumResult.carry) {
+    remainingCount = 0;
   }
   (*g_MemoryApi.free)(g_ScenarioCatalog);
   g_ScenarioCatalog = (ScenarioCatalogHeader *)0x0;
-  AVar8 = (*g_MemoryApi.alloc)((dVar5 + 1) * 0x104);
-  pSVar3 = (ScenarioCatalogHeader *)AVar8.eax;
-  if (!AVar8.carry) {
-    destination = &pSVar3->campaignRecordsOffset + dVar5;
-    g_ScenarioCatalog = pSVar3;
-    rowCount = dVar5;
+  allocResult = (*g_MemoryApi.alloc)((remainingCount + 1) * 0x104);
+  rowPointerCursor = (ScenarioCatalogHeader *)allocResult.eax;
+  if (!allocResult.carry) {
+    destination = &rowPointerCursor->campaignRecordsOffset + remainingCount;
+    g_ScenarioCatalog = rowPointerCursor;
+    rowCount = remainingCount;
     leaf = (word *)g_PackageScratchBuffer;
-    for (; dVar5 != 0; dVar5 = dVar5 - 1) {
-      pSVar3->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
+    for (; remainingCount != 0; remainingCount = remainingCount - 1) {
+      rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
       *destination = 0;
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
@@ -186,69 +186,69 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiRoo
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (word *)&g_ScenarioCatalogPathScratchUtf16);
-      FVar9 = (*g_FileSystemOpenCf)
+      openResult = (*g_FileSystemOpenCf)
                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16);
-      handle = (void *)FVar9.eax;
-      if (!FVar9.carry) {
-        handle_00 = handle;
+      handle = (void *)openResult.eax;
+      if (!openResult.carry) {
+        closeHandle = handle;
         (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
         (*g_FileSystemReadExactCf)(0x100,destination,handle);
-        (*g_FileSystemClose)(handle_00);
+        (*g_FileSystemClose)(closeHandle);
         destination[0x1c] = destination[0x1c] + 0x2230;
         destination[0x24] = destination[0x24] + 0x2220;
       }
-      pSVar3 = (ScenarioCatalogHeader *)&pSVar3->campaignRecordsOffset;
+      rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 0x40;
-      leaf = (word *)((int)leaf + FVar13.recordSizeBytes);
+      leaf = (word *)((int)leaf + enumResult.recordSizeBytes);
     }
-    pSVar3->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
-    pSVar7 = destination;
-    for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *pSVar7 = 0;
-      pSVar7 = pSVar7 + 1;
+    rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
+    clearCursor = destination;
+    for (clearCount = 0x40; clearCount != 0; clearCount = clearCount + -1) {
+      *clearCursor = 0;
+      clearCursor = clearCursor + 1;
     }
-    TVar10 = TextResource_Resolve(0x2151);
-    RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,TVar10.eax);
-    psVar4 = &savePageRoot[0x18].base.left;
+    resolvedText = TextResource_Resolve(0x2151);
+    RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,resolvedText.eax);
+    controlPtr = &savePageRoot[0x18].base.left;
     UiPointerList_InitializeColumnLayout
-              (rowCount,(void **)g_ScenarioCatalog,(UiPointerListControl *)psVar4);
-    UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)psVar4);
+              (rowCount,(void **)g_ScenarioCatalog,(UiPointerListControl *)controlPtr);
+    UiPointerList_SortByDwordPairFieldDescending(0xf0,(UiPointerListControl *)controlPtr);
     UiPointerList_InitializeColumnLayout
-              (rowCount + 1,(void **)g_ScenarioCatalog,(UiPointerListControl *)psVar4);
-    UiPointerList_SelectIndexVariantB(rowCount,(UiPointerListControl *)psVar4);
+              (rowCount + 1,(void **)g_ScenarioCatalog,(UiPointerListControl *)controlPtr);
+    UiPointerList_SelectIndexVariantB(rowCount,(UiPointerListControl *)controlPtr);
     UiPageStack_SetActiveIndex(5,(UiPageStackControl *)&savePageRoot[-0x4b].base.nodeFlags);
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&savePageRoot[0x1b].base.bottomAnchorQ31);
-    pUVar1 = (savePageRoot->base).parent;
+    parentOrSelectedRow = (savePageRoot->base).parent;
     firstNode = savePageRoot;
-    while (pUVar1 != (UiNodeBase *)0xffffffff) {
+    while (parentOrSelectedRow != (UiNodeBase *)0xffffffff) {
       firstNode = (UiRootNode *)(firstNode->base).parent;
-      pUVar1 = (firstNode->base).parent;
+      parentOrSelectedRow = (firstNode->base).parent;
     }
     UiNodeList_SuppressActionId(0x1210,&firstNode->base);
     UiNodeList_SuppressActionId(0x1219,&firstNode->base);
-    psVar4 = &firstNode[0x89].base.top;
-    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)psVar4);
-    InGameSaveName_UpdateSaveActionValidity((UiNodeBase *)psVar4);
-    pUVar2 = savePageRoot[0x19].base.vtable;
-    pUVar1 = savePageRoot[0x19].base.parent;
-    UVar11 = UiPointerList_GetSelectedIndexVariantBCf
+    controlPtr = &firstNode[0x89].base.top;
+    UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)controlPtr);
+    InGameSaveName_UpdateSaveActionValidity((UiNodeBase *)controlPtr);
+    listRowCount = savePageRoot[0x19].base.vtable;
+    parentOrSelectedRow = savePageRoot[0x19].base.parent;
+    selectionResult = UiPointerList_GetSelectedIndexVariantBCf
                        ((UiPointerListControl *)&savePageRoot[0x18].base.left);
-    pUVar1 = (&pUVar1->nextSibling)[(int)UVar11.rowIndex];
+    parentOrSelectedRow = (&parentOrSelectedRow->nextSibling)[(int)selectionResult.rowIndex];
     savePageRoot[0x1b].base.topAnchorQ31 = 0x215d;
-    if ((undefined1 *)((int)&pUVar2[-1].pointerWheel + 3U) != (undefined1 *)UVar11.rowIndex) {
+    if ((undefined1 *)((int)&listRowCount[-1].pointerWheel + 3U) != (undefined1 *)selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
-        resourceId = pUVar1[1].topOffset;
-        TVar10 = TextResource_Resolve(resourceId);
-        *TVar10.eax = 0x8000;
+        resourceId = parentOrSelectedRow[1].topOffset;
+        resolvedText = TextResource_Resolve(resourceId);
+        *resolvedText.eax = 0x8000;
         savePageRoot[0x1b].base.topAnchorQ31 = resourceId;
       }
       else {
-        TVar10 = TextResource_Resolve(0x215e);
-        TVar12 = TextResource_Resolve(pUVar1[1].topOffset);
-        *TVar12.eax = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,TVar12.eax,TVar10.eax);
-        TVar12 = TextResource_Resolve(pUVar1[1].layoutHeight);
-        RichTextCommandStream_PatchPayloadBySelector(0,TVar12.eax,TVar10.eax);
+        resolvedText = TextResource_Resolve(0x215e);
+        fieldText = TextResource_Resolve(parentOrSelectedRow[1].topOffset);
+        *fieldText.eax = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,resolvedText.eax);
+        fieldText = TextResource_Resolve(parentOrSelectedRow[1].layoutHeight);
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,resolvedText.eax);
         savePageRoot[0x1b].base.topAnchorQ31 = 0x215e;
       }
     }
@@ -270,13 +270,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
 {
   dword errorOrValue;
   word *leaf;
-  byte bVar1;
-  UiListRowIndexEaxCf5 UVar2;
-  uint uVar3;
+  byte saveStatus;
+  UiListRowIndexEaxCf5 selectionResult;
+  uint saveCarry;
   
   (*g_GraphicsCursorSetFrame)(6);
-  UVar2 = UiPointerList_GetSelectedIndexVariantBCf((UiPointerListControl *)((int)source + 0x150));
-  errorOrValue = UVar2.rowIndex + 1;
+  selectionResult = UiPointerList_GetSelectedIndexVariantBCf((UiPointerListControl *)((int)source + 0x150));
+  errorOrValue = selectionResult.rowIndex + 1;
   leaf = (word *)((int)source + 0x348);
   if (errorOrValue != *(dword *)((int)source + 0x1a4)) {
     leaf = *(word **)(*(int *)((int)source + 0x1a0) + -4 + errorOrValue * 4);
@@ -289,11 +289,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
              (word *)&g_ScenarioCatalogPathScratchUtf16);
   WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
   /* The error check below uses the save routine's CF, not the extension helper's. */
-  bVar1 = InGameUiAction1210_ResourceRegistrationHelper
+  saveStatus = InGameUiAction1210_ResourceRegistrationHelper
                     ((void *)((int)source + -0x2220),&g_ScenarioCatalogPathScratchUtf16);
-  uVar3 = (uint)(bVar1 & 1);
+  saveCarry = (uint)(saveStatus & 1);
   (*g_GraphicsCursorSetFrame)(0);
-  (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(uVar3 & 1) != 0);
+  (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)((int)source + 0x1738));
   InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)((int)source + 0x1738));
   return;
@@ -312,125 +312,125 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 
 {
-  UiNodeBase *pUVar1;
+  UiNodeBase *parentWalk;
   UiNodeBase *firstNode;
-  UiNodeVtable *pUVar2;
-  uint uVar3;
-  uint uVar4;
-  sdword *psVar5;
-  sdword *psVar6;
-  bool bVar7;
+  UiNodeVtable *remainingLength;
+  uint scanRemaining;
+  uint nameLength;
+  sdword *scanEnd;
+  sdword *charCursor;
+  bool matched;
   
-  pUVar1 = nameControl->parent;
+  parentWalk = nameControl->parent;
   firstNode = nameControl;
-  while (pUVar1 != (UiNodeBase *)0xffffffff) {
+  while (parentWalk != (UiNodeBase *)0xffffffff) {
     firstNode = firstNode->parent;
-    pUVar1 = firstNode->parent;
+    parentWalk = firstNode->parent;
   }
   if (((uint)nameControl[1].nextSibling & 1) != 0) {
-    pUVar2 = nameControl[1].vtable;
-    bVar7 = true;
-    psVar6 = &nameControl[1].leftOffset;
+    remainingLength = nameControl[1].vtable;
+    matched = true;
+    charCursor = &nameControl[1].leftOffset;
     do {
-      psVar5 = psVar6;
-      if (pUVar2 == (UiNodeVtable *)0x0) break;
-      pUVar2 = (UiNodeVtable *)((int)&pUVar2[-1].pointerWheel + 3);
-      psVar5 = (sdword *)((int)psVar6 + 2);
-      bVar7 = (short)*psVar6 == 0;
-      psVar6 = psVar5;
-    } while (!bVar7);
-    if (bVar7) {
-      uVar4 = (uint)-((int)&nameControl[1].leftOffset - (int)psVar5) >> 1;
-      bVar7 = uVar4 == 0;
-      uVar3 = uVar4;
-      psVar6 = &nameControl[1].leftOffset;
+      scanEnd = charCursor;
+      if (remainingLength == (UiNodeVtable *)0x0) break;
+      remainingLength = (UiNodeVtable *)((int)&remainingLength[-1].pointerWheel + 3);
+      scanEnd = (sdword *)((int)charCursor + 2);
+      matched = (short)*charCursor == 0;
+      charCursor = scanEnd;
+    } while (!matched);
+    if (matched) {
+      nameLength = (uint)-((int)&nameControl[1].leftOffset - (int)scanEnd) >> 1;
+      matched = nameLength == 0;
+      scanRemaining = nameLength;
+      charCursor = &nameControl[1].leftOffset;
       do {
-        if (uVar3 == 0) break;
-        uVar3 = uVar3 - 1;
-        bVar7 = (short)*psVar6 == 0x2a;
-        psVar6 = (sdword *)((int)psVar6 + 2);
-      } while (!bVar7);
-      if (!bVar7) {
-        uVar3 = uVar4;
-        psVar6 = &nameControl[1].leftOffset;
+        if (scanRemaining == 0) break;
+        scanRemaining = scanRemaining - 1;
+        matched = (short)*charCursor == 0x2a;
+        charCursor = (sdword *)((int)charCursor + 2);
+      } while (!matched);
+      if (!matched) {
+        scanRemaining = nameLength;
+        charCursor = &nameControl[1].leftOffset;
         do {
-          if (uVar3 == 0) break;
-          uVar3 = uVar3 - 1;
-          bVar7 = (short)*psVar6 == 0x2e;
-          psVar6 = (sdword *)((int)psVar6 + 2);
-        } while (!bVar7);
-        if (!bVar7) {
-          uVar3 = uVar4;
-          psVar6 = &nameControl[1].leftOffset;
+          if (scanRemaining == 0) break;
+          scanRemaining = scanRemaining - 1;
+          matched = (short)*charCursor == 0x2e;
+          charCursor = (sdword *)((int)charCursor + 2);
+        } while (!matched);
+        if (!matched) {
+          scanRemaining = nameLength;
+          charCursor = &nameControl[1].leftOffset;
           do {
-            if (uVar3 == 0) break;
-            uVar3 = uVar3 - 1;
-            bVar7 = (short)*psVar6 == 0x5c;
-            psVar6 = (sdword *)((int)psVar6 + 2);
-          } while (!bVar7);
-          if (!bVar7) {
-            uVar3 = uVar4;
-            psVar6 = &nameControl[1].leftOffset;
+            if (scanRemaining == 0) break;
+            scanRemaining = scanRemaining - 1;
+            matched = (short)*charCursor == 0x5c;
+            charCursor = (sdword *)((int)charCursor + 2);
+          } while (!matched);
+          if (!matched) {
+            scanRemaining = nameLength;
+            charCursor = &nameControl[1].leftOffset;
             do {
-              if (uVar3 == 0) break;
-              uVar3 = uVar3 - 1;
-              bVar7 = (short)*psVar6 == 0x3f;
-              psVar6 = (sdword *)((int)psVar6 + 2);
-            } while (!bVar7);
-            if (!bVar7) {
-              uVar3 = uVar4;
-              psVar6 = &nameControl[1].leftOffset;
+              if (scanRemaining == 0) break;
+              scanRemaining = scanRemaining - 1;
+              matched = (short)*charCursor == 0x3f;
+              charCursor = (sdword *)((int)charCursor + 2);
+            } while (!matched);
+            if (!matched) {
+              scanRemaining = nameLength;
+              charCursor = &nameControl[1].leftOffset;
               do {
-                if (uVar3 == 0) break;
-                uVar3 = uVar3 - 1;
-                bVar7 = (short)*psVar6 == 0x3c;
-                psVar6 = (sdword *)((int)psVar6 + 2);
-              } while (!bVar7);
-              if (!bVar7) {
-                uVar3 = uVar4;
-                psVar6 = &nameControl[1].leftOffset;
+                if (scanRemaining == 0) break;
+                scanRemaining = scanRemaining - 1;
+                matched = (short)*charCursor == 0x3c;
+                charCursor = (sdword *)((int)charCursor + 2);
+              } while (!matched);
+              if (!matched) {
+                scanRemaining = nameLength;
+                charCursor = &nameControl[1].leftOffset;
                 do {
-                  if (uVar3 == 0) break;
-                  uVar3 = uVar3 - 1;
-                  bVar7 = (short)*psVar6 == 0x3e;
-                  psVar6 = (sdword *)((int)psVar6 + 2);
-                } while (!bVar7);
-                if (!bVar7) {
-                  uVar3 = uVar4;
-                  psVar6 = &nameControl[1].leftOffset;
+                  if (scanRemaining == 0) break;
+                  scanRemaining = scanRemaining - 1;
+                  matched = (short)*charCursor == 0x3e;
+                  charCursor = (sdword *)((int)charCursor + 2);
+                } while (!matched);
+                if (!matched) {
+                  scanRemaining = nameLength;
+                  charCursor = &nameControl[1].leftOffset;
                   do {
-                    if (uVar3 == 0) break;
-                    uVar3 = uVar3 - 1;
-                    bVar7 = (short)*psVar6 == 0x3a;
-                    psVar6 = (sdword *)((int)psVar6 + 2);
-                  } while (!bVar7);
-                  if (!bVar7) {
-                    uVar3 = uVar4;
-                    psVar6 = &nameControl[1].leftOffset;
+                    if (scanRemaining == 0) break;
+                    scanRemaining = scanRemaining - 1;
+                    matched = (short)*charCursor == 0x3a;
+                    charCursor = (sdword *)((int)charCursor + 2);
+                  } while (!matched);
+                  if (!matched) {
+                    scanRemaining = nameLength;
+                    charCursor = &nameControl[1].leftOffset;
                     do {
-                      if (uVar3 == 0) break;
-                      uVar3 = uVar3 - 1;
-                      bVar7 = (short)*psVar6 == 0x22;
-                      psVar6 = (sdword *)((int)psVar6 + 2);
-                    } while (!bVar7);
-                    if (!bVar7) {
-                      uVar3 = uVar4;
-                      psVar6 = &nameControl[1].leftOffset;
+                      if (scanRemaining == 0) break;
+                      scanRemaining = scanRemaining - 1;
+                      matched = (short)*charCursor == 0x22;
+                      charCursor = (sdword *)((int)charCursor + 2);
+                    } while (!matched);
+                    if (!matched) {
+                      scanRemaining = nameLength;
+                      charCursor = &nameControl[1].leftOffset;
                       do {
-                        if (uVar3 == 0) break;
-                        uVar3 = uVar3 - 1;
-                        bVar7 = (short)*psVar6 == 0x7c;
-                        psVar6 = (sdword *)((int)psVar6 + 2);
-                      } while (!bVar7);
-                      if (!bVar7) {
-                        psVar6 = &nameControl[1].leftOffset;
+                        if (scanRemaining == 0) break;
+                        scanRemaining = scanRemaining - 1;
+                        matched = (short)*charCursor == 0x7c;
+                        charCursor = (sdword *)((int)charCursor + 2);
+                      } while (!matched);
+                      if (!matched) {
+                        charCursor = &nameControl[1].leftOffset;
                         do {
-                          if (uVar4 == 0) break;
-                          uVar4 = uVar4 - 1;
-                          bVar7 = (short)*psVar6 == 0x2f;
-                          psVar6 = (sdword *)((int)psVar6 + 2);
-                        } while (!bVar7);
-                        if (!bVar7) {
+                          if (nameLength == 0) break;
+                          nameLength = nameLength - 1;
+                          matched = (short)*charCursor == 0x2f;
+                          charCursor = (sdword *)((int)charCursor + 2);
+                        } while (!matched);
+                        if (!matched) {
                           UiNodeList_UnsuppressActionId(0x1210,firstNode);
                           return;
                         }

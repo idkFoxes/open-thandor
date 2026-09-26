@@ -20,14 +20,14 @@
 void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
 {
-  GraphicsCursorFrameRecord *pGVar1;
-  GraphicsCursorFrameIndex GVar2;
-  sdword sVar3;
-  GraphicsSubresourceIndex GVar4;
-  GraphicsSubresourceIndex GVar5;
+  GraphicsCursorFrameRecord *frameRecords;
+  GraphicsCursorFrameIndex activeFrameIndex;
+  sdword previousAccessState;
+  GraphicsSubresourceIndex nextIdleSubresource;
+  GraphicsSubresourceIndex nextActiveSubresource;
   
-  GVar2 = g_CursorFrameIndex;
-  pGVar1 = g_CursorFrameRecords;
+  activeFrameIndex = g_CursorFrameIndex;
+  frameRecords = g_CursorFrameRecords;
   if (g_CursorVisibilityToken < 0) {
     return;
   }
@@ -35,17 +35,17 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
   g_GraphicsCursorAnimationCountdown = g_GraphicsCursorAnimationCountdown + -1;
   if (g_GraphicsCursorAnimationCountdown == 0) {
     g_GraphicsCursorAnimationCountdown = 2;
-    GVar4 = g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex + 1;
-    GVar5 = g_CursorFrameRecords[g_CursorFrameIndex].activeSubresourceIndex + 1;
-    if (g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationLastSubresourceIndex < GVar4) {
-      GVar4 = g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationFirstSubresourceIndex;
+    nextIdleSubresource = g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex + 1;
+    nextActiveSubresource = g_CursorFrameRecords[g_CursorFrameIndex].activeSubresourceIndex + 1;
+    if (g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationLastSubresourceIndex < nextIdleSubresource) {
+      nextIdleSubresource = g_CursorFrameRecords[g_CursorFrameIndex].idleAnimationFirstSubresourceIndex;
     }
-    if (g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationLastSubresourceIndex < GVar5) {
-      GVar5 = g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationFirstSubresourceIndex;
+    if (g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationLastSubresourceIndex < nextActiveSubresource) {
+      nextActiveSubresource = g_CursorFrameRecords[g_CursorFrameIndex].activeAnimationFirstSubresourceIndex;
     }
-    if (GVar4 != g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex) {
-      g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex = GVar4;
-      pGVar1[GVar2].activeSubresourceIndex = GVar5;
+    if (nextIdleSubresource != g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex) {
+      g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex = nextIdleSubresource;
+      frameRecords[activeFrameIndex].activeSubresourceIndex = nextActiveSubresource;
       goto GraphicsCursor_RefreshComposedCursorIfNeeded;
     }
   }
@@ -53,12 +53,12 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
     return;
   }
 GraphicsCursor_RefreshComposedCursorIfNeeded:
-  sVar3 = g_GraphicsBackendAccessState;
+  previousAccessState = g_GraphicsBackendAccessState;
   if (g_CursorSourceAsset != (GraphicsTextureSourceAsset *)0x0) {
     LOCK();
     g_GraphicsBackendAccessState = 1;
     UNLOCK();
-    if (sVar3 == 0) {
+    if (previousAccessState == 0) {
       g_MouseEventsProcessed = 0;
       GraphicsCursor_RestoreAfterPresent(g_PrimarySurface3);
       GraphicsCursor_ComposeBeforePresent(g_PrimarySurface3);
@@ -78,18 +78,18 @@ GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
-  GraphicsCursorFrameEaxCf5 GVar1;
-  GraphicsCursorFrameEaxCf5 GVar2;
+  GraphicsCursorFrameEaxCf5 successResult;
+  GraphicsCursorFrameEaxCf5 failureResult;
   
   if (frameIndex < g_CursorFrameCount) {
     g_CursorFrameIndex = frameIndex;
-    GVar1.eax = 0x2d;
-    GVar1.carry = false;
-    return GVar1;
+    successResult.eax = 0x2d;
+    successResult.carry = false;
+    return successResult;
   }
-  GVar2.carry = true;
-  GVar2.eax = 0x2d;
-  return GVar2;
+  failureResult.carry = true;
+  failureResult.eax = 0x2d;
+  return failureResult;
 }
 
 
@@ -103,10 +103,10 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
 
 {
-  GraphicsCursorEventType GVar1;
+  GraphicsCursorEventType consumedEventType;
   uint nextReadIndex;
-  GraphicsCursorInputEventRegsCf21 IVar2;
-  GraphicsCursorInputEventRegsCf21 IVar3;
+  GraphicsCursorInputEventRegsCf21 eventResult;
+  GraphicsCursorInputEventRegsCf21 emptyResult;
   GraphicsCursorEventType eventType;
   GraphicsCursorClockValue eventClock;
   dword eventIndex;
@@ -116,24 +116,24 @@ GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_Co
   eventIndex = g_CursorInputReadIndex;
   nextReadIndex = g_CursorInputReadIndex + 1;
   if (g_CursorInputReadIndex == g_CursorInputWriteIndex) {
-    memset(&IVar3, 0, sizeof IVar3);
-    IVar3.carry = true;
-    return IVar3;
+    memset(&emptyResult, 0, sizeof emptyResult);
+    emptyResult.carry = true;
+    return emptyResult;
   }
   if (0xff < nextReadIndex) {
     nextReadIndex = 0;
   }
   g_CursorInputReadIndex = nextReadIndex;
-  GVar1 = g_CursorInputEvents[eventIndex].eventType00;
+  consumedEventType = g_CursorInputEvents[eventIndex].eventType00;
   eventClock = g_CursorInputEvents[eventIndex].clockValue14;
   g_CursorButtonState = g_CursorInputEvents[eventIndex].buttonState04;
   leftReleaseClock = g_CursorButtonReleaseClock[0];
   middleReleaseClock = g_CursorButtonReleaseClock[1];
-  if (((((GVar1 != LEFT_PRESS) && (GVar1 != MIDDLE_PRESS)) && (GVar1 != RIGHT_PRESS)) &&
-      ((leftReleaseClock = eventClock, GVar1 != LEFT_RELEASE &&
+  if (((((consumedEventType != LEFT_PRESS) && (consumedEventType != MIDDLE_PRESS)) && (consumedEventType != RIGHT_PRESS)) &&
+      ((leftReleaseClock = eventClock, consumedEventType != LEFT_RELEASE &&
        (leftReleaseClock = g_CursorButtonReleaseClock[0], middleReleaseClock = eventClock,
-       GVar1 != MIDDLE_RELEASE)))) &&
-     (middleReleaseClock = g_CursorButtonReleaseClock[1], GVar1 == RIGHT_RELEASE)) {
+       consumedEventType != MIDDLE_RELEASE)))) &&
+     (middleReleaseClock = g_CursorButtonReleaseClock[1], consumedEventType == RIGHT_RELEASE)) {
     g_CursorButtonReleaseClock[2] = eventClock;
   }
   g_CursorButtonReleaseClock[1] = middleReleaseClock;
@@ -141,19 +141,19 @@ GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_Co
   g_CursorOverrideX = g_CursorInputEvents[eventIndex].pointerX08;
   g_CursorOverrideY = g_CursorInputEvents[eventIndex].pointerY0C;
   g_CursorWheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
-  if ((GVar1 != MOTION_OR_WHEEL) && (GVar1 < 4)) {
+  if ((consumedEventType != MOTION_OR_WHEEL) && (consumedEventType < 4)) {
     g_CursorLastClickX = g_CursorInputEvents[eventIndex].pointerX08;
     g_CursorLastClickY = g_CursorInputEvents[eventIndex].pointerY0C;
   }
   /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
      position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
-  IVar2.eventCode = GVar1;
-  IVar2.buttonState = g_CursorButtonState;
-  IVar2.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
-  IVar2.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
-  IVar2.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
-  IVar2.carry = false;
-  return IVar2;
+  eventResult.eventCode = consumedEventType;
+  eventResult.buttonState = g_CursorButtonState;
+  eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
+  eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
+  eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
+  eventResult.carry = false;
+  return eventResult;
 }
 
 
@@ -166,8 +166,8 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
 
 {
   int perspectiveScaleQ12;
-  GraphicsProjectedPointPair GVar1;
-  GraphicsProjectedPointPair GVar2;
+  GraphicsProjectedPointPair projectedPoint;
+  GraphicsProjectedPointPair offscreenPoint;
   longlong projectedXProduct;
   longlong projectedYProduct;
   
@@ -175,17 +175,17 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
     perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, longlong, g_ProjectionNumerator) / (longlong)viewPoint->z);
     projectedXProduct = (longlong)viewPoint->x * (longlong)perspectiveScaleQ12;
     projectedYProduct = (longlong)viewPoint->y * (longlong)perspectiveScaleQ12;
-    GVar1.projectedY =
+    projectedPoint.projectedY =
          ((int)((ulonglong)projectedYProduct >> 0x20) << 0x14 | (uint)projectedYProduct >> 0xc) +
          g_ProjectionCenterFixed.component1;
-    GVar1.projectedX =
+    projectedPoint.projectedX =
          g_ProjectionCenterFixed.component0 +
          ((int)((ulonglong)projectedXProduct >> 0x20) << 0x14 | (uint)projectedXProduct >> 0xc);
-    return GVar1;
+    return projectedPoint;
   }
-  GVar2.projectedX = 0;
-  GVar2.projectedY = 0;
-  return GVar2;
+  offscreenPoint.projectedX = 0;
+  offscreenPoint.projectedY = 0;
+  return offscreenPoint;
 }
 
 
@@ -375,52 +375,52 @@ Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
 
 {
-  dword dVar1;
-  dword dVar2;
-  dword dVar3;
+  dword forwardX;
+  dword forwardY;
+  dword forwardZ;
   uint cornerAzimuthAngle16;
-  uint uVar4;
+  uint sideAzimuthAngle16;
   int scale;
   uint elevationAngle;
-  FixedDirectionXyzRegs12 FVar5;
+  FixedDirectionXyzRegs12 viewDirection;
   dword viewElevationAngle16;
   dword viewAzimuthAngle16;
   
   viewElevationAngle16 = g_ViewAngle1;
   viewAzimuthAngle16 = g_ViewAngle0;
   scale = 1 << (0xcU - (char)g_ProjectionShift & 0x1f);
-  FVar5 = FixedMath_DirectionFromAnglesScaledRegs(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
-  dVar3 = FVar5.edx;
-  dVar2 = FVar5.ecx;
-  dVar1 = FVar5.eax;
+  viewDirection = FixedMath_DirectionFromAnglesScaledRegs(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
+  forwardZ = viewDirection.edx;
+  forwardY = viewDirection.ecx;
+  forwardX = viewDirection.eax;
   cornerAzimuthAngle16 = viewAzimuthAngle16 + 0x4000 & 0xffff;
   FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,cornerAzimuthAngle16,scale);
-  uVar4 = cornerAzimuthAngle16 - 0x8000 & 0xffff;
-  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,uVar4,scale);
-  g_FrustumCornerRayFixed_0[0].x = g_FrustumCornerRayFixed_0[0].x + dVar1;
-  g_FrustumCornerRayFixed_0[0].y = g_FrustumCornerRayFixed_0[0].y + dVar2;
-  g_FrustumCornerRayFixed_0[0].z = g_FrustumCornerRayFixed_0[0].z + dVar3;
-  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x + dVar1;
-  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y + dVar2;
-  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z + dVar3;
-  uVar4 = uVar4 + 0x4000 & 0xffff;
+  sideAzimuthAngle16 = cornerAzimuthAngle16 - 0x8000 & 0xffff;
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 1,0,sideAzimuthAngle16,scale);
+  g_FrustumCornerRayFixed_0[0].x = g_FrustumCornerRayFixed_0[0].x + forwardX;
+  g_FrustumCornerRayFixed_0[0].y = g_FrustumCornerRayFixed_0[0].y + forwardY;
+  g_FrustumCornerRayFixed_0[0].z = g_FrustumCornerRayFixed_0[0].z + forwardZ;
+  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x + forwardX;
+  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y + forwardY;
+  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z + forwardZ;
+  sideAzimuthAngle16 = sideAzimuthAngle16 + 0x4000 & 0xffff;
   elevationAngle = viewElevationAngle16 + 0x4000 & 0xffff;
-  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,elevationAngle,uVar4,scale);
+  FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0 + 2,elevationAngle,sideAzimuthAngle16,scale);
   FixedMath_WriteDirectionScaled
-            (g_FrustumCornerRayFixed_0 + 3,elevationAngle - 0x8000 & 0xffff,uVar4,scale);
+            (g_FrustumCornerRayFixed_0 + 3,elevationAngle - 0x8000 & 0xffff,sideAzimuthAngle16,scale);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0,g_FrustumCornerRayFixed_0,
                      g_FrustumCornerRayFixed_0 + 2);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 1,g_FrustumCornerRayFixed_0 + 2,
                      g_FrustumCornerRayFixed_0 + 1);
-  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x - dVar1;
-  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y - dVar2;
-  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z - dVar3;
-  g_FrustumCornerRayFixed_0[2].x = g_FrustumCornerRayFixed_0[2].x + dVar1;
-  g_FrustumCornerRayFixed_0[2].y = g_FrustumCornerRayFixed_0[2].y + dVar2;
-  g_FrustumCornerRayFixed_0[2].z = g_FrustumCornerRayFixed_0[2].z + dVar3;
-  g_FrustumCornerRayFixed_0[3].x = g_FrustumCornerRayFixed_0[3].x + dVar1;
-  g_FrustumCornerRayFixed_0[3].y = g_FrustumCornerRayFixed_0[3].y + dVar2;
-  g_FrustumCornerRayFixed_0[3].z = g_FrustumCornerRayFixed_0[3].z + dVar3;
+  g_FrustumCornerRayFixed_0[1].x = g_FrustumCornerRayFixed_0[1].x - forwardX;
+  g_FrustumCornerRayFixed_0[1].y = g_FrustumCornerRayFixed_0[1].y - forwardY;
+  g_FrustumCornerRayFixed_0[1].z = g_FrustumCornerRayFixed_0[1].z - forwardZ;
+  g_FrustumCornerRayFixed_0[2].x = g_FrustumCornerRayFixed_0[2].x + forwardX;
+  g_FrustumCornerRayFixed_0[2].y = g_FrustumCornerRayFixed_0[2].y + forwardY;
+  g_FrustumCornerRayFixed_0[2].z = g_FrustumCornerRayFixed_0[2].z + forwardZ;
+  g_FrustumCornerRayFixed_0[3].x = g_FrustumCornerRayFixed_0[3].x + forwardX;
+  g_FrustumCornerRayFixed_0[3].y = g_FrustumCornerRayFixed_0[3].y + forwardY;
+  g_FrustumCornerRayFixed_0[3].z = g_FrustumCornerRayFixed_0[3].z + forwardZ;
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 2,g_FrustumCornerRayFixed_0 + 2,
                      g_FrustumCornerRayFixed_0 + 1);
   FixedVec3_CrossQ12(g_FrustumPlaneNormalFixed_0 + 3,g_FrustumCornerRayFixed_0 + 1,
@@ -457,10 +457,10 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
 
 {
   FixedEulerPairEdxEax8 eulerAnglePair;
-  FixedEulerAnglesEaxEcxEdx12 FVar1;
+  FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
-  FVar1 = FixedTransform_ExtractEulerAnglesRegs((GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
-  return FVar1;
+  eulerAngles = FixedTransform_ExtractEulerAnglesRegs((GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
+  return eulerAngles;
 }
 
 
@@ -477,7 +477,7 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
           GraphicsObjectAddress32 graphicsObject)
 
 {
-  FixedMathVectorAnglesRegs8 FVar1;
+  FixedMathVectorAnglesRegs8 localAngles;
   
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),(GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
@@ -485,8 +485,8 @@ GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
   FixedTransform_ApplyPoint
             ((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0),(GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionWorld,0),
              (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0));
-  FVar1 = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0));
-  return FVar1;
+  localAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)THANDOR_ADDR(g_GraphicsDirectionLocal,0));
+  return localAngles;
 }
 
 
@@ -534,36 +534,36 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress)
 
 {
-  int iVar1;
-  int iVar2;
+  int remainingChildCount;
+  int parentObjectOrCursor;
   GraphicsFixedMatrix3x4 *output;
-  FixedDirectionXyzRegs12 FVar3;
+  FixedDirectionXyzRegs12 translationDirection;
   
   output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
-  iVar2 = *(int *)(graphicsObjectAddress + 100);
-  if (iVar2 == 0) {
+  parentObjectOrCursor = *(int *)(graphicsObjectAddress + 100);
+  if (parentObjectOrCursor == 0) {
     output = (GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10);
   }
   FixedTransform_BuildRotationBasis
             (output,(int)*(uint *)(graphicsObjectAddress + 0x4c) >> 0x10,
              *(uint *)(graphicsObjectAddress + 0x4c) & 0xffff,
              *(AngleTurn32 *)(graphicsObjectAddress + 0x48));
-  FVar3 = FixedMath_DirectionFromAnglesScaledRegs
+  translationDirection = FixedMath_DirectionFromAnglesScaledRegs
                     ((int)*(uint *)(graphicsObjectAddress + 0x44) >> 0x10,
                      *(uint *)(graphicsObjectAddress + 0x44) & 0xffff,
                      *(FixedMathScale32 *)(graphicsObjectAddress + 0x40));
-  (output->translation).x = FVar3.eax;
-  (output->translation).y = FVar3.ecx;
-  (output->translation).z = FVar3.edx;
-  iVar1 = *(int *)(graphicsObjectAddress + 0xc);
-  if (iVar2 != 0) {
+  (output->translation).x = translationDirection.eax;
+  (output->translation).y = translationDirection.ecx;
+  (output->translation).z = translationDirection.edx;
+  remainingChildCount = *(int *)(graphicsObjectAddress + 0xc);
+  if (parentObjectOrCursor != 0) {
     FixedTransform_Compose
               ((GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10),output,
-               (GraphicsFixedMatrix3x4 *)(iVar2 + 0x10));
+               (GraphicsFixedMatrix3x4 *)(parentObjectOrCursor + 0x10));
   }
-  for (; iVar1 != 0; iVar1 = iVar1 + -1) {
-    GraphicsObject_RebuildTransformHierarchyRecursive(*(GraphicsObjectAddress32 *)(iVar2 + 0x78));
-    iVar2 = iVar2 + 4;
+  for (; remainingChildCount != 0; remainingChildCount = remainingChildCount + -1) {
+    GraphicsObject_RebuildTransformHierarchyRecursive(*(GraphicsObjectAddress32 *)(parentObjectOrCursor + 0x78));
+    parentObjectOrCursor = parentObjectOrCursor + 4;
   }
   return;
 }
@@ -579,115 +579,115 @@ dword __cdecl Graphics_Init(void)
 
 {
   dword errorOrValue;
-  TH_LEGACY_HRESULT TVar1;
-  SoftwareDisplayModeHookProc *pSVar2;
-  int iVar3;
-  dword dVar4;
-  GraphicsAdapterRecord *pGVar5;
-  dword arg3;
-  GraphicsAdapterRecord *pGVar6;
-  bool bVar7;
-  ArenaAllocEaxCf5 AVar8;
-  DynDllLoadEaxCf5 DVar9;
-  DynApiResolveEaxCf5 DVar10;
-  CommandLineFindOptionEbxCf5 CVar11;
+  TH_LEGACY_HRESULT hresult;
+  SoftwareDisplayModeHookProc *displayModeHook;
+  int remainingDwords;
+  dword remainingAdapters;
+  GraphicsAdapterRecord *cursorOrResult;
+  dword displayAdapterIndex;
+  GraphicsAdapterRecord *adapterOrModule;
+  bool glideDetected;
+  ArenaAllocEaxCf5 allocResult;
+  DynDllLoadEaxCf5 moduleLoad;
+  DynApiResolveEaxCf5 procResolve;
+  CommandLineFindOptionEbxCf5 optionResult;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
   
-  AVar8 = (*g_MemoryApi.alloc)(0x4000);
-  pGVar5 = (GraphicsAdapterRecord *)AVar8.eax;
-  if (!AVar8.carry) {
-    g_GraphicsTextureSlots = (GraphicsTextureResource **)pGVar5;
-    for (iVar3 = 0x1000; iVar3 != 0; iVar3 = iVar3 + -1) {
-      (pGVar5->adapterGuid).Data1 = 0;
-      pGVar5 = (GraphicsAdapterRecord *)&(pGVar5->adapterGuid).Data2;
+  allocResult = (*g_MemoryApi.alloc)(0x4000);
+  cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
+  if (!allocResult.carry) {
+    g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
+    for (remainingDwords = 0x1000; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      (cursorOrResult->adapterGuid).Data1 = 0;
+      cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
     }
-    AVar8 = (*g_MemoryApi.alloc)(0x400);
-    pGVar5 = (GraphicsAdapterRecord *)AVar8.eax;
-    if (!AVar8.carry) {
-      g_TexturePaletteEntries = (DirectDrawPaletteEntry *)pGVar5;
-      for (iVar3 = 0x100; iVar3 != 0; iVar3 = iVar3 + -1) {
-        (pGVar5->adapterGuid).Data1 = 0;
-        pGVar5 = (GraphicsAdapterRecord *)&(pGVar5->adapterGuid).Data2;
+    allocResult = (*g_MemoryApi.alloc)(0x400);
+    cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
+    if (!allocResult.carry) {
+      g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
+      for (remainingDwords = 0x100; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+        (cursorOrResult->adapterGuid).Data1 = 0;
+        cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
       }
-      CVar11 = CommandLine_FindOption(7,s_D3DALL_00578078);
-      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + CVar11.carry;
-      AVar8 = (*g_MemoryApi.alloc)(0x800);
-      pGVar5 = (GraphicsAdapterRecord *)AVar8.eax;
-      if (!AVar8.carry) {
+      optionResult = CommandLine_FindOption(7,s_D3DALL_00578078);
+      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.carry;
+      allocResult = (*g_MemoryApi.alloc)(0x800);
+      cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
+      if (!allocResult.carry) {
         g_GraphicsAdapterCount = 0;
-        g_GraphicsAdapters = (GraphicsAdapterRecord *)AVar8.eax;
-        AVar8 = (*g_MemoryApi.alloc)(0x1000);
-        pGVar5 = (GraphicsAdapterRecord *)AVar8.eax;
-        if (!AVar8.carry) {
+        g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.eax;
+        allocResult = (*g_MemoryApi.alloc)(0x1000);
+        cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
+        if (!allocResult.carry) {
           g_GraphicsDisplayModeCount = 0;
-          g_GraphicsDisplayModes = (GraphicsDisplayMode *)AVar8.eax;
-          bVar7 = Glide3_InitAndEnumerate();
-          if ((bVar7) && (CVar11 = CommandLine_FindOption(6,s_GLIDE_0057ee84), !CVar11.carry)) {
+          g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.eax;
+          glideDetected = Glide3_InitAndEnumerate();
+          if ((glideDetected) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.carry)) {
             (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
           }
-          DVar9 = DynDLL_Load(dynapi_2);
-          pGVar6 = (GraphicsAdapterRecord *)DVar9.moduleOrError;
-          pGVar5 = pGVar6;
-          if (!DVar9.carry) {
-            DVar10 = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)pGVar6,dynapi_17);
-            pGVar5 = DVar10.procedureOrError;
-            if (!DVar10.carry) {
-              DVar10 = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)pGVar6,dynapi_18);
-              pGVar5 = DVar10.procedureOrError;
-              if (!DVar10.carry) {
-                TVar1 = (*pDirectDrawEnumerateA)
+          moduleLoad = DynDLL_Load(dynapi_2);
+          adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
+          cursorOrResult = adapterOrModule;
+          if (!moduleLoad.carry) {
+            procResolve = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,dynapi_17);
+            cursorOrResult = procResolve.procedureOrError;
+            if (!procResolve.carry) {
+              procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,dynapi_18);
+              cursorOrResult = procResolve.procedureOrError;
+              if (!procResolve.carry) {
+                hresult = (*pDirectDrawEnumerateA)
                                   (DirectDraw_EnumAdapterCallback,(TH_LEGACY_LPVOID)0x0);
-                pGVar5 = (GraphicsAdapterRecord *)&k_LowAddressLiteral00000017;
-                if ((TVar1 == 0) &&
-                   (dVar4 = g_GraphicsAdapterCount, pGVar6 = g_GraphicsAdapters,
+                cursorOrResult = (GraphicsAdapterRecord *)&k_LowAddressLiteral00000017;
+                if ((hresult == 0) &&
+                   (remainingAdapters = g_GraphicsAdapterCount, adapterOrModule = g_GraphicsAdapters,
                    g_GraphicsAdapterCount != 0)) {
                   do {
-                    if ((pGVar6->adapterGuid).Data1 != 1) {
-                      pGVar5 = pGVar6;
-                      if ((pGVar6->adapterGuid).Data1 == 0) {
-                        pGVar5 = (GraphicsAdapterRecord *)0x0;
+                    if ((adapterOrModule->adapterGuid).Data1 != 1) {
+                      cursorOrResult = adapterOrModule;
+                      if ((adapterOrModule->adapterGuid).Data1 == 0) {
+                        cursorOrResult = (GraphicsAdapterRecord *)0x0;
                       }
-                      TVar1 = (*pDirectDrawCreate)
-                                        (&pGVar5->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
-                      if (TVar1 == 0) {
-                        TVar1 = (*directDraw->lpVtbl->QueryInterface)
+                      hresult = (*pDirectDrawCreate)
+                                        (&cursorOrResult->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
+                      if (hresult == 0) {
+                        hresult = (*directDraw->lpVtbl->QueryInterface)
                                           (directDraw,&IID_IDirect3D2_Local,&direct3D2);
-                        if (TVar1 == 0) {
+                        if (hresult == 0) {
                           (*direct3D2->lpVtbl->EnumDevices)
-                                    (direct3D2,Direct3D_EnumDeviceCallback,pGVar6);
+                                    (direct3D2,Direct3D_EnumDeviceCallback,adapterOrModule);
                           (*direct3D2->lpVtbl->Release)(direct3D2);
                         }
                         (*directDraw->lpVtbl->Release)(directDraw);
                       }
                     }
-                    dVar4 = dVar4 - 1;
-                    pGVar6 = pGVar6 + 1;
-                  } while (dVar4 != 0);
-                  arg3 = 0;
-                  dVar4 = g_GraphicsAdapterCount;
-                  pGVar5 = g_GraphicsAdapters;
+                    remainingAdapters = remainingAdapters - 1;
+                    adapterOrModule = adapterOrModule + 1;
+                  } while (remainingAdapters != 0);
+                  displayAdapterIndex = 0;
+                  remainingAdapters = g_GraphicsAdapterCount;
+                  cursorOrResult = g_GraphicsAdapters;
                   do {
-                    if ((pGVar5->adapterGuid).Data1 != 1) {
-                      pGVar6 = pGVar5;
-                      if ((pGVar5->adapterGuid).Data1 == 0) {
-                        pGVar6 = (GraphicsAdapterRecord *)0x0;
+                    if ((cursorOrResult->adapterGuid).Data1 != 1) {
+                      adapterOrModule = cursorOrResult;
+                      if ((cursorOrResult->adapterGuid).Data1 == 0) {
+                        adapterOrModule = (GraphicsAdapterRecord *)0x0;
                       }
-                      TVar1 = (*pDirectDrawCreate)
-                                        (&pGVar6->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
-                      if (TVar1 == 0) {
+                      hresult = (*pDirectDrawCreate)
+                                        (&adapterOrModule->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
+                      if (hresult == 0) {
                         (*directDraw->lpVtbl->EnumDisplayModes)
-                                  (directDraw,0,(DDSURFACEDESC_DX6 *)0x0,arg3,
+                                  (directDraw,0,(DDSURFACEDESC_DX6 *)0x0,displayAdapterIndex,
                                    DirectDraw_EnumDisplayModeCallback);
                         (*directDraw->lpVtbl->Release)(directDraw);
                       }
                     }
-                    pSVar2 = g_GraphicsDisplayModeHook;
-                    arg3 = arg3 + 1;
-                    pGVar5 = pGVar5 + 1;
-                    dVar4 = dVar4 - 1;
-                  } while (dVar4 != 0);
-                  pGVar5 = (GraphicsAdapterRecord *)0x18;
+                    displayModeHook = g_GraphicsDisplayModeHook;
+                    displayAdapterIndex = displayAdapterIndex + 1;
+                    cursorOrResult = cursorOrResult + 1;
+                    remainingAdapters = remainingAdapters - 1;
+                  } while (remainingAdapters != 0);
+                  cursorOrResult = (GraphicsAdapterRecord *)0x18;
                   if (g_GraphicsDisplayModeCount != 0) {
                     g_GraphicsBackendRefreshActiveAdapterCf =
                          GraphicsBackend_RefreshActiveAdapterIfReady;
@@ -704,8 +704,8 @@ dword __cdecl Graphics_Init(void)
                     g_GraphicsRefreshTextureColor = GraphicsTextureSet_RefreshColor;
                     g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
                     g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
-                    g_GraphicsDisplayModeFinalizeCf = pSVar2;
-                    return (dword)pSVar2;
+                    g_GraphicsDisplayModeFinalizeCf = displayModeHook;
+                    return (dword)displayModeHook;
                   }
                 }
               }
@@ -715,7 +715,7 @@ dword __cdecl Graphics_Init(void)
       }
     }
   }
-  return (dword)pGVar5;
+  return (dword)cursorOrResult;
 }
 
 
@@ -745,9 +745,9 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfR
 void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
 
 {
-  GraphicsTextureResource **ppGVar1;
-  GraphicsTextureResource **ppGVar2;
-  GraphicsTextureResource **ppGVar3;
+  GraphicsTextureResource **slotsOrRemaining;
+  GraphicsTextureResource **remainingSlots;
+  GraphicsTextureResource **slotCursor;
   
   g_GraphicsBackendAccessState = -1;
   (*g_MemoryApi.free)(g_CursorSavedBackground);
@@ -757,16 +757,16 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
   g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
   g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
   GlideBackend_ShutdownWrapper();
-  ppGVar2 = (GraphicsTextureResource **)0x1000;
-  ppGVar3 = g_GraphicsTextureSlots;
-  ppGVar1 = g_GraphicsTextureSlots;
-  while (ppGVar1 != (GraphicsTextureResource **)0x0) {
-    if (*ppGVar3 != (GraphicsTextureResource *)0x0) {
-      GraphicsTexture_ReleaseObjects(*ppGVar3);
+  remainingSlots = (GraphicsTextureResource **)0x1000;
+  slotCursor = g_GraphicsTextureSlots;
+  slotsOrRemaining = g_GraphicsTextureSlots;
+  while (slotsOrRemaining != (GraphicsTextureResource **)0x0) {
+    if (*slotCursor != (GraphicsTextureResource *)0x0) {
+      GraphicsTexture_ReleaseObjects(*slotCursor);
     }
-    ppGVar3 = ppGVar3 + 1;
-    ppGVar2 = (GraphicsTextureResource **)((int)ppGVar2 + -1);
-    ppGVar1 = ppGVar2;
+    slotCursor = slotCursor + 1;
+    remainingSlots = (GraphicsTextureResource **)((int)remainingSlots + -1);
+    slotsOrRemaining = remainingSlots;
   }
   g_LastViewportRect.x1 = 0;
   g_LastViewportRect.y1 = 0;
@@ -828,19 +828,19 @@ Graphics_SetViewportAndClearDepth
           GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3)
 
 {
-  TH_LEGACY_DWORD TVar1;
-  TH_LEGACY_HRESULT TVar2;
-  GraphicsScreenCoordinate GVar3;
-  GraphicsScreenCoordinate GVar4;
-  GraphicsScreenCoordinate GVar5;
-  GraphicsScreenCoordinate GVar6;
+  TH_LEGACY_DWORD backendId;
+  TH_LEGACY_HRESULT hresult;
+  GraphicsScreenCoordinate savedY2;
+  GraphicsScreenCoordinate savedX2;
+  GraphicsScreenCoordinate savedY1;
+  GraphicsScreenCoordinate savedX1;
   
-  TVar1 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  if (TVar1 == 0) {
+  backendId = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  if (backendId == 0) {
     SoftwareRenderer_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
     return;
   }
-  if (TVar1 != 1) {
+  if (backendId != 1) {
     SoftwareRenderer_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
     g_CurrentClearRect.x1 = coordinate3;
     g_CurrentClearRect.y1 = coordinate2;
@@ -848,10 +848,10 @@ Graphics_SetViewportAndClearDepth
     g_CurrentClearRect.y2 = coordinate0;
     if ((((coordinate3 != g_LastViewportRect.x1) || (coordinate2 != g_LastViewportRect.y1)) ||
         (coordinate1 != g_LastViewportRect.x2)) || (coordinate0 != g_LastViewportRect.y2)) {
-      GVar3 = coordinate0;
-      GVar4 = coordinate1;
-      GVar5 = coordinate2;
-      GVar6 = coordinate3;
+      savedY2 = coordinate0;
+      savedX2 = coordinate1;
+      savedY1 = coordinate2;
+      savedX1 = coordinate3;
       Memory_ZeroDwords(0x2c,&g_Direct3DViewportState);
       g_Direct3DViewportState.dwSize = 0x2c;
       g_Direct3DViewportState.dvMinZ = 0.0;
@@ -864,13 +864,13 @@ Graphics_SetViewportAndClearDepth
       g_Direct3DViewportState.dvClipY = (float)coordinate2;
       g_Direct3DViewportState.dvClipWidth = (float)(int)g_Direct3DViewportState.dwWidth;
       g_Direct3DViewportState.dvClipHeight = (float)(int)g_Direct3DViewportState.dwHeight;
-      TVar2 = (*g_Direct3DViewport2->lpVtbl->SetViewport2)
+      hresult = (*g_Direct3DViewport2->lpVtbl->SetViewport2)
                         (g_Direct3DViewport2,&g_Direct3DViewportState);
-      if (TVar2 == 0) {
-        g_LastViewportRect.x1 = GVar6;
-        g_LastViewportRect.y1 = GVar5;
-        g_LastViewportRect.x2 = GVar4;
-        g_LastViewportRect.y2 = GVar3;
+      if (hresult == 0) {
+        g_LastViewportRect.x1 = savedX1;
+        g_LastViewportRect.y1 = savedY1;
+        g_LastViewportRect.x2 = savedX2;
+        g_LastViewportRect.y2 = savedY2;
       }
     }
     (*g_Direct3DViewport2->lpVtbl->Clear)(g_Direct3DViewport2,1,&g_CurrentClearRect,2);
@@ -890,30 +890,30 @@ Graphics_SetViewportAndClearDepth
 void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
 
 {
-  TH_LEGACY_DWORD TVar1;
-  TH_LEGACY_HRESULT TVar2;
-  int iVar3;
-  bool bVar4;
+  TH_LEGACY_DWORD backendId;
+  TH_LEGACY_HRESULT hresult;
+  int restoreResult;
+  bool isSoftwareBackend;
   
-  TVar1 = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  bVar4 = TVar1 == 0;
-  if (bVar4) {
+  backendId = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  isSoftwareBackend = backendId == 0;
+  if (isSoftwareBackend) {
     return;
   }
-  if (TVar1 == 1) {
+  if (backendId == 1) {
     GlideBackend_BeginSceneNoOp();
-    if (!bVar4) {
+    if (!isSoftwareBackend) {
       return;
     }
   }
   else {
-    TVar2 = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
-    iVar3 = 0;
-    if (TVar2 != 0) {
-      iVar3 = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
+    hresult = (*g_BackSurface3->lpVtbl->IsLost)(g_BackSurface3);
+    restoreResult = 0;
+    if (hresult != 0) {
+      restoreResult = (*g_BackSurface3->lpVtbl->Restore)(g_BackSurface3);
     }
-    if ((iVar3 == 0) &&
-       (TVar2 = (*g_Direct3DDevice2->lpVtbl->BeginScene)(g_Direct3DDevice2), TVar2 == 0)) {
+    if ((restoreResult == 0) &&
+       (hresult = (*g_Direct3DDevice2->lpVtbl->BeginScene)(g_Direct3DDevice2), hresult == 0)) {
       return;
     }
   }
@@ -963,7 +963,7 @@ Graphics_DrawPrimitiveQueue
 
 {
   GraphicsPrimitivePacket *currentPacket;
-  GraphicsPrimitivePacketEaxCf5 GVar1;
+  GraphicsPrimitivePacketEaxCf5 packetResult;
   TH_LEGACY_DWORD graphicsBackendSelector;
   
   graphicsBackendSelector = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
@@ -973,14 +973,14 @@ Graphics_DrawPrimitiveQueue
     return;
   }
   if (graphicsBackendSelector != 1) {
-    GVar1 = GraphicsPrimitiveQueue_Begin(queue);
-    while (!GVar1.carry) {
+    packetResult = GraphicsPrimitiveQueue_Begin(queue);
+    while (!packetResult.carry) {
       (**(code **)((int)g_GraphicsDispatchTable.primitive +
-                  (((GVar1.packet)->renderFlags & 0x3f000) >> 10)))(GVar1.packet);
+                  (((packetResult.packet)->renderFlags & 0x3f000) >> 10)))(packetResult.packet);
       (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)
                 (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
-      GVar1 = GraphicsPrimitiveQueue_Next(queue);
+      packetResult = GraphicsPrimitiveQueue_Next(queue);
     }
     return;
   }
@@ -1000,7 +1000,7 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
 
 {
   UiPixelCoordinate cursorX;
-  dword arg6;
+  dword cursorSubresourceIndex;
   GraphicsCursorFrameRecord *cursorFrame;
   UiPixelCoordinate cursorY;
   int drawY;
@@ -1021,12 +1021,12 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
       g_CursorCurrentDrawY = drawY;
       GraphicsCursor_SaveSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
       GraphicsCursor_SaveSurfaceBackground(g_CursorSavedBackground,drawY,cursorX,backSurface);
-      arg6 = cursorFrame->activeSubresourceIndex;
+      cursorSubresourceIndex = cursorFrame->activeSubresourceIndex;
       if ((g_CursorButtonState & 7) == 0) {
-        arg6 = cursorFrame->idleSubresourceIndex;
+        cursorSubresourceIndex = cursorFrame->idleSubresourceIndex;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (g_FramebufferHeight,g_FramebufferWidth,0,0,0,0,arg6,g_CursorSourceAsset,
+                (g_FramebufferHeight,g_FramebufferWidth,0,0,0,0,cursorSubresourceIndex,g_CursorSourceAsset,
                  g_CursorCompositeBuffer);
       GraphicsCursor_RestoreSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
     }

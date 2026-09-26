@@ -23,62 +23,62 @@ PckCodec_EncodeFieldGrid
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
 
 {
-  AssetMagic AVar1;
-  AssetMagic *pAVar2;
+  AssetMagic pendingCellDword;
+  AssetMagic *encodedSizeOrError;
   AssetMagic *compactFieldImageBase;
   PckHeaderDwordCount headerDwordCount;
-  uint uVar3;
+  uint cellCount;
   dword bytes;
   PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
-  ArenaAllocEaxCf5 AVar4;
-  PckCodecEaxCf5 PVar5;
-  PckCodecEaxCf5 PVar6;
+  ArenaAllocEaxCf5 allocResult;
+  PckCodecEaxCf5 encodeResult;
+  PckCodecEaxCf5 successResult;
   AssetMagic persistedCellDword;
   
-  uVar3 = sourceGrid->gridWidth * sourceGrid->gridHeight;
-  bytes = uVar3 * 0x10 + 0x200;
-  AVar4 = (*g_MemoryApi.alloc)(bytes);
-  compactFieldImageBase = (AssetMagic *)AVar4.eax;
-  if (!AVar4.carry) {
+  cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
+  bytes = cellCount * 0x10 + 0x200;
+  allocResult = (*g_MemoryApi.alloc)(bytes);
+  compactFieldImageBase = (AssetMagic *)allocResult.eax;
+  if (!allocResult.carry) {
     compactWriteCursor = compactFieldImageBase;
     for (headerDwordCount = 0x80; headerDwordCount != 0; headerDwordCount = headerDwordCount - 1) {
       *compactWriteCursor = (sourceGrid->common).magic;
       sourceGrid = (FieldGridAsset *)&(sourceGrid->common).allocationSizeBytes;
       compactWriteCursor = compactWriteCursor + 1;
     }
-    uVar3 = uVar3 & 0xfffffff;
+    cellCount = cellCount & 0xfffffff;
     do {
       persistedCellDword =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xc);
       *compactWriteCursor =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0x12);
       compactWriteCursor[1] = persistedCellDword;
-      AVar1 = *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0x10);
+      pendingCellDword = *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0x10);
       compactWriteCursor[2] =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xe);
-      compactWriteCursor[3] = AVar1;
+      compactWriteCursor[3] = pendingCellDword;
       sourceGrid = (FieldGridAsset *)((sourceGrid->common).buildMetadata.names.sourceName + 8);
       compactWriteCursor = compactWriteCursor + 4;
-      uVar3 = uVar3 - 1;
-    } while (uVar3 != 0);
+      cellCount = cellCount - 1;
+    } while (cellCount != 0);
     *(dword *)destination = bytes;
-    PVar5 = PckCodec_EncodeHuffmanRle
+    encodeResult = PckCodec_EncodeHuffmanRle
                       (destinationCapacityBytes - 0x10,destination + 0x10,bytes,
                        (byte *)compactFieldImageBase);
-    pAVar2 = (AssetMagic *)PVar5.eax;
-    if (!PVar5.carry) {
+    encodedSizeOrError = (AssetMagic *)encodeResult.eax;
+    if (!encodeResult.carry) {
       (*g_MemoryApi.free)(compactFieldImageBase);
-      PVar6.eax = pAVar2 + 4;
-      PVar6.carry = false;
-      return PVar6;
+      successResult.eax = encodedSizeOrError + 4;
+      successResult.carry = false;
+      return successResult;
     }
     (*g_MemoryApi.free)(compactFieldImageBase);
-    compactFieldImageBase = pAVar2;
+    compactFieldImageBase = encodedSizeOrError;
   }
-  PVar5.carry = true;
-  PVar5.eax = (dword)compactFieldImageBase;
-  return PVar5;
+  encodeResult.carry = true;
+  encodeResult.eax = (dword)compactFieldImageBase;
+  return encodeResult;
 }
 
 
@@ -98,88 +98,88 @@ PckCodec_DecodeFieldGrid
 
 {
   dword bytes;
-  AssetMagic AVar1;
+  AssetMagic pendingCellDword;
   AssetMagic *compactFieldImageBase;
-  int iVar2;
+  int countOrRowStartX;
   FieldGridDimension columnsRemaining;
-  int iVar3;
+  int cellCountOrWorldX;
   FieldGridDimension rowsRemaining;
   Q12 currentWorldYQ12;
   AssetMagic *compactReadCursor;
   FieldGridCell *currentWorldCoordinateCell;
   FieldGridAsset *expandedZeroCursor;
   FieldGridAsset *expandedWriteCursor;
-  ArenaAllocEaxCf5 AVar4;
-  PckCodecEaxCf5 PVar5;
-  ArenaFreeEaxCf5 AVar6;
+  ArenaAllocEaxCf5 allocResult;
+  PckCodecEaxCf5 decodeResult;
+  ArenaFreeEaxCf5 freeResult;
   FieldGridDimension gridWidth;
   
   bytes = *(dword *)source;
-  AVar4 = (*g_MemoryApi.alloc)(bytes);
-  compactFieldImageBase = (AssetMagic *)AVar4.eax;
-  if (!AVar4.carry) {
-    PVar5 = PckCodec_DecodeHuffmanRle
+  allocResult = (*g_MemoryApi.alloc)(bytes);
+  compactFieldImageBase = (AssetMagic *)allocResult.eax;
+  if (!allocResult.carry) {
+    decodeResult = PckCodec_DecodeHuffmanRle
                       (bytes,(byte *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
-    if (!PVar5.carry) {
-      iVar3 = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
+    if (!decodeResult.carry) {
+      cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
       expandedWriteCursor = destinationGrid;
-      for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
+      for (countOrRowStartX = 0x80; countOrRowStartX != 0; countOrRowStartX = countOrRowStartX + -1) {
         (expandedWriteCursor->common).magic = *compactReadCursor;
         compactReadCursor = compactReadCursor + 1;
         expandedWriteCursor = (FieldGridAsset *)&(expandedWriteCursor->common).allocationSizeBytes;
       }
       expandedZeroCursor = expandedWriteCursor;
-      for (iVar2 = iVar3 * 0x20; iVar2 != 0; iVar2 = iVar2 + -1) {
+      for (countOrRowStartX = cellCountOrWorldX * 0x20; countOrRowStartX != 0; countOrRowStartX = countOrRowStartX + -1) {
         (expandedZeroCursor->common).magic = 0;
         expandedZeroCursor = (FieldGridAsset *)&(expandedZeroCursor->common).allocationSizeBytes;
       }
       do {
-        AVar1 = compactReadCursor[1];
+        pendingCellDword = compactReadCursor[1];
         *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0x12) =
              *compactReadCursor;
         *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0xc) =
-             AVar1;
-        AVar1 = compactReadCursor[3];
+             pendingCellDword;
+        pendingCellDword = compactReadCursor[3];
         *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0xe) =
              compactReadCursor[2];
         *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0x10) =
-             AVar1;
+             pendingCellDword;
         compactReadCursor = compactReadCursor + 4;
         expandedWriteCursor =
              (FieldGridAsset *)((expandedWriteCursor->common).buildMetadata.names.sourceName + 8);
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-      iVar3 = 0;
+        cellCountOrWorldX = cellCountOrWorldX + -1;
+      } while (cellCountOrWorldX != 0);
+      cellCountOrWorldX = 0;
       currentWorldYQ12 = 0;
       gridWidth = destinationGrid->gridWidth;
       rowsRemaining = destinationGrid->gridHeight;
       currentWorldCoordinateCell = destinationGrid->cells;
       columnsRemaining = gridWidth;
-      iVar2 = 0;
+      countOrRowStartX = 0;
       do {
         do {
-          currentWorldCoordinateCell->worldX = iVar3;
+          currentWorldCoordinateCell->worldX = cellCountOrWorldX;
           currentWorldCoordinateCell->worldY = currentWorldYQ12;
-          iVar3 = iVar3 + 0x901;
+          cellCountOrWorldX = cellCountOrWorldX + 0x901;
           currentWorldCoordinateCell = currentWorldCoordinateCell + 1;
           columnsRemaining = columnsRemaining - 1;
         } while (columnsRemaining != 0);
-        iVar3 = iVar2 + 0x480;
+        cellCountOrWorldX = countOrRowStartX + 0x480;
         currentWorldYQ12 = currentWorldYQ12 + -1999;
         rowsRemaining = rowsRemaining - 1;
         columnsRemaining = gridWidth;
-        iVar2 = iVar3;
+        countOrRowStartX = cellCountOrWorldX;
       } while (rowsRemaining != 0);
-      AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
-      return THANDOR_BITCAST(qword, PckCodecEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, AVar6) & 0xFFFFFFFFFFull) & 0xffffffff));
+      freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
+      return THANDOR_BITCAST(qword, PckCodecEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
-    AVar6 = (*g_MemoryApi.free)(compactFieldImageBase);
-    compactFieldImageBase = (AssetMagic *)AVar6.eax;
+    freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
+    compactFieldImageBase = (AssetMagic *)freeResult.eax;
   }
-  PVar5.carry = true;
-  PVar5.eax = (dword)compactFieldImageBase;
-  return PVar5;
+  decodeResult.carry = true;
+  decodeResult.eax = (dword)compactFieldImageBase;
+  return decodeResult;
 }
 
 
@@ -195,8 +195,8 @@ PckCodec_EncodeStored
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecEaxCf5 PVar1;
-  PckCodecEaxCf5 PVar2;
+  PckCodecEaxCf5 successResult;
+  PckCodecEaxCf5 errorResult;
   
   if (sourceSizeBytes <= destinationCapacityBytes) {
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
@@ -205,13 +205,13 @@ PckCodec_EncodeStored
       source = source + 4;
       destination = destination + 4;
     }
-    PVar1.eax = sourceSizeBytes + 3 & 0xfffffffc;
-    PVar1.carry = false;
-    return PVar1;
+    successResult.eax = sourceSizeBytes + 3 & 0xfffffffc;
+    successResult.carry = false;
+    return successResult;
   }
-  PVar2.carry = true;
-  PVar2.eax = 0x14;
-  return PVar2;
+  errorResult.carry = true;
+  errorResult.eax = 0x14;
+  return errorResult;
 }
 
 
@@ -227,7 +227,7 @@ PckCodec_DecodeStored
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecEaxCf5 PVar1;
+  PckCodecEaxCf5 copyResult;
   
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
       dwordCopyCount = dwordCopyCount - 1) {
@@ -235,10 +235,10 @@ PckCodec_DecodeStored
     source = source + 4;
     destination = destination + 4;
   }
-  PVar1.carry = (sourceSizeBytes >> 1 & 1) != 0;
+  copyResult.carry = (sourceSizeBytes >> 1 & 1) != 0;
   /* EAX is untouched; in Package_DecodeEntryInto it still holds the read size (packedSize). */
-  PVar1.eax = sourceSizeBytes;
-  return PVar1;
+  copyResult.eax = sourceSizeBytes;
+  return copyResult;
 }
 
 
@@ -254,175 +254,175 @@ PckCodec_EncodeHuffmanRle
           PckDecodedByteCount sourceSizeBytes,byte *source)
 
 {
-  PckHuffmanNodePtr pPVar1;
-  uint uVar2;
+  PckHuffmanNodePtr ancestorNode;
+  uint weightIndexOrSize;
   PckHuffmanBitOffset outputBitOffset;
-  int iVar3;
-  PckDecodedByteCount PVar4;
-  uint uVar5;
+  int countOrCodeLength;
+  PckDecodedByteCount bytesRemaining;
+  uint secondWeightOrCode;
   PckHuffmanNode *lowestWeightNode;
-  byte *pbVar6;
-  PckHuffmanSymbolState *pPVar7;
-  PckHuffmanNode *pPVar8;
+  byte *sourceByteCursor;
+  PckHuffmanSymbolState *symbolState;
+  PckHuffmanNode *scanNode;
   byte *frequencyByteCursor;
   undefined4 *workspaceClearCursor;
-  PckHuffmanNode *pPVar9;
+  PckHuffmanNode *leafOrSecondLowestNode;
   PckHuffmanNodePtr currentLeafNode;
-  uint *puVar10;
-  uint *puVar11;
-  PckCodecEaxCf5 PVar12;
-  PckCodecEaxCf5 PVar13;
+  uint *outputClearCursor;
+  uint *outputWriteCursor;
+  PckCodecEaxCf5 successResult;
+  PckCodecEaxCf5 errorResult;
   PckHuffmanNodePtr nextInternalNode;
   byte currentSymbolByte;
   PckHuffmanNodePtr parentNode;
   
   workspaceClearCursor = g_PckHuffmanSymbolWorkspace256;
-  for (iVar3 = 0x900; PVar4 = sourceSizeBytes, pbVar6 = source, iVar3 != 0; iVar3 = iVar3 + -1) {
+  for (countOrCodeLength = 0x900; bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrCodeLength != 0; countOrCodeLength = countOrCodeLength + -1) {
     *workspaceClearCursor = 0;
     workspaceClearCursor = workspaceClearCursor + 1;
   }
   do {
-    g_PckHuffmanSymbolWorkspace256[*pbVar6].frequencyCount =
-         g_PckHuffmanSymbolWorkspace256[*pbVar6].frequencyCount + 1;
-    PVar4 = PVar4 - 1;
-    pbVar6 = pbVar6 + 1;
-  } while (PVar4 != 0);
-  uVar2 = 0;
-  pPVar7 = g_PckHuffmanSymbolWorkspace256;
+    g_PckHuffmanSymbolWorkspace256[*sourceByteCursor].frequencyCount =
+         g_PckHuffmanSymbolWorkspace256[*sourceByteCursor].frequencyCount + 1;
+    bytesRemaining = bytesRemaining - 1;
+    sourceByteCursor = sourceByteCursor + 1;
+  } while (bytesRemaining != 0);
+  weightIndexOrSize = 0;
+  symbolState = g_PckHuffmanSymbolWorkspace256;
   do {
-    if (uVar2 < pPVar7->frequencyCount) {
-      uVar2 = pPVar7->frequencyCount;
+    if (weightIndexOrSize < symbolState->frequencyCount) {
+      weightIndexOrSize = symbolState->frequencyCount;
     }
-    pPVar7 = pPVar7 + 1;
-  } while (pPVar7 < g_PckHuffmanLeafNodeWorkspace256);
-  iVar3 = 0;
-  for (; 0xff < uVar2; uVar2 = uVar2 + 1 >> 1) {
-    iVar3 = iVar3 + 1;
+    symbolState = symbolState + 1;
+  } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
+  countOrCodeLength = 0;
+  for (; 0xff < weightIndexOrSize; weightIndexOrSize = weightIndexOrSize + 1 >> 1) {
+    countOrCodeLength = countOrCodeLength + 1;
   }
-  if (iVar3 != 0) {
-    pPVar7 = g_PckHuffmanSymbolWorkspace256;
+  if (countOrCodeLength != 0) {
+    symbolState = g_PckHuffmanSymbolWorkspace256;
     do {
-      pPVar7->frequencyCount = pPVar7->frequencyCount + (1 << ((byte)iVar3 & 0x1f)) + -1;
-      pPVar7->frequencyCount = pPVar7->frequencyCount >> ((byte)iVar3 & 0x1f);
-      pPVar7 = pPVar7 + 1;
-    } while (pPVar7 < g_PckHuffmanLeafNodeWorkspace256);
+      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((byte)countOrCodeLength & 0x1f)) + -1;
+      symbolState->frequencyCount = symbolState->frequencyCount >> ((byte)countOrCodeLength & 0x1f);
+      symbolState = symbolState + 1;
+    } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
   }
-  pPVar7 = g_PckHuffmanSymbolWorkspace256;
-  pPVar9 = g_PckHuffmanLeafNodeWorkspace256;
+  symbolState = g_PckHuffmanSymbolWorkspace256;
+  leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    pPVar9->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *pPVar7);
-    pPVar7 = pPVar7 + 1;
-    pPVar9 = pPVar9 + 1;
-  } while (pPVar7 < g_PckHuffmanLeafNodeWorkspace256);
+    leafOrSecondLowestNode->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *symbolState);
+    symbolState = symbolState + 1;
+    leafOrSecondLowestNode = leafOrSecondLowestNode + 1;
+  } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
   while( true ) {
-    pPVar8 = g_PckHuffmanLeafNodeWorkspace256;
-    uVar2 = 0xffffffff;
-    iVar3 = 0x200;
-    uVar5 = 0xffffffff;
+    scanNode = g_PckHuffmanLeafNodeWorkspace256;
+    weightIndexOrSize = 0xffffffff;
+    countOrCodeLength = 0x200;
+    secondWeightOrCode = 0xffffffff;
     do {
-      if (pPVar8->weight != 0) {
-        if (pPVar8->weight < uVar2) {
-          if (uVar2 < uVar5) {
-            uVar5 = uVar2;
-            pPVar9 = lowestWeightNode;
+      if (scanNode->weight != 0) {
+        if (scanNode->weight < weightIndexOrSize) {
+          if (weightIndexOrSize < secondWeightOrCode) {
+            secondWeightOrCode = weightIndexOrSize;
+            leafOrSecondLowestNode = lowestWeightNode;
           }
-          uVar2 = pPVar8->weight;
-          lowestWeightNode = pPVar8;
+          weightIndexOrSize = scanNode->weight;
+          lowestWeightNode = scanNode;
         }
-        else if (pPVar8->weight < uVar5) {
-          uVar5 = pPVar8->weight;
-          pPVar9 = pPVar8;
+        else if (scanNode->weight < secondWeightOrCode) {
+          secondWeightOrCode = scanNode->weight;
+          leafOrSecondLowestNode = scanNode;
         }
       }
-      pPVar8 = pPVar8 + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    if ((int)uVar5 < 0) break;
-    nextInternalNode->weight = uVar2 + uVar5;
+      scanNode = scanNode + 1;
+      countOrCodeLength = countOrCodeLength + -1;
+    } while (countOrCodeLength != 0);
+    if ((int)secondWeightOrCode < 0) break;
+    nextInternalNode->weight = weightIndexOrSize + secondWeightOrCode;
     nextInternalNode->zeroChild = lowestWeightNode;
-    nextInternalNode->oneChild = pPVar9;
+    nextInternalNode->oneChild = leafOrSecondLowestNode;
     lowestWeightNode->parent = nextInternalNode;
-    pPVar9->parent = nextInternalNode;
+    leafOrSecondLowestNode->parent = nextInternalNode;
     lowestWeightNode->weight = 0;
-    pPVar9->weight = 0;
+    leafOrSecondLowestNode->weight = 0;
     nextInternalNode = nextInternalNode + 1;
     if ((PckHuffmanNodePtr)((int)&g_PckHuffmanInternalNodeWorkspace256[0xff].parent + 3) <
         nextInternalNode) goto LAB_0040a77f;
   }
   if (destinationCapacityBytes < 0x100) goto LAB_0040a77f;
-  iVar3 = 0x100;
-  puVar11 = (uint *)(destination + 0x100);
+  countOrCodeLength = 0x100;
+  outputWriteCursor = (uint *)(destination + 0x100);
   frequencyByteCursor = (byte *)g_PckHuffmanSymbolWorkspace256;
   do {
     *destination = *frequencyByteCursor;
     frequencyByteCursor = frequencyByteCursor + 4;
     destination = destination + 1;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  pPVar7 = g_PckHuffmanSymbolWorkspace256;
-  uVar2 = 0;
+    countOrCodeLength = countOrCodeLength + -1;
+  } while (countOrCodeLength != 0);
+  symbolState = g_PckHuffmanSymbolWorkspace256;
+  weightIndexOrSize = 0;
   do {
-    if (pPVar7->frequencyCount != 0) {
-      iVar3 = 0;
-      uVar5 = 0;
-      currentLeafNode = g_PckHuffmanLeafNodeWorkspace256 + uVar2;
+    if (symbolState->frequencyCount != 0) {
+      countOrCodeLength = 0;
+      secondWeightOrCode = 0;
+      currentLeafNode = g_PckHuffmanLeafNodeWorkspace256 + weightIndexOrSize;
       do {
-        pPVar1 = currentLeafNode->parent;
-        uVar5 = uVar5 * 2;
-        iVar3 = iVar3 + 1;
-        if (currentLeafNode == pPVar1->oneChild) {
-          uVar5 = uVar5 + 1;
+        ancestorNode = currentLeafNode->parent;
+        secondWeightOrCode = secondWeightOrCode * 2;
+        countOrCodeLength = countOrCodeLength + 1;
+        if (currentLeafNode == ancestorNode->oneChild) {
+          secondWeightOrCode = secondWeightOrCode + 1;
         }
-        currentLeafNode = pPVar1;
-      } while (pPVar1->weight == 0);
-      pPVar7->frequencyCount = uVar5 | iVar3 * 0x1000000;
+        currentLeafNode = ancestorNode;
+      } while (ancestorNode->weight == 0);
+      symbolState->frequencyCount = secondWeightOrCode | countOrCodeLength * 0x1000000;
     }
-    uVar2 = uVar2 + 1;
-    pPVar7 = pPVar7 + 1;
-  } while (uVar2 < 0x100);
-  uVar2 = destinationCapacityBytes - 0x100 & 0xfffffffc;
-  if (uVar2 != 0) {
-    puVar10 = puVar11;
-    for (uVar5 = destinationCapacityBytes - 0x100 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *puVar10 = 0;
-      puVar10 = puVar10 + 1;
+    weightIndexOrSize = weightIndexOrSize + 1;
+    symbolState = symbolState + 1;
+  } while (weightIndexOrSize < 0x100);
+  weightIndexOrSize = destinationCapacityBytes - 0x100 & 0xfffffffc;
+  if (weightIndexOrSize != 0) {
+    outputClearCursor = outputWriteCursor;
+    for (secondWeightOrCode = destinationCapacityBytes - 0x100 >> 2; secondWeightOrCode != 0; secondWeightOrCode = secondWeightOrCode - 1) {
+      *outputClearCursor = 0;
+      outputClearCursor = outputClearCursor + 1;
     }
-    destinationCapacityBytes = uVar2 - 4;
-    if (3 < uVar2) {
+    destinationCapacityBytes = weightIndexOrSize - 4;
+    if (3 < weightIndexOrSize) {
       outputBitOffset = 0;
-      uVar2 = 0x11f;
+      weightIndexOrSize = 0x11f;
       do {
         while( true ) {
           currentSymbolByte = *source;
           if (((sourceSizeBytes < 3) || (currentSymbolByte != source[1])) ||
              (currentSymbolByte != source[2])) break;
-          uVar5 = 0;
+          secondWeightOrCode = 0;
           do {
-            if ((currentSymbolByte != *source) || (0x11 < uVar5)) break;
-            uVar5 = uVar5 + 1;
+            if ((currentSymbolByte != *source) || (0x11 < secondWeightOrCode)) break;
+            secondWeightOrCode = secondWeightOrCode + 1;
             source = source + 1;
             sourceSizeBytes = sourceSizeBytes - 1;
           } while (sourceSizeBytes != 0);
-          *puVar11 = *puVar11 | uVar5 * 2 + -5 << (outputBitOffset & 0x1f);
-          uVar5 = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-          *puVar11 = *puVar11 | (uVar5 & 0xffffff) << (outputBitOffset + 5 & 0x1f);
-          for (outputBitOffset = outputBitOffset + 5 + (char)(uVar5 >> 0x18); 7 < outputBitOffset;
+          *outputWriteCursor = *outputWriteCursor | secondWeightOrCode * 2 + -5 << (outputBitOffset & 0x1f);
+          secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
+          *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 0x1f);
+          for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
               outputBitOffset = outputBitOffset - 8) {
-            puVar11 = (uint *)((int)puVar11 + 1);
-            uVar2 = uVar2 + 1;
+            outputWriteCursor = (uint *)((int)outputWriteCursor + 1);
+            weightIndexOrSize = weightIndexOrSize + 1;
             destinationCapacityBytes = destinationCapacityBytes - 1;
             if (destinationCapacityBytes == 0) goto LAB_0040a77f;
           }
           if (sourceSizeBytes == 0)
           goto PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear;
         }
-        uVar5 = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
-        *puVar11 = *puVar11 | (uVar5 & 0xffffff) << (outputBitOffset + 1 & 0x1f);
-        for (outputBitOffset = outputBitOffset + 1 + (char)(uVar5 >> 0x18); 7 < outputBitOffset;
+        secondWeightOrCode = g_PckHuffmanSymbolWorkspace256[currentSymbolByte].frequencyCount;
+        *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 0x1f);
+        for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
             outputBitOffset = outputBitOffset - 8) {
-          puVar11 = (uint *)((int)puVar11 + 1);
-          uVar2 = uVar2 + 1;
+          outputWriteCursor = (uint *)((int)outputWriteCursor + 1);
+          weightIndexOrSize = weightIndexOrSize + 1;
           destinationCapacityBytes = destinationCapacityBytes - 1;
           if (destinationCapacityBytes == 0) goto LAB_0040a77f;
         }
@@ -431,17 +431,17 @@ PckCodec_EncodeHuffmanRle
       } while (sourceSizeBytes != 0);
 PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear:
       if (outputBitOffset != 0) {
-        uVar2 = uVar2 + 1;
+        weightIndexOrSize = weightIndexOrSize + 1;
       }
-      PVar12.eax = uVar2 & 0xfffffff0;
-      PVar12.carry = false;
-      return PVar12;
+      successResult.eax = weightIndexOrSize & 0xfffffff0;
+      successResult.carry = false;
+      return successResult;
     }
   }
 LAB_0040a77f:
-  PVar13.carry = true;
-  PVar13.eax = 0x14;
-  return PVar13;
+  errorResult.carry = true;
+  errorResult.eax = 0x14;
+  return errorResult;
 }
 
 
@@ -456,132 +456,132 @@ PckCodec_DecodeHuffmanRle
           byte *source)
 
 {
-  PckHuffmanSymbolState PVar1;
-  uint uVar2;
+  PckHuffmanSymbolState symbolState;
+  uint lowWeightOrBitWindow;
   PckHuffmanRunLength runLength;
   PckHuffmanBitOffset nextBitOffset;
   PckHuffmanBitOffset inputBitOffset;
-  int iVar3;
-  uint uVar4;
+  int remainingCount;
+  uint secondWeightOrCodeBits;
   PckHuffmanNode *lowestWeightNode;
-  PckHuffmanNodePtr pPVar5;
+  PckHuffmanNodePtr literalNode;
   PckHuffmanNodePtr currentHuffmanNode;
   byte *frequencyByteCursor;
-  PckHuffmanNode *pPVar6;
-  uint *puVar7;
-  PckHuffmanSymbolState *pPVar8;
-  PckHuffmanNode *pPVar9;
-  bool bVar10;
-  PckCodecEaxCf5 PVar11;
+  PckHuffmanNode *scanNode;
+  uint *inputCursor;
+  PckHuffmanSymbolState *symbolStateCursor;
+  PckHuffmanNode *leafOrSecondLowestNode;
+  bool decodeFailed;
+  PckCodecEaxCf5 huffmanResult;
   PckHuffmanNodePtr nextInternalNode;
   
-  pPVar8 = g_PckHuffmanSymbolWorkspace256;
+  symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
   frequencyByteCursor = source;
   do {
-    THANDOR_WRITE_PART(PVar1.frequencyCount, 1, 3, 0);
-    THANDOR_PART(byte, PVar1.frequencyCount, 0) = *frequencyByteCursor;
-    *pPVar8 = PVar1;
+    THANDOR_WRITE_PART(symbolState.frequencyCount, 1, 3, 0);
+    THANDOR_PART(byte, symbolState.frequencyCount, 0) = *frequencyByteCursor;
+    *symbolStateCursor = symbolState;
     frequencyByteCursor = frequencyByteCursor + 1;
-    pPVar8 = pPVar8 + 1;
-  } while (pPVar8 < g_PckHuffmanLeafNodeWorkspace256);
-  for (iVar3 = 0x800; iVar3 != 0; iVar3 = iVar3 + -1) {
-    pPVar8->frequencyCount = 0;
-    pPVar8 = pPVar8 + 1;
+    symbolStateCursor = symbolStateCursor + 1;
+  } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);
+  for (remainingCount = 0x800; remainingCount != 0; remainingCount = remainingCount + -1) {
+    symbolStateCursor->frequencyCount = 0;
+    symbolStateCursor = symbolStateCursor + 1;
   }
-  pPVar8 = g_PckHuffmanSymbolWorkspace256;
-  pPVar9 = g_PckHuffmanLeafNodeWorkspace256;
+  symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
+  leafOrSecondLowestNode = g_PckHuffmanLeafNodeWorkspace256;
   do {
-    pPVar9->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *pPVar8);
-    pPVar8 = pPVar8 + 1;
-    pPVar9 = pPVar9 + 1;
-  } while (pPVar8 < g_PckHuffmanLeafNodeWorkspace256);
+    leafOrSecondLowestNode->weight = THANDOR_BITCAST(PckHuffmanSymbolState, PckHuffmanWeight, *symbolStateCursor);
+    symbolStateCursor = symbolStateCursor + 1;
+    leafOrSecondLowestNode = leafOrSecondLowestNode + 1;
+  } while (symbolStateCursor < g_PckHuffmanLeafNodeWorkspace256);
   nextInternalNode = g_PckHuffmanInternalNodeWorkspace256;
   do {
-    pPVar6 = g_PckHuffmanLeafNodeWorkspace256;
-    uVar2 = 0xffffffff;
-    iVar3 = 0x200;
-    uVar4 = 0xffffffff;
+    scanNode = g_PckHuffmanLeafNodeWorkspace256;
+    lowWeightOrBitWindow = 0xffffffff;
+    remainingCount = 0x200;
+    secondWeightOrCodeBits = 0xffffffff;
     do {
-      if (pPVar6->weight != 0) {
-        if (pPVar6->weight < uVar2) {
-          if (uVar2 < uVar4) {
-            uVar4 = uVar2;
-            pPVar9 = lowestWeightNode;
+      if (scanNode->weight != 0) {
+        if (scanNode->weight < lowWeightOrBitWindow) {
+          if (lowWeightOrBitWindow < secondWeightOrCodeBits) {
+            secondWeightOrCodeBits = lowWeightOrBitWindow;
+            leafOrSecondLowestNode = lowestWeightNode;
           }
-          uVar2 = pPVar6->weight;
-          lowestWeightNode = pPVar6;
+          lowWeightOrBitWindow = scanNode->weight;
+          lowestWeightNode = scanNode;
         }
-        else if (pPVar6->weight < uVar4) {
-          uVar4 = pPVar6->weight;
-          pPVar9 = pPVar6;
+        else if (scanNode->weight < secondWeightOrCodeBits) {
+          secondWeightOrCodeBits = scanNode->weight;
+          leafOrSecondLowestNode = scanNode;
         }
       }
-      pPVar6 = pPVar6 + 1;
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    if ((int)uVar4 < 0) {
+      scanNode = scanNode + 1;
+      remainingCount = remainingCount + -1;
+    } while (remainingCount != 0);
+    if ((int)secondWeightOrCodeBits < 0) {
       inputBitOffset = 0;
-      puVar7 = (uint *)(source + 0x100);
+      inputCursor = (uint *)(source + 0x100);
       goto LAB_0040a890;
     }
-    nextInternalNode->weight = uVar2 + uVar4;
+    nextInternalNode->weight = lowWeightOrBitWindow + secondWeightOrCodeBits;
     nextInternalNode->zeroChild = lowestWeightNode;
-    nextInternalNode->oneChild = pPVar9;
+    nextInternalNode->oneChild = leafOrSecondLowestNode;
     lowestWeightNode->parent = nextInternalNode;
-    pPVar9->parent = nextInternalNode;
+    leafOrSecondLowestNode->parent = nextInternalNode;
     lowestWeightNode->weight = 0;
-    pPVar9->weight = 0;
+    leafOrSecondLowestNode->weight = 0;
     nextInternalNode = nextInternalNode + 1;
   /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
      where the internal node workspace ends. */
   } while (nextInternalNode < g_PckHuffmanInternalNodeWorkspace256 + 256);
   runLength = 0x14;
-  bVar10 = true;
+  decodeFailed = true;
   goto LAB_0040a953;
 LAB_0040a890:
   do {
-    uVar2 = *puVar7 >> (inputBitOffset & 0x1f);
+    lowWeightOrBitWindow = *inputCursor >> (inputBitOffset & 0x1f);
     nextBitOffset = inputBitOffset + 1;
-    if ((uVar2 & 1) == 0) {
-      runLength = uVar2 >> 1;
-      pPVar5 = nextInternalNode + -1;
+    if ((lowWeightOrBitWindow & 1) == 0) {
+      runLength = lowWeightOrBitWindow >> 1;
+      literalNode = nextInternalNode + -1;
       do {
         if ((runLength & 1) == 0) {
-          pPVar5 = pPVar5->zeroChild;
+          literalNode = literalNode->zeroChild;
         }
         else {
-          pPVar5 = pPVar5->oneChild;
+          literalNode = literalNode->oneChild;
         }
         runLength = runLength >> 1;
         nextBitOffset = nextBitOffset + 1;
-      } while (pPVar5->zeroChild != (PckHuffmanNodePtr)0x0);
-      *destination = (byte)(pPVar5 - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+      } while (literalNode->zeroChild != (PckHuffmanNodePtr)0x0);
+      *destination = (byte)(literalNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
       for (inputBitOffset = nextBitOffset; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8)
       {
-        puVar7 = (uint *)((int)puVar7 + 1);
+        inputCursor = (uint *)((int)inputCursor + 1);
       }
       outputSizeBytes = outputSizeBytes - 1;
       if (outputSizeBytes == 0) break;
       goto LAB_0040a890;
     }
-    uVar4 = uVar2 >> 5;
+    secondWeightOrCodeBits = lowWeightOrBitWindow >> 5;
     inputBitOffset = inputBitOffset + 5;
     currentHuffmanNode = nextInternalNode + -1;
     do {
-      if ((uVar4 & 1) == 0) {
+      if ((secondWeightOrCodeBits & 1) == 0) {
         currentHuffmanNode = currentHuffmanNode->zeroChild;
       }
       else {
         currentHuffmanNode = currentHuffmanNode->oneChild;
       }
-      uVar4 = uVar4 >> 1;
+      secondWeightOrCodeBits = secondWeightOrCodeBits >> 1;
       inputBitOffset = inputBitOffset + 1;
     } while (currentHuffmanNode->zeroChild != (PckHuffmanNodePtr)0x0);
     for (; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8) {
-      puVar7 = (uint *)((int)puVar7 + 1);
+      inputCursor = (uint *)((int)inputCursor + 1);
     }
-    runLength = (uVar2 >> 1 & 0xf) + 3;
+    runLength = (lowWeightOrBitWindow >> 1 & 0xf) + 3;
     do {
       *destination = (byte)(currentHuffmanNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
@@ -590,10 +590,10 @@ LAB_0040a890:
       runLength = runLength - 1;
     } while (runLength != 0);
   } while (outputSizeBytes != 0);
-  bVar10 = false;
+  decodeFailed = false;
 LAB_0040a953:
-  PVar11.carry = bVar10;
-  PVar11.eax = runLength;
-  return PVar11;
+  huffmanResult.carry = decodeFailed;
+  huffmanResult.eax = runLength;
+  return huffmanResult;
 }
 
