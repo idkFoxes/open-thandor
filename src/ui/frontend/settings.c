@@ -200,8 +200,7 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
        *(uint *)(frontendRootPage->taskRowControls04C +
                 (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) &
        0xfffffff7;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls
-            ((dword)rowTextIdBytes,activeCountOffsetOrLocalRow,(UiRootNode *)frontendRootPage);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
   rootVtable = (frontendRootPage->rootNode).vtable;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -1369,9 +1368,8 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
    Purpose: Rebuilds faction and player control availability, selection state, labels, assignment buffers, and the
    localized task-description payload for the active frontend task-assignment page.
 */
-void __fastcall
-FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls
-          (dword generationCursor,dword selectionIndex,UiRootNode *taskAssignmentRoot)
+void
+FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
 
 {
   sdword *rosterLayoutFlags;

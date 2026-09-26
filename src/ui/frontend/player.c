@@ -1401,7 +1401,7 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
         rootAnchorFlags = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
         *rootAnchorFlags = *rootAnchorFlags & 0xfffffff7;
       }
-      FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(0,playerId,taskAssignmentRoot);
+      FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(taskAssignmentRoot);
       return;
     }
     playerBlock = playerBlock + 1;

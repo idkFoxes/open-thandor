@@ -3340,7 +3340,7 @@ FrontendUiAction2045_IndexedSelectionHelper
   } while (remainingPlayerBlocks != 0);
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates + selectionIndex + 1;
   *lifecycleState = *lifecycleState ^ FACTION_RUNTIME_LIFECYCLE_ACTIVE;
-  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(selectionIndex,0,g_FrontendRootNode);
+  FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
   return;
 }
 
@@ -3411,8 +3411,7 @@ FrontendUiAction2046_IndexedSelectionHelper
     (matchedPlayerBlock->factionAssignment).readyOrWaitState = readyStateGeneration;
     g_FrontendFactionAssignmentReadyStateGeneration =
          g_FrontendFactionAssignmentReadyStateGeneration + 1;
-    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls
-              (generationCursor,readyStateGeneration,g_FrontendRootNode);
+    FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(g_FrontendRootNode);
   }
   return;
 }

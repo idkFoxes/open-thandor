@@ -132,7 +132,7 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
           (FrontendNetworkSettingsControlView250 *networkSettings);
 
 /* 0x00549620 */
-void __fastcall FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls (dword generationCursor,dword selectionIndex,UiRootNode *taskAssignmentRoot);
+void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot);
 
 /* 0x0054CD20 */
 bool __thandor_cf_preserve_eax_ecx_edx

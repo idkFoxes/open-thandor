@@ -4108,7 +4108,7 @@ UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
   bool pathRejected;
   bool validatorRejected;
   
-  validatorRejected = (bool)(*g_FileSystemValidateDos83Path)
+  validatorRejected = (*g_FileSystemValidateDos83Path)
                           (control->editStateFlags >> 1 & 3,(byte *)control->pathBuffer);
   if (validatorRejected) {
     control->editStateFlags = control->editStateFlags & ~UI_TEXT_EDIT_VALUE_VALID;
