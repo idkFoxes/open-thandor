@@ -21,7 +21,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
 
 {
   undefined8 coefficientQuadHigh;
-  undefined4 in_EAX;
+  undefined4 in_EAX = 0; /* the original preserves EAX; no caller reads a result */
   short *cosineBankCoefficients1;
   MmxPackedValue64 coefficientPairProducts91;
   MmxPackedValue64 coefficientPairProducts93;

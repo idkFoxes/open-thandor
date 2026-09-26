@@ -263,8 +263,8 @@ GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_EDX;
+  undefined4 in_EAX = 0; /* failure (CF set): EAX/EDX untouched; callers check CF */
+  undefined4 in_EDX = 0; /* see in_EAX */
   GraphicsTextureSizeEaxEdxCf9 successResult;
   GraphicsTextureSizeEaxEdxCf9 failureResult;
   AssetRelativeOffset subresourceTableOffset;

@@ -1125,8 +1125,8 @@ UiTransferMailboxReceivedEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
 UiTransferMailbox_GetReceivedBufferCf(void)
 
 {
-  undefined4 in_EAX;
-  undefined4 in_ECX;
+  undefined4 in_EAX = 0; /* unavailable (CF set): EAX/ECX untouched; callers use them only with CF clear */
+  undefined4 in_ECX = 0; /* see in_EAX */
   UiTransferMailboxReceivedEaxEcxCf9 receivedResult;
   UiTransferMailboxReceivedEaxEcxCf9 unavailableResult;
   

@@ -419,7 +419,7 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
 {
   word networkPort;
   dword socketOrAddressLength;
-  undefined2 extraout_var;
+  undefined2 extraout_var = 0; /* high half of EAX after htons; only the low word of the carrier is read */
   int winsockResultOrError;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 failureResult;

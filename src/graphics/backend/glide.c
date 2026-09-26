@@ -896,7 +896,6 @@ Glide3_Framebuffer_CaptureRegion
   GraphicsCapturedTextureSourceAsset *capturedAsset;
   dword strideOrTimestamp;
   int pixelCountOrRemaining;
-  AssetAllocationSizeBytes extraout_EDX;
   ushort *sourcePixelCursor;
   GraphicsCapturedTextureSourceAsset *clearCursor;
   dword *argbCursor;
@@ -924,7 +923,9 @@ Glide3_Framebuffer_CaptureRegion
     (*g_GrFinish)();
     (*g_GrLfbReadRegion)(buffer,sourceX,sourceY,width,height,strideOrTimestamp,destinationPixels);
     (capturedAsset->common).magic = ASSET_MAGIC_GFX;
-    (capturedAsset->common).allocationSizeBytes = extraout_EDX;
+    /* The original stores EDX after the Glide calls, i.e. whatever glide3x left there; this is the
+       allocation size, as the DirectDraw capture stores (the screenshot writer uses it as file size). */
+    (capturedAsset->common).allocationSizeBytes = captureWidth * captureHeight * 4 + 0x220;
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
     strideOrTimestamp = (*g_LocaleGetPackedCurrentTime)();

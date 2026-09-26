@@ -348,7 +348,7 @@ GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacket *in_EAX;
+  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* empty queue (CF set): EAX untouched; callers stop on CF */
   GraphicsPrimitivePacketEaxCf5 successResult;
   GraphicsPrimitivePacketEaxCf5 failureResult;
   GraphicsPrimitivePacket *currentTraversalPacket;
@@ -578,7 +578,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
   dword textureCoordinate;
   uint textureEntryIndex;
   GraphicsTextureSet *terrainTextureSet;
-  GraphicsPrimitivePacket *in_EAX;
+  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* queue full (CF set): EAX stale; callers use the packet only with CF clear */
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
   GraphicsPrimitivePacketEaxCf5 successResult;
@@ -684,7 +684,7 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   dword packetIndexOrAttribute;
   dword packetAttribute;
   GraphicsTextureSet *materialTextureSet;
-  GraphicsPrimitivePacket *in_EAX;
+  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* queue full (CF set): EAX stale; callers use the packet only with CF clear */
   PackedArgb32 paletteModulationColor;
   dword *vertexFieldWriteCursor;
   GraphicsPrimitivePacketEaxCf5 successResult;

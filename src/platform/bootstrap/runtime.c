@@ -1534,7 +1534,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 {
   dword compareBytesRemaining;
   int optionBufferCapacityRemaining;
-  byte *in_EBX;
+  byte *in_EBX = (byte *)0; /* not found (CF set): EBX not written; callers read it only with CF clear */
   char *compareOrScanCursor;
   char *optionBufferCursor;
   char *storedOptionCompareCursor;

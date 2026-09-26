@@ -594,7 +594,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
   EngineFileHandle handleOrRemaining;
   word *firstPathCursor;
   word *secondPathCursor;
-  undefined4 in_ECX;
+  undefined4 in_ECX = 0; /* handle not mounted (CF set): ECX is the caller's; callers ignore the match count then */
   int matchedCount;
   int remainingCount;
   int unitsRemaining;

@@ -576,7 +576,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
 {
   FieldGridCell *workspaceRecord;
   dword baseWeight;
-  dword in_EAX;
+  dword in_EAX = 0; /* no site (CF set): EAX is stale; callers read the score only with CF clear */
   int countOrTritium;
   uint weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;

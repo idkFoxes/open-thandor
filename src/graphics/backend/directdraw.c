@@ -203,7 +203,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
 
 {
   D3DDEVICEDESC_DX6 *hardwareDeviceDesc;
-  GraphicsTextureResource *in_EAX;
+  GraphicsTextureResource *in_EAX = (GraphicsTextureResource *)0x1a; /* Glide path: the callee preserves EAX, so the original returns the caller's EAX (the adapter index at startup) as the error; 0x1a is Glide's own mode error, which gives a meaningful message */
   GraphicsAdapterRecord *adapterRecord;
   TH_LEGACY_HRESULT comResult;
   sdword renderStateResult;
