@@ -5,6 +5,7 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <stdlib.h>
 #include <thandor/platform/bootstrap/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -1150,10 +1151,33 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
+  /* Debug tool: OPEN_THANDOR_MOVIE=<name> (e.g. ende0001) plays flm\<name>.flm through this player
+     instead of the intro; OPEN_THANDOR_MOVIE_STRETCH=1 draws it with the full-screen bilinear
+     stretch the end movie uses. */
+  static word debugMoviePath[0x40];
+  const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
+  const char *debugStretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
+  int debugStretch = (debugStretchValue != NULL) && (debugStretchValue[0] == '1');
+  if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
+    static const char prefix[] = "flm\\";
+    int n = 0;
+    int i;
+    for (i = 0; prefix[i] != 0; i++) debugMoviePath[n++] = (word)prefix[i];
+    for (i = 0; debugMovie[i] != 0 && n < 0x30; i++) debugMoviePath[n++] = (word)debugMovie[i];
+    debugMoviePath[n++] = '.';
+    debugMoviePath[n++] = 'f';
+    debugMoviePath[n++] = 'l';
+    debugMoviePath[n++] = 'm';
+    debugMoviePath[n] = 0;
+    Thandor_Log("debug movie: playing flm\\%s.flm stretch=%d", debugMovie, debugStretch);
+  }
   CVar10 = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
-  if (CVar10.carry) {
+  if (CVar10.carry || (debugMoviePath[0] != 0)) {
     while( true ) {
-      MVar6 = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
+      MVar6 = Movie_Open(1,(debugMoviePath[0] != 0) ? debugMoviePath : (word *)u_flm_intro0_flm_00573046);
+      if (MVar6.carry && (debugMoviePath[0] != 0)) {
+        Thandor_Log("debug movie: Movie_Open failed (eax=%08x)", MVar6.eax);
+      }
       if (MVar6.carry) break;
       MVar7 = Movie_AdvanceFrame();
       if (MVar7.carry) {
@@ -1182,6 +1206,12 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
           bVar4 = (*g_GraphicsFramebufferBeginAccess)();
           if (bVar4) goto GameIntroMovies_StopCurrentPlayback;
           MVar5 = Movie_GetFrameDimensions();
+          if (debugStretch) {
+            (*g_GraphicsTextureSourceStretchDirectColorBilinear)
+                      (g_FramebufferHeight,g_FramebufferWidth,0,0,0,
+                       (GraphicsTextureSourceAsset *)MVar7.eax,g_FramebufferAccess);
+          }
+          else
           (*g_GraphicsTextureSourceBlitSourceAlpha)
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
                      ((int)((dVar1 - uVar2) - (int)(MVar5 >> 0x20)) >> 1) + (dVar1 >> 3),
@@ -1197,6 +1227,9 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 GameIntroMovies_StopCurrentPlayback:
       (*g_TimerUnregisterPeriodic)(IntroMovie_TimerTick);
       Movie_Close();
+      if (debugMoviePath[0] != 0) {
+        return; /* debug movie: play once, then continue to the menu */
+      }
       u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + L'\x01';
     }
   }

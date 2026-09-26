@@ -5,6 +5,9 @@
  * Reverse engineering by idkFoxes 2026
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <thandor/movie/runtime/playback.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
@@ -1988,6 +1991,59 @@ Movie_EncodeFrame4x4Delta
    MovieRuntime in EAX; CF set reports end-of-movie or read failure.
    Local calls: Movie_DecodeFrame4x4Delta.
 */
+/* Debug tool: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame (consumed bytes, stream state,
+   pixel checksum) and writes every tenth frame to moviedump\frame_NNNN.bmp. */
+static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
+{
+  static int enabled = -1;
+  dword width = movie->sourceEntry.pixelWidth;
+  dword height = movie->sourceEntry.pixelHeight;
+  dword sum = 0;
+  dword i;
+  if (enabled < 0) {
+    const char *value = getenv("OPEN_THANDOR_MOVIEDUMP");
+    enabled = (value != NULL) && (value[0] == '1');
+    if (enabled) {
+      CreateDirectoryA("moviedump", NULL);
+    }
+  }
+  if (!enabled) {
+    return;
+  }
+  for (i = 0; i < width * height; i += 7) {
+    sum = sum * 31 + movie->argbPixels[i];
+  }
+  Thandor_Log("movie frame %u/%u: consumed=%x offset=%x loadedEnd-header=%x remaining=%x state=%d worker=%d sum=%08x",
+              movie->currentFrameIndex, movie->fileHeader->frameCount, consumedBytes,
+              movie->videoStreamOffset, (dword)(movie->loadedVideoEnd - (byte *)movie->fileHeader),
+              movie->remainingVideoBytes, (int)movie->streamState, (int)movie->workerActive, sum);
+  if ((movie->currentFrameIndex % 10) == 1) {
+    char name[64];
+    FILE *file;
+    sprintf(name, "moviedump\\frame_%04u.bmp", movie->currentFrameIndex);
+    file = fopen(name, "wb");
+    if (file != NULL) {
+      dword imageBytes = width * height * 4;
+      dword header[13];
+      int y;
+      memset(header, 0, sizeof header);
+      fwrite("BM", 1, 2, file);
+      header[0] = 54 + imageBytes; /* file size */
+      header[2] = 54;              /* pixel data offset */
+      header[3] = 40;              /* BITMAPINFOHEADER */
+      header[4] = width;
+      header[5] = (dword)-(int)height; /* top-down */
+      header[6] = 1 | (32 << 16);  /* planes, bit count */
+      header[8] = imageBytes;
+      fwrite(header, 4, 13, file);
+      for (y = 0; y < (int)height; y++) {
+        fwrite(movie->argbPixels + y * width, 4, width, file);
+      }
+      fclose(file);
+    }
+  }
+}
+
 MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
@@ -2042,6 +2098,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
                           (pMVar1->heightPixels,pMVar1->widthPixels,pMVar3->argbPixels,pbVar8);
         pMVar3->currentFrameIndex = uVar6;
         pMVar3->videoStreamOffset = pMVar3->videoStreamOffset + dVar5;
+        Movie_DebugDumpFrame(pMVar3, dVar5);
         if ((pMVar3->openFlags != 0) && (pMVar3->streamState == MOVIE_STREAM_IDLE)) {
           uVar4 = pMVar3->videoStreamOffset;
           uVar6 = (int)pMVar3->loadedVideoEnd - (int)pMVar3->fileHeader;
