@@ -974,116 +974,90 @@ UiTimedListControl_SelectRowFromPointer
           (int pointerButton,int pointerY,int pointerX,UiNodeBase *control)
 
 {
-  UiNodeBase *pUVar1;
-  code *pcVar2;
-  UiAnchorFractionQ31 UVar3;
-  UiNodeVtable *pUVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  sdword *unaff_EBP;
-  sdword *psVar9;
-  sdword *psVar10;
-  UiNodeBase *pUVar11;
-  bool bVar12;
-  RichTextExtentRegs RVar13;
-  UiPackedTextStyle aUStack_3c [5];
-  UiNodeBase *pUStack_28;
-  sdword *psStack_24;
-  UiNodeBase *pUStack_20;
-  
-  pUStack_20 = (UiNodeBase *)0x0;
-  pUVar1 = control[1].firstChild;
-  if (pUVar1 != (UiNodeBase *)0x0) {
-    pUVar11 = pUVar1->nextSibling;
-    iVar6 = pointerX - control->left;
-    if (((control->left <= pointerX) && (control->top <= pointerY)) &&
-       (pUVar11 != (UiNodeBase *)0x0)) {
-      iVar5 = pointerY - control->top;
-      psVar9 = &pUVar1->left;
-      while (pUVar1 = pUStack_20, iVar8 = iVar5 - (int)control[1].vtable,
-            iVar8 != 0 && (int)control[1].vtable <= iVar5) {
-        psVar10 = psVar9 + 4;
-        pUVar11 = (UiNodeBase *)((int)&pUVar11[-1].nodeFlags + 3);
-        if ((((psVar9[3] & 1U) != 0) && ((psVar9[3] & 2U) != 0)) && (psVar9[2] != 0)) {
-          pUStack_20 = (UiNodeBase *)((int)&pUStack_20->nextSibling + 1);
-          psStack_24 = psVar10;
-          pUStack_28 = pUVar11;
-          psVar10 = (int *)psVar9[2] + 4;
-          pUVar11 = *(UiNodeBase **)psVar9[2];
-        }
-        while (iVar5 = iVar8, psVar9 = psVar10, pUVar11 == (UiNodeBase *)0x0) {
-          if (pUStack_20 == (UiNodeBase *)0x0) {
-            return;
-          }
-          pUStack_20 = (UiNodeBase *)((int)&pUStack_20[-1].nodeFlags + 3);
-          psVar10 = unaff_EBP;
-          pUVar11 = pUStack_20;
-        }
-      }
-      iVar5 = (int)pUStack_20 * control[1].topAnchorQ31;
-      iVar7 = iVar6 - iVar5;
-      if (iVar6 < iVar5) {
-        if (((psVar9[3] & 1U) != 0) && (iVar5 != 0)) {
-          UVar3 = control[1].topAnchorQ31;
-          pUVar4 = control[1].vtable;
-          (&psStack_24)[(int)pUStack_20 * 2] = (sdword *)control[1].bottom;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = control[1].leftOffset;
-          aUStack_3c[(int)pUVar1 * 2 + 4] = 0;
-          aUStack_3c[(int)pUVar1 * 2 + 3] = 0;
-          aUStack_3c[(int)pUVar1 * 2 + 2] = iVar7 + UVar3;
-          aUStack_3c[(int)pUVar1 * 2 + 1] = iVar8 + (int)pUVar4;
-          aUStack_3c[(int)pUVar1 * 2] = 0x4bbe3a;
-          bVar12 = (*g_GraphicsTextureSourceTestOpaquePixel)
-                             (aUStack_3c[(int)pUVar1 * 2 + 1],aUStack_3c[(int)pUVar1 * 2 + 2],
-                              aUStack_3c[(int)pUVar1 * 2 + 3],aUStack_3c[(int)pUVar1 * 2 + 4],
-                              aUStack_3c[(int)pUVar1 * 2 + 5],
-                              (GraphicsTextureSourceAsset *)(&psStack_24)[(int)pUVar1 * 2]);
-          if ((bVar12) && (control[1].right != 0)) {
-            (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-            aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
-            pcVar2 = (code *)control[1].right;
-            aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbe4d;
-            (*pcVar2)();
-          }
-        }
-      }
-      else {
-        iVar6 = iVar7 - control[1].rightAnchorQ31;
-        if (iVar6 != 0 && (int)control[1].rightAnchorQ31 <= iVar7) {
-          (&psStack_24)[(int)pUStack_20 * 2] = (sdword *)*psVar9;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = g_UiListTextStyle;
-          aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbdb4;
-          RVar13 = RichTextCommandStream_MeasureRegs
-                             (aUStack_3c[(int)pUVar1 * 2 + 5],(word *)(&psStack_24)[(int)pUVar1 * 2]
-                             );
-          if (((int)RVar13.widthPixels < iVar6) && (6 < (int)(iVar6 - RVar13.widthPixels))) {
-            return;
-          }
-        }
-        if (psVar9 != (int *)control[1].top) {
-          (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
-          aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbdd0;
-          UiTimedListControl_SelectRecordAndScrollIntoView
-                    ((UiTimedListTreeRecord16 *)aUStack_3c[(int)pUVar1 * 2 + 5],
-                     (UiTimedListRuntimeExtendedView88 *)(&psStack_24)[(int)pUVar1 * 2]);
-          (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = control[1].left;
-          aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbddc;
-          UiActionQueue_Enqueue(aUStack_3c[(int)pUVar1 * 2 + 5],(&psStack_24)[(int)pUVar1 * 2]);
-        }
-        if ((((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) && ((psVar9[3] & 1U) != 0)
-            ) && (control[1].right != 0)) {
-          (&psStack_24)[(int)pUVar1 * 2] = (sdword *)control;
-          aUStack_3c[(int)pUVar1 * 2 + 5] = (UiPackedTextStyle)psVar9;
-          pcVar2 = (code *)control[1].right;
-          aUStack_3c[(int)pUVar1 * 2 + 4] = 0x4bbe07;
-          (*pcVar2)();
-        }
-      }
+  /* Rewritten from the assembly (0x004BBCD0-0x004BBE56): expanded records with children push
+     their position on the machine stack and descend; the decompiler kept only one level. */
+  enum { TREE_DEPTH_LIMIT = 64 };
+  UiTimedListRuntimeExtendedView88 *list = (UiTimedListRuntimeExtendedView88 *)control;
+  UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
+  int savedRemaining[TREE_DEPTH_LIMIT];
+  UiTimedListTreeRecord16 *record;
+  UiTimedListTreeRecord16 *header;
+  int remaining;
+  int depth;
+  int x;
+  int y;
+  int indent;
+
+  header = list->base.recordTree;
+  if (header == (UiTimedListTreeRecord16 *)0x0) {
+    return;
+  }
+  remaining = (int)header->recordCountOrRowPayload00;
+  x = pointerX - control->left;
+  if (x < 0) {
+    return;
+  }
+  y = pointerY - control->top;
+  if ((y < 0) || (remaining == 0)) {
+    return;
+  }
+  record = header + 1;
+  depth = 0;
+  for (;;) {
+    y = y - (int)list->base.rowHeight;
+    if (y <= 0) {
+      break;
     }
+    record = record + 1;
+    remaining = remaining - 1;
+    if ((((record[-1].recordFlags0C & 1) != 0) && ((record[-1].recordFlags0C & 2) != 0)) &&
+        (record[-1].nestedRecordBlockOrParentLink08 != (UiTimedListTreeRecord16 *)0x0) &&
+        (depth < TREE_DEPTH_LIMIT)) {
+      savedRecord[depth] = record;
+      savedRemaining[depth] = remaining;
+      depth = depth + 1;
+      header = record[-1].nestedRecordBlockOrParentLink08;
+      remaining = (int)header->recordCountOrRowPayload00;
+      record = header + 1;
+    }
+    while (remaining == 0) {
+      if (depth == 0) {
+        return;
+      }
+      depth = depth - 1;
+      record = savedRecord[depth];
+      remaining = savedRemaining[depth];
+    }
+  }
+  indent = depth * (int)list->observedDrawParameter80;
+  x = x - indent;
+  if (x < 0) {
+    /* Inside the indentation: the expand/collapse icon of the row. */
+    if (((record->recordFlags0C & 1) != 0) && (indent != 0) &&
+        (*g_GraphicsTextureSourceTestOpaquePixel)
+                  (y + (int)list->base.rowHeight,x + (int)list->observedDrawParameter80,0,0,
+                   list->base.observedDrawParameter6C,list->base.rowTextureSource) &&
+        (list->base.recordSelectionCallback != 0)) {
+      list->base.recordSelectionCallback(record,list);
+    }
+    return;
+  }
+  x = x - (int)list->observedDrawParameter84;
+  if (x > 0) {
+    RichTextExtentRegs extent =
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+    x = x - (int)extent.widthPixels;
+    if ((x > 0) && (x > 6)) {
+      return;
+    }
+  }
+  if (record != list->base.selectedRecord) {
+    UiTimedListControl_SelectRecordAndScrollIntoView(record,list);
+    UiActionQueue_Enqueue(list->base.actionId,control);
+  }
+  if (((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) &&
+      ((record->recordFlags0C & 1) != 0) && (list->base.recordSelectionCallback != 0)) {
+    list->base.recordSelectionCallback(record,list);
   }
   return;
 }

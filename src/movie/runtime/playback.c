@@ -1952,7 +1952,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
   uint uVar4;
   dword dVar5;
   uint uVar6;
-  void *unaff_EBX;
+  void *unaff_EBX = (void *)0; /* the original closes a stale caller EBX here */
   undefined4 *puVar7;
   byte *pbVar8;
   SoundPlayVoiceEaxCf5 SVar9;

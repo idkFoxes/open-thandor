@@ -898,11 +898,10 @@ UiSelectionGeometryControl_DrawClipped
   int iVar20;
   byte *pbVar21;
   bool bVar22;
-  undefined8 extraout_MM0;
-  int iVar23;
+  uint pixelStepU;
+  uint pixelStepV;
   undefined1 uVar25;
   undefined1 uVar26;
-  int extraout_MM1_Da;
   PackedArgb32 sourcePixelSample3;
   undefined4 uVar24;
   undefined8 mm1PackedValue0;
@@ -977,6 +976,9 @@ UiSelectionGeometryControl_DrawClipped
              (uVar14 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
              (((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar15) *
              (((control->base).left + (control->base).right >> 1) - clipRight)));
+    /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
+    pixelStepU = ((int)((ulonglong)lVar6 >> 0x20) << 0xc | (uint)lVar6 >> 0x14) - uVar15;
+    pixelStepV = uVar15 * 2;
     iVar20 = control->sourceOriginXQ12 -
              (iVar29 * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
              uVar15 * 2 * (((control->base).left + (control->base).right >> 1) - clipRight));
@@ -991,7 +993,6 @@ UiSelectionGeometryControl_DrawClipped
       ;
       bVar22 = (*g_GraphicsFramebufferBeginAccess)();
       if (!bVar22) {
-        iVar23 = (int)((ulonglong)extraout_MM0 >> 0x20);
         iVar28 = (int)(uVar27 >> 0x20);
         uVar14 = (uint)uVar34;
         iVar13 = (int)(uVar34 >> 0x20);
@@ -1138,8 +1139,8 @@ UiSelectionGeometryControl_DrawClipped
                                g_SoftwarePixelMmxConstants.packWeights);
               *(short *)pbVar21 =
                    (short)((ulonglong)uVar31 >> 0x28) + (short)((ulonglong)uVar31 >> 8);
-              uVar14 = uVar14 + (int)extraout_MM0;
-              uVar35 = uVar35 + iVar23 + extraout_MM1_Da;
+              uVar14 = uVar14 + (int)pixelStepU;
+              uVar35 = uVar35 + pixelStepV;
               pbVar21 = pbVar21 + 2;
               iStack_2c = iStack_2c + -1;
             } while (iStack_2c != 0);
@@ -1271,8 +1272,8 @@ UiSelectionGeometryControl_DrawClipped
                                               (0xff < uVar48),
                                               (uVar41 != 0) * (uVar41 < 0x100) * (char)uVar41 -
                                               (0xff < uVar41))));
-              uVar14 = uVar14 + (int)extraout_MM0;
-              uVar35 = uVar35 + iVar23 + extraout_MM1_Da;
+              uVar14 = uVar14 + (int)pixelStepU;
+              uVar35 = uVar35 + pixelStepV;
               pbVar21 = pbVar21 + 4;
               iStack_2c = iStack_2c + -1;
             } while (iStack_2c != 0);

@@ -666,7 +666,6 @@ dword __cdecl Game_LoadCoreAssets(void)
   FrontendPlayerRuntimeRecord *pFVar9;
   byte *pbVar10;
   TextResourceId resourceId;
-  SoundSampleAsset *allocation;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
   StatusValueEaxCf5 SVar11;
   SoundCreateSampleVoiceSetEaxCf5 SVar12;
@@ -934,7 +933,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 }
                 FVar17 = FncModule_LoadAndRelocateCf(PVar16.bufferOrError);
                 module = (FncModuleHeader *)FVar17.moduleBase;
-                arg0 = allocation;
+                arg0 = (SoundSampleAsset *)PVar16.bufferOrError;
                 if (!FVar17.carry) {
                   g_PcxFunctionModule = module;
                   SVar11 = FncModule_GetExportByIndexCf(3,module);
@@ -945,7 +944,8 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                     module = (FncModuleHeader *)SVar11.valueOrError;
                     if (!SVar11.carry) {
                       g_PcxFunctionExport2 = (PcxDecodeProc *)module;
-                      Resource_Release(allocation);
+                      /* EDX still holds the engine\pcx.fnc package buffer. */
+                      Resource_Release((SoundSampleAsset *)PVar16.bufferOrError);
                       GVar18 = (*g_GraphicsTextureSourceLoadPackageAsset)
                                          ((word *)u_gfx_panel_stat_gfx_00573002);
                       if (GVar18.carry) {

@@ -226,7 +226,6 @@ PckCodec_DecodeStored
           PckStoredByteCount sourceSizeBytes,byte *source)
 
 {
-  dword in_EAX;
   PckDwordCopyCount dwordCopyCount;
   PckCodecEaxCf5 PVar1;
   
@@ -237,7 +236,8 @@ PckCodec_DecodeStored
     destination = destination + 4;
   }
   PVar1.carry = (sourceSizeBytes >> 1 & 1) != 0;
-  PVar1.eax = in_EAX;
+  /* EAX is untouched; in Package_DecodeEntryInto it still holds the read size (packedSize). */
+  PVar1.eax = sourceSizeBytes;
   return PVar1;
 }
 
