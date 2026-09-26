@@ -21203,7 +21203,9 @@ void SoftwareRaster16_Mode06
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue10;
   undefined8 mm0PackedValue11;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -21449,7 +21451,7 @@ void SoftwareRaster16_Mode06
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue17 >> 8) +
                            (short)((ulonglong)mm6PackedValue17 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -21569,7 +21571,7 @@ void SoftwareRaster16_Mode06
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
                            (short)((ulonglong)mm6PackedValue6 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -21736,7 +21738,7 @@ void SoftwareRaster16_Mode06
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
                            (short)((ulonglong)mm6PackedValue19 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -21856,7 +21858,7 @@ void SoftwareRaster16_Mode06
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
                            (short)((ulonglong)mm6PackedValue13 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -23358,7 +23360,9 @@ void SoftwareRaster16_Mode04
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue10;
   undefined8 mm0PackedValue11;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -23604,7 +23608,7 @@ void SoftwareRaster16_Mode04
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue17 >> 8) +
                            (short)((ulonglong)mm6PackedValue17 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -23724,7 +23728,7 @@ void SoftwareRaster16_Mode04
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
                            (short)((ulonglong)mm6PackedValue6 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -23891,7 +23895,7 @@ void SoftwareRaster16_Mode04
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
                            (short)((ulonglong)mm6PackedValue19 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -24011,7 +24015,7 @@ void SoftwareRaster16_Mode04
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
                            (short)((ulonglong)mm6PackedValue13 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -24480,7 +24484,9 @@ void SoftwareRaster16_Mode14
   undefined8 mm0PackedValue3;
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue5;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined1 mm4PackedValue0ByteLane1;
   undefined1 mm4PackedValue0ByteLane2;
   undefined8 mm4PackedValue0;
@@ -24647,7 +24653,7 @@ void SoftwareRaster16_Mode14
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
                            (short)((ulonglong)mm6PackedValue19 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -24730,7 +24736,7 @@ void SoftwareRaster16_Mode14
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
                            (short)((ulonglong)mm6PackedValue6 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -24851,7 +24857,7 @@ void SoftwareRaster16_Mode14
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue16 >> 8) +
                            (short)((ulonglong)mm6PackedValue16 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -24934,7 +24940,7 @@ void SoftwareRaster16_Mode14
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
                            (short)((ulonglong)mm6PackedValue13 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -25977,7 +25983,9 @@ void SoftwareRaster16_Mode12
   undefined8 mm0PackedValue3;
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue5;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined1 mm4PackedValue0ByteLane1;
   undefined1 mm4PackedValue0ByteLane2;
   undefined8 mm4PackedValue0;
@@ -26144,7 +26152,7 @@ void SoftwareRaster16_Mode12
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue19 >> 8) +
                            (short)((ulonglong)mm6PackedValue19 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -26227,7 +26235,7 @@ void SoftwareRaster16_Mode12
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue6 >> 8) +
                            (short)((ulonglong)mm6PackedValue6 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -26348,7 +26356,7 @@ void SoftwareRaster16_Mode12
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue16 >> 8) +
                            (short)((ulonglong)mm6PackedValue16 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -26431,7 +26439,7 @@ void SoftwareRaster16_Mode12
                       *(short *)pixelCursor =
                            (short)((ulonglong)mm6PackedValue13 >> 8) +
                            (short)((ulonglong)mm6PackedValue13 >> 0x28);
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -41815,7 +41823,9 @@ void SoftwareRasterNon16_Mode06
   byte mm0PackedValue9ByteLane2;
   undefined8 mm0PackedValue9;
   undefined8 mm0PackedValue11;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -42047,7 +42057,7 @@ void SoftwareRasterNon16_Mode06
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue14 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -42160,7 +42170,7 @@ void SoftwareRasterNon16_Mode06
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue4 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -42320,7 +42330,7 @@ void SoftwareRasterNon16_Mode06
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue15 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -42433,7 +42443,7 @@ void SoftwareRasterNon16_Mode06
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue10 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -43875,7 +43885,9 @@ void SoftwareRasterNon16_Mode04
   byte mm0PackedValue9ByteLane2;
   undefined8 mm0PackedValue9;
   undefined8 mm0PackedValue11;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -44107,7 +44119,7 @@ void SoftwareRasterNon16_Mode04
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue14 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -44220,7 +44232,7 @@ void SoftwareRasterNon16_Mode04
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue4 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -44380,7 +44392,7 @@ void SoftwareRasterNon16_Mode04
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue15 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -44493,7 +44505,7 @@ void SoftwareRasterNon16_Mode04
                                                       (0xff < greenLane),
                                                       (0 < spanFractionOrBlueLane) * (spanFractionOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue10 - (0xff < spanFractionOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < greenBaseOrAlphaIndex) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -44938,7 +44950,9 @@ void SoftwareRasterNon16_Mode14
   byte mm0PackedValue4ByteLane3;
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue5;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm6PackedValue0;
   undefined8 mm6PackedValue1;
@@ -45088,7 +45102,7 @@ void SoftwareRasterNon16_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue15 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -45161,7 +45175,7 @@ void SoftwareRasterNon16_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue4 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -45275,7 +45289,7 @@ void SoftwareRasterNon16_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue13 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -45351,7 +45365,7 @@ void SoftwareRasterNon16_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue10 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -46324,7 +46338,9 @@ void SoftwareRasterNon16_Mode12
   byte mm0PackedValue4ByteLane2;
   undefined8 mm0PackedValue4;
   undefined8 mm0PackedValue5;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm6PackedValue0;
   undefined8 mm6PackedValue1;
@@ -46474,7 +46490,7 @@ void SoftwareRasterNon16_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue15 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -46547,7 +46563,7 @@ void SoftwareRasterNon16_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue4 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -46661,7 +46677,7 @@ void SoftwareRasterNon16_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue13 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -46737,7 +46753,7 @@ void SoftwareRasterNon16_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue10 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7f < alphaIndex) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -60001,7 +60017,9 @@ void SoftwareRasterAux_Mode06
   undefined8 mm0PackedValue3;
   undefined8 mm0PackedValue1;
   undefined8 mm0PackedValue2;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -60193,7 +60211,7 @@ void SoftwareRasterAux_Mode06
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue7 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue6 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -60275,7 +60293,7 @@ void SoftwareRasterAux_Mode06
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue1 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -60404,7 +60422,7 @@ void SoftwareRasterAux_Mode06
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue5 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue4 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -60486,7 +60504,7 @@ void SoftwareRasterAux_Mode06
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue3 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue2 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -61694,7 +61712,9 @@ void SoftwareRasterAux_Mode04
   undefined8 mm0PackedValue3;
   undefined8 mm0PackedValue1;
   undefined8 mm0PackedValue2;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined8 mm4PackedValue0;
   undefined8 mm4PackedValue1;
   SoftwareRasterColorFixed4 steppedEdgeColorUpper;
@@ -61886,7 +61906,7 @@ void SoftwareRasterAux_Mode04
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue7 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue6 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -61968,7 +61988,7 @@ void SoftwareRasterAux_Mode04
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue1 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -62097,7 +62117,7 @@ void SoftwareRasterAux_Mode04
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue5 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue4 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -62179,7 +62199,7 @@ void SoftwareRasterAux_Mode04
                                                       (0xff < greenLane),
                                                       (0 < offsetWordOrBlueLane) * (offsetWordOrBlueLane < 0x100) *
                                                       (char)mm6PackedValue3 - (0xff < offsetWordOrBlueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue2 >> 0x30)) {
                         *depthCursor = depthOrLaneBase;
                       }
                     }
@@ -62608,7 +62628,9 @@ void SoftwareRasterAux_Mode14
   PackedArgb32 *auxPixelWriteCursorReverse0;
   PackedArgb32 *auxPixelWriteCursorForward1;
   PackedArgb32 *auxPixelWriteCursor;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined1 mm4PackedValue0ByteLane1;
   undefined1 mm4PackedValue0ByteLane2;
   undefined8 mm4PackedValue0;
@@ -62721,7 +62743,7 @@ void SoftwareRasterAux_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue7 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue6 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -62766,7 +62788,7 @@ void SoftwareRasterAux_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue1 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -62849,7 +62871,7 @@ void SoftwareRasterAux_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue5 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue4 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -62894,7 +62916,7 @@ void SoftwareRasterAux_Mode14
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue3 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue2 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -63641,7 +63663,9 @@ void SoftwareRasterAux_Mode12
   PackedArgb32 *auxPixelWriteCursorReverse0;
   PackedArgb32 *auxPixelWriteCursorForward1;
   PackedArgb32 *auxPixelWriteCursor;
-  uint in_MM2_Da;
+  /* The original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it
+     sees whatever the previous triangle left there. The textured modes (Mode20/28) load MM2 with the
+     shaded alpha lane; the depth tests below use that lane (or its top 12 bits, the blend index). */
   undefined1 mm4PackedValue0ByteLane1;
   undefined1 mm4PackedValue0ByteLane2;
   undefined8 mm4PackedValue0;
@@ -63754,7 +63778,7 @@ void SoftwareRasterAux_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue7 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue6 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -63799,7 +63823,7 @@ void SoftwareRasterAux_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue1 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue0 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -63882,7 +63906,7 @@ void SoftwareRasterAux_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue5 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue4 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
@@ -63927,7 +63951,7 @@ void SoftwareRasterAux_Mode12
                                                       (0xff < greenLane),
                                                       (0 < blueLane) * (blueLane < 0x100) *
                                                       (char)mm6PackedValue3 - (0xff < blueLane))));
-                      if (0x7ff < in_MM2_Da) {
+                      if (0x7ff < (uint)((ulonglong)mm6PackedValue2 >> 0x30)) {
                         *depthCursor = areaOrSpanDepth;
                       }
                     }
