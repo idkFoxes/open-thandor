@@ -434,6 +434,20 @@ UiImageActionControl_DrawImageAndChildren
                   control->left, control->bottom, control->right, g_ActiveMovie->currentFrameIndex,
                   *(dword *)((byte *)g_ActiveMovie + 0x220 + 4 * (160 * 320 + 160)),
                   (control->nodeFlags & UI_NODE_SUPPRESSED) != 0);
+      if (control[1].parent == (UiNodeBase *)g_ActiveMovie) {
+        byte *asset = (byte *)g_ActiveMovie;
+        dword *entry = (dword *)(asset + *(dword *)(asset + 0xb8) + (dword)control[1].vtable * 0x20);
+        dword *pixels = (dword *)(asset + entry[3]);
+        dword count = entry[6] * entry[7];
+        dword sum = 0;
+        dword i;
+        for (i = 0; i < count; i += 7) {
+          sum = sum * 31 + pixels[i];
+        }
+        Thandor_Log("  movie source: w=%u h=%u dataOffset=%x palette=%d sum=%08x decodeTarget=%p readFrom=%p",
+                    entry[6], entry[7], entry[3], (int)entry[2], sum,
+                    (void *)g_ActiveMovie->argbPixels, (void *)pixels);
+      }
     }
   }
   
