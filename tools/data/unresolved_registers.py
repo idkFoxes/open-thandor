@@ -11,7 +11,8 @@ from collections import Counter
 
 import common
 
-PLACEHOLDER = re.compile(r'\b(in_[A-Z][A-Za-z0-9_]*|unaff_[A-Za-z0-9_]+|extraout_[A-Za-z0-9_]+)\b')
+NAME = r'(?:in_[A-Z][A-Za-z0-9_]*|unaff_[A-Za-z0-9_]+|extraout_[A-Za-z0-9_]+)'
+PLACEHOLDER = re.compile(r'\b(' + NAME + r')\b')
 found = {}
 for path in common.c_sources():
     rel = os.path.relpath(path, common.REPO)
@@ -22,9 +23,11 @@ for path in common.c_sources():
         start = m.end()
         end = code.find('\n}\n', start)
         body = code[start:end if end > 0 else len(code)]
-        declared = set(re.findall(r'^\s+[\w ]+\*?\s*\b(' + PLACEHOLDER.pattern[2:-2] + r')\s*(?:=[^;]*)?;', body, re.M))
+        declared = set(re.findall(r'^\s+[\w ]+\*?\s*\b(' + NAME + r')\s*(?:=[^;]*)?;', body, re.M))
+        # declared with an initializer: resolved on purpose (the declaration says why)
+        initialized = set(re.findall(r'^\s+[\w ]+\*?\s*\b(' + NAME + r')\s*=[^;]*;', body, re.M))
         uses = PLACEHOLDER.findall(body)
-        reads = [u for u in uses if not (u in declared and uses.count(u) == 1)]
+        reads = [u for u in uses if u not in initialized and not (u in declared and uses.count(u) == 1)]
         if reads:
             found[(rel, m.group(1))] = sorted(set(reads))
 kinds = Counter(re.sub(r'_\d+$', '', r) for regs in found.values() for r in regs)

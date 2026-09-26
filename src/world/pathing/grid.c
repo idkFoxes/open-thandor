@@ -1276,31 +1276,47 @@ EntityPathing_UpdateRouteSegment
     targetWorldYQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x14 | (uint)wideProductXOrY >> 0xc;
   }
   columnLimitOrRadius = routeEntityRuntime->modelDefinition->placementRadiusOrClearanceDC;
-  entityWorldX = (routeEntityRuntime->modelNode->worldTransform).translation.x;
-  entityWorldYOrMidpoint = (routeEntityRuntime->modelNode->worldTransform).translation.y;
-  rowTermOrSubdivisions = 1;
-  segmentWorldYQ12 = targetWorldYQ12;
-  segmentWorldXQ12 = targetWorldXQ12;
-  do {
-    while( true ) {
-      startColumnOrDeltaX = segmentWorldXQ12 - entityWorldX;
-      if (startColumnOrDeltaX < 0) {
-        startColumnOrDeltaX = -startColumnOrDeltaX;
+  {
+    /* Rewritten from the assembly (0x00536BB0-0x00536C89). The segment from the entity to the
+       target is split in halves until each piece spans at most 0x240 on both axes (or 64 pieces
+       are pending); the low-distance influence bands are stamped at the end of each piece. The
+       original keeps the pending pieces as pushed frames on the machine stack, processing the
+       half towards the target first; the decompiled version lost that stack and used the
+       return address 0x00536C13 as a coordinate. */
+    struct { int startX; int startY; int endX; int endY; } pieces[64];
+    int pending = 1;
+    pieces[0].startX = (routeEntityRuntime->modelNode->worldTransform).translation.x;
+    pieces[0].startY = (routeEntityRuntime->modelNode->worldTransform).translation.y;
+    pieces[0].endX = targetWorldXQ12;
+    pieces[0].endY = targetWorldYQ12;
+    while (pending != 0) {
+      int top = pending - 1;
+      int deltaX = pieces[top].endX - pieces[top].startX;
+      int deltaY2 = pieces[top].endY - pieces[top].startY;
+      if (deltaX < 0) {
+        deltaX = -deltaX;
       }
-      startRowOrDeltaY = segmentWorldYQ12 - entityWorldYOrMidpoint;
-      if (startRowOrDeltaY < 0) {
-        startRowOrDeltaY = -startRowOrDeltaY;
+      if (deltaY2 < 0) {
+        deltaY2 = -deltaY2;
       }
-      if ((0x3f < rowTermOrSubdivisions) || ((startColumnOrDeltaX < 0x241 && (startRowOrDeltaY < 0x241)))) break;
-      segmentWorldXQ12 = (int)(segmentWorldXQ12 + entityWorldX) >> 1;
-      entityWorldYOrMidpoint = (int)(segmentWorldYQ12 + entityWorldYOrMidpoint) >> 1;
-      rowTermOrSubdivisions = rowTermOrSubdivisions + 1;
-      segmentWorldYQ12 = entityWorldYOrMidpoint;
+      if (pending >= 0x40 || (deltaX <= 0x240 && deltaY2 <= 0x240)) {
+        GridInfluence_SetLowDistanceBandsAroundWorldPoint
+                  (columnLimitOrRadius,pieces[top].endY,pieces[top].endX);
+        pending = pending - 1;
+      }
+      else {
+        int midX = (pieces[top].endX + pieces[top].startX) >> 1;
+        int midY = (pieces[top].endY + pieces[top].startY) >> 1;
+        pieces[pending].startX = midX;
+        pieces[pending].startY = midY;
+        pieces[pending].endX = pieces[top].endX;
+        pieces[pending].endY = pieces[top].endY;
+        pieces[top].endX = midX;
+        pieces[top].endY = midY;
+        pending = pending + 1;
+      }
     }
-    entityWorldX = 0x536c13;
-    GridInfluence_SetLowDistanceBandsAroundWorldPoint(columnLimitOrRadius,segmentWorldYQ12,segmentWorldXQ12);
-    rowTermOrSubdivisions = rowTermOrSubdivisions - 1;
-  } while (rowTermOrSubdivisions != 0);
+  }
   entityMovement = routeEntityRuntime->movementRuntime;
   if (((GameEntityRuntime *)routeEntityRuntime != sourceRouteEntityRuntime) &&
      ((targetWorldXQ12 != entityMovement->movementWorldXQ12 ||
@@ -2199,7 +2215,7 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
   GridScratchStateMask blockedMask;
   dword maxRow;
   int bestHexDistance;
-  undefined4 unaff_EBX;
+  undefined4 unaff_EBX = 0; /* open cell: the original leaves EBX unchanged; callers read EAX/EBX only when CF is set */
   int searchRow;
   int rowDelta;
   GridScratchCell *scanCell;

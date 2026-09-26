@@ -297,7 +297,6 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
 {
   int iVar1;
-  uint in_EAX;
   int *freedBlockHeader;
   ArenaFreeEaxCf5 AVar2;
   ArenaFreeEaxCf5 AVar3;
@@ -333,8 +332,9 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
       }
     }
   }
+  /* The original returns with EAX unchanged on success; callers only test CF. */
   AVar2.carry = false;
-  AVar2.eax = in_EAX;
+  AVar2.eax = 0;
   return AVar2;
 }
 

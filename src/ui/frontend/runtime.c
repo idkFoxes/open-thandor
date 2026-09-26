@@ -2725,7 +2725,7 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   FrontendRootResourceSlots5954 *pFVar5;
   FrontendRootResourceSlots5954 *frontendUiState;
   DirectSoundVoiceSet *arg2;
-  FrontendRootResourceSlots5954 *extraout_EAX;
+  FrontendRootResourceSlots5954 *extraout_EAX = (FrontendRootResourceSlots5954 *)0; /* error value of RomRuntime_BuildAllRegistryNodeTrees, which reports only CF here */
   dword *pdVar6;
   dword *settingsCopySourceDwordsB;
   SessionNetworkRoleFlags SVar7;

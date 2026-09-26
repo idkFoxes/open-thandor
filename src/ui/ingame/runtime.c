@@ -3478,20 +3478,20 @@ InGameMusic_ComputeTrackSuitabilityScore
 {
   int activeFactionIndex;
   dword suitabilityScore;
-  ArmyAssetRecordPrefix *armyDefinition;
+  ArmyAssetRuntimeSemanticView80 *armyDefinition;
   int modelRuntimeOrBonus;
   int registryWeight;
   ArmyRegistryEaxCf5_51b6d0 foundArmyAsset;
   int flag10BonusSum;
-  int variantFieldSum;
-  int weightedRegistryFieldSum;
-  int sizeFieldSum;
+  int class74Sum;
+  int weightedClass78Sum;
+  int class70Sum;
   WorldOwnerListNode100 *ownerListNode;
   
   suitabilityScore = 0;
-  sizeFieldSum = 0;
-  weightedRegistryFieldSum = 0;
-  variantFieldSum = 0;
+  class70Sum = 0;
+  weightedClass78Sum = 0;
+  class74Sum = 0;
   flag10BonusSum = 0;
   if (trackClassId != 0) {
     activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
@@ -3500,34 +3500,34 @@ InGameMusic_ComputeTrackSuitabilityScore
       if ((ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeOrBonus = *(int *)((int)ownerListNode->runtimePayload + 8), activeFactionIndex == *(int *)(modelRuntimeOrBonus + 0xc))) {
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(modelRuntimeOrBonus + 0xa0));
-        armyDefinition = foundArmyAsset.eax;
+        armyDefinition = (ArmyAssetRuntimeSemanticView80 *)foundArmyAsset.eax;
         if (!foundArmyAsset.carry) {
           registryWeight = 1;
           if ((*(uint *)(modelRuntimeOrBonus + 0x2c) & 1) != 0) {
             registryWeight = 3;
           }
-          sizeFieldSum = sizeFieldSum + armyDefinition[7].byteSize;
-          weightedRegistryFieldSum = weightedRegistryFieldSum + registryWeight * armyDefinition[7].registryId;
+          class70Sum = class70Sum + armyDefinition->definitionClassValue70;
+          weightedClass78Sum = weightedClass78Sum + registryWeight * armyDefinition->definitionClassValue78;
           modelRuntimeOrBonus = 0x32;
-          if ((armyDefinition[1].selectionDetailTemplateVariantIndex & 0x10) == 0) {
+          if ((armyDefinition->flags14 & 0x10) == 0) {
             modelRuntimeOrBonus = 0;
           }
-          variantFieldSum = variantFieldSum + armyDefinition[7].selectionDetailTemplateVariantIndex;
+          class74Sum = class74Sum + armyDefinition->definitionClassValue74;
           flag10BonusSum = flag10BonusSum + modelRuntimeOrBonus;
         }
       }
     }
     if (trackClassId < 0x14) {
-      suitabilityScore = flag10BonusSum * 0x80 + variantFieldSum * 0x100 + weightedRegistryFieldSum * 0x280 + sizeFieldSum * 0x100;
+      suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x280 + class70Sum * 0x100;
     }
     else if (trackClassId < 0x32) {
-      suitabilityScore = flag10BonusSum * -0x100 + variantFieldSum * 0x40 + 0x32000 + weightedRegistryFieldSum * 0x10 + sizeFieldSum * 0x80;
+      suitabilityScore = flag10BonusSum * -0x100 + class74Sum * 0x40 + 0x32000 + weightedClass78Sum * 0x10 + class70Sum * 0x80;
     }
     else if (trackClassId < 0x46) {
-      suitabilityScore = flag10BonusSum * 0x80 + variantFieldSum * 0x100 + weightedRegistryFieldSum * 0x20 + sizeFieldSum * 0x300;
+      suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x20 + class70Sum * 0x300;
     }
     else {
-      suitabilityScore = flag10BonusSum * 0x100 + variantFieldSum * 0x200 + weightedRegistryFieldSum * 0x180 + sizeFieldSum * 0x10;
+      suitabilityScore = flag10BonusSum * 0x100 + class74Sum * 0x200 + weightedClass78Sum * 0x180 + class70Sum * 0x10;
     }
   }
   return suitabilityScore;

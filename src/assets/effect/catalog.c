@@ -68,7 +68,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
 
 {
   StatusValueEaxCf5 SVar1;
-  ShotDefinition *in_EAX;
+  ShotDefinition *in_EAX = (ShotDefinition *)0; /* success returns the last resolved definition; callers test CF only */
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
   EffectDefinitionLookupEaxCf5 EVar2;

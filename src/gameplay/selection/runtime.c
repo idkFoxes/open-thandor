@@ -1552,23 +1552,15 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntryCf(GameEntityRuntime *entry)
 
 {
-  int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
-  byte in_CF;
-  undefined1 in_ZF;
-  GameEntityRuntime *currentEntry;
-  
-  entriesRemaining = 0x20;
-  selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  do {
-    if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
-    in_CF = 0;
-    currentEntry = *selectionEntryCursor;
-    in_ZF = entry == currentEntry;
-    selectionEntryCursor = selectionEntryCursor + 1;
-  } while (!(bool)in_ZF);
-  return (in_CF & 2) != 0 || !(bool)in_ZF;
+  /* REPNE SCASD over the 32 selection slots; CF set when the entry is not among them. */
+  int slotIndex;
+
+  for (slotIndex = 0; slotIndex < 0x20; slotIndex = slotIndex + 1) {
+    if (g_SelectionInfoEntitySlots->entries[slotIndex] == entry) {
+      return false;
+    }
+  }
+  return true;
 }
 
 

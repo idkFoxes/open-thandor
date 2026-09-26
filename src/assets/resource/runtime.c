@@ -86,7 +86,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
   PckEntryHeader *entry;
   byte *bytes;
   byte *pbVar1;
-  byte *in_ECX;
+  byte *in_ECX = (byte *)0; /* ECX is only meaningful on success (byte count); callers test CF */
   ArenaAllocEaxCf5 AVar2;
   PackageDecodeEaxCf5 PVar3;
   FileSystemOpenEaxCf5 FVar4;

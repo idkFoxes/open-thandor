@@ -57,7 +57,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
 {
-  undefined4 in_EAX;
+  undefined4 in_EAX = 0; /* empty queue: the original leaves EAX unchanged; callers use it only after a read */
   uint nextReadIndex;
   KeyboardEventEaxEdxCf9 KVar1;
   KeyboardEventEaxEdxCf9 KVar2;
@@ -113,7 +113,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   GraphicsSubresourceIndex GVar1;
   ushort uVar2;
   TH_LEGACY_HRESULT TVar3;
-  undefined2 extraout_var;
+  undefined2 extraout_var = 0; /* upper half of GetKeyState's AX result: only bit 0 is tested */
   GraphicsTextureSourceAsset *arg1;
   uint uVar4;
   dword arg0;
