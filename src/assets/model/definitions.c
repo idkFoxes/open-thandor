@@ -189,7 +189,13 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
        (uint *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
   while( true ) {
     if (entriesRemaining == 0) {
-      return THANDOR_BITCAST(int, ModelLookupPayloadEaxEcxEdxCf13, (ZEXT513(0x100000000) << 0x40));
+      /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
+         64 bits and lost the CF byte) */
+      payloadResult.payloadEax = 0;
+      payloadResult.payloadEcx = 0;
+      payloadResult.payloadEdx = 0;
+      payloadResult.carry = true;
+      return payloadResult;
     }
     if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) break;
     packedKeyEntryCursor = packedKeyEntryCursor + 4;
