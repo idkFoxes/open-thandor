@@ -93,6 +93,42 @@ static void Thandor_SelfTestPathSplit(void)
     }
 }
 
+
+static void Thandor_SelfTestStretch(void)
+{
+    /* 4x2 ARGB source with a horizontal red ramp, stretched to 8x4. */
+    static dword asset[0x100];
+    static dword target[8 * 4];
+    dword framebuffer[4] = {8, 0, 4, 0};
+    dword *entry;
+    dword *pixels;
+    int x;
+    int y;
+    memset(asset, 0, sizeof asset);
+    asset[0] = 0x786667;
+    asset[0xb0 / 4] = 1;
+    asset[0xb8 / 4] = 0x100;
+    entry = asset + 0x100 / 4;
+    entry[2] = 0xffffffff;
+    entry[3] = 0x200;
+    entry[6] = 4;
+    entry[7] = 2;
+    pixels = asset + 0x200 / 4;
+    for (y = 0; y < 2; y++) {
+        for (x = 0; x < 4; x++) {
+            pixels[y * 4 + x] = 0xff000000u | ((dword)(x * 85) << 16) | ((dword)(y * 255) << 8);
+        }
+    }
+    framebuffer[3] = (dword)(uintptr_t)target;
+    SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, (GraphicsTextureSourceAsset *)asset,
+                                                       (SoftwareFramebufferAccess *)framebuffer);
+    for (y = 0; y < 4; y++) {
+        Thandor_Log("stretch selftest row %d: %08x %08x %08x %08x %08x %08x %08x %08x", y,
+                    target[y * 8 + 0], target[y * 8 + 1], target[y * 8 + 2], target[y * 8 + 3],
+                    target[y * 8 + 4], target[y * 8 + 5], target[y * 8 + 6], target[y * 8 + 7]);
+    }
+}
+
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;
@@ -115,6 +151,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "path") == 0) {
             Thandor_SelfTestPathSplit();
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "stretch") == 0) {
+            Thandor_SelfTestStretch();
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {

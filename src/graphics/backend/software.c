@@ -1935,308 +1935,85 @@ SoftwareTextureSource_StretchDirectColorBilinear32
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  int iVar1;
-  int iVar2;
-  GraphicsPixelDimension GVar3;
-  undefined4 uVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  uint uVar12;
-  int iVar13;
-  uint uVar14;
-  uint uVar15;
-  uint uVar16;
-  uint uVar17;
-  byte *pbVar18;
-  byte *pbVar19;
-  ulonglong *puVar20;
-  ushort uVar21;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
-  ushort uVar22;
-  ushort uVar23;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  ushort uVar24;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined8 mm2PackedValue1;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  ushort uVar25;
-  undefined1 mm4PackedValue0ByteLane1;
-  undefined1 mm4PackedValue0ByteLane2;
-  ushort uVar26;
-  ushort uVar27;
-  undefined8 mm4PackedValue0;
-  undefined8 mm4PackedValue1;
-  ushort uVar28;
-  undefined1 mm5PackedValue0ByteLane1;
-  undefined1 mm5PackedValue0ByteLane2;
-  undefined8 mm5PackedValue0;
-  undefined1 mm6PackedValue0ByteLane1;
-  undefined1 mm6PackedValue0ByteLane2;
-  undefined8 mm6PackedValue0;
-  undefined8 mm6PackedValue1;
-  undefined1 mm7PackedValue0ByteLane1;
-  undefined1 mm7PackedValue0ByteLane2;
-  undefined8 mm7PackedValue0;
-  uint uStack_38;
-  GraphicsPixelDimension GStack_30;
-  ulonglong *puStack_28;
-  
-  if (((((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-       (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) &&
-      (iVar2 = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset,
-      framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT)) &&
-     (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + iVar2 + -0x20) ==
-      -1)) {
-    GVar3 = framebuffer->width;
-    puVar20 = (ulonglong *)(framebuffer->pixels + (destinationY * GVar3 + destinationX) * 4);
-    uVar12 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     iVar2 + -0x10) - 1;
-    iVar13 = (int)(((ulonglong)(uVar12 >> 0x18) << 0x20 | (ulonglong)uVar12 * 0x100 & 0xffffffff) /
-                  (ulonglong)(destinationWidth - 1));
-    uVar12 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                     iVar2 + -0xc) - 1;
-    pbVar18 = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-              *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                      iVar2 + -0x1c) + -0x28;
-    GStack_30 = destinationHeight;
-    iVar2 = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    iVar2 + -0x10) * 4;
-    uVar14 = 0;
-    uVar16 = 0;
-    pbVar19 = pbVar18;
-    uStack_38 = destinationWidth >> 1;
-    puStack_28 = puVar20;
-    do {
-      do {
-        uVar15 = uVar14 >> 8;
-        iVar1 = iVar2 + uVar15 * 4;
-        uVar4 = *(undefined4 *)(pbVar19 + uVar15 * 4);
-        uVar5 = *(undefined4 *)(pbVar19 + uVar15 * 4 + 4);
-        uVar6 = *(undefined4 *)(pbVar19 + iVar1);
-        uVar7 = *(undefined4 *)(pbVar19 + iVar1 + 4);
-        uVar15 = uVar14 + iVar13 >> 8;
-        iVar1 = iVar2 + uVar15 * 4;
-        uVar8 = *(undefined4 *)(pbVar19 + uVar15 * 4);
-        uVar9 = *(undefined4 *)(pbVar19 + uVar15 * 4 + 4);
-        uVar10 = *(undefined4 *)(pbVar19 + iVar1);
-        uVar11 = *(undefined4 *)(pbVar19 + iVar1 + 4);
-        mm0PackedValue0ByteLane1 = (undefined1)((uint)uVar4 >> 0x18);
-        uVar21 = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
-        mm0PackedValue0ByteLane2 = (undefined1)((uint)uVar4 >> 0x10);
-        mm0PackedValue0ByteLane1 = (undefined1)((uint)uVar4 >> 8);
-        mm1PackedValue0ByteLane1 = (undefined1)((uint)uVar5 >> 0x18);
-        uVar22 = CONCAT11(mm1PackedValue0ByteLane1,mm1PackedValue0ByteLane1);
-        mm1PackedValue0ByteLane2 = (undefined1)((uint)uVar5 >> 0x10);
-        mm1PackedValue0ByteLane1 = (undefined1)((uint)uVar5 >> 8);
-        mm2PackedValue0ByteLane1 = (undefined1)((uint)uVar6 >> 0x18);
-        uVar23 = CONCAT11(mm2PackedValue0ByteLane1,mm2PackedValue0ByteLane1);
-        mm2PackedValue0ByteLane2 = (undefined1)((uint)uVar6 >> 0x10);
-        mm2PackedValue0ByteLane1 = (undefined1)((uint)uVar6 >> 8);
-        mm3PackedValue0ByteLane1 = (undefined1)((uint)uVar7 >> 0x18);
-        uVar24 = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1);
-        mm3PackedValue0ByteLane2 = (undefined1)((uint)uVar7 >> 0x10);
-        mm3PackedValue0ByteLane1 = (undefined1)((uint)uVar7 >> 8);
-        mm4PackedValue0ByteLane1 = (undefined1)((uint)uVar8 >> 0x18);
-        uVar25 = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
-        mm4PackedValue0ByteLane2 = (undefined1)((uint)uVar8 >> 0x10);
-        mm4PackedValue0ByteLane1 = (undefined1)((uint)uVar8 >> 8);
-        mm5PackedValue0ByteLane1 = (undefined1)((uint)uVar9 >> 0x18);
-        uVar26 = CONCAT11(mm5PackedValue0ByteLane1,mm5PackedValue0ByteLane1);
-        mm5PackedValue0ByteLane2 = (undefined1)((uint)uVar9 >> 0x10);
-        mm5PackedValue0ByteLane1 = (undefined1)((uint)uVar9 >> 8);
-        mm6PackedValue0ByteLane1 = (undefined1)((uint)uVar10 >> 0x18);
-        uVar27 = CONCAT11(mm6PackedValue0ByteLane1,mm6PackedValue0ByteLane1);
-        mm6PackedValue0ByteLane2 = (undefined1)((uint)uVar10 >> 0x10);
-        mm6PackedValue0ByteLane1 = (undefined1)((uint)uVar10 >> 8);
-        mm7PackedValue0ByteLane1 = (undefined1)((uint)uVar11 >> 0x18);
-        uVar28 = CONCAT11(mm7PackedValue0ByteLane1,mm7PackedValue0ByteLane1);
-        mm7PackedValue0ByteLane2 = (undefined1)((uint)uVar11 >> 0x10);
-        mm7PackedValue0ByteLane1 = (undefined1)((uint)uVar11 >> 8);
-        uVar15 = uVar14 & 0xff;
-        uVar17 = uVar16 & 0xff;
-        mm0PackedValue0 =
-             pmulhw(CONCAT26(uVar21 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar21,mm0PackedValue0ByteLane2),
-                                                        CONCAT14(mm0PackedValue0ByteLane2,uVar4)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                        mm0PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar4,(char)uVar4) >> 2))),
-                    g_SoftwareBilinearInverseFactors[uVar15]);
-        mm1PackedValue0 =
-             pmulhw(CONCAT26(uVar22 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar22,mm1PackedValue0ByteLane2),
-                                                        CONCAT14(mm1PackedValue0ByteLane2,uVar5)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                        mm1PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar5,(char)uVar5) >> 2))),
-                    g_SoftwareBilinearForwardFactors[uVar15]);
-        mm2PackedValue0 =
-             pmulhw(CONCAT26(uVar23 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar23,mm2PackedValue0ByteLane2),
-                                                        CONCAT14(mm2PackedValue0ByteLane2,uVar6)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                        mm2PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar6,(char)uVar6) >> 2))),
-                    g_SoftwareBilinearInverseFactors[uVar15]);
-        mm3PackedValue0 =
-             pmulhw(CONCAT26(uVar24 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar24,mm3PackedValue0ByteLane2),
-                                                        CONCAT14(mm3PackedValue0ByteLane2,uVar7)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm3PackedValue0ByteLane1,
-                                                        mm3PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar7,(char)uVar7) >> 2))),
-                    g_SoftwareBilinearForwardFactors[uVar15]);
-        mm0PackedValue1 =
-             pmulhw(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                             (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                             CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                      (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                      CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                               (short)((ulonglong)mm1PackedValue0 >> 0x10),
-                                               (short)mm0PackedValue0 + (short)mm1PackedValue0))),
-                    g_SoftwareBilinearInverseFactors[uVar17]);
-        mm2PackedValue1 =
-             pmulhw(CONCAT26((short)((ulonglong)mm2PackedValue0 >> 0x30) +
-                             (short)((ulonglong)mm3PackedValue0 >> 0x30),
-                             CONCAT24((short)((ulonglong)mm2PackedValue0 >> 0x20) +
-                                      (short)((ulonglong)mm3PackedValue0 >> 0x20),
-                                      CONCAT22((short)((ulonglong)mm2PackedValue0 >> 0x10) +
-                                               (short)((ulonglong)mm3PackedValue0 >> 0x10),
-                                               (short)mm2PackedValue0 + (short)mm3PackedValue0))),
-                    g_SoftwareBilinearForwardFactors[uVar17]);
-        uVar15 = uVar14 + iVar13 & 0xff;
-        mm4PackedValue0 =
-             pmulhw(CONCAT26(uVar25 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar25,mm4PackedValue0ByteLane2),
-                                                        CONCAT14(mm4PackedValue0ByteLane2,uVar8)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm4PackedValue0ByteLane1,
-                                                        mm4PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar8,(char)uVar8) >> 2))),
-                    g_SoftwareBilinearInverseFactors[uVar15]);
-        mm5PackedValue0 =
-             pmulhw(CONCAT26(uVar26 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar26,mm5PackedValue0ByteLane2),
-                                                        CONCAT14(mm5PackedValue0ByteLane2,uVar9)) >>
-                                              0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm5PackedValue0ByteLane1,
-                                                        mm5PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar9,(char)uVar9) >> 2))),
-                    g_SoftwareBilinearForwardFactors[uVar15]);
-        mm6PackedValue0 =
-             pmulhw(CONCAT26(uVar27 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar27,mm6PackedValue0ByteLane2),
-                                                        CONCAT14(mm6PackedValue0ByteLane2,uVar10))
-                                              >> 0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm6PackedValue0ByteLane1,
-                                                        mm6PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar10,(char)uVar10) >> 2))),
-                    g_SoftwareBilinearInverseFactors[uVar15]);
-        mm7PackedValue0 =
-             pmulhw(CONCAT26(uVar28 >> 2,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(uVar28,mm7PackedValue0ByteLane2),
-                                                        CONCAT14(mm7PackedValue0ByteLane2,uVar11))
-                                              >> 0x20) >> 2,
-                                      CONCAT22(CONCAT11(mm7PackedValue0ByteLane1,
-                                                        mm7PackedValue0ByteLane1) >> 2,
-                                               CONCAT11((char)uVar11,(char)uVar11) >> 2))),
-                    g_SoftwareBilinearForwardFactors[uVar15]);
-        mm4PackedValue1 =
-             pmulhw(CONCAT26((short)((ulonglong)mm4PackedValue0 >> 0x30) +
-                             (short)((ulonglong)mm5PackedValue0 >> 0x30),
-                             CONCAT24((short)((ulonglong)mm4PackedValue0 >> 0x20) +
-                                      (short)((ulonglong)mm5PackedValue0 >> 0x20),
-                                      CONCAT22((short)((ulonglong)mm4PackedValue0 >> 0x10) +
-                                               (short)((ulonglong)mm5PackedValue0 >> 0x10),
-                                               (short)mm4PackedValue0 + (short)mm5PackedValue0))),
-                    g_SoftwareBilinearInverseFactors[uVar17]);
-        mm6PackedValue1 =
-             pmulhw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
-                             (short)((ulonglong)mm7PackedValue0 >> 0x30),
-                             CONCAT24((short)((ulonglong)mm6PackedValue0 >> 0x20) +
-                                      (short)((ulonglong)mm7PackedValue0 >> 0x20),
-                                      CONCAT22((short)((ulonglong)mm6PackedValue0 >> 0x10) +
-                                               (short)((ulonglong)mm7PackedValue0 >> 0x10),
-                                               (short)mm6PackedValue0 + (short)mm7PackedValue0))),
-                    g_SoftwareBilinearForwardFactors[uVar17]);
-        uVar21 = (ushort)((short)mm0PackedValue1 + (short)mm2PackedValue1) >> 2;
-        uVar22 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                         (short)((ulonglong)mm2PackedValue1 >> 0x10)) >> 2;
-        uVar23 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                         (short)((ulonglong)mm2PackedValue1 >> 0x20)) >> 2;
-        uVar24 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) +
-                         (short)((ulonglong)mm2PackedValue1 >> 0x30)) >> 2;
-        uVar25 = (ushort)((short)mm4PackedValue1 + (short)mm6PackedValue1) >> 2;
-        uVar26 = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x10) +
-                         (short)((ulonglong)mm6PackedValue1 >> 0x10)) >> 2;
-        uVar27 = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x20) +
-                         (short)((ulonglong)mm6PackedValue1 >> 0x20)) >> 2;
-        uVar28 = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x30) +
-                         (short)((ulonglong)mm6PackedValue1 >> 0x30)) >> 2;
-        *puVar20 = CONCAT17((uVar24 != 0) * (uVar24 < 0x100) * (char)uVar24 - (0xff < uVar24),
-                            CONCAT16((uVar23 != 0) * (uVar23 < 0x100) * (char)uVar23 -
-                                     (0xff < uVar23),
-                                     CONCAT15((uVar22 != 0) * (uVar22 < 0x100) * (char)uVar22 -
-                                              (0xff < uVar22),
-                                              CONCAT14((uVar21 != 0) * (uVar21 < 0x100) *
-                                                       (char)uVar21 - (0xff < uVar21),
-                                                       CONCAT13((uVar24 != 0) * (uVar24 < 0x100) *
-                                                                (char)uVar24 - (0xff < uVar24),
-                                                                CONCAT12((uVar23 != 0) *
-                                                                         (uVar23 < 0x100) *
-                                                                         (char)uVar23 -
-                                                                         (0xff < uVar23),
-                                                                         CONCAT11((uVar22 != 0) *
-                                                                                  (uVar22 < 0x100) *
-                                                                                  (char)uVar22 -
-                                                                                  (0xff < uVar22),
-                                                                                  (uVar21 != 0) *
-                                                                                  (uVar21 < 0x100) *
-                                                                                  (char)uVar21 -
-                                                                                  (0xff < uVar21))))
-                                                      )))) & g_SoftwareBilinearPackedByteClampMask |
-                   (ulonglong)
-                   CONCAT13((uVar28 != 0) * (uVar28 < 0x100) * (char)uVar28 - (0xff < uVar28),
-                            CONCAT12((uVar27 != 0) * (uVar27 < 0x100) * (char)uVar27 -
-                                     (0xff < uVar27),
-                                     CONCAT11((uVar26 != 0) * (uVar26 < 0x100) * (char)uVar26 -
-                                              (0xff < uVar26),
-                                              (uVar25 != 0) * (uVar25 < 0x100) * (char)uVar25 -
-                                              (0xff < uVar25)))) << 0x20;
-        uVar14 = uVar14 + iVar13 * 2;
-        puVar20 = puVar20 + 1;
-        uStack_38 = uStack_38 - 1;
-      } while (uStack_38 != 0);
-      uVar16 = uVar16 + (int)(((ulonglong)(uVar12 >> 0x18) << 0x20 |
-                              (ulonglong)uVar12 * 0x100 & 0xffffffff) /
-                             (ulonglong)(destinationHeight - 1));
-      puVar20 = (ulonglong *)((int)puStack_28 + GVar3 * 4);
-      pbVar19 = pbVar18 + (uVar16 >> 8) * iVar2;
-      uVar14 = 0;
-      GStack_30 = GStack_30 - 1;
-      uStack_38 = destinationWidth >> 1;
-      puStack_28 = puVar20;
-    } while (GStack_30 != 0);
+  /* Rewritten from the assembly (0x004AA3F0-0x004AA616) with the MMX lanes in plain C. The
+     decompiled version (300 lines of lane emulation) left the end-movie frames static. Two
+     destination pixels per step; each blends four ARGB8888 neighbours through the forward
+     (0x00420F20) and inverse (0x0041FF20) word tables, as PMULHW does. */
+  const short *forward = (const short *)(uintptr_t)0x420f20;
+  const short *inverse = (const short *)(uintptr_t)0x41ff20;
+  const unsigned long long clampMask = *(const unsigned long long *)(uintptr_t)0x41f688;
+  byte *asset = (byte *)sourceAsset;
+  byte *entry;
+  byte *sourceBase;
+  byte *sourceRow;
+  dword *destinationRow;
+  dword pitchPixels;
+  dword sourceWidth;
+  dword sourceHeight;
+  dword stepX;
+  dword stepY;
+  dword fy;
+  dword row;
+  dword pair;
+
+  if ((*(dword *)asset != 0x786667) || (subresourceIndex >= *(dword *)(asset + 0xb0))) {
+    return;
   }
-  return;
+  entry = asset + *(dword *)(asset + 0xb8) + subresourceIndex * 0x20;
+  if ((*(dword *)((byte *)framebuffer + 8) != 4) || (*(sdword *)(entry + 8) != -1)) {
+    return;
+  }
+  pitchPixels = *(dword *)framebuffer;
+  destinationRow = (dword *)*(byte **)((byte *)framebuffer + 0xc) +
+                   (destinationY * pitchPixels + destinationX);
+  sourceWidth = *(dword *)(entry + 0x18);
+  sourceHeight = *(dword *)(entry + 0x1c);
+  stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
+  stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
+  sourceBase = asset + *(dword *)(entry + 0xc);
+  sourceRow = sourceBase;
+  fy = 0;
+  for (row = destinationHeight; row != 0; row--) {
+    dword fx = 0;
+    dword *out = destinationRow;
+    for (pair = destinationWidth >> 1; pair != 0; pair--) {
+      dword pixels[2];
+      int half;
+      for (half = 0; half < 2; half++) {
+        dword x = fx >> 8;
+        const byte *p00 = sourceRow + x * 4;
+        const byte *p10 = sourceRow + sourceWidth * 4 + x * 4;
+        dword wx = fx & 0xff;
+        dword wy = fy & 0xff;
+        dword pixel = 0;
+        int lane;
+        for (lane = 0; lane < 4; lane++) {
+          int a = ((p00[lane] * 0x101) >> 2);
+          int b = ((p00[lane + 4] * 0x101) >> 2);
+          int c = ((p10[lane] * 0x101) >> 2);
+          int d = ((p10[lane + 4] * 0x101) >> 2);
+          short top = (short)(((a * forward[wx * 4 + lane]) >> 16) + ((b * inverse[wx * 4 + lane]) >> 16));
+          short bottom = (short)(((c * forward[wx * 4 + lane]) >> 16) + ((d * inverse[wx * 4 + lane]) >> 16));
+          short mixed = (short)(((top * forward[wy * 4 + lane]) >> 16) +
+                                ((bottom * inverse[wy * 4 + lane]) >> 16));
+          int value = (unsigned short)mixed >> 2;
+          if (value > 0xff) value = 0xff;
+          pixel |= (dword)value << (lane * 8);
+        }
+        pixels[half] = pixel;
+        fx = fx + stepX;
+      }
+      /* PACKUSWB MM0,MM0 duplicates the first pixel into both halves; PAND with the clamp mask,
+         then POR with the second pixel shifted into the high half. */
+      *(unsigned long long *)out =
+           ((((unsigned long long)pixels[0] << 32) | pixels[0]) & clampMask) |
+           ((unsigned long long)pixels[1] << 32);
+      out = out + 2;
+    }
+    destinationRow = destinationRow + pitchPixels;
+    fy = fy + stepY;
+    sourceRow = sourceBase + (fy >> 8) * sourceWidth * 4;
+  }
 }
 
 
