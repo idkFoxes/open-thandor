@@ -70,9 +70,9 @@ EntityPathing_UpdateRouteSegment
 /* 0x00533D60 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestWorldPointReachabilityCf
-          (uint traversalMask,GraphicsWorldCoordinateQ12 sourceWorldXQ12,
-          GraphicsWorldCoordinateQ12 sourceWorldYQ12,GraphicsWorldCoordinateQ12 targetWorldXQ12,
-          GraphicsWorldCoordinateQ12 targetWorldYQ12);
+          (uint traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
+          GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
+          GraphicsWorldCoordinateQ12 targetWorldXQ12);
 
 /* 0x00534660 */
 GridPathBacktrackEaxEbxEcxCf13 __thandor_eax_cf_preserve_edx

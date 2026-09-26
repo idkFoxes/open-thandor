@@ -1336,33 +1336,33 @@ EntityPathing_UpdateRouteSegment
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestWorldPointReachabilityCf
-          (uint traversalMask,GraphicsWorldCoordinateQ12 sourceWorldXQ12,
-          GraphicsWorldCoordinateQ12 sourceWorldYQ12,GraphicsWorldCoordinateQ12 targetWorldXQ12,
-          GraphicsWorldCoordinateQ12 targetWorldYQ12)
+          (uint traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
+          GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
+          GraphicsWorldCoordinateQ12 targetWorldXQ12)
 
 {
-  GridScratchCell *targetCell;
+  GridScratchCell *sourceCell;
   dword scratchWidth;
   int cellsRemaining;
   uint scaledRowTerm;
-  GridScratchCell *currentCell;
+  GridScratchCell *targetCell;
   GridScratchCell *clearCursor;
   bool unreachable;
   
   scratchWidth = g_GridScratchWidth;
-  scaledRowTerm = (int)((ulonglong)((longlong)sourceWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)sourceWorldXQ12 * -0x20c8cc) >> 0x15;
-  targetCell = g_GridScratchPrimary +
+  scaledRowTerm = (int)((ulonglong)((longlong)sourceWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint)((longlong)sourceWorldYQ12 * -0x20c8cc) >> 0x15;
+  sourceCell = g_GridScratchPrimary +
                ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-               ((int)((((int)((ulonglong)((longlong)sourceWorldYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                       (uint)((longlong)sourceWorldYQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
+               ((int)((((int)((ulonglong)((longlong)sourceWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                       (uint)((longlong)sourceWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
                );
-  scaledRowTerm = (int)((ulonglong)((longlong)targetWorldXQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)targetWorldXQ12 * -0x20c8cc) >> 0x15;
-  currentCell = g_GridScratchPrimary +
+  scaledRowTerm = (int)((ulonglong)((longlong)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint)((longlong)targetWorldYQ12 * -0x20c8cc) >> 0x15;
+  targetCell = g_GridScratchPrimary +
                 ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-                ((int)((((int)((ulonglong)((longlong)targetWorldYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                        (uint)((longlong)targetWorldYQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
+                ((int)((((int)((ulonglong)((longlong)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                        (uint)((longlong)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
                 10);
   cellsRemaining = g_GridScratchHeight * g_GridScratchWidth;
   clearCursor = g_GridScratchPrimary;
@@ -1387,8 +1387,8 @@ GridScratch_TestWorldPointReachabilityCf
     cellsRemaining = cellsRemaining + -0x10;
   } while (cellsRemaining != 0);
   unreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
-                    (traversalMask | 0x80000001,scratchWidth << 3,&currentCell->stateMask,
-                     &targetCell->stateMask);
+                    (traversalMask | 0x80000001,scratchWidth << 3,&targetCell->stateMask,
+                     &sourceCell->stateMask);
   return unreachable;
 }
 
