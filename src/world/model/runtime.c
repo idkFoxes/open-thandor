@@ -403,6 +403,28 @@ StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
 }
 
 
+/* Releases the resource of one definition node and then, depth first in index order, of all its
+   children (child count at +0x14, child pointers from +0x18). The original walks the tree with an
+   explicit {count, index, node} frame stack on the machine stack; the decompile only followed the
+   first child. */
+static void ModelRuntimePool_ReleaseDefinitionNodeResources(dword resourceRecord)
+
+{
+  dword childrenRemaining;
+  int childIndex;
+  
+  childrenRemaining = *(dword *)(resourceRecord + 0x14);
+  if (((*(uint *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
+    Resource_Release(*(void **)(resourceRecord + 0x30));
+  }
+  for (childIndex = 0; childrenRemaining != 0; childIndex = childIndex + 1) {
+    ModelRuntimePool_ReleaseDefinitionNodeResources(*(dword *)(resourceRecord + 0x18 + childIndex * 4));
+    childrenRemaining = childrenRemaining - 1;
+  }
+  return;
+}
+
+
 /* Address: 0x00528A70.
    Ownership: world/model/runtime.
    Purpose: Frees the model runtime pool and releases registered definition resources. The function returns no
@@ -412,42 +434,24 @@ StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
 void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 
 {
-  int childLink;
   int registryRemaining;
-  int nestingDepth;
   ModelDefinitionRecordPrefix **registryEntry;
   dword resourceRecord;
   
   (*g_MemoryApi.free)(g_ModelRuntimeSlots);
   g_ModelRuntimeSlots = (ModelRuntimeSlot *)0x0;
   registryEntry = g_ModelDefinitionRegistry;
-  registryRemaining = 0x300;
-  while( true ) {
+  for (registryRemaining = 0x300; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
     if ((*registryEntry != (ModelDefinitionRecordPrefix *)0x0) &&
-       (resourceRecord = (*registryEntry)[8].flags, resourceRecord != 0)) break;
-ModelRuntimePool_Shutdown_ClearDefinitionEntryAndAdvance:
+       (resourceRecord = (*registryEntry)[8].flags, resourceRecord != 0)) {
+      ModelRuntimePool_ReleaseDefinitionNodeResources(resourceRecord);
+    }
     *registryEntry = (ModelDefinitionRecordPrefix *)0x0;
     registryEntry = registryEntry + 1;
-    registryRemaining = registryRemaining + -1;
-    if (registryRemaining == 0) {
-      return;
-    }
   }
-  nestingDepth = 0;
-  do {
-    childLink = *(int *)(resourceRecord + 0x14);
-    if (((*(uint *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
-      Resource_Release(*(void **)(resourceRecord + 0x30));
-    }
-    nestingDepth = nestingDepth + 1;
-    while( true ) {
-      if (childLink != 0) break;
-      nestingDepth = nestingDepth + -1;
-      if (nestingDepth == 0) goto ModelRuntimePool_Shutdown_ClearDefinitionEntryAndAdvance;
-    }
-    resourceRecord = *(dword *)(resourceRecord + 0x18);
-  } while( true );
+  return;
 }
+
 
 
 /* Address: 0x00528B30.
