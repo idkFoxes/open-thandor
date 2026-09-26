@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050B5D0 */
-bool SpatialSoundPool_Init(void);
+StatusValueEaxCf5 SpatialSoundPool_Init(void);
 
 /* 0x0050B600 */
 void __thandor_void_preserve_eax_ecx_edx

@@ -272,7 +272,7 @@ GraphicsPrimitiveQueue_RadixSortForRendering
    Purpose: Allocates 0x20 + capacity * 0xA0 bytes for the global primitive queue pool. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-void GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
+StatusValueEaxCf5 GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
@@ -282,10 +282,11 @@ void GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity pa
   g_PrimitiveQueuePoolCapacity = packetCapacity;
   allocResult = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
   allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.eax;
-  if (!allocResult.carry) {
-    g_PrimitiveQueueStorage = allocatedQueueStorage;
+  if (allocResult.carry) {
+    return StatusValue_Fail(allocResult.eax);
   }
-  return;
+  g_PrimitiveQueueStorage = allocatedQueueStorage;
+  return StatusValue_Ok(allocResult.eax);
 }
 
 

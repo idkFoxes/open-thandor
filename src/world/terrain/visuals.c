@@ -95,7 +95,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Crea
    Purpose: Allocates and 64-KiB-aligns the shared terrain byte lookup and fills its clamp/offset tables using
    delta 0x15 with verified caps 0x87 and 0xFF.
 */
-bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
 
 {
   void *lookupAllocationBase;
@@ -110,7 +110,7 @@ bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
   allocResult = (*g_MemoryApi.alloc)(0x20000);
   lookupAllocationBase = (void *)allocResult.eax;
   if (allocResult.carry) {
-    return true;
+    return StatusValue_Fail(allocResult.eax);
   }
   clampInputValue = 0;
   lookupWriteCursor = (byte *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
@@ -235,7 +235,7 @@ bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint)nextInputByte;
   } while ((nextInputByte != 0) || (finalRowsRemaining = finalRowsRemaining + -1, finalRowsRemaining != 0));
-  return false;
+  return StatusValue_Ok(0);
 }
 
 

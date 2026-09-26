@@ -50,13 +50,13 @@ dword __cdecl CPU_DetectFeatures(void);
 void __cdecl Game_Run(void);
 
 /* 0x0050BB10 */
-void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
+StatusValueEaxCf5 __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
 
 /* 0x00573140 */
 dword __cdecl Game_LoadCoreAssets(void);
 
 /* 0x005739D0 */
-void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
+bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
 
 /* 0x00573DB0 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void);

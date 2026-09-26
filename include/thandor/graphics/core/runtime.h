@@ -97,7 +97,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x00578560 */
-dword __cdecl Graphics_Init(void);
+StatusValueEaxCf5 __cdecl Graphics_Init(void);
 
 /* 0x005794E0 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfReady(void);

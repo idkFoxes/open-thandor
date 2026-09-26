@@ -20,7 +20,7 @@ GraphicsPrimitiveQueue_RadixSortForRendering
           (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A10 */
-void GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
+StatusValueEaxCf5 GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
 /* 0x004D0A40 */
 GraphicsPrimitiveQueueEaxCf5 __thandor_eax_cf_preserve_ecx_edx

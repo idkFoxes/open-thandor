@@ -20,7 +20,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004BCF70 */
-bool __thandor_void_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void);
 
 /* 0x004CCA90 */
 MmxPackedValue64 __thandor_void_preserve_ecx_edx_mm1

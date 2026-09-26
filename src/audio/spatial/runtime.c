@@ -14,7 +14,7 @@
    Ownership: audio/spatial/runtime.
    Purpose: Allocates and zeroes 0x1000 bytes, exactly 256 SpatialSoundSlot records. CF reports allocation failure.
 */
-bool SpatialSoundPool_Init(void)
+StatusValueEaxCf5 SpatialSoundPool_Init(void)
 
 {
   SpatialSoundSlot *spatialSoundStorageCursor;
@@ -34,7 +34,7 @@ bool SpatialSoundPool_Init(void)
     }
     allocationFailed = false;
   }
-  return allocationFailed;
+  return allocationFailed ? StatusValue_Fail(allocResult.eax) : StatusValue_Ok(0);
 }
 
 

@@ -65,7 +65,7 @@ SoundBackendDisabled_SetVoiceGains
           IDirectSoundBuffer *voice);
 
 /* 0x00583140 */
-bool __thandor_void_preserve_ecx_edx DirectSound_Init(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void);
 
 /* 0x00583490 */
 SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx

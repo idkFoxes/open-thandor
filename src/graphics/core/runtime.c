@@ -575,7 +575,7 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
    Cross-module calls: CommandLine_FindOption [platform/bootstrap/runtime], Glide3_InitAndEnumerate
    [graphics/backend/glide], DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime].
 */
-dword __cdecl Graphics_Init(void)
+StatusValueEaxCf5 __cdecl Graphics_Init(void)
 
 {
   TH_LEGACY_HRESULT hresult;
@@ -705,7 +705,7 @@ dword __cdecl Graphics_Init(void)
                     g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
                     g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
                     g_GraphicsDisplayModeFinalizeCf = displayModeHook;
-                    return (dword)displayModeHook;
+                    return StatusValue_Ok((dword)displayModeHook);
                   }
                 }
               }
@@ -715,7 +715,7 @@ dword __cdecl Graphics_Init(void)
       }
     }
   }
-  return (dword)cursorOrResult;
+  return StatusValue_Fail((dword)cursorOrResult);
 }
 
 

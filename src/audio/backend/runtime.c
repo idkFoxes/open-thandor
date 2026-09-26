@@ -181,7 +181,7 @@ SoundBackendDisabled_SetVoiceGains
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    Memory_ZeroDwords [core/memory/allocator], CosineDerivedLookupTables_InitCf [core/math/fixed].
 */
-bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
 
 {
   HINSTANCE module;
@@ -204,7 +204,8 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
     directSoundResult = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (dword)directSoundResult);
     if (directSoundResult != 0) {
-      return false;
+      /* no DirectSound device: not an error, the game runs silent */
+      return StatusValue_Ok((dword)directSoundResult);
     }
     directSoundResult = (*g_DirectSound->lpVtbl->SetCooperativeLevel)(g_DirectSound,g_MainWindow,3);
     if (directSoundResult == 0) {
@@ -262,9 +263,9 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
                       g_SoundQueryVoiceRegs = DirectSound_QueryVoiceRegsStub;
                       g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
                       CosineDerivedLookupTables_InitCf();
-                      return false;
+                      return StatusValue_Ok(0);
                     }
-                    return true;
+                    return StatusValue_Fail(registryAlloc.eax);
                   }
                 }
               }
@@ -275,11 +276,11 @@ bool __thandor_void_preserve_ecx_edx DirectSound_Init(void)
     }
     Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (dword)directSoundResult);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
+    return StatusValue_Fail(0x29); /* DirectSound failed at stage <g_PackageLastErrorPath> */
   }
-  else {
-    Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  }
-  return true;
+  Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
+  return StatusValue_Fail(dllLoadResult.carry ? (dword)dllLoadResult.moduleOrError
+                                              : (dword)resolveResult.procedureOrError);
 }
 
 

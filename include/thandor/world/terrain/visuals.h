@@ -18,7 +18,7 @@
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void);
 
 /* 0x00503B10 */
-bool __thandor_void_preserve_ecx_edx TerrainByteClampLookup_Initialize(void);
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void);
 
 /* 0x00503F30 */
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx

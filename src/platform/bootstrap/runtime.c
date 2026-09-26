@@ -31,9 +31,8 @@ void __cdecl ProcessEntry(void)
   undefined2 extraout_var;
   int nHeight;
   int nWidth;
-  dword timerInitResult;
   dword initResultOrBitDepth;
-  dword soundInitError;
+  StatusValueEaxCf5 soundResult;
   dword adapterIndex;
   bool carryOrSoundFailed;
   undefined1 carryIn;
@@ -81,21 +80,22 @@ void __cdecl ProcessEntry(void)
         statusResult = DynAPI_Bootstrap();
         fatalResult = (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
         carryOrSoundFailed = fatalResult.carry;
+        /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
-        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(timerInitResult,carryOrSoundFailed);
-        carryOrSoundFailed = fatalResult.carry;
-        initResultOrBitDepth = Graphics_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(initResultOrBitDepth,carryOrSoundFailed);
+        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(fatalResult.eax,false);
+        statusResult = Graphics_Init();
+        (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
         statusResult = DirectInputMouse_Init();
         (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
-        carryOrSoundFailed = DirectSound_Init();
+        soundResult = DirectSound_Init();
+        carryOrSoundFailed = soundResult.carry;
         Thandor_Log("DirectSound_Init: %s", carryOrSoundFailed ? "failed (continuing without sound)" : "ok");
         carryIn = 0;
         if (carryOrSoundFailed) {
           soundOption = CommandLine_FindOption(6,s_SOUND_00582f28);
           carryIn = soundOption.carry;
           if (!(bool)carryIn) {
-            fatalResult = (*g_FatalErrorPrimaryDispatchCf)(soundInitError,true);
+            fatalResult = (*g_FatalErrorPrimaryDispatchCf)(soundResult.valueOrError,true);
             carryIn = fatalResult.carry;
           }
         }
@@ -569,7 +569,7 @@ dword __cdecl CPU_DetectFeatures(void)
 void __cdecl Game_Run(void)
 
 {
-  dword renderingInitResult;
+  StatusValueEaxCf5 renderingInitResult;
   dword loadResultOrWidth;
   dword displayHeight;
   dword bitDepth;
@@ -583,14 +583,15 @@ void __cdecl Game_Run(void)
   cursorFrameResult = (*g_GraphicsCursorSetFrame)(0);
   fatalResult = (*g_FatalErrorPrimaryDispatchCf)(cursorFrameResult.eax,cursorFrameResult.carry);
   dispatchCarry = fatalResult.carry;
-  GameRuntime_InitializeSpatialAudioAndRenderingCf();
-  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(renderingInitResult,dispatchCarry);
+  renderingInitResult = GameRuntime_InitializeSpatialAudioAndRenderingCf();
+  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(renderingInitResult.valueOrError,renderingInitResult.carry);
   dispatchCarry = fatalResult.carry;
   loadResultOrWidth = Game_LoadCoreAssets();
   Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
-  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(loadResultOrWidth,dispatchCarry);
-  dispatchCarry = fatalResult.carry;
-  Game_PlayIntroMovies();
+  /* 0 with CF clear on success, an error code with CF set otherwise */
+  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(loadResultOrWidth,loadResultOrWidth != 0);
+  /* keeps EAX: a movie that cannot start is reported with the previous value */
+  dispatchCarry = Game_PlayIntroMovies();
   (*g_FatalErrorPrimaryDispatchCf)(fatalResult.eax,dispatchCarry);
   PersistentSettings_Load();
   loadResultOrWidth = PersistentSettings_ReadDword(0x280,4);
@@ -624,25 +625,28 @@ void __cdecl Game_Run(void)
    SoftwareRenderer_InstallDisplayModeHook [graphics/backend/software], GraphicsPrimitiveQueue_AllocateGlobalPool
    [graphics/render/primitives].
 */
-void __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
+StatusValueEaxCf5 __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
 
 {
-  bool initFailed;
+  StatusValueEaxCf5 step;
   
-  initFailed = SpatialSoundPool_Init();
-  if (!initFailed) {
-    initFailed = TerrainByteClampLookup_Initialize();
-    if (!initFailed) {
-      initFailed = GraphicsIntensityClampTable_InitializeCf();
-      if (!initFailed) {
-        initFailed = SoftwareRenderer_InstallDisplayModeHook();
-        if (!initFailed) {
-          GraphicsPrimitiveQueue_AllocateGlobalPool(0xa000);
-        }
-      }
-    }
+  step = SpatialSoundPool_Init();
+  if (step.carry) {
+    return step;
   }
-  return;
+  step = TerrainByteClampLookup_Initialize();
+  if (step.carry) {
+    return step;
+  }
+  step = GraphicsIntensityClampTable_InitializeCf();
+  if (step.carry) {
+    return step;
+  }
+  step = SoftwareRenderer_InstallDisplayModeHook();
+  if (step.carry) {
+    return step;
+  }
+  return GraphicsPrimitiveQueue_AllocateGlobalPool(0xa000);
 }
 
 
@@ -1364,7 +1368,7 @@ static void DebugMovie_Run(const char *which)
    Movie_Close [movie/runtime/playback], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout],
    Movie_GetFrameDimensions [movie/runtime/playback].
 */
-void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
+bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 
 {
   dword frameHeightSnapshot;
@@ -1410,7 +1414,7 @@ void __thandor_void_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
       firstFrameResult = Movie_AdvanceFrame();
       if (firstFrameResult.carry) {
         Movie_Close();
-        return;
+        return true;
       }
       g_IntroMoviePendingTicks = 0;
       UiFrame_FlushInputAndResetPendingTicks();
@@ -1452,7 +1456,7 @@ GameIntroMovies_StopCurrentPlayback:
       u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + L'\x01';
     }
   }
-  return;
+  return false;
 }
 
 

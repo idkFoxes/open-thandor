@@ -55,6 +55,23 @@ or to other layout-compatible structs, which C only allows through a union.
 #include <thandor/data/recovered.h>
 #include <thandor/generated/imports.h>
 
+/* EAX + CF results: CF clear with a value, or CF set with an engine error code in EAX. */
+static __inline StatusValueEaxCf5 StatusValue_Ok(dword value)
+{
+    StatusValueEaxCf5 result;
+    result.valueOrError = value;
+    result.carry = false;
+    return result;
+}
+
+static __inline StatusValueEaxCf5 StatusValue_Fail(dword errorCode)
+{
+    StatusValueEaxCf5 result;
+    result.valueOrError = errorCode;
+    result.carry = true;
+    return result;
+}
+
 /* Variadic UiSelectableGroup_* helpers take the group's controls as extra stack arguments, which
    the decompiler dropped at every call site. The original addresses them as base + byte offset. */
 #define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((byte *)(uintptr_t)(base) + (int)(offset)))

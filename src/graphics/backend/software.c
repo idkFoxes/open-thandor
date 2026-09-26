@@ -64069,7 +64069,7 @@ SoftwareRenderer_DisplayModeHook
    Purpose: Installs SoftwareRenderer_DisplayModeHook after SoftwarePixelFormat_BaseDisplayModeHook and allocates
    the initial software depth buffer. ABI: CF clear means success. CF set means failure.
 */
-bool __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
+StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
   sdword *allocatedDepthBuffer;
@@ -64092,9 +64092,9 @@ bool __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
   if (!depthAllocation.carry) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
     g_SoftwareDepthEpoch = 0;
-    return false;
+    return StatusValue_Ok(0);
   }
-  return true;
+  return StatusValue_Fail(depthAllocation.eax);
 }
 
 

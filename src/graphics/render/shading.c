@@ -2614,7 +2614,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
    Purpose: Allocates and aligns a 256 by 256 byte lookup table and fills each entry with the first input clamped
    to within plus or minus 0x15 of the second input. Carry reports allocation failure.
 */
-bool __thandor_void_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
 
 {
   int rowsRemaining;
@@ -2654,9 +2654,9 @@ bool __thandor_void_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(vo
       referenceValue = referenceValue + 1;
       rowsRemaining = rowsRemaining + -1;
     } while (rowsRemaining != 0);
-    return false;
+    return StatusValue_Ok(0);
   }
-  return true;
+  return StatusValue_Fail(allocResult.eax);
 }
 
 

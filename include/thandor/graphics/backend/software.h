@@ -438,7 +438,7 @@ SoftwareRenderer_DisplayModeHook
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
 /* 0x004FE7D0 */
-bool __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
+StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
 
 /* 0x00518CE0 */
 void __thandor_void_preserve_eax_ecx_edx
