@@ -7,7 +7,6 @@
 
 #include <thandor/ui/controls/buttons.h>
 #include <thandor/thandor.h>
-#include <thandor/platform/bootstrap/image.h>
 
 /* Implementation ownership: ui/controls/buttons. */
 
@@ -420,20 +419,6 @@ UiImageActionControl_DrawImageAndChildren
   int arg5;
   int arg4;
   bool bVar4;
-  {
-    /* Diagnostics: end-movie display (texture source = g_ActiveMovie). */
-    static int logged;
-    if ((g_ActiveMovie != (MovieRuntime *)0x0) && (control[1].parent == (UiNodeBase *)g_ActiveMovie) &&
-        (logged < 40)) {
-      logged++;
-      Thandor_Log("movie image draw %d: node=%p mode=%s sub=%u clip=%d,%d,%d,%d rect=%d,%d,%d,%d frame=%u pixel=%08x suppressed=%d",
-                  logged, (void *)control, ((uint)control[1].nextSibling & 1) ? "stretch" : "blit",
-                  (dword)control[1].vtable, clipTop, clipLeft, clipBottom, clipRight, control->top,
-                  control->left, control->bottom, control->right, g_ActiveMovie->currentFrameIndex,
-                  *(dword *)((byte *)g_ActiveMovie + 0x220 + 4 * (160 * 320 + 160)),
-                  (control->nodeFlags & UI_NODE_SUPPRESSED) != 0);
-    }
-  }
   
   if (((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control[1].parent != (UiNodeBase *)0x0))
   {
