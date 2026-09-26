@@ -1143,12 +1143,12 @@ static const byte g_DebugFont5x7[][8] = {
   {'y',0x11,0x11,0x11,0x0a,0x04,0x04,0x04},{'z',0x1f,0x01,0x02,0x04,0x08,0x10,0x1f},
 };
 
-/* Draws text at 3x scale with a black box behind it; framebuffer: [0] pitch in pixels,
+/* Draws text at 1x scale with a black box behind it; framebuffer: [0] pitch in pixels,
    [2] bytes per pixel, [3] pixels. */
 static void DebugMovie_DrawText(int x0, int y0, const char *text)
 {
   dword *fb = (dword *)g_FramebufferAccess;
-  int scale = 3;
+  int scale = 1;
   int length = (int)strlen(text);
   int boxWidth = length * 6 * scale + 2 * scale;
   int boxHeight = 9 * scale;
@@ -1318,7 +1318,10 @@ static void DebugMovie_Run(const char *which)
       if (names[count][0] != 0) count++;
     }
     fclose(list);
-    for (i = 0; i < count; i++) {
+    /* OPEN_THANDOR_MOVIE_START=<n> resumes the list at movie n (1-based). */
+    i = (getenv("OPEN_THANDOR_MOVIE_START") != NULL) ? atoi(getenv("OPEN_THANDOR_MOVIE_START")) - 1 : 0;
+    if (i < 0) i = 0;
+    for (; i < count; i++) {
       DebugMovie_PlayOne(names[i], i + 1, count, stretch);
     }
   }
