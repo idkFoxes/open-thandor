@@ -981,7 +981,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
   int heightRadiusOrDeltaY;
   ModelRuntimeNode *ownerNode;
   bool blocked;
-  code *terrainTest;
+  bool (*terrainTest)(FieldGridRadiusUnits,Q12,Q12,Q12,FieldGridAsset *);
   ModelRuntimeNode *rootNode;
   
   rootNode = modelRuntime->rootModelNode;
@@ -998,10 +998,12 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
                     ((WorldOwnerListNode100 *)rootNode,(rootNode->worldTransform).translation.y,
                      (rootNode->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
                      worldRuntime);
+  /* The original rejects on the terrain test's CF (JC after the indirect call); the decompile
+     dropped that result and re-tested the runtime-list flag. */
   if ((!blocked) &&
-     ((*terrainTest)(placementDefinition->placementRadiusOrClearanceDC,heightRadiusOrDeltaY,
+     (blocked = (*terrainTest)(placementDefinition->placementRadiusOrClearanceDC,heightRadiusOrDeltaY,
                  (rootNode->worldTransform).translation.y,
-                 (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid,terrainTest,heightCopyOrDeltaX),
+                 (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid),
      !blocked)) {
     rootNode = modelRuntime->rootModelNode;
     ownerArmy = modelRuntime->ownerArmyRuntime;
