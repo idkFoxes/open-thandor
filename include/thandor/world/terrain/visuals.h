@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/visuals. */
+
+/* g_TerrainMaterialTextureSets: one texture set per terrain material, loaded from the secondary path with
+   the suffix letter a..z (TerrainVisualResources_LoadPrimary). */
+#define TERRAIN_MATERIAL_TEXTURE_SET_COUNT 26
+/* Entries of g_TerrainLightingColorRampArgb256 and g_TerrainDirectionalLightColorLut
+   (TerrainLighting_BuildColorRampAndSetBaseColor). */
+#define TERRAIN_LIGHTING_RAMP_ENTRY_COUNT 256
+#define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT 257
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053D370 */

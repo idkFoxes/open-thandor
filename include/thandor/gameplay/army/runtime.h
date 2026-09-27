@@ -12,6 +12,18 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/runtime. */
+
+/* ArmyRuntimeSlot.runtimeFlags bit set when the army's health (actionVector2Q12) drops to zero
+   (ArmyRuntime_ApplyImpactDamageAndFinalizeState and the other damage helpers). */
+#define ARMY_RUNTIME_FLAG_DESTROYED 0x8
+/* g_ArmyRuntimeSlots: a 0x48000-byte pool of 0x120-byte ArmyRuntimeSlot entries (ArmyRuntime_InitializePoolAndGraphics) */
+#define ARMY_RUNTIME_SLOT_COUNT 0x400
+/* g_ArmyGraphicsBindings: texture set and palette per faction slot 0-7 */
+#define ARMY_GRAPHICS_BINDING_COUNT 8
+/* ArmyRuntime_CreateInstanceFromAsset creationFlags */
+#define ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION 0x2 /* owned by the active faction: +1 on the counter at +0x1B0 of
+                                                     the faction's selected model definition */
+#define ARMY_CREATE_UNLOCK_TECHNOLOGY 0x4 /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */

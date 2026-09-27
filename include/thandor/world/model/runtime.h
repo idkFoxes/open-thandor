@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/model/runtime. */
+
+/* g_ModelRuntimeSlots: a 0x400000-byte pool of 0x200-byte ModelRuntimeSlot entries (ModelRuntimePool_Init) */
+#define MODEL_RUNTIME_SLOT_COUNT 0x2000
+/* pointer slots in g_ModelDefinitionRegistry */
+#define MODEL_DEFINITION_REGISTRY_SLOT_COUNT 0x300
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00529360 */

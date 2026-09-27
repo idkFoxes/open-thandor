@@ -972,13 +972,9 @@ SelectionMarkerCoordinates_ApplyType7
 
 
 /* Address: 0x00568210.
-   Ownership: gameplay/selection/overlay.
-   Purpose: Avoids duplicate transient markers, interpolates terrain height, creates the effect, and records it in
-   the in-game overlay marker array. Storage remains one signed 32-bit word. Typed parameters: p0 scaleQ12→Q12.
-   Calling convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters:
-   p2 worldYQ12→Q12, p3 worldXQ12→Q12.
-   Cross-module calls: FieldGrid_InterpolateTopSurfaceHeight [world/terrain/grid],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
+   Places a command-target marker effect on the terrain at a world point, unless the point is the source node's
+   own position or already carries a marker. Markers for a scaleQ12 other than 1.0 are lifted and scaled so the
+   model's bounding radius becomes 6.5 * scaleQ12 (Q12).
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
@@ -996,15 +992,17 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   EffectCreateResult createdEffect;
   
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
+  /* +0x94/+0x98: world translation x/y of a model node (worldTransform.translation) */
   if ((worldXQ12 != *(int *)((int)sourceWorldNode + 0x94)) ||
      (worldYQ12 != *(int *)((int)sourceWorldNode + 0x98))) {
+    /* each marker is an EffectRuntimeSlot *, whose model node sits at +4 */
     markerCursor = (int *)THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0);
-    for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers = remainingMarkers + -1) {
+    for (remainingMarkers = g_InGameCommandTargetTransientEffectMarkerCount; remainingMarkers != 0; remainingMarkers--) {
       if ((worldXQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x94)) &&
          (worldYQ12 == *(int *)(*(int *)(*markerCursor + 4) + 0x98))) {
         return;
       }
-      markerCursor = markerCursor + 1;
+      markerCursor++;
     }
     surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                       (worldYQ12,worldXQ12,*(FieldGridAsset **)((int)inGameRuntime + 0x54));
@@ -1013,14 +1011,14 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
                        surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     *(EffectRuntimeSlot **)(markerSlotIndex * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = createdEffect.effectRuntime;
     markerModelNode = ((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode;
-    g_InGameCommandTargetTransientEffectMarkerCount =
-         g_InGameCommandTargetTransientEffectMarkerCount + 1;
+    g_InGameCommandTargetTransientEffectMarkerCount++;
     boundingRadius = markerModelNode->subtreeBoundingRadiusQ12;
     markerModelNode->tintArgb = 0xffffffff;
-    if ((scaleQ12 != 0x1000) && (boundingRadius != 0)) {
+    if ((scaleQ12 != Q12_ONE) && (boundingRadius != 0)) {
       translationZ = &(markerModelNode->worldTransform).translation.z;
       *translationZ = *translationZ + 0x144;
-      markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | 0x800;
+      markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | MODEL_RUNTIME_FLAG_APPLY_SCALE;
+      /* unsigned 32x32->64 MUL / DIV, as in the original */
       markerModelNode->modelScaleQ12 = (Q12)(((uint64_t)(uint32_t)scaleQ12 * 0x1a00) / (uint64_t)boundingRadius);
     }
   }

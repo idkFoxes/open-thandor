@@ -143,9 +143,9 @@ WideNumber_FormatUtf16
 
 
 /* Address: 0x00403010.
-   Ownership: core/text/string.
-   Purpose: Compares two UTF-16 streams while folding ASCII A-Z/a-z only. EAX and EDX are restored; ordering is
-   returned through flags.
+   Compares two NUL-terminated UTF-16 strings, ignoring the case of ASCII letters only, and returns the result
+   in the flags (ZF equal, CF leftText < rightText); a string that ends first compares as equal-or-greater
+   (CF clear), with ZF set only when both end together.
 */
 TextCompareResult __thandor_void_preserve_eax_ecx_edx
 Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
@@ -160,8 +160,8 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
     do {
       leftCodeUnit = *leftText;
       rightCodeUnit = *rightText;
-      leftText = leftText + 1;
-      rightText = rightText + 1;
+      leftText++;
+      rightText++;
       otherCodeUnit = rightCodeUnit;
       if ((leftCodeUnit == 0) || (otherCodeUnit = leftCodeUnit, rightCodeUnit == 0)) {
         compareFlags.equal = otherCodeUnit == 0;
@@ -169,6 +169,9 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
         return compareFlags;
       }
     } while (leftCodeUnit == rightCodeUnit);
+    /* Fold only when one side is an upper-case letter ('A'..'Z', 0x41..0x5A) and the other a lower-case one
+       ('a'..'z', 0x61..0x7A); the lower-case test on leftCodeUnit has no upper bound in the original either
+       (CMP EAX,0x61 / JC only), which is harmless because rightCodeUnit is then an upper-case letter. */
     if (0x40 < leftCodeUnit) {
       if (leftCodeUnit < 0x5b) {
         if ((0x60 < rightCodeUnit) && (rightCodeUnit < 0x7b)) {
@@ -223,9 +226,8 @@ Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destinati
 
 
 /* Address: 0x00586DA0.
-   Ownership: core/text/string.
-   Purpose: Copies a NUL-terminated UTF-16 string including its terminator. Returns the copied byte count excluding
-   the two-byte terminator.
+   Copies a NUL-terminated UTF-16 string including its terminator and returns its length in bytes, without
+   the terminator.
 */
 uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
 
@@ -239,8 +241,8 @@ uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
     completedByteLength = nextByteLength;
     copiedCodeUnit = *source;
     *destination = copiedCodeUnit;
-    source = source + 1;
-    destination = destination + 1;
+    source++;
+    destination++;
     nextByteLength = completedByteLength + 2;
   } while (copiedCodeUnit != 0);
   return completedByteLength;

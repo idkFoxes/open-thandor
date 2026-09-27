@@ -66,21 +66,17 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
 
 
 /* Address: 0x00407F90.
-   Ownership: core/error/runtime.
-   Purpose: Registered as the fatal-error dispatch callback after the fixed 0x110-byte error state is allocated. It
-   publishes the pending error state, presents the modal runtime UI, pumps frames until dismissal, and returns
-   status through CF.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], RichTextCommandStream_MeasureWrappedBlockRegs [assets/text/richtext], UiRootStack_Push
-   [ui/controls/layout], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout], UiRootStack_InvalidateAll
-   [ui/controls/layout].
+   The in-game fatal-error handler behind FatalError_ReportIfFailed (installed by
+   ErrorRuntime_InstallUiHandlerAndAllocateState): with CF clear it passes EAX through; with CF set it builds
+   the message like FatalError_Exit, opens it as a modal dialog sized to the text and runs UI frames until the
+   dialog is dismissed, then returns the error with CF set so the caller can carry on.
 */
 FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
 FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
 
 {
   int32_t *topOffsetField;
-  UiRootNode *uiRootTemplate;
+  UiRootNode *dialogRoot;
   uint16_t *stream;
   int remainingDwords;
   uint32_t *templateImageCursor;
@@ -89,18 +85,19 @@ FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
   FatalErrorCheckResult passThroughResult;
   FatalErrorCheckResult dispatchResult;
   TextResolveResult resolvedText;
-  
+
   if (!carryIn) {
     passThroughResult.failed = false;
     passThroughResult.valueOrError = errorOrValue;
     return passThroughResult;
   }
-  if (g_FatalErrorUiRootTemplate == (UiRootNode *)0x0) {
+  if (g_FatalErrorUiRootTemplate == NULL) {
+    /* no dialog state allocated yet: FatalError_Exit, which does not return */
     dispatchResult = FatalError_ExitIfFailed(errorOrValue,true);
     errorOrValue = dispatchResult.valueOrError;
   }
   stream = (uint16_t *)errorOrValue;
-  if ((errorOrValue & 0xffffff00) == 0) {
+  if ((errorOrValue & 0xffffff00) == 0) { /* an error code, not a text pointer */
     resolvedText = TextResource_Resolve(errorOrValue);
     stream = resolvedText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
@@ -111,19 +108,22 @@ FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
   templateImageCursor = g_FatalErrorUiRootTemplateImage;
   templateCopyCursor = g_FatalErrorUiRootTemplate;
   g_FatalErrorRichTextStream = stream;
-  for (remainingDwords = 0x44; uiRootTemplate = g_FatalErrorUiRootTemplate, remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+  /* copy the dialog template image into the allocated root node, one dword per step (REP MOVSD) */
+  for (remainingDwords = sizeof g_FatalErrorUiRootTemplateImage / sizeof(uint32_t);
+       dialogRoot = g_FatalErrorUiRootTemplate, remainingDwords != 0; remainingDwords--) {
     (templateCopyCursor->base).nextSibling = (UiNodeBase *)*templateImageCursor;
     templateImageCursor = templateImageCursor + 1;
     templateCopyCursor = (UiRootNode *)&(templateCopyCursor->base).firstChild;
   }
+  /* the text height is subtracted from the dialog's top offset */
   wrappedExtent = RichTextCommandStream_MeasureWrappedBlockRegs
                     (g_UiTextStyleNormal,g_FatalErrorRichTextStream,
                      ((g_FatalErrorRichTextRight - g_FatalErrorRichTextLeft) +
                      g_FatalErrorRichTextBottom) - g_FatalErrorRichTextTop);
-  topOffsetField = &(uiRootTemplate->base).topOffset;
+  topOffsetField = &(dialogRoot->base).topOffset;
   *topOffsetField = *topOffsetField - wrappedExtent.heightPixels;
   UiRootStack_Push(&g_UiRootCallbacks_00407E28,g_FatalErrorUiRootTemplate);
-  g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
   UiFrame_FlushInputAndResetPendingTicks();
   g_GraphicsCursorSetFrame(0);
@@ -231,11 +231,10 @@ FatalError_Exit(uint32_t errorOrValue,bool carryIn)
 
 
 /* Address: 0x0041BB00.
-   Ownership: core/error/runtime.
-   Purpose: Fatal-dialog copy of the same bounded rich-text-to-narrow conversion used immediately before
-   MessageBoxA. It follows nested command streams and preserves the original CF/EAX error contract. Typed
-   parameters: p0 capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Converts a rich-text command stream into plain narrow text for the fatal-error MessageBoxA: glyphs below
+   0x100 are copied as bytes, fixed spaces become ' ', line breaks CR LF, nested streams are followed and
+   every other command is skipped. Returns the bytes written including the terminator, or
+   FATAL_ERROR_GENERAL_FAILURE (output cut and terminated) when capacityBytes runs out.
 */
 int FatalError_CopyRichTextToNarrow
               (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
@@ -261,60 +260,60 @@ int FatalError_CopyRichTextToNarrow
       if (commandOrCodeUnit == 0) break;
       if ((short)commandOrCodeUnit < 0) {
         nextCommand = streamCursor;
-        switch(commandOrCodeUnit & 0x1f) {
-        case 6:
-          nextCommand = commandCursor + 9;
+        switch(commandOrCodeUnit & RICHTEXT_OPCODE_MASK) {
+        case RICHTEXT_OP_LITERAL_COLOR:
+          nextCommand = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
           break;
-        case 0x10:
-          remainingCapacityBytes = remainingCapacityBytes - 1;
+        case RICHTEXT_OP_FIXED_SPACE:
+          remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
-          *destination = 0x20;
-          destination = destination + 1;
+          *destination = ' ';
+          destination++;
           nextCommand = streamCursor;
           break;
-        case 0x12:
+        case RICHTEXT_OP_LINE_BREAK:
           newlineCapacityUnderflow = remainingCapacityBytes < 2;
           remainingCapacityBytes = remainingCapacityBytes - 2;
           if (newlineCapacityUnderflow || remainingCapacityBytes == 0)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
-          destination[0] = 0xd;
-          destination[1] = 10;
+          destination[0] = '\r';
+          destination[1] = '\n';
           destination = destination + 2;
           nextCommand = streamCursor;
           break;
-        case 0x14:
-        case 0x15:
-        case 0x16:
-          nextCommand = commandCursor + 3;
+        case RICHTEXT_OP_INLINE_VALUE_0:
+        case RICHTEXT_OP_INLINE_VALUE_1:
+        case RICHTEXT_OP_INLINE_VALUE_2:
+          nextCommand = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
           break;
-        case 0x18:
+        case RICHTEXT_OP_CALL_NESTED:
           if (nestedDepth == 64)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
           nestedReturnStack[nestedDepth++] = streamCursor;
           nextCommand = *(uint16_t **)streamCursor;
           break;
-        case 0x19:
+        case RICHTEXT_OP_JUMP_NESTED:
           nextCommand = *(uint16_t **)streamCursor;
           break;
-        case 0x1a:
-          nextCommand = commandCursor + 5;
+        case RICHTEXT_OP_INLINE_IMAGE:
+          nextCommand = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
         }
       }
       else {
         nextCommand = streamCursor;
-        if ((commandOrCodeUnit & 0xff00) == 0) {
-          remainingCapacityBytes = remainingCapacityBytes - 1;
+        if ((commandOrCodeUnit & 0xff00) == 0) { /* only glyphs that fit a narrow character */
+          remainingCapacityBytes--;
           if (remainingCapacityBytes == 0)
           goto FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError;
           *destination = (uint8_t)commandOrCodeUnit;
-          destination = destination + 1;
+          destination++;
           nextCommand = streamCursor;
         }
       }
     }
     if (nestedDepth == 0) break;
-    nextCommand = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + 8);
+    nextCommand = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
@@ -322,5 +321,5 @@ int FatalError_CopyRichTextToNarrow
   }
 FatalError_CopyRichTextToNarrow_TerminateOutputAndReturnCapacityError:
   destination[-1] = 0;
-  return 0x14;
+  return FATAL_ERROR_GENERAL_FAILURE;
 }

@@ -203,10 +203,9 @@ WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *
 
 
 /* Address: 0x00531170.
-   Ownership: core/text/path.
-   Purpose: Scans at most 32 UTF-16 code units for the terminator, starts six code units before it, and parses the
-   contiguous decimal digits immediately preceding the extension. The parsed value is returned in ECX while EAX is
-   preserved.
+   Parses the decimal number that ends right before a 4-character extension (".sav" in "save12.sav" gives 12):
+   reads digits backwards from the fifth code unit before the terminator until a non-digit. The terminator
+   search and the digit count share a limit of 32 code units. Returns the number in ECX, 0 if there is none.
 */
 uint32_t __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
 
@@ -224,22 +223,23 @@ uint32_t __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionR
   do {
     terminatorCursor = path;
     if (scanCountOrPlaceValue == 0) break;
-    scanCountOrPlaceValue = scanCountOrPlaceValue + -1;
+    scanCountOrPlaceValue--;
     terminatorCursor = path + 1;
     currentCodeUnit = *path;
     path = terminatorCursor;
   } while (currentCodeUnit != 0);
-  terminatorCursor = terminatorCursor + -6;
+  /* one past the terminator minus 6: the last code unit before the ".ext" */
+  terminatorCursor = terminatorCursor - 6;
   parsedValue = 0;
   scannedCodeUnitCount = scanCountOrPlaceValue + 6;
   scanCountOrPlaceValue = 1;
   digitScanCursor = terminatorCursor;
   while( true ) {
     digitCodeUnit = *digitScanCursor;
-    scannedCodeUnitCount = scannedCodeUnitCount + 1;
-    digitScanCursor = digitScanCursor + -1;
-    digitValue = digitCodeUnit - 0x30;
-    if (digitCodeUnit < 0x30) {
+    scannedCodeUnitCount++;
+    digitScanCursor--;
+    digitValue = digitCodeUnit - '0';
+    if (digitCodeUnit < '0') {
       return parsedValue;
     }
     if (9 < digitValue) break;

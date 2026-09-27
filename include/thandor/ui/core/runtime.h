@@ -26,6 +26,9 @@
 #define UI_ACTION_NONE (-1)
 /* Dirty rectangles collected by UiNode_InvalidateRoot per frame (0x18-byte UiDirtyRectEntry each). */
 #define UI_DIRTY_RECT_CAPACITY 0x40
+/* Action handler table g_UiActionHandlerPages: 256 pages of 256 handlers; action id bits 8..15 pick the page,
+   bits 0..7 the handler (UiActionQueue_DispatchPending). */
+#define UI_ACTION_HANDLER_PAGE_COUNT 256
 
 /* 0x004228F0 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);

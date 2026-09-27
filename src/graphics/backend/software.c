@@ -3253,25 +3253,22 @@ void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
 
 
 /* Address: 0x00519210.
-   Ownership: graphics/backend/software.
-   Purpose: Clears the complete software mask buffer at runtime offset 0x60 using the logical dimensions of the
-   associated texture source. Typed parameters: p2 maskControl→SoftwareMaskRuntimeAddress32_V345. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Zeroes the one-byte-per-pixel mask buffer of a software mask (if it has one), sized by the logical
+   width x height of its texture source, 64 bytes per step (eight MMX qword stores).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 {
   uint64_t *maskQwordWriteCursor;
-  uint32_t qwordBlocksRemaining;
-  uint64_t maskLogicalSizePair;
+  uint32_t blocksRemaining;
   TextureSizeResult logicalSize;
-  
+
   maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
-  if (maskQwordWriteCursor != (uint64_t *)0x0) {
+  if (maskQwordWriteCursor != NULL) {
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(0,maskControl->textureSource);
-    qwordBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
+    /* 64-byte blocks; a mask of fewer than 64 pixels would wrap the count, as in the original */
+    blocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
     do {
       *maskQwordWriteCursor = 0;
       maskQwordWriteCursor[1] = 0;
@@ -3282,8 +3279,8 @@ SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
       maskQwordWriteCursor[6] = 0;
       maskQwordWriteCursor[7] = 0;
       maskQwordWriteCursor = maskQwordWriteCursor + 8;
-      qwordBlocksRemaining = qwordBlocksRemaining - 1;
-    } while (qwordBlocksRemaining != 0);
+      blocksRemaining = blocksRemaining - 1;
+    } while (blocksRemaining != 0);
   }
   return;
 }

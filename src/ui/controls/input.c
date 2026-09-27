@@ -9,12 +9,12 @@
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
 
-/* Diagnostics: a UI link that is neither -1 nor a readable node ends the walk and is logged once
-   per holder, instead of crashing the focus traversal. */
+/* Diagnostics (open-thandor only): a UI link that is neither UI_NODE_NONE nor a readable node ends the
+   walk as UI_NODE_NONE instead of crashing the focus traversal; the first 20 such links are logged. */
 static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,UiNodeBase *link)
 {
   static int logged;
-  if ((link == (UiNodeBase *)0xffffffff) || Thandor_IsReadable(link,0x4c)) {
+  if ((link == UI_NODE_NONE) || Thandor_IsReadable(link,sizeof(UiNodeBase))) {
     return link;
   }
   if (logged < 20) {
@@ -22,10 +22,10 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
     Thandor_Log("ui focus walk: node %p (vtable %s flags %08x) has bad %s link %p; focus %p (vtable %s)",
                 (void *)holder,Thandor_SymbolName(holder->vtable),holder->nodeFlags,field,(void *)link,
                 (void *)g_UiKeyboardFocusNode,
-                g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff ?
+                g_UiKeyboardFocusNode != UI_NODE_NONE ?
                 Thandor_SymbolName(g_UiKeyboardFocusNode->vtable) : "-");
   }
-  return (UiNodeBase *)0xffffffff;
+  return UI_NODE_NONE;
 }
 
 /* Implementation ownership: ui/controls/input. */
@@ -112,9 +112,8 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
 
 
 /* Address: 0x004B00F0.
-   Ownership: ui/controls/input.
-   Purpose: Handles ui keyboard focus release node.
-   Local calls: UiKeyboardFocus_MoveNext, UiKeyboardFocus_Set.
+   Takes the keyboard focus away from node (e.g. before it is hidden or removed): the focus moves on to the
+   next focus target, or is cleared when node is the only one.
 */
 void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase *node)
 
@@ -122,7 +121,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase 
   if (node == g_UiKeyboardFocusNode) {
     UiKeyboardFocus_MoveNext();
     if (node == g_UiKeyboardFocusNode) {
-      UiKeyboardFocus_Set((UiNodeBase *)0xffffffff);
+      UiKeyboardFocus_Set(UI_NODE_NONE);
     }
   }
   return;
@@ -206,10 +205,8 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
 
 
 /* Address: 0x004B0030.
-   Ownership: ui/controls/input.
-   Purpose: Traverses a subtree for an initial keyboard-focus target, preferring nodeFlags bit 0x02 and using bit
-   0x20 as a fallback.
-   Local calls: UiKeyboardFocus_Set.
+   Gives the keyboard focus to the first node from root on that is a preferred focus target, else to the
+   last fallback focus target found (suppressed nodes are skipped); without any the focus stays as it is.
 */
 void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *root)
 
@@ -220,7 +217,7 @@ void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *r
 
   /* Pre-order walk starting at root (continuing past its subtree through the parents' siblings):
      the first unsuppressed preferred focus target wins, else the last unsuppressed fallback. */
-  fallbackFocusNode = (UiNodeBase *)0xffffffff;
+  fallbackFocusNode = UI_NODE_NONE;
   searchNodeCursor = root;
   while( true ) {
     if ((searchNodeCursor->nodeFlags & UI_NODE_SUPPRESSED) == 0) {
@@ -230,14 +227,14 @@ void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *r
       }
     }
     nextNode = searchNodeCursor->firstChild;
-    if (nextNode == (UiNodeBase *)0xffffffff) {
-      while ((searchNodeCursor != (UiNodeBase *)0xffffffff) &&
-             (nextNode = searchNodeCursor->nextSibling, nextNode == (UiNodeBase *)0xffffffff)) {
+    if (nextNode == UI_NODE_NONE) {
+      while ((searchNodeCursor != UI_NODE_NONE) &&
+             (nextNode = searchNodeCursor->nextSibling, nextNode == UI_NODE_NONE)) {
         searchNodeCursor = searchNodeCursor->parent;
       }
-      if (searchNodeCursor == (UiNodeBase *)0xffffffff) {
+      if (searchNodeCursor == UI_NODE_NONE) {
         searchNodeCursor = fallbackFocusNode;
-        if (fallbackFocusNode == (UiNodeBase *)0xffffffff) {
+        if (fallbackFocusNode == UI_NODE_NONE) {
           return;
         }
         break;
@@ -1237,12 +1234,10 @@ UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
 
 
 /* Address: 0x004AFA60.
-   Ownership: ui/controls/input.
-   Purpose: Hit-tests the root stack, captures the selected node as button LEFT, records the repeat/double-click
-   marker in nodeFlags bit 0x80, and dispatches nonRightPress followed by nonRightDrag.
-   Local calls: UiKeyboardFocus_Set.
-   Cross-module calls: UiImageControl_HitTestOpaque [ui/controls/misc], UiRootStack_BringToFront
-   [ui/controls/layout].
+   Left button press: the node under the pointer (a hovered image control on an opaque pixel, else the hit
+   test of the topmost root containing the pointer; pressing into a lower root brings it to the front
+   first) captures the pointer for the left button, takes the keyboard focus when it is a focus target and
+   gets nonRightPress followed by nonRightDrag. Ignored while any button holds a capture.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointer_DispatchLeftPress
@@ -1259,27 +1254,27 @@ UiPointer_DispatchLeftPress
   UiImageControl *node;
   UiRootNode *root;
   bool handled;
-  
+
   node = g_UiImageControlHoverTarget;
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton != UI_POINTER_CAPTURE_NONE) {
     return;
   }
   /* A hovered image control keeps the press when the pointer is on one of its opaque pixels. */
-  opaqueHit = (UiNodeBase *)0xffffffff;
-  if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
+  opaqueHit = UI_NODE_NONE;
+  if (g_UiImageControlHoverTarget != NULL) {
     opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
-    g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-    if (opaqueHit == (UiNodeBase *)0xffffffff) {
+    g_UiImageControlHoverTarget = NULL;
+    if (opaqueHit == UI_NODE_NONE) {
       stateFlagsField = &(node->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
+      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
     }
   }
-  if (opaqueHit == (UiNodeBase *)0xffffffff) {
-    /* Otherwise hit-test the root stack from the top. */
+  if (opaqueHit == UI_NODE_NONE) {
+    /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
     root = topRoot;
     while( true ) {
-      if (root == (UiRootNode *)0xffffffff) {
+      if (root == UI_ROOT_STACK_END) {
         return;
       }
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
@@ -1287,7 +1282,7 @@ UiPointer_DispatchLeftPress
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) break;
       callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+      if (((*callbacksField)->method08 != NULL) &&
          (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
@@ -1296,12 +1291,12 @@ UiPointer_DispatchLeftPress
     if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
       return;
     }
-    if (node == (UiImageControl *)0xffffffff) {
+    if (node == (UiImageControl *)UI_NODE_NONE) {
       return;
     }
   }
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_LEFT;
-  if ((buttonMask & 0x80000000) == CURSOR_BUTTON_NONE) {
+  if ((buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) == CURSOR_BUTTON_NONE) {
     nodeFlagsField = &(node->selectable).base.nodeFlags;
     *nodeFlagsField = *nodeFlagsField & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
   }
@@ -1316,7 +1311,8 @@ UiPointer_DispatchLeftPress
     UiKeyboardFocus_Set((UiNodeBase *)node);
   }
   nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
-  if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
+  /* the press handler may have released the capture already */
+  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
     return;
   }
   g_UiPointerCaptureTarget->vtable->nonRightDrag
@@ -1326,15 +1322,9 @@ UiPointer_DispatchLeftPress
 
 
 /* Address: 0x004AFBC0.
-   Ownership: ui/controls/input.
-   Purpose: Hit-tests the root stack, captures the selected node as button MIDDLE, records the repeat/double-click
-   marker in nodeFlags bit 0x80, and dispatches nonRightPress followed by nonRightDrag. Kept distinct from player
-   IDs, command opcodes, and resource identifiers. Typed parameters: p0 buttonMask→UiPointerButtonMask_V338.
-   Calling convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters:
-   p2 pointerY→UiPixelCoordinate_V297, p3 pointerX→UiPixelCoordinate_V297.
-   Local calls: UiKeyboardFocus_Set.
-   Cross-module calls: UiImageControl_HitTestOpaque [ui/controls/misc], UiRootStack_BringToFront
-   [ui/controls/layout].
+   Middle button press: like UiPointer_DispatchLeftPress (same node selection, focus and nonRightPress /
+   nonRightDrag), but captures the pointer for the middle button and always marks the node's press as a
+   repeated click (UI_NODE_REPEAT_OR_DOUBLE_CLICK), whatever buttonMask says.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointer_DispatchMiddlePress
@@ -1358,20 +1348,20 @@ UiPointer_DispatchMiddlePress
     return;
   }
   /* A hovered image control keeps the press when the pointer is on one of its opaque pixels. */
-  opaqueHit = (UiNodeBase *)0xffffffff;
-  if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
+  opaqueHit = UI_NODE_NONE;
+  if (g_UiImageControlHoverTarget != NULL) {
     opaqueHit = UiImageControl_HitTestOpaque(pointerY,pointerX,g_UiImageControlHoverTarget);
-    g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-    if (opaqueHit == (UiNodeBase *)0xffffffff) {
+    g_UiImageControlHoverTarget = NULL;
+    if (opaqueHit == UI_NODE_NONE) {
       stateFlagsField = &(node->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
+      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
     }
   }
-  if (opaqueHit == (UiNodeBase *)0xffffffff) {
-    /* Otherwise hit-test the root stack from the top. */
+  if (opaqueHit == UI_NODE_NONE) {
+    /* Otherwise hit-test the root stack from the top; a root's method08 may end the search. */
     root = topRoot;
     while( true ) {
-      if (root == (UiRootNode *)0xffffffff) {
+      if (root == UI_ROOT_STACK_END) {
         return;
       }
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
@@ -1379,7 +1369,7 @@ UiPointer_DispatchMiddlePress
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) break;
       callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+      if (((*callbacksField)->method08 != NULL) &&
          (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
@@ -1388,7 +1378,7 @@ UiPointer_DispatchMiddlePress
     if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
       return;
     }
-    if (node == (UiImageControl *)0xffffffff) {
+    if (node == (UiImageControl *)UI_NODE_NONE) {
       return;
     }
   }
@@ -1402,7 +1392,8 @@ UiPointer_DispatchMiddlePress
     UiKeyboardFocus_Set((UiNodeBase *)node);
   }
   nodeVtable->nonRightPress(wheelDelta,pointerY,pointerX,(UiNodeBase *)node);
-  if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
+  /* the press handler may have released the capture already */
+  if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
     return;
   }
   g_UiPointerCaptureTarget->vtable->nonRightDrag
@@ -1412,14 +1403,10 @@ UiPointer_DispatchMiddlePress
 
 
 /* Address: 0x004AFD10.
-   Ownership: ui/controls/input.
-   Purpose: Hit-tests the root stack, captures the selected node as button RIGHT, records the repeat/double-click
-   marker in nodeFlags bit 0x80, and dispatches rightPress followed by rightDrag. Kept distinct from player IDs,
-   command opcodes, and resource identifiers. Typed parameters: p0 buttonMask→UiPointerButtonMask_V338. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p2
-   pointerY→UiPixelCoordinate_V297, p3 pointerX→UiPixelCoordinate_V297.
-   Local calls: UiKeyboardFocus_Set.
-   Cross-module calls: UiRootStack_BringToFront [ui/controls/layout].
+   Right button press: the hit test of the topmost root containing the pointer (a hovered image control
+   only loses its hover state, it gets no opaque-pixel check) picks the node, which captures the pointer for
+   the right button, takes the keyboard focus when it is a focus target and gets rightPress followed by
+   rightDrag. Ignored while any button holds a capture.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointer_DispatchRightPress
@@ -1438,11 +1425,11 @@ UiPointer_DispatchRightPress
   topRoot = g_UiRootNode;
   if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_NONE) {
     root = topRoot;
-    if (g_UiImageControlHoverTarget != (UiImageControl *)0x0) {
+    if (g_UiImageControlHoverTarget != NULL) {
       stateFlagsField = &(g_UiImageControlHoverTarget->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xfffff9fc;
+      *stateFlagsField = *stateFlagsField & ~UI_IMAGE_CONTROL_HOVER_STATE_BITS;
     }
-    while (root != (UiRootNode *)0xffffffff) {
+    while (root != UI_ROOT_STACK_END) {
       if (((((root->rootFlags & UI_ROOT_DISABLE_POINTER_HIT_TEST) == 0) &&
            ((root->base).left <= pointerX)) && ((root->base).top <= pointerY)) &&
          ((pointerX < (root->base).right && (pointerY < (root->base).bottom)))) {
@@ -1450,11 +1437,11 @@ UiPointer_DispatchRightPress
         if ((root != topRoot) && (handled = UiRootStack_BringToFront(root), handled)) {
           return;
         }
-        if (node == (UiNodeBase *)0xffffffff) {
+        if (node == UI_NODE_NONE) {
           return;
         }
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_RIGHT;
-        if ((buttonMask & 0x80000000) == 0) {
+        if ((buttonMask & UI_POINTER_BUTTON_REPEAT_CLICK) == 0) {
           node->nodeFlags = node->nodeFlags & ~UI_NODE_REPEAT_OR_DOUBLE_CLICK;
         }
         else {
@@ -1467,7 +1454,8 @@ UiPointer_DispatchRightPress
           UiKeyboardFocus_Set(node);
         }
         nodeVtable->rightPress(wheelDelta,pointerY,pointerX,node);
-        if (g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) {
+        /* the press handler may have released the capture already */
+        if (g_UiPointerCaptureTarget == UI_NODE_NONE) {
           return;
         }
         g_UiPointerCaptureTarget->vtable->rightDrag
@@ -1476,7 +1464,7 @@ UiPointer_DispatchRightPress
       }
       callbacksField = &root->callbacks;
       root = root->previousRoot;
-      if (((*callbacksField)->method08 != (UiRootMethod08Callback *)0x0) &&
+      if (((*callbacksField)->method08 != NULL) &&
          (handled = (*(*callbacksField)->method08)(root), handled)) {
         return;
       }
@@ -1528,11 +1516,11 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
 
 
 /* Address: 0x004AFE40.
-   Ownership: ui/controls/input.
-   Purpose: Updates tooltip/hover tracking, routes motion to the active capture drag slot or to pointerMove on the
-   hit-tested node, and sends nonzero wheel delta through pointerWheel.
-   Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiTooltip_UpdateHoverTarget
-   [ui/controls/text].
+   Pointer motion (and wheel): drops a hovered in-game selection record (rebuilding the detail panel) and
+   updates the tooltip target. While a node holds the pointer capture it gets the drag for its button;
+   otherwise the node under the pointer in the topmost root containing it gets pointerMove and, for a
+   non-zero wheel delta, pointerWheel. A root the pointer misses passes it on to the root below only when
+   its pointerMissPolicy returns a negative value.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointer_DispatchMotionAndWheel
@@ -1546,13 +1534,13 @@ UiPointer_DispatchMotionAndWheel
   UiRootNode *root;
   
   targetNode = g_UiPointerCaptureTarget;
-  if (g_UiHoverSelectionRecord != (UiCommandRuntimeRecordPrefix *)0x0) {
-    g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)0x0;
+  if (g_UiHoverSelectionRecord != NULL) {
+    g_UiHoverSelectionRecord = NULL;
     InGameSelectionDetailPanel_Rebuild();
   }
   UiTooltip_UpdateHoverTarget(pointerY,pointerX);
   root = g_UiRootNode;
-  if (targetNode != (UiNodeBase *)0xffffffff) {
+  if (targetNode != UI_NODE_NONE) {
     if (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT) {
       targetNode->vtable->rightDrag(wheelDelta,pointerY,pointerX,targetNode);
     }
@@ -1562,13 +1550,13 @@ UiPointer_DispatchMotionAndWheel
     return;
   }
   while( true ) {
-    if (root == (UiRootNode *)0xffffffff) {
+    if (root == UI_ROOT_STACK_END) {
       return;
     }
     if (((((root->base).left <= pointerX) && ((root->base).top <= pointerY)) &&
         (pointerX < (root->base).right)) && (pointerY < (root->base).bottom)) {
       targetNode = (*((root->base).vtable)->hitTest)(pointerY,pointerX,&root->base);
-      if (targetNode == (UiNodeBase *)0xffffffff) {
+      if (targetNode == UI_NODE_NONE) {
         return;
       }
       nodeVtable = targetNode->vtable;
@@ -1580,7 +1568,7 @@ UiPointer_DispatchMotionAndWheel
       return;
     }
     missPolicy = root->callbacks->pointerMissPolicy;
-    if (missPolicy == (UiRootPointerMissPolicyCallback *)0x0) {
+    if (missPolicy == NULL) {
       return;
     }
     missPolicyResult = missPolicy(root);
@@ -1627,21 +1615,19 @@ UiNode_DefaultKeyboardEventMoveFocusNext
 
 
 /* Address: 0x004AFF60.
-   Ownership: ui/controls/input.
-   Purpose: Clears nodeFlags bit 0x04 on the old focus node, stores the new focus node, sets bit 0x04 on it, and
-   invalidates the UI.
-   Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout].
+   Moves the keyboard focus to node (UI_NODE_NONE clears it), keeping UI_NODE_HAS_KEYBOARD_FOCUS on the
+   focused node only, and redraws every root (also when the focus did not change).
 */
 void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_Set(UiNodeBase *node)
 
 {
   if (g_UiKeyboardFocusNode != node) {
-    if (g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff) {
+    if (g_UiKeyboardFocusNode != UI_NODE_NONE) {
       g_UiKeyboardFocusNode->nodeFlags =
            g_UiKeyboardFocusNode->nodeFlags & ~UI_NODE_HAS_KEYBOARD_FOCUS;
     }
     g_UiKeyboardFocusNode = node;
-    if (node != (UiNodeBase *)0xffffffff) {
+    if (node != UI_NODE_NONE) {
       node->nodeFlags = node->nodeFlags | UI_NODE_HAS_KEYBOARD_FOCUS;
     }
   }

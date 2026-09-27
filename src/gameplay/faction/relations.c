@@ -11,12 +11,10 @@
 /* Implementation ownership: gameplay/faction/relations. */
 
 /* Address: 0x0053C010.
-   Ownership: gameplay/faction/relations.
-   Purpose: Walks every active opposing faction, tests pair-transition rules, and dispatches state-specific random
-   advance, faster advance, or reset behavior for the selected faction.
-   Local calls: GameFactionRelations_TestPairTransitionAllowed, GameFactionRelations_IsResetEligibleState,
-   GameFactionRelations_MaybeResetPairState, GameFactionRelations_MaybeAdvancePairStateRare,
-   GameFactionRelations_MaybeAdvancePairStateCommon.
+   Random drift of the diplomatic relations between sourceFactionIndex and every other active faction 7..1
+   (faction 0 is never visited). When the pair may change state and sits in state 3, 6 or 10, the relation may
+   be reset (GameFactionRelations_IsResetEligibleState returns false for exactly those states); otherwise it may
+   advance: rarely from the other states, more often from 3, 6 and 10.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_UpdateAllPairsForFaction
@@ -24,9 +22,8 @@ GameFactionRelations_UpdateAllPairsForFaction
 
 {
   int opposingFactionIndex;
-  FactionRuntimeIndex unusedFactionIndex;
   bool pairTestResult;
-  
+
   opposingFactionIndex = 7;
   do {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[opposingFactionIndex] ==
@@ -47,12 +44,11 @@ GameFactionRelations_UpdateAllPairsForFaction
           GameFactionRelations_MaybeAdvancePairStateRare(opposingFactionIndex,sourceFactionIndex);
         }
         else {
-          GameFactionRelations_MaybeAdvancePairStateCommon(opposingFactionIndex,sourceFactionIndex)
-          ;
+          GameFactionRelations_MaybeAdvancePairStateCommon(opposingFactionIndex,sourceFactionIndex);
         }
       }
     }
-    opposingFactionIndex = opposingFactionIndex + -1;
+    opposingFactionIndex--;
   } while (opposingFactionIndex != 0);
   return;
 }

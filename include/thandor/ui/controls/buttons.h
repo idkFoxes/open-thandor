@@ -14,6 +14,14 @@
 /* Submodule: ui/controls/buttons. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* UiSpriteButtonControl stateFlags bits beyond UiSelectableStateFlags (UiSpriteButtonControl_* functions):
+   ANIMATED cycles the frames of the normal/selected range (UiSpriteButtonControl_AdvanceAnimation);
+   ACTION_AFTER_ANIMATION defers the action of an activation until the animation reaches its last frame;
+   ACTION_PENDING marks such a deferred action. */
+#define UI_SPRITE_BUTTON_ANIMATED 0x80
+#define UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION 0x800
+#define UI_SPRITE_BUTTON_ACTION_PENDING 0x1000
+
 /* 0x004B1D20 */
 void __thandor_void_preserve_eax_ecx_edx UiTree_AdvanceSpriteButtonAnimations(UiNodeBase *root);
 

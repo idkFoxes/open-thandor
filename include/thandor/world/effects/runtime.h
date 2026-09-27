@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/effects/runtime. */
+
+/* g_EffectRuntimeSlots: a 0x40000-byte pool of 0x40-byte EffectRuntimeSlot entries (EffectRuntime_InitGraphicsResources) */
+#define EFFECT_RUNTIME_SLOT_COUNT 0x1000
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051E120 */

@@ -11,12 +11,11 @@
 /* Implementation ownership: gameplay/ai/units. */
 
 /* Address: 0x0053B0E0.
-   Ownership: gameplay/ai/units.
-   Purpose: Scans active workspace01 entity records, updates their countdown state, and dispatches supported
-   behavior classes either to special class-0x12 planning or to the shared anchor-action selector. MILITARY
-   DISPATCH: reads class from instance+0x4C with a SINGLE deref (definitionValue9C_4C, ~0 on disk); class 0x12 ->
-   UpdateSpecialClass12Entity, 1/2/3/0x11/0x13 -> SelectBestAnchorAction.
-   Local calls: AiUnitBehavior_UpdateSpecialClass12Entity, AiUnitBehavior_SelectBestAnchorAction.
+   Per AI tick for the faction's own units (workspace 01): clears the collected-army list, lets busy units
+   (command flags 0x01/0x10) wait for their behaviour cooldown (common +0x8C), skips units with command
+   flag 0x02, and dispatches the rest by model class: class 18 to UpdateSpecialClass12Entity, the ground,
+   tracked, walker, water and glider classes (1/2/3/19/17) to SelectBestAnchorAction. The class is read with a
+   single dereference from the model at +0x4C.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiUnitBehavior_UpdateWorkspace01Entities
@@ -28,31 +27,30 @@ AiUnitBehavior_UpdateWorkspace01Entities
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   MdlDefinitionSemanticPrefix80 *modelDefinition;
   int *behaviorCooldownCounter;
-  int *entityRuntime;
   ArmyRuntimeSlot *armySlot;
   GameEntityRuntime *slotEntityRuntime;
-  
+
   g_AiCollectedEntityCount = 0;
   workspaceEntriesRemaining = g_AiWorkspace01Count;
   workspaceEntryCursor = g_AiWorkspaceBuffer01_Size0200;
-  for (; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1, workspaceEntryCursor = workspaceEntryCursor + 1) {
+  for (; workspaceEntriesRemaining != 0; workspaceEntriesRemaining--, workspaceEntryCursor++) {
     armySlot = workspaceEntryCursor->armyRuntime;
-    if (armySlot == (ArmyRuntimeSlot *)0x0) continue;
+    if (armySlot == NULL) continue;
     slotEntityRuntime = armySlot->linkedEntityRuntime;
-    if (((slotEntityRuntime->common).commandFlags & 0x13) != 0) {
-      if (((slotEntityRuntime->common).commandFlags & 2) != 0) continue;
-      /* Busy entities only get a behavior update when their cooldown runs out (or was already negative). */
-      behaviorCooldownCounter = (int *)((slotEntityRuntime->common).reserved80_9F + 0xc);
+    if ((slotEntityRuntime->common.commandFlags & 0x13) != 0) {
+      if ((slotEntityRuntime->common.commandFlags & 2) != 0) continue;
+      /* Busy entities only get a behavior update when their cooldown runs out (or was already negative,
+         which the increment below undoes). */
+      behaviorCooldownCounter = (int *)(slotEntityRuntime->common.reserved80_9F + 0xc);
       *behaviorCooldownCounter = *behaviorCooldownCounter + -1;
       if (*behaviorCooldownCounter != 0) {
         if (-1 < *behaviorCooldownCounter) continue;
-        cooldownCounterBytes = (slotEntityRuntime->common).reserved80_9F + 0xc;
+        cooldownCounterBytes = slotEntityRuntime->common.reserved80_9F + 0xc;
         *(int *)cooldownCounterBytes = *(int *)cooldownCounterBytes + 1;
       }
     }
     modelDefinition =
-         (MdlDefinitionSemanticPrefix80 *)(armySlot->modelRuntimeOrSavedOffset).modelRuntime;
+         (MdlDefinitionSemanticPrefix80 *)armySlot->modelRuntimeOrSavedOffset.modelRuntime;
     if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
       AiUnitBehavior_UpdateSpecialClass12Entity
                 (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,

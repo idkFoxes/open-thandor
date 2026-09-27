@@ -148,20 +148,18 @@ Movie_EncodeFlmBufferFromFrameProvider
 
 
 /* Address: 0x00563FF0.
-   Ownership: movie/runtime/playback.
-   Purpose: Increments the playback schedule counter, derives the target from exact groups of eight frames and the
-   configured span, advances intermediate eight-frame boundaries and the final target, then invokes the existing
-   playback tick helper. EAX is preserved.
-   Local calls: MoviePlayback_AdvanceToFrameAndPresent.
-   Cross-module calls: InGameRuntime_UpdateSimulationAndNetworkTick [gameplay/session/runtime].
+   Per-tick callback of a movie played inside a session: counts the tick, works out which frame the movie
+   should show by now (8 frames per g_MoviePlaybackScheduleSpan ticks, offset by the base frame group), catches
+   up to it, presenting at least every 8th frame on the way, then runs the regular simulation and network tick
+   so the session keeps going under the movie.
 */
 void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void)
 
 {
   uint32_t targetFrame;
   uint32_t boundaryFrame;
-  
-  g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + 1;
+
+  g_MoviePlaybackScheduleCounter++;
   if (g_MoviePlaybackScheduleSpan != 0) {
     targetFrame = (uint32_t)(g_MoviePlaybackScheduleCounter * 8) / g_MoviePlaybackScheduleSpan + 1 +
                   g_MoviePlaybackBaseFrameGroup * 8;
@@ -245,12 +243,11 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 
 
 /* Address: 0x004A8590.
-   Ownership: movie/runtime/playback.
-   Purpose: Opens an FLM from a mounted package or loose path, validates magic/version, chooses one embedded audio
-   track, builds a one-subresource gfx-compatible MovieRuntime, and optionally starts the refill worker. CF clear
-   means success; EAX returns frameCount and ECX returns frameIntervalMilliseconds.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], Package_FindEntryAcrossMounts
-   [assets/package/runtime], Random_NextPrimary [core/math/random].
+   Opens an FLM movie as g_ActiveMovie: from the loose movie directory (unless MOVIE_OPEN_PACKAGE_ONLY), a
+   mounted package, the executable directory or the plain path, in that order. Loads the header and the video
+   stream (only its start when streaming), picks one of the embedded audio tracks at random and builds a
+   MovieRuntime that looks like a one-frame gfx texture, so the ARGB frame can be drawn like any other texture.
+   A partly loaded stream gets the refill worker thread. Returns frameCount and frameIntervalMilliseconds.
 */
 MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
 
@@ -284,7 +281,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
 
   isSharedPackageHandle = 0;
   looseFileOpened = false;
-  if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
+  if (((movieOpenFlags & MOVIE_OPEN_PACKAGE_ONLY) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
     openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
@@ -292,13 +289,13 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
     looseFileOpened = !openResult.failed;
   }
   if (!looseFileOpened) {
-    movieOpenFlags = movieOpenFlags & 0x7fffffff;
+    movieOpenFlags = movieOpenFlags & ~MOVIE_OPEN_PACKAGE_ONLY;
     packageEntry = Package_FindEntryAcrossMounts(path);
     if ((!packageEntry.notFound) &&
        (seekResult = g_FileSystemSeek
                            (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.entry + 0x1ec) + 0x200,
                             (void *)packageEntry.fileHandle), !seekResult.failed)) {
-      isSharedPackageHandle = isSharedPackageHandle + 1;
+      isSharedPackageHandle++;
       handle = (void *)packageEntry.fileHandle;
     }
     else {
@@ -318,30 +315,32 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
       handle = (void *)openResult.handleOrError;
     }
   }
-  readResult = g_FileSystemReadExact(0x200,g_PackageScratchBuffer,handle);
+  readResult = g_FileSystemReadExact(MOVIE_FILE_HEADER_BYTES,g_PackageScratchBuffer,handle);
   status = readResult.valueOrError;
   if (!readResult.failed) {
     header = (MovieFileHeader *)g_PackageScratchBuffer;
-    status = 0x30;
-    if ((header->common.magic == ASSET_MAGIC_FLM) && ((uint32_t)header->common.converterVersion == 0x20001)) {
-      sizeOrValue = header->videoStreamBytes + 0x200;
-      if ((0x3c0000 < sizeOrValue) && (movieOpenFlags != 0)) {
-        sizeOrValue = 0x3c0000;
+    status = FATAL_ERROR_MOVIE_INVALID;
+    if ((header->common.magic == ASSET_MAGIC_FLM) &&
+        ((uint32_t)header->common.converterVersion == MOVIE_FLM_CONVERTER_VERSION)) {
+      /* the buffer holds the header and the whole video stream, or a bounded window of it when streaming */
+      sizeOrValue = header->videoStreamBytes + MOVIE_FILE_HEADER_BYTES;
+      if ((MOVIE_STREAM_BUFFER_MAX_BYTES < sizeOrValue) && (movieOpenFlags != 0)) {
+        sizeOrValue = MOVIE_STREAM_BUFFER_MAX_BYTES;
       }
       allocResult = g_MemoryApi.alloc(sizeOrValue);
       status = allocResult.payloadOrError;
       if (!allocResult.failed) {
         copySource = (uint32_t *)g_PackageScratchBuffer;
         copyDestination = (uint32_t *)allocResult.payloadOrError;
-        for (copyCount = 0x80; copyCount != 0; copyCount = copyCount + -1) {
+        for (copyCount = MOVIE_FILE_HEADER_BYTES / 4; copyCount != 0; copyCount--) {
           *copyDestination = *copySource;
-          copySource = copySource + 1;
-          copyDestination = copyDestination + 1;
+          copySource++;
+          copyDestination++;
         }
         header = (MovieFileHeader *)allocResult.payloadOrError;
         initialVideoBytes = header->videoStreamBytes;
-        if ((0x3a2000 < initialVideoBytes) && (movieOpenFlags != 0)) {
-          initialVideoBytes = 0x3a2000;
+        if ((MOVIE_INITIAL_VIDEO_MAX_BYTES < initialVideoBytes) && (movieOpenFlags != 0)) {
+          initialVideoBytes = MOVIE_INITIAL_VIDEO_MAX_BYTES;
         }
         remainingByteCount = header->videoStreamBytes - initialVideoBytes;
         loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
@@ -354,7 +353,7 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
           audioResult = Movie_OpenLoadRandomAudioTrack(header,remainingByteCount,handle);
           status = audioResult.valueOrError;
           if (!audioResult.failed) {
-            sizeOrValue = header->widthPixels * header->heightPixels * 4 + 0x220;
+            sizeOrValue = header->widthPixels * header->heightPixels * 4 + MOVIE_RUNTIME_PIXELS_OFFSET;
             allocResult = g_MemoryApi.alloc(sizeOrValue);
             status = allocResult.payloadOrError;
             if (!allocResult.failed) {
@@ -363,41 +362,41 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
               if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
                 g_FileSystemClose(handle);
               }
-              (movie->textureCommon).magic = ASSET_MAGIC_GFX;
-              (movie->textureCommon).allocationSizeBytes = sizeOrValue;
-              (movie->textureCommon).formatVersion = 1;
-              (movie->textureCommon).converterVersion = 0;
+              movie->textureCommon.magic = ASSET_MAGIC_GFX;
+              movie->textureCommon.allocationSizeBytes = sizeOrValue;
+              movie->textureCommon.formatVersion = 1;
+              movie->textureCommon.converterVersion = 0;
               movie->audioVoiceSet = (DirectSoundVoiceSet *)audioResult.valueOrError;
-              movie->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
+              movie->activeAudioBuffer = NULL;
               frameWidth = header->widthPixels;
               frameHeight = header->heightPixels;
               sizeOrValue = g_LocaleGetPackedCurrentTime();
-              (movie->textureCommon).buildMetadata.timestamps.dateValue0 = sizeOrValue;
-              (movie->textureCommon).buildMetadata.timestamps.dateValue1 = sizeOrValue;
-              (movie->textureCommon).buildMetadata.timestamps.dateValue2 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.dateValue0 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.dateValue1 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.dateValue2 = sizeOrValue;
               sizeOrValue = g_LocaleGetPackedCurrentDate();
-              (movie->textureCommon).buildMetadata.timestamps.timeValue0 = sizeOrValue;
-              (movie->textureCommon).buildMetadata.timestamps.timeValue1 = sizeOrValue;
-              (movie->textureCommon).buildMetadata.timestamps.timeValue2 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.timeValue0 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.timeValue1 = sizeOrValue;
+              movie->textureCommon.buildMetadata.timestamps.timeValue2 = sizeOrValue;
               g_LocaleCopyDefaultComputerLabelUtf16
-                        ((movie->textureCommon).buildMetadata.names.producerName);
+                        (movie->textureCommon.buildMetadata.names.producerName);
               g_LocaleCopyDefaultComputerLabelUtf16
-                        ((movie->textureCommon).buildMetadata.names.sourceName);
+                        (movie->textureCommon.buildMetadata.names.sourceName);
               movie->reserved100_1FF[0] = 0;
-              movie->subresourceTableOffset = 0x200;
+              movie->subresourceTableOffset = 0x200; /* the subresource entry follows the gfx header */
               movie->paletteBankCount = 0;
               movie->subresourceCount = 1;
               movie->fileHeader = header;
               movie->currentFrameIndex = 0;
-              movie->videoStreamOffset = 0x200;
-              (movie->sourceEntry).dataOffset = 0x220;
-              (movie->sourceEntry).pixelWidth = frameWidth;
-              (movie->sourceEntry).pixelHeight = frameHeight;
-              (movie->sourceEntry).logicalWidth = frameWidth;
-              (movie->sourceEntry).logicalHeight = frameHeight;
-              (movie->sourceEntry).paletteIndex = -1;
-              (movie->sourceEntry).originX = 0;
-              (movie->sourceEntry).originY = 0;
+              movie->videoStreamOffset = MOVIE_FILE_HEADER_BYTES;
+              movie->sourceEntry.dataOffset = MOVIE_RUNTIME_PIXELS_OFFSET;
+              movie->sourceEntry.pixelWidth = frameWidth;
+              movie->sourceEntry.pixelHeight = frameHeight;
+              movie->sourceEntry.logicalWidth = frameWidth;
+              movie->sourceEntry.logicalHeight = frameHeight;
+              movie->sourceEntry.paletteIndex = -1;
+              movie->sourceEntry.originX = 0;
+              movie->sourceEntry.originY = 0;
               movie->remainingVideoBytes = remainingByteCount;
               movie->streamHandle = handle;
               movie->loadedVideoEnd = loadedEnd;
@@ -408,17 +407,17 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
               movie->audioGainQ15 = defaultAudioGain;
               movie->workerActive = 0;
               movie->streamState = MOVIE_STREAM_IDLE;
-              movie->refillSemaphore = (void *)0x0;
+              movie->refillSemaphore = NULL;
               if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-                movie->workerActive = movie->workerActive + 1;
-                semaphoreOrThread = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
+                movie->workerActive++;
+                semaphoreOrThread = CreateSemaphoreA(NULL,0,1,NULL);
                 movie->refillSemaphore = semaphoreOrThread;
                 /* The original passes the address of its remainingByteCount local as lpThreadId. */
-                semaphoreOrThread = CreateThread((LPSECURITY_ATTRIBUTES)0x0,0,
-                                      (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,(LPVOID)0x0,0,
+                semaphoreOrThread = CreateThread(NULL,0,
+                                      (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,NULL,0,
                                       &remainingByteCount);
-                if (semaphoreOrThread == (HANDLE)0x0) {
-                  movie->workerActive = movie->workerActive - 1;
+                if (semaphoreOrThread == NULL) {
+                  movie->workerActive--;
                 }
                 else {
                   CloseHandle(semaphoreOrThread);
@@ -466,13 +465,13 @@ MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDime
 
 
 /* Address: 0x004A8A40.
-   Ownership: movie/runtime/playback.
-   Purpose: Updates the active movie's equal-channel Q15 one-shot audio gain. Does nothing when no movie is open.
+   Sets the Q15 volume the active movie's soundtrack starts with (Movie_AdvanceFrame plays it on the first frame
+   with this gain on both channels). Does nothing when no movie is open.
 */
 void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 
 {
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  if (g_ActiveMovie != NULL) {
     g_ActiveMovie->audioGainQ15 = gainQ15;
   }
   return;
@@ -557,9 +556,10 @@ void Movie_Rewind(void)
 }
 
 /* Address: 0x004A8D90.
-   Ownership: movie/runtime/playback.
-   Purpose: Signals worker shutdown, waits for workerActive to clear, closes the semaphore and owned stream,
-   releases the selected audio voice set, frees the FLM buffer and MovieRuntime, and clears g_ActiveMovie.
+   Closes g_ActiveMovie. With the arena allocator a refill worker may run: it is told to stop and waited for
+   (with the process dropped from real-time to normal priority so the worker gets CPU time while this thread
+   spins), then the semaphore is closed. Frees the FLM buffer, the soundtrack voice set, a still-open own
+   stream handle and the MovieRuntime.
 */
 void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
 
@@ -567,25 +567,25 @@ void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
   MovieRuntime *movie;
   HANDLE currentProcessHandle;
   HANDLE hProcess;
-  
+
   movie = g_ActiveMovie;
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  if (g_ActiveMovie != NULL) {
     if (g_MemoryApi.alloc == ArenaHeap_Alloc) {
       g_ActiveMovie->streamState = MOVIE_STREAM_SHUTDOWN;
       currentProcessHandle = GetCurrentProcess();
-      SetPriorityClass(currentProcessHandle,0x20);
+      SetPriorityClass(currentProcessHandle,NORMAL_PRIORITY_CLASS);
       do {
       } while (movie->workerActive != 0);
-      if (movie->refillSemaphore != (void *)0x0) {
+      if (movie->refillSemaphore != NULL) {
         CloseHandle(movie->refillSemaphore);
-        movie->refillSemaphore = (void *)0x0;
+        movie->refillSemaphore = NULL;
       }
       hProcess = GetCurrentProcess();
-      SetPriorityClass(hProcess,0x100);
+      SetPriorityClass(hProcess,REALTIME_PRIORITY_CLASS);
     }
-    g_ActiveMovie = (MovieRuntime *)0x0;
+    g_ActiveMovie = NULL;
     g_MemoryApi.free(movie->fileHeader);
-    if (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0) {
+    if (movie->audioVoiceSet != NULL) {
       g_SoundReleaseSampleVoiceSet(movie->audioVoiceSet);
     }
     if ((movie->remainingVideoBytes != 0) && (movie->streamHandleIsSharedPackage == 0)) {
@@ -598,11 +598,10 @@ void __thandor_void_preserve_eax_ecx_edx Movie_Close(void)
 
 
 /* Address: 0x005657D0.
-   Ownership: movie/runtime/playback.
-   Purpose: End-movie UI callback. Checks frontend/session mode flags and invokes the corresponding transition or
-   close helper.
-   Cross-module calls: FrontendClientSession_DecrementTimeoutsAndCompactPlayers [ui/frontend/session],
-   FrontendHostSession_TickShutdownOrReadyConsensus [ui/frontend/session].
+   Update callback of the end-movie UI in a network game: keeps the frontend session alive while the end
+   movie plays by running the session tick of the local role. Does nothing in a local game. Note that the
+   SESSION_NETWORK_ROLE_CLIENT bit selects the host tick and the HOST bit the client tick: either the enum or
+   the two tick functions are named the wrong way round.
 */
 void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime)
 
@@ -620,11 +619,9 @@ void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransition(void *endMovi
 
 
 /* Address: 0x00565810.
-   Ownership: movie/runtime/playback.
-   Purpose: End-movie command dispatcher selected by command code and modifier flags. Typed parameters: p0
-   modifierFlags→UiKeyboardStateMask_V297, p1 commandCode→UiActionId_V338. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Keyboard handler of the end-movie UI: looks the key up in the end-movie command table, whose records also
+   say which Ctrl/Alt combination they need, and runs the matching action: save a numbered PCX screenshot, or
+   skip the end movie (marks the local player done with the results; in a network game as a queued command).
 */
 void __thandor_void_preserve_eax_ecx_edx
 EndMovieUiRuntime_DispatchCommandByFlags
@@ -644,17 +641,18 @@ EndMovieUiRuntime_DispatchCommandByFlags
     if (record->commandCode != commandCode) {
       continue;
     }
+    /* the record's modifier class demands exactly none, Ctrl, Alt or Ctrl+Alt (Shift is ignored) */
     if (flags == 0) {
-      if ((modifierFlags & 0x3c) != 0) continue;
+      if ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) continue;
     }
-    else if ((flags & 0x30) == 0) {
-      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+    else if ((flags & KEYBOARD_STATE_ALT) == 0) {
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
     }
-    else if ((flags & 0xc) == 0) {
-      if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+    else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
     }
     else {
-      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
     }
     target = (uint32_t)record->continuationEntryAddress;
     break;
@@ -678,11 +676,12 @@ EndMovieUiRuntime_DispatchCommandByFlags
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     g_MemoryApi.free(pcx.encodedBytesOrError);
     g_MemoryApi.free(capture.capture);
-    *digitLow = *digitLow + 1;
-    if (*digitLow > 0x39) {
-      *digitHigh = *digitHigh + 1;
+    /* two-digit counter in the file name, wrapping from 99 to 00 */
+    (*digitLow)++;
+    if (*digitLow > '9') {
+      (*digitHigh)++;
       *digitLow = *digitLow - 10;
-      if (*digitHigh > 0x39) {
+      if (*digitHigh > '9') {
         *digitHigh = *digitHigh - 10;
       }
     }
@@ -690,22 +689,25 @@ EndMovieUiRuntime_DispatchCommandByFlags
   }
   case 0x565990: /* skip the end movie */
     if (((*(uint32_t *)((uint8_t *)endMovieRuntime + 0x6ec) & 8) != 0) ||
-        ((g_UiCommandRuntimeFlags & 0x800) != 0)) {
+        ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0)) {
       break;
     }
-    if ((g_SessionNetworkRoleFlags & 1) != 0) {
-      if ((g_SessionNetworkRoleFlags & 3) != 0) {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x470,0,0,0);
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0) {
+      /* always true here: the direct call below is unreachable in the original as well */
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_MARK_PLAYER_READY_101B,0,0,0);
       }
       else {
         FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(g_LocalPlayerRuntimeId);
       }
     }
-    else if ((g_SessionNetworkRoleFlags & 3) != 0) {
-      InGameCommandQueue_AppendLocalPlayerCommand(0x310,0,0x1000,0);
+    else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
+      InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_APPLY_UI_FLAG_MASKS,0,
+                                                  UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
     }
     else {
-      UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,0x1000,0);
+      UiCommandRuntimeFlags_ApplyClearSetToggleMasks(g_LocalPlayerRuntimeId,0,
+                                                     UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED,0);
     }
     break;
   default:
@@ -1684,13 +1686,6 @@ Movie_EncodeFrame4x4Delta
 }
 
 
-/* Address: 0x004A8A60.
-   Ownership: movie/runtime/playback.
-   Purpose: Starts embedded audio on the first frame, decodes the next 4x4 delta frame when enough bytes are
-   buffered, compacts the bounded stream buffer, and requests asynchronous refill. CF clear returns the active
-   MovieRuntime in EAX; CF set reports end-of-movie or read failure.
-   Local calls: Movie_DecodeFrame4x4Delta.
-*/
 /* Debug tool: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame (consumed bytes, stream state,
    pixel checksum) and writes every tenth frame to moviedump\frame_NNNN.bmp. */
 static void Movie_DebugDumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
@@ -1800,6 +1795,13 @@ static void Movie_DebugCompareAfter(MovieRuntime *movie, uint32_t height, uint32
   }
 }
 
+/* Address: 0x004A8A60.
+   Decodes the next frame of g_ActiveMovie into its ARGB image and returns the movie. Asks the worker for more
+   data when the buffer has room, starts the soundtrack with the first frame, and waits (returns without
+   decoding) while a streamed movie has less than one refill chunk buffered. A streamed movie drops played
+   bytes from the buffer front in MOVIE_COMPACT_SHIFT_BYTES steps. Ends (CF set) after the last frame, on a
+   read failure of the worker or when no movie is open.
+*/
 MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
@@ -1816,10 +1818,10 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
   MovieFrameResult successResult;
   MovieFrameResult bufferingResult;
   MovieFrameResult failureResult;
-  
+
   movie = g_ActiveMovie;
-  byteCountOrStatus = 0x30;
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  byteCountOrStatus = FATAL_ERROR_MOVIE_INVALID;
+  if (g_ActiveMovie != NULL) {
     if (g_ActiveMovie->streamState == MOVIE_STREAM_READ_FAILED) {
       /* 0x004A8BDD PUSH EBX; CALL g_FileSystemClose. On this path the function never loads EBX, so the
          original closes whatever EBX its caller left there -- never the movie stream handle: a UI/runtime
@@ -1828,22 +1830,23 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
          MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
          open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
          CloseHandle on an unrelated value. */
-      g_FileSystemClose((void *)0x0);
+      g_FileSystemClose(NULL);
       movie->remainingVideoBytes = 0;
     }
     else {
       if (((g_ActiveMovie->streamState == MOVIE_STREAM_IDLE) && (g_ActiveMovie->workerActive != 0))
          && (g_ActiveMovie->remainingVideoBytes != 0)) {
-        if ((uint32_t)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200)
+        if ((uint32_t)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) <
+            MOVIE_REFILL_LIMIT_BYTES)
         {
           g_ActiveMovie->streamState = MOVIE_STREAM_FILL_REQUESTED;
-          ReleaseSemaphore(movie->refillSemaphore,1,(LPLONG)0x0);
+          ReleaseSemaphore(movie->refillSemaphore,1,NULL);
         }
       }
       flmHeader = movie->fileHeader;
       previousFrameIndex = movie->currentFrameIndex;
       streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
-      if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
+      if ((previousFrameIndex == 0) && (movie->audioVoiceSet != NULL)) {
         playResult = g_SoundPlayOneShot
                           (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
         movie->activeAudioBuffer = playResult.soundBuffer;
@@ -1851,13 +1854,13 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
       nextFrameOrLoadedSize = previousFrameIndex + 1;
       byteCountOrStatus = (int)movie->loadedVideoEnd - (int)streamCursor;
       if (nextFrameOrLoadedSize <= flmHeader->frameCount) {
-        if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < 0x1e000)) {
+        if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < MOVIE_REFILL_CHUNK_BYTES)) {
           /* Not enough bytes buffered yet: CF clear without decoding. The original returns ESI - 0x220
              here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
              0x004A8B48. Callers keep EAX as the movie only after the first-frame call, which cannot
              get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
           bufferingResult.ended = false;
-          bufferingResult.movieOrError = (uint32_t)((uint8_t *)movie - 0x220);
+          bufferingResult.movieOrError = (uint32_t)((uint8_t *)movie - MOVIE_RUNTIME_PIXELS_OFFSET);
           return bufferingResult;
         }
         Movie_DebugCompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
@@ -1870,15 +1873,20 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
         if ((movie->openFlags != 0) && (movie->streamState == MOVIE_STREAM_IDLE)) {
           byteCountOrStatus = movie->videoStreamOffset;
           nextFrameOrLoadedSize = (int)movie->loadedVideoEnd - (int)movie->fileHeader;
-          if ((0x1e01ff < byteCountOrStatus) && (byteCountOrStatus < nextFrameOrLoadedSize)) {
-            movie->videoStreamOffset = movie->videoStreamOffset - 0x1e0000;
-            copyDestination = (uint32_t *)((uint8_t *)movie->fileHeader + byteCountOrStatus - 0x1e0000);
-            movie->loadedVideoEnd = movie->loadedVideoEnd + -0x1e0000;
-            copySource = (uint32_t *)((uint8_t *)copyDestination + 0x1e0000);
-            for (byteCountOrStatus = (nextFrameOrLoadedSize - byteCountOrStatus) >> 2; byteCountOrStatus != 0; byteCountOrStatus = byteCountOrStatus - 1) {
+          /* once the read position is a whole shift past the header, move the unplayed bytes down by
+             MOVIE_COMPACT_SHIFT_BYTES (a REP MOVSD in the original) to make room for further refills */
+          if ((MOVIE_COMPACT_SHIFT_BYTES + MOVIE_FILE_HEADER_BYTES - 1 < byteCountOrStatus) &&
+              (byteCountOrStatus < nextFrameOrLoadedSize)) {
+            movie->videoStreamOffset = movie->videoStreamOffset - MOVIE_COMPACT_SHIFT_BYTES;
+            copyDestination =
+                 (uint32_t *)((uint8_t *)movie->fileHeader + byteCountOrStatus - MOVIE_COMPACT_SHIFT_BYTES);
+            movie->loadedVideoEnd = movie->loadedVideoEnd - MOVIE_COMPACT_SHIFT_BYTES;
+            copySource = (uint32_t *)((uint8_t *)copyDestination + MOVIE_COMPACT_SHIFT_BYTES);
+            for (byteCountOrStatus = (nextFrameOrLoadedSize - byteCountOrStatus) >> 2; byteCountOrStatus != 0;
+                 byteCountOrStatus--) {
               *copyDestination = *copySource;
-              copySource = copySource + 1;
-              copyDestination = copyDestination + 1;
+              copySource++;
+              copyDestination++;
             }
           }
         }
@@ -1895,14 +1903,9 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 
 /* Address: 0x00564080.
-   Ownership: movie/runtime/playback.
-   Purpose: Advances Movie_AdvanceFrame until the requested target is reached or CF reports failure. On success it
-   publishes the current frame index, invalidates all UI roots, draws, and presents the framebuffer. EAX and CF
-   behavior remain intact. Typed parameters: p0 targetFrame→MovieFrameIndex_V343. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: Movie_AdvanceFrame.
-   Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout], UiFrame_Draw [ui/controls/layout].
+   Decodes movie frames until g_MoviePlaybackCurrentFrame reaches targetFrame, then redraws the whole UI (which
+   shows the movie texture) and presents it once. Stops without drawing, and without updating the frame
+   counter, when the movie ends or cannot deliver a frame.
 */
 void __thandor_void_preserve_eax_ecx_edx
 MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
@@ -1910,11 +1913,11 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 {
   uint32_t frameIndex;
   MovieFrameResult advanceResult;
-  
+
   frameIndex = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
-      frameIndex = frameIndex + 1;
+      frameIndex++;
       advanceResult = Movie_AdvanceFrame();
       if (advanceResult.ended) {
         return;

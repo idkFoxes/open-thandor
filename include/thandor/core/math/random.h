@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/math/random. */
+
+/* Both random streams step their seed as seed = seed * 33 + 101 (mod 2^32), see Random_NextPrimary. */
+#define RANDOM_LCG_MULTIPLIER 33
+#define RANDOM_LCG_INCREMENT 101
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004030B0 */

@@ -22,6 +22,14 @@
 #define FRONTEND_ROM_ACTION_KEYFRAME_SIZE 0x20
 /* Elapsed-tick value beyond every flight's last keyframe time: ends the flight on the next frame. */
 #define FRONTEND_ROM_TRANSITION_SKIP_TICKS 0x10000000
+/* Record id (dword) inside each ROM record table entry (RomRecordTable_FindRecordById/FindIndexById). */
+#define ROM_RECORD_TABLE_ENTRY_ID_OFFSET 0x1c
+/* g_RomRegistrySlots: fixed array of 256 {record, runtime root node} slots (RomAssetRecord_RegisterAndRelocate). */
+#define ROM_REGISTRY_SLOT_COUNT 256
+/* Model-node descriptor list scanned by RomRuntime_ApplyIndexedDescriptor: 0x10-byte entries whose first dword
+   holds the kind in its low 4 bits and the entry index above them; kind 4 is a point light. */
+#define ROM_NODE_DESCRIPTOR_KIND_MASK 0xf
+#define ROM_NODE_DESCRIPTOR_KIND_LIGHT 4
 
 /* 0x005452A0 */
 void __thandor_void_preserve_eax_ecx_edx

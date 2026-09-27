@@ -152,12 +152,9 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
 
 
 /* Address: 0x0055F200.
-   Ownership: network/protocol/commands.
-   Purpose: Scans the fixed 0x10-byte queued-command records for one packed player/key value and any of three
-   payload values; returns carry set on a match. Typed parameters: p2
-   payloadValue→InGameCommandPayloadTripletValue32_V345, p3
-   commandHandlerAddress→InGameCommandHandlerAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Tells whether the local player already queued the command whose handler lives at commandHandlerAddress
+   with payloadValue in any of its three payload dwords (returned in CF), so input handlers do not queue a
+   selection change twice. Single player has no queue and always answers no.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 InGameCommandQueue_ContainsTripletValue
@@ -173,7 +170,7 @@ InGameCommandQueue_ContainsTripletValue
     nextRecord = g_InGameCommandQueueRecords;
     while (record = nextRecord, record < g_InGameCommandQueueEnd) {
       nextRecord = record + 1;
-      if ((((commandHandlerAddress + -0x55f130) * 0x100 | g_LocalPlayerRuntimeId) ==
+      if ((((commandHandlerAddress - INGAME_COMMAND_CODE_BASE) * 0x100 | g_LocalPlayerRuntimeId) ==
            record->packedCommandAndPlayerId) &&
          (((payloadValue == record->payloadDword04 || (payloadValue == record->payloadDword08)) ||
           (payloadValue == record->payloadDword0C)))) {

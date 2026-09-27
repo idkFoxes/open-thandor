@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/resources/texture. */
+
+/* Number of entries in g_GraphicsTextureSlots, the registry of live DirectDraw texture resources
+   (GraphicsTexture_RegisterSlot, GraphicsTexture_RebuildAllStagingTextures, GraphicsTextureSet_Destroy). */
+#define GRAPHICS_TEXTURE_SLOT_CAPACITY 4096
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */

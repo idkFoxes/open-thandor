@@ -29,8 +29,8 @@ extern Q12 g_ArmyPlacementValidatedWorldYQ12;
 /* 0x0051D380 */
 bool __thandor_preserve_eax
 ArmyPlacement_ValidateAssetAtPointAndCellCorners
-          (ArmyPlacementMode placementMode,PckArmyAssetIdCatalog armyAssetId,Q12 worldYQ12,
-          Q12 worldXQ12,ArmyPlacementContext placementContext,FactionRuntimeIndex ownerFactionId,
+          (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
+          Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime);
 
 /* 0x00524EB0 */
@@ -116,8 +116,8 @@ PlacementDispatchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyPlacement_DispatchAssetAtFieldPoint
           (ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
-          FactionRuntimeIndex ownerFactionIndex,Q12 worldYQ12,Q12 worldXQ12,
-          PckArmyAssetIdCatalog armyAssetId,ArmyPlacementContext placementContext,
+          uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
+          PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
           UiRootNode *inGameRoot);
 
 /* 0x00529D70 */

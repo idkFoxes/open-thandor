@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/model. */
+
+/* ModelRuntimeNode.runtimeFlags bits */
+#ifndef MODEL_RUNTIME_FLAG_APPLY_SCALE
+#define MODEL_RUNTIME_FLAG_APPLY_SCALE 0x800 /* ModelRender_PrepareProjectedVertex scales every vertex by
+                                                modelScaleQ12 */
+#endif
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BDC90 */

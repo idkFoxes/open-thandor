@@ -57,15 +57,10 @@ AiPlacement_ReserveAdditionalSpecialSite
 
 
 /* Address: 0x0053AE60.
-   Ownership: gameplay/ai/placement.
-   Purpose: Chooses among special candidate IDs 0x12D, 0x32, and 0x0B according to current primary and secondary
-   workspace state plus faction flags, then adds the selected candidate with the computed special-site weight. It
-   is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: AiCandidatePlanning_ComputeSpecialSiteWeight.
-   Cross-module calls: AiSecondaryWorkspace_HasEntryById [gameplay/ai/workspaces],
-   AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces], ArmyAssetRegistry_FindEnabledById
-   [assets/army/catalog], AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
+   Plans the special-site chain while the secondary workspace has no ARM_0050 entry: without ARM_0301 in the
+   primary workspace it proposes that building; with it (and when the ARM_0050 registry lookup reports false)
+   it proposes technology 11 (entry kind 2) until the faction has researched it, then ARM_0050. Each candidate
+   gets the special-site weight; nothing is added when no site is available.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiCandidatePlanning_AddSpecialSiteCandidate
@@ -81,17 +76,18 @@ AiCandidatePlanning_AddSpecialSiteCandidate
     if (hasEntry) {
       hasEntry = ArmyAssetRegistry_FindEnabledById(ARM_0050_UNIT_MDL0103);
       if (!hasEntry) {
+        /* 0x800 is bit 11 of the technology mask, i.e. technology 11 proposed below */
         if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 0x800) == 0
            ) {
           weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
           if (!weightResult.noSite) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0xb,weightResult.score,2);
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(11,weightResult.score,2);
           }
         }
         else {
           weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
           if (!weightResult.noSite) {
-            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x32,weightResult.score,0);
+            AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0050_UNIT_MDL0103,weightResult.score,0);
           }
         }
       }
@@ -99,7 +95,7 @@ AiCandidatePlanning_AddSpecialSiteCandidate
     else {
       weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
       if (!weightResult.noSite) {
-        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x12d,weightResult.score,0);
+        AiCandidateWorkspace_AddOrAccumulateWeightedEntry(ARM_0301_BUILDING_MDL0318,weightResult.score,0);
       }
     }
   }

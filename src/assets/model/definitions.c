@@ -102,14 +102,10 @@ static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks
 }
 
 /* Address: 0x0051DA60.
-   Ownership: assets/model/definitions.
-   Purpose: Traverses the linked model-definition hierarchy and tests every definition technology requirement
-   against the selected faction masks, preserving the carry-status result. It is distinct from
-   FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
-   definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlocked.
+   Walks the model-definition hierarchy below definitionNode and tests each definition's technology
+   requirement against the faction's technology masks. Returns false (CF clear) when every definition in the
+   tree is unlocked, true (CF set) as soon as one is still locked: ModelDefinition_IsFactionTechnologyUnlocked
+   reports a locked technology with CF set.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
@@ -125,12 +121,9 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
 
 
 /* Address: 0x00528950.
-   Ownership: assets/model/definitions.
-   Purpose: Validates the 'mdl' magic and converter version 0x0008000A, then prepares recordCount variable-size
-   records beginning at +0x200. Each successful record advances by its leading byte-size dword. The per-record
-   preparer receives the asset base for stored-offset relocation. Payload fields remain opaque. Role: Walks
-   variable-size MDL records and registers each model definition.
-   Local calls: ModelDefinition_RegisterAndResolveReferences.
+   Checks that the asset is an 'mdl' of converter version 0x8000A, then registers each of its variable-size
+   model-definition records (starting at +0x200, each prefixed with its byte size) and resolves their
+   references against the asset base. Stops with CF set at the first record that fails.
 */
 StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 
@@ -138,14 +131,13 @@ StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAsse
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ModelDefinitionResolvePhaseView280 *definition;
-  ModelDefinitionRecordPrefix *definitionCursor;
   StatusResult registrationResult;
   StatusResult failureResult;
-  
-  registrationStatusCode = 0x3d;
-  if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_MDL) &&
-     ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_MDL_0008000A)) {
-    recordsRemaining = (asset->recordCountHeader).recordCount;
+
+  registrationStatusCode = FATAL_ERROR_MODEL_ASSET_INVALID;
+  if ((asset->recordCountHeader.common.magic == ASSET_MAGIC_MDL) &&
+     (asset->recordCountHeader.common.converterVersion == PCK_CONVERTER_MDL_0008000A)) {
+    recordsRemaining = asset->recordCountHeader.recordCount;
     definition = (ModelDefinitionResolvePhaseView280 *)(asset + 1);
     while( true ) {
       if (recordsRemaining == 0) {
@@ -156,9 +148,10 @@ StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAsse
       registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
+      /* advance by the record's leading byte size (reserved010_017 lies at +0x10) */
       definition = (ModelDefinitionResolvePhaseView280 *)
                    (definition->reserved010_017 + (definition->byteSize - 0x10));
-      recordsRemaining = recordsRemaining - 1;
+      recordsRemaining--;
     }
   }
   failureResult.failed = true;
@@ -821,9 +814,8 @@ ModelDefinition_IsFactionTechnologyUnlocked
 
 
 /* Address: 0x00528E20.
-   Ownership: assets/model/definitions.
-   Purpose: Scans the 768-slot model-definition registry. On a miss it formats the unresolved identifier into
-   g_PackageLastErrorPath and returns error 0x3E with CF set.
+   Looks a model definition up by id in the 768-slot registry. On a miss it writes a number into
+   g_PackageLastErrorPath for the error message and returns FATAL_ERROR_MODEL_DEFINITION_MISSING with CF set.
 */
 ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId)
@@ -834,19 +826,19 @@ ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definition
   ModelDefinitionRecordPrefix **registryCursor;
   ModelDefinitionResult missResult;
   ModelDefinitionResult foundResult;
-  ModelDefinitionRecordPrefix *candidateDefinition;
-  
+
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((registeredDefinition = *registryCursor, registeredDefinition == (ModelDefinitionRecordPrefix *)0x0 ||
+  registrySlotsRemaining = 768;
+  while ((registeredDefinition = *registryCursor, registeredDefinition == NULL ||
          (registeredDefinition->definitionId != definitionId))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
+      /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x00528E59) */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
       missResult.notFound = true;
-      missResult.modelDefinition = (ModelDefinitionRecordPrefix *)0x3e;
+      missResult.modelDefinition = (ModelDefinitionRecordPrefix *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
       return missResult;
     }
   }

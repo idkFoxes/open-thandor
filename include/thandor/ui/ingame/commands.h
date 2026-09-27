@@ -48,6 +48,25 @@
 #define UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED 0x40000 /* toggled by typing the cheat code into the chat line
                                                           (InGameUiAction1024_Handler) */
 #define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
+/* SelectionPlayerRuntimeBlock.sessionFlags bit: the player asks for a pause (shown as "P" in the player roster;
+   toggled by InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal) */
+#define PLAYER_SESSION_FLAG_PAUSE_REQUESTED 0x01
+/* sessionFlags bit: the player's machine renders too few frames (set/cleared through command 0x340 by
+   InGameHud_UpdateStatusCountersAndSessionPrompts; shown as a highlighted "W" in the player roster) */
+#define PLAYER_SESSION_FLAG_SLOW_RENDERING 0x02
+/* g_UiCommandRuntimeFlags bits of windows that pause a local game while open (mission help:
+   InGameUiAction101F_Handler, settings: InGameSettingsPage_ToggleAndSynchronizeControls) */
+#define UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE 0x4000 /* an open window paused the game */
+#define UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW 0x400 /* the game was already paused when it opened */
+/* UI action toggling the technology window (InGameSelectionPage_ToggleAndRefreshPage2); suppressed by
+   InGameSelectionDetailPanel_Rebuild when the single selected army has no available technology */
+#define INGAME_ACTION_TECHNOLOGY_WINDOW 0x1010
+/* Buttons of the quit game window (InGameUiImage.quitMenuSurrenderButton / quitMenuRestartMissionButton) */
+#define INGAME_ACTION_QUIT_SURRENDER 0x101E /* command 150 mode 1: destroys the local faction's armies */
+#define INGAME_ACTION_QUIT_RESTART_MISSION 0x1027 /* command 150 mode 2 (label unverified) */
+/* flags of InGameCommand150_HandlePlayerDepartureAndOwnership; neither bit: the player left the session */
+#define INGAME_COMMAND150_FLAG_SURRENDER 0x01 /* destroy every army of the player's faction */
+#define INGAME_COMMAND150_FLAG_CLOSE_SESSION 0x02 /* sets UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED */
 
 /* Action id of the results screen's resultsContinueButton (InGameCommandAction_SetFlag1000OrMarkReady);
    a network host only shows it once every client has pressed its own
@@ -134,8 +153,8 @@ InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
 /* 0x005604D0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommand_ExecuteLocalPlacementFromSelection
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
+          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
 
 /* 0x0056A2A0 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node);

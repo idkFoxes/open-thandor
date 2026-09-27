@@ -3918,10 +3918,9 @@ UiSoftwareTexturePreviewControl_HandleKeyboardActivation
 
 
 /* Address: 0x004B0150.
-   Ownership: ui/controls/text.
-   Purpose: Stores the pointer coordinates, hit-tests the active root when no pointer capture exists, accepts only
-   nodes with nodeFlags 0x100, reloads the delay countdown on target changes, and clears the previous tooltip text.
-   Local calls: UiTooltip_PrepareTargetText.
+   Tracks which node the tooltip belongs to: remembers the pointer position and takes the node under the
+   pointer in the top root (only while no button holds a capture, and only tooltip-eligible nodes). When the
+   target changes, the tooltip delay starts over and the text of the previous target is prepared again.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointerX)
@@ -3933,14 +3932,14 @@ UiTooltip_UpdateHoverTarget(UiPixelCoordinate pointerY,UiPixelCoordinate pointer
   node = g_UiTooltipState.targetNode;
   g_UiTooltipState.pointerX = pointerX;
   g_UiTooltipState.pointerY = pointerY;
-  g_UiTooltipState.targetNode = (UiNodeBase *)0x0;
-  if ((((((g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) &&
-         (g_UiRootNode != (UiRootNode *)0xffffffff)) && ((g_UiRootNode->base).left <= pointerX)) &&
+  g_UiTooltipState.targetNode = NULL;
+  if ((((((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
+         (g_UiRootNode != UI_ROOT_STACK_END)) && ((g_UiRootNode->base).left <= pointerX)) &&
        (((g_UiRootNode->base).top <= pointerY && (pointerX < (g_UiRootNode->base).right)))) &&
       ((pointerY < (g_UiRootNode->base).bottom &&
        ((hitTestNode = (*((g_UiRootNode->base).vtable)->hitTest)
                                  (pointerY,pointerX,&g_UiRootNode->base),
-        hitTestNode != (UiNodeBase *)0xffffffff &&
+        hitTestNode != UI_NODE_NONE &&
         ((hitTestNode->nodeFlags & UI_NODE_TOOLTIP_ELIGIBLE) != 0)))))) &&
      (g_UiTooltipState.targetNode = hitTestNode, hitTestNode == node)) {
     return;
@@ -4091,26 +4090,25 @@ UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
 
 
 /* Address: 0x004B0250.
-   Ownership: ui/controls/text.
-   Purpose: Reads the tooltip reference stored immediately before the serialized node. nodeFlags 0x200 selects a
-   direct UTF-16 pointer; otherwise the value is resolved as a localized text resource ID. Measures the text and
-   requests redraw.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureRegs
-   [assets/text/richtext], UiRootStack_InvalidateAll [ui/controls/layout].
+   Prepares the tooltip of node (NULL: nothing to do): the dword stored just before the node is its tooltip,
+   either a UTF-16 text pointer (UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) or a text resource id. The text is
+   measured in the tooltip style and the UI is redrawn.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTooltip_PrepareTargetText(UiNodeBase *node)
 
 {
   uint16_t *commandStream;
   TextResolveResult resolvedText;
-  
-  if (node != (UiNodeBase *)0x0) {
+
+  if (node != NULL) {
+    /* the last field of the (virtual) node before this one = the dword at node - 4 */
     commandStream = (uint16_t *)node[-1].nodeFlags;
     if ((node->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
       commandStream = resolvedText.text;
     }
     RichTextCommandStream_MeasureRegs(g_UiTooltipTextStyle,commandStream);
+    /* the size of window piece 0xBC is queried but not used */
     g_GraphicsTextureSourceGetLogicalSize(0xbc,g_UiWindowTextureSource);
     UiRootStack_InvalidateAll();
   }
@@ -4241,8 +4239,7 @@ UiPathTextControl_UpdateDos83Validity(UiPathTextEditControl *control)
 
 
 /* Address: 0x004B78F0.
-   Ownership: ui/controls/text.
-   Purpose: Sets validity bit 1 exactly when the first UTF-16 code unit at control offset +0x6C is nonzero.
+   A text control's value is valid (UI_TEXT_EDIT_VALUE_VALID) exactly when its text is not empty.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)

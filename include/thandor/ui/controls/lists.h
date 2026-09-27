@@ -14,6 +14,13 @@
 /* Submodule: ui/controls/lists. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Scrollbar pieces in g_UiWindowTextureSource (UiScrollableControl_RefreshChildAndScrollThumbs): the arrow
+   buttons give the bar thickness and arrow length, a thumb is at least two thumb pieces long. */
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW 0x5A
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW 0x5E
+#define UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB 0xC0
+#define UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB 0xC2
+
 /* 0x004BBE60 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiTimedListControl_HandleKeyboardNavigation

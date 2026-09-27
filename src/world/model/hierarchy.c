@@ -105,20 +105,16 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
 }
 
 /* Address: 0x0051DB80.
-   Ownership: world/model/hierarchy.
-   Purpose: Invokes the recursive faction-technology variant pass on the attached model runtime hierarchy. It is
-   distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive.
+   Switches the models of an army to the variants its faction's technology selects: runs
+   ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive on the army's model runtime hierarchy.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *modelRuntimeHolder)
+          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-            (factionIndex,(int *)(modelRuntimeHolder->modelRuntimeOrSavedOffset).modelRuntime);
-  return;
+            (factionIndex,(int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
 }
 
 
@@ -886,17 +882,19 @@ static int ModelRuntimeHierarchy_SumMetric3CFrom(uint8_t *node)
   return sum;
 }
 
+/* Body of ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive: ORs 0x418 into the runtime flags (+0xEC) of
+   node unless flag 0x08 is already set, then recurses into the non-NULL children (same layout as above). */
 static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
 {
   int childCount;
-  int i;
+  int childIndex;
   if ((*(uint32_t *)(node + 0xec) & 8) == 0) {
     *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) | 0x418;
   }
   childCount = *(int *)(node + 0xc);
-  for (i = 0; i < childCount; i++) {
-    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
-    if (child != (uint8_t *)0x0) {
+  for (childIndex = 0; childIndex < childCount; childIndex++) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + childIndex * 0x20);
+    if (child != NULL) {
       ModelRuntimeHierarchy_ApplyFlags418From(child);
     }
   }

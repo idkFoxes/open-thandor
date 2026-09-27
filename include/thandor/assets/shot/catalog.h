@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/shot/catalog. */
+
+/* Slots of g_ShotDefinitionRegistry (0x0052AF50, 256 pointers; a null slot is free). */
+#define SHOT_DEFINITION_REGISTRY_SLOT_COUNT 256
+/* Entries of ShotDefinition.terrainMaterialIndices31 (one per terrain-material reference of a shot). */
+#define SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT 31
+/* Entries of g_TerrainMaterialTextureSets (0x005039DC): valid terrain-material indices are 0..25. */
+#ifndef TERRAIN_MATERIAL_COUNT
+#define TERRAIN_MATERIAL_COUNT 26
+#endif
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052B4D0 */

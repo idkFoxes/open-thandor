@@ -17,17 +17,13 @@ typedef void InGamePointerModeHandler
           SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
 
 /* Address: 0x0056D2D0.
-   Ownership: gameplay/input/world.
-   Purpose: Handles targeting-context state 7 or 0x1B. State 0x1B delegates to the cancellation handler. State 7
-   resolves the root targeting context, updates or searches the active target according to the numeric mode at
-   root+0x9E54, and may dispatch backend operation 0x1620. Exact original target-mode labels are not preserved.
-   Table 0056D340: 0056D4A0, 0056D3A0, 0056D3F0, 0056D380, 0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0,
-   0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0, 0056D4A0.
-   Local calls: InGameTargetingContext_CancelAndRestoreState.
-   Cross-module calls: WorldRuntime_CaptureMotionStateToSnapshot [world/runtime/core],
-   FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands], FieldGrid_GetNearestTerrainPoint
-   [world/terrain/grid], WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
+   "Go to" action of the active in-game notification. In state 27 it only cancels (restores the camera, see
+   InGameTargetingContext_CancelAndRestoreState). In state 7 it saves the camera state (unless bit 0x10 of the
+   world runtimeFlags is set) and then, by payload kind: TECHNOLOGY_UNLOCK_POSITION selects the own model standing at
+   the payload position (locally or as INGAME_COMMAND_SELECT_MODEL_AND_ARMY) and ends the interaction;
+   FACTION_IMPACT_ANCHOR remembers the position and, like ARMY_CREATED, moves the camera onto the terrain point
+   there and switches the interaction to state 27. Jump table 0x0056D340: kinds 1, 2, 3 are handled, the rest
+   do nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameTargetingContext_AdvanceOrResolveTarget
@@ -48,20 +44,21 @@ InGameTargetingContext_AdvanceOrResolveTarget
     InGameTargetingContext_CancelAndRestoreState(targetingContext);
   }
   else if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_ADVANCE_OR_RESOLVE) {
-    parentNode = (targetingContext->base).parent;
-    while (parentNode != (UiNodeBase *)0xffffffff) {
-      targetingContext = (InGameTargetingRootTraversalView9E60 *)(targetingContext->base).parent;
-      parentNode = (targetingContext->base).parent;
+    /* walk up to the in-game root node */
+    parentNode = targetingContext->base.parent;
+    while (parentNode != UI_NODE_NONE) {
+      targetingContext = (InGameTargetingRootTraversalView9E60 *)targetingContext->base.parent;
+      parentNode = targetingContext->base.parent;
     }
-    payloadKind = (targetingContext->activeNotificationPayload9E40).payloadKind14;
-    if (((targetingContext->worldRuntime0A30).runtimeFlags & 0x10) == 0) {
+    payloadKind = targetingContext->activeNotificationPayload9E40.payloadKind14;
+    if ((targetingContext->worldRuntime0A30.runtimeFlags & 0x10) == 0) {
       WorldRuntime_CaptureMotionStateToSnapshot(&targetingContext->worldRuntime0A30);
     }
-                    // WARNING: Switch is manually overridden
     switch(payloadKind) {
     case TECHNOLOGY_UNLOCK_POSITION:
-      for (ownerNode = (targetingContext->worldRuntime0A30).ownerListHead;
-          ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+      /* own model at exactly the payload position; the tokens are the rebased army/model offsets */
+      for (ownerNode = targetingContext->worldRuntime0A30.ownerListHead;
+          ownerNode != NULL; ownerNode = ownerNode->nextNode) {
         if ((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
              (ownerNode->worldXQ12 ==
               (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00)) &&
@@ -78,7 +75,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
                       (g_LocalPlayerRuntimeId,0,armyToken,modelToken);
           }
           else {
-            InGameCommandQueue_AppendLocalPlayerCommand(0x1620,0,armyToken,modelToken);
+            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SELECT_MODEL_AND_ARMY,0,armyToken,modelToken);
           }
           targetingContext->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
           return;
@@ -90,6 +87,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
       targetingContext->targetingPrimaryWorldCoordinateQ12_9E58 =
            (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00;
       targetingContext->targetingSecondaryWorldCoordinateQ12_9E5C = secondaryCoordinateQ12;
+      /* falls through */
     case ARMY_CREATED:
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint
                         ((targetingContext->activeNotificationPayload9E40).
@@ -104,9 +102,9 @@ InGameTargetingContext_AdvanceOrResolveTarget
                  (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04,
                  (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00,
                  &targetingContext->worldRuntime0A30);
-      runtimeFlagsField = &(targetingContext->worldRuntime0A30).runtimeFlags;
-      *runtimeFlagsField = *runtimeFlagsField & 0xffffffef;
-      targetingContext->sessionNotificationInteractionState9B4C = 0x1b;
+      runtimeFlagsField = &targetingContext->worldRuntime0A30.runtimeFlags;
+      *runtimeFlagsField = *runtimeFlagsField & ~0x10;
+      targetingContext->sessionNotificationInteractionState9B4C = 0x1b; /* 27: next click cancels */
     }
   }
   return;
@@ -1007,11 +1005,9 @@ InGameCameraCommand_DispatchByCodeAndModifierFlags
 
 
 /* Address: 0x0056D4B0.
-   Ownership: gameplay/input/world.
-   Purpose: Cancels targeting-context state 0x1B by resetting the context state, finding the root targeting object
-   at +0xA30, clearing its active bit 0x10, and restoring the saved targeting fields. Queued UI action handler for
-   INGAME_PAGE10[14] (0x100E). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: WorldRuntime_RestoreMotionStateFromSnapshot [world/runtime/core].
+   Ends a notification "go to" (state 27): resets the state to idle, walks up to the in-game root, clears bit 0x10
+   of its world runtimeFlags and restores the camera saved by InGameTargetingContext_AdvanceOrResolveTarget.
+   Also the queued UI action handler for INGAME_PAGE10[14] (0x100E).
 */
 void __thandor_preserve_eax
 InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E60 *targetingContext)
@@ -1019,16 +1015,16 @@ InGameTargetingContext_CancelAndRestoreState(InGameTargetingRootTraversalView9E6
 {
   WorldRuntimeFlags *runtimeFlagsField;
   UiNodeBase *parentCursor;
-  
+
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
     targetingContext->actionState = INGAME_TARGETING_OBSERVED_IDLE;
-    parentCursor = (targetingContext->base).parent;
-    while (parentCursor != (UiNodeBase *)0xffffffff) {
-      targetingContext = (InGameTargetingRootTraversalView9E60 *)(targetingContext->base).parent;
-      parentCursor = (targetingContext->base).parent;
+    parentCursor = targetingContext->base.parent;
+    while (parentCursor != UI_NODE_NONE) {
+      targetingContext = (InGameTargetingRootTraversalView9E60 *)targetingContext->base.parent;
+      parentCursor = targetingContext->base.parent;
     }
-    runtimeFlagsField = &(targetingContext->worldRuntime0A30).runtimeFlags;
-    *runtimeFlagsField = *runtimeFlagsField & 0xffffffef;
+    runtimeFlagsField = &targetingContext->worldRuntime0A30.runtimeFlags;
+    *runtimeFlagsField = *runtimeFlagsField & ~0x10;
     WorldRuntime_RestoreMotionStateFromSnapshot(&targetingContext->worldRuntime0A30);
   }
   return;

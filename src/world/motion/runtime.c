@@ -11,12 +11,9 @@
 /* Implementation ownership: world/motion/runtime. */
 
 /* Address: 0x0050D050.
-   Ownership: world/motion/runtime.
-   Purpose: Reads the edge-scroll settings and pointer-edge state, applies the corresponding camera translation,
-   refreshes the view, and returns the directional cursor frame or zero.
-   Local calls: WorldRuntime_TranslateCameraByScreenDelta.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent],
-   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface [world/runtime/core].
+   Edge scrolling: while the cursor presses against a screen edge (g_CursorOverflow*), moves the camera by the
+   configured scroll step in that direction and returns the matching scroll-arrow cursor frame
+   (WORLD_CURSOR_SCROLL_*), or 0 when no edge is touched.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
@@ -24,56 +21,57 @@ WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
 {
   uint32_t edgeScrollStep;
   uint32_t bottomStepOrCursorFrame;
-  uint32_t rightStepOrScreenDeltaX;
-  uint32_t screenDeltaY;
-  
-  edgeScrollStep = PersistentSettings_Read(0x20,0x48);
-  rightStepOrScreenDeltaX = 0;
+  uint32_t rightStepOrDeltaDown;
+  uint32_t screenDeltaRight;
+
+  edgeScrollStep = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
+  rightStepOrDeltaDown = 0;
   if (g_CursorOverflowRight != 0) {
-    rightStepOrScreenDeltaX = edgeScrollStep;
+    rightStepOrDeltaDown = edgeScrollStep;
   }
   bottomStepOrCursorFrame = 0;
   if (g_CursorOverflowBottom != 0) {
     bottomStepOrCursorFrame = edgeScrollStep;
   }
-  screenDeltaY = rightStepOrScreenDeltaX - g_CursorOverflowLeft;
-  if ((int)(rightStepOrScreenDeltaX - g_CursorOverflowLeft) < 0) {
-    screenDeltaY = -edgeScrollStep;
+  /* delta = right/bottom step - left/top overflow; a negative result becomes -step */
+  screenDeltaRight = rightStepOrDeltaDown - g_CursorOverflowLeft;
+  if ((int)(rightStepOrDeltaDown - g_CursorOverflowLeft) < 0) {
+    screenDeltaRight = -edgeScrollStep;
   }
-  rightStepOrScreenDeltaX = bottomStepOrCursorFrame - g_CursorOverflowTop;
+  rightStepOrDeltaDown = bottomStepOrCursorFrame - g_CursorOverflowTop;
   if ((int)(bottomStepOrCursorFrame - g_CursorOverflowTop) < 0) {
-    rightStepOrScreenDeltaX = -edgeScrollStep;
+    rightStepOrDeltaDown = -edgeScrollStep;
   }
-  WorldRuntime_TranslateCameraByScreenDelta(rightStepOrScreenDeltaX,screenDeltaY,worldRuntime);
+  WorldRuntime_TranslateCameraByScreenDelta(rightStepOrDeltaDown,screenDeltaRight,worldRuntime);
   WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
-  bottomStepOrCursorFrame = 0x2f;
-  if ((screenDeltaY == 0) && (rightStepOrScreenDeltaX == 0)) {
+  bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP;
+  if ((screenDeltaRight == 0) && (rightStepOrDeltaDown == 0)) {
     bottomStepOrCursorFrame = 0;
   }
-  else if (screenDeltaY == 0) {
-    if (-1 < (int)rightStepOrScreenDeltaX) {
-      bottomStepOrCursorFrame = 0x33;
+  else if (screenDeltaRight == 0) {
+    if (-1 < (int)rightStepOrDeltaDown) {
+      bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN;
     }
   }
-  else if ((int)screenDeltaY < 0) {
-    bottomStepOrCursorFrame = 0x35;
-    if (rightStepOrScreenDeltaX != 0) {
-      if ((int)rightStepOrScreenDeltaX < 0) {
-        bottomStepOrCursorFrame = 0x36;
+  else if ((int)screenDeltaRight < 0) {
+    bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_LEFT;
+    if (rightStepOrDeltaDown != 0) {
+      if ((int)rightStepOrDeltaDown < 0) {
+        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP_LEFT;
       }
       else {
-        bottomStepOrCursorFrame = 0x34;
+        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN_LEFT;
       }
     }
   }
   else {
-    bottomStepOrCursorFrame = 0x31;
-    if (rightStepOrScreenDeltaX != 0) {
-      if ((int)rightStepOrScreenDeltaX < 0) {
-        bottomStepOrCursorFrame = 0x30;
+    bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_RIGHT;
+    if (rightStepOrDeltaDown != 0) {
+      if ((int)rightStepOrDeltaDown < 0) {
+        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_UP_RIGHT;
       }
       else {
-        bottomStepOrCursorFrame = 0x32;
+        bottomStepOrCursorFrame = WORLD_CURSOR_SCROLL_DOWN_RIGHT;
       }
     }
   }
@@ -415,17 +413,13 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
 
 
 /* Address: 0x0050C770.
-   Ownership: world/motion/runtime.
-   Purpose: Transforms a screen-space delta through the current camera angle and scale, updates both camera
-   coordinate pairs, and refreshes the world view. Typed parameters: p0 screenDeltaX→CameraScreenDeltaPixels_V344.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: FixedMath_SinCosScaled [core/math/fixed], WorldRuntime_ClearFieldGridDirtyFlag
-   [world/runtime/core].
+   Scrolls the camera by a screen-space delta (arrow keys, edge scrolling): screenDeltaDown moves along the
+   camera heading, screenDeltaRight along the heading plus a quarter turn, both scaled with the camera distance so
+   a scroll step covers the same screen distance at any zoom. Camera position and target move together.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_TranslateCameraByScreenDelta
-          (CameraScreenDeltaPixels screenDeltaX,uint32_t screenDeltaY,WorldRuntimeContext *worldRuntime
+          (CameraScreenDeltaPixels screenDeltaDown,uint32_t screenDeltaRight,WorldRuntimeContext *worldRuntime
           )
 
 {
@@ -435,11 +429,11 @@ WorldRuntime_TranslateCameraByScreenDelta
   FixedSinCosEdxEax8 movementDeltaXYQ12;
   FixedSinCosEdxEax8 sideMovementDeltaXYQ12;
   Q12 *motionCoordinateField;
-  
+
   distanceScaleOrSideDeltaY = (int)(_k_CameraScreenDeltaDistanceScaleQ16 * (worldRuntime->motion).targetDistanceQ12) >>
           0x10;
   angle = (worldRuntime->motion).headingAngle;
-  movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaX * distanceScaleOrSideDeltaY);
+  movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaDown * distanceScaleOrSideDeltaY);
   THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
   (worldRuntime->motion).positionXQ12 =
        (worldRuntime->motion).positionXQ12 - (int)movementDeltaXYQ12;
@@ -449,7 +443,8 @@ WorldRuntime_TranslateCameraByScreenDelta
   *coordinateField = *coordinateField - (int)movementDeltaXYQ12;
   coordinateField = &(worldRuntime->motion).targetPositionYQ12;
   *coordinateField = *coordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
-  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + 0x4000 & 0xffff,screenDeltaY * distanceScaleOrSideDeltaY);
+  /* angles are 16-bit turns: +0x4000 is a quarter turn */
+  sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + 0x4000 & 0xffff,screenDeltaRight * distanceScaleOrSideDeltaY);
   distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 0x20);
   (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 - (int)sideMovementDeltaXYQ12;
   coordinateField = &(worldRuntime->motion).positionYQ12;

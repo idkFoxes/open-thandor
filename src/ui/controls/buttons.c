@@ -711,10 +711,9 @@ UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
 
 
 /* Address: 0x004B1C80.
-   Ownership: ui/controls/buttons.
-   Purpose: Advances the active normal or selected frame range, loops at the exclusive end, optionally queues
-   actionId on terminal animation state, and invalidates the root.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
+   Advances an animated sprite button by one frame within its normal or selected frame range, wrapping to
+   the first frame. On the last frame a deferred activation action is queued (and cleared), then the UI is
+   redrawn.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
@@ -723,8 +722,8 @@ UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
   uint32_t subresourceStart;
   uint32_t subresourceEndExclusive;
   UiSelectableStateFlags *stateFlagsField;
-  
-  if (((control->selectable).stateFlags & 0x80) != 0) {
+
+  if (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ANIMATED) != 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
       subresourceStart = control->normalSubresourceStartOrDescriptor;
       subresourceEndExclusive = control->normalSubresourceEndExclusive;
@@ -734,18 +733,18 @@ UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
       subresourceEndExclusive = control->selectedSubresourceEndExclusive;
     }
     if (subresourceStart + 1 + control->animationFrameOffset < subresourceEndExclusive) {
-      control->animationFrameOffset = control->animationFrameOffset + 1;
+      control->animationFrameOffset++;
     }
     else {
       control->animationFrameOffset = 0;
     }
     if (subresourceEndExclusive - 1 <= subresourceStart + control->animationFrameOffset) {
-      if ((((control->selectable).stateFlags & 0x800) != 0) &&
-         (((control->selectable).stateFlags & 0x1000) != 0)) {
+      if ((((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_AFTER_ANIMATION) != 0) &&
+         (((control->selectable).stateFlags & UI_SPRITE_BUTTON_ACTION_PENDING) != 0)) {
         UiActionQueue_Enqueue((control->selectable).actionId,control);
       }
       stateFlagsField = &(control->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xffffefff;
+      *stateFlagsField = *stateFlagsField & ~UI_SPRITE_BUTTON_ACTION_PENDING;
     }
     UiNode_InvalidateRoot((UiNodeBase *)control);
   }

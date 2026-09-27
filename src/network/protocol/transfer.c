@@ -250,16 +250,11 @@ UiTransferMailbox_ReceiveNextRecord:
 
 
 /* Address: 0x0054ECB0.
-   Ownership: network/protocol/transfer.
-   Purpose: Handles host-session packet 0x00040008 and low-type 0x0010 command batches, initializes player/session
-   state, dispatches commands, and emits the required acknowledgement. Guest lobby recv: host session state +
-   (n<<16)|0x10 LOBBY command batches (the 0x10 low-word side of the N4 phase split). Typed parameters: p4
-   frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendTransfer_SendQueued10011AndOptional10004, UiTransfer_StagePacketAndSend.
-   Cross-module calls: UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], FrontendState_DispatchCode [ui/frontend/runtime],
-   FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
+   Client side of the host lobby: accepts the host's 0x40008 session packet (one player-list row and the
+   player's name; a non-zero expected block count starts the session and switches to
+   FRONTEND_NETWORK_STATE_CLIENT_STARTING) and the host's lobby command batches, whose commands it executes
+   before answering with its own next queued command (packet 0x10011). Packets from other hosts or sessions
+   are ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTransfer_HandleHostSessionAndCommandBatchPackets
@@ -286,21 +281,23 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       playerRowCursor = (uint32_t *)(&g_FrontendPlayerListRows)
                         [(packet->packet20002PlayerDescriptor).playerDescriptorPayload[2]];
       g_FrontendPlayerRuntimeCount = playerOrCommandCount;
-      for (loopCount = 0x20; loopCount != 0; loopCount = loopCount + -1) {
+      /* the whole 0x80-byte packet becomes the player's list row */
+      for (loopCount = 0x20; loopCount != 0; loopCount--) {
         *playerRowCursor = (packetCursor->packet10000Handshake).header.packedTypeAndUnitCount;
         packetCursor = (FrontendTransferPacketUnion *)&(packetCursor->packet10000Handshake).header.sequenceToken
         ;
-        playerRowCursor = playerRowCursor + 1;
+        playerRowCursor++;
       }
       playerRecord = g_FrontendPlayerRuntimeBlocks +
                (packet->packet20002PlayerDescriptor).playerDescriptorPayload[2];
-      *(uint32_t *)((int)(&playerRecord->playerName + -1) + 0x24) =
+      /* playerRecord->playerRuntimeId (+0x14), addressed from the name field like the original */
+      *(uint32_t *)((int)(&playerRecord->playerName - 1) + 0x24) =
            (packet->packet20002PlayerDescriptor).playerDescriptorPayload[4];
       nameSourceCursor = &(packet->genericTransferPacket).commands[2].payloadDword08;
       nameDestinationCursor = &playerRecord->playerName;
-      for (loopCount = 10; loopCount != 0; loopCount = loopCount + -1) {
+      for (loopCount = 10; loopCount != 0; loopCount--) {
         *(uint32_t *)nameDestinationCursor->textUtf16 = *nameSourceCursor;
-        nameSourceCursor = nameSourceCursor + 1;
+        nameSourceCursor++;
         nameDestinationCursor = (FrontendPlayerNameUtf16_28 *)(nameDestinationCursor->textUtf16 + 2);
       }
       UiPointerList_InitializeColumnLayout
@@ -308,13 +305,14 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                  (UiPointerListControl *)(frontendRuntime + 0x5874));
     }
     g_SessionTransferTimeoutTicks = 0x40;
+    /* the host starts the session: this many player snapshots follow */
     if ((packet->packet10009SnapshotChunkRequest).reserved10 != 0) {
       g_FrontendPlayerRuntimeBlockCount = 0;
       g_FrontendExpectedPlayerRuntimeBlockCount =
            (packet->packet10009SnapshotChunkRequest).reserved10;
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(frontendRuntime + 0x508));
       FrontendState_DispatchCode(1);
-      g_FrontendNetworkState = 5;
+      g_FrontendNetworkState = FRONTEND_NETWORK_STATE_CLIENT_STARTING;
       FrontendTransfer_SendQueued10011AndOptional10004();
       loopCount = 8;
       playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -322,18 +320,21 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
         (playerRecord->factionAssignment).roleStateFlags = 0;
         playerRecord->runtimeState64 = 0;
         playerRecord->snapshotTransferFlags = 0;
-        playerRecord = playerRecord + 1;
-        loopCount = loopCount + -1;
+        playerRecord++;
+        loopCount--;
       } while (loopCount != 0);
     }
     return;
   }
-  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & 0xffff) == 0x10) &&
+  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & FRONTEND_PACKET_TYPE_MASK) ==
+        FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       senderEndpoint->ipv4AddressNetworkOrder)) {
-    playerOrCommandCount = (packet->packet10000Handshake).header.packedTypeAndUnitCount >> 0x10;
+    playerOrCommandCount =
+         (packet->packet10000Handshake).header.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
     do {
+      /* command dword = handler offset << 8 | player id; offsets past the command handlers are ignored */
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
         if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
@@ -344,6 +345,7 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                      (packet->packet20002PlayerDescriptor).reserved14);
         }
       }
+      /* next 0x20-byte unit */
       packet = (FrontendTransferPacketUnion *)
                ((packet->packet50001SessionAdvertisement).sessionTitleUtf16 + 4);
       playerOrCommandCount = playerOrCommandCount - 1;
@@ -361,13 +363,11 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
 
 
 /* Address: 0x0054F680.
-   Ownership: network/protocol/transfer.
-   Purpose: Validates and handles gameplay command batches plus packet types 0x00010012, 0x00010007, 0x00030005,
-   and 0x00010009. Carry is set only when a new command batch is accepted.
-   Local calls: UiTransfer_StagePacketAndSend, FrontendTransfer_SendQueued10011AndOptional10004.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime], Random_SetBothSeeds
-   [core/math/random], Random_SelectSecondaryStream [core/math/random].
+   Client side of the session start: executes a new command batch from the host (a repeated batch only
+   re-sends the last 0x10011 answer), answers 0x10012 with 0x10013, removes a player on 0x10007, stores the
+   next player snapshot (0x30005, which also seeds the random streams) and serves chunks of the local
+   player's PCX preview on 0x10009. Only packets of the selected host and session count; CF is set only when
+   a new command batch was executed.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendTransfer_HandleGameplayCommandAndRosterPackets
@@ -389,20 +389,24 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
   TextResolveResult resolvedText;
   
   expectedBlockCount = g_FrontendExpectedPlayerRuntimeBlockCount;
-  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & 0xffff) == 0x10) &&
+  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & FRONTEND_PACKET_TYPE_MASK) ==
+        FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       senderEndpoint->ipv4AddressNetworkOrder)) {
     batchSenderContext = (packet->packet10000Handshake).header.senderContext;
-    g_SessionTransferTimeoutTicks = 0x100;
+    g_SessionTransferTimeoutTicks = FRONTEND_PEER_TIMEOUT_TICKS;
+    /* the same batch again: our answer got lost, repeat it */
     if (batchSenderContext == g_FrontendSelectedPlayerToken) {
       UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10011Buffer.header);
       return false;
     }
-    commandCountOrPlayerIndex = (packet->packet10000Handshake).header.packedTypeAndUnitCount >> 0x10;
+    commandCountOrPlayerIndex =
+         (packet->packet10000Handshake).header.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
     g_FrontendSelectedPlayerToken = batchSenderContext;
     do {
+      /* command dword = handler offset << 8 | player id; offsets past the command handlers are ignored */
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
         if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
@@ -413,6 +417,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
                      (packet->packet20002PlayerDescriptor).reserved14);
         }
       }
+      /* next 0x20-byte unit */
       packet = (FrontendTransferPacketUnion *)
                ((packet->packet50001SessionAdvertisement).sessionTitleUtf16 + 4);
       commandCountOrPlayerIndex = commandCountOrPlayerIndex - 1;
@@ -425,7 +430,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       senderEndpoint->ipv4AddressNetworkOrder)) {
-    g_SessionTransferTimeoutTicks = 0x100;
+    g_SessionTransferTimeoutTicks = FRONTEND_PEER_TIMEOUT_TICKS;
     g_FrontendPacket10013Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10013;
     UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10013Buffer.header);
@@ -440,22 +445,24 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
       if ((packet->packet10000Handshake).protocolMagic2931 == playerRecord->playerRuntimeId) {
+        /* "player left" message with the name, then close the gap in the record array */
         resolvedText = TextResource_Resolve(0xff00);
         RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.text);
         FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
         if (playersRemaining - 1 != 0) {
           nextPlayerCursor = playerRecord + 1;
-          for (copyCount = (playersRemaining - 1) * 0x4ec; copyCount != 0; copyCount = copyCount + -1) {
+          /* 0x4EC dwords = sizeof(FrontendPlayerRuntimeRecord) */
+          for (copyCount = (playersRemaining - 1) * 0x4ec; copyCount != 0; copyCount--) {
             playerRecord->runtimeState00 = nextPlayerCursor->runtimeState00;
             nextPlayerCursor = (FrontendPlayerRuntimeRecord *)&nextPlayerCursor->peerSequenceToken;
             playerRecord = (FrontendPlayerRuntimeRecord *)&playerRecord->peerSequenceToken;
           }
         }
-        g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
+        g_FrontendPlayerRuntimeBlockCount--;
         return false;
       }
-      playerRecord = playerRecord + 1;
-      playersRemaining = playersRemaining - 1;
+      playerRecord++;
+      playersRemaining--;
     } while (playersRemaining != 0);
     return false;
   }
@@ -469,10 +476,11 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
       (commandCountOrPlayerIndex == g_FrontendPlayerRuntimeBlockCount)))) {
     Random_SetBothSeeds((packet->packet30005PlayerSnapshot).secondaryRandomSeed);
     Random_SelectSecondaryStream();
-    g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount + 1;
+    g_FrontendPlayerRuntimeBlockCount++;
     packetCursor = packet;
     playerRecord = g_FrontendPlayerRuntimeBlocks + commandCountOrPlayerIndex;
-    for (copyCount = 0x18; copyCount != 0; copyCount = copyCount + -1) {
+    /* the first 0x60 bytes of the packet become the head of the player's record */
+    for (copyCount = 0x18; copyCount != 0; copyCount--) {
       playerRecord->runtimeState00 = (packetCursor->packet10000Handshake).header.packedTypeAndUnitCount;
       packetCursor = (FrontendTransferPacketUnion *)&(packetCursor->packet10000Handshake).header.sequenceToken;
       playerRecord = (FrontendPlayerRuntimeRecord *)&playerRecord->peerSequenceToken;
@@ -493,15 +501,17 @@ FrontendTransfer_HandleGameplayCommandAndRosterPackets
     previewSourceCursor = (uint32_t *)
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A;
+    /* 0xE8-byte chunks; the last one at 0x1220 has 0xE0 bytes (the preview is 0x1300 bytes) */
     copyCount = 0x3a;
     if (g_FrontendPacket8000ABuffer.snapshotChunkOffset == 0x1220) {
       copyCount = 0x38;
     }
-    for (; copyCount != 0; copyCount = copyCount + -1) {
+    for (; copyCount != 0; copyCount--) {
       *(uint32_t *)chunkDestinationCursor = *previewSourceCursor;
-      previewSourceCursor = previewSourceCursor + 1;
+      previewSourceCursor++;
       chunkDestinationCursor = chunkDestinationCursor + 4;
     }
+    /* answered only once every expected player snapshot has arrived */
     if (expectedBlockCount == g_FrontendPlayerRuntimeBlockCount) {
       UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket8000ABuffer.header);
@@ -627,16 +637,13 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(vo
 
 
 /* Address: 0x0054E4E0.
-   Ownership: network/protocol/transfer.
-   Purpose: Dispatches the frontend lobby packet family including 0x00010000, 0x00020002, 0x00010006, and
-   0x00010011, formatting discovery replies and updating player records. Typed parameters: p4
-   frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], RichTextCommandStream_CopyExpanded [assets/text/richtext],
-   FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands],
-   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction [ui/frontend/player].
+   Host side of the lobby. Answers a discovery probe (0x10000) with the session advertisement (0x50001:
+   title, host description, player count; joinable while the lobby is not full), admits a joining player
+   (0x20002: new player-list row, lowest free player id, join ack 0x10003), stores a player's capability
+   heartbeat (0x10006), and collects each player's next command (0x10011), broadcasting the non-empty ones
+   as one lobby command batch that the host then executes itself.
+   frontendRuntime +0x563C/+0x5640 are the row slots and row count of the lobby's player list
+   (a UiPointerListControl), +0x5140 the player limit.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
@@ -663,8 +670,9 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   if ((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
       FRONTEND_PACKET_10000_HANDSHAKE) {
     g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_UNAVAILABLE;
-    if ((((packet->packet10000Handshake).protocolMagic2931 == 0x2931) &&
-        (((packet->packet10000Handshake).header.sequenceToken & 0xffff0000) == 0x12340000)) &&
+    if ((((packet->packet10000Handshake).protocolMagic2931 == FRONTEND_PROTOCOL_MAGIC) &&
+        (((packet->packet10000Handshake).header.sequenceToken & FRONTEND_SEQUENCE_TOKEN_HIGH_MASK) ==
+         FRONTEND_SEQUENCE_TOKEN_HIGH_WORD)) &&
        (*(uint32_t *)(frontendRuntime + 0x5640) < *(uint32_t *)(frontendRuntime + 0x5140))) {
       g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
     }
@@ -710,7 +718,8 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
         }
       }
       playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
-      for (rootNodeOrCount = 8; rootNodeOrCount != 0; rootNodeOrCount = rootNodeOrCount + -1) {
+      /* keep the player's 0x20-byte command packet; the host's own command goes into slot 0 below */
+      for (rootNodeOrCount = 8; rootNodeOrCount != 0; rootNodeOrCount--) {
         (commandRecordCursor->header).packedTypeAndUnitCount =
              (packet->packet10000Handshake).header.packedTypeAndUnitCount;
         packet = (FrontendTransferPacketUnion *)&(packet->packet10000Handshake).header.sequenceToken
@@ -722,27 +731,30 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
       commandRecordCursor = g_FrontendPlayerCommandRecords;
       batchCursor = g_FrontendCommandBatchPacketBuffer;
       rootNodeOrCount = g_FrontendPlayerRuntimeCount;
+      /* compact the slots holding a command into the batch and clear them (the player id stays) */
       do {
         if (((commandRecordCursor->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
-          commandRecordCursor = commandRecordCursor + 1;
+          commandRecordCursor++;
         }
         else {
-          for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+          for (dwordCount = 8; dwordCount != 0; dwordCount--) {
             (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
             commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
             batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
           }
-          countFlagsOrId = countFlagsOrId + 1;
+          countFlagsOrId++;
           commandRecordCursor[-1].command.packedCommandAndPlayerId =
                commandRecordCursor[-1].command.packedCommandAndPlayerId & 0xff;
         }
-        rootNodeOrCount = rootNodeOrCount + -1;
+        rootNodeOrCount--;
       } while (rootNodeOrCount != 0);
-      if (countFlagsOrId << 0x10 != 0) {
-        g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount = countFlagsOrId << 0x10 | 0x10;
+      if (countFlagsOrId << FRONTEND_PACKET_UNIT_COUNT_SHIFT != 0) {
+        g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
+             countFlagsOrId << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE;
+        /* to every player but the host (record 0); 0x13B endpoint sizes = one player record */
         endpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
         rootNodeOrCount = g_FrontendPlayerRuntimeCount;
-        while (rootNodeOrCount = rootNodeOrCount + -1, rootNodeOrCount != 0) {
+        while (rootNodeOrCount = rootNodeOrCount - 1, rootNodeOrCount != 0) {
           UiTransfer_StagePacketAndSend(endpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
           endpointCursor = endpointCursor + 0x13b;
         }
@@ -758,7 +770,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
                          (commandRecordCursor->command).payloadDword08,(commandRecordCursor->command).payloadDword04);
             }
           }
-          commandRecordCursor = commandRecordCursor + 1;
+          commandRecordCursor++;
           countFlagsOrId = countFlagsOrId - 1;
         } while (countFlagsOrId != 0);
       }
@@ -769,8 +781,8 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     while (((packet->packet10000Handshake).header.sequenceToken != playerRecord->peerSequenceToken ||
            (senderEndpoint->ipv4AddressNetworkOrder != (playerRecord->endpoint).ipv4AddressNetworkOrder))
           ) {
-      playerRecord = playerRecord + 1;
-      rootNodeOrCount = rootNodeOrCount + -1;
+      playerRecord++;
+      rootNodeOrCount--;
       if (rootNodeOrCount == 0) {
         return;
       }
@@ -783,10 +795,11 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     playerRecord->reserved78_7F[1] = 0;
     playerRecord->reserved78_7F[2] = 0;
     playerRecord->reserved78_7F[3] = 0;
-    if ((countFlagsOrId & 0x100) != 0) {
-      playerRecord->reserved78_7F[0] = 0x43;
+    if ((countFlagsOrId & FRONTEND_CAPABILITY_CD) != 0) {
+      /* L"CD" */
+      playerRecord->reserved78_7F[0] = 'C';
       playerRecord->reserved78_7F[1] = 0;
-      playerRecord->reserved78_7F[2] = 0x44;
+      playerRecord->reserved78_7F[2] = 'D';
       playerRecord->reserved78_7F[3] = 0;
     }
     FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
@@ -795,16 +808,17 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   joiningPlayerRecordDwordCursor =
        *(uint32_t **)(*(int *)(frontendRuntime + 0x563c) + *(int *)(frontendRuntime + 0x5640) * 4);
   *(int *)(frontendRuntime + 0x5640) = *(int *)(frontendRuntime + 0x5640) + 1;
-  for (rootNodeOrCount = 0x10; rootNodeOrCount != 0; rootNodeOrCount = rootNodeOrCount + -1) {
+  /* the new row: the 0x40-byte descriptor packet followed by the sender's 0x10-byte endpoint */
+  for (rootNodeOrCount = 0x10; rootNodeOrCount != 0; rootNodeOrCount--) {
     *joiningPlayerRecordDwordCursor = (packet->packet10000Handshake).header.packedTypeAndUnitCount;
     packet = (FrontendTransferPacketUnion *)&(packet->packet10000Handshake).header.sequenceToken;
-    joiningPlayerRecordDwordCursor = joiningPlayerRecordDwordCursor + 1;
+    joiningPlayerRecordDwordCursor++;
   }
   endpointCursor = senderEndpoint;
-  for (rootNodeOrCount = 4; rootNodeOrCount != 0; rootNodeOrCount = rootNodeOrCount + -1) {
+  for (rootNodeOrCount = 4; rootNodeOrCount != 0; rootNodeOrCount--) {
     *joiningPlayerRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, endpointCursor->addressHeader);
     endpointCursor = (UiTransferEndpointDescriptor *)&endpointCursor->ipv4AddressNetworkOrder;
-    joiningPlayerRecordDwordCursor = joiningPlayerRecordDwordCursor + 1;
+    joiningPlayerRecordDwordCursor++;
   }
   /* Smallest player runtime id below 0xFF that no current player uses (0xFF when all are taken). */
   countFlagsOrId = 0;
@@ -812,11 +826,11 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
     while (countFlagsOrId != playerRecord->playerRuntimeId) {
-      rootNodeOrCount = rootNodeOrCount + -1;
-      playerRecord = playerRecord + 1;
+      rootNodeOrCount--;
+      playerRecord++;
       if (rootNodeOrCount == 0) goto FrontendTransfer_InitializeJoiningPlayerWithFreeId;
     }
-    countFlagsOrId = countFlagsOrId + 1;
+    countFlagsOrId++;
     rootNodeOrCount = g_FrontendPlayerRuntimeCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
   } while (countFlagsOrId < 0xff);
@@ -834,8 +848,8 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
   joiningPlayerRecordDwordCursor[0xd] = 0;
   joiningPlayerRecordDwordCursor[0xe] = 0;
   joiningPlayerRecordDwordCursor[0xf] = 0;
-  if ((descriptorStatusBits & 0x100) != 0) {
-    joiningPlayerRecordDwordCursor[10] = 0x440043;
+  if ((descriptorStatusBits & FRONTEND_CAPABILITY_CD) != 0) {
+    joiningPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" */
   }
   *(uint16_t *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
   g_WideNumberFormatUtf16
@@ -845,22 +859,17 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
   g_FrontendPacket10003Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10003_JOIN_ACK;
   g_FrontendPacket10003Buffer.assignedPlayerRuntimeId = countFlagsOrId;
   UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket10003Buffer.header);
-  g_FrontendPlayerRuntimeCount = g_FrontendPlayerRuntimeCount + 1;
+  g_FrontendPlayerRuntimeCount++;
   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
   return;
 }
 
 
 /* Address: 0x0054E9B0.
-   Ownership: network/protocol/transfer.
-   Purpose: Dequeues one frontend command into g_FrontendPlayerCommandRecords, compacts active 0x20-byte
-   FrontendCommandPacketRecord slots into g_FrontendCommandBatchPacketBuffer, broadcasts them, and dispatches the
-   local copies. Host side: periodic 0x50001 SessionAdvertisement publish (title[20]/host[44]/ count[4] UTF-16) +
-   queued lobby command dispatch. Typed parameters: p2 frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
+   Host lobby tick. Sends every joined player the session packet 0x40008 for one player-list row, chosen
+   round robin (with its row, name and ping text "<n>ms"), plus a 0x10032 tick stamp; a pending session start
+   switches to FRONTEND_NETWORK_STATE_HOST_STARTING. Then it adds the host's own next queued command to the
+   players' collected ones, broadcasts the non-empty ones as one lobby command batch and executes them.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
@@ -887,8 +896,9 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
   if (remainingCount != 0 && 0 < (int)playerOrCommandCount) {
     g_FrontendPacket40008Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_40008;
     g_FrontendPacket40008Buffer.pendingSessionPlayerCount = g_FrontendPendingSessionPlayerCount;
-    g_FrontendHostPublishRoundRobinCounter = g_FrontendHostPublishRoundRobinCounter + 1;
+    g_FrontendHostPublishRoundRobinCounter++;
     selectedIndexOrPackedCommand = roundRobinOrTextLength % playerOrCommandCount;
+    /* the selected player's record fields, addressed from the record-1 endpoint in 0x10-byte steps */
     g_FrontendPacket40008Buffer.selectedPlayerRuntimeId =
          peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x13e].ipv4AddressNetworkOrder;
     g_FrontendPacket40008Buffer.selectedStatusCode0 =
@@ -907,22 +917,23 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
     *(uint16_t *)((int)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength + 4) = 0;
     descriptorSourceCursor = peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x13e].zeroPadding;
     descriptorDestinationCursor = g_FrontendPacket40008Buffer.playerDescriptorPayload;
-    for (dwordCount = 10; dwordCount != 0; dwordCount = dwordCount + -1) {
+    for (dwordCount = 10; dwordCount != 0; dwordCount--) {
       *descriptorDestinationCursor = *(uint32_t *)descriptorSourceCursor;
       descriptorSourceCursor = descriptorSourceCursor + 4;
-      descriptorDestinationCursor = descriptorDestinationCursor + 1;
+      descriptorDestinationCursor++;
     }
     g_FrontendPacket10032Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10032;
     g_FrontendPacket10032Buffer.backendSessionValue = g_UiTransferMailboxTickCounter;
+    /* to every player but the host (record 0); 0x13B endpoint sizes = one player record */
     do {
       UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPacket40008Buffer.header);
       UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPacket10032Buffer.header);
       endpoint = endpoint + 0x13b;
-      remainingCount = remainingCount + -1;
+      remainingCount--;
     } while (remainingCount != 0);
   }
   if (g_FrontendPendingSessionPlayerCount != 0) {
-    g_FrontendNetworkState = 4;
+    g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOST_STARTING;
     g_FrontendPendingSessionPlayerCount = 0;
   }
   FrontendCommandQueue_DequeueFirstIntoRecord(g_FrontendPlayerCommandRecords);
@@ -930,27 +941,29 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
   commandRecordCursor = g_FrontendPlayerCommandRecords;
   batchCursor = g_FrontendCommandBatchPacketBuffer;
   remainingCount = g_FrontendPlayerRuntimeCount;
+  /* compact the slots holding a command into the batch and clear them (the player id stays) */
   do {
     if (((commandRecordCursor->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
-      commandRecordCursor = commandRecordCursor + 1;
+      commandRecordCursor++;
     }
     else {
-      for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+      for (dwordCount = 8; dwordCount != 0; dwordCount--) {
         (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
         commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
         batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
       }
-      playerOrCommandCount = playerOrCommandCount + 1;
+      playerOrCommandCount++;
       commandRecordCursor[-1].command.packedCommandAndPlayerId =
            commandRecordCursor[-1].command.packedCommandAndPlayerId & 0xff;
     }
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  if (playerOrCommandCount << 0x10 != 0) {
-    g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount = playerOrCommandCount << 0x10 | 0x10;
+  if (playerOrCommandCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT != 0) {
+    g_FrontendCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
+         playerOrCommandCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE;
     peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
     remainingCount = g_FrontendPlayerRuntimeCount;
-    while (remainingCount = remainingCount + -1, remainingCount != 0) {
+    while (remainingCount = remainingCount - 1, remainingCount != 0) {
       UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
       peerEndpointCursor = peerEndpointCursor + 0x13b;
     }
@@ -966,7 +979,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
                      (commandRecordCursor->command).payloadDword04);
         }
       }
-      commandRecordCursor = commandRecordCursor + 1;
+      commandRecordCursor++;
       playerOrCommandCount = playerOrCommandCount - 1;
     } while (playerOrCommandCount != 0);
   }
@@ -975,17 +988,15 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
 
 
 /* Address: 0x0054EEF0.
-   Ownership: network/protocol/transfer.
-   Purpose: Stages and sends packet 0x00010006 with the fixed 0x100 and 0x40 payload fields to the current frontend
-   endpoint.
-   Local calls: UiTransfer_StagePacketAndSend.
+   Sends the client's capability heartbeat (0x10006) to the selected host: the CD capability and a heartbeat
+   value of 0x40, which the host stores in this player's record.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
 
 {
   g_FrontendPacket10006Buffer.header.packedTypeAndUnitCount =
        FRONTEND_PACKET_10006_CAPABILITY_HEARTBEAT;
-  g_FrontendPacket10006Buffer.capabilityFlags = 0x100;
+  g_FrontendPacket10006Buffer.capabilityFlags = FRONTEND_CAPABILITY_CD;
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = 0x40;
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);
@@ -1172,14 +1183,11 @@ void __thandor_preserve_eax_edx UiTransferMailbox_RandomizeSequenceToken(void)
 
 
 /* Address: 0x0054E260.
-   Ownership: network/protocol/transfer.
-   Purpose: Handles packet 0x00050001 session-list records and packet 0x00010003 join acknowledgements, updating
-   frontend state and player selection data. Browse-screen recv handler: 0x50001 SessionAdvertisement rows +
-   0x10003 JoinAck (assignedPlayerRuntimeId, networkTickInterval) — exe_net_client_join.md flow. Typed parameters:
-   p4 frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPointerList_RefreshSelectionAndQueueAction [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], UiPointerList_InitializeColumnLayout [ui/controls/lists].
+   Network game page (browsing): a session advertisement (0x50001) updates its row in the session list or
+   appends one (at most 0x20 sessions); the join ack (0x10003) from the selected host takes over the assigned
+   player id and network tick interval, switches to the host-lobby page and FRONTEND_NETWORK_STATE_JOINED and
+   marks this machine as a network client.
+   frontendRuntime +0x4BBC is the session list's row count.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendTransfer_HandleSessionListAndJoinAckPackets
@@ -1197,14 +1205,14 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
       FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT) {
     sessionDiscoveryRecordDwordCursor = (uint32_t *)g_FrontendSessionDiscoveryRecords;
     sessionRowCursor = g_FrontendSessionListRows;
-    for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+    for (; remainingCount != 0; remainingCount--) {
       if (((packet->packet10000Handshake).header.sequenceToken ==
            (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->advertisement).
            header.sequenceToken) &&
          (senderEndpoint->ipv4AddressNetworkOrder ==
           (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->senderEndpoint).
           ipv4AddressNetworkOrder)) break;
-      sessionRowCursor = sessionRowCursor + 1;
+      sessionRowCursor++;
       sessionDiscoveryRecordDwordCursor = (uint32_t *)((int)sessionDiscoveryRecordDwordCursor + 0xb0);
     }
     /* Update the known session in place, or append it while the list has fewer than 0x20 rows. */
@@ -1213,8 +1221,10 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
         *sessionRowCursor = (FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor;
         *(int *)(frontendRuntime + 0x4bbc) = *(int *)(frontendRuntime + 0x4bbc) + 1;
       }
+      /* the packet's first dword after the header is overwritten with 0x20 before it is stored */
       (packet->packet10000Handshake).protocolMagic2931 = 0x20;
-      for (remainingCount = 0x28; remainingCount != 0; remainingCount = remainingCount + -1) {
+      /* the 0xA0-byte advertisement followed by the sender's 0x10-byte endpoint */
+      for (remainingCount = 0x28; remainingCount != 0; remainingCount--) {
         (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->advertisement).
         header.packedTypeAndUnitCount = (packet->packet10000Handshake).header.packedTypeAndUnitCount
         ;
@@ -1224,10 +1234,10 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
              &(((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->
               advertisement).header.sequenceToken;
       }
-      for (remainingCount = 4; remainingCount != 0; remainingCount = remainingCount + -1) {
+      for (remainingCount = 4; remainingCount != 0; remainingCount--) {
         *sessionDiscoveryRecordDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, senderEndpoint->addressHeader);
         senderEndpoint = (UiTransferEndpointDescriptor *)&senderEndpoint->ipv4AddressNetworkOrder;
-        sessionDiscoveryRecordDwordCursor = sessionDiscoveryRecordDwordCursor + 1;
+        sessionDiscoveryRecordDwordCursor++;
       }
       UiPointerList_RefreshSelectionAndQueueAction
                 ((UiPointerListControl *)(frontendRuntime + 0x4b68));
@@ -1241,13 +1251,13 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
     g_LocalPlayerRuntimeId = (packet->packet10000Handshake).protocolMagic2931;
     g_SessionNetworkTickInterval = (packet->packet50001SessionAdvertisement).joinAvailableFlag;
     UiPageStack_SetActiveIndex(4,(UiPageStackControl *)(frontendRuntime + 0x508));
-    g_FrontendNetworkState = 3;
+    g_FrontendNetworkState = FRONTEND_NETWORK_STATE_JOINED;
     g_SessionTransferTimeoutTicks = 0x40;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_CLIENT;
     playerRowCursor = (uint32_t *)g_FrontendPlayerListRows;
-    for (remainingCount = 0x100; remainingCount != 0; remainingCount = remainingCount + -1) {
+    for (remainingCount = 0x100; remainingCount != 0; remainingCount--) {
       *playerRowCursor = 0;
-      playerRowCursor = playerRowCursor + 1;
+      playerRowCursor++;
     }
     UiPointerList_InitializeColumnLayout
               (0,(void **)&g_FrontendPlayerListRows,
@@ -1277,15 +1287,16 @@ void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void
 
 
 /* Address: 0x0054FBA0.
-   Ownership: network/protocol/transfer.
-   Purpose: Atomically clears the frontend processed flag and returns carry set when the prior value was nonzero.
-   The instruction body is byte-identical to FrontendTransfer_ConsumeProcessedFlag at 0x00572AA0.
+   Frontend copy of FrontendTransfer_ConsumeProcessedFlag: atomically takes and clears
+   g_FrontendTransferResponsePending (set by FrontendTransfer_HandleGameplayCommandAndRosterPackets after a new
+   command batch). Returns true (CF set) when no batch arrived, so Frontend_StateTick ends its tick early.
 */
 bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontend(void)
 
 {
   int previousFlag;
-  
+
+  /* an XCHG in the original; spelled out as a plain read and write here */
   previousFlag = g_FrontendTransferResponsePending;
   LOCK();
   g_FrontendTransferResponsePending = 0;
@@ -1418,10 +1429,10 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(voi
 
 
 /* Address: 0x00407160.
-   Ownership: network/protocol/transfer.
-   Purpose: Transforms 8-byte packet blocks through sixteen table-driven rounds. The archived RET 0x10 proves four
-   stack arguments; no register arguments are part of the ABI. Symmetric block transform (involution): the same
-   routine encodes and decodes — no separate inverse exists.
+   Encrypts an outgoing packet: byteCount/8 64-bit blocks in CBC mode (each input block is XORed with the
+   previous output block, starting from zero), each through 16 rounds keyed by roundKeys16 and the eight
+   nibble substitution tables at 0x00403160. UiTransferBlock_Transform64BitBlocksWithRoundKeys16 is the
+   matching decryption used on receive.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTransfer_TransformPacketBlocks
@@ -1461,8 +1472,9 @@ UiTransfer_TransformPacketBlocks
         roundKeyNibble5 = roundKeys16 + roundIndex;
         roundKeyNibble6 = roundKeys16 + roundIndex;
         roundKeyNibble7 = roundKeys16 + roundIndex;
-        roundIndex = roundIndex + 1;
-        rightState = (((((((*(int *)(&g_RandomPrimaryNibbleMixTable0 +
+        roundIndex++;
+        /* one nibble per table: table n, row = key nibble n, column = input nibble n */
+        rightState =(((((((*(int *)(&g_RandomPrimaryNibbleMixTable0 +
                                     (roundInputHalf & 0xf) * 4 + (*roundKeyNibble0 & 0xf) * 0x40) << 4 |
                            *(uint32_t *)(&g_RandomPrimaryNibbleMixTable1 +
                                     ((roundInputHalf & 0xf0) >> 4) * 4 + (*roundKeyNibble1 & 0xf0) * 4)) << 4
@@ -1489,7 +1501,7 @@ UiTransfer_TransformPacketBlocks
       outputBlocks[1] = rightState;
       inputBlocks = inputBlocks + 2;
       outputBlocks = outputBlocks + 2;
-      blocksRemaining = blocksRemaining - 1;
+      blocksRemaining--;
     } while (blocksRemaining != 0);
   }
   return;
@@ -1497,9 +1509,9 @@ UiTransfer_TransformPacketBlocks
 
 
 /* Address: 0x004072F0.
-   Ownership: network/protocol/transfer.
-   Purpose: Transforms byteCount/8 fixed 64-bit blocks from source to destination using the 16-round key schedule
-   and eight archived substitution tables; source and destination may alias.
+   Decrypts a received packet in place or into destination (they may alias): the inverse of
+   UiTransfer_TransformPacketBlocks, running the 16 rounds backwards with the second table set
+   (g_UiTransferCipherSubstitution, 0x00405160) and XORing each result with the previous ciphertext block (CBC).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTransferBlock_Transform64BitBlocksWithRoundKeys16
@@ -1540,7 +1552,7 @@ UiTransferBlock_Transform64BitBlocksWithRoundKeys16
                 *(uint32_t *)((roundKeys16[roundIndex] & 0xf0) * 4 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0x400) +
                          ((rightHalf & 0xf000000) >> 0x18) * 4)) << 4 |
                 *(uint32_t *)((roundKeys16[roundIndex] & 0xf) * 0x40 + THANDOR_ADDR(g_UiTransferCipherSubstitution,0) + (rightHalf >> 0x1c) * 4);
-        roundIndex = roundIndex + -1;
+        roundIndex--;
         rightHalf = savedHalf;
       } while (-1 < roundIndex);
       leftHalf = leftHalf ^ previousCipherLow;
@@ -1551,7 +1563,7 @@ UiTransferBlock_Transform64BitBlocksWithRoundKeys16
       *(uint32_t *)((int)destination + 4) = savedHalf;
       source = (void *)((int)source + 8);
       destination = (void *)((int)destination + 8);
-      blocksRemaining = blocksRemaining - 1;
+      blocksRemaining--;
     } while (blocksRemaining != 0);
   }
   return;

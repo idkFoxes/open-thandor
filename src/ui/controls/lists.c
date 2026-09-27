@@ -1956,9 +1956,8 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
 
 
 /* Address: 0x004B2DE0.
-   Ownership: ui/controls/lists.
-   Purpose: Tests one selectable control. CF=1 only when nodeFlags bit 0x08 is clear and stateFlags bit 0x02 is
-   set; otherwise CF=0.
+   Tells (in CF) whether a selectable control counts as selected/checked: only a visible (not suppressed)
+   control can be.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_IsSelected(UiSelectableControl *control)
@@ -1990,8 +1989,8 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
 
 
 /* Address: 0x004B4920.
-   Ownership: ui/controls/lists.
-   Purpose: CF=0 when base.firstChild matches an entry in the page array; CF=1 when the active child is absent.
+   Looks up the page stack's shown page (its first child) in its page array: returns the page's index with
+   CF clear, or CF set (index past the last page) when the shown page is none of the stack's pages.
 */
 PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
@@ -2006,7 +2005,7 @@ UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
   do {
     notFound = (stack->base).firstChild != (&stack->pages)[pageIndex];
     if (!notFound) break;
-    pageIndex = pageIndex + 1;
+    pageIndex++;
   } while (pageIndex < stack->pageCount);
   result.notFound = notFound;
   result.pageIndex = pageIndex;
@@ -3683,9 +3682,10 @@ UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recor
 
 
 /* Address: 0x004B9170.
-   Ownership: ui/controls/lists.
-   Purpose: Refreshes the active child rectangle from the current scroll offsets and recomputes the enabled
-   scrollbar tracks and thumb positions without repeating the complete viewport-selection pass.
+   Places the scrolled content (the first child) at the current scroll offsets, clamps the offsets so the
+   content neither ends inside the viewport nor starts after its origin, lays the content out and
+   recomputes the thumb rectangles of the enabled scrollbars (thumb length proportional to the visible
+   part, at least two thumb pieces). Scrolled content has offsets <= 0.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
@@ -3699,12 +3699,15 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
   uint32_t thumbLength;
   UiPixelOffset offsetX;
   UiPixelOffset offsetY;
+  /* both are reused as temporaries: first the control's top and the overflow past the content end, later
+     the horizontal/vertical track lengths and the thumb positions */
   int horizontalExtent;
   int verticalExtent;
   TextureSizeResult textureSize;
-  
+
   contentChild = (control->base).firstChild;
-  if (contentChild != (UiNodeBase *)0xffffffff) {
+  if (contentChild != UI_NODE_NONE) {
+    /* offsetX temporarily holds the vertical offset here */
     offsetX = control->scrollOffsetY;
     horizontalExtent = (control->base).top;
     contentChild->left = contentChild->leftOffset + control->scrollOffsetX + (control->base).left;
@@ -3755,21 +3758,23 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
     control->verticalThumbBottom = 0;
+    /* the thumb rectangles start at the bar positions: a bar at the top/left shifts the other bar's thumb */
     if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_BAR_AT_TOP) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
       control->verticalThumbTop = control->verticalThumbTop + textureSize.logicalHeightPixels;
       control->verticalThumbBottom = control->verticalThumbBottom + textureSize.logicalHeightPixels;
     }
     if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_BAR_AT_LEFT) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       control->horizontalThumbLeft = control->horizontalThumbLeft + textureSize.logicalWidthPixels;
       control->horizontalThumbRight = control->horizontalThumbRight + textureSize.logicalWidthPixels;
     }
+    /* track lengths: the control size minus both arrows and the other bar's thickness */
     horizontalExtent = (control->base).layoutWidth;
     verticalExtent = (control->base).layoutHeight;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5a,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_ARROW,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalWidthPixels;
       control->horizontalThumbLeft = control->horizontalThumbLeft + arrowSize;
       control->horizontalThumbRight = control->horizontalThumbRight + arrowSize;
@@ -3778,7 +3783,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0x5e,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_ARROW,g_UiWindowTextureSource);
       arrowSize = textureSize.logicalHeightPixels;
       control->verticalThumbTop = control->verticalThumbTop + arrowSize;
       control->verticalThumbBottom = control->verticalThumbBottom + arrowSize;
@@ -3789,12 +3794,13 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
                     (int64_t)(int)control->contentWidth);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc0,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_HORIZONTAL_THUMB,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
       }
       control->horizontalThumbRight = control->horizontalThumbRight + thumbLength;
+      /* thumb position = scrolled share of the free track */
       horizontalExtent = (int)(((int64_t)(int)-control->scrollOffsetX * (int64_t)(int)(horizontalExtent - thumbLength)) /
                    (int64_t)(int)(control->contentWidth - control->viewportWidth));
       control->horizontalThumbLeft = control->horizontalThumbLeft + horizontalExtent;
@@ -3804,7 +3810,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
       thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
                     (int64_t)(int)control->contentHeight);
-      textureSize = g_GraphicsTextureSourceGetLogicalSize(0xc2,g_UiWindowTextureSource);
+      textureSize = g_GraphicsTextureSourceGetLogicalSize(UI_WINDOW_SUBRESOURCE_VERTICAL_THUMB,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;

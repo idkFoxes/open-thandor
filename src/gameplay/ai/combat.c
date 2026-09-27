@@ -57,11 +57,10 @@ AiCombatDecision_UpdateTargetAssignment
 
 
 /* Address: 0x0053B8B0.
-   Ownership: gameplay/ai/combat.
-   Purpose: GROUP ATTACK also SINGLE-derefs instance+0x4C — falsifies the docs note that the group-attack priority
-   path used the type field (ai-economy.md corrected 2026-07-31).
-   Cross-module calls: ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime],
-   ArmyRuntime_ResolveCommandTargetAndRoute [gameplay/army/movement].
+   Group attack: when at least two armies were collected, sums their hierarchy scale ratios (x256 each) until
+   the group is strong enough (sum >= 0x200), then picks the target with the highest class base score from
+   workspace 07 (or workspace 03 when 07 is empty) and sends every collected army to attack it. The target
+   class is read with a single dereference from the target model's +0x4C, not from its type field.
 */
 void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
 
@@ -76,12 +75,13 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
   AiTargetWorkspaceEntry *targetCandidateRecordCursor;
   ArmyRuntimeSlot **collectedArmyCursor;
   ModelRuntimeScaleRatioRegisterPairQ12 collectedHierarchyScaleRatioPairQ12;
-  uint8_t *candidateArmyRuntime;
   ArmyRuntimeSlot *candidateTargetArmy;
-  
+
   if (1 < g_AiCollectedEntityCount) {
     accumulatedScaleRatio = 0;
     remainingOrBestScore = g_AiCollectedEntityCount;
+    /* walks the collected army pointers: "->modelRuntimeOrSavedOffset.modelRuntime" (offset 0) reads the
+       pointer at the cursor, "&->modelNodeRuntime" (offset 4) steps to the next one */
     collectedOrTargetArmy = (ArmyRuntimeSlot *)g_AiWorkspaceBuffer14_Size0100;
     do {
       collectedHierarchyScaleRatioPairQ12 =
@@ -105,14 +105,15 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
         }
         do {
           candidateTargetArmy = targetCandidateRecordCursor->armyRuntime;
-          if ((candidateTargetArmy != (ArmyRuntimeSlot *)0x0) &&
-             (targetClassIndex = ((candidateTargetArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C
+          /* ties go to the later candidate */
+          if ((candidateTargetArmy != NULL) &&
+             (targetClassIndex = candidateTargetArmy->modelRuntimeOrSavedOffset.modelRuntime->definitionValue9C_4C
              , remainingOrBestScore <= *(uint32_t *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4))) {
             remainingOrBestScore = *(uint32_t *)(&g_AiCombatTargetClassBaseScoreTable24 + targetClassIndex * 4);
             collectedOrTargetArmy = candidateTargetArmy;
           }
-          targetCandidateRecordCursor = targetCandidateRecordCursor + 1;
-          targetCandidateRecordsRemaining = targetCandidateRecordsRemaining + -1;
+          targetCandidateRecordCursor++;
+          targetCandidateRecordsRemaining--;
         } while (targetCandidateRecordsRemaining != 0);
         if (remainingOrBestScore == 0) {
           return;
@@ -126,16 +127,16 @@ void __fastcall AiUnitGroup_AssignCollectedEntitiesToBestTarget(void)
           collectedOrTargetArmy->runtimeState98 = (uint32_t)targetRuntime;
           collectedOrTargetArmy->commandModeFlags = collectedOrTargetArmy->commandModeFlags | 4;
           collectedOrTargetArmy->runtimeState94 = collectedOrTargetArmy->runtimeState94 | 1;
-          collectedOrTargetArmy->movementStateFlags = collectedOrTargetArmy->movementStateFlags & 0xfffffdff;
+          collectedOrTargetArmy->movementStateFlags = collectedOrTargetArmy->movementStateFlags & ~0x200;
           collectedOrTargetArmy->runtimeState8C = 8;
           collectedOrTargetArmy->commandGeneration = assignedCommandGeneration;
-          collectedArmyCursor = collectedArmyCursor + 1;
-          remainingOrBestScore = remainingOrBestScore - 1;
+          collectedArmyCursor++;
+          remainingOrBestScore--;
         } while (remainingOrBestScore != 0);
         return;
       }
       collectedOrTargetArmy = (ArmyRuntimeSlot *)&collectedOrTargetArmy->modelNodeRuntime;
-      remainingOrBestScore = remainingOrBestScore - 1;
+      remainingOrBestScore--;
     } while (remainingOrBestScore != 0);
   }
   return;

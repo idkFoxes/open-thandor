@@ -22,6 +22,12 @@
   (FIELD_CELL_LAST_ROW_BOUNDARY | FIELD_CELL_LAST_COLUMN_BOUNDARY | FIELD_CELL_FIRST_ROW_BOUNDARY | \
    FIELD_CELL_FIRST_COLUMN_BOUNDARY) /* 0x88006000 */
 
+/* World plane to field-grid coordinates (FieldGrid_WorldToGridQ12 and the samplers that inline it): the grid
+   is a triangular lattice, grid columns per world unit in Q20 (about 1 / 0.5625) and grid rows per world unit in
+   Q20, negative because rows grow towards -Y (about -2.05). The column is then skewed by half the row. */
+#define FIELD_GRID_WORLD_X_TO_COLUMN_Q20 0x1c6e9c
+#define FIELD_GRID_WORLD_Y_TO_ROW_Q20 (-0x20c8cc)
+
 /* FieldGridCell.occupancyMask (+0x70) holds one occupancy byte per faction slot 0..7 (the tick wheel
    indexes it with WorldRuntimeContext.activeFactionRuntimeIndex). Bit meanings inside a byte as far as
    the tick-wheel code shows them: */
@@ -29,6 +35,8 @@
 #define FIELD_CELL_OCCUPANCY_REBUILT_BITS 0x7f    /* bits 0..6: cleared before every occupancy rebuild */
 #define FIELD_CELL_OCCUPANCY_PERSISTENT_BIT 0x80  /* bit 7: survives the rebuild clear */
 #define FIELD_CELL_OCCUPANCY_PRESENCE_BITS 0xf9   /* bits that count as "faction present" (1 and 2 excluded) */
+#define FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS 0x79 /* the presence bits without the persistent bit 7
+                                                           (FieldGrid_ClassifyCellFlagsToRuntimeByte, minimap) */
 /* a byte mask moved into the faction slot's byte of the 64-bit occupancyMask */
 #define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
 
@@ -181,7 +189,7 @@ FieldGrid_ApplyByteClampLookupToCells
 /* 0x00503E80 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ClassifyCellFlagsToRuntimeByte
-          (FieldGridByteOffset cellByteOffset,FieldGridAsset *fieldGrid);
+          (FieldGridByteOffset factionSlot,FieldGridAsset *fieldGrid);
 
 /* 0x00503EE0 */
 void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void);

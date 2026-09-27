@@ -27,6 +27,11 @@
 #define INGAME_COMMAND_SELECT_ARMY 0xDA0 /* InGamePlayerSelection_SelectArmyRuntimeIndex */
 #define INGAME_COMMAND_TARGET_POSITION 0xDE0 /* InGamePlayerSelection_ApplyTargetPositionCommand */
 #define INGAME_COMMAND_PLACE_ARMY 0x13A0 /* InGameCommand_ExecuteLocalPlacementFromSelection */
+#define INGAME_COMMAND_SELECT_MODEL_AND_ARMY 0x1620 /* FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel */
+#define INGAME_COMMAND_SET_SESSION_FLAGS 0x340 /* FrontendPlayerRuntime_SetReadyFlagById */
+#define INGAME_COMMAND_ASSIGN_ARMY_TOKEN 0x16B0 /* FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 */
+#define INGAME_COMMAND_APPLY_UI_FLAG_MASKS 0x310 /* UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
+#define INGAME_COMMAND_MARK_PLAYER_READY_101B 0x470 /* FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B */
 /* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
    (0x00543F50). */
 #define FRONTEND_COMMAND_CODE_BASE 0x00543F50
@@ -34,6 +39,7 @@
 #define FRONTEND_COMMAND_XOR_PLAYER_STATE 0x3B0 /* FrontendPlayerRuntime_XorStateMaskByPlayerId */
 #define FRONTEND_COMMAND_STOP_ROM_TRANSITION 0x1340 /* ScenarioCatalog_RequestRomTransitionStopCallback */
 #define FRONTEND_COMMAND_EXECUTE_ROM_ACTION 0x1350 /* FrontendRomActionTable_ExecuteRecord */
+#define FRONTEND_COMMAND_MARK_TRANSFER_UNAVAILABLE 0x16F0 /* FrontendTransfer_MarkUnavailableIfModeBit0Callback */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */

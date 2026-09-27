@@ -147,19 +147,17 @@ void __cdecl TimerSystem_Init(void)
 }
 
 /* Address: 0x005867E0.
-   Ownership: platform/system/time_locale.
-   Purpose: WinMM TIMECALLBACK used by timeSetEvent. The dwUser value is a byte offset into
-   TimerSystemState.callbacks. Aligned offsets below 0x80 dispatch the corresponding non-null engine callback
-   without arguments. Typed parameters: p0 timerId→WinMmTimerId_V331, p2
-   slotOffset→TimerCallbackSlotByteOffset_V331. Nearby but non-identical semantic domains were explicitly deferred.
+   The WinMM timer procedure every periodic timer of TimerSystem_RegisterPeriodic runs through, on WinMM's
+   timer thread: dwUser (slotOffset) is the byte offset of the timer's callbacks[] slot, and a valid, occupied
+   slot's engine callback is called without arguments.
 */
 void __stdcall WinMM_TimerDispatchCallback
           (WinMmTimerId timerId,uint32_t message,TimerCallbackSlotByteOffset slotOffset,
-          uint32_t callbackData0,uint32_t callbackData1)
+          uint32_t reserved1,uint32_t reserved2)
 
 {
-  if ((((slotOffset & 3) == 0) && (slotOffset < 0x80)) &&
-     (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + slotOffset) != (TimerCallbackProc *)0x0)) {
+  if ((((slotOffset & 3) == 0) && (slotOffset < sizeof g_TimerSystemState.callbacks)) &&
+     (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + slotOffset) != NULL)) {
     /* slotOffset is the byte offset of the callbacks[] entry */
     (**(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + slotOffset))();
   }

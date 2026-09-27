@@ -706,16 +706,15 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 
 /* Address: 0x0057EE90.
-   Ownership: graphics/backend/glide.
-   Purpose: Loads Glide 3 and appends its boards and resolutions to the adapter and display mode
-   lists. CF=1 when the DLL or one of its entry points is missing; EAX is then that error code.
-   Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
-   DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16 [core/text/string].
+   Loads glide3x.dll, binds its entry points and adds every 3dfx board as an adapter (GUID Data1 =
+   GRAPHICS_ADAPTER_GUID_GLIDE, board index in Data2/Data3) with all its 16-bit resolutions of 640x480 and up
+   as display modes, then unloads the DLL again. Fails (CF set) with the DLL's error code when the DLL or one
+   of its procedures is missing.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
 {
-  uint8_t *source;
+  uint8_t *boardName;
   uint8_t *driverDescription;
   uint32_t querySizeOrAdapterIndex;
   int *output;
@@ -749,58 +748,58 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
       return result;
     }
     binding = binding + 1;
-  } while (binding->importName != (char *)0x0);
-  g_GrGet(0xf,4,&remainingBoards);
+  } while (binding->importName != NULL);
+  g_GrGet(GR_NUM_BOARDS,sizeof remainingBoards,&remainingBoards);
   if (remainingBoards != 0) {
     sstIndex = 0;
     do {
-      if (0xf < g_GraphicsAdapterCount) break;
+      if (GRAPHICS_ADAPTER_CAPACITY - 1 < g_GraphicsAdapterCount) break;
       g_GrGlideInit();
       g_GrSstSelect(sstIndex);
-      source = (uint8_t *)g_GrGetString(0xa2);
-      driverDescription = (uint8_t *)g_GrGetString(0xa1);
+      boardName = (uint8_t *)g_GrGetString(GR_RENDERER);
+      driverDescription = (uint8_t *)g_GrGetString(GR_HARDWARE);
       adapter = g_GraphicsAdapters + g_GraphicsAdapterCount;
-      Text_CopyNarrowToUtf16(0x28,adapter->driverDescriptionUtf16,driverDescription);
-      Text_CopyNarrowToUtf16(0x28,adapter->deviceNameUtf16,source);
-      (adapter->adapterGuid).Data1 = 1;
+      Text_CopyNarrowToUtf16(40,adapter->driverDescriptionUtf16,driverDescription);
+      Text_CopyNarrowToUtf16(40,adapter->deviceNameUtf16,boardName);
+      (adapter->adapterGuid).Data1 = GRAPHICS_ADAPTER_GUID_GLIDE;
       (adapter->adapterGuid).Data2 = (uint16_t)sstIndex;
       (adapter->adapterGuid).Data3 = THANDOR_PART(uint16_t, sstIndex, 2);
-      (adapter->deviceGuid).Data1 = 1;
-      querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,(void *)0x0);
+      (adapter->deviceGuid).Data1 = 1; /* nonzero: the adapter renders in 3D */
+      querySizeOrAdapterIndex = g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,NULL);
       if (querySizeOrAdapterIndex != 0) {
         resolutionAlloc = g_MemoryApi.alloc(querySizeOrAdapterIndex);
         output = (int *)resolutionAlloc.payloadOrError;
         if (!resolutionAlloc.failed) {
-          remainingResolutions = querySizeOrAdapterIndex >> 4;
+          remainingResolutions = querySizeOrAdapterIndex >> 4; /* 16-byte GrResolution entries */
           g_GrQueryResolutions(&g_GlideEnumerationResolutionQuery,output);
           displayMode = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
           resolutionCursor = output;
           do {
-            if (0xff < g_GraphicsDisplayModeCount) break;
+            if (GRAPHICS_DISPLAY_MODE_CAPACITY - 1 < g_GraphicsDisplayModeCount) break;
             switch (*resolutionCursor) {
-            case 7:
-              modeWidth = 0x280;
-              modeHeight = 0x1e0;
+            case GR_RESOLUTION_640x480:
+              modeWidth = 640;
+              modeHeight = 480;
               break;
-            case 8:
+            case GR_RESOLUTION_800x600:
               modeWidth = 800;
               modeHeight = 600;
               break;
-            case 9:
-              modeWidth = 0x3c0;
-              modeHeight = 0x2d0;
+            case GR_RESOLUTION_960x720:
+              modeWidth = 960;
+              modeHeight = 720;
               break;
-            case 0xc:
-              modeWidth = 0x400;
-              modeHeight = 0x300;
+            case GR_RESOLUTION_1024x768:
+              modeWidth = 1024;
+              modeHeight = 768;
               break;
-            case 0xd:
-              modeWidth = 0x500;
-              modeHeight = 0x400;
+            case GR_RESOLUTION_1280x1024:
+              modeWidth = 1280;
+              modeHeight = 1024;
               break;
-            case 0xe:
-              modeWidth = 0x640;
-              modeHeight = 0x4b0;
+            case GR_RESOLUTION_1600x1200:
+              modeWidth = 1600;
+              modeHeight = 1200;
               break;
             default:
               /* Resolution not offered: skip it. */
@@ -812,9 +811,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
               displayMode->width = modeWidth;
               displayMode->height = modeHeight;
               querySizeOrAdapterIndex = g_GraphicsAdapterCount;
-              displayMode->bitsPerPixel = 0x10;
+              displayMode->bitsPerPixel = 16;
               displayMode->adapterIndex = querySizeOrAdapterIndex;
-              g_GraphicsDisplayModeCount = g_GraphicsDisplayModeCount + 1;
+              g_GraphicsDisplayModeCount++;
               displayMode = displayMode + 1;
             }
             resolutionCursor = resolutionCursor + 4;
@@ -824,9 +823,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
         }
       }
       g_GrGlideShutdown();
-      g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
-      sstIndex = sstIndex + 1;
-      remainingBoards = remainingBoards + -1;
+      g_GraphicsAdapterCount++;
+      sstIndex++;
+      remainingBoards--;
     } while (remainingBoards != 0);
   }
   DynDLL_Unload(dynapi_5);

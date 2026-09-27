@@ -16,6 +16,16 @@
 /* GraphicsAdapterRecord.adapterGuid.Data1 of the 3dfx Glide adapter (Glide3_InitAndEnumerate); DirectDraw
    adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
 #define GRAPHICS_ADAPTER_GUID_GLIDE 1
+/* Capacity of g_GraphicsAdapters (Graphics_Init allocates 16 records of 0x80 bytes) and of g_GraphicsDisplayModes
+   (the enumeration callbacks stop at 256 modes). */
+#define GRAPHICS_ADAPTER_CAPACITY 16
+#define GRAPHICS_DISPLAY_MODE_CAPACITY 256
+/* g_ActiveGraphicsAdapterIndex before the first display mode is set (and while the backend is being recreated). */
+#define GRAPHICS_ADAPTER_INDEX_NONE (-1)
+/* GraphicsAdapterRecord.deviceGuid.Data1 selects the renderer of the adapter: no Direct3D device (the software
+   rasterizer), the Glide adapter (set by Glide3_InitAndEnumerate), otherwise the GUID of a Direct3D device. */
+#define GRAPHICS_DEVICE_GUID_SOFTWARE 0
+#define GRAPHICS_DEVICE_GUID_GLIDE 1
 
 /* Frames for g_GraphicsCursorSetFrame (GraphicsCursor_SetFrameIndex). */
 #define GRAPHICS_CURSOR_FRAME_ARROW 0
@@ -117,8 +127,8 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void);
 /* 0x0057A5C0 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetViewportAndClearDepth
-          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3);
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX);
 
 /* 0x0057E6D0 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void);
@@ -129,8 +139,8 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void);
 /* 0x0057E7A0 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_DrawPrimitiveQueue
-          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3,
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x0057A330 */

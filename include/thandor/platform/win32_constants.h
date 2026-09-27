@@ -257,6 +257,47 @@
 #define WM_QUIT 0x0012
 #endif
 
+/* Keyboard messages and virtual keys (Win32_ShouldTranslateMessageFlags) */
+#ifndef WM_KEYDOWN
+#define WM_KEYDOWN 0x0100
+#endif
+#ifndef WM_CHAR
+#define WM_CHAR 0x0102
+#endif
+#ifndef WM_DEADCHAR
+#define WM_DEADCHAR 0x0103
+#endif
+#ifndef WM_SYSKEYUP
+#define WM_SYSKEYUP 0x0105
+#endif
+#ifndef VK_BACK
+#define VK_BACK 0x08
+#endif
+#ifndef VK_TAB
+#define VK_TAB 0x09
+#endif
+#ifndef VK_RETURN
+#define VK_RETURN 0x0D
+#endif
+#ifndef VK_PAUSE
+#define VK_PAUSE 0x13
+#endif
+#ifndef VK_ESCAPE
+#define VK_ESCAPE 0x1B
+#endif
+#ifndef VK_SPACE
+#define VK_SPACE 0x20
+#endif
+#ifndef VK_DELETE
+#define VK_DELETE 0x2E
+#endif
+#ifndef VK_NUMPAD0
+#define VK_NUMPAD0 0x60
+#endif
+#ifndef VK_F12
+#define VK_F12 0x7B
+#endif
+
 /* timeSetEvent (TimerSystem_RegisterPeriodic) */
 #ifndef TIME_PERIODIC
 #define TIME_PERIODIC 0x0001
@@ -313,6 +354,235 @@
 #endif
 #ifndef WHEEL_DELTA
 #define WHEEL_DELTA 120
+#endif
+
+/* RegOpenKeyExA / RegQueryValueExA (Game_LoadCoreAssets: install directory); the bound registry procs take the
+   key as a plain dword, so HKEY_LOCAL_MACHINE is defined without the SDK's (HKEY) cast */
+#ifndef HKEY_LOCAL_MACHINE
+#define HKEY_LOCAL_MACHINE 0x80000002
+#endif
+#ifndef KEY_READ
+#define KEY_READ 0x00020019
+#endif
+#ifndef REG_SZ
+#define REG_SZ 1
+#endif
+#ifndef ERROR_SUCCESS
+#define ERROR_SUCCESS 0L
+#endif
+
+/* DirectDraw (ddraw.h): SetCooperativeLevel flags, DDSURFACEDESC.dwFlags, DDSCAPS.dwCaps, DDPIXELFORMAT.dwFlags
+   and the DDBD_* bit depths of D3DDEVICEDESC (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources and the
+   enumeration callbacks) */
+#ifndef DDSCL_FULLSCREEN
+#define DDSCL_FULLSCREEN 0x00000001
+#endif
+#ifndef DDSCL_NORMAL
+#define DDSCL_NORMAL 0x00000008
+#endif
+#ifndef DDSCL_EXCLUSIVE
+#define DDSCL_EXCLUSIVE 0x00000010
+#endif
+#ifndef DDSD_CAPS
+#define DDSD_CAPS 0x00000001
+#endif
+#ifndef DDSD_HEIGHT
+#define DDSD_HEIGHT 0x00000002
+#endif
+#ifndef DDSD_WIDTH
+#define DDSD_WIDTH 0x00000004
+#endif
+#ifndef DDSD_BACKBUFFERCOUNT
+#define DDSD_BACKBUFFERCOUNT 0x00000020
+#endif
+#ifndef DDSD_ZBUFFERBITDEPTH
+#define DDSD_ZBUFFERBITDEPTH 0x00000040
+#endif
+#ifndef DDSCAPS_BACKBUFFER
+#define DDSCAPS_BACKBUFFER 0x00000004
+#endif
+#ifndef DDSCAPS_COMPLEX
+#define DDSCAPS_COMPLEX 0x00000008
+#endif
+#ifndef DDSCAPS_FLIP
+#define DDSCAPS_FLIP 0x00000010
+#endif
+#ifndef DDSCAPS_OFFSCREENPLAIN
+#define DDSCAPS_OFFSCREENPLAIN 0x00000040
+#endif
+#ifndef DDSCAPS_PRIMARYSURFACE
+#define DDSCAPS_PRIMARYSURFACE 0x00000200
+#endif
+#ifndef DDSCAPS_SYSTEMMEMORY
+#define DDSCAPS_SYSTEMMEMORY 0x00000800
+#endif
+#ifndef DDSCAPS_3DDEVICE
+#define DDSCAPS_3DDEVICE 0x00002000
+#endif
+#ifndef DDSCAPS_VIDEOMEMORY
+#define DDSCAPS_VIDEOMEMORY 0x00004000
+#endif
+#ifndef DDSCAPS_ZBUFFER
+#define DDSCAPS_ZBUFFER 0x00020000
+#endif
+/* IDirectDrawSurface::Lock flag (GraphicsFramebuffer_BeginAccess) */
+#ifndef DDLOCK_WAIT
+#define DDLOCK_WAIT 0x00000001
+#endif
+#ifndef DDPF_ALPHAPIXELS
+#define DDPF_ALPHAPIXELS 0x00000001
+#endif
+#ifndef DDPF_ALPHA
+#define DDPF_ALPHA 0x00000002
+#endif
+#ifndef DDPF_PALETTEINDEXED4
+#define DDPF_PALETTEINDEXED4 0x00000008
+#endif
+#ifndef DDPF_PALETTEINDEXEDTO8
+#define DDPF_PALETTEINDEXEDTO8 0x00000010
+#endif
+#ifndef DDPF_PALETTEINDEXED8
+#define DDPF_PALETTEINDEXED8 0x00000020
+#endif
+#ifndef DDPF_RGB
+#define DDPF_RGB 0x00000040
+#endif
+#ifndef DDPF_YUV
+#define DDPF_YUV 0x00000200
+#endif
+#ifndef DDPF_ZBUFFER
+#define DDPF_ZBUFFER 0x00000400
+#endif
+#ifndef DDPF_PALETTEINDEXED1
+#define DDPF_PALETTEINDEXED1 0x00000800
+#endif
+#ifndef DDPF_ZPIXELS
+#define DDPF_ZPIXELS 0x00002000
+#endif
+#ifndef DDBD_32
+#define DDBD_32 0x00000100
+#endif
+#ifndef DDBD_16
+#define DDBD_16 0x00000400
+#endif
+
+/* Direct3D (d3dcaps.h, d3dtypes.h): D3DDEVICEDESC.dwFlags validity bits, device and triangle caps
+   (Direct3D_EnumDeviceCallback) and render-state values
+   (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources) */
+#ifndef D3DDD_COLORMODEL
+#define D3DDD_COLORMODEL 0x00000001
+#endif
+#ifndef D3DDD_DEVCAPS
+#define D3DDD_DEVCAPS 0x00000002
+#endif
+#ifndef D3DDD_TRICAPS
+#define D3DDD_TRICAPS 0x00000040
+#endif
+#ifndef D3DDD_DEVICERENDERBITDEPTH
+#define D3DDD_DEVICERENDERBITDEPTH 0x00000080
+#endif
+#ifndef D3DDD_DEVICEZBUFFERBITDEPTH
+#define D3DDD_DEVICEZBUFFERBITDEPTH 0x00000100
+#endif
+#ifndef D3DDEVCAPS_TLVERTEXSYSTEMMEMORY
+#define D3DDEVCAPS_TLVERTEXSYSTEMMEMORY 0x00000040
+#endif
+#ifndef D3DDEVCAPS_TEXTUREVIDEOMEMORY
+#define D3DDEVCAPS_TEXTUREVIDEOMEMORY 0x00000200
+#endif
+#ifndef D3DPRASTERCAPS_STIPPLE
+#define D3DPRASTERCAPS_STIPPLE 0x00000200
+#endif
+#ifndef D3DPCMPCAPS_LESSEQUAL
+#define D3DPCMPCAPS_LESSEQUAL 0x00000008
+#endif
+#ifndef D3DPBLENDCAPS_ZERO
+#define D3DPBLENDCAPS_ZERO 0x00000001
+#endif
+#ifndef D3DPBLENDCAPS_ONE
+#define D3DPBLENDCAPS_ONE 0x00000002
+#endif
+#ifndef D3DPBLENDCAPS_SRCALPHA
+#define D3DPBLENDCAPS_SRCALPHA 0x00000010
+#endif
+#ifndef D3DPBLENDCAPS_INVSRCALPHA
+#define D3DPBLENDCAPS_INVSRCALPHA 0x00000020
+#endif
+#ifndef D3DPSHADECAPS_COLORGOURAUDRGB
+#define D3DPSHADECAPS_COLORGOURAUDRGB 0x00000008
+#endif
+#ifndef D3DPSHADECAPS_ALPHAGOURAUDBLEND
+#define D3DPSHADECAPS_ALPHAGOURAUDBLEND 0x00004000
+#endif
+#ifndef D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED
+#define D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED 0x00008000
+#endif
+#ifndef D3DPTBLENDCAPS_MODULATE
+#define D3DPTBLENDCAPS_MODULATE 0x00000002
+#endif
+#ifndef D3DPTADDRESSCAPS_WRAP
+#define D3DPTADDRESSCAPS_WRAP 0x00000001
+#endif
+#ifndef D3DSHADE_GOURAUD
+#define D3DSHADE_GOURAUD 2
+#endif
+#ifndef D3DCULL_NONE
+#define D3DCULL_NONE 1
+#endif
+#ifndef D3DZB_TRUE
+#define D3DZB_TRUE 1
+#endif
+#ifndef D3DCMP_LESSEQUAL
+#define D3DCMP_LESSEQUAL 4
+#endif
+#ifndef D3DFILL_SOLID
+#define D3DFILL_SOLID 3
+#endif
+#ifndef D3DTBLEND_MODULATEALPHA
+#define D3DTBLEND_MODULATEALPHA 4
+#endif
+/* IDirect3DDevice2::DrawPrimitive and IDirect3DViewport2::Clear (Graphics_DrawPrimitiveQueue,
+   Graphics_SetViewportAndClearDepth) */
+#ifndef D3DPT_TRIANGLEFAN
+#define D3DPT_TRIANGLEFAN 6
+#endif
+#ifndef D3DVT_TLVERTEX
+#define D3DVT_TLVERTEX 3
+#endif
+#ifndef D3DDP_DONOTUPDATEEXTENTS
+#define D3DDP_DONOTUPDATEEXTENTS 0x00000008
+#endif
+#ifndef D3DCLEAR_ZBUFFER
+#define D3DCLEAR_ZBUFFER 0x00000002
+#endif
+
+/* 3dfx Glide 3 (glide.h): grGet/grGetString selectors and GrScreenResolution_t values (Glide3_InitAndEnumerate) */
+#ifndef GR_NUM_BOARDS
+#define GR_NUM_BOARDS 0x0f
+#endif
+#ifndef GR_HARDWARE
+#define GR_HARDWARE 0xa1
+#endif
+#ifndef GR_RENDERER
+#define GR_RENDERER 0xa2
+#endif
+#ifndef GR_RESOLUTION_640x480
+#define GR_RESOLUTION_640x480 0x7
+#endif
+#ifndef GR_RESOLUTION_800x600
+#define GR_RESOLUTION_800x600 0x8
+#endif
+#ifndef GR_RESOLUTION_960x720
+#define GR_RESOLUTION_960x720 0x9
+#endif
+#ifndef GR_RESOLUTION_1024x768
+#define GR_RESOLUTION_1024x768 0xC
+#endif
+#ifndef GR_RESOLUTION_1280x1024
+#define GR_RESOLUTION_1280x1024 0xD
+#endif
+#ifndef GR_RESOLUTION_1600x1200
+#define GR_RESOLUTION_1600x1200 0xE
 #endif
 
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */

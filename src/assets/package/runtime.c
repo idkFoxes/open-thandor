@@ -188,12 +188,10 @@ Package_UpsertEntry_Fail:
 
 
 /* Address: 0x0040ED00.
-   Ownership: assets/package/runtime.
-   Purpose: Loads a package entry into a caller-provided buffer when allowed by flags and capacity, otherwise falls
-   back to the loose-file path. The high two bits of capacityAndFlags control package bypass and alternate loose-
-   path handling.
-   Local calls: Package_FindEntryAcrossMounts, Package_DecodeEntryInto, Package_SetLastErrorPath.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path].
+   Loads path into a caller buffer of the given capacity: from the first mounted package that has it, otherwise
+   from the loose file (PACKAGE_LOAD_* flags in the top two bits of the capacity select loose-only loading and a
+   first try next to the executable). Returns the byte count; CF set with an error code, FATAL_ERROR_OUT_OF_MEMORY
+   when the entry does not fit (or is to be decoded into g_PackageScratchBuffer, which holds the packed data).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_LoadEntryIntoBuffer
@@ -213,13 +211,14 @@ Package_LoadEntryIntoBuffer
   StatusResult failureResult;
   PackageEntryLookupResult findResult;
   
-  bufferCapacity = (void *)(bufferCapacityAndLoadFlags & 0x3fffffff);
-  if ((bufferCapacityAndLoadFlags & 0x80000000) == 0) {
+  bufferCapacity = (void *)(bufferCapacityAndLoadFlags & PACKAGE_LOAD_CAPACITY_MASK);
+  if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_SKIP_PACKAGES) == 0) {
     findResult = Package_FindEntryAcrossMounts(path);
     entry = (PckEntryHeader *)findResult.entry;
     if (!findResult.notFound) {
-      handle = (void *)0x5;
-      if ((((void *)entry->unpackedSize <= bufferCapacity) && (entry->packedSize < 0x800001)) &&
+      handle = (void *)FATAL_ERROR_OUT_OF_MEMORY;
+      if ((((void *)entry->unpackedSize <= bufferCapacity) &&
+           (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1)) &&
          (destination != g_PackageScratchBuffer)) {
         decodeResult = Package_DecodeEntryInto(destination,entry,findResult.fileHandle);
         decodeStatus.valueOrError = decodeResult.valueOrError;
@@ -230,7 +229,7 @@ Package_LoadEntryIntoBuffer
       goto Package_LoadEntryIntoBuffer_Fail;
     }
   }
-  if ((bufferCapacityAndLoadFlags & 0x40000000) == 0) {
+  if ((bufferCapacityAndLoadFlags & PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST) == 0) {
     openResult = g_FileSystemOpen(0,path);
     handle = (void *)openResult.handleOrError;
     if (openResult.failed) goto Package_LoadEntryIntoBuffer_Fail;
@@ -250,8 +249,10 @@ Package_LoadEntryIntoBuffer
   sizeResult = g_FileSystemGetSize(handle);
   byteCount = (void *)sizeResult.sizeOrError;
   if (!sizeResult.failed) {
-    if ((bufferCapacity < byteCount) && (byteCount = bufferCapacity, (void *)0x7fffff < bufferCapacity)) {
-      byteCount = (void *)0x5;
+    /* a file larger than the buffer is truncated to the capacity, unless that exceeds 8 MiB */
+    if ((bufferCapacity < byteCount) &&
+        (byteCount = bufferCapacity, (void *)(PACKAGE_SCRATCH_BUFFER_BYTES - 1) < bufferCapacity)) {
+      byteCount = (void *)FATAL_ERROR_OUT_OF_MEMORY;
     }
     else {
       readResult = g_FileSystemReadExact((FileIoByteCount)byteCount,destination,handle);
@@ -274,11 +275,8 @@ Package_LoadEntryIntoBuffer_Fail:
 
 
 /* Address: 0x0040E450.
-   Ownership: assets/package/runtime.
-   Purpose: Mounts a package into the last free slot while scanning the 1,024-slot mount table backward. Because
-   lookups scan forward, this archive has the lowest precedence. Startup uses this path for engine.pck.
-   Local calls: Package_ReadDirectory.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path].
+   Like Package_Mount, but takes the last free mount slot: lookups scan the table from the front, so this
+   archive loses against every other one. FileSystem_Init mounts engine.pck this way.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t *path)
 
@@ -292,8 +290,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t
   ArenaAllocResult allocResult;
   StatusResult successResult;
   
-  mountSlot = g_PackageMountSlots + 0x3ff;
-  slotsRemaining = 0x400;
+  mountSlot = g_PackageMountSlots + (PACKAGE_MOUNT_SLOT_COUNT - 1);
+  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
   do {
     if (mountSlot->fileHandle == 0) {
       WidePath_CombineDirectoryAndLeaf
@@ -307,7 +305,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t
         handle = (PckEntryHeader *)openResult.handleOrError;
         if (openResult.failed) goto Package_MountLowPriority_Fail;
       }
-      allocResult = g_MemoryApi.alloc(0x80000);
+      allocResult = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES);
       allocatedEntryHeaders = (PckEntryHeader *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         mountSlot->fileHandle = (EngineFileHandle)handle;
@@ -322,10 +320,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t
       handle = allocatedEntryHeaders;
       goto Package_MountLowPriority_Fail;
     }
-    mountSlot = mountSlot + -1;
-    slotsRemaining = slotsRemaining + -1;
+    mountSlot--;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  handle = (PckEntryHeader *)0x14;
+  handle = (PckEntryHeader *)FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
 Package_MountLowPriority_Fail:
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)handle;
@@ -530,11 +528,10 @@ Package_LoadEntry_Fail:
 
 
 /* Address: 0x0040E3A0.
-   Ownership: assets/package/runtime.
-   Purpose: Mounts a package in the first free slot. Lookup scans the table in the same direction, so earlier
-   normal mounts have higher precedence.
-   Local calls: Package_ReadDirectory.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path].
+   Mounts the package archive path (next to the executable first, then as given) in the first free mount slot
+   and reads its directory into a fresh PACKAGE_DIRECTORY_BYTES entry-header array. Lookups scan the slots in
+   the same order, so earlier mounts win. Returns the file handle; CF set with an error code when no slot is
+   free, the file cannot be opened or the allocation fails.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path)
 
@@ -549,7 +546,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path)
   StatusResult successResult;
   
   mountSlot = g_PackageMountSlots;
-  slotsRemaining = 0x400;
+  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
   do {
     if (mountSlot->fileHandle == 0) {
       WidePath_CombineDirectoryAndLeaf
@@ -563,7 +560,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path)
         handle = (PckEntryHeader *)openResult.handleOrError;
         if (openResult.failed) goto Package_Mount_Fail;
       }
-      allocResult = g_MemoryApi.alloc(0x80000);
+      allocResult = g_MemoryApi.alloc(PACKAGE_DIRECTORY_BYTES);
       allocatedEntryHeaders = (PckEntryHeader *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         mountSlot->fileHandle = (EngineFileHandle)handle;
@@ -578,10 +575,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path)
       handle = allocatedEntryHeaders;
       goto Package_Mount_Fail;
     }
-    mountSlot = mountSlot + 1;
-    slotsRemaining = slotsRemaining + -1;
+    mountSlot++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  handle = (PckEntryHeader *)0x14;
+  handle = (PckEntryHeader *)FATAL_ERROR_GENERAL_FAILURE; /* no free slot */
 Package_Mount_Fail:
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)handle;
@@ -590,11 +587,10 @@ Package_Mount_Fail:
 
 
 /* Address: 0x0040EB70.
-   Ownership: assets/package/runtime.
-   Purpose: Collects entry paths in one mounted package that match the package wildcard grammar, copies them into
-   0x200-byte output slots, and sorts the results lexicographically. Returns 0x200 with CF clear or error 0x14 with
-   CF set.
-   Local calls: Package_WildcardPathMatches.
+   Lists the entries of the mounted package fileHandle whose path matches pattern (Package_WildcardPathMatches):
+   copies each path into a PCK_ENTRY_HEADER_BYTES output record while the capacity lasts and sorts the records
+   by path (UTF-16 code-unit order). Returns the record size with the match count in ECX; CF set with
+   FATAL_ERROR_GENERAL_FAILURE when the handle is not mounted.
 */
 PackageFindResult __thandor_eax_cf_preserve_edx
 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
@@ -624,17 +620,17 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
   uint32_t swappedDword;
   
   mountSlot = g_PackageMountSlots;
-  slotsRemaining = 0x400;
-  handleOrRemaining = fileHandle;
+  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
+  handleOrRemaining = fileHandle; /* a zero handle fails at once, like running out of slots */
   while( true ) {
     if (handleOrRemaining == 0) {
       failureResult.matchCount = unmountedMatchCount;
-      failureResult.recordSizeOrError = 0x14;
+      failureResult.recordSizeOrError = FATAL_ERROR_GENERAL_FAILURE;
       failureResult.failed = true;
       return failureResult;
     }
     if (fileHandle == mountSlot->fileHandle) break;
-    mountSlot = mountSlot + 1;
+    mountSlot++;
     slotsRemaining = slotsRemaining - 1;
     handleOrRemaining = slotsRemaining;
   }
@@ -646,36 +642,40 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
     do {
       carryFlag = Package_WildcardPathMatches(pattern,entryCursor->path);
       if (!carryFlag) {
-        carryFlag = outputCapacityBytes < 0x200;
-        outputCapacityBytes = outputCapacityBytes - 0x200;
+        /* output full: stop with the matches so far */
+        carryFlag = outputCapacityBytes < PCK_ENTRY_HEADER_BYTES;
+        outputCapacityBytes = outputCapacityBytes - PCK_ENTRY_HEADER_BYTES;
         if (carryFlag) goto Package_FindEntry_ReturnMatches;
+        /* only the path is copied; the rest of the output record is left as it was */
         sourceCursor = entryCursor;
         copyDestination = targetCursor;
-        for (remainingCount = 0xf6; remainingCount != 0; remainingCount = remainingCount + -1) {
+        for (remainingCount = PCK_ENTRY_PATH_UNITS; remainingCount != 0; remainingCount--) {
           copyDestination->path[0] = sourceCursor->path[0];
           sourceCursor = (PckEntryHeader *)(sourceCursor->path + 1);
           copyDestination = (PckEntryHeader *)(copyDestination->path + 1);
         }
-        targetCursor = targetCursor + 1;
-        matchedCount = matchedCount + 1;
+        targetCursor++;
+        matchedCount++;
       }
-      entryCursor = entryCursor + 1;
+      entryCursor++;
       entriesRemaining = entriesRemaining - 1;
     } while (entriesRemaining != 0);
+    /* exchange sort: every record is compared with each later one and swapped (0x80 dwords) when the later
+       path is smaller; outputEntries walks down the list as the front becomes sorted */
     if (matchedCount != 0) {
-      remainingCount = matchedCount + -1;
+      remainingCount = matchedCount - 1;
       carryFlag = false;
       if (remainingCount != 0) {
         entryCursor = outputEntries + 1;
         unsortedCount = matchedCount;
         do {
           do {
-            unitsRemaining = 0x100;
+            unitsRemaining = PCK_ENTRY_HEADER_BYTES / 2; /* REPE CMPSW over the whole record */
             targetCursor = entryCursor;
             sourceCursor = outputEntries;
             do {
               if (unitsRemaining == 0) break;
-              unitsRemaining = unitsRemaining + -1;
+              unitsRemaining--;
               firstPathCursor = sourceCursor->path;
               secondPathCursor = targetCursor->path;
               carryFlag = *secondPathCursor < *firstPathCursor;
@@ -683,7 +683,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
               sourceCursor = (PckEntryHeader *)(sourceCursor->path + 1);
             } while (*secondPathCursor == *firstPathCursor);
             if (carryFlag) {
-              unitsRemaining = 0x80;
+              unitsRemaining = PCK_ENTRY_HEADER_BYTES / 4;
               do {
                 sourceCursor = outputEntries;
                 targetCursor = entryCursor;
@@ -692,7 +692,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
                 *(uint32_t *)sourceCursor->path = *(uint32_t *)targetCursor->path;
                 UNLOCK();
                 *(uint32_t *)targetCursor->path = swappedDword;
-                unitsRemaining = unitsRemaining + -1;
+                unitsRemaining--;
                 entryCursor = (PckEntryHeader *)(targetCursor->path + 2);
                 outputEntries = (PckEntryHeader *)(sourceCursor->path + 2);
               } while (unitsRemaining != 0);
@@ -700,11 +700,11 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
               outputEntries = (PckEntryHeader *)(sourceCursor[-1].path + 2);
             }
             carryFlag = (PckEntryHeader *)0xfffffdff < entryCursor;
-            entryCursor = entryCursor + 1;
-            remainingCount = remainingCount + -1;
+            entryCursor++;
+            remainingCount--;
           } while (remainingCount != 0);
-          remainingCount = unsortedCount + -2;
-          unsortedCount = unsortedCount + -1;
+          remainingCount = unsortedCount - 2;
+          unsortedCount--;
           entryCursor = outputEntries + 2;
           carryFlag = false;
           outputEntries = outputEntries + 1;
@@ -714,16 +714,15 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
   }
 Package_FindEntry_ReturnMatches:
   successResult.matchCount = matchedCount;
-  successResult.recordSizeOrError = 0x200;
+  successResult.recordSizeOrError = PCK_ENTRY_HEADER_BYTES;
   successResult.failed = false;
   return successResult;
 }
 
 
 /* Address: 0x0040E500.
-   Ownership: assets/package/runtime.
-   Purpose: Finds the mount slot by file handle, frees its entry-header array, closes the file, and clears all
-   three slot fields.
+   Unmounts the package fileHandle: frees its entry-header array, closes the file and clears the mount slot.
+   Does nothing for a zero or unknown handle.
 */
 void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle)
 
@@ -733,21 +732,21 @@ void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle)
   PckMountSlot *mountSlotCursor;
   
   mountSlotCursor = g_PackageMountSlots;
-  mountSlotsRemaining = 0x400;
-  handleOrRemaining = fileHandle;
+  mountSlotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
+  handleOrRemaining = fileHandle; /* a zero handle returns at once, like running out of slots */
   while( true ) {
     if (handleOrRemaining == 0) {
       return;
     }
     if (fileHandle == mountSlotCursor->fileHandle) break;
-    mountSlotCursor = mountSlotCursor + 1;
+    mountSlotCursor++;
     mountSlotsRemaining = mountSlotsRemaining - 1;
     handleOrRemaining = mountSlotsRemaining;
   }
   g_MemoryApi.free(mountSlotCursor->entryHeaders);
   g_FileSystemClose((void *)fileHandle);
   mountSlotCursor->fileHandle = 0;
-  mountSlotCursor->entryHeaders = (PckEntryHeader *)0x0;
+  mountSlotCursor->entryHeaders = NULL;
   mountSlotCursor->entryCount = 0;
   return;
 }
@@ -782,10 +781,9 @@ bool __thandor_cf_preserve_eax_ecx_edx Package_WildcardPathMatches(uint16_t *pat
 
 
 /* Address: 0x0040EAF0.
-   Ownership: assets/package/runtime.
-   Purpose: Seeks to runtimePayloadOffset + 0x200, reads packedSize bytes into g_PackageScratchBuffer, and
-   dispatches compressionMethod through g_PckDecoderTable into destination. CF reports failure.
-   Local calls: Package_SetLastErrorPath.
+   Reads the packed data of entry from the package fileHandle into g_PackageScratchBuffer and unpacks it into
+   destination with the decoder of its compression method (g_PckDecoderTable). Returns the decoder result; on
+   failure the entry path is left in g_PackageLastErrorPath and CF is set.
 */
 PackageDecodeResult __thandor_eax_cf_preserve_ecx_edx
 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle)
@@ -800,7 +798,7 @@ Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHan
   PackageDecodeResult failureResult;
   
   seekResult = g_FileSystemSeek
-                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + 0x200,(void *)fileHandle);
+                    (FILESYSTEM_SEEK_BEGIN,entry->runtimePayloadOffset + PCK_ENTRY_HEADER_BYTES,(void *)fileHandle);
   decoderStatusCode = seekResult.positionOrError;
   if (!seekResult.failed) {
     entryCompression = entry->compressionMethod;
@@ -825,9 +823,10 @@ Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHan
 
 
 /* Address: 0x0040E2B0.
-   Ownership: assets/package/runtime.
-   Purpose: Copies up to 256 UTF-16 words from path into g_PackageLastErrorPath. The buffer is used by package and
-   loose-file load failures.
+   Stores path in g_PackageLastErrorPath for the fatal-error message of a failed load. The length is measured
+   in code units (at most 0x100, terminator included) but used as a byte count: the original copies twice as
+   many code units as the path has (SUB EDI,ESI then REP MOVSW), running past the terminator and, for paths
+   over 0x80 units, into g_FatalErrorDetail1Utf16 behind the 0x100-unit buffer.
 */
 void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path)
 
@@ -842,17 +841,17 @@ void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path
   do {
     scanEnd = wordCursor;
     if (remainingCount == 0) break;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
     scanEnd = wordCursor + 1;
     codeUnit = *wordCursor;
     wordCursor = scanEnd;
   } while (codeUnit != 0);
-  remainingCount = (int)scanEnd - (int)path;
+  remainingCount = (int)scanEnd - (int)path; /* bytes, used as a code-unit count below */
   wordCursor = g_PackageLastErrorPath;
-  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (; remainingCount != 0; remainingCount--) {
     *wordCursor = *path;
-    path = path + 1;
-    wordCursor = wordCursor + 1;
+    path++;
+    wordCursor++;
   }
   return;
 }
@@ -941,9 +940,10 @@ Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle)
 
 
 /* Address: 0x0040EA20.
-   Ownership: assets/package/runtime.
-   Purpose: Lowercases the caller's path in place and searches mounted archives from slot 0 upward, establishing
-   first-mounted-wins precedence. CF clear returns the matching entry header.
+   Finds path in the mounted packages, scanning the mount slots from the front so that the first mounted
+   package that has the entry wins. The path is lowercased in place first (package paths are stored in lower
+   case). Returns the entry header and, in EBX, the package handle; CF set when the path is too long for an
+   entry or no package has it.
 */
 PackageEntryLookupResult __thandor_eax_ebx_cf_preserve_ecx_edx
 Package_FindEntryAcrossMounts(uint16_t *path)
@@ -965,27 +965,28 @@ Package_FindEntryAcrossMounts(uint16_t *path)
   PackageEntryLookupResult notFoundResult;
   PckEntryHeader *currentEntry;
 
-  remainingOrLength = 0xf6;
+  remainingOrLength = PCK_ENTRY_PATH_UNITS;
   pathCursor = path;
   do {
     compareRemaining = remainingOrLength;
     codeUnit = *pathCursor;
-    if ((0x40 < codeUnit) && (codeUnit < 0x5b)) {
+    if ((0x40 < codeUnit) && (codeUnit < 0x5b)) { /* 'A'..'Z' */
       codeUnit = codeUnit + 0x20;
     }
     *pathCursor = (uint16_t)codeUnit;
-    remainingOrLength = compareRemaining + -1;
+    remainingOrLength = compareRemaining - 1;
     if (remainingOrLength == 0) goto Package_FindEntryAcrossMounts_NotFound;
     pathCursor = pathCursor + 1;
   } while (codeUnit != 0);
   mountSlot = g_PackageMountSlots;
-  slotsRemaining = 0x400;
-  remainingOrLength = -(compareRemaining + -0xf7);
+  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
+  /* the path length in code units, terminator included */
+  remainingOrLength = -(compareRemaining + -(PCK_ENTRY_PATH_UNITS + 1));
   do {
     currentEntry = mountSlot->entryHeaders;
     entriesRemaining = mountSlot->entryCount;
     failureEntryCount = entriesRemaining;
-    if ((currentEntry != (PckEntryHeader *)0x0) && (entriesRemaining != 0)) {
+    if ((currentEntry != NULL) && (entriesRemaining != 0)) {
       do {
         /* REPE CMPSW over the lowercased path length including its terminator. */
         matched = false;
@@ -994,9 +995,9 @@ Package_FindEntryAcrossMounts(uint16_t *path)
         nameCursor = currentEntry->path;
         while (compareRemaining != 0) {
           matched = *pathCursor == *nameCursor;
-          compareRemaining = compareRemaining + -1;
-          pathCursor = pathCursor + 1;
-          nameCursor = nameCursor + 1;
+          compareRemaining--;
+          pathCursor++;
+          nameCursor++;
           if (!matched) break;
         }
         if (matched) {
@@ -1005,13 +1006,13 @@ Package_FindEntryAcrossMounts(uint16_t *path)
           foundResult.notFound = false;
           return foundResult;
         }
-        currentEntry = currentEntry + 1;
+        currentEntry++;
         entriesRemaining = entriesRemaining - 1;
       } while (entriesRemaining != 0);
       failureEntryCount = 0;
     }
-    mountSlot = mountSlot + 1;
-    slotsRemaining = slotsRemaining + -1;
+    mountSlot++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
 Package_FindEntryAcrossMounts_NotFound:
   notFoundResult.fileHandle = failureEntryCount;

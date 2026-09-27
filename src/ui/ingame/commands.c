@@ -494,8 +494,8 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
 
 
 /* Address: 0x0055F4A0.
-   Ownership: ui/ingame/commands.
-   Purpose: Handles in game command mode toggle player flag bit0 and reconcile global.
+   In-game command handler 0x370 (key P): toggles the player's pause request, then toggles the global pause once
+   every player agrees - the game pauses when all players request it and resumes when none does any more.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
@@ -504,47 +504,40 @@ InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
 {
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
-  
+
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->sessionFlags =
-       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->sessionFlags ^ 1;
+       g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->sessionFlags ^ PLAYER_SESSION_FLAG_PAUSE_REQUESTED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   do {
-    if ((g_UiCommandRuntimeFlags & 1) == 0) {
-      if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags & 1) == 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) == 0) {
+      if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+           PLAYER_SESSION_FLAG_PAUSE_REQUESTED) == 0) {
         return;
       }
     }
-    else if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags & 1) != 0
-            ) {
+    else if ((g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->sessionFlags &
+              PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
       return;
     }
-    playerRecord = playerRecord + 1;
-    remainingPlayers = remainingPlayers - 1;
+    playerRecord++;
+    remainingPlayers--;
   } while (remainingPlayers != 0);
-  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 1;
+  g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_PAUSED;
   return;
 }
 
 
 /* Address: 0x005604D0.
-   Ownership: ui/ingame/commands.
-   Purpose: Consumes the pending selected placement record, validates and creates the local army/effect object, and
-   refreshes local in-game UI state. Typed parameters: p0 playerId→PlayerRuntimeId. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged. Typed parameters: p1
-   payloadDword04→CommandPayloadDword04_V343, p2 payloadDword08→CommandPayloadDword08_V343, p3
-   payloadDword0C→CommandPayloadDword0C_V343.
-   Cross-module calls: ArmyPlacement_ValidateAssetAtPointAndCellCorners [gameplay/army/placement],
-   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
-   [world/model/hierarchy], ArmyRuntime_DispatchClassCommand [gameplay/army/runtime],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime], UiCatalogGroup48_RebuildGrid
-   [ui/ingame/technology].
+   In-game command handler INGAME_COMMAND_PLACE_ARMY: takes the player's pending army asset (stock entry chosen
+   in the army stock panel), validates the placement at the clicked point and creates the army there with the
+   given heading, counts it for the faction and spawns the asset's placement effect. A rejected placement leaves
+   the asset pending; a successful one ends the local placement mode.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommand_ExecuteLocalPlacementFromSelection
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,CommandPayloadDword04 headingAngle,
+          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12)
 
 {
   FactionRelationCounter *relationCounter;
@@ -555,29 +548,28 @@ InGameCommand_ExecuteLocalPlacementFromSelection
   ModelRuntimeSlot *slotModelRuntime;
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   ArmyRuntimeSlot **createdArmySlots;
-  Q12 worldYQ12;
-  SelectionPlayerRuntimeBlock *worldXQ12;
   WorldRuntimeContext *worldRuntime;
   bool placementRejected;
   ArmyRuntimeCreateResult createResult;
-  
+
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
+  /* XCHG in the original: take the pending entry and clear it atomically */
   LOCK();
   pendingEntryOrFactionToken = playerBlock->pendingSelectionEntityOffset8098;
   playerBlock->pendingSelectionEntityOffset8098 = 0;
   UNLOCK();
   if (pendingEntryOrFactionToken != 0) {
-    worldXQ12 = playerBlock;
+    /* the pending entry holds the army asset id at +8 */
     placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
-                      (0,payloadDword04,payloadDword08,payloadDword0C,
+                      (0,headingAngle,worldXQ12,worldYQ12,
                        *(ArmyPlacementContext *)(pendingEntryOrFactionToken + 8),playerBlock->primaryEntityOrFactionToken8080,
                        worldRuntime);
     if (!placementRejected) {
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
       createResult = ArmyRuntime_CreateInstanceFromAsset
-                        (4,payloadDword04,g_ArmyPlacementValidatedWorldYQ12,
+                        (4,headingAngle,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->primaryEntityOrFactionToken8080,
                          *(PckArmyAssetIdCatalog *)(pendingEntryOrFactionToken + 8),worldRuntime);
@@ -586,6 +578,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
         pendingEntryOrFactionToken = playerBlock->primaryEntityOrFactionToken8080;
         modelNodeRuntime = createdArmySlots[1];
         armySlot = *createdArmySlots;
+        /* pendingEntryOrFactionToken now holds the owning faction */
         modelNodeRuntime->movementPosition0Q12 = 0;
         if (pendingEntryOrFactionToken == (runtimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
           modelNodeRuntime->movementPosition0Q12 = 0x7fffffff;
@@ -610,7 +603,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
         if (playerId != g_LocalPlayerRuntimeId) {
           return;
         }
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffdf;
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING;
         g_InGamePendingPlacementArmyAsset = 0;
         return;
       }
@@ -770,34 +763,31 @@ InGameCommandAction_ClearSelectedArmyTokenAndClosePage(UiNodeBase *control)
 
 
 /* Address: 0x0056C660.
-   Ownership: ui/ingame/commands.
-   Purpose: Binary entry is anchored by g_UiActionPage12InitializedHandlers[0]@005625B8. Queued UI action handler
-   for INGAME_PAGE12[0] (0x1200). Return datatype is preserved for non-queue direct callers. Typed parameters: p0
-   source→InGameCommandPanelSourceAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiNodeList_UnsuppressActionId
-   [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists].
+   UI action 0x1200 (game menu quit button): opens the quit game window (page 4 of the in-game window page
+   stack). Its restart button is only offered in local games, its surrender button only while the local
+   faction is still in play (world input enabled).
 */
 void __thandor_preserve_eax
 InGameCommandPanel_OpenPage4AndRefreshAvailability(InGameCommandPanelSourceAddress32 source)
 
 {
   UiNodeBase *firstNode;
-  
+
+  /* source is InGameUiImage.gameMenuQuitButton (+0x25B0); -0x19E0 lands on gameWindowPageStack (+0xBD0) */
   UiPageStack_SetActiveIndex(4,(UiPageStackControl *)(source + -0x19e0));
-  firstNode = (UiNodeBase *)(source + -0x25b0);
+  firstNode = (UiNodeBase *)(source + -0x25b0); /* the in-game UI root */
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiNodeList_UnsuppressActionId(0x1027,firstNode);
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
   }
   else {
-    UiNodeList_SuppressActionId(0x1027,firstNode);
+    UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_RESTART_MISSION,firstNode);
   }
-  if ((g_UiCommandRuntimeFlags & 0x100) == 0) {
-    UiNodeList_UnsuppressActionId(0x101e,firstNode);
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0) {
+    UiNodeList_UnsuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
   }
   else {
-    UiNodeList_SuppressActionId(0x101e,firstNode);
+    UiNodeList_SuppressActionId(INGAME_ACTION_QUIT_SURRENDER,firstNode);
   }
   return;
 }
@@ -1560,15 +1550,10 @@ void UiCommandRuntime_CallbackNoOp(void)
 }
 
 /* Address: 0x0055F280.
-   Ownership: ui/ingame/commands.
-   Purpose: Handles local operation 0x150. Depending on flags, marks runtime state, transfers matching object
-   ownership, removes a frontend player, shuts down a departed local network session, or posts localized departure
-   message 0xFF08. Typed parameters: p3 flags→GameEntityCommandFlags. Nearby but non-identical semantic domains
-   were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: Resource_Release [assets/resource/runtime], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
-   [ui/ingame/runtime], ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
+   In-game command handler 0x150 (quit game window and player departure): CLOSE_SESSION ends the session,
+   SURRENDER destroys every army of the player's faction. Without flags the player has left: another player's
+   departure is announced in the message history (text 0xFF08); the local player's own departure marks the
+   session as left and, in a network game, shuts the network backend down and falls back to a one-player setup.
 */
 void __thandor_void_preserve_eax_ecx
 InGameCommand150_HandlePlayerDepartureAndOwnership
@@ -1586,11 +1571,11 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
   WorldOwnerListNode100 *ownerNode;
   
   runtimeRoot = g_InGameRuntimeRoot;
-  if ((flags & 2) == 0) {
+  if ((flags & INGAME_COMMAND150_FLAG_CLOSE_SESSION) == 0) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    if ((flags & 1) == 0) {
+    if ((flags & INGAME_COMMAND150_FLAG_SURRENDER) == 0) {
       do {
         if (playerOrFactionId == playerRecord->playerRuntimeId) {
           playerRecord->heartbeatExpiryTicks = 0;
@@ -1598,12 +1583,12 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
             g_SessionTransferTimeoutTicks = 0;
           }
           if (playerOrFactionId == (runtimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId) {
-            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x20000;
+            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT;
             Resource_Release(g_FrontendLoadedCampaignAsset);
-            g_FrontendLoadedCampaignAsset = (void *)0x0;
+            g_FrontendLoadedCampaignAsset = NULL;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                 SESSION_NETWORK_ROLE_LOCAL) {
-              g_FrontendLoadedCampaignAsset = (void *)0x0;
+              g_FrontendLoadedCampaignAsset = NULL; /* stored twice, as in the original */
               return;
             }
             g_SessionNetworkRoleFlags =
@@ -1620,20 +1605,21 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
             (playerRecord->factionAssignment).roleStateFlags = 0;
             return;
           }
+          /* departure message: the player name is patched into text 0xFF08 */
           departureText = TextResource_Resolve(0xff08);
           RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,departureText.text);
           InGameRecentTextHistory_InsertAndRebuild8(departureText.text);
           return;
         }
-        remainingPlayers = remainingPlayers - 1;
-        playerRecord = playerRecord + 1;
+        remainingPlayers--;
+        playerRecord++;
       } while (remainingPlayers != 0);
     }
     else {
       factionToken = g_SelectionPlayerRuntimeBlockPointers[playerOrFactionId]->
               primaryEntityOrFactionToken8080;
       for (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+          ownerNode != NULL; ownerNode = ownerNode->nextNode) {
         if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
            (entityRuntime = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8),
            factionToken == (entityRuntime->common).ownership.ownerIndex)) {
@@ -1643,7 +1629,7 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
     }
   }
   else {
-    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x10000;
+    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED;
   }
   return;
 }

@@ -12,6 +12,22 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: movie/runtime/playback. */
+
+/* Movie_Open flags. Intro and end movies are streamed; in-game and briefing movies are loaded from the packages
+   only. Movie_Open clears MOVIE_OPEN_PACKAGE_ONLY when the loose path was not used, so a nonzero
+   MovieRuntime.openFlags means streaming. */
+#define MOVIE_OPEN_STREAM 0x00000001 /* load at most MOVIE_INITIAL_VIDEO_MAX_BYTES, the worker thread streams the rest */
+#define MOVIE_OPEN_PACKAGE_ONLY 0x80000000 /* skip the g_LooseMoviePathPrefix directory */
+/* FLM layout and the streaming buffer (Movie_Open, Movie_AdvanceFrame, Movie_StreamWorkerThread) */
+#define MOVIE_FILE_HEADER_BYTES 0x200 /* MovieFileHeader; the video stream follows it */
+#define MOVIE_FLM_CONVERTER_VERSION 0x20001
+#define MOVIE_RUNTIME_PIXELS_OFFSET 0x220 /* MovieRuntime: 0x200-byte gfx header and one 0x20-byte subresource
+                                             entry, then the ARGB frame */
+#define MOVIE_STREAM_BUFFER_MAX_BYTES 0x3C0000 /* allocation cap of the FLM buffer when streaming */
+#define MOVIE_INITIAL_VIDEO_MAX_BYTES 0x3A2000 /* video bytes Movie_Open reads when streaming */
+#define MOVIE_REFILL_LIMIT_BYTES 0x3A2200 /* refills only while header + loaded video stay below this */
+#define MOVIE_REFILL_CHUNK_BYTES 0x1E000 /* bytes per refill; also the minimum buffered ahead of a decode */
+#define MOVIE_COMPACT_SHIFT_BYTES 0x1E0000 /* played bytes dropped from the buffer front at once */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */

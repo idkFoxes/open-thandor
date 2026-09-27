@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/text/resources. */
+
+/* Text resource ids: a compact id (bits 16-23 zero) is page << 8 | index, an extended id page << 16 | index
+   with a 16-bit index. TEXT_RESOURCE_ID_NONE resolves to the shared empty string; FontRuntime_Init
+   fills the whole override table with it. */
+#define TEXT_RESOURCE_ID_NONE 0xFFFFFFFF
+#define TEXT_RESOURCE_OVERRIDE_CAPACITY 0x1000 /* entries of TextResourceOverrideTable */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041CD30 */

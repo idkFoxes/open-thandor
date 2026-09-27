@@ -2703,20 +2703,17 @@ InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot)
 
 
 /* Address: 0x00563BD0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Updates the in-game HUD status counters, localized session text, timers, ready-state prompts, and
-   related transient text state.
-   Cross-module calls: WideNumber_FormatUtf16 [core/text/string], FrontendPlayerRuntime_SetReadyFlagById
-   [ui/frontend/player], InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   WorldRuntime_GetVector0Regs [world/runtime/core], WorldRuntime_GetVector1Regs [world/runtime/core],
-   TextResource_Resolve [assets/text/resources].
+   Per-tick HUD text update. Every 20 ticks (one second) it formats the render statistics into the debug overlay
+   and reports the local player as slow (fewer than 13 frames in that second) or no longer slow; every tick it
+   formats the camera pose, the selection point, free memory and the elapsed game time, and builds the faction
+   status lines (name, player roster with pause/speed/slow marks, a counter) for the active factions 1..7.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessionPrompts(void)
 
 {
   SelectionPlayerRuntimeBlock *selectionBlock;
   uint32_t stepTicks;
-  uint64_t elapsedSeconds;
+  uint64_t elapsedMinutes;
   uint32_t value;
   uint16_t *stream;
   uint32_t frameOrFactionIndex;
@@ -2735,9 +2732,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   
   frameOrFactionIndex = g_RenderedFrameCountSinceDebugRefresh;
-  g_DebugOverlayCounterRefreshCountdown = g_DebugOverlayCounterRefreshCountdown - 1;
+  g_DebugOverlayCounterRefreshCountdown--;
   if (g_DebugOverlayCounterRefreshCountdown == 0) {
-    g_DebugOverlayCounterRefreshCountdown = 0x14;
+    g_DebugOverlayCounterRefreshCountdown = 20;
+    /* frames, then draw calls / texture binds / texture reloads per frame (2 decimals) */
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,g_RenderedFrameCountSinceDebugRefresh,
                g_FrontendDebugOverlayTextSlot00Utf16);
@@ -2753,25 +2751,27 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_FIXED_FRACTION_WIDTH,2,10,frameOrFactionIndex,
                g_TextureDeviceReloadCount,g_FrontendDebugOverlayTextSlot03Utf16);
+    /* bit 0 of g_InGameReadyStateToggleFlags: the slow state is currently reported */
     if ((g_InGameReadyStateToggleFlags & 1) == 0) {
-      if (g_RenderedFrameCountSinceDebugRefresh < 0xd) {
+      if (g_RenderedFrameCountSinceDebugRefresh < 13) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerRuntime_SetReadyFlagById(g_LocalPlayerRuntimeId,0,0,2);
+          FrontendPlayerRuntime_SetReadyFlagById(g_LocalPlayerRuntimeId,0,0,PLAYER_SESSION_FLAG_SLOW_RENDERING);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x340,0,0,2);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SESSION_FLAGS,0,0,
+                                                      PLAYER_SESSION_FLAG_SLOW_RENDERING);
         }
         g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
       }
     }
-    else if (0xc < g_RenderedFrameCountSinceDebugRefresh) {
+    else if (12 < g_RenderedFrameCountSinceDebugRefresh) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendPlayerRuntime_SetReadyFlagById(g_LocalPlayerRuntimeId,0,0,0);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x340,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_SET_SESSION_FLAGS,0,0,0);
       }
       g_InGameReadyStateToggleFlags = g_InGameReadyStateToggleFlags ^ 1;
     }
@@ -2802,10 +2802,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,
              1,cameraOrientation.pitchAngle,g_FrontendDebugOverlayTextSlot09Utf16);
+  /* selection point (+8/+0xC), or "-" while its dword +0x10 holds the 0x7FFFFFFF "none" marker */
   if (*(int *)((runtimeRoot->worldRuntime0A30).selection.reserved04_1F + 0x10) == 0x7fffffff) {
-    g_FrontendDebugOverlayTextSlot10Utf16[0] = 0x2d;
+    g_FrontendDebugOverlayTextSlot10Utf16[0] = L'-';
     g_FrontendDebugOverlayTextSlot10Utf16[1] = 0;
-    g_FrontendDebugOverlayTextSlot11Utf16[0] = 0x2d;
+    g_FrontendDebugOverlayTextSlot11Utf16[0] = L'-';
     g_FrontendDebugOverlayTextSlot11Utf16[1] = 0;
   }
   else {
@@ -2824,9 +2825,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
   WideNumber_FormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,value,
              g_FrontendDebugOverlayTextSlot12Utf16);
-  elapsedSeconds = (uint64_t)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
+  /* 1200 simulation ticks = one minute at 20 ticks per second; rounded up, shown as hours and minutes */
+  elapsedMinutes = (uint64_t)(g_GameFactionRuntimeImage.tail.simulationTick + 1199) / 1200;
   g_LocaleFormatTimeFieldsUtf16
-            ((uint32_t)(elapsedSeconds / 0x3c),(uint32_t)(elapsedSeconds % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
+            ((uint32_t)(elapsedMinutes / 60),(uint32_t)(elapsedMinutes % 60),g_FrontendDebugOverlayTextSlot13Utf16);
+  /* faction records are 0x740 bytes; faction 0 is skipped */
   frameOrFactionIndex = 1;
   factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   destination = g_InGameFactionStatusTextScratchUtf16;
@@ -2846,43 +2849,46 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
         do {
           if (frameOrFactionIndex == (playerBlock->factionAssignment).factionAssignmentIndex) {
             if (rosterCount != 0) {
-              rosterCursor[0] = 0x2c;
-              rosterCursor[1] = 0x20;
+              rosterCursor[0] = L',';
+              rosterCursor[1] = L' ';
               rosterCursor = rosterCursor + 2;
             }
-            rosterCount = rosterCount + 1;
+            rosterCount++;
             copiedText = RichTextCommandStream_CopyExpanded
                                (0x28,rosterCursor,(playerBlock->playerName).textUtf16);
             if (!copiedText.overflowed) {
               rosterCursor = (uint16_t *)((int)rosterCursor + copiedText.bytesWritten);
               selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
               stepTicks = selectionBlock->simulationStepTicks;
-              if ((selectionBlock->sessionFlags & 1) != 0) {
-                rosterCursor[0] = 0x20;
-                rosterCursor[1] = 0x20;
-                rosterCursor[2] = 0x50;
+              if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_PAUSE_REQUESTED) != 0) {
+                /* "  P" */
+                rosterCursor[0] = L' ';
+                rosterCursor[1] = L' ';
+                rosterCursor[2] = L'P';
                 rosterCursor[3] = 0;
                 rosterCursor = rosterCursor + 3;
               }
               if (1 < stepTicks) {
-                rosterCursor[0] = 0x20;
-                rosterCursor[1] = 0x20;
+                /* "  x<n>": the characters 'x' and '0' + stepTicks as one dword store */
+                rosterCursor[0] = L' ';
+                rosterCursor[1] = L' ';
                 *(uint32_t *)(rosterCursor + 2) = stepTicks * 0x10000 + 0x300078;
                 rosterCursor = rosterCursor + 4;
               }
-              if ((selectionBlock->sessionFlags & 2) != 0) {
-                rosterCursor[0] = 0x20;
-                rosterCursor[1] = 0x20;
+              if ((selectionBlock->sessionFlags & PLAYER_SESSION_FLAG_SLOW_RENDERING) != 0) {
+                /* "  W" wrapped in rich-text style commands 0x8004/0x8003 ... 0x8005 */
+                rosterCursor[0] = L' ';
+                rosterCursor[1] = L' ';
                 rosterCursor[2] = 0x8004;
                 rosterCursor[3] = 0x8003;
-                rosterCursor[4] = 0x57;
+                rosterCursor[4] = L'W';
                 rosterCursor[5] = 0x8005;
                 rosterCursor = rosterCursor + 6;
               }
             }
           }
-          playerBlock = playerBlock + 1;
-          remainingPlayers = remainingPlayers - 1;
+          playerBlock++;
+          remainingPlayers--;
         } while (remainingPlayers != 0);
         *rosterCursor = 0;
       }
@@ -2896,6 +2902,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
         rosterCursor = resolvedText.text;
         RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,rosterCursor);
       }
+      /* faction name (text 0x2173 + dword +0x38 of the record), roster, and the sum of dwords +0x90/+0x94 */
       resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
       statusTemplate = TextResource_Resolve(0x21d2);
       stream = statusTemplate.text;
@@ -2907,7 +2914,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
         destination = (uint16_t *)((int)destination + copiedText.bytesWritten);
       }
     }
-    frameOrFactionIndex = frameOrFactionIndex + 1;
+    frameOrFactionIndex++;
     factionRecordAddress = factionRecordAddress + 0x740;
     if (7 < frameOrFactionIndex) {
       return;
@@ -3569,11 +3576,10 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 
 
 /* Address: 0x0056A460.
-   Ownership: ui/ingame/runtime.
-   Purpose: Walks world entries and computes the weighted suitability score for a music track class. Typed
-   parameters: p0 trackClassId→MusicTrackClassId_V343. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   Scores how well one of the level's music tracks (by sample number) fits the situation of the active faction:
+   sums three army definition values over the faction's armies (+0x78 weighted 3 for armies with flag bit 0 at
+   +0x2C) plus 50 per army with definition flag 0x10, and weights them by the track's number band (below 20, 50,
+   70, or above). Track number 0 scores 0. The in-game music picks the best of the level's four tracks.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 InGameMusic_ComputeTrackSuitabilityScore
@@ -3599,8 +3605,9 @@ InGameMusic_ComputeTrackSuitabilityScore
   flag10BonusSum = 0;
   if (trackClassId != 0) {
     activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
-    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != (WorldOwnerListNode100 *)0x0;
+    for (ownerListNode = worldRuntime->ownerListHead; ownerListNode != NULL;
         ownerListNode = ownerListNode->nextNode) {
+      /* modelRuntimeOrBonus: the entity runtime (owner at +0xC, army asset id at +0xA0), later the flag bonus */
       if ((ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeOrBonus = *(int *)((int)ownerListNode->runtimePayload + 8), activeFactionIndex == *(int *)(modelRuntimeOrBonus + 0xc))) {
         foundArmyAsset = ArmyAssetRegistry_FindById(*(PckArmyAssetIdCatalog *)(modelRuntimeOrBonus + 0xa0));
@@ -3612,7 +3619,7 @@ InGameMusic_ComputeTrackSuitabilityScore
           }
           class70Sum = class70Sum + armyDefinition->definitionClassValue70;
           weightedClass78Sum = weightedClass78Sum + registryWeight * armyDefinition->definitionClassValue78;
-          modelRuntimeOrBonus = 0x32;
+          modelRuntimeOrBonus = 50;
           if ((armyDefinition->flags14 & 0x10) == 0) {
             modelRuntimeOrBonus = 0;
           }
@@ -3621,13 +3628,14 @@ InGameMusic_ComputeTrackSuitabilityScore
         }
       }
     }
-    if (trackClassId < 0x14) {
+    /* weights are Q8 (0x100 = 1) */
+    if (trackClassId < 20) {
       suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x280 + class70Sum * 0x100;
     }
-    else if (trackClassId < 0x32) {
+    else if (trackClassId < 50) {
       suitabilityScore = flag10BonusSum * -0x100 + class74Sum * 0x40 + 0x32000 + weightedClass78Sum * 0x10 + class70Sum * 0x80;
     }
-    else if (trackClassId < 0x46) {
+    else if (trackClassId < 70) {
       suitabilityScore = flag10BonusSum * 0x80 + class74Sum * 0x100 + weightedClass78Sum * 0x20 + class70Sum * 0x300;
     }
     else {
@@ -3639,12 +3647,10 @@ InGameMusic_ComputeTrackSuitabilityScore
 
 
 /* Address: 0x0056A8A0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Recovered action-table target INGAME_PAGE10[31] (0x101F).
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], UiSelectableControl_SetSelected [ui/controls/lists], UiKeyboardFocus_ReleaseNode
-   [ui/controls/input], TextResource_Resolve [assets/text/resources], RichTextCommandStream_MeasureWrappedBlockRegs
-   [assets/text/richtext].
+   UI action 0x101F (mission help toggle button): opening shows the mission help window (page 8) with the
+   active faction's help text for this level, re-measures its three text panels and blocks the world input; a local
+   game is paused meanwhile. Closing hides the window, re-enables the world input and resumes the game unless it
+   was already paused before the window opened.
 */
 
 void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *source)
@@ -3656,25 +3662,29 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
   RichTextExtentRegs wrappedExtent;
   TextResolveResult resolvedText;
   InGameAction101FRootView43DC *uiRoot;
-  
+
   ancestorParent = source->parent;
   uiRoot = (InGameAction101FRootView43DC *)source;
-  while (ancestorParent != (UiNodeBase *)0xffffffff) {
+  while (ancestorParent != UI_NODE_NONE) {
     uiRoot = (InGameAction101FRootView43DC *)(uiRoot->rootUi0000).base.parent;
     ancestorParent = (uiRoot->rootUi0000).base.parent;
   }
   isSelected = (bool)UiSelectableControl_IsSelected((UiSelectableControl *)source);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(0,&uiRoot->gameWindowPageStack0BD0);
+    /* interaction flag 8: a window blocks the world input */
     interactionFlagsField = &(uiRoot->worldRuntime0A30).interaction.interactionFlags48;
     *interactionFlagsField = *interactionFlagsField & 0xfffffff7;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      if ((g_UiCommandRuntimeFlags & 0x400) == 0) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffbffe;
+      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
+        g_UiCommandRuntimeFlags =
+             g_UiCommandRuntimeFlags & ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       }
       else {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffbbff;
+        g_UiCommandRuntimeFlags =
+             g_UiCommandRuntimeFlags &
+             ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW);
       }
     }
     return;
@@ -3684,6 +3694,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
   *interactionFlagsField = *interactionFlagsField | 8;
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)&uiRoot->worldRuntime0A30);
   UiPageStack_SetActiveIndex(8,&uiRoot->gameWindowPageStack0BD0);
+  /* help text id: 0x230017 + 16 * level title index + active faction */
   (uiRoot->textPanel0_1100).textResourceIdE4 =
        (uiRoot->worldRuntime0A30).activeFactionRuntimeIndex + 0x230017 +
        ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).header.
@@ -3710,11 +3721,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameUiAction101F_Handler(UiNodeBase *
   UiScrollableControl_RebuildViewportAndScrollbars(&(uiRoot->textPanel2_1334).scrollable);
   UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,&(uiRoot->textPanel2_1334).scrollable);
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
-       SESSION_NETWORK_ROLE_LOCAL) && ((g_UiCommandRuntimeFlags & 0x4000) == 0)) {
-    if ((g_UiCommandRuntimeFlags & 1) != 0) {
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x400;
+       SESSION_NETWORK_ROLE_LOCAL) && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE) == 0)) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
+      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW;
     }
-    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x4001;
+    g_UiCommandRuntimeFlags =
+         g_UiCommandRuntimeFlags | (UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
   }
   return;
 }
@@ -3820,16 +3832,10 @@ InGameOtherPlayerCommand_DispatchSelectedTarget(UiCommandSpriteButtonControl *co
 
 
 /* Address: 0x0056B520.
-   Ownership: ui/ingame/runtime.
-   Purpose: Finds the UI root, clears suppression on the command-page container, toggles the page stack at
-   root+0xBD0 between pages 0 and 2, refreshes the seven-slot selection state when page 2 becomes active, and
-   dispatches the verified backend payload. Queued UI action handler for INGAME_PAGE10[16] (0x1010). Return
-   datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiPageStack_ActivePageNotInList [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], SelectionInfo_GetFirstEntry [gameplay/selection/runtime],
-   InGameTechnologyPanel_ResetAndSelectCurrentArea [ui/ingame/technology],
-   FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80 [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   UI action 0x1010 (also key F): toggles the in-game technology window (page 2 of the window page stack).
+   When it opens with a selection, the technology panel is reset to the current area and the first selected
+   entity's definition is assigned to the player (command INGAME_COMMAND_ASSIGN_ARMY_TOKEN). Ignored while the
+   game is paused or the world input is disabled.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
@@ -3842,14 +3848,15 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
   GameEntityRuntime *firstSelectedEntity;
   CommandPayloadDword04 modelOffset;
   PageStackSearchResult pageNotInListResult;
-  
+
   ancestorParent = source->parent;
-  while (ancestorParent != (UiNodeBase *)0xffffffff) {
+  while (ancestorParent != UI_NODE_NONE) {
     source = (((UiRootNode *)source)->base).parent;
     ancestorParent = (((UiRootNode *)source)->base).parent;
   }
-  if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
-    INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & 0xfffffff7;
+  if ((g_UiCommandRuntimeFlags &
+       (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+    INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
     gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
     pageNotInListResult = UiPageStack_ActivePageNotInList(gameWindowStack);
     if (pageNotInListResult.pageIndex == 2) {
@@ -3860,9 +3867,10 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
     }
     UiPageStack_SetActiveIndex(pageIndex,gameWindowStack);
     if ((pageIndex == 2) &&
-       (firstSelectedEntity = SelectionInfo_GetFirstEntry(), firstSelectedEntity != (GameEntityRuntime *)0x0)) {
+       (firstSelectedEntity = SelectionInfo_GetFirstEntry(), firstSelectedEntity != NULL)) {
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
       InGameTechnologyPanel_ResetAndSelectCurrentArea((UiRootNode *)source);
+      /* network-safe form of the pointer: offset from g_ModelRuntimeRebaseDelta */
       modelOffset = (int)definitionRecord - g_ModelRuntimeRebaseDelta;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -3870,7 +3878,7 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
                   (g_LocalPlayerRuntimeId,0,0,modelOffset);
       }
       else {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x16b0,0,0,modelOffset);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_ASSIGN_ARMY_TOKEN,0,0,modelOffset);
       }
     }
   }
@@ -5517,14 +5525,10 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 
 
 /* Address: 0x005669B0.
-   Ownership: ui/ingame/runtime.
-   Purpose: Rebuilds the in-game selection-detail page for no selection, one selected entity, multiple selected
-   entities, or the hover record. It updates action 0x1010, localized weapon/name fields, costs, icons, and detail
-   pages.
-   Cross-module calls: FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken [ui/frontend/player],
-   UiNodeList_UnsuppressActionId [ui/controls/lists], Technology_IsAvailableForFaction
-   [gameplay/technology/runtime], UiNodeList_SuppressActionId [ui/controls/lists], ArmyAssetRegistry_FindById
-   [assets/army/catalog], UiPageStack_SetActiveIndex [ui/controls/layout].
+   Rebuilds the selection detail panel (page stack: 0 empty, 1 one own entity, 2 grid of up to 12 own entities,
+   3 the hovered stock/build record). Page 1 shows armour, energy, name and up to three weapon names of the
+   entity plus the name of its linked army asset (definition classes 0x0B/0x0D/0x16), and enables the technology button only when a technology is
+   available; page 3 shows the hovered record's armour, costs, build time, energy, name and weapons.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void)
 
@@ -5561,24 +5565,24 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
   
   definitionNode = g_UiHoverSelectionRecord;
   rootCursor = g_InGameRuntimeRoot;
-  if (g_InGameRuntimeRoot == (InGameRuntimeRootImageC3E4 *)0x0) {
+  if (g_InGameRuntimeRoot == NULL) {
     return;
   }
-  slotCounterOrOffset = 0x20;
+  slotCounterOrOffset = SELECTION_ENTRY_CAPACITY;
   workValue = (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex;
   selectedCountOrCounter = 0;
-  lastSelectedEntity = (GameEntityRuntime *)0x0;
+  lastSelectedEntity = NULL;
   entitySlot = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*entitySlot != (GameEntityRuntime *)0x0) {
-      selectedCountOrCounter = selectedCountOrCounter + 1;
+    if (*entitySlot != NULL) {
+      selectedCountOrCounter++;
       lastSelectedEntity = *entitySlot;
     }
-    entitySlot = entitySlot + 1;
-    slotCounterOrOffset = slotCounterOrOffset + -1;
+    entitySlot++;
+    slotCounterOrOffset--;
   } while (slotCounterOrOffset != 0);
   stack = &g_InGameRuntimeRoot->selectionDetailPageStack9FAC;
-  if (g_UiHoverSelectionRecord == (UiCommandRuntimeRecordPrefix *)0x0) {
+  if (g_UiHoverSelectionRecord == NULL) {
     if (selectedCountOrCounter == 1) {
       if (workValue == (lastSelectedEntity->common).ownership.ownerIndex) {
         recordCursor = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
@@ -5588,22 +5592,22 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
                             (g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId)
         ;
         if (!conditionResult) {
-          /* Action 0x1010 stays available when any of the 0x1C technology slots is available. */
-          UiNodeList_UnsuppressActionId(0x1010,(UiNodeBase *)rootCursor);
+          /* The technology button stays available when any of the 0x1C technology slots is available. */
+          UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
           selectedCountOrCounter = 0x1c;
           do {
             conditionResult = Technology_IsAvailableForFaction
                                (*(PckTechnologyIdCatalog *)(workValue + 0x1c4 + selectedCountOrCounter * 4),
                                 (lastSelectedEntity->common).ownership.ownerIndex);
             if (conditionResult) break;
-            selectedCountOrCounter = selectedCountOrCounter + -1;
+            selectedCountOrCounter--;
           } while (selectedCountOrCounter != 0);
           if (!conditionResult) {
-            UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)rootCursor);
+            UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
           }
         }
         else {
-          UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)rootCursor);
+          UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_WINDOW,(UiNodeBase *)rootCursor);
         }
         foundArmyAsset = ArmyAssetRegistry_FindById((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
         ;
@@ -5626,11 +5630,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
                                              definitionOrClassRecord + 4) + 0x18004f);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailNameTextUtf16;
-        for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+        for (workValue = 0x40; workValue != 0; workValue--) {
           *destinationText = *sourceText;
-          sourceText = sourceText + 1;
-          destinationText = destinationText + 1;
+          sourceText++;
+          destinationText++;
         }
+        /* text 0x18004E fills unused weapon slots; name texts are 0x18004F + the definition's name index */
         resolvedText = TextResource_Resolve(0x18004e);
         sourceText = resolvedText.text;
         RichTextCommandStream_CopyExpanded
@@ -5639,9 +5644,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
                   (0x80,g_InGameSelectionDetailWeaponName1TextUtf16,sourceText);
         RichTextCommandStream_CopyExpanded
                   (0x80,g_InGameSelectionDetailWeaponName2TextUtf16,sourceText);
-        g_InGameSelectionDetailTextSlot05Utf16[0] = 0x2d;
+        g_InGameSelectionDetailTextSlot05Utf16[0] = L'-';
         g_InGameSelectionDetailTextSlot05Utf16[1] = 0;
-        g_InGameSelectionDetailTextSlot09Utf16[0] = 0x2d;
+        g_InGameSelectionDetailTextSlot09Utf16[0] = L'-';
         g_InGameSelectionDetailTextSlot09Utf16[1] = 0;
         selectedModelRuntime = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
         if (((selectedModelRuntime->classState).classStateEC & 0x40) != 0) {
@@ -5656,43 +5661,43 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         }
         if (selectedModelRuntime->attachmentCount0C != 0) {
           attachedModelRuntime = selectedModelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
-          if (attachedModelRuntime != (ModelRuntimeSlot *)0x0) {
+          if (attachedModelRuntime != NULL) {
             resolvedText = TextResource_Resolve
                                (((attachedModelRuntime->definitionOrSavedId).definition)->flags + 0x18004f);
             sourceText = resolvedText.text;
             destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-            for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+            for (workValue = 0x40; workValue != 0; workValue--) {
               *destinationText = *sourceText;
-              sourceText = sourceText + 1;
-              destinationText = destinationText + 1;
+              sourceText++;
+              destinationText++;
             }
           }
           selectedModelRuntimeTail = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
           if (1 < selectedModelRuntimeTail->attachmentCount0C) {
             attachedModelRuntime = selectedModelRuntimeTail->attachments140[1].childModelRuntimeOrSavedOffset00;
-            if (attachedModelRuntime != (ModelRuntimeSlot *)0x0) {
+            if (attachedModelRuntime != NULL) {
               resolvedText = TextResource_Resolve
                                  (((attachedModelRuntime->definitionOrSavedId).definition)->flags + 0x18004f);
               sourceText = resolvedText.text;
               destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-              for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+              for (workValue = 0x40; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
-                sourceText = sourceText + 1;
-                destinationText = destinationText + 1;
+                sourceText++;
+                destinationText++;
               }
             }
             selectedModelRuntimeTail2 = (lastSelectedEntity->common).ownership.definitionOrClassRecord;
             if ((2 < selectedModelRuntimeTail2->attachmentCount0C) &&
                (attachedModelRuntime = selectedModelRuntimeTail2->attachments140[2].
-                         childModelRuntimeOrSavedOffset00, attachedModelRuntime != (ModelRuntimeSlot *)0x0)) {
+                         childModelRuntimeOrSavedOffset00, attachedModelRuntime != NULL)) {
               resolvedText = TextResource_Resolve
                                  (((attachedModelRuntime->definitionOrSavedId).definition)->flags + 0x18004f);
               sourceText = resolvedText.text;
               destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-              for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+              for (workValue = 0x40; workValue != 0; workValue--) {
                 *destinationText = *sourceText;
-                sourceText = sourceText + 1;
-                destinationText = destinationText + 1;
+                sourceText++;
+                destinationText++;
               }
             }
           }
@@ -5747,33 +5752,35 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
     }
     else if ((selectedCountOrCounter != 0) && (workValue == (lastSelectedEntity->common).ownership.ownerIndex)) {
       UiPageStack_SetActiveIndex(2,stack);
-      selectedCountOrCounter = 0x20;
+      /* fill up to 12 grid cells (entity at cell +4, army asset id at cell -4), then clear the rest */
+      selectedCountOrCounter = SELECTION_ENTRY_CAPACITY;
       recordCursor = g_InGameSelectionDetailGridCellOffsets;
-      workValue = 0xc;
+      workValue = 12;
       entitySlot = g_SelectionInfoEntitySlots->entries;
       do {
         lastSelectedEntity = *entitySlot;
-        if ((lastSelectedEntity != (GameEntityRuntime *)0x0) && (workValue != 0)) {
+        if ((lastSelectedEntity != NULL) && (workValue != 0)) {
           slotCounterOrOffset = *recordCursor;
           *(GameEntityRuntime **)(rootCursor->opaque0058_017B + slotCounterOrOffset + 4) = lastSelectedEntity;
           foundArmyAsset = ArmyAssetRegistry_FindById
                              ((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId);
           *(PckArmyAssetIdCatalog *)(rootCursor->opaque0058_017B + slotCounterOrOffset + -4) =
                foundArmyAsset.recordOrError[1].registryId;
+          /* adds 0: slotCounterOrOffset was just loaded from *recordCursor */
           rootCursor = (InGameRuntimeRootImageC3E4 *)((int)rootCursor + (slotCounterOrOffset - *recordCursor));
-          workValue = workValue + -1;
-          recordCursor = recordCursor + 1;
+          workValue--;
+          recordCursor++;
         }
-        entitySlot = entitySlot + 1;
-        selectedCountOrCounter = selectedCountOrCounter + -1;
+        entitySlot++;
+        selectedCountOrCounter--;
       } while (selectedCountOrCounter != 0);
-      for (; workValue != 0; workValue = workValue + -1) {
+      for (; workValue != 0; workValue--) {
         clearedControlBytes = rootCursor->opaque0058_017B + *recordCursor + -4;
         clearedControlBytes[0] = 0;
         clearedControlBytes[1] = 0;
         clearedControlBytes[2] = 0;
         clearedControlBytes[3] = 0;
-        recordCursor = recordCursor + 1;
+        recordCursor++;
       }
       /* (The decompile rewrote text slots 05/09 with their own contents here; the asm does not touch them.) */
       return;
@@ -5814,10 +5821,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
     sourceText = resolvedText.text;
     destinationText = g_InGameSelectionDetailNameTextUtf16;
 InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
-    for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+    for (workValue = 0x40; workValue != 0; workValue--) {
       *destinationText = *sourceText;
-      sourceText = sourceText + 1;
-      destinationText = destinationText + 1;
+      sourceText++;
+      destinationText++;
     }
     resolvedText = TextResource_Resolve(0x18004e);
     sourceText = resolvedText.text;
@@ -5831,10 +5838,10 @@ InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
       resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + 0x18004f);
       sourceText = resolvedText.text;
       destinationText = g_InGameSelectionDetailWeaponName0TextUtf16;
-      for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+      for (workValue = 0x40; workValue != 0; workValue--) {
         *destinationText = *sourceText;
-        sourceText = sourceText + 1;
-        destinationText = destinationText + 1;
+        sourceText++;
+        destinationText++;
       }
       if (1 < linkedDefinitionListView->childListCount) {
         unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
@@ -5843,10 +5850,10 @@ InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
         resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + 0x18004f);
         sourceText = resolvedText.text;
         destinationText = g_InGameSelectionDetailWeaponName1TextUtf16;
-        for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+        for (workValue = 0x40; workValue != 0; workValue--) {
           *destinationText = *sourceText;
-          sourceText = sourceText + 1;
-          destinationText = destinationText + 1;
+          sourceText++;
+          destinationText++;
         }
         if (2 < linkedDefinitionListView->childListCount) {
           unlockedDefinition = ModelDefinition_SelectFactionUnlockedLinkedDefinition
@@ -5855,10 +5862,10 @@ InGameSelectionDetailPanel_Rebuild_CopyResolvedDefinitionNamesIntoDetailSlots:
           resolvedText = TextResource_Resolve((unlockedDefinition.modelDefinition)->flags + 0x18004f);
           sourceText = resolvedText.text;
           destinationText = g_InGameSelectionDetailWeaponName2TextUtf16;
-          for (workValue = 0x40; workValue != 0; workValue = workValue + -1) {
+          for (workValue = 0x40; workValue != 0; workValue--) {
             *destinationText = *sourceText;
-            sourceText = sourceText + 1;
-            destinationText = destinationText + 1;
+            sourceText++;
+            destinationText++;
           }
         }
       }

@@ -604,10 +604,10 @@ DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
 }
 
 
-/*
-Volume and pan as in 0x00583AD0/0x00583C70: the attenuation of the louder channel is the volume,
-and attenuation[first] - attenuation[second] is the pan. The original leaves the pan argument on
-the stack for the following SetPan call, which Ghidra could not follow.
+/* No own address: shared tail of the play functions (0x00583AD0) and DirectSound_SetVoiceGains
+   (0x00583C70). The attenuation of the louder channel is the volume and left - right attenuation is the
+   pan. The original leaves the pan argument on the stack for the following SetPan call, which Ghidra
+   could not follow.
 */
 static void DirectSound_ApplyChannelGains
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
@@ -793,12 +793,11 @@ DirectSound_SetVoiceGains
 
 
 /* Address: 0x004175F0.
-   Ownership: audio/backend/runtime.
-   Purpose: Disabled-backend stop-all no-op. CF is cleared.
+   Stop-all entry of the disabled sound backend (the initial value of g_SoundStopAllVoices until
+   DirectSound_Init installs DirectSound_StopAllVoices): there are no voices, so it only clears CF.
 */
 void __thandor_void_preserve_eax_ecx_edx SoundBackendDisabled_StopAllVoices(void)
 
 {
-  return;
 }
 

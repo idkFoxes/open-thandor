@@ -1574,16 +1574,13 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
 
 
 /* Address: 0x00548700.
-   Ownership: ui/frontend/runtime.
-   Purpose: EAX is preserved. Typed parameters: p0 stateCode→FrontendStatusCode_V306. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: FrontendRomActionTable_ExecuteRecord [assets/rom/runtime].
+   Runs one record of the frontend ROM action table locally, with the activation sound (the direct-call form of
+   the FRONTEND_COMMAND_EXECUTE_ROM_ACTION command handler).
 */
-void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode stateCode)
+void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode romRecordIndex)
 
 {
-  FrontendRomActionTable_ExecuteRecord(0,0,0,stateCode);
+  FrontendRomActionTable_ExecuteRecord(0,0,false,romRecordIndex);
   return;
 }
 
@@ -1795,11 +1792,8 @@ void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext)
 }
 
 /* Address: 0x00548CB0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Takes a UTF-16 text pointer in EAX, inserts it into the shared recent-text history, and rebuilds the
-   frontend five-entry pointer list at activeFrontendState+0x350. EAX is preserved.
-   Cross-module calls: RecentTextHistory_Insert [ui/support/runtime], RecentTextHistory_SortAndBuildPointerList
-   [ui/support/runtime].
+   Adds a chat line to the shared recent-text history and rebuilds the frontend chat history box from its five
+   newest entries.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text)
 
@@ -1810,7 +1804,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebu
   output = (RecentTextHistoryPointerList *)
            &((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount;
   RecentTextHistory_Insert(text);
-  RecentTextHistory_SortAndBuildPointerList(5,output);
+  RecentTextHistory_SortAndBuildPointerList(5,output); /* the box shows five lines */
   return;
 }
 
@@ -3456,11 +3450,9 @@ FrontendUiAction2046_IndexedSelectionHelper
 
 
 /* Address: 0x00546190.
-   Ownership: ui/frontend/runtime.
-   Purpose: Refreshes debug-overlay UTF-16 fields for render counters, world vectors, cursor coordinates, and free
-   arena bytes. The four render counters are sampled every twenty calls and then cleared.
-   Cross-module calls: WideNumber_FormatUtf16 [core/text/string], WorldRuntime_GetVector0Regs [world/runtime/core],
-   WorldRuntime_GetVector1Regs [world/runtime/core].
+   Fills the frontend debug overlay texts: every 20th call the frames rendered since the last refresh and the
+   draw calls, texture binds and texture reloads per frame (then all four counters restart), and on every call
+   the menu camera's position and orientation, the cursor override position and the free arena bytes.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
@@ -3475,10 +3467,11 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
   denominator = g_RenderedFrameCountSinceDebugRefresh;
   g_DebugOverlayCounterRefreshCountdown = g_DebugOverlayCounterRefreshCountdown - 1;
   if (g_DebugOverlayCounterRefreshCountdown == 0) {
-    g_DebugOverlayCounterRefreshCountdown = 0x14;
+    g_DebugOverlayCounterRefreshCountdown = 20;
     WideNumber_FormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,g_RenderedFrameCountSinceDebugRefresh,
                g_FrontendDebugOverlayTextSlot00Utf16);
+    /* per-frame averages with two decimals */
     if (denominator == 0) {
       denominator = 1;
     }
@@ -3526,7 +3519,7 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
   freeArenaBytes = g_MemoryApi.queryFreeBytes();
   WideNumber_FormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,freeArenaBytes,
-             g_FrontendDebugOverlayTextSlot12Utf16);
+             g_FrontendDebugOverlayTextSlot12Utf16); /* hexadecimal despite radix 10 */
   g_FrontendDebugOverlayTextSlot13Utf16[0] = 0;
   return;
 }

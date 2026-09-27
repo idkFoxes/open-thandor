@@ -472,11 +472,9 @@ SelectionPanel_RenderArmyRuntimeMetrics_EndFramebufferAccessAndReturn:
 
 
 /* Address: 0x0055FA20.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles in game selection rebuild owned class16 selection.
-   Local calls: SelectionPointerArray_Clear32, SelectionPointerArray_InsertUniqueAndRecenter.
-   Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid
-   [ui/ingame/technology].
+   In-game command handler (code 0x8F0, key A): replaces the player's selection with every world model of
+   definition class 0x16 that the player owns, then rebuilds the selection panels when the player is the local
+   one.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_RebuildOwnedClass16Selection
@@ -486,12 +484,13 @@ InGameSelection_RebuildOwnedClass16Selection
   WorldOwnerListNode100 *ownerNode;
   GameEntityRuntime *entityRuntime;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  
+
   inGameRoot = g_InGameRuntimeRoot;
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
-  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      /* model payload: dword 0 = definition record (class id at +0x4C), dword 2 = entity runtime */
       entityRuntime = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
       if ((*(int *)(*(int *)ownerNode->runtimePayload + 0x4c) == 0x16) &&
          ((entityRuntime->common).ownership.ownerIndex ==
@@ -512,15 +511,9 @@ InGameSelection_RebuildOwnedClass16Selection
 
 
 /* Address: 0x0055FB30.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Replaces one player selection with the army runtime identified by the rebased index and refreshes local
-   UI when applicable. Kept distinct from frontend slot indices, faction runtime indices, network endpoint
-   identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage,
-   body bytes, control flow, and executable data remain unchanged. Typed parameters: p3
-   armyRuntimeIndex→RuntimeToken.
-   Local calls: SelectionPointerArray_Clear32, SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity.
-   Cross-module calls: InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid
-   [ui/ingame/technology].
+   In-game command handler INGAME_COMMAND_REPLACE_SELECTION: replaces the player's selection with all world
+   entries matching the army at the rebased index (byte offset from g_ArmyRuntimeRebaseBaseMinusOne, 0 = none)
+   and refreshes the local selection panels. Nothing is added when the army has no model node.
 */
 void __thandor_preserve_eax
 InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
@@ -529,12 +522,11 @@ InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 
 {
   ArmyRuntimeSlot *sourceArmyRuntime;
-  
+
   if (armyRuntimeIndex != 0) {
-    sourceArmyRuntime = (ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne)
-    ;
+    sourceArmyRuntime = (ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne);
     SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
-    if (sourceArmyRuntime->modelNodeRuntime != (ModelRuntimeNode *)0x0) {
+    if (sourceArmyRuntime->modelNodeRuntime != NULL) {
       SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
                 (sourceArmyRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
       if (playerId == g_LocalPlayerRuntimeId) {
@@ -548,56 +540,44 @@ InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 
 
 /* Address: 0x0055FE70.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Forwards command payload coordinates to position-command variant B using the player selection array.
-   Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
-   identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged. Typed parameters: p2 payloadDword08→CommandPayloadDword08_V343, p3
-   payloadDword0C→CommandPayloadDword0C_V343.
-   Local calls: SelectionPointerArray_ApplyPositionCommandVariantB.
+   In-game command handler INGAME_COMMAND_POSITION_VARIANT_B (plain click on the ground): sends the player's
+   selection to the world point, each entry keeping its formation offset unless the selection is spread too wide.
+   A lone class-0x0D entry takes the point into its definition record instead and the selection is cleared.
 */
 void __thandor_preserve_eax_edx
 InGamePlayerSelection_ApplyPositionCommandVariantB
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
-          CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          CommandPayloadDword0C worldYQ12)
 
 {
   SelectionPointerArray_ApplyPositionCommandVariantB
-            (payloadDword08,payloadDword0C,
+            (worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x0055FEA0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Forwards command payload coordinates to SelectionPointerArray_ApplyPositionCommand for one player
-   selection array. Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity,
-   and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body
-   bytes, control flow, and executable data remain unchanged. Typed parameters: p2
-   payloadDword08→CommandPayloadDword08_V343, p3 payloadDword0C→CommandPayloadDword0C_V343.
-   Local calls: SelectionPointerArray_ApplyPositionCommand.
+   In-game command handler INGAME_COMMAND_POSITION (Shift/Alt-click on the ground): queues the world point as a
+   waypoint for every entry of the player's selection (formation offsets as in the plain move).
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
-          CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          CommandPayloadDword0C worldYQ12)
 
 {
   SelectionPointerArray_ApplyPositionCommand
-            (payloadDword08,payloadDword0C,
+            (worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x0055FED0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Selects the army runtime identified by the rebased index for one player when the runtime is eligible.
-   Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
-   identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged. Typed parameters: p3 armyRuntimeIndex→RuntimeToken.
-   Local calls: SelectionPointerArray_ApplyArmyRuntimeTarget.
+   In-game command handler INGAME_COMMAND_SELECT_ARMY (click on an army as an order target): makes the army at
+   the rebased index the command target of every eligible entry of the player's selection. Ignored for index 0
+   and for armies without a model node.
 */
 void __thandor_preserve_eax
 InGamePlayerSelection_SelectArmyRuntimeIndex
@@ -607,7 +587,7 @@ InGamePlayerSelection_SelectArmyRuntimeIndex
 {
   if ((armyRuntimeIndex != 0) &&
      (((ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne))->
-      modelNodeRuntime != (ModelRuntimeNode *)0x0)) {
+      modelNodeRuntime != NULL)) {
     SelectionPointerArray_ApplyArmyRuntimeTarget
               ((ArmyRuntimeSlot *)(armyRuntimeIndex + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
@@ -617,31 +597,25 @@ InGamePlayerSelection_SelectArmyRuntimeIndex
 
 
 /* Address: 0x0055FF10.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Forwards a four-dword in-game command to the target-position helper using one player selection array.
-   Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
-   identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged. Typed parameters: p1 payloadDword04→CommandPayloadDword04_V343, p2
-   payloadDword08→CommandPayloadDword08_V343, p3 payloadDword0C→CommandPayloadDword0C_V343.
-   Local calls: SelectionPointerArray_ApplyTargetPositionCommand.
+   In-game command handler INGAME_COMMAND_TARGET_POSITION (Ctrl-click on the ground): gives every eligible
+   entry of the player's selection the terrain point (surface height, x, y) as its target position.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGamePlayerSelection_ApplyTargetPositionCommand
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C)
+          (PlayerRuntimeId playerId,CommandPayloadDword04 surfaceHeightQ12,
+          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12)
 
 {
   SelectionPointerArray_ApplyTargetPositionCommand
-            (payloadDword04,payloadDword08,payloadDword0C,
+            (surfaceHeightQ12,worldXQ12,worldYQ12,
              &g_SelectionPlayerRuntimeBlockPointers[playerId]->selection);
   return;
 }
 
 
 /* Address: 0x0055FF40.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles player selection reset movement prune and recenter entries.
-   Local calls: SelectionRuntime_ResetMovementPruneAndRecenterEntries.
+   In-game command handler 0xE10 (key S, stop): resets the movement of the player's selection, drops its
+   class-0x16 entries and recenters the formation offsets (SelectionRuntime_ResetMovementPruneAndRecenterEntries).
 */
 void __thandor_preserve_eax
 PlayerSelection_ResetMovementPruneAndRecenterEntries
@@ -656,9 +630,9 @@ PlayerSelection_ResetMovementPruneAndRecenterEntries
 
 
 /* Address: 0x0055FF60.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles player selection reset movement anchors and clear flag200 for eligible entries.
-   Local calls: SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries.
+   In-game command handler 0xE30 (Shift+S): resets the movement anchors of the eligible entries of the player's
+   selection and clears their command flag 0x200. The block pointer doubles as its selection array (first
+   member).
 */
 void __thandor_preserve_eax
 PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
@@ -673,9 +647,8 @@ PlayerSelection_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
 
 
 /* Address: 0x0055FF80.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles player selection interrupt targets and clear flag10 for eligible entries.
-   Local calls: SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries.
+   In-game command handler 0xE50 (Alt+S): interrupts the active targets of the eligible entries of the player's
+   selection and clears flag 0x10 of their dword +0x2C.
 */
 void __thandor_preserve_eax
 PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
@@ -690,9 +663,8 @@ PlayerSelection_InterruptTargetsAndClearFlag10ForEligibleEntries
 
 
 /* Address: 0x0055FFA0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles player selection apply flags418 unless bit8 to eligible entries.
-   Local calls: SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries.
+   In-game command handler 0xE70 (Alt+D): applies the model hierarchy flags 0x418 to the eligible entries of the
+   player's selection (SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries).
 */
 void __thandor_preserve_eax
 PlayerSelection_ApplyFlags418UnlessBit8ToEligibleEntries
@@ -1162,9 +1134,8 @@ SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
 
 
 /* Address: 0x0052FB70.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the 32 global selection-info entity slots, sums entity position fields +0x94/+0x98/+0x9C, and
-   returns their signed averages in EAX/ECX/EDX. CF is set when no slot is populated and clear on success.
+   Returns the average world position (model node translation) of the local selection's entities; unresolved
+   (CF) when the selection is empty, with all coordinates 0.
 */
 WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void)
 
@@ -1177,24 +1148,23 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
   WorldPositionResult averagePosition;
   int selectedEntityCount;
   int selectionSlotsRemaining;
-  ModelRuntimeNode *selectedModelNode;
-  
+
   worldXAggregateQ12 = 0;
   worldYAggregateQ12 = 0;
   worldZAggregateQ12 = 0;
-  selectionSlotsRemaining = 0x20;
+  selectionSlotsRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntityCount = 0;
   selectionEntitySlotCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntitySlotCursor != (GameEntityRuntime *)0x0) {
+    if (*selectionEntitySlotCursor != NULL) {
       slotModelNode = ((*selectionEntitySlotCursor)->common).ownership.modelNode;
       worldXAggregateQ12 = worldXAggregateQ12 + (slotModelNode->worldTransform).translation.x;
       worldYAggregateQ12 = worldYAggregateQ12 + (slotModelNode->worldTransform).translation.y;
       worldZAggregateQ12 = worldZAggregateQ12 + (slotModelNode->worldTransform).translation.z;
-      selectedEntityCount = selectedEntityCount + 1;
+      selectedEntityCount++;
     }
-    selectionEntitySlotCursor = selectionEntitySlotCursor + 1;
-    selectionSlotsRemaining = selectionSlotsRemaining + -1;
+    selectionEntitySlotCursor++;
+    selectionSlotsRemaining--;
   } while (selectionSlotsRemaining != 0);
   if (selectedEntityCount != 0) {
     worldXAggregateQ12 = worldXAggregateQ12 / selectedEntityCount;
@@ -1232,9 +1202,7 @@ SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointe
 
 
 /* Address: 0x0052FDC0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the global exact 32-entry selection array. CF set means at least one entry is non-null; CF clear
-   means all entries are null. EAX is restored before return.
+   Returns true (CF set) when the local selection holds at least one entity, false when it is empty.
 */
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void)
 
@@ -1243,27 +1211,25 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void)
   GameEntityRuntime **selectionEntryCursor;
   bool entryIsEmpty;
   GameEntityRuntime *currentEntry;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   entryIsEmpty = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
+  /* REPE SCASD against 0 in the original */
   do {
     if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
     currentEntry = *selectionEntryCursor;
-    entryIsEmpty = currentEntry == (GameEntityRuntime *)0x0;
-    selectionEntryCursor = selectionEntryCursor + 1;
+    entryIsEmpty = currentEntry == NULL;
+    selectionEntryCursor++;
   } while (entryIsEmpty);
   return !entryIsEmpty;
 }
 
 
 /* Address: 0x0052FDE0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the global 32-entry selection array. Null entries are accepted; every non-null entry must have
-   owner/index dword +0x0C equal to ownerIndex. CF clear means all entries satisfy the condition, and CF set means
-   the first mismatch. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or
-   codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
+   Returns false (CF clear) when every entity of the local selection belongs to the faction ownerIndex (an empty
+   selection passes), true as soon as one belongs to another faction.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
@@ -1271,13 +1237,13 @@ SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 {
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  while ((*selectionEntryCursor == (GameEntityRuntime *)0x0 ||
+  while ((*selectionEntryCursor == NULL ||
          (ownerIndex == ((*selectionEntryCursor)->common).ownership.ownerIndex))) {
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
     if (entriesRemaining == 0) {
       return false;
     }
@@ -1287,12 +1253,9 @@ SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 
 /* Address: 0x0052FE30.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Validates the global 32-entry selection array for one owner index. Every non-null entry must match
-   ownerIndex, resolve to nested type 0x16, and at least one matching nested object must have a positive dword at
-   +0x70. CF clear means the complete condition holds; CF set means mismatch or no active entry. EAX is preserved.
-   It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
+   Returns false (CF clear) when the local selection consists only of class-0x16 entities of faction ownerIndex
+   and at least one of them has a non-zero dword +0x70 in its runtime record; true otherwise (also for an empty
+   selection).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
@@ -1303,13 +1266,14 @@ SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
   int activeEntryCount;
   GameEntityRuntime **selectionEntryCursor;
   GameEntityRuntime *currentEntry;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   activeEntryCount = 0;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     currentEntry = *selectionEntryCursor;
-    if (currentEntry != (GameEntityRuntime *)0x0) {
+    if (currentEntry != NULL) {
+      /* classRecord[0] = definition record (class id at +0x4C); classRecord[0x1c] = dword +0x70 */
       classRecord = (currentEntry->common).ownership.definitionOrClassRecord;
       if (ownerIndex != (currentEntry->common).ownership.ownerIndex) {
         return true;
@@ -1318,11 +1282,11 @@ SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
         return true;
       }
       if (classRecord[0x1c] != 0) {
-        activeEntryCount = activeEntryCount + 1;
+        activeEntryCount++;
       }
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
     if (entriesRemaining == 0) {
       if (activeEntryCount == 0) {
         return true;
@@ -1334,9 +1298,9 @@ SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
 
 
 /* Address: 0x0052FEB0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Returns through CF whether the current selection contains an active definition or the exact single-
-   class-13 fallback condition.
+   Returns false (CF clear) when the local selection can take a ground position order: some entity's
+   definition has a non-zero dword +0x18, or the selection is a single entity of definition class 0x0D (13).
+   True otherwise; the world input then ignores the ground click.
 */
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13(void)
 
@@ -1346,14 +1310,14 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass1
   GameEntityRuntime **selectionEntryCursor;
   bool selectedEntryIsClass13;
   int selectedDefinitionRecordAddress;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntryCount = 0;
   selectedEntryIsClass13 = false;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      selectedEntryCount = selectedEntryCount + 1;
+    if (*selectionEntryCursor != NULL) {
+      selectedEntryCount++;
       selectedDefinitionRecordAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
       if (*(int *)(selectedDefinitionRecordAddress + 0x18) != 0) {
@@ -1361,8 +1325,8 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass1
       }
       selectedEntryIsClass13 = *(int *)(selectedDefinitionRecordAddress + 0x4c) == 0xd;
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   if ((selectedEntryCount == 1) && (selectedEntryIsClass13)) {
     return false;
@@ -1372,10 +1336,10 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass1
 
 
 /* Address: 0x0052FF30.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection info test position command at world point carry-flag result.
-   Cross-module calls: GridScratch_TestProjectedCellMaskBands [world/pathing/grid],
-   ArmyRuntimeNode_DispatchTypedCallback [gameplay/army/runtime].
+   Tests whether the local selection could be ordered to a world point (CF = result of the test). The first
+   entity whose definition has a non-zero dword +0x18 is temporarily moved to the point and asked through its
+   typed callback; without such an entity the first class-0x0D entity tests the grid cell mask bands selected by
+   its capability flags (0x80 -> band 3, 4 -> band 1, else 6). CF is set when neither exists.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionInfo_TestPositionCommandAtWorldPoint
@@ -1395,22 +1359,22 @@ SelectionInfo_TestPositionCommandAtWorldPoint
   bool testResult;
   GameEntityRuntime *selectedEntity;
   
-  entriesRemaining = 0x20;
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-  while ((selectedEntity = *selectionEntryCursor, selectedEntity == (GameEntityRuntime *)0x0 ||
+  while ((selectedEntity = *selectionEntryCursor, selectedEntity == NULL ||
          (selectedModelNode = (selectedEntity->common).ownership.modelNode,
          *(int *)(*(int *)(selectedEntity->common).ownership.definitionOrClassRecord + 0x18) == 0)))
   {
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
     if (entriesRemaining == 0) {
-      entriesRemaining = 0x20;
+      entriesRemaining = SELECTION_ENTRY_CAPACITY;
       selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
-      while ((*selectionEntryCursor == (GameEntityRuntime *)0x0 ||
+      while ((*selectionEntryCursor == NULL ||
              (class13Definition = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord,
              *(int *)(class13Definition + 0x4c) != 0xd))) {
-        selectionEntryCursor = selectionEntryCursor + 1;
-        entriesRemaining = entriesRemaining + -1;
+        selectionEntryCursor++;
+        entriesRemaining--;
         if (entriesRemaining == 0) {
           return true;
         }
@@ -1424,6 +1388,7 @@ SelectionInfo_TestPositionCommandAtWorldPoint
       return testResult;
     }
   }
+  /* XCHG in the original; note that translation.x receives worldYQ12 and translation.y worldXQ12 */
   LOCK();
   translationPtr = &(selectedModelNode->worldTransform).translation;
   savedTranslationX = translationPtr->x;
@@ -1442,10 +1407,9 @@ SelectionInfo_TestPositionCommandAtWorldPoint
 
 
 /* Address: 0x00530050.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Returns through CF when no selected runtime reports a positive state value at offset 0x100.
-   Cross-module calls: ArmyRuntime_TestStateField100Nonnegative [gameplay/army/runtime],
-   ArmyRuntime_TestStateField100Zero [gameplay/army/runtime].
+   Returns false (CF clear) as soon as one entity of the local selection passes
+   ArmyRuntime_TestStateField100Nonnegative but fails ArmyRuntime_TestStateField100Zero (its state value at
+   +0x100 is positive); true when none does.
 */
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonpositive(void)
 
@@ -1454,12 +1418,12 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
   bool stateTestResult;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     armyRuntime = *selectionEntryCursor;
-    if (armyRuntime != (GameEntityRuntime *)0x0) {
+    if (armyRuntime != NULL) {
       stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)armyRuntime);
       if (stateTestResult) {
         stateTestResult = ArmyRuntime_TestStateField100Zero((ArmyRuntimeSlot *)armyRuntime);
@@ -1468,17 +1432,16 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
         }
       }
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   return true;
 }
 
 
 /* Address: 0x005300A0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Returns through CF when any selected runtime reports a nonnegative state value at offset 0x100.
-   Cross-module calls: ArmyRuntime_TestStateField100Nonnegative [gameplay/army/runtime].
+   Returns true (CF set) when ArmyRuntime_TestStateField100Nonnegative holds for any entity of the local
+   selection, false otherwise.
 */
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnegative(void)
 
@@ -1486,18 +1449,18 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnega
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
   bool stateTestResult;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
+    if (*selectionEntryCursor != NULL) {
       stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
       if (stateTestResult) {
         return true;
       }
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   return false;
 }
@@ -1536,17 +1499,15 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 }
 
 /* Address: 0x00530100.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the fixed 32-entry selection-info array for entry. CF is clear when found and set when absent;
-   EAX is preserved.
+   Tests whether entry is part of the local selection: false (CF clear) when found, true when absent.
 */
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime *entry)
 
 {
-  /* REPNE SCASD over the 32 selection slots; CF set when the entry is not among them. */
+  /* REPNE SCASD over the 32 selection slots in the original */
   int slotIndex;
 
-  for (slotIndex = 0; slotIndex < 0x20; slotIndex = slotIndex + 1) {
+  for (slotIndex = 0; slotIndex < SELECTION_ENTRY_CAPACITY; slotIndex++) {
     if (g_SelectionInfoEntitySlots->entries[slotIndex] == entry) {
       return false;
     }
@@ -1556,9 +1517,8 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime
 
 
 /* Address: 0x00530770.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection info collect attachment effect variant mask.
-   Cross-module calls: ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs [gameplay/army/runtime].
+   Returns the OR of the attachment effect variant masks of all entities in the local selection (per entity from
+   ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs).
 */
 uint32_t __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void)
 
@@ -1567,27 +1527,26 @@ uint32_t __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVar
   int entriesRemaining;
   uint32_t entryVariantMask;
   GameEntityRuntime **selectionEntryCursor;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   effectVariantMask = 0;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
+    if (*selectionEntryCursor != NULL) {
       entryVariantMask = ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs
                         (((*selectionEntryCursor)->common).ownership.definitionOrClassRecord);
       effectVariantMask = effectVariantMask | entryVariantMask;
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   return effectVariantMask;
 }
 
 
 /* Address: 0x005307C0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the fixed 32-entry selection-info array. Entries whose nested type is 0x16 contribute flag 0x08;
-   type 0x0D entries contribute their nested capability dword at +0xC4. Returns the OR-combined mask.
+   Returns the OR of the capability flags of the local selection: definition class 0x16 contributes 8, class
+   0x0D the capability dword +0xC4 of its definition; other classes contribute nothing.
 */
 uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
 
@@ -1596,12 +1555,12 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
   int entriesRemaining;
   GameEntityRuntime **selectionEntryCursor;
   int currentEntityDefinition;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   capabilityMask = 0;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
+    if (*selectionEntryCursor != NULL) {
       currentEntityDefinition =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
       if (*(int *)(currentEntityDefinition + 0x4c) == 0x16) {
@@ -1611,8 +1570,8 @@ uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void)
         capabilityMask = capabilityMask | *(uint32_t *)(currentEntityDefinition + 0xc4);
       }
     }
-    selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    selectionEntryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   return capabilityMask;
 }

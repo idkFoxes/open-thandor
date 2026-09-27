@@ -14,6 +14,13 @@
 /* Submodule: ui/controls/input. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Bit 31 of a press event's button mask: a repeated (double) click. UiPointer_DispatchLeftPress/RightPress
+   copy it into the pressed node's UI_NODE_REPEAT_OR_DOUBLE_CLICK flag. */
+#define UI_POINTER_BUTTON_REPEAT_CLICK 0x80000000
+/* UiImageControl stateFlags bits 0, 1, 9 and 10, cleared when a hovered image control loses the pointer
+   (UiPointer_Dispatch*Press, UiImageControl pointer handlers). */
+#define UI_IMAGE_CONTROL_HOVER_STATE_BITS 0x603
+
 /* 0x004AF500 */
 void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void);
 

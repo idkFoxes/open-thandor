@@ -138,10 +138,10 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
 
 
 /* Address: 0x0052B540.
-   Ownership: world/shots/runtime.
-   Purpose: CF set propagates a load or allocation failure.
-   Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
-   [movie/runtime/playback].
+   Loads the shot graphics of a level (mutableBasePath with its extension replaced by .gfx and .pal) and
+   allocates the zeroed shot runtime pool; g_ShotRuntimeRebaseBaseMinusOne is set for the 1-based saved slot
+   offsets. The movie playback is advanced between the steps so that a running movie keeps going. CF set with
+   the error code of the first failing load or allocation.
 */
 StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
@@ -151,27 +151,29 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   ArenaAllocResult loadResult;
   StatusResult initResult;
   
-  WidePath_SetExtensionCode(0x786667,mutableBasePath);
+  WidePath_SetExtensionCode(0x786667,mutableBasePath); /* "gfx" */
   MoviePlayback_AdvanceScheduledFrameAndTick();
   loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
   if (!loadResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
-    WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
+    WidePath_SetExtensionCode(0x6c6170,mutableBasePath); /* "pal" */
     loadResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, g_GraphicsPaletteAssetLoadPackage(mutableBasePath));
     if (!loadResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_ShotPalette = (GraphicsPaletteAsset *)loadResult.payloadOrError;
-      loadResult = g_MemoryApi.alloc(0x40000);
+      loadResult = g_MemoryApi.alloc(SHOT_RUNTIME_POOL_BYTES);
       runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.payloadOrError;
       if (!loadResult.failed) {
+        /* pool address - 1 */
         g_ShotRuntimeRebaseBaseMinusOne =
              (uint8_t *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
                      3);
         g_ShotRuntimeSlots = runtimeSlotCursor;
-        for (runtimeSlotsRemaining = 0x10000; runtimeSlotsRemaining != 0;
-            runtimeSlotsRemaining = runtimeSlotsRemaining + -1) {
-          (runtimeSlotCursor->definitionOrSavedId).definition = (ShotDefinition *)0x0;
+        /* clears the pool dword by dword */
+        for (runtimeSlotsRemaining = SHOT_RUNTIME_POOL_BYTES / 4; runtimeSlotsRemaining != 0;
+            runtimeSlotsRemaining--) {
+          (runtimeSlotCursor->definitionOrSavedId).definition = NULL;
           runtimeSlotCursor = (ShotRuntimeSlot *)&runtimeSlotCursor->launchSpeedQ12;
         }
         loadResult.payloadOrError = 0;
@@ -186,10 +188,9 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
 
 /* Address: 0x0052B5C0.
-   Ownership: world/shots/runtime.
-   Purpose: Releases the shot runtime pool and graphics resources, releases owned definition resources, clears the
-   registry, and has no semantic normal return.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Counterpart of ShotRuntime_InitGraphicsResources at level end: frees the shot runtime pool, releases the
+   shot texture set and palette, releases the nested resource each shot definition owns and empties the shot
+   definition registry.
 */
 void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
 
@@ -199,26 +200,26 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
   ShotDefinition *currentDefinition;
   
   g_MemoryApi.free(g_ShotRuntimeSlots);
-  g_ShotRuntimeSlots = (ShotRuntimeSlot *)0x0;
-  if (g_ShotTextureSet != (GraphicsTextureSet *)0x0) {
+  g_ShotRuntimeSlots = NULL;
+  if (g_ShotTextureSet != NULL) {
     g_GraphicsTextureSetReleasePackage(g_ShotTextureSet);
-    g_ShotTextureSet = (GraphicsTextureSet *)0x0;
+    g_ShotTextureSet = NULL;
   }
-  if (g_ShotPalette != (GraphicsPaletteAsset *)0x0) {
+  if (g_ShotPalette != NULL) {
     g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_ShotPalette);
-    g_ShotPalette = (GraphicsPaletteAsset *)0x0;
+    g_ShotPalette = NULL;
   }
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
+  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOTS;
   do {
     currentDefinition = *registryCursor;
-    if ((currentDefinition != (ShotDefinition *)0x0) &&
+    if ((currentDefinition != NULL) &&
        (currentDefinition->ownedNestedResourcePresent != 0)) {
       Resource_Release(currentDefinition->ownedNestedResource);
     }
-    *registryCursor = (ShotDefinition *)0x0;
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    *registryCursor = NULL;
+    registryCursor++;
+    registrySlotsRemaining--;
   } while (registrySlotsRemaining != 0);
   return;
 }
@@ -263,10 +264,10 @@ ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
 
 
 /* Address: 0x0052B750.
-   Ownership: world/shots/runtime.
-   Purpose: Rebases all 4096 live shot slots after load and replaces each saved definitionId with its registered
-   ShotDefinition pointer. The 170 physical records and 136 unique ids include bank aliases; no fabricated per-
-   alias gameplay meaning is assigned.
+   Turns the saved form of the shot slots back into pointers after a savegame load (and after writing one):
+   for every live shot (non-zero model node) the 1-based model node, runtime state and owner army offsets are
+   rebased and the saved definition id is replaced by the registered ShotDefinition. A shot whose id is no
+   longer registered is dropped (model node cleared).
 */
 void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
 
@@ -282,22 +283,24 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
   ShotDefinition *registryDefinition;
   
   shotSlot = g_ShotRuntimeSlots;
-  shotSlotsRemaining = 0x1000;
+  shotSlotsRemaining = SHOT_RUNTIME_SLOT_COUNT;
+  /* NOT dword ptr [slot0 + 0x3C]: inverted on every call, purpose unknown */
   firstSlotCountdown = &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
   *firstSlotCountdown = ~*firstSlotCountdown;
   do {
     rebasedRuntimeState = (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer;
     savedOwnerArmy = (shotSlot->ownerAndTrajectory).ownerArmyRuntime;
-    if ((shotSlot->modelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
-      if (rebasedRuntimeState != (void *)0x0) {
+    if ((shotSlot->modelNodeOrSavedOffset).modelNode != NULL) {
+      if (rebasedRuntimeState != NULL) {
         rebasedRuntimeState = (void *)((int)rebasedRuntimeState + g_ModelRuntimeRebaseDelta);
       }
-      rebasedOwnerArmy = (ArmyRuntimeSlot *)0x0;
-      if (savedOwnerArmy != (ArmyRuntimeSlot *)0x0) {
+      rebasedOwnerArmy = NULL;
+      if (savedOwnerArmy != NULL) {
         rebasedOwnerArmy = (ArmyRuntimeSlot *)
                     ((int)&savedOwnerArmy->modelRuntimeOrSavedOffset +
                     (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
+      /* saved model node offset + g_RuntimeObjectRebaseBaseMinusOne */
       (shotSlot->modelNodeOrSavedOffset).modelNode =
            (ModelRuntimeNode *)
            (g_RuntimeObjectRebaseBaseMinusOne +
@@ -305,24 +308,24 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
       (shotSlot->runtimeStateOrSavedOffset).runtimeStatePointer = rebasedRuntimeState;
       (shotSlot->ownerAndTrajectory).ownerArmyRuntime = rebasedOwnerArmy;
       registryCursor = g_ShotDefinitionRegistry;
-      registrySlotsRemaining = 0x100;
+      registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOTS;
       for (;;) {
         registryDefinition = *registryCursor;
-        if ((registryDefinition != (ShotDefinition *)0x0) &&
+        if ((registryDefinition != NULL) &&
            ((shotSlot->definitionOrSavedId).definition ==
             (ShotDefinition *)registryDefinition->definitionId)) break;
-        registryCursor = registryCursor + 1;
-        registrySlotsRemaining = registrySlotsRemaining + -1;
+        registryCursor++;
+        registrySlotsRemaining--;
         if (registrySlotsRemaining == 0) {
           /* saved definition no longer registered: drop the shot (definition = last registry entry) */
-          (shotSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+          (shotSlot->modelNodeOrSavedOffset).modelNode = NULL;
           break;
         }
       }
       (shotSlot->definitionOrSavedId).definition = registryDefinition;
     }
-    shotSlot = shotSlot + 1;
-    shotSlotsRemaining = shotSlotsRemaining + -1;
+    shotSlot++;
+    shotSlotsRemaining--;
     if (shotSlotsRemaining == 0) {
       return;
     }

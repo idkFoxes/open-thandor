@@ -272,13 +272,11 @@ ArmyRuntimeClass_UpdateTimedEffectsModelsAndDamage
 
 
 /* Address: 0x0052A2E0.
-   Ownership: gameplay/army/combat.
-   Purpose: Typed parameters: p2 impactAngle→AngleTurn32. Nearby but non-identical semantic domains were explicitly
-   deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data
-   remain unchanged. Typed parameters: p3 damageAmount→DamageAmount32_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: ArmyRuntime_ApplyDamageAndPropagateToParent.
+   Applies an impact's damage to a living army (health in actionVector2Q12, capped at the class maximum at
+   model runtime +0x60). When the health reaches zero the army is marked destroyed; a child passes the excess
+   damage on to its parent army; a root army of class 0 with a zero +0x278 state only turns to the impact
+   angle, any other root army is counted in its owner faction's relation counter C (group-A command classes:
+   counter D).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyImpactDamageAndFinalizeState
@@ -293,6 +291,7 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
   bool rotateToImpact;
   ModelRuntimeNode *parentModelNode;
   
+  /* one dword 0x200 at +0xF8 (MOV [ESI+0xF8],0x200) */
   armyRuntime->reservedF8_FF[0] = 0;
   armyRuntime->reservedF8_FF[1] = 2;
   armyRuntime->reservedF8_FF[2] = 0;
@@ -303,13 +302,16 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
     healthField = &armyRuntime->actionVector2Q12;
     healthOrOwnerIndex = *healthField;
     *healthField = *healthField - damageAmount;
+    /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthOrOwnerIndex,damageAmount) != *healthField < 0) {
-      healthOrOwnerIndex = armyRuntime->actionVector2Q12;
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | 8;
+      healthOrOwnerIndex = armyRuntime->actionVector2Q12; /* <= 0; its negation is the excess damage */
+      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
       parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
       armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
       armyRuntime->actionVector2Q12 = 0;
-      if (parentModelNode == (ModelRuntimeNode *)0x0) {
+      if (parentModelNode == NULL) {
+        /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A395 / JZ 0x0052A39C), whose ZF is
+           architecturally undefined; the C keeps Ghidra's reading that it still holds the CMP result below. */
         rotateToImpact = false;
         if ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0) &&
            (rotateToImpact = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime[1].classLinkState.
@@ -323,10 +325,11 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
            *relationCounter = *relationCounter + 1,
            g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[classId] ==
            ArmyRuntime_ClassCommandHandlerGroupA)) {
+          /* armies of the group-A command class move from counter C to counter D */
           relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterD;
           *relationCounter = *relationCounter + 1;
           relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterC;
-          *relationCounter = *relationCounter + -1;
+          *relationCounter = *relationCounter - 1;
         }
       }
       else {
@@ -335,13 +338,13 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
       }
     }
     else {
+      /* SUB / JG: a negative damage (repair) never raises the health above maxHealth */
       healthOrOwnerIndex = maxHealth - armyRuntime->actionVector2Q12;
       if (healthOrOwnerIndex == 0 || maxHealth < armyRuntime->actionVector2Q12) {
         armyRuntime->actionVector2Q12 = armyRuntime->actionVector2Q12 + healthOrOwnerIndex;
       }
     }
   }
-  return;
 }
 
 

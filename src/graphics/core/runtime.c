@@ -12,10 +12,10 @@
 /* Implementation ownership: graphics/core/runtime. */
 
 /* Address: 0x00576C30.
-   Ownership: graphics/core/runtime.
-   Purpose: 20 ms graphics cursor timer. Advances animation coordinates, marks the cursor dirty, acquires the
-   graphics guard, restores/redraws cursor background on the primary surface, and releases the guard.
-   Local calls: GraphicsCursor_RestoreAfterPresent, GraphicsCursor_ComposeBeforePresent.
+   Periodic cursor timer callback: keeps the software mouse cursor animated and in place independently of the
+   game's frame rate. Every second tick it steps the idle and active animation subresources of the current cursor
+   frame (wrapping to the first one); when the frame changed or mouse events moved the cursor, and the graphics
+   backend is not in use, the cursor is redrawn directly on the primary surface.
 */
 void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void)
 
@@ -33,8 +33,8 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
   if (g_CursorVisibilityToken < 0) {
     return;
   }
-  g_CursorInputClockValue = g_CursorInputClockValue + 1;
-  g_GraphicsCursorAnimationCountdown = g_GraphicsCursorAnimationCountdown + -1;
+  g_CursorInputClockValue++;
+  g_GraphicsCursorAnimationCountdown--;
   if (g_GraphicsCursorAnimationCountdown == 0) {
     g_GraphicsCursorAnimationCountdown = 2;
     nextIdleSubresource = g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex + 1;
@@ -55,8 +55,9 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
   if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
     return;
   }
+  /* try-lock: the original swaps 1 into the access state (XCHG) and only draws when it was 0 */
   previousAccessState = g_GraphicsBackendAccessState;
-  if (g_CursorSourceAsset != (GraphicsTextureSourceAsset *)0x0) {
+  if (g_CursorSourceAsset != NULL) {
     LOCK();
     g_GraphicsBackendAccessState = 1;
     UNLOCK();
@@ -64,7 +65,7 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
       g_MouseEventsProcessed = 0;
       GraphicsCursor_RestoreAfterPresent(g_PrimarySurface3);
       GraphicsCursor_ComposeBeforePresent(g_PrimarySurface3);
-      g_GraphicsBackendAccessState = g_GraphicsBackendAccessState + -1;
+      g_GraphicsBackendAccessState--;
     }
   }
   return;
@@ -722,16 +723,16 @@ StatusResult __cdecl Graphics_Init(void)
 
 
 /* Address: 0x005794E0.
-   Ownership: graphics/core/runtime.
-   Purpose: Graphics backend callback that checks the selected adapter record and invokes the active-backend
-   refresh routine only when graphics state and the adapter are ready.
-   Cross-module calls: Glide3_Shutdown [graphics/backend/glide].
+   Installed by Graphics_Init as g_GraphicsBackendRefreshActiveAdapter, which MainWindowProc calls when the
+   application is deactivated (WM_ACTIVATEAPP): despite its name it shuts Glide down when the active adapter
+   is the running 3dfx Glide adapter, so the full-screen Glide display is released while the game is in the
+   background.
 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfReady(void)
 
 {
-  if (((g_GlideRuntimeActiveCount != 0) && (g_ActiveGraphicsAdapterIndex != -1)) &&
-     (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == 1)) {
+  if (((g_GlideRuntimeActiveCount != 0) && (g_ActiveGraphicsAdapterIndex != GRAPHICS_ADAPTER_INDEX_NONE)) &&
+     (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE)) {
     Glide3_Shutdown();
   }
   return;
@@ -739,10 +740,9 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfR
 
 
 /* Address: 0x00579520.
-   Ownership: graphics/core/runtime.
-   Purpose: Handles graphics shutdown.
-   Cross-module calls: GlideBackend_ShutdownWrapper [graphics/backend/glide], GraphicsTexture_ReleaseObjects
-   [graphics/resources/texture].
+   Tears the graphics backend down at exit (Runtime_Shutdown): blocks the cursor timer, frees the software
+   cursor buffers, shuts Glide down, releases the objects of every texture slot and then every Direct3D and
+   DirectDraw object, viewport first and primary surface last.
 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
 
@@ -750,159 +750,156 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_Shutdown(void)
   GraphicsTextureResource **slotsOrRemaining;
   GraphicsTextureResource **remainingSlots;
   GraphicsTextureResource **slotCursor;
-  
-  g_GraphicsBackendAccessState = -1;
+
+  g_GraphicsBackendAccessState = -1; /* nonzero: GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer draws nothing */
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
   g_MemoryApi.free(g_CursorAlternateSavedBackground);
-  g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
-  g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
-  g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
+  g_CursorSavedBackground = NULL;
+  g_CursorCompositeBuffer = NULL;
+  g_CursorAlternateSavedBackground = NULL;
   GlideBackend_ShutdownWrapper();
+  /* 0x1000 texture slots; slotsOrRemaining first carries the table pointer (skipped when it is NULL), then
+     the number of slots still to visit */
   remainingSlots = (GraphicsTextureResource **)0x1000;
   slotCursor = g_GraphicsTextureSlots;
   slotsOrRemaining = g_GraphicsTextureSlots;
-  while (slotsOrRemaining != (GraphicsTextureResource **)0x0) {
-    if (*slotCursor != (GraphicsTextureResource *)0x0) {
+  while (slotsOrRemaining != NULL) {
+    if (*slotCursor != NULL) {
       GraphicsTexture_ReleaseObjects(*slotCursor);
     }
-    slotCursor = slotCursor + 1;
-    remainingSlots = (GraphicsTextureResource **)((int)remainingSlots + -1);
+    slotCursor++;
+    remainingSlots = (GraphicsTextureResource **)((int)remainingSlots - 1);
     slotsOrRemaining = remainingSlots;
   }
   g_LastViewportRect.x1 = 0;
   g_LastViewportRect.y1 = 0;
   g_LastViewportRect.x2 = 0;
   g_LastViewportRect.y2 = 0;
-  if (g_Direct3DViewport2 != (IDirect3DViewport2 *)0x0) {
+  if (g_Direct3DViewport2 != NULL) {
     g_Direct3DViewport2->lpVtbl->Release(g_Direct3DViewport2);
-    g_Direct3DViewport2 = (IDirect3DViewport2 *)0x0;
+    g_Direct3DViewport2 = NULL;
   }
-  if (g_ZSurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (g_ZSurface3 != NULL) {
     g_ZSurface3->lpVtbl->Release(g_ZSurface3);
-    g_ZSurface3 = (IDirectDrawSurface3 *)0x0;
+    g_ZSurface3 = NULL;
   }
-  if (g_ZSurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (g_ZSurfaceBase != NULL) {
     g_ZSurfaceBase->lpVtbl->Release(g_ZSurfaceBase);
-    g_ZSurfaceBase = (IDirectDrawSurface *)0x0;
+    g_ZSurfaceBase = NULL;
   }
-  if (g_Direct3DDevice2 != (IDirect3DDevice2 *)0x0) {
+  if (g_Direct3DDevice2 != NULL) {
     g_Direct3DDevice2->lpVtbl->Release(g_Direct3DDevice2);
-    g_Direct3DDevice2 = (IDirect3DDevice2 *)0x0;
+    g_Direct3DDevice2 = NULL;
   }
-  if (g_Direct3D2 != (IDirect3D2 *)0x0) {
+  if (g_Direct3D2 != NULL) {
     g_Direct3D2->lpVtbl->Release(g_Direct3D2);
-    g_Direct3D2 = (IDirect3D2 *)0x0;
+    g_Direct3D2 = NULL;
   }
-  if (g_BackSurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (g_BackSurface3 != NULL) {
     g_BackSurface3->lpVtbl->Release(g_BackSurface3);
-    g_BackSurface3 = (IDirectDrawSurface3 *)0x0;
+    g_BackSurface3 = NULL;
   }
-  if (g_BackSurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (g_BackSurfaceBase != NULL) {
     g_BackSurfaceBase->lpVtbl->Release(g_BackSurfaceBase);
-    g_BackSurfaceBase = (IDirectDrawSurface *)0x0;
+    g_BackSurfaceBase = NULL;
   }
-  if (g_PrimarySurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (g_PrimarySurface3 != NULL) {
     g_PrimarySurface3->lpVtbl->Release(g_PrimarySurface3);
-    g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
+    g_PrimarySurface3 = NULL;
   }
-  if (g_PrimarySurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (g_PrimarySurfaceBase != NULL) {
     g_PrimarySurfaceBase->lpVtbl->Release(g_PrimarySurfaceBase);
-    g_PrimarySurfaceBase = (IDirectDrawSurface *)0x0;
+    g_PrimarySurfaceBase = NULL;
   }
   return;
 }
 
 
 /* Address: 0x0057A5C0.
-   Ownership: graphics/core/runtime.
-   Purpose: Transforms four engine coordinates, updates IDirect3DViewport2 when the rectangle changes, and clears
-   the depth buffer inside the resulting D3DRECT. Typed parameters: p0 coordinate0→GraphicsScreenCoordinate_V307,
-   p1 coordinate1→GraphicsScreenCoordinate_V307, p2 coordinate2→GraphicsScreenCoordinate_V307, p3
-   coordinate3→GraphicsScreenCoordinate_V307. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: SoftwareRenderer_ClearViewport [graphics/backend/software], Memory_ZeroDwords
-   [core/memory/allocator], Glide3_ClearViewport [graphics/backend/glide].
+   Sets the rectangle the scene is drawn into and clears its depth buffer. The software rasterizer only takes
+   the rectangle as its clip rectangle; Direct3D also gets it as its viewport (SetViewport2 only when the
+   rectangle changed since the last successful call) and clears the Z-buffer inside it; Glide does its own.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_SetViewportAndClearDepth
-          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3)
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX)
 
 {
-  TH_LEGACY_DWORD backendId;
+  TH_LEGACY_DWORD deviceKind;
   TH_LEGACY_HRESULT hresult;
-  GraphicsScreenCoordinate savedY2;
-  GraphicsScreenCoordinate savedX2;
-  GraphicsScreenCoordinate savedY1;
-  GraphicsScreenCoordinate savedX1;
-  
-  backendId = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  if (backendId == 0) {
-    SoftwareRenderer_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
+  GraphicsScreenCoordinate savedMaxY;
+  GraphicsScreenCoordinate savedMaxX;
+  GraphicsScreenCoordinate savedMinY;
+  GraphicsScreenCoordinate savedMinX;
+
+  deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  if (deviceKind == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    SoftwareRenderer_ClearViewport(clipMaxY,clipMaxX,clipMinY,clipMinX);
     return;
   }
-  if (backendId != 1) {
-    SoftwareRenderer_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
-    g_CurrentClearRect.x1 = coordinate3;
-    g_CurrentClearRect.y1 = coordinate2;
-    g_CurrentClearRect.x2 = coordinate1;
-    g_CurrentClearRect.y2 = coordinate0;
-    if ((((coordinate3 != g_LastViewportRect.x1) || (coordinate2 != g_LastViewportRect.y1)) ||
-        (coordinate1 != g_LastViewportRect.x2)) || (coordinate0 != g_LastViewportRect.y2)) {
-      savedY2 = coordinate0;
-      savedX2 = coordinate1;
-      savedY1 = coordinate2;
-      savedX1 = coordinate3;
-      Memory_ZeroDwords(0x2c,&g_Direct3DViewportState);
+  if (deviceKind != GRAPHICS_DEVICE_GUID_GLIDE) {
+    /* Direct3D: the software clip rectangle is kept in step as well */
+    SoftwareRenderer_ClearViewport(clipMaxY,clipMaxX,clipMinY,clipMinX);
+    g_CurrentClearRect.x1 = clipMinX;
+    g_CurrentClearRect.y1 = clipMinY;
+    g_CurrentClearRect.x2 = clipMaxX;
+    g_CurrentClearRect.y2 = clipMaxY;
+    if ((((clipMinX != g_LastViewportRect.x1) || (clipMinY != g_LastViewportRect.y1)) ||
+        (clipMaxX != g_LastViewportRect.x2)) || (clipMaxY != g_LastViewportRect.y2)) {
+      savedMaxY = clipMaxY;
+      savedMaxX = clipMaxX;
+      savedMinY = clipMinY;
+      savedMinX = clipMinX;
+      Memory_ZeroDwords(0x2c,&g_Direct3DViewportState); /* sizeof(D3DVIEWPORT2) */
       g_Direct3DViewportState.dwSize = 0x2c;
       g_Direct3DViewportState.dvMinZ = 0.0;
-      g_Direct3DViewportState.dwX = coordinate3;
-      g_Direct3DViewportState.dwY = coordinate2;
-      g_Direct3DViewportState.dwWidth = coordinate1 - coordinate3;
-      g_Direct3DViewportState.dwHeight = coordinate0 - coordinate2;
+      g_Direct3DViewportState.dwX = clipMinX;
+      g_Direct3DViewportState.dwY = clipMinY;
+      g_Direct3DViewportState.dwWidth = clipMaxX - clipMinX;
+      g_Direct3DViewportState.dwHeight = clipMaxY - clipMinY;
       g_Direct3DViewportState.dvMaxZ = 1.0;
-      g_Direct3DViewportState.dvClipX = (float)coordinate3;
-      g_Direct3DViewportState.dvClipY = (float)coordinate2;
+      g_Direct3DViewportState.dvClipX = (float)clipMinX;
+      g_Direct3DViewportState.dvClipY = (float)clipMinY;
       g_Direct3DViewportState.dvClipWidth = (float)(int)g_Direct3DViewportState.dwWidth;
       g_Direct3DViewportState.dvClipHeight = (float)(int)g_Direct3DViewportState.dwHeight;
       hresult = g_Direct3DViewport2->lpVtbl->SetViewport2
                         (g_Direct3DViewport2,&g_Direct3DViewportState);
       if (hresult == 0) {
-        g_LastViewportRect.x1 = savedX1;
-        g_LastViewportRect.y1 = savedY1;
-        g_LastViewportRect.x2 = savedX2;
-        g_LastViewportRect.y2 = savedY2;
+        g_LastViewportRect.x1 = savedMinX;
+        g_LastViewportRect.y1 = savedMinY;
+        g_LastViewportRect.x2 = savedMaxX;
+        g_LastViewportRect.y2 = savedMaxY;
       }
     }
-    g_Direct3DViewport2->lpVtbl->Clear(g_Direct3DViewport2,1,&g_CurrentClearRect,2);
+    g_Direct3DViewport2->lpVtbl->Clear(g_Direct3DViewport2,1,&g_CurrentClearRect,D3DCLEAR_ZBUFFER);
     return;
   }
-  Glide3_ClearViewport(coordinate0,coordinate1,coordinate2,coordinate3);
+  Glide3_ClearViewport(clipMaxY,clipMaxX,clipMinY,clipMinX);
   return;
 }
 
 
 /* Address: 0x0057E6D0.
-   Ownership: graphics/core/runtime.
-   Purpose: Restores the back surface when lost and begins the Direct3D scene. Alternate backends are dispatched
-   separately. ABI: CF clear means success. CF set means failure; EAX may contain an engine error code.
-   Cross-module calls: GlideBackend_BeginSceneNoOp [graphics/backend/glide].
+   Starts a frame on the active renderer: nothing for the software rasterizer, the (empty) Glide hook, or for
+   Direct3D a restore of a lost back surface followed by IDirect3DDevice2::BeginScene. The original reports a
+   failed restore or BeginScene with CF set; this C version returns nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
 
 {
-  TH_LEGACY_DWORD backendId;
+  TH_LEGACY_DWORD deviceKind;
   TH_LEGACY_HRESULT hresult;
   int restoreResult;
   bool isSoftwareBackend;
-  
-  backendId = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  isSoftwareBackend = backendId == 0;
+
+  deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  isSoftwareBackend = deviceKind == GRAPHICS_DEVICE_GUID_SOFTWARE;
   if (isSoftwareBackend) {
     return;
   }
-  if (backendId == 1) {
+  if (deviceKind == GRAPHICS_DEVICE_GUID_GLIDE) {
     GlideBackend_BeginSceneNoOp();
     if (!isSoftwareBackend) {
       return;
@@ -924,18 +921,17 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_BeginScene(void)
 
 
 /* Address: 0x0057E750.
-   Ownership: graphics/core/runtime.
-   Purpose: Ends the current Direct3D scene. Alternate backends are dispatched separately.
-   Cross-module calls: GlideBackend_EndSceneNoOp [graphics/backend/glide].
+   Ends the frame started by Graphics_BeginScene: IDirect3DDevice2::EndScene for Direct3D, the (empty) Glide
+   hook for Glide, nothing for the software rasterizer.
 */
 void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void)
 
 {
-  TH_LEGACY_DWORD graphicsBackendId;
-  
-  graphicsBackendId = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  if (graphicsBackendId != 0) {
-    if (graphicsBackendId == 1) {
+  TH_LEGACY_DWORD deviceKind;
+
+  deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  if (deviceKind != GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    if (deviceKind == GRAPHICS_DEVICE_GUID_GLIDE) {
       GlideBackend_EndSceneNoOp();
     }
     else {
@@ -947,46 +943,40 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_EndScene(void)
 
 
 /* Address: 0x0057E7A0.
-   Ownership: graphics/core/runtime.
-   Purpose: Traverses the next-linked render list created by GraphicsPrimitiveQueue_RadixSortForRendering. Typed
-   parameters: p0 coordinate0→GraphicsScreenCoordinate_V307, p1 coordinate1→GraphicsScreenCoordinate_V307, p2
-   coordinate2→GraphicsScreenCoordinate_V307, p3 coordinate3→GraphicsScreenCoordinate_V307. Calling convention,
-   complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Cross-module calls: SoftwareRenderer_DrawPrimitiveQueueBridge [graphics/backend/software],
-   GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
-   [graphics/render/primitives], Glide3_DrawPrimitiveQueue [graphics/backend/glide].
+   Draws a sorted primitive queue (see GraphicsPrimitiveQueue_RadixSortForRendering) inside the given clip
+   rectangle. Software and Glide have their own queue walkers; for Direct3D every packet is turned into
+   transformed vertices by the primitive handler its render flags select and drawn as one triangle fan.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Graphics_DrawPrimitiveQueue
-          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3,
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX,
           GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacket *currentPacket;
   PrimitivePacketResult packetResult;
-  TH_LEGACY_DWORD graphicsBackendSelector;
-  
-  graphicsBackendSelector = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-  if (graphicsBackendSelector == 0) {
-    SoftwareRenderer_DrawPrimitiveQueueBridge(coordinate0,coordinate1,coordinate2,coordinate3,queue)
-    ;
+  TH_LEGACY_DWORD deviceKind;
+
+  deviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
+  if (deviceKind == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    SoftwareRenderer_DrawPrimitiveQueueBridge(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
     return;
   }
-  if (graphicsBackendSelector != 1) {
+  if (deviceKind != GRAPHICS_DEVICE_GUID_GLIDE) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
     while (!packetResult.noPacket) {
-      g_GraphicsDispatchTable.primitive[((packetResult.packet)->renderFlags & 0x3f000) >> 12]
+      /* render-flag bits 12..17 select the handler that fills g_ImmediateTLVertices */
+      g_GraphicsDispatchTable.primitive[(packetResult.packet->renderFlags & 0x3f000) >> 12]
                 (packetResult.packet);
       g_Direct3DDevice2->lpVtbl->DrawPrimitive
-                (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
-      g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
+                (g_Direct3DDevice2,D3DPT_TRIANGLEFAN,D3DVT_TLVERTEX,g_ImmediateTLVertices,
+                 g_ImmediateVertexCount,D3DDP_DONOTUPDATEEXTENTS);
+      g_PrimitiveDrawCallCount++;
       packetResult = GraphicsPrimitiveQueue_Next(queue);
     }
     return;
   }
-  Glide3_DrawPrimitiveQueue(coordinate0,coordinate1,coordinate2,coordinate3,queue);
+  Glide3_DrawPrimitiveQueue(clipMaxY,clipMaxX,clipMinY,clipMinX,queue);
   return;
 }
 

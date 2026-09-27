@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/shots/runtime. */
+#define SHOT_RUNTIME_SLOT_COUNT 0x1000 /* g_ShotRuntimeSlots, 0x40-byte slots */
+#define SHOT_RUNTIME_POOL_BYTES 0x40000 /* SHOT_RUNTIME_SLOT_COUNT * sizeof(ShotRuntimeSlot) */
+#define SHOT_DEFINITION_REGISTRY_SLOTS 0x100 /* g_ShotDefinitionRegistry */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052CC60 */

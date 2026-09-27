@@ -11,13 +11,10 @@
 /* Implementation ownership: assets/shot/catalog. */
 
 /* Address: 0x0052B4D0.
-   Ownership: assets/shot/catalog.
-   Purpose: Validates the 'sht' magic and converter version 0x00060006, then prepares entryCount fixed 0x2E0-byte
-   entries beginning at +0x200. Preparation stops on the first CF-set entry failure. Invalid headers are copied to
-   the package last-error path. Payload fields remain opaque. Role: Walks the SHT asset table and registers every
-   shot definition.
-   Local calls: ShotDefinition_RegisterAndResolveReferences.
-   Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
+   Registers every shot definition of a loaded SHT asset: checks the 'sht' magic and converter version
+   0x60006, then hands each 0x2E0-byte record after the 0x200-byte header to
+   ShotDefinition_RegisterAndResolveReferences, stopping at the first failure. An invalid header leaves the
+   asset path in g_PackageLastErrorPath and fails with FATAL_ERROR_SHOT_ASSET_INVALID.
 */
 StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
@@ -25,17 +22,17 @@ StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetH
   uint32_t registrationStatusCode;
   AssetRecordCount entriesRemaining;
   ShotDefinition *definition;
-  ShotDefinition *definitionCursor;
   StatusResult registrationResult;
   StatusResult failureResult;
-  
-  registrationStatusCode = 0x43;
-  if (((asset->entryCountHeader).common.magic == ASSET_MAGIC_SHT) &&
-     ((asset->entryCountHeader).common.converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
-    entriesRemaining = (asset->entryCountHeader).entryCount;
+
+  registrationStatusCode = FATAL_ERROR_SHOT_ASSET_INVALID;
+  if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_SHT) &&
+     (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
+    entriesRemaining = asset->entryCountHeader.entryCount;
     definition = (ShotDefinition *)(asset + 1);
     while( true ) {
       if (entriesRemaining == 0) {
+        /* success hands back EAX as it was: the error code preset or the last registration result */
         registrationResult.failed = false;
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
@@ -43,8 +40,8 @@ StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetH
       registrationResult = ShotDefinition_RegisterAndResolveReferences(definition);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
-      definition = definition + 1;
-      entriesRemaining = entriesRemaining - 1;
+      definition++;
+      entriesRemaining--;
     }
   }
   else {
@@ -57,9 +54,10 @@ StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetH
 
 
 /* Address: 0x0052B7E0.
-   Ownership: assets/shot/catalog.
-   Purpose: Validates the 31 terrain-material indices embedded in every registered shot definition; invalid or
-   unloaded material references return error 0x46.
+   Runs after the level's terrain materials are loaded: checks that each of the 31 terrain-material indices
+   of every registered shot definition is negative (no material) or names a loaded material. Otherwise the
+   registry index of the offending shot is written to g_PackageLastErrorPath and the check fails with
+   FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 ShotDefinitions_ValidateTerrainMaterialReferences(void)
@@ -77,29 +75,29 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
   StatusResult failureResult;
 
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
+  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
   do {
     definition = *registryCursor;
-    if (definition != (ShotDefinition *)0x0) {
+    if (definition != NULL) {
       materialIndexCursor = definition->terrainMaterialIndices31;
-      materialIndicesRemaining = 0x1f;
+      materialIndicesRemaining = SHOT_TERRAIN_MATERIAL_REFERENCE_COUNT;
       do {
         materialIndex = *materialIndexCursor;
-        materialIndexCursor = materialIndexCursor + 1;
-        if ((0x19 < materialIndex) ||
-           ((-1 < materialIndex && (g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0)
-            ))) {
+        materialIndexCursor++;
+        if ((TERRAIN_MATERIAL_COUNT - 1 < materialIndex) ||
+           ((-1 < materialIndex && (g_TerrainMaterialTextureSets[materialIndex] == NULL)))) {
           g_WideNumberFormatUtf16
-                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100 - registrySlotsRemaining,g_PackageLastErrorPath);
+                    (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
+                     SHOT_DEFINITION_REGISTRY_SLOT_COUNT - registrySlotsRemaining,g_PackageLastErrorPath);
           failureResult.failed = true;
-          failureResult.valueOrError = 0x46;
+          failureResult.valueOrError = FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID;
           return failureResult;
         }
-        materialIndicesRemaining = materialIndicesRemaining + -1;
+        materialIndicesRemaining--;
       } while (materialIndicesRemaining != 0);
     }
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       successResult.failed = false;
       successResult.valueOrError = (uint32_t)materialIndex;

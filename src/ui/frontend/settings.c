@@ -1303,30 +1303,29 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsVal
 
 
 /* Address: 0x0054D1F0.
-   Ownership: ui/frontend/settings.
-   Purpose: Writes the game/session name as 0x28 bytes at settings offset 0x88. Queued UI action handler for
-   FRONTEND_PAGE20[8] (0x2008). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists], PersistentSettings_WriteDwords [core/settings/persistent].
+   Change handler of the host game setup page's game-name edit: the create button (FRONTEND_ACTION_CREATE_HOSTED_GAME)
+   is only offered while the name is valid (non-empty), and a valid name is saved as PERSISTENT_SETTING_GAME_NAME.
 */
 void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditControl *control)
 
 {
-  UiTextEditControl *firstNode;
+  UiTextEditControl *rootNode;
   UiNodeBase *parentCursor;
   
   parentCursor = (control->base).parent;
-  firstNode = control;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
-    firstNode = (UiTextEditControl *)(firstNode->base).parent;
-    parentCursor = (firstNode->base).parent;
+  rootNode = control;
+  /* climb to the root of the control's UI tree */
+  while (parentCursor != UI_NODE_NONE) {
+    rootNode = (UiTextEditControl *)(rootNode->base).parent;
+    parentCursor = (rootNode->base).parent;
   }
   if ((control->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
-    UiNodeList_SuppressActionId(0x2004,&firstNode->base);
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2004,&firstNode->base);
-    PersistentSettings_WriteBlock(0x28,(uint32_t *)control->textPrefix6C,0x88);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_CREATE_HOSTED_GAME,&rootNode->base);
+    PersistentSettings_WriteBlock(PERSISTENT_SETTINGS_NAME_BYTES,(uint32_t *)control->textPrefix6C,
+                                  PERSISTENT_SETTING_GAME_NAME);
   }
   return;
 }

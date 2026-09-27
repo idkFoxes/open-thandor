@@ -445,8 +445,8 @@ FrontendPlayerRuntime_MarkFlag08ById
 
 
 /* Address: 0x00544300.
-   Ownership: ui/frontend/player.
-   Purpose: Handles frontend player runtime xor state mask by player id.
+   Command handler FRONTEND_COMMAND_XOR_PLAYER_STATE (run on every peer): toggles the stateMask bits in
+   runtimeState64 of the player block with this player id. The two middle command arguments are unused.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_XorStateMaskByPlayerId
@@ -463,8 +463,8 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
       playerBlock->runtimeState64 = playerBlock->runtimeState64 ^ stateMask;
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
@@ -867,15 +867,8 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
 
 
 /* Address: 0x0055FB90.
-   Ownership: ui/frontend/player.
-   Purpose: Inserts up to three resolved entries into the selected player array and rebuilds the local selection
-   panels when the affected player is local. Kept distinct from frontend slot indices, faction runtime indices,
-   network endpoint identity, and PCK asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId.
-   Calling convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters:
-   p3 armyRuntimeOffset2→ArmyRuntimeSavedOffset_V343, p4 armyRuntimeOffset1→ArmyRuntimeSavedOffset_V343, p5
-   armyRuntimeOffset0→ArmyRuntimeSavedOffset_V343.
-   Cross-module calls: SelectionPointerArray_InsertUniqueAndRecenter [gameplay/selection/runtime],
-   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
+   Command handler INGAME_COMMAND_SELECTION_INSERT: adds up to three armies (saved offsets, 0 = none; armies
+   without a model are skipped) to the player's selection and rebuilds the selection panels for the local player.
 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_InsertThreeEntriesAndRefresh
@@ -885,21 +878,21 @@ FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 {
   if ((armyRuntimeOffset0 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
-      ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+      ownership.modelNode != NULL)) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if ((armyRuntimeOffset1 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
-      ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+      ownership.modelNode != NULL)) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
   if ((armyRuntimeOffset2 != 0) &&
      ((((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common).
-      ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+      ownership.modelNode != NULL)) {
     SelectionPointerArray_InsertUniqueAndRecenter
               ((GameEntityRuntime *)(armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
                &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
@@ -913,47 +906,43 @@ FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 
 
 /* Address: 0x0055FC30.
-   Ownership: ui/frontend/player.
-   Purpose: Removes up to three resolved entries from the selected player array and rebuilds the local selection
-   panels when the affected player is local. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-
-   player identity, and PCK-backed asset identifiers. Typed parameters: p1 selectionEntryToken2→RuntimeToken, p2
-   selectionEntryToken1→RuntimeToken, p3 selectionEntryToken0→RuntimeToken. Calling convention, parameter storage,
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_RemoveFirstMatch [gameplay/selection/runtime],
-   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
+   Command handler INGAME_COMMAND_SELECTION_REMOVE: removes up to three armies (saved offsets, 0 = none) from the
+   player's selection and rebuilds the selection panels for the local player. Like the original it calls the
+   removal once more for the last argument after the three checks (see the comment there).
 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-          (FrontendPlayerIndex playerIndex,RuntimeToken selectionEntryToken2,
-          RuntimeToken selectionEntryToken1,RuntimeToken selectionEntryToken0)
+          (FrontendPlayerIndex playerRuntimeId,RuntimeToken armyRuntimeOffset2,
+          RuntimeToken armyRuntimeOffset1,RuntimeToken armyRuntimeOffset0)
 
 {
-  if ((selectionEntryToken0 != 0) &&
-     ((((GameEntityRuntime *)(selectionEntryToken0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common)
-      .ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+  if ((armyRuntimeOffset0 != 0) &&
+     ((((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common)
+      .ownership.modelNode != NULL)) {
     SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)(selectionEntryToken0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
-               &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+              ((GameEntityRuntime *)(armyRuntimeOffset0 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+               &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
-  if ((selectionEntryToken1 != 0) &&
-     ((((GameEntityRuntime *)(selectionEntryToken1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common)
-      .ownership.modelNode != (ModelRuntimeNode *)0x0)) {
+  if ((armyRuntimeOffset1 != 0) &&
+     ((((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne))->common)
+      .ownership.modelNode != NULL)) {
     SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)(selectionEntryToken1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
-               &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+              ((GameEntityRuntime *)(armyRuntimeOffset1 + (int)g_ArmyRuntimeRebaseBaseMinusOne),
+               &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
-  if ((selectionEntryToken2 != 0) &&
-     (selectionEntryToken2 = selectionEntryToken2 + (int)g_ArmyRuntimeRebaseBaseMinusOne,
-     (((GameEntityRuntime *)selectionEntryToken2)->common).ownership.modelNode !=
-     (ModelRuntimeNode *)0x0)) {
+  if ((armyRuntimeOffset2 != 0) &&
+     (armyRuntimeOffset2 = armyRuntimeOffset2 + (int)g_ArmyRuntimeRebaseBaseMinusOne,
+     (((GameEntityRuntime *)armyRuntimeOffset2)->common).ownership.modelNode != NULL)) {
     SelectionPointerArray_RemoveFirstMatch
-              ((GameEntityRuntime *)selectionEntryToken2,
-               &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
+              ((GameEntityRuntime *)armyRuntimeOffset2,
+               &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
   }
+  /* Original quirk (0x0055FCA1): a fourth, unconditional removal with the third argument as left in EAX: the
+     rebased pointer, or the raw offset 0 when it was empty. */
   SelectionPointerArray_RemoveFirstMatch
-            ((GameEntityRuntime *)selectionEntryToken2,
-             &g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
-  if (playerIndex == g_LocalPlayerRuntimeId) {
+            ((GameEntityRuntime *)armyRuntimeOffset2,
+             &g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+  if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
@@ -962,20 +951,16 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
 
 
 /* Address: 0x0055FCD0.
-   Ownership: ui/frontend/player.
-   Purpose: Clears the selected player's 32-entry selection array and rebuilds selection-detail and catalog panels
-   when the affected player is local. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
-   identity, and PCK-backed asset identifiers.
-   Cross-module calls: SelectionPointerArray_Clear32 [gameplay/selection/runtime],
-   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
+   Command handler INGAME_COMMAND_SELECTION_CLEAR: empties the player's 32-entry selection and rebuilds the
+   selection panels for the local player. Only the first command argument is used.
 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_ClearAndRefreshLocalPanels
-          (FrontendPlayerIndex playerIndex,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
+          (FrontendPlayerIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
-  SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
-  if (playerIndex == g_LocalPlayerRuntimeId) {
+  SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+  if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   }
@@ -984,17 +969,10 @@ FrontendPlayerSelection_ClearAndRefreshLocalPanels
 
 
 /* Address: 0x0055FD10.
-   Ownership: ui/frontend/player.
-   Purpose: Transfers or merges one 32-pointer faction selection group according to mode bits, recenters offsets,
-   refreshes local selection panels, and optionally repositions the selected world object. Typed parameters: p5
-   selectionGroupIndex→FrontendFactionAssignmentIndex_V306. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged. Typed parameters: p4
-   transferModeFlags→FrontendSelectionTransferModeFlags_V343.
-   Cross-module calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition [gameplay/selection/runtime],
-   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology],
-   SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs [gameplay/selection/runtime],
-   WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
+   Selection groups (keys 1..8, command 0xBE0): copies or merges between the player's selection and one of the
+   faction's 8 groups of 32 armies, direction and merge chosen by the SELECTION_TRANSFER_* flags. Storing a
+   selection first removes its armies from all groups of the faction. For the local player it rebuilds the
+   selection panels and, with SELECTION_TRANSFER_CENTER_VIEW, moves the camera to the selection's centre.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
@@ -1016,51 +994,54 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   bool foundEmpty;
   WorldPositionResult averagePosition;
   
+  /* &g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32[selectionGroupIndex * 32]
+     (faction records of 0x740 bytes, the groups at +0x2E0, 0x80 bytes each) */
   groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
            (selectionGroupIndex * 0x80 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x2e0) + factionIndex * 0x740);
   sourceCursor = groupOrScanCursor;
   destCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  if ((transferModeFlags & 1) != 0) {
-    entriesRemaining = 0x20;
+  if ((transferModeFlags & SELECTION_TRANSFER_TO_GROUP) != 0) {
+    entriesRemaining = SELECTION_GROUP_ENTRY_COUNT;
     sourceCursor = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
     do {
       destCursor = sourceCursor;
       selectionEntry = (destCursor->selection).entries[0];
-      if (selectionEntry != (GameEntityRuntime *)0x0) {
-        memberOrEntryRemaining = 0x100;
+      if (selectionEntry != NULL) {
+        memberOrEntryRemaining = SELECTION_GROUP_COUNT * SELECTION_GROUP_ENTRY_COUNT;
         groupMemberSlot = g_GameFactionRuntimeImage.records[factionIndex].runtimeGroupMembers8x32;
         do {
           if (selectionEntry == (GameEntityRuntime *)*groupMemberSlot) {
-            *groupMemberSlot = (ArmyRuntimeSlot *)0x0;
+            *groupMemberSlot = NULL;
           }
           groupMemberSlot = groupMemberSlot + 1;
-          memberOrEntryRemaining = memberOrEntryRemaining + -1;
+          memberOrEntryRemaining--;
         } while (memberOrEntryRemaining != 0);
       }
-      entriesRemaining = entriesRemaining + -1;
+      entriesRemaining--;
       sourceCursor = (SelectionPlayerRuntimeBlock *)((destCursor->selection).entries + 1);
     } while (entriesRemaining != 0);
+    /* back to the first selection entry (the typed expression is Ghidra's): selection -> group */
     sourceCursor = (SelectionPlayerRuntimeBlock *)&destCursor[-1].packedSelectionState809C;
     destCursor = groupOrScanCursor;
   }
-  entriesRemaining = 0x20;
-  if ((transferModeFlags & 2) == 0) {
-    for (; entriesRemaining != 0; entriesRemaining = entriesRemaining + -1) {
+  entriesRemaining = SELECTION_GROUP_ENTRY_COUNT;
+  if ((transferModeFlags & SELECTION_TRANSFER_MERGE) == 0) {
+    for (; entriesRemaining != 0; entriesRemaining--) {
       (destCursor->selection).entries[0] = (sourceCursor->selection).entries[0];
       sourceCursor = (SelectionPlayerRuntimeBlock *)((sourceCursor->selection).entries + 1);
       destCursor = (SelectionPlayerRuntimeBlock *)((destCursor->selection).entries + 1);
     }
   }
   else {
-    memberOrEntryRemaining = 0x20;
+    memberOrEntryRemaining = SELECTION_GROUP_ENTRY_COUNT;
     do {
       selectionEntry = (sourceCursor->selection).entries[0];
       scanRemaining = entriesRemaining;
       groupOrScanCursor = destCursor;
-      if (selectionEntry != (GameEntityRuntime *)0x0) {
+      if (selectionEntry != NULL) {
         do {
           if (selectionEntry == (groupOrScanCursor->selection).entries[0]) break;
-          scanRemaining = scanRemaining + -1;
+          scanRemaining--;
           groupOrScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
         } while (scanRemaining != 0);
         /* Not yet in the destination group (the scan ran out; entriesRemaining is 0x20 here): store it in
@@ -1074,17 +1055,18 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
             if (scanRemaining == 0) break;
             scanRemaining = scanRemaining + -1;
             nextScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
-            foundEmpty = (groupOrScanCursor->selection).entries[0] == (GameEntityRuntime *)0x0;
+            foundEmpty = (groupOrScanCursor->selection).entries[0] == NULL;
             groupOrScanCursor = nextScanCursor;
           } while (!foundEmpty);
           if (foundEmpty) {
+            /* = nextScanCursor's previous entry, i.e. the empty slot found */
             *(GameEntityRuntime **)(nextScanCursor[-1].reserved80B0_8117 + 100) =
                  (sourceCursor->selection).entries[0];
           }
         }
       }
       sourceCursor = (SelectionPlayerRuntimeBlock *)((sourceCursor->selection).entries + 1);
-      memberOrEntryRemaining = memberOrEntryRemaining + -1;
+      memberOrEntryRemaining--;
     } while (memberOrEntryRemaining != 0);
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
@@ -1093,7 +1075,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   if (playerRuntimeId == g_LocalPlayerRuntimeId) {
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
-    if ((transferModeFlags & 4) != 0) {
+    if ((transferModeFlags & SELECTION_TRANSFER_CENTER_VIEW) != 0) {
       averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
       if (!averagePosition.unresolved) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
@@ -1608,28 +1590,25 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
 
 
 /* Address: 0x0055FAD0.
-   Ownership: ui/frontend/player.
-   Purpose: Resolves a model token, replaces the player selection array with that model, and refreshes the local
-   selection panels when the player is local.
-   Cross-module calls: SelectionPointerArray_Clear32 [gameplay/selection/runtime],
-   SelectionPointerArray_InsertUniqueAndRecenter [gameplay/selection/runtime], InGameSelectionDetailPanel_Rebuild
-   [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology].
+   Command handler INGAME_COMMAND_SELECT_SINGLE_ARMY: replaces the player's selection with one army (saved offset;
+   0 does nothing, an army without a model leaves the selection empty) and rebuilds the selection panels for the
+   local player. The two middle command arguments are unused.
 */
 void __thandor_preserve_eax
 FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-          (FactionRuntimeIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
-          RuntimeToken modelToken)
+          (FactionRuntimeIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
+          RuntimeToken armyRuntimeOffset)
 
 {
-  GameEntityRuntime *entityRuntime;
+  GameEntityRuntime *army;
   
-  if (modelToken != 0) {
-    entityRuntime = (GameEntityRuntime *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
-    SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
-    if ((entityRuntime->common).ownership.modelNode != (ModelRuntimeNode *)0x0) {
+  if (armyRuntimeOffset != 0) {
+    army = (GameEntityRuntime *)(armyRuntimeOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
+    SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+    if ((army->common).ownership.modelNode != NULL) {
       SelectionPointerArray_InsertUniqueAndRecenter
-                (entityRuntime,&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
-      if (playerIndex == g_LocalPlayerRuntimeId) {
+                (army,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
+      if (playerRuntimeId == g_LocalPlayerRuntimeId) {
         InGameSelectionDetailPanel_Rebuild();
         UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
       }

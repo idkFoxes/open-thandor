@@ -952,13 +952,10 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
 
 
 /* Address: 0x00418560.
-   Ownership: audio/codec/sam.
-   Purpose: Converts one 256-coefficient block into one 0x400-byte interleaved stereo 16-bit PCM block with the
-   legacy MMX transform path. Docs VA 0x418560 ("SynthesizeBlockToPcmMmx" in sam-format.md — this recovered name is
-   the same function). Per bank: word = bits 16..31 of the 32-bit- wrapped 256-tap dot product x32, paddsw-doubled,
-   stereo-duplicated; STATELESS across blocks. Output 22050 Hz stereo s16. The mono variant
-   SoundSample_DecodeCoefficientBlockToMonoPcmMmx (L27864) is not ported (same structure, SFX path; out of V3
-   scope).
+   Synthesizes one SAM block: transforms 256 decoded coefficients into 256 PCM samples with the MMX cosine
+   tables (each sample is bits 16..31 of the wrapping 256-tap dot product x32, doubled with saturation) and
+   writes them as a 0x400-byte interleaved stereo 16-bit block with the same value on both channels. No state
+   is kept between blocks.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coefficients)
@@ -1234,7 +1231,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
   int bank3LowLaneSum;
   int outputGroupsRemaining;
   
-  outputGroupsRemaining = 0x40;
+  outputGroupsRemaining = 64; /* 64 groups of 4 samples, one cosine bank of 4 x 256 taps per group */
   cosineBankCursor = g_CosineDerivedLookupSecondTable;
   do {
     coefficientQuadLow = *(MmxPackedValue64 *)coefficients;
@@ -1877,7 +1874,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
          ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
     *(uint64_t *)(outputStereoPcm + 4) =
          ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001;
-    outputGroupsRemaining = outputGroupsRemaining + -1;
+    outputGroupsRemaining--;
     outputStereoPcm = outputStereoPcm + 8;
   } while (outputGroupsRemaining != 0);
   return;
@@ -2967,11 +2964,10 @@ SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoeff
 }
 
 /* Address: 0x0041A430.
-   Ownership: audio/codec/sam.
-   Purpose: Decodes one variable-length packed SAM block into 256 signed 16-bit coefficients and returns the
-   aligned encoded byte count consumed in EAX. Docs VA 0x41A430. Bitstream -> 32 coefficient rows; the final
-   consumed pointer aligns DOWN to 4 (& 0xFFFFFFFC) — the alignment direction that broke the first Python port.
-   Out-of-bounds refill reads behave as zero (portable decoder matches).
+   Unpacks one SAM block into 256 signed 16-bit coefficients (inverse of
+   SoundSample_EncodePackedCoefficientBlock). Each coefficient is prefix-coded from the low bits of a 32-bit
+   little-endian bit accumulator (prefix bits listed from bit 0): 0 -> zero (1 bit), 1,0 -> 3-bit value (5 bits),
+   1,1,0 -> 6-bit value (9 bits), 1,1,1 -> 12-bit value (15 bits). Returns the encoded byte count consumed, rounded DOWN to a multiple of 4.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
@@ -2985,12 +2981,13 @@ SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *enco
   uint32_t availableBitCount;
   uint16_t *inputCursor;
   int coefficientsRemaining;
-  
-  coefficientsRemaining = 0x100;
+
+  coefficientsRemaining = 256;
   bitAccumulator = *(uint32_t *)encodedBlock;
-  availableBitCount = 0x20;
+  availableBitCount = 32;
   inputCursor = (uint16_t *)(encodedBlock + 4);
   do {
+    /* the value fields are sign-extended by shifting them to the top of a 32-bit int and back */
     if ((bitAccumulator & 1) == 0) {
       *outputCoefficients = 0;
       availableBitCount = availableBitCount - 1;
@@ -3000,46 +2997,47 @@ SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *enco
       fieldBits = bitAccumulator >> 2;
       bitAccumulator = bitAccumulator >> 5;
       availableBitCount = availableBitCount - 5;
-      *outputCoefficients = (short)((int)(fieldBits << 0x1d) >> 0x1d);
+      *outputCoefficients = (short)((int)(fieldBits << 29) >> 29);
     }
     else if ((bitAccumulator & 4) == 0) {
       fieldBits = bitAccumulator >> 3;
       bitAccumulator = bitAccumulator >> 9;
       availableBitCount = availableBitCount - 9;
-      *outputCoefficients = (short)((int)(fieldBits << 0x1a) >> 0x1a);
+      *outputCoefficients = (short)((int)(fieldBits << 26) >> 26);
     }
     else {
       fieldBits = bitAccumulator >> 3;
-      bitAccumulator = bitAccumulator >> 0xf;
-      availableBitCount = availableBitCount - 0xf;
-      *outputCoefficients = (short)((int)(fieldBits << 0x14) >> 0x14);
+      bitAccumulator = bitAccumulator >> 15;
+      availableBitCount = availableBitCount - 15;
+      *outputCoefficients = (short)((int)(fieldBits << 20) >> 20);
     }
+    /* refill whole bytes above the remaining bits so that at least 25 bits are available again */
     refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
       refillDword = *(int *)inputCursor;
       inputCursor = (uint16_t *)((int)inputCursor + 3);
-      availableBitCount = availableBitCount + 0x18;
+      availableBitCount = availableBitCount + 24;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
-    else if (availableBitCount < 0x11) {
+    else if (availableBitCount < 17) {
       refillWord = *inputCursor;
       inputCursor = inputCursor + 1;
-      availableBitCount = availableBitCount + 0x10;
+      availableBitCount = availableBitCount + 16;
       bitAccumulator = bitAccumulator | (uint32_t)refillWord << (refillShift & 0x1f);
     }
-    else if (availableBitCount < 0x19) {
+    else if (availableBitCount < 25) {
       refillWord = *inputCursor;
       inputCursor = (uint16_t *)((int)inputCursor + 1);
       availableBitCount = availableBitCount + 8;
       bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
-    outputCoefficients = outputCoefficients + 1;
-    coefficientsRemaining = coefficientsRemaining + -1;
+    outputCoefficients++;
+    coefficientsRemaining--;
   } while (coefficientsRemaining != 0);
-  if (availableBitCount == 0x20) {
-    inputCursor = (uint16_t *)((int)inputCursor + -1);
+  if (availableBitCount == 32) {
+    inputCursor = (uint16_t *)((int)inputCursor - 1);
   }
-  else if (availableBitCount < 0x18) {
+  else if (availableBitCount < 24) {
     inputCursor = (uint16_t *)((int)inputCursor + 1);
   }
   return ((uint32_t)inputCursor & 0xfffffffc) - (int)encodedBlock;

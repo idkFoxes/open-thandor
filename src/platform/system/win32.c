@@ -51,17 +51,18 @@ static void Win32_AutoShotTick(void)
     sprintf(name, "shots\\shot_%04u.bmp", number++);
     file = fopen(name, "wb");
     if (file != NULL) {
+      /* "BM" + the rest of BITMAPFILEHEADER (14 bytes) and a BITMAPINFOHEADER (40 bytes): 32-bit top-down */
       uint32_t header[13];
       uint32_t imageBytes = width * height * 4;
       memset(header, 0, sizeof header);
       fwrite("BM", 1, 2, file);
-      header[0] = 54 + imageBytes;
-      header[2] = 54;
-      header[3] = 40;
+      header[0] = 54 + imageBytes; /* bfSize */
+      header[2] = 54;              /* bfOffBits */
+      header[3] = 40;              /* biSize */
       header[4] = width;
-      header[5] = (uint32_t)-(int)height;
-      header[6] = 1 | (32 << 16);
-      header[8] = imageBytes;
+      header[5] = (uint32_t)-(int)height; /* negative height: rows top to bottom */
+      header[6] = 1 | (32 << 16);  /* biPlanes 1, biBitCount 32 */
+      header[8] = imageBytes;      /* biSizeImage */
       fwrite(header, 4, 13, file);
       fwrite(pixels, 4, width * height, file);
       fclose(file);
@@ -123,6 +124,7 @@ static void Win32_ScriptTick(void)
   static int layoutHeight;
   char line[128];
   unsigned now;
+  /* state: -1 not started, 0 no (more) script, 1 read the next line, 2 a line waits for its time */
   if (state < 0) {
     const char *path = getenv("OPEN_THANDOR_SCRIPT");
     state = 0;
@@ -180,6 +182,7 @@ static void Win32_ScriptTick(void)
     Thandor_Log("script: %u ms %s %d %d", now, command, x, y);
     if (strcmp(command, "click") == 0 || strcmp(command, "rclick") == 0) {
       int right = command[0] == 'r';
+      /* g_MouseButtonMask bits: 1 left, 4 right */
       Win32_PushCursorEvent(MOTION_OR_WHEEL, 0, x, y);
       Win32_PushCursorEvent(right ? RIGHT_PRESS : LEFT_PRESS, right ? 4 : 1, x, y);
       pendingRelease = 1;
@@ -238,25 +241,25 @@ Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
 
 
 /* Address: 0x00577B90.
-   Ownership: platform/system/win32.
-   Purpose: Examines a Win32 MSG before TranslateMessage. CF set means the pump should call TranslateMessage. CF
-   clear means translation is suppressed. WM_CHAR/WM_DEADCHAR and the engine's directly handled editing,
-   navigation, digit, letter, and function-key ranges are suppressed to avoid duplicate character messages.
+   Decides whether the message pump calls TranslateMessage (CF set): only for key-down/up messages
+   (WM_KEYDOWN..WM_SYSKEYUP, not WM_CHAR/WM_DEADCHAR) of keys that produce text. The keys the engine
+   handles itself (Backspace, Tab, Enter, Pause, Escape, Space through Delete, numpad and F1-F12) get no
+   WM_CHAR, so text fields do not see them twice.
 */
 bool __thandor_void_preserve_eax_ecx Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
 {
   uint32_t messageCode;
   uint32_t virtualKeyCode;
-  
+
   messageCode = message->message;
   virtualKeyCode = message->wParam;
-  if (((((((0xff < messageCode) && (messageCode < 0x106)) && (messageCode != 0x103)) &&
-        ((messageCode != 0x102 && (virtualKeyCode != 8)))) &&
-       ((virtualKeyCode != 9 && ((virtualKeyCode != 0xd && (virtualKeyCode != 0x13)))))) &&
-      (virtualKeyCode != 0x1b)) &&
-     ((virtualKeyCode < 0x20 ||
-      ((0x2e < virtualKeyCode && ((virtualKeyCode < 0x60 || (0x7b < virtualKeyCode)))))))) {
+  if (((((((WM_KEYDOWN - 1 < messageCode) && (messageCode < WM_SYSKEYUP + 1)) && (messageCode != WM_DEADCHAR)) &&
+        ((messageCode != WM_CHAR && (virtualKeyCode != VK_BACK)))) &&
+       ((virtualKeyCode != VK_TAB && ((virtualKeyCode != VK_RETURN && (virtualKeyCode != VK_PAUSE)))))) &&
+      (virtualKeyCode != VK_ESCAPE)) &&
+     ((virtualKeyCode < VK_SPACE ||
+      ((VK_DELETE < virtualKeyCode && ((virtualKeyCode < VK_NUMPAD0 || (VK_F12 < virtualKeyCode)))))))) {
     return true;
   }
   return false;

@@ -20,13 +20,10 @@
 #define TEXTURE_SATURATE_TO_BYTE(lane) ((uint32_t)((0xff < (lane)) ? 0xff : (uint8_t)(lane)))
 
 /* Address: 0x0057E970.
-   Ownership: graphics/resources/texture.
-   Purpose: Allocates texture-set metadata, then creates one runtime texture resource per source entry. DirectDraw
-   adapters create staging and device textures. ABI: CF clear means success. CF set means failure.
-   Local calls: GraphicsTextureSet_AllocateMetadata, GraphicsTexture_SelectPixelFormat,
-   GraphicsTexture_CreateStagingTexture, GraphicsTexture_RegisterSlot, GraphicsTexture_ReleaseObjects,
-   GraphicsTexture_CreateDeviceTexture.
-   Cross-module calls: Glide3_TextureSet_CreateBackend [graphics/backend/glide].
+   Creates the renderer textures of a texture asset: allocates the set metadata and hands it to the Glide
+   backend, or (DirectDraw) creates one texture resource per subresource with its staging and device
+   texture and registers it in g_GraphicsTextureSlots. A subresource whose allocation or registration
+   fails is left NULL; only a failed metadata allocation fails the call (CF set).
 */
 TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
@@ -55,7 +52,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
     failureResult.textureSet = allocatedSet.textureSet;
     return failureResult;
   }
-  if (adapters[adapterIndex].deviceGuid.Data1 == 1) {
+  if (adapters[adapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     allocatedSet.failed = Glide3_TextureSet_CreateBackend(allocatedSet.textureSet,sourceAsset);
     return allocatedSet;
   }
@@ -65,16 +62,16 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
   subresourceIndex = 0;
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(subresourceIndex,setSourceAsset);
-    textureAllocation = g_MemoryApi.alloc(0x50);
+    textureAllocation = g_MemoryApi.alloc(sizeof(GraphicsTextureResource));
     newTexture = (GraphicsTextureResource *)textureAllocation.payloadOrError;
     if (!textureAllocation.failed) {
-      newTexture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
-      newTexture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
-      newTexture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
+      newTexture->stagingTexture2 = NULL;
+      newTexture->stagingSurface3 = NULL;
+      newTexture->stagingSurfaceBase = NULL;
       entryCursor->texture = newTexture;
-      newTexture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
-      newTexture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-      newTexture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
+      newTexture->deviceTexture2 = NULL;
+      newTexture->deviceSurface3 = NULL;
+      newTexture->deviceSurfaceBase = NULL;
       newTexture->sourceAsset = setSourceAsset;
       newTexture->subresourceIndex = subresourceIndex;
       newTexture->pixelFormat = selectedPixelFormat;
@@ -87,15 +84,15 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
       if (registerFailed) {
         GraphicsTexture_ReleaseObjects(newTexture);
         g_MemoryApi.free(newTexture);
-        entryCursor->texture = (GraphicsTextureResource *)0x0;
+        entryCursor->texture = NULL;
       }
       else {
         GraphicsTexture_CreateDeviceTexture(newTexture);
       }
     }
-    subresourceIndex = subresourceIndex + 1;
-    entryCursor = entryCursor + 1;
-    entriesRemaining = entriesRemaining - 1;
+    subresourceIndex++;
+    entryCursor++;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   successResult.failed = false;
   successResult.textureSet = allocatedSet.textureSet;
@@ -104,12 +101,9 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
 
 
 /* Address: 0x0057AD30.
-   Ownership: graphics/resources/texture.
-   Purpose: Dispatches all-resource texture rebuilding by selected backend. The Glide marker delegates to
-   Glide3_TextureResource_ReinitializeAll. DirectDraw scans all 4096 slots, releases every registered resource's
-   six COM objects, and recreates its staging texture. Device textures remain lazy and are recreated on demand.
-   Local calls: GraphicsTexture_ReleaseObjects, GraphicsTexture_CreateStagingTexture.
-   Cross-module calls: Glide3_TextureResource_ReinitializeAll [graphics/backend/glide].
+   Recreates the texture objects of every registered texture, e.g. after the display mode or device
+   changed: Glide reinitialises its own resources; for DirectDraw each resource's surfaces are released and
+   its staging texture rebuilt, while the device texture is recreated lazily when next used.
 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextures(void)
 
@@ -117,32 +111,29 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsTexture_RebuildAllStagingTextur
   GraphicsTextureResource *texture;
   int textureSlotsRemaining;
   GraphicsTextureResource **textureSlotCursor;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     Glide3_TextureResource_ReinitializeAll();
     return;
   }
-  textureSlotsRemaining = 0x1000;
+  textureSlotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   textureSlotCursor = g_GraphicsTextureSlots;
   do {
     texture = *textureSlotCursor;
-    if (texture != (GraphicsTextureResource *)0x0) {
+    if (texture != NULL) {
       GraphicsTexture_ReleaseObjects(texture);
       GraphicsTexture_CreateStagingTexture(texture);
     }
-    textureSlotCursor = textureSlotCursor + 1;
-    textureSlotsRemaining = textureSlotsRemaining + -1;
+    textureSlotCursor++;
+    textureSlotsRemaining--;
   } while (textureSlotsRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x0057EAF0.
-   Ownership: graphics/resources/texture.
-   Purpose: Unregisters and releases all runtime texture resources, frees texture-set metadata, and returns the
-   owned GraphicsTextureSourceAsset.
-   Local calls: GraphicsTexture_ReleaseObjects, GraphicsTextureSet_FreeMetadata.
-   Cross-module calls: Glide3_TextureSet_DestroyBackend [graphics/backend/glide].
+   Destroys a texture set made by GraphicsTextureSet_Create: every texture resource is removed from
+   g_GraphicsTextureSlots, released and freed, then the set metadata is freed. Returns the source asset
+   the set was built from, so the caller can release it too.
 */
 GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
 GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
@@ -155,32 +146,33 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
   uint32_t entriesRemaining;
   GraphicsTextureSetEntry *entryCursor;
   GraphicsTextureResource **matchedSlot;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     releasedSourceAsset = Glide3_TextureSet_DestroyBackend(set,set);
     return releasedSourceAsset;
   }
-  releasedSourceAsset = (GraphicsTextureSourceAsset *)0x0;
-  if (set != (GraphicsTextureSet *)0x0) {
+  releasedSourceAsset = NULL;
+  if (set != NULL) {
     entriesRemaining = set->subresourceCount;
     entryCursor = set->entries;
     do {
       texture = entryCursor->texture;
-      if (texture != (GraphicsTextureResource *)0x0) {
-        slotsRemaining = 0x1000;
+      if (texture != NULL) {
+        /* find the texture's slot; if it is not registered the scan ends on (and clears) the last slot */
+        slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
         slotCursor = g_GraphicsTextureSlots;
         do {
           matchedSlot = slotCursor;
           if (texture == *matchedSlot) break;
-          slotsRemaining = slotsRemaining + -1;
+          slotsRemaining--;
           slotCursor = matchedSlot + 1;
         } while (slotsRemaining != 0);
-        *matchedSlot = (GraphicsTextureResource *)0x0;
+        *matchedSlot = NULL;
         GraphicsTexture_ReleaseObjects(texture);
         g_MemoryApi.free(texture);
       }
-      entryCursor = entryCursor + 1;
-      entriesRemaining = entriesRemaining - 1;
+      entryCursor++;
+      entriesRemaining--;
     } while (entriesRemaining != 0);
     releasedSourceAsset = GraphicsTextureSet_FreeMetadata(set);
   }
@@ -3539,56 +3531,49 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
 
 
 /* Address: 0x0057EBB0.
-   Ownership: graphics/resources/texture.
-   Purpose: Runs the color-upload handler selected by texture->downsampleShift and reloads the device texture from
-   staging.
-   Cross-module calls: Glide3_TextureSet_RefreshColor [graphics/backend/glide].
+   Re-uploads the colour channels of one subresource after its source pixels changed (installed as
+   g_GraphicsRefreshTextureColor): the colour upload for the texture's downsample level refills the staging texture,
+   and an existing device texture is reloaded from it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsTextureSet_RefreshColor(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
-  GraphicsTextureResource *textureResource;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     Glide3_TextureSet_RefreshColor(subresourceIndex,set);
     return;
   }
   texture = set->entries[subresourceIndex].texture;
   g_GraphicsDispatchTable.colorUpload[texture->downsampleShift](texture);
-  if (texture->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+  if (texture->deviceTexture2 != NULL) {
     texture->deviceTexture2->lpVtbl->Load(texture->deviceTexture2,texture->stagingTexture2);
-    g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+    g_TextureDeviceReloadCount++;
   }
-  return;
 }
 
 
 /* Address: 0x0057EC40.
-   Ownership: graphics/resources/texture.
-   Purpose: Runs the alpha-upload handler selected by texture->downsampleShift and reloads the device texture from
-   staging.
-   Cross-module calls: Glide3_TextureSet_RefreshAlpha [graphics/backend/glide].
+   Like GraphicsTextureSet_RefreshColor, but re-uploads only the alpha channel of the subresource
+   (g_GraphicsRefreshTextureAlpha; used for the shading texture set).
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSet *set)
 
 {
   GraphicsTextureResource *texture;
-  GraphicsTextureResource *textureResource;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     Glide3_TextureSet_RefreshAlpha(subresourceIndex,set);
     return;
   }
   texture = set->entries[subresourceIndex].texture;
   g_GraphicsDispatchTable.alphaUpload[texture->downsampleShift](texture);
-  if (texture->deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+  if (texture->deviceTexture2 != NULL) {
     texture->deviceTexture2->lpVtbl->Load(texture->deviceTexture2,texture->stagingTexture2);
-    g_TextureDeviceReloadCount = g_TextureDeviceReloadCount + 1;
+    g_TextureDeviceReloadCount++;
   }
-  return;
 }
 
 

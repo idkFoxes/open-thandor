@@ -313,21 +313,14 @@ ModelRuntime_QueryHierarchyScaleRatioQ12(RuntimeModelFactionPrefix10 *runtimeEnt
 
 
 /* Address: 0x0051C260.
-   Ownership: world/model/runtime.
-   Purpose: Queries the root model runtime hierarchy for the recursive Q12 scale-ratio result returned by the
-   shared hierarchy metric routine. Queries the linked ModelRuntimeSlot and preserves the verified scale-ratio
-   register pair returned in EDX:EAX.
-   Cross-module calls: ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs [world/model/hierarchy].
+   Returns ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs (EDX:EAX) for the model runtime hierarchy of a
+   runtime entry (an army).
 */
 ModelRuntimeScaleRatioRegisterPairQ12 __thandor_eax_edx_cf_preserve_ecx
 ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
-  ModelRuntimeScaleRatioRegisterPairQ12 hierarchyScaleRatioPairQ12;
-  
-  hierarchyScaleRatioPairQ12 =
-       ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
-  return hierarchyScaleRatioPairQ12;
+  return ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(runtimeEntry->modelRuntime);
 }
 
 
@@ -372,9 +365,8 @@ ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix10
 
 
 /* Address: 0x00528A40.
-   Ownership: world/model/runtime.
-   Purpose: Allocates and zeroes the exact 0x400000-byte model runtime pool, equal to 8192 ModelRuntimeSlot
-   records.
+   Allocates and zeroes the model runtime pool (MODEL_RUNTIME_SLOT_COUNT 0x200-byte slots, 4 MiB) and records
+   its rebase delta (pool base - 1) for savegames. Returns 0, or the allocation error with CF set.
 */
 StatusResult __cdecl ModelRuntimePool_Init(void)
 
@@ -387,13 +379,11 @@ StatusResult __cdecl ModelRuntimePool_Init(void)
   allocResult = g_MemoryApi.alloc(0x400000);
   modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
   if (!allocResult.failed) {
-    g_ModelRuntimeRebaseDelta = (int)&modelRuntimeStorageCursor[-1].attachments140[5].reserved1C + 3
-    ;
+    /* pool base - 1 */
+    g_ModelRuntimeRebaseDelta = (int)&modelRuntimeStorageCursor[-1].attachments140[5].reserved1C + 3;
     g_ModelRuntimeSlots = modelRuntimeStorageCursor;
-    for (allocationDwordsRemaining = 0x100000; allocationDwordsRemaining != 0;
-        allocationDwordsRemaining = allocationDwordsRemaining + -1) {
-      (modelRuntimeStorageCursor->definitionOrSavedId).definition =
-           (ModelDefinitionRecordPrefix *)0x0;
+    for (allocationDwordsRemaining = 0x100000; allocationDwordsRemaining != 0; allocationDwordsRemaining--) {
+      (modelRuntimeStorageCursor->definitionOrSavedId).definition = NULL;
       modelRuntimeStorageCursor =
            (ModelRuntimeSlot *)&modelRuntimeStorageCursor->rootModelNodeOrSavedOffset;
     }
@@ -429,10 +419,9 @@ static void ModelRuntimePool_ReleaseDefinitionNodeResources(uint32_t resourceRec
 
 
 /* Address: 0x00528A70.
-   Ownership: world/model/runtime.
-   Purpose: Frees the model runtime pool and releases registered definition resources. The function returns no
-   semantic value.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Counterpart of ModelRuntimePool_Init: frees the model runtime pool, releases the resources of every
+   registered model definition's node tree (see ModelRuntimePool_ReleaseDefinitionNodeResources) and clears
+   the definition registry.
 */
 void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefinitions(void)
 
@@ -442,17 +431,17 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefi
   uint32_t resourceRecord;
   
   g_MemoryApi.free(g_ModelRuntimeSlots);
-  g_ModelRuntimeSlots = (ModelRuntimeSlot *)0x0;
+  g_ModelRuntimeSlots = NULL;
   registryEntry = g_ModelDefinitionRegistry;
-  for (registryRemaining = 0x300; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
-    if ((*registryEntry != (ModelDefinitionRecordPrefix *)0x0) &&
+  for (registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT; registryRemaining != 0; registryRemaining--) {
+    /* (*registryEntry)[8].flags: the root of the definition's node tree */
+    if ((*registryEntry != NULL) &&
        (resourceRecord = (*registryEntry)[8].flags, resourceRecord != 0)) {
       ModelRuntimePool_ReleaseDefinitionNodeResources(resourceRecord);
     }
-    *registryEntry = (ModelDefinitionRecordPrefix *)0x0;
-    registryEntry = registryEntry + 1;
+    *registryEntry = NULL;
+    registryEntry++;
   }
-  return;
 }
 
 
@@ -534,11 +523,10 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 
 
 /* Address: 0x00528CF0.
-   Ownership: world/model/runtime.
-   Purpose: Rebases 8192 exact 0x200-byte model runtime slots and rebuilds their six attachment descriptors. The
-   function returns no semantic value. Saved ids, relocated pointers, attachment selectors, and runtime class ids
-   remain separate.
-   Cross-module calls: ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive [world/model/hierarchy].
+   After a savegame load, counterpart of ModelRuntimePool_UnrebaseBeforeSave: turns the saved offsets of every
+   used model runtime slot back into pointers, replaces the saved definition id by the registered definition,
+   runs the class's load-repair callback and rebuilds the attachment descriptors from the definition. A slot
+   whose definition is no longer registered is dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
 
@@ -557,10 +545,14 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
   ModelRuntimeNode *savedParentNode;
   ModelRuntimeSlot *savedChildRuntime;
   
-  slotsRemaining = 0x2000;
+  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
   modelRuntime = g_ModelRuntimeSlots;
   do {
-    if ((modelRuntime->rootModelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
+    if ((modelRuntime->rootModelNodeOrSavedOffset).modelNode != NULL) {
+      /* Ghidra's field arithmetic below adds the pool deltas: the owner army (+0x08, always rebased) and the
+         linked army (+0xF0) get g_ArmyRuntimeRebaseBaseMinusOne, the root node (+0x04) and attachment parent
+         nodes g_RuntimeObjectRebaseBaseMinusOne, the linked model runtime (+0x38) and attachment children
+         g_ModelRuntimeRebaseDelta; zero offsets other than the owner stay NULL. */
       ownerOrLinkedArmy = (ArmyRuntimeSlot *)
                   ((int)&((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->
                          modelRuntimeOrSavedOffset + (int)g_ArmyRuntimeRebaseBaseMinusOne);
@@ -571,14 +563,14 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
       ;
       (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime = ownerOrLinkedArmy;
       ownerOrLinkedArmy = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime;
-      linkedRuntimeOrCursor = (ModelRuntimeSlot *)0x0;
-      if ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != (ModelRuntimeSlot *)0x0) {
+      linkedRuntimeOrCursor = NULL;
+      if ((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime != NULL) {
         linkedRuntimeOrCursor = (ModelRuntimeSlot *)
                      (((modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime)->reserved10_37
                      + g_ModelRuntimeRebaseDelta + -0x10);
       }
-      rebasedLinkedArmy = (ArmyRuntimeSlot *)0x0;
-      if (ownerOrLinkedArmy != (ArmyRuntimeSlot *)0x0) {
+      rebasedLinkedArmy = NULL;
+      if (ownerOrLinkedArmy != NULL) {
         rebasedLinkedArmy = (ArmyRuntimeSlot *)
                     ((int)&ownerOrLinkedArmy->modelRuntimeOrSavedOffset +
                     (int)g_ArmyRuntimeRebaseBaseMinusOne);
@@ -586,13 +578,13 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
       (modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = linkedRuntimeOrCursor;
       (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
       registryEntry = g_ModelDefinitionRegistry;
-      registryRemaining = 0x300;
+      registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
       for (;;) {
         registeredDefinition = *registryEntry;
-        if ((registeredDefinition != (ModelDefinitionRecordPrefix *)0x0) &&
+        if ((registeredDefinition != NULL) &&
            ((modelRuntime->definitionOrSavedId).definition ==
             (ModelDefinitionRecordPrefix *)registeredDefinition->definitionId)) {
-          classIndexOrCount = registeredDefinition[6].flags;
+          classIndexOrCount = registeredDefinition[6].flags; /* the definition's runtime class */
           (modelRuntime->definitionOrSavedId).definition = registeredDefinition;
           g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelRebaseOrLoadRepair[classIndexOrCount]
                     (modelRuntime);
@@ -602,22 +594,24 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
             do {
               savedChildRuntime = linkedRuntimeOrCursor->attachments140[0].childModelRuntimeOrSavedOffset00;
               savedParentNode = linkedRuntimeOrCursor->attachments140[0].parentModelNodeOrSavedOffset08;
-              rebasedChildRuntime = (ModelRuntimeSlot *)0x0;
-              if (savedChildRuntime != (ModelRuntimeSlot *)0x0) {
+              rebasedChildRuntime = NULL;
+              if (savedChildRuntime != NULL) {
                 rebasedChildRuntime = (ModelRuntimeSlot *)
                              (savedChildRuntime->reserved10_37 + g_ModelRuntimeRebaseDelta + -0x10);
               }
-              rebasedParentNode = (ModelRuntimeNode *)0x0;
-              if (savedParentNode != (ModelRuntimeNode *)0x0) {
+              rebasedParentNode = NULL;
+              if (savedParentNode != NULL) {
                 rebasedParentNode = (ModelRuntimeNode *)
                              (g_RuntimeObjectRebaseBaseMinusOne +
                              (int)(&savedParentNode->modelPayload + -1) + 0x30);
               }
               linkedRuntimeOrCursor->attachments140[0].childModelRuntimeOrSavedOffset00 = rebasedChildRuntime;
               linkedRuntimeOrCursor->attachments140[0].parentModelNodeOrSavedOffset08 = rebasedParentNode;
+              /* next attachment descriptor: 0x20 bytes on */
               linkedRuntimeOrCursor = (ModelRuntimeSlot *)(linkedRuntimeOrCursor->reserved10_37 + 0x10);
-              classIndexOrCount = classIndexOrCount - 1;
+              classIndexOrCount--;
             } while (classIndexOrCount != 0);
+            /* the definition's serialized root node header is at +100 (0x64) */
             modelRuntime->attachmentCount0C = 0;
             ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                       (modelRuntime,modelRuntime,
@@ -626,17 +620,17 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
           }
           break;
         }
-        registryEntry = registryEntry + 1;
-        registryRemaining = registryRemaining + -1;
+        registryEntry++;
+        registryRemaining--;
         if (registryRemaining == 0) {
           /* definition no longer registered: drop the instance */
-          (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+          (modelRuntime->rootModelNodeOrSavedOffset).modelNode = NULL;
           break;
         }
       }
     }
-    modelRuntime = modelRuntime + 1;
-    slotsRemaining = slotsRemaining + -1;
+    modelRuntime++;
+    slotsRemaining--;
     if (slotsRemaining == 0) {
       return;
     }

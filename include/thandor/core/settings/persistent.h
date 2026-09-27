@@ -41,6 +41,15 @@
 #define PERSISTENT_SETTING_GAME_NAME 0x88 /* UTF-16, PERSISTENT_SETTINGS_NAME_BYTES long */
 #define PERSISTENT_SETTINGS_NAME_BYTES 0x28 /* 20 UTF-16 code units */
 #define PERSISTENT_SETTINGS_IMAGE_BYTES 200 /* size of the settings file and of the in-memory image */
+/* Bits of PERSISTENT_SETTING_SOUND_OPTION_FLAGS (Game_LoadCoreAssets) */
+#define PERSISTENT_SOUND_OPTION_EFFECTS 0x1
+#define PERSISTENT_SOUND_OPTION_MUSIC 0x2
+#define PERSISTENT_SOUND_OPTION_REVERSE_STEREO 0x4
+#define PERSISTENT_SOUND_OPTION_DEFAULT 3 /* effects and music on */
+/* Bits of PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS (gameplay settings page, InGameRuntime_UpdateCursorGridAndViewScaleCache) */
+#define PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF 0x1
+#define PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF 0x2
+#define PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN 0x4
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

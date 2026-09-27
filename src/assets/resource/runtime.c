@@ -75,17 +75,16 @@ ResourceRegistration_OpenSource(void *packagePath)
 
 
 /* Address: 0x0040F000.
-   Ownership: assets/resource/runtime.
-   Purpose: Handles resource load.
-   Cross-module calls: Package_FindEntryAcrossMounts [assets/package/runtime], WidePath_CombineDirectoryAndLeaf
-   [core/text/path], Package_DecodeEntryInto [assets/package/runtime].
+   Loads a whole resource into a fresh arena buffer and returns it with its byte count. A mounted package
+   entry is decoded into the buffer; otherwise the loose file is read, first from the executable's directory,
+   then from the path as given. On failure CF is set and EAX carries the file-system or out-of-memory code.
 */
 ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path)
 
 {
   PckEntryHeader *entry;
-  uint8_t *bytes;
-  uint8_t *sizeOrFailureCode;
+  uint8_t *fileSize;
+  uint8_t *sizeOrErrorCode;
   /* ECX on failure: the file size once it is known, else the caller's ECX (zero stands in for it). It is only
      meaningful on success (byte count); callers test CF. */
   uint32_t failureByteCount = 0;
@@ -113,23 +112,24 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
       if (openResult.failed) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
     sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
-    bytes = (uint8_t *)sizeResult.sizeOrError;
-    sizeOrFailureCode = bytes;
+    fileSize = (uint8_t *)sizeResult.sizeOrError;
+    sizeOrErrorCode = fileSize;
     if (!sizeResult.failed) {
-      allocResult = g_MemoryApi.alloc((uint32_t)bytes);
+      allocResult = g_MemoryApi.alloc((uint32_t)fileSize);
       fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
-      failureByteCount = (uint32_t)bytes;
+      failureByteCount = (uint32_t)fileSize;
       if (allocResult.failed) {
+        /* the requested size becomes the detail line of the out-of-memory message */
         g_WideNumberFormatUtf16
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
-        sizeOrFailureCode = (uint8_t *)0x5;
+                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)fileSize,g_FatalErrorDetail1Utf16);
+        sizeOrErrorCode = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
       }
       else {
-        readResult = g_FileSystemReadExact((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
-        sizeOrFailureCode = (uint8_t *)readResult.valueOrError;
+        readResult = g_FileSystemReadExact((FileIoByteCount)fileSize,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
+        sizeOrErrorCode = (uint8_t *)readResult.valueOrError;
         if (!readResult.failed) {
           g_FileSystemClose(fileOrPackageResult.bufferOrError);
-          fileLoadResult.byteCount = (uint32_t)bytes;
+          fileLoadResult.byteCount = (uint32_t)fileSize;
           fileLoadResult.failed = false;
           return fileLoadResult;
         }
@@ -137,11 +137,11 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
       }
     }
     g_FileSystemClose(fileOrPackageResult.bufferOrError);
-    fileOrPackageResult.bufferOrError = sizeOrFailureCode;
+    fileOrPackageResult.bufferOrError = sizeOrErrorCode;
   }
   else {
-    fileOrPackageResult.bufferOrError = (uint8_t *)0x5;
-    if (entry->packedSize < 0x800001) {
+    fileOrPackageResult.bufferOrError = (uint8_t *)FATAL_ERROR_OUT_OF_MEMORY;
+    if (entry->packedSize < PACKAGE_SCRATCH_BUFFER_BYTES + 1) {
       allocResult = g_MemoryApi.alloc(entry->unpackedSize);
       fileOrPackageResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
       if (!allocResult.failed) {
@@ -151,9 +151,9 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
           fileOrPackageResult.failed = false;
           return fileOrPackageResult;
         }
-        sizeOrFailureCode = (uint8_t *)decodeResult.valueOrError;
+        sizeOrErrorCode = (uint8_t *)decodeResult.valueOrError;
         g_MemoryApi.free(fileOrPackageResult.bufferOrError);
-        fileOrPackageResult.bufferOrError = sizeOrFailureCode;
+        fileOrPackageResult.bufferOrError = sizeOrErrorCode;
       }
     }
   }

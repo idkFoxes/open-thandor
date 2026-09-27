@@ -42,9 +42,10 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
 }
 
 /* Address: 0x00578270.
-   Ownership: graphics/backend/direct3d.
-   Purpose: IDirect3D2::EnumDevices callback. Context points at the adapter record being expanded.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   IDirect3D2::EnumDevices callback for the DirectDraw adapter in adapterContext: adds one adapter record per
+   Direct3D device (copy of the adapter record plus device GUID, name and both device descriptions). Without
+   -D3DALL (g_GraphicsEnumerateAllDevicesFlag nonzero) only hardware devices with the caps the renderer needs
+   are taken, and the first one fills the adapter's own record instead of a new one. Always continues (returns 1).
 */
 int32_t __stdcall Direct3D_EnumDeviceCallback
                  (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName,
@@ -63,35 +64,41 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
   ArenaAllocResult descAllocation;
   
   newAdapterIndex = g_GraphicsAdapterCount;
-  if ((g_GraphicsAdapterCount < 0x10) &&
+  /* The original also tests D3DDEVCAPS_DRAWPRIMTLVERTEX (0x400) but never branches on the result. */
+  if ((g_GraphicsAdapterCount < GRAPHICS_ADAPTER_CAPACITY) &&
      ((g_GraphicsEnumerateAllDevicesFlag == 0 ||
-      (((((((hardwareDesc->dwFlags & 1) != 0 && ((hardwareDesc->dwFlags & 0x100) != 0)) &&
-          ((hardwareDesc->dwDeviceZBufferBitDepth & 0x400) != 0)) &&
-         (((hardwareDesc->dwFlags & 2) != 0 && ((hardwareDesc->dwDevCaps & 0x40) != 0)))) &&
-        ((((hardwareDesc->dwDevCaps & 0x200) != 0 &&
-          (((hardwareDesc->dwFlags & 0x40) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwZCmpCaps & 8) != 0)))) &&
-         (((hardwareDesc->dpcTriCaps).dwTextureAddressCaps & 1) != 0)))) &&
-       (((((((hardwareDesc->dpcTriCaps).dwTextureBlendCaps & 2) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & 2) != 0)) &&
-          (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & 0x10) != 0)) &&
-         (((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & 1) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwDestBlendCaps & 2) != 0)) &&
-          ((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & 0x20) != 0 &&
-           (((hardwareDesc->dpcTriCaps).dwShadeCaps & 8) != 0)))))) &&
-        (((((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x4000) != 0 ||
-          (((hardwareDesc->dpcTriCaps).dwShadeCaps & 0x8000) != 0)) ||
-         (((hardwareDesc->dpcTriCaps).dwRasterCaps & 0x200) != 0)))))))))) {
-    descAllocation = g_MemoryApi.alloc(0x198);
+      (((((((hardwareDesc->dwFlags & D3DDD_COLORMODEL) != 0 &&
+            ((hardwareDesc->dwFlags & D3DDD_DEVICEZBUFFERBITDEPTH) != 0)) &&
+          ((hardwareDesc->dwDeviceZBufferBitDepth & DDBD_16) != 0)) &&
+         (((hardwareDesc->dwFlags & D3DDD_DEVCAPS) != 0 &&
+           ((hardwareDesc->dwDevCaps & D3DDEVCAPS_TLVERTEXSYSTEMMEMORY) != 0)))) &&
+        ((((hardwareDesc->dwDevCaps & D3DDEVCAPS_TEXTUREVIDEOMEMORY) != 0 &&
+          (((hardwareDesc->dwFlags & D3DDD_TRICAPS) != 0 &&
+           (((hardwareDesc->dpcTriCaps).dwZCmpCaps & D3DPCMPCAPS_LESSEQUAL) != 0)))) &&
+         (((hardwareDesc->dpcTriCaps).dwTextureAddressCaps & D3DPTADDRESSCAPS_WRAP) != 0)))) &&
+       (((((((hardwareDesc->dpcTriCaps).dwTextureBlendCaps & D3DPTBLENDCAPS_MODULATE) != 0 &&
+           (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & D3DPBLENDCAPS_ONE) != 0)) &&
+          (((hardwareDesc->dpcTriCaps).dwSrcBlendCaps & D3DPBLENDCAPS_SRCALPHA) != 0)) &&
+         (((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_ZERO) != 0 &&
+           (((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_ONE) != 0)) &&
+          ((((hardwareDesc->dpcTriCaps).dwDestBlendCaps & D3DPBLENDCAPS_INVSRCALPHA) != 0 &&
+           (((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_COLORGOURAUDRGB) != 0)))))) &&
+        (((((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDBLEND) != 0 ||
+          (((hardwareDesc->dpcTriCaps).dwShadeCaps & D3DPSHADECAPS_ALPHAGOURAUDSTIPPLED) != 0)) ||
+         (((hardwareDesc->dpcTriCaps).dwRasterCaps & D3DPRASTERCAPS_STIPPLE) != 0)))))))))) {
+    /* one block for the copies of the hardware and the software device description */
+    descAllocation = g_MemoryApi.alloc(2 * sizeof(D3DDEVICEDESC_DX6));
     updatedAdapterCount = g_GraphicsAdapterCount;
     if (!descAllocation.failed) {
       newRecord = g_GraphicsAdapters + newAdapterIndex;
-      remainingDwords = 0x20;
-      g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
+      remainingDwords = sizeof(GraphicsAdapterRecord) / sizeof(uint32_t);
+      g_GraphicsAdapterCount++;
       recordCursor = newRecord;
+      /* in the filtered mode the first device of an adapter reuses the adapter's record (count bumped back) */
       if ((g_GraphicsEnumerateAllDevicesFlag == 0) ||
          (filledRecord = adapterContext, (adapterContext->deviceGuid).Data1 != 0)) {
-        for (; filledRecord = newRecord, updatedAdapterCount = g_GraphicsAdapterCount, remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+        for (; filledRecord = newRecord, updatedAdapterCount = g_GraphicsAdapterCount, remainingDwords != 0;
+             remainingDwords--) {
           (recordCursor->adapterGuid).Data1 = (adapterContext->adapterGuid).Data1;
           adapterContext = (GraphicsAdapterRecord *)&(adapterContext->adapterGuid).Data2;
           recordCursor = (GraphicsAdapterRecord *)&(recordCursor->adapterGuid).Data2;
@@ -99,21 +106,23 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
       }
       g_GraphicsAdapterCount = updatedAdapterCount;
       guidCursor = &filledRecord->deviceGuid;
-      for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      for (remainingDwords = sizeof(TH_LEGACY_GUID) / sizeof(uint32_t); remainingDwords != 0; remainingDwords--) {
         guidCursor->Data1 = deviceGuid->Data1;
         deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
         guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
       }
-      Text_CopyNarrowToUtf16(0x28,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
+      Text_CopyNarrowToUtf16(40,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
       filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
       descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
-      for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
+           remainingDwords--) {
         descCursor->dwSize = hardwareDesc->dwSize;
         hardwareDesc = (D3DDEVICEDESC_DX6 *)&hardwareDesc->dwFlags;
         descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;
       }
-      filledRecord->softwareDesc = descCursor;
-      for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      filledRecord->softwareDesc = descCursor; /* the second half of the block */
+      for (remainingDwords = sizeof(D3DDEVICEDESC_DX6) / sizeof(uint32_t); remainingDwords != 0;
+           remainingDwords--) {
         descCursor->dwSize = softwareDesc->dwSize;
         softwareDesc = (D3DDEVICEDESC_DX6 *)&softwareDesc->dwFlags;
         descCursor = (D3DDEVICEDESC_DX6 *)&descCursor->dwFlags;

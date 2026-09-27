@@ -12,6 +12,16 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/motion/runtime. */
+
+/* Scroll-arrow cursor frames returned by WorldRuntime_ApplyEdgeScrollAndGetCursorFrame (clockwise from up). */
+#define WORLD_CURSOR_SCROLL_UP 0x2F
+#define WORLD_CURSOR_SCROLL_UP_RIGHT 0x30
+#define WORLD_CURSOR_SCROLL_RIGHT 0x31
+#define WORLD_CURSOR_SCROLL_DOWN_RIGHT 0x32
+#define WORLD_CURSOR_SCROLL_DOWN 0x33
+#define WORLD_CURSOR_SCROLL_DOWN_LEFT 0x34
+#define WORLD_CURSOR_SCROLL_LEFT 0x35
+#define WORLD_CURSOR_SCROLL_UP_LEFT 0x36
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050D050 */
@@ -65,7 +75,7 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
 /* 0x0050C770 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_TranslateCameraByScreenDelta
-          (CameraScreenDeltaPixels screenDeltaX,uint32_t screenDeltaY,WorldRuntimeContext *worldRuntime
+          (CameraScreenDeltaPixels screenDeltaDown,uint32_t screenDeltaRight,WorldRuntimeContext *worldRuntime
           );
 
 #endif /* THANDOR_WORLD_MOTION_RUNTIME_H */

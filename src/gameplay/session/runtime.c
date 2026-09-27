@@ -467,10 +467,10 @@ EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn:
 
 
 /* Address: 0x0050EA90.
-   Ownership: gameplay/session/runtime.
-   Purpose: Rebases exact 0x100-byte loaded condition records. RET 4 proves one stack argument and removes two
-   false register parameters.
-   Cross-module calls: SpriteAssetRegistry_FindById [assets/sprite/catalog].
+   Turns the saved form of the resource registration records (widget.hex) back into pointers, after a savegame
+   load and after writing a savegame: the 1-based offsets become runtime-object, shading-record, army/shot/effect
+   slot pointers, texture set and palette are re-selected per domain, and the sprite id is resolved again. Also
+   restores the tail record pointer and the local player's faction assignment.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage *runtimeImage)
@@ -498,13 +498,14 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
       secondaryPointer = (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
       nestedBasePointer = (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
-      if (primaryPointer != (uint8_t *)0x0) {
+      /* 1-based offsets from the runtime-object base; 0 stays NULL */
+      if (primaryPointer != NULL) {
         primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (secondaryPointer != (uint8_t *)0x0) {
+      if (secondaryPointer != NULL) {
         secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (nestedBasePointer != (uint8_t *)0x0) {
+      if (nestedBasePointer != NULL) {
         nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
       (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer;
@@ -513,7 +514,7 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
       auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
       nestedRemaining = registrationRecord->nestedCountC8;
-      if (auxiliaryPointer != (uint8_t *)0x0) {
+      if (auxiliaryPointer != NULL) {
         /* 1-based offset from the shading records; 0 is null */
         auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
       }
@@ -521,7 +522,7 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       nestedCursor = registrationRecord;
       selectedPalette = g_ShotPalette;
       for (; g_ShotPalette = selectedPalette, nestedRemaining != 0; nestedRemaining = nestedRemaining - 1) {
-        if (nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer != (void *)0x0) {
+        if (nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer != NULL) {
           nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer =
                (uint8_t *)((int)nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer +
                        (int)g_RuntimeObjectRebaseBaseMinusOne);
@@ -530,9 +531,9 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
         selectedPalette = g_ShotPalette;
       }
       payloadSlot = (registrationRecord->runtimePayload).armyRuntime;
-                    // WARNING: Switch is manually overridden
       switch(registrationRecord->domainIndex) {
       case RESOURCE_DOMAIN_ARMY_RUNTIME:
+        /* textureSet holds the army graphics binding index until here */
         payloadSlot = (ArmyRuntimeSlot *)
                      ((int)&payloadSlot->modelRuntimeOrSavedOffset + g_ModelRuntimeRebaseDelta);
         selectedPalette = g_ArmyGraphicsBindings[(int)registrationRecord->textureSet].paletteAsset;
@@ -552,6 +553,7 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
                      (int)&payloadSlot->modelRuntimeOrSavedOffset);
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
+        /* effects flagged 2 in their model runtime use the army graphics of binding 0 */
         if ((*(uint32_t *)(((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 + 0x20)
             & 2) != 0) {
           selectedTextureSet = g_ArmyGraphicsBindings[0].textureSet;
@@ -565,13 +567,14 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       registrationRecord->spriteAsset = resolvedSprite;
     }
     playerRuntimeBlocks = g_FrontendPlayerRuntimeBlocks;
-    registrationRecord = registrationRecord + 1;
+    registrationRecord++;
     remainingRecords = remainingRecords - 1;
   } while (remainingRecords != 0);
+  /* the last nested slot of the last record is the saved tail record */
   tailNestedPointer = runtimeImage->records58[runtimeImage->recordCountAC - 1].nestedPointerOrOffsetArray13
            [0xc].runtimePointer;
-  registrationRecord = (ResourceRegistrationRecord100 *)0x0;
-  if (tailNestedPointer != (void *)0x0) {
+  registrationRecord = NULL;
+  if (tailNestedPointer != NULL) {
     registrationRecord = (ResourceRegistrationRecord100 *)(g_RuntimeObjectRebaseBaseMinusOne + (int)tailNestedPointer);
   }
   runtimeImage->tailRecordD8 = registrationRecord;
@@ -2446,11 +2449,9 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
 
 
 /* Address: 0x0053D4F0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Converts the global in-game cursor world position to grid coordinates and refreshes the cached view-
-   scale and settings-derived fields.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid], PersistentSettings_ReadDword
-   [core/settings/persistent].
+   Stores the field-grid cell under the target position of the in-game world motion (the cursor/view target)
+   and, unless automatic rotation or zoom is switched off in the map settings, copies its heading and a zoom value derived from the committed distance
+   (distance * 3/128) into the in-game root's view cache.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewScaleCache(void)
 
@@ -2465,13 +2466,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
                     ((g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionXQ12);
   inGameRoot->fieldGridPosition9A6C = THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, FixedPlanarPointEdxEax8, cursorGridPosition);
-  viewSettings = PersistentSettings_Read(0,0x40);
+  viewSettings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   committedDistance = (inGameRoot->worldRuntime0A30).motion.committedDistanceQ12;
-  if ((viewSettings & 2) == 0) {
+  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF) == 0) {
     *(AngleTurn32 *)(inGameRoot->opaque9A74_9B4B + 4) =
          (inGameRoot->worldRuntime0A30).motion.headingAngle;
   }
-  if ((viewSettings & 1) == 0) {
+  if ((viewSettings & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF) == 0) {
+    /* high dword of distance * 0x6000000 */
     *(int *)inGameRoot->opaque9A74_9B4B =
          (int)((uint64_t)((int64_t)(int)committedDistance * 0x6000000) >> 0x20);
   }

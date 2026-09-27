@@ -34,8 +34,7 @@ WorldMotionSpline_BuildSixChannelCurves
 /* 0x004CCC00 */
 void __thandor_void_preserve_eax_ecx_edx
 InterpolationState_SetNegatedTargetAndRescaleProgress
-          (GraphicsTransitionTickCount transitionDurationTicks,
-          GraphicsShadingRuntimeRecord *interpolationState);
+          (GraphicsTransitionTickCount fadeOutTicks,GraphicsShadingRuntimeRecord *shadingRecord);
 
 /* 0x004CCC80 */
 void __thandor_void_preserve_eax_ecx_edx

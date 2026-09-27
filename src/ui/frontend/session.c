@@ -406,13 +406,14 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
 
 
 /* Address: 0x005725D0.
-   Ownership: ui/frontend/session.
-   Purpose: Compacts player blocks and paired command slots after timeout, then sends
-   g_FrontendClientPlayerRemovalPacket10007 for each removed player token.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8 [ui/ingame/runtime],
-   UiTransfer_StagePacketAndSend [network/protocol/transfer],
-   FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus [ui/frontend/player].
+   In-game tick on the HOST (despite the name): counts down every client's heartbeat timeout, drops clients that
+   ran out (a notice with the player's name is posted) and compacts the player blocks and their command records,
+   then tells the remaining clients about each dropped player with a 0x10007 packet and re-evaluates the ready
+   consensus.
+   NOTE: this C differs from the original. The original pushes every dropped player id on the stack (one 0x10007
+   per id) and keeps the command-record destination in a separate slot; here removedIdOrCommandCursor holds the
+   last dropped id and is then copied into destinationCommandOrPacket, so a surviving client after a dropped one
+   gets its command record written to the address "player id", and several drops send the same/garbage id.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
@@ -455,7 +456,7 @@ FrontendClientSession_RemoveExpiredPlayer:
         heartbeatTicks = &sourcePlayer->heartbeatExpiryTicks;
         *heartbeatTicks = *heartbeatTicks - 1;
         if (*heartbeatTicks == 0) {
-          timeoutText = TextResource_Resolve(0xff00);
+          timeoutText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
           RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.text);
           InGameRecentTextHistory_InsertAndRebuild8(timeoutText.text);
           goto FrontendClientSession_RemoveExpiredPlayer;
@@ -463,15 +464,15 @@ FrontendClientSession_RemoveExpiredPlayer:
         nextSourcePlayer = sourcePlayer + 1;
         nextDestinationPlayer = destinationPlayer + 1;
         removedIdOrCommandCursor = (FrontendCommandPacketRecord *)(destinationCommandOrPacket + 1);
-        copyCount = 0x4ec;
+        copyCount = sizeof(FrontendPlayerRuntimeRecord) / sizeof(uint32_t);
         if (nextDestinationPlayer != nextSourcePlayer) {
-          for (; nextDestinationPlayer = destinationPlayer, nextSourcePlayer = sourcePlayer, copyCount != 0; copyCount = copyCount + -1) {
+          for (; nextDestinationPlayer = destinationPlayer, nextSourcePlayer = sourcePlayer, copyCount != 0; copyCount--) {
             nextDestinationPlayer->runtimeState00 = nextSourcePlayer->runtimeState00;
             sourcePlayer = (FrontendPlayerRuntimeRecord *)&nextSourcePlayer->peerSequenceToken;
             destinationPlayer = (FrontendPlayerRuntimeRecord *)&nextDestinationPlayer->peerSequenceToken;
           }
           commandCopyCursor = sourceCommandRecord;
-          for (copyCount = 8; copyCount != 0; copyCount = copyCount + -1) {
+          for (copyCount = sizeof(FrontendCommandPacketRecord) / sizeof(uint32_t); copyCount != 0; copyCount--) {
             (destinationCommandOrPacket->header).packedTypeAndUnitCount = (commandCopyCursor->header).packedTypeAndUnitCount;
             commandCopyCursor = (FrontendCommandPacketRecord *)&(commandCopyCursor->header).sequenceToken;
             destinationCommandOrPacket = (FrontendPlayerRemovalPacket10007 *)&(destinationCommandOrPacket->header).sequenceToken;
@@ -479,7 +480,7 @@ FrontendClientSession_RemoveExpiredPlayer:
         }
       }
       sourceCommandRecord = sourceCommandRecord + 1;
-      playersRemaining = playersRemaining + -1;
+      playersRemaining--;
       sourcePlayer = nextSourcePlayer;
       destinationPlayer = nextDestinationPlayer;
       destinationCommandOrPacket = (FrontendPlayerRemovalPacket10007 *)removedIdOrCommandCursor;
@@ -496,25 +497,22 @@ FrontendClientSession_RemoveExpiredPlayer:
       while (recipientsRemaining = recipientsRemaining - 1, recipientsRemaining != 0) {
         destinationCommandOrPacket = &g_FrontendClientPlayerRemovalPacket10007;
         UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
-        endpoint = endpoint + 0x13b;
+        endpoint = endpoint + sizeof(FrontendPlayerRuntimeRecord) / sizeof(UiTransferEndpointDescriptor);
         removedIdOrCommandCursor = (FrontendCommandPacketRecord *)destinationCommandOrPacket;
       }
-      removedCount = removedCount + -1;
+      removedCount--;
     } while (removedCount != 0);
-    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0xffffffff,0,0,0);
+    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(0xffffffff,0,0,0); /* no player: only re-check */
   }
   return;
 }
 
 
 /* Address: 0x00572960.
-   Ownership: ui/frontend/session.
-   Purpose: Ticks the host-session transition countdown, clears role and session flags on expiry, posts the
-   localized transition text, and selects shutdown or ready-consensus handling.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8 [ui/ingame/runtime],
-   FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus [ui/frontend/player],
-   InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   In-game tick on a CLIENT (despite the name): counts down the host timeout. When it runs out the session falls
+   back to a local game: the network role is cleared, the socket closed, TEXT_ID_NETWORK_HOST_LOST posted, a
+   pending ready vote is submitted if some player has not voted yet, and the local player becomes the only
+   player, with id 0.
 */
 void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyConsensus(void)
 
@@ -531,9 +529,9 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
   g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks - 1;
   if (g_SessionTransferTimeoutTicks == 0) {
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
-    g_NetworkBackendSlot3();
-    g_NetworkBackendSlot1();
-    shutdownText = TextResource_Resolve(0xff01);
+    g_NetworkBackendSlot3(); /* close */
+    g_NetworkBackendSlot1(); /* cleanup */
+    shutdownText = TextResource_Resolve(TEXT_ID_NETWORK_HOST_LOST);
     RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.text);
     InGameRecentTextHistory_InsertAndRebuild8(shutdownText.text);
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -541,13 +539,13 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     do {
       if ((playerRecord->factionAssignment).readyOrWaitState == 0) {
+        /* always true here, the role was cleared above */
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0)
-          ;
+          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
         }
         else {
-          InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+          InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
         }
         playerRecord = g_FrontendPlayerRuntimeBlocks;
         previousLocalPlayerId = g_LocalPlayerRuntimeId;
@@ -563,8 +561,8 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
         (playerRecord->factionAssignment).roleStateFlags = 0;
         return;
       }
-      playerRecord = playerRecord + 1;
-      playersRemaining = playersRemaining - 1;
+      playerRecord++;
+      playersRemaining--;
     } while (playersRemaining != 0);
     g_FrontendPlayerRuntimeBlockCount = 1;
     LOCK();

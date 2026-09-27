@@ -1469,11 +1469,9 @@ UiResizableWindowControl_QueryResizeCursorCode
 
 
 /* Address: 0x00569A80.
-   Ownership: ui/controls/layout.
-   Purpose: Computes a compact grid for itemCount with at most maxRows. Typed parameters: p0
-   maxRows→UiControlCount_V338, p1 itemCount→UiControlCount_V338. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Picks a grid for itemCount items, returned as EDX = rows, EAX = columns: up to 4 items in one row, up to
+   4 * maxRows items in rows of 4, more in maxRows rows (fewer when the last rows would stay empty) of as
+   many columns as needed.
 */
 UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
@@ -1486,6 +1484,7 @@ UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
   columnCount = itemCount;
   if (4 < itemCount) {
     if (maxRows << 2 < itemCount) {
+      /* the mask mirrors the SHL by 2 of the comparison */
       rowCount = maxRows & 0x3fffffff;
       columnCount = (itemCount - 1) / rowCount + 1;
       do {
@@ -1504,10 +1503,7 @@ UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 
 
 /* Address: 0x00569AE0.
-   Ownership: ui/controls/layout.
-   Purpose: Returns one column in EAX and itemCount rows in EDX. Typed parameters: p0
-   itemCount→UiControlCount_V338. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   The single-column counterpart of UiGrid_ComputeDimensionsPacked: EDX = itemCount rows, EAX = 1 column.
 */
 UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
@@ -1554,30 +1550,26 @@ UiContainer_UnsuppressActionId(UiActionId actionId,UiNodeBase *control)
 
 
 /* Address: 0x004B1420.
-   Ownership: ui/controls/layout.
-   Purpose: Walks a serialized sibling chain while layoutWidth is -1, converts next/child/parent image offsets to
-   pointers, clears transient node flags, and invokes each node's relocate method. Typed parameters: p0
-   imageDelta→SerializedImageRelocationDelta_V343. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Relocates a UI tree loaded from a serialized image: for each node of the sibling chain from firstNode
+   that is still unrelocated (layoutWidth -1, reset to 0 here) the sibling/child/parent links are turned
+   from image offsets into pointers by adding imageDelta, the transient click and focus flags are cleared,
+   and the node's own relocate method runs (containers relocate their children from there).
 */
 void __thandor_void_preserve_eax_ecx
 UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *firstNode)
 
 {
-  int currentImageDelta;
-  
-  for (; (firstNode != (UiNodeBase *)0xffffffff && (firstNode->layoutWidth == -1));
+  for (; (firstNode != UI_NODE_NONE && (firstNode->layoutWidth == -1));
       firstNode = firstNode->nextSibling) {
     firstNode->layoutWidth = ~firstNode->layoutWidth;
-    if (firstNode->nextSibling != (UiNodeBase *)0xffffffff) {
-      firstNode->nextSibling =
-           (UiNodeBase *)((int)&firstNode->nextSibling->nextSibling + imageDelta);
+    if (firstNode->nextSibling != UI_NODE_NONE) {
+      firstNode->nextSibling = (UiNodeBase *)((int)firstNode->nextSibling + imageDelta);
     }
-    if (firstNode->firstChild != (UiNodeBase *)0xffffffff) {
-      firstNode->firstChild = (UiNodeBase *)((int)&firstNode->firstChild->nextSibling + imageDelta);
+    if (firstNode->firstChild != UI_NODE_NONE) {
+      firstNode->firstChild = (UiNodeBase *)((int)firstNode->firstChild + imageDelta);
     }
-    if (firstNode->parent != (UiNodeBase *)0xffffffff) {
-      firstNode->parent = (UiNodeBase *)((int)&firstNode->parent->nextSibling + imageDelta);
+    if (firstNode->parent != UI_NODE_NONE) {
+      firstNode->parent = (UiNodeBase *)((int)firstNode->parent + imageDelta);
     }
     firstNode->nodeFlags =
          firstNode->nodeFlags & ~(UI_NODE_REPEAT_OR_DOUBLE_CLICK|UI_NODE_HAS_KEYBOARD_FOCUS);
@@ -1588,19 +1580,16 @@ UiSerializedTree_Relocate(SerializedImageRelocationDelta imageDelta,UiNodeBase *
 
 
 /* Address: 0x004B4850.
-   Ownership: ui/controls/layout.
-   Purpose: Recursively traverses every child and sibling below root using the 0xFFFFFFFF UI sentinel. Each visited
-   node is passed to UiKeyboardFocus_AcquireIfNone, allowing the first eligible node to claim focus when no focus
-   currently exists.
-   Cross-module calls: UiKeyboardFocus_AcquireIfNone [ui/controls/input].
+   Gives the keyboard focus, if nothing has it, to the first focus target below root (depth first), e.g. when
+   a page becomes active.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
 
 {
   UiNodeBase *node;
-  
-  for (node = root->firstChild; node != (UiNodeBase *)0xffffffff; node = node->nextSibling) {
+
+  for (node = root->firstChild; node != UI_NODE_NONE; node = node->nextSibling) {
     UiKeyboardFocus_AcquireIfNone(node);
     UiNodeSubtree_AcquireKeyboardFocusDefaults(node);
   }
@@ -1609,18 +1598,15 @@ UiNodeSubtree_AcquireKeyboardFocusDefaults(UiNodeBase *root)
 
 
 /* Address: 0x004B4890.
-   Ownership: ui/controls/layout.
-   Purpose: Recursively traverses every child and sibling below root using the 0xFFFFFFFF UI sentinel. Each visited
-   node is passed to UiKeyboardFocus_ReleaseNode so an active focus node is advanced or cleared before its page
-   subtree is deactivated.
-   Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input].
+   Takes the keyboard focus away from every node below root (depth first; see UiKeyboardFocus_ReleaseNode)
+   before that subtree, e.g. a page, is deactivated.
 */
 void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNodeBase *root)
 
 {
   UiNodeBase *node;
-  
-  for (node = root->firstChild; node != (UiNodeBase *)0xffffffff; node = node->nextSibling) {
+
+  for (node = root->firstChild; node != UI_NODE_NONE; node = node->nextSibling) {
     UiKeyboardFocus_ReleaseNode(node);
     UiNodeSubtree_ReleaseKeyboardFocus(node);
   }

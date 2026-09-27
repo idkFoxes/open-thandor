@@ -12,6 +12,8 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/spatial/runtime. */
+/* Capacity of g_SpatialSoundSlots (SpatialSoundPool_Init allocates 0x1000 bytes of 0x10-byte slots) */
+#define SPATIAL_SOUND_SLOT_COUNT 0x100
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050B5D0 */

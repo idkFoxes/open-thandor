@@ -502,14 +502,14 @@ void UiNode_DefaultTick(UiNodeBase *control)
 }
 
 /* Address: 0x004B0FD0.
-   Ownership: ui/core/runtime.
-   Purpose: Registers one 256-entry action-handler page when pageIndex is below 256.
+   Installs the handler page for action ids pageIndex * 256 .. pageIndex * 256 + 255, so a UI module can register
+   its actions; out-of-range page indices are ignored.
 */
 void __thandor_preserve_eax
 UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
 
 {
-  if (pageIndex < 0x100) {
+  if (pageIndex < UI_ACTION_HANDLER_PAGE_COUNT) {
     g_UiActionHandlerPages[pageIndex] = page;
     return;
   }
@@ -518,17 +518,15 @@ UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage 
 
 
 /* Address: 0x004B14B0.
-   Ownership: ui/core/runtime.
-   Purpose: Walks parent pointers at offset 0x08 until the 0xFFFFFFFF root sentinel is reached. Returns the root
-   node in EAX.
+   Returns the root (window) node of the UI tree containing node: the ancestor whose parent is UI_NODE_NONE.
 */
 UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
 
 {
   UiNodeBase *parentNode;
-  
+
   parentNode = node->parent;
-  while (parentNode != (UiNodeBase *)0xffffffff) {
+  while (parentNode != UI_NODE_NONE) {
     node = node->parent;
     parentNode = node->parent;
   }

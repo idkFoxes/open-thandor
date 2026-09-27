@@ -1457,15 +1457,10 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
 
 
 /* Address: 0x0051D6B0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Allocates and zeroes the exact 0x48000-byte army runtime pool, records its base and base-minus-one
-   relocation value, loads up to eight faction-dependent gfx/palette binding pairs, and creates runtime instances
-   for eligible records in the fixed 768-entry army definition registry. CF and EAX errors are preserved.
-   Local calls: ArmyRuntime_RenderPreviewTexture.
-   Cross-module calls: MoviePlayback_AdvanceScheduledFrameAndTick [movie/runtime/playback],
-   WidePath_SetExtensionCode [core/text/path], Package_LoadEntry [assets/package/runtime],
-   ArmyGraphics_CopyFrontendPlayerPaletteAndTexture [gameplay/army/audio], Resource_Release
-   [assets/resource/runtime].
+   Level start: allocates and zeroes the 0x48000-byte army runtime pool, loads the army graphics (texture set and
+   palette, "<graphicsBasePath><suffix>.gfx/.pal") of slot 0 and of every existing faction, and renders the two
+   panel preview textures of every army asset that has a selection panel entry. The movie schedule is ticked in between, since this
+   runs behind the level-loading movie. Any load error is returned with CF set.
 */
 ArmyRuntimeInitResult __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath)
@@ -1496,29 +1491,31 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
   allocResult = g_MemoryApi.alloc(0x48000);
   armySlot1 = (ArmyRuntimeSlot *)allocResult.payloadOrError;
   if (!allocResult.failed) {
+    /* base - 1 (MOV then DEC): the rebase value for saved offsets, see ArmyRuntimePool_RebaseAfterLoad */
     g_ArmyRuntimeRebaseBaseMinusOne = (void *)((int)&armySlot1[-1].selectionMetric5 + 3);
     g_ArmyRuntimeSlots = armySlot1;
-    for (remainingCount = 0x12000; remainingCount != 0; remainingCount = remainingCount + -1) {
+    for (remainingCount = 0x12000; remainingCount != 0; remainingCount--) {
       (armySlot1->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)0x0;
       armySlot1 = (ArmyRuntimeSlot *)&armySlot1->modelNodeRuntime;
     }
+    /* find the end of graphicsBasePath (at most 32 code units); the suffix digit is written there */
     frontendPlayerRuntimeId = 0;
     remainingCount = 0x20;
     pathCursor = graphicsBasePath;
     do {
       pathEnd = pathCursor;
       if (remainingCount == 0) break;
-      remainingCount = remainingCount + -1;
+      remainingCount--;
       pathEnd = pathCursor + 1;
       pathChar = *pathCursor;
       pathCursor = pathEnd;
     } while (pathChar != 0);
-    remainingCount = 8;
-    pathEnd = pathEnd + -1;
+    remainingCount = ARMY_GRAPHICS_BINDING_COUNT;
+    pathEnd = pathEnd - 1;
     g_MoviePlaybackScheduleSpan = 0x1a;
     do {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      factionSuffixChar = 0x30;
+      factionSuffixChar = '0';
       /* Slot 0 always loads the "0" graphics; the other slots load theirs (suffix 0-9/A-Z from the faction's
          graphics variant) only while the faction exists. */
       loadFactionGraphics = frontendPlayerRuntimeId == 0;
@@ -1526,20 +1523,21 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
         paletteOrResult = (GraphicsPaletteAsset *)(frontendPlayerRuntimeId * 0x740);
         MoviePlayback_AdvanceScheduledFrameAndTick();
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frontendPlayerRuntimeId] != 0) {
+          /* records[frontendPlayerRuntimeId].factionClassOrMode (+0x38) */
           factionGraphicsVariant = *(uint32_t *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
-          g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + -1;
+          g_MoviePlaybackScheduleCounter--;
           if (factionGraphicsVariant < 10) {
-            factionSuffixChar = factionGraphicsVariant + 0x30;
+            factionSuffixChar = factionGraphicsVariant + '0';
           }
           else {
-            factionSuffixChar = factionGraphicsVariant + 0x37;
+            factionSuffixChar = factionGraphicsVariant + ('A' - 10);
           }
           loadFactionGraphics = true;
         }
       }
       if (loadFactionGraphics) {
-        *(int *)pathEnd = factionSuffixChar;
-        WidePath_SetExtensionCode(0x786667,graphicsBasePath);
+        *(int *)pathEnd = factionSuffixChar; /* the suffix and a terminator in one dword */
+        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,graphicsBasePath);
         packageResult = Package_LoadEntry(graphicsBasePath);
         textureSourceAsset = packageResult.bufferOrError;
         if (packageResult.failed) {
@@ -1559,7 +1557,7 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].textureSet = loadedTextureSet;
-        WidePath_SetExtensionCode(0x6c6170,graphicsBasePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_PAL,graphicsBasePath);
         initResult = THANDOR_BITCAST(PaletteAssetResult, ArmyRuntimeInitResult, g_GraphicsPaletteAssetLoadPackage(graphicsBasePath));
         paletteOrResult = (GraphicsPaletteAsset *)initResult.errorOrValue;
         if (initResult.failed) {
@@ -1567,17 +1565,19 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
         }
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].paletteAsset = paletteOrResult;
       }
-      frontendPlayerRuntimeId = frontendPlayerRuntimeId + 1;
+      frontendPlayerRuntimeId++;
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      remainingCount = remainingCount + -1;
+      remainingCount--;
     } while (remainingCount != 0);
     pathEnd[0] = 0;
     pathEnd[1] = 0;
+    /* Preview textures for army assets with a non-zero selection detail variant (bits 1-7 of +0x14): the panel
+       size one (subresource 34) into +0x1C, a third of the subresource-2 width into +0x18. */
     registryCursor = g_ArmyAssetRecordRegistry;
-    remainingCount = 0x300;
+    remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT;
     do {
       armyAsset = *registryCursor;
-      if ((armyAsset != (ArmyAssetRecordPrefix *)0x0) &&
+      if ((armyAsset != NULL) &&
          ((armyAsset[1].selectionDetailTemplateVariantIndex & 0xfe) != 0)) {
         previewResult = ArmyRuntime_RenderPreviewTexture
                            (g_InGamePanelTextureSubresource34Height,
@@ -1600,8 +1600,8 @@ ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBaseP
           }
         }
       }
-      registryCursor = registryCursor + 1;
-      remainingCount = remainingCount + -1;
+      registryCursor++;
+      remainingCount--;
     } while (remainingCount != 0);
     allocResult.failed = false;
     allocResult.payloadOrError = (uint32_t)paletteOrResult;
@@ -1662,11 +1662,9 @@ ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy
 
 
 /* Address: 0x00531130.
-   Ownership: gameplay/army/runtime.
-   Purpose: Companion army-node callback that clears transient node flags, rebuilds the terrain occupancy
-   contribution, and refreshes the node visual/runtime state.
-   Local calls: ArmyRuntime_InitializeTerrainOccupancyFlags.
-   Cross-module calls: UiModelControl_RefreshStateTint [ui/controls/misc].
+   World owner-list callback: for a model node, clears its runtime flags 0x4 and 0x8, re-registers the owning
+   army's terrain occupancy and refreshes the node's state tint. Second pass after
+   ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback when a level's armies are set up.
 */
 void __thandor_preserve_eax_edx
 ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
@@ -1675,11 +1673,11 @@ ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
 {
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     node->runtimeFlags = node->runtimeFlags & 0xfffffff3;
+    /* the army runtime at +8 of the node's payload */
     ArmyRuntime_InitializeTerrainOccupancyFlags
               (armyContext,*(ArmyRuntimeSlot **)((int)node->runtimePayload + 8));
     UiModelControl_RefreshStateTint((ModelRuntimeNode *)node);
   }
-  return;
 }
 
 
@@ -1895,13 +1893,10 @@ ArmyRuntime_ResolveShotAimPoint
 
 
 /* Address: 0x0051D170.
-   Ownership: gameplay/army/runtime.
-   Purpose: Army-node owner-list callback that derives the faction visibility mask, accumulates projected terrain
-   occlusion around the node world position, and marks occupancy bit 2 when the definition flags require it.
-   Maintenance table phase occupancyRebuild, object kind army. The 4x3 table bytes, target body, calling
-   convention, and RET 0x08 contract remain unchanged.
-   Cross-module calls: TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint [world/terrain/projection],
-   TerrainOccupancyBit2_MarkAroundWorldPoint [world/terrain/occupancy].
+   World owner-list callback: for a model node of an owned army, adds the army's projected terrain occlusion
+   (its +0x9C mask in the byte of every faction whose nibble in the owner's packed relation states has bit 3
+   set) around the node, and marks occupancy bit 2 around it when the active faction's nibble has bit 3 set. First pass of the occupancy rebuild; see
+   ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
@@ -1915,18 +1910,23 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
   uint64_t factionMaskByte;
   Q12 worldXQ12;
   Q12 worldYQ12;
-  int occupancyByteOffset;
+  int ownerFactionIndex;
   FieldGridAsset *fieldGrid;
   
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+    /* node->worldXQ12 (+0x94) goes to the callees' worldYQ12 and node->worldYQ12 (+0x98) to their worldXQ12,
+       as in the original; one of the two namings is swapped. */
     worldYQ12 = node->worldXQ12;
     armyRecord = *(int *)((int)node->runtimePayload + 8);
     worldXQ12 = node->worldYQ12;
+    /* armyRecord: the army runtime at +8 of the node payload; +0xC is its owner faction (0 = none) */
     if (*(int *)(armyRecord + 0xc) != 0) {
-      occupancyByteOffset = *(int *)(armyRecord + 0xc);
+      ownerFactionIndex = *(int *)(armyRecord + 0xc);
       fieldGrid = worldRuntime->fieldGrid;
-      relationStates = g_GameFactionRuntimeImage.records[occupancyByteOffset].packedRelationStates;
+      relationStates = g_GameFactionRuntimeImage.records[ownerFactionIndex].packedRelationStates;
       factionMaskByte = (uint64_t)*(uint32_t *)(armyRecord + 0x9c);
+      /* one nibble per faction in relationStates, one byte per faction in the 64-bit mask; faction 0 (the
+         lowest byte) is not tested and stays zero */
       visibilityMask = 0;
       if ((relationStates & 0x80000000) != 0) {
         visibilityMask = factionMaskByte;
@@ -1962,12 +1962,11 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
                  worldRuntime->fieldGrid);
       if ((relationStates >> ((uint8_t)(activeFactionIndex << 2) & 0x1f) & 8) != 0) {
         TerrainOccupancyBit2_MarkAroundWorldPoint
-                  (*(FieldGridRadiusUnits *)(armyRecord + 0x90),worldXQ12,worldYQ12,occupancyByteOffset,
+                  (*(FieldGridRadiusUnits *)(armyRecord + 0x90),worldXQ12,worldYQ12,ownerFactionIndex,
                    fieldGrid);
       }
     }
   }
-  return;
 }
 
 
@@ -2036,9 +2035,9 @@ ArmyRuntime_DispatchClassCommand
 
 
 /* Address: 0x0051D8C0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Frees the army runtime pool, releases all eight texture/palette binding pairs, frees the two verified
-   owned allocations for every populated army registry entry, and clears the registry pointers.
+   Counterpart of ArmyRuntime_InitializePoolAndGraphics: frees the army runtime pool, releases every faction's
+   army texture set and palette, frees the two preview textures (+0x18/+0x1C) of every registered army asset
+   and clears the asset registry.
 */
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(void)
 
@@ -2049,35 +2048,34 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(voi
   ArmyAssetRecordPrefix **assetRegistryCursor;
   
   g_MemoryApi.free(g_ArmyRuntimeSlots);
-  g_ArmyRuntimeSlots = (ArmyRuntimeSlot *)0x0;
+  g_ArmyRuntimeSlots = NULL;
   graphicsBindingCursor = g_ArmyGraphicsBindings;
-  remainingCount = 8;
+  remainingCount = ARMY_GRAPHICS_BINDING_COUNT;
   do {
-    if (graphicsBindingCursor->textureSet != (GraphicsTextureSet *)0x0) {
+    if (graphicsBindingCursor->textureSet != NULL) {
       g_GraphicsTextureSetReleasePackage(graphicsBindingCursor->textureSet);
-      graphicsBindingCursor->textureSet = (GraphicsTextureSet *)0x0;
+      graphicsBindingCursor->textureSet = NULL;
     }
-    if (graphicsBindingCursor->paletteAsset != (GraphicsPaletteAsset *)0x0) {
+    if (graphicsBindingCursor->paletteAsset != NULL) {
       g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage
                 (graphicsBindingCursor->paletteAsset);
-      graphicsBindingCursor->paletteAsset = (GraphicsPaletteAsset *)0x0;
+      graphicsBindingCursor->paletteAsset = NULL;
     }
-    graphicsBindingCursor = graphicsBindingCursor + 1;
-    remainingCount = remainingCount + -1;
+    graphicsBindingCursor++;
+    remainingCount--;
   } while (remainingCount != 0);
   assetRegistryCursor = g_ArmyAssetRecordRegistry;
-  remainingCount = 0x300;
+  remainingCount = ARMY_ASSET_REGISTRY_SLOT_COUNT;
   do {
     armyAsset = *assetRegistryCursor;
-    if (armyAsset != (ArmyAssetRecordPrefix *)0x0) {
+    if (armyAsset != NULL) {
       g_MemoryApi.free((void *)armyAsset[1].rootNodeOffsetOrPointer);
       g_MemoryApi.free((void *)armyAsset[1].registryId);
-      *assetRegistryCursor = (ArmyAssetRecordPrefix *)0x0;
+      *assetRegistryCursor = NULL;
     }
-    assetRegistryCursor = assetRegistryCursor + 1;
-    remainingCount = remainingCount + -1;
+    assetRegistryCursor++;
+    remainingCount--;
   } while (remainingCount != 0);
-  return;
 }
 
 
@@ -2135,39 +2133,42 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
 
 
 /* Address: 0x0051D9F0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Traverses 1024 exact 0x120-byte slots and converts the four verified serialized offsets in each
-   populated slot back to runtime pointers using the model, world, and army pool relocation bases.
+   After a savegame load: turns the saved offsets in every used army slot (model node != 0) back into
+   pointers, the counterpart of ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs. Model runtime (+0x00)
+   and model node (+0x04) are rebased by their pools' deltas; the army references (+0x1C, +0x98) are saved
+   as pointer - (pool base - 1), so 0 stays NULL.
 */
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntimePool_RebaseAfterLoad(void)
 
 {
   uint32_t savedRuntimeState98Offset;
-  void *rebasedDefinition;
+  void *rebasedModelRuntime;
   int runtimeSlotsRemaining;
   ArmyRuntimeSlot *rebasedCommandTarget;
   ArmyRuntimeSlot *runtimeSlotCursor;
   
-  runtimeSlotsRemaining = 0x400;
+  runtimeSlotsRemaining = ARMY_RUNTIME_SLOT_COUNT;
   runtimeSlotCursor = g_ArmyRuntimeSlots;
   do {
-    if (runtimeSlotCursor->modelNodeRuntime != (ModelRuntimeNode *)0x0) {
-      rebasedDefinition =
+    if (runtimeSlotCursor->modelNodeRuntime != NULL) {
+      /* Ghidra's field arithmetic: this is modelRuntime + g_ModelRuntimeRebaseDelta (ADD ECX,[0x005200BC]) */
+      rebasedModelRuntime =
            ((runtimeSlotCursor->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 +
            g_ModelRuntimeRebaseDelta + -0x10;
-      rebasedCommandTarget = (ArmyRuntimeSlot *)0x0;
-      if (runtimeSlotCursor->commandTargetArmyRuntime != (ArmyRuntimeSlot *)0x0) {
+      rebasedCommandTarget = NULL;
+      if (runtimeSlotCursor->commandTargetArmyRuntime != NULL) {
         rebasedCommandTarget =
              (ArmyRuntimeSlot *)
              ((int)&runtimeSlotCursor->commandTargetArmyRuntime->modelRuntimeOrSavedOffset +
              (int)g_ArmyRuntimeRebaseBaseMinusOne);
       }
+      /* modelNodeRuntime + g_RuntimeObjectRebaseBaseMinusOne (ADD EAX,[0x00563700]) */
       runtimeSlotCursor->modelNodeRuntime =
            (ModelRuntimeNode *)
            (g_RuntimeObjectRebaseBaseMinusOne +
            (int)(&runtimeSlotCursor->modelNodeRuntime->modelPayload + -1) + 0x30);
       savedRuntimeState98Offset = runtimeSlotCursor->runtimeState98;
-      (runtimeSlotCursor->modelRuntimeOrSavedOffset).modelRuntime = rebasedDefinition;
+      (runtimeSlotCursor->modelRuntimeOrSavedOffset).modelRuntime = rebasedModelRuntime;
       if (savedRuntimeState98Offset != 0) {
         savedRuntimeState98Offset = savedRuntimeState98Offset + (int)g_ArmyRuntimeRebaseBaseMinusOne
         ;
@@ -2175,10 +2176,9 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntimePool_RebaseAfterLoad(void)
       runtimeSlotCursor->commandTargetArmyRuntime = rebasedCommandTarget;
       runtimeSlotCursor->runtimeState98 = savedRuntimeState98Offset;
     }
-    runtimeSlotCursor = runtimeSlotCursor + 1;
-    runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
+    runtimeSlotCursor++;
+    runtimeSlotsRemaining--;
   } while (runtimeSlotsRemaining != 0);
-  return;
 }
 
 
@@ -3285,10 +3285,9 @@ ArmyRuntimeSpawner_CreateLinkedChildInstance
 
 
 /* Address: 0x00527430.
-   Ownership: gameplay/army/runtime.
-   Purpose: Tests proximity across the base model and its attachment descriptors for two army runtimes; status is
-   returned through CF.
-   Local calls: ArmyRuntime_TestPositionDistanceWithinCombinedRadius.
+   Returns true (CF set) when the candidate army is within the combined radius of the source army's model and
+   of every attached model listed in the source's attachment records (+0x140, 0x20 bytes each, count at +0xC);
+   false as soon as one of them is out of reach.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestModelAttachmentProximity
@@ -3302,7 +3301,8 @@ ArmyRuntime_TestModelAttachmentProximity
   bool result;
   
   candidateModelRuntime = (candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  remainingAttachments = sourceArmyRuntime->factionIndex;
+  remainingAttachments = sourceArmyRuntime->factionIndex; /* +0xC, used as the attachment count here */
+  /* attachments140[3].childModelRuntimeOrSavedOffset00 is the model runtime's radius at +0x1A0 */
   baseWithinRadius = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
                     ((UQ12)candidateModelRuntime->attachments140[3].childModelRuntimeOrSavedOffset00,
                      (UQ12)((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
@@ -3310,9 +3310,11 @@ ArmyRuntime_TestModelAttachmentProximity
                      candidateArmyRuntime->modelNodeRuntime,sourceArmyRuntime->modelNodeRuntime);
   result = false;
   if (baseWithinRadius) {
-    for (; remainingAttachments != 0; remainingAttachments = remainingAttachments + -1) {
+    for (; remainingAttachments != 0; remainingAttachments--) {
+      /* the attachment record pointer at +0x140; the cursor advances 0x20 bytes per record. The record holds
+         the attached model runtime (radius at +0x1A0) and its model node. */
       attachmentRecord = (int *)sourceArmyRuntime[1].commandCoordinate0Q12;
-      if ((attachmentRecord != (int *)0x0) &&
+      if ((attachmentRecord != NULL) &&
          (result = ArmyRuntime_TestPositionDistanceWithinCombinedRadius
                             ((UQ12)candidateModelRuntime->attachments140[3].childModelRuntimeOrSavedOffset00,
                              *(UQ12 *)(*attachmentRecord + 0x1a0),candidateArmyRuntime->modelNodeRuntime,
@@ -3328,15 +3330,10 @@ ArmyRuntime_TestModelAttachmentProximity
 
 
 /* Address: 0x0051C040.
-   Ownership: gameplay/army/runtime.
-   Purpose: Releases an army runtime model instance, removes selection and global references, clears the identifier
-   from faction technology tables, marks the runtime slot free, and refreshes the two catalog grids and selection-
-   detail panel.
-   Cross-module calls: ModelRuntimePool_DestroyHierarchyAndDetach [world/model/runtime],
-   SelectionPlayerBlocks_RemovePointer [gameplay/selection/runtime], WorldRuntime_ForEachNodeInOwnerListD8
-   [world/runtime/core], GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables
-   [gameplay/faction/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology], UiCatalogGroup42_RebuildGrid
-   [ui/ingame/technology].
+   Removes an army for good: destroys its model hierarchy, drops every reference to it (player selections, the
+   world selection, owned-model links of other nodes, each player's primary selection, the faction group
+   tables), frees its runtime slot (model node = NULL) and rebuilds the in-game catalog grids and the
+   selection detail panel.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_DestroyInstanceAndRefreshUi
@@ -3348,13 +3345,13 @@ ArmyRuntime_DestroyInstanceAndRefreshUi
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   
   modelRuntime = (entityRuntime->common).ownership.definitionOrClassRecord;
-  if (modelRuntime != (ModelRuntimeSlot *)0x0) {
-    (entityRuntime->common).ownership.definitionOrClassRecord = (void *)0x0;
+  if (modelRuntime != NULL) {
+    (entityRuntime->common).ownership.definitionOrClassRecord = NULL;
     ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,modelRuntime);
   }
   SelectionPlayerBlocks_RemovePointer(entityRuntime);
   if (entityRuntime == (worldRuntime->selection).selectedEntity) {
-    (worldRuntime->selection).selectedEntity = (GameEntityRuntime *)0x0;
+    (worldRuntime->selection).selectedEntity = NULL;
   }
   WorldRuntime_ForEachNodeInOwnerListD8
             (entityRuntime,WorldRuntimeNode_ClearOwnedModelReferencesCallback,worldRuntime);
@@ -3368,24 +3365,21 @@ ArmyRuntime_DestroyInstanceAndRefreshUi
       g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->
       primarySelectionEntityOffset8094 = 0;
     }
-    playerBlockCursor = playerBlockCursor + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlockCursor++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(entityRuntime);
-  (entityRuntime->common).ownership.modelNode = (ModelRuntimeNode *)0x0;
+  (entityRuntime->common).ownership.modelNode = NULL; /* marks the army slot free */
   UiCatalogGroup48_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   UiCatalogGroup42_RebuildGrid((UiNodeBase *)g_InGameRuntimeRoot);
   InGameSelectionDetailPanel_Rebuild();
-  return;
 }
 
 
 /* Address: 0x005246B0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Tests the class-13 candidate relation and distance/proximity conditions used by the Group-A command
-   handler; status is returned through CF.
-   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
-   ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], FixedMath_Length2 [core/math/fixed].
+   Group-A command check: returns true (CF set) when the source army is of class 13 and the candidate army is
+   within its radius + 0xC00 (0.75 in Q12) of the source model's anchor point (model lookup entry (1,5),
+   transformed to world space), measured in x/y.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestClass13ProximityCandidate
@@ -3399,7 +3393,8 @@ ArmyRuntime_TestClass13ProximityCandidate
   ModelWorldPoint anchorPoint;
   ModelRuntimeNode *modelNode1;
   
-  if (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd) {
+  if (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 13) {
+    /* not a pointer: the candidate model runtime's radius at +0x1A0 */
     attachmentChildRuntime = ((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
              childModelRuntimeOrSavedOffset00;
     modelNodeRuntime = sourceArmyRuntime->modelNodeRuntime;
@@ -3410,6 +3405,8 @@ ArmyRuntime_TestClass13ProximityCandidate
       anchorPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
       anchorDistance = FixedMath_Length2(anchorPoint.yQ12 - (modelNode1->worldTransform).translation.y,
                                 anchorPoint.xQ12 - (modelNode1->worldTransform).translation.x);
+      /* attachmentChildRuntime + 6 is radius + 0xC00 (ADD EDX,0xC00): Ghidra scaled the constant by
+         sizeof(ModelRuntimeSlot) = 0x200 */
       if ((int)anchorDistance <= (int)(attachmentChildRuntime + 6)) {
         return true;
       }
@@ -3893,21 +3890,11 @@ ArmyRuntime_TestWorldPointAllowedDefault(uint32_t allowedContext,uint32_t worldY
 
 
 /* Address: 0x0051B8F0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Allocates a free 0x120-byte army runtime slot, resolves the requested asset and faction graphics,
-   initializes the runtime state, creates and links the model hierarchy, and rebuilds transforms, bounds, and tint
-   before returning status through carry. Role: Creates a world army/placeable instance from an asset record and
-   its model graph. Inputs: World context, army definition, model selection/technology/faction state and world
-   transform. Outputs: ArmyRuntimeSlot, ModelRuntimeSlot/Node hierarchy, world links, occupancy, tint and derived
-   radius/depth. Edges: ModelRuntimePool_CreateInstanceByDefinitionId -> linked-child recursion ->
-   transform/occupancy initialization.
-   Local calls: ArmyRuntime_InitializeTerrainOccupancyFlags, ArmyRuntime_RebuildDerivedSelectionMetrics.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions],
-   ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology [assets/model/definitions],
-   ModelDefinition_SelectFactionUnlockedLinkedId [assets/model/definitions],
-   ModelRuntimePool_CreateInstanceByDefinitionId [world/model/runtime],
-   ModelNodeRuntime_InstantiateLinkedChildrenRecursive [world/model/hierarchy],
-   WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core].
+   Creates an army (unit or building) of an army asset for a faction at a world point: takes the first free
+   army slot, creates the faction's model (and its linked child models) with the faction's army graphics, links
+   it into the world, places it on the terrain and initialises occupancy, tint and selection metrics. Returns
+   the army slot, or with CF set FATAL_ERROR_GENERAL_FAILURE (no free slot or model creation failed) or
+   FATAL_ERROR_ARMY_ID_NOT_FOUND (the id is left in g_PackageLastErrorPath).
 */
 ArmyRuntimeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_CreateInstanceFromAsset
@@ -3937,39 +3924,43 @@ ArmyRuntime_CreateInstanceFromAsset
   uint32_t slotScanContinueValue;
   ArmyAssetRuntimeSemanticView80 *definitionNode;
   
-  armySlotsRemaining = 0x400;
+  /* find a free army slot (model node NULL); slotScanContinueValue is first the pool pointer (no pool: fail) */
+  armySlotsRemaining = ARMY_RUNTIME_SLOT_COUNT;
   armyRuntime = g_ArmyRuntimeSlots;
   slotScanContinueValue = (uint32_t)g_ArmyRuntimeSlots;
-  while (resultOrModelNode = (ModelRuntimeNode *)0x14, slotScanContinueValue != 0) {
-    if (armyRuntime->modelNodeRuntime == (ModelRuntimeNode *)0x0) {
+  while (resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE, slotScanContinueValue != 0) {
+    if (armyRuntime->modelNodeRuntime == NULL) {
       registryCursor = g_ArmyAssetRecordRegistry;
-      remainingOrDefinition = 0x300;
+      remainingOrDefinition = ARMY_ASSET_REGISTRY_SLOT_COUNT;
       goto ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry;
     }
-    armyRuntime = armyRuntime + 1;
-    armySlotsRemaining = armySlotsRemaining - 1;
+    armyRuntime++;
+    armySlotsRemaining--;
     slotScanContinueValue = armySlotsRemaining;
   }
   goto ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure;
   while( true ) {
-    registryCursor = registryCursor + 1;
-    remainingOrDefinition = remainingOrDefinition + -1;
+    registryCursor++;
+    remainingOrDefinition--;
     if (remainingOrDefinition == 0) break;
 ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
     armyAssetRecord = *registryCursor;
-    if ((armyAssetRecord != (ArmyAssetRecordPrefix *)0x0) &&
+    if ((armyAssetRecord != NULL) &&
        (armyAssetRecord->registryId == armyAssetId)) {
       armyRuntime->armyAssetId = armyAssetId;
-      if (((creationFlags & 2) != 0) && (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
+      if (((creationFlags & ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION) != 0) &&
+          (factionIndex == worldRuntime->activeFactionRuntimeIndex)) {
         definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
+        /* INC [EAX+0x1B0] */
         definitionLookup.modelDefinition[0x24].byteSize = definitionLookup.modelDefinition[0x24].byteSize + 1;
       }
+      /* the graphics bindings exist for faction slots 0-7 only */
       if (7 < (uint32_t)factionIndex) {
         factionIndex = 7;
       }
       armyRuntime->factionIndex = factionIndex;
-      if ((creationFlags & 4) != 0) {
+      if ((creationFlags & ARMY_CREATE_UNLOCK_TECHNOLOGY) != 0) {
         ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
                   (factionIndex,(ModelDefinitionHierarchyNodeAddress32)armyAssetRecord);
       }
@@ -3989,16 +3980,19 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
       (armyRuntime->articulatedContact).fallbackPosition0Q12 = worldYQ12;
       (armyRuntime->articulatedContact).fallbackPosition1Q12 = worldXQ12;
       armyRuntime->linkedEntityRuntime = linkedEntity;
-      (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)0x0;
+      (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime = NULL;
       armyRuntime->runtimeState8C = 0;
       modelDefinitionId = ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,rootNodeOrClassValue);
       modelCreateResult = ModelRuntimePool_CreateInstanceByDefinitionId
                          (paletteAsset,textureSet,armyRuntime,modelDefinitionId,worldRuntime);
       resultOrModelNode = modelCreateResult.modelNode;
       if (!modelCreateResult.failed) {
+        /* the create result is the model runtime; +4 is its root model node */
         modelNodeRuntime = (ModelRuntimeNode *)(resultOrModelNode->common).nextNode;
         (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (uint32_t)resultOrModelNode;
         armyRuntime->modelNodeRuntime = modelNodeRuntime;
+        /* worldYQ12 goes to translation.x and worldXQ12 to translation.y throughout, as in the original; the
+           parameter names are swapped relative to the node fields */
         (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
         (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
         (modelNodeRuntime->worldTransform).translation.z = 0;
@@ -4008,9 +4002,9 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
         armyRuntime->movementTarget0Q12 = worldYQ12;
         armyRuntime->movementTarget1Q12 = worldXQ12;
         (modelNodeRuntime->modelPayload).worldRotationAngle0 = 0;
-        (modelNodeRuntime->modelPayload).worldRotationAngle1 = 0x4000;
+        (modelNodeRuntime->modelPayload).worldRotationAngle1 = FIXED_ANGLE16_QUARTER_TURN;
         (modelNodeRuntime->modelPayload).worldRotationAngle2 = orientationAngle;
-        armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)0x0;
+        armyRuntime->commandTargetArmyRuntime = NULL;
         armyRuntime->runtimeState98 = 0;
         armyRuntime->commandCoordinate0Q12 = 0;
         armyRuntime->commandCoordinate1Q12 = 0;
@@ -4038,6 +4032,8 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
         if (!childCreateFailed) {
           WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)modelNodeRuntime);
           ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
+          /* remainingOrDefinition: the model runtime's definition (its first dword). Terrain contact by the
+             definition's contact kind (+0x278); depth class by its model class (+0x4C); depth radius +0xDC. */
           remainingOrDefinition = *THANDOR_BITCAST(ModelRuntimeSlotReferenceOrSavedOffset4, int *, armyRuntime->modelRuntimeOrSavedOffset);
           g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(remainingOrDefinition + 0x278)]
                     (*(Q12 *)(remainingOrDefinition + 0x54),(modelNodeRuntime->worldTransform).translation.y,
@@ -4060,9 +4056,9 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
       goto ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure;
     }
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath)
-  ;
-  resultOrModelNode = (ModelRuntimeNode *)0x41;
+  /* the asset id as decimal text (base 10, at least one digit) for the error message */
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,armyAssetId,g_PackageLastErrorPath);
+  resultOrModelNode = (ModelRuntimeNode *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
 ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure:
   failureResult.failed = true;
   failureResult.armyRuntimeOrError = (uint32_t)resultOrModelNode;

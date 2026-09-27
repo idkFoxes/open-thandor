@@ -132,16 +132,11 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
 
 
 /* Address: 0x0056BDD0.
-   Ownership: gameplay/session/savegame.
-   Purpose: Enumerates save/*.sve, allocates and fills 0x104-byte catalog records, adds the localized New score row
-   0x2151, sorts by the persisted dword pair, selects the current row, and updates save-page actions and
-   description 0x215E. Queued UI action handler for INGAME_PAGE12[14] (0x120E). Return datatype is preserved for
-   non-queue direct callers.
-   Local calls: InGameSaveName_UpdateSaveActionValidity.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], TextResource_Resolve
-   [assets/text/resources], RichTextCommandStream_CopyExpanded [assets/text/richtext],
-   UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPointerList_SortByDwordPairFieldDescending
-   [ui/controls/lists], UiPointerList_SelectIndexVariantB [ui/controls/lists].
+   Opens the in-game save page (action 0x120E, from the game menu's Save button): rebuilds g_ScenarioCatalog
+   from the headers of save\*.sve plus a final "new savegame" row (text 0x2151), sorts the saves by the dword pair
+   at record offset 0xF0 (descending), selects the new row and shows the page with the save-name entry. The
+   description shows the selected save's title texts (alone, or patched into text 0x215E while a campaign is
+   loaded), or text 0x215D for the new row.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton)
 
@@ -175,18 +170,19 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
-                     (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
+                     (FILESYSTEM_ENUMERATE_FILES,0xffffffff,PACKAGE_SCRATCH_BUFFER_BYTES,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   remainingCount = enumResult.entryCount;
   if (enumResult.failed) {
     remainingCount = 0;
   }
   g_MemoryApi.free(g_ScenarioCatalog);
-  g_ScenarioCatalog = (ScenarioCatalogHeader *)0x0;
+  g_ScenarioCatalog = NULL;
+  /* per row a pointer and a 0x100-byte record: the row pointers first, then the records */
   allocResult = g_MemoryApi.alloc((remainingCount + 1) * 0x104);
   rowPointerCursor = (ScenarioCatalogHeader *)allocResult.payloadOrError;
   if (!allocResult.failed) {
-    destination = &rowPointerCursor->campaignRecordsOffset + remainingCount;
+    destination = &rowPointerCursor->campaignRecordsOffset + remainingCount; /* behind count + 1 pointers */
     g_ScenarioCatalog = rowPointerCursor;
     rowCount = remainingCount;
     leaf = (uint16_t *)g_PackageScratchBuffer;
@@ -202,23 +198,24 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       openResult = g_FileSystemOpen
                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       handle = (void *)openResult.handleOrError;
+      /* the catalog record is the second 0x100 bytes of the .sve; a save that cannot be opened stays empty */
       if (!openResult.failed) {
         closeHandle = handle;
         g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
         g_FileSystemReadExact(0x100,destination,handle);
         g_FileSystemClose(closeHandle);
-        destination[0x1c] = destination[0x1c] + 0x2230;
-        destination[0x24] = destination[0x24] + 0x2220;
+        destination[0x1c] = destination[0x1c] + 0x2230; /* localizedStringId70: level index -> level title text */
+        destination[0x24] = destination[0x24] + 0x2220; /* optionalLocalizedStringId90 -> text id */
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 0x40;
-      leaf = (uint16_t *)((int)leaf + enumResult.recordSizeBytes);
+      leaf = (uint16_t *)((int)leaf + enumResult.recordSizeBytes); /* next enumerated file name */
     }
     rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
     clearCursor = destination;
-    for (clearCount = 0x40; clearCount != 0; clearCount = clearCount + -1) {
+    for (clearCount = 0x40; clearCount != 0; clearCount--) {
       *clearCursor = 0;
-      clearCursor = clearCursor + 1;
+      clearCursor++;
     }
     resolvedText = TextResource_Resolve(0x2151);
     RichTextCommandStream_CopyExpanded(0x100,(uint16_t *)destination,resolvedText.text);
@@ -234,6 +231,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(inGameUi, saveNameEntryStack));
     parentCursor = saveMenuButton->parent;
     firstNode = saveMenuButton;
+    /* up to the root node (its parent is -1) */
     while (parentCursor != (UiNodeBase *)0xffffffff) {
       firstNode = firstNode->parent;
       parentCursor = firstNode->parent;
@@ -246,7 +244,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
     rowSlots = saveList->rowSlots;
     selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
     selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
-    /* The description text holds a TextResourceId (labelFlags & 0x10 clear). */
+    /* The description text holds a TextResourceId (labelFlags & 0x10 clear); the last row is the new save. */
     descriptionText->text = (uint16_t *)0x215d;
     if (listRowCount - 1 != selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {

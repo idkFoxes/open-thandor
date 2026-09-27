@@ -11,11 +11,10 @@
 /* Implementation ownership: assets/package/codec. */
 
 /* Address: 0x0040A9C0.
-   Ownership: assets/package/codec.
-   Purpose: PCK method-2 encoder. Copies the 0x200-byte FieldGridAsset header, compacts each 0x80-byte
-   FieldGridCell to four persisted dwords, then invokes method 0. Method 2 writer: packs each 0x80 runtime cell
-   back to the 0x10-byte on-disk record (+0x54,+0x48,+0x4C,+0x50) then Huffman.
-   Local calls: PckCodec_EncodeHuffmanRle.
+   PCK compression method 2 writer for field grids: keeps only the header and the four persisted dwords of each
+   0x80-byte cell (the rest is runtime state that the decoder regenerates), then packs that compact image with
+   method 0 behind a PCK_FIELD_GRID_PREFIX_BYTES prefix holding its size. Returns the packed size including the
+   prefix; CF set with the error code of the allocation or the method-0 encoder.
 */
 PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeFieldGrid
@@ -37,17 +36,20 @@ PckCodec_EncodeFieldGrid
   AssetMagic persistedCellDword;
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
-  bytes = cellCount * 0x10 + 0x200;
+  bytes = cellCount * FIELD_GRID_COMPACT_CELL_BYTES + FIELD_GRID_HEADER_BYTES;
   allocResult = g_MemoryApi.alloc(bytes);
   compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     compactWriteCursor = compactFieldImageBase;
-    for (headerDwordCount = 0x80; headerDwordCount != 0; headerDwordCount = headerDwordCount - 1) {
+    /* the header dword by dword; sourceGrid then points at cells[0] */
+    for (headerDwordCount = FIELD_GRID_HEADER_DWORDS; headerDwordCount != 0; headerDwordCount--) {
       *compactWriteCursor = (sourceGrid->common).magic;
       sourceGrid = (FieldGridAsset *)&(sourceGrid->common).allocationSizeBytes;
-      compactWriteCursor = compactWriteCursor + 1;
+      compactWriteCursor++;
     }
-    cellCount = cellCount & 0xfffffff;
+    cellCount = cellCount & 0xfffffff; /* (count * 0x10) >> 4 in the original */
+    /* per cell: the dwords at cell offsets 0x54, 0x48, 0x4C and 0x50 (persistedAux54, terrainHeight,
+       waterSurfaceDelta, flagsAndMaterial), addressed through the header fields at the same offsets */
     do {
       persistedCellDword =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xc);
@@ -58,18 +60,18 @@ PckCodec_EncodeFieldGrid
       compactWriteCursor[2] =
            *(AssetMagic *)((sourceGrid->common).buildMetadata.names.producerName + 0xe);
       compactWriteCursor[3] = pendingCellDword;
-      sourceGrid = (FieldGridAsset *)((sourceGrid->common).buildMetadata.names.sourceName + 8);
+      sourceGrid = (FieldGridAsset *)((sourceGrid->common).buildMetadata.names.sourceName + 8); /* next cell */
       compactWriteCursor = compactWriteCursor + 4;
       cellCount = cellCount - 1;
     } while (cellCount != 0);
     *(uint32_t *)destination = bytes;
     encodeResult = PckCodec_EncodeHuffmanRle
-                      (destinationCapacityBytes - 0x10,destination + 0x10,bytes,
-                       (uint8_t *)compactFieldImageBase);
+                      (destinationCapacityBytes - PCK_FIELD_GRID_PREFIX_BYTES,
+                       destination + PCK_FIELD_GRID_PREFIX_BYTES,bytes,(uint8_t *)compactFieldImageBase);
     encodedSizeOrError = (AssetMagic *)encodeResult.byteCountOrError;
     if (!encodeResult.failed) {
       g_MemoryApi.free(compactFieldImageBase);
-      successResult.byteCountOrError = (uint32_t)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
+      successResult.byteCountOrError = (uint32_t)encodedSizeOrError + PCK_FIELD_GRID_PREFIX_BYTES;
       successResult.failed = false;
       return successResult;
     }
@@ -83,13 +85,10 @@ PckCodec_EncodeFieldGrid
 
 
 /* Address: 0x0040AAA0.
-   Ownership: assets/package/codec.
-   Purpose: PCK method-2 decoder. Restores the FieldGridAsset header, expands compact 0x10-byte records into zeroed
-   0x80-byte FieldGridCell records, and generates worldX/worldY for every cell. 0x10-byte packed cell -> 0x80
-   FieldGridCell: dword0 -> +0x54, dword1 -> +0x48 (terrainHeight), dword2 -> +0x4C (waterSurfaceDelta), dword3 ->
-   +0x50 (flagsAndMaterial, packs FLD layer bytes 8-11 LE — R1). Generated world coords (32-bit wrap): worldX =
-   col*0x901 + row*0x480, worldY = -1999*row (triangle lattice 2305/1152/1999; inverse of the T4 sampler).
-   Local calls: PckCodec_DecodeHuffmanRle.
+   PCK compression method 2 reader for field grids (see PckCodec_EncodeFieldGrid): unpacks the compact image,
+   restores the header, expands every 0x10-byte record into a zeroed FieldGridCell and regenerates the cell world
+   coordinates: worldX = column * 0x901 + row * 0x480, worldY = row * -1999 (Q12, 32-bit wrap). CF set with the
+   error code of the allocation or the method-0 decoder.
 */
 PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeFieldGrid
@@ -119,21 +118,26 @@ PckCodec_DecodeFieldGrid
   compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     decodeResult = PckCodec_DecodeHuffmanRle
-                      (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
+                      (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - PCK_FIELD_GRID_PREFIX_BYTES,
+                       source + PCK_FIELD_GRID_PREFIX_BYTES);
     if (!decodeResult.failed) {
+      /* header dwords 0x2E/0x2F are gridWidth/gridHeight */
       cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
       expandedWriteCursor = destinationGrid;
-      for (countOrRowStartX = 0x80; countOrRowStartX != 0; countOrRowStartX = countOrRowStartX + -1) {
+      for (countOrRowStartX = FIELD_GRID_HEADER_DWORDS; countOrRowStartX != 0; countOrRowStartX--) {
         (expandedWriteCursor->common).magic = *compactReadCursor;
-        compactReadCursor = compactReadCursor + 1;
+        compactReadCursor++;
         expandedWriteCursor = (FieldGridAsset *)&(expandedWriteCursor->common).allocationSizeBytes;
       }
+      /* expandedWriteCursor now points at cells[0]; clear all cells dword by dword */
       expandedZeroCursor = expandedWriteCursor;
-      for (countOrRowStartX = cellCountOrWorldX * 0x20; countOrRowStartX != 0; countOrRowStartX = countOrRowStartX + -1) {
+      for (countOrRowStartX = cellCountOrWorldX * FIELD_GRID_CELL_DWORDS; countOrRowStartX != 0;
+          countOrRowStartX--) {
         (expandedZeroCursor->common).magic = 0;
         expandedZeroCursor = (FieldGridAsset *)&(expandedZeroCursor->common).allocationSizeBytes;
       }
+      /* per cell: record dwords 0..3 to cell offsets 0x54, 0x48, 0x4C, 0x50 */
       do {
         pendingCellDword = compactReadCursor[1];
         *(AssetMagic *)((expandedWriteCursor->common).buildMetadata.names.producerName + 0x12) =
@@ -148,7 +152,7 @@ PckCodec_DecodeFieldGrid
         compactReadCursor = compactReadCursor + 4;
         expandedWriteCursor =
              (FieldGridAsset *)((expandedWriteCursor->common).buildMetadata.names.sourceName + 8);
-        cellCountOrWorldX = cellCountOrWorldX + -1;
+        cellCountOrWorldX--;
       } while (cellCountOrWorldX != 0);
       cellCountOrWorldX = 0;
       currentWorldYQ12 = 0;
@@ -161,12 +165,12 @@ PckCodec_DecodeFieldGrid
         do {
           currentWorldCoordinateCell->worldX = cellCountOrWorldX;
           currentWorldCoordinateCell->worldY = currentWorldYQ12;
-          cellCountOrWorldX = cellCountOrWorldX + 0x901;
-          currentWorldCoordinateCell = currentWorldCoordinateCell + 1;
+          cellCountOrWorldX = cellCountOrWorldX + FIELD_GRID_WORLD_COLUMN_STEP_X;
+          currentWorldCoordinateCell++;
           columnsRemaining = columnsRemaining - 1;
         } while (columnsRemaining != 0);
-        cellCountOrWorldX = countOrRowStartX + 0x480;
-        currentWorldYQ12 = currentWorldYQ12 + -1999;
+        cellCountOrWorldX = countOrRowStartX + FIELD_GRID_WORLD_ROW_STEP_X;
+        currentWorldYQ12 = currentWorldYQ12 + FIELD_GRID_WORLD_ROW_STEP_Y;
         rowsRemaining = rowsRemaining - 1;
         columnsRemaining = gridWidth;
         countOrRowStartX = cellCountOrWorldX;

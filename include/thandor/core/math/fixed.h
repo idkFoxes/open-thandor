@@ -12,6 +12,17 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/math/fixed. */
+
+#ifndef Q12_ONE
+#define Q12_ONE 0x1000 /* 1.0 in Q12 fixed point (scales, world coordinates) */
+#endif
+
+/* Engine angles are 16-bit fractions of a full turn (0x10000 = 360 degrees), as used by the
+   g_FixedSinQ28/g_FixedCosQ28 lookups and returned by FixedMath_Atan2Angle16. */
+#define FIXED_ANGLE16_EIGHTH_TURN 0x2000
+#define FIXED_ANGLE16_QUARTER_TURN 0x4000
+#define FIXED_ANGLE16_HALF_TURN 0x8000
+#define FIXED_ANGLE16_FULL_TURN 0x10000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BECB0 */
@@ -151,8 +162,8 @@ FixedMath_WriteDirectionScaled
 /* 0x00485120 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_Compose
-          (GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *transformA,
-          GraphicsFixedMatrix3x4 *transformB);
+          (GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *innerTransform,
+          GraphicsFixedMatrix3x4 *outerTransform);
 
 /* 0x00484990 */
 FixedVectorAngles __thandor_preserve_eax
@@ -167,7 +178,8 @@ FixedTransform_ApplyPoint
 /* 0x00484D20 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_BuildRotationBasis
-          (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,AngleTurn32 angle2);
+          (GraphicsFixedMatrix3x4 *output,AngleTurn32 rollAngle,AngleTurn32 elevationAngle,
+          AngleTurn32 azimuthAngle);
 
 /* 0x00484BA0 */
 uint32_t __thandor_eax_preserve_ecx_edx

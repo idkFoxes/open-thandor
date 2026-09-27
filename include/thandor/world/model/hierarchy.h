@@ -25,7 +25,7 @@ ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime);
 /* 0x0051DB80 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
-          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *modelRuntimeHolder);
+          (FactionRuntimeIndex factionIndex,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x004BD310 */
 void __thandor_void_preserve_eax_ecx_edx

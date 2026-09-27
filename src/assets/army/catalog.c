@@ -282,12 +282,10 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
 
 
 /* Address: 0x0051B5E0.
-   Ownership: assets/army/catalog.
-   Purpose: Validates the 'arm' magic and converter version 0x00020008, then prepares recordCount variable-size
-   records beginning at +0x200. Each successful record advances by its leading byteSize. Invalid headers update the
-   package last-error path. CF and EAX status are preserved.
-   Local calls: ArmyAssetRecord_RegisterAndRelocate.
-   Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
+   Checks that a loaded asset is an 'arm' file of converter version 0x20008 and registers every army record
+   in it (the variable-size records follow the 0x200-byte header, each starting with its byte size). A wrong
+   header stores the asset path as the error detail and fails with FATAL_ERROR_ARMY_ASSET_INVALID; a failed
+   registration fails with that step's error code.
 */
 StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
@@ -297,8 +295,8 @@ StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetH
   ArmyAssetHeader *record;
   StatusResult registrationStatus;
   StatusResult failureStatus;
-  
-  registrationStatusCode = 0x40;
+
+  registrationStatusCode = FATAL_ERROR_ARMY_ASSET_INVALID;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ARM) &&
      ((asset->recordCountHeader).common.converterVersion == PCK_CONVERTER_ARM_00020008)) {
     recordsRemaining = (asset->recordCountHeader).recordCount;
@@ -312,6 +310,8 @@ StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetH
       registrationStatus = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
       registrationStatusCode = registrationStatus.valueOrError;
       if (registrationStatus.failed) break;
+      /* record += its byte size: the anchor array at +0x28 decays to record + 0x28, and the dword at +0
+         (typed as the magic here) is the record's byte size */
       record = (ArmyAssetHeader *)
                ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                ((record->recordCountHeader).common.magic - 0x28));
@@ -350,13 +350,9 @@ ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 
 /* Address: 0x0051B770.
-   Ownership: assets/army/catalog.
-   Purpose: Scans the sixteen linked army-asset identifiers and succeeds when an enabled asset has a faction-
-   unlocked linked definition with the required nonzero state and flag overlap. It is distinct from
-   FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains.
-   Local calls: ArmyAssetRegistry_FindById.
-   Cross-module calls: ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction [assets/model/definitions].
+   Checks the 16 army-asset ids linked from an army record (dwords at +0x30) and returns true (CF set) as soon as
+   one names a registered, enabled asset whose technology is fully unlocked for the faction, that has a model
+   tree (+0x1C) and whose flags (+0x14) share a bit with requiredDefinitionFlags.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
@@ -364,30 +360,32 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
-  ArmyAssetRecordPrefix *definitionNode;
+  ArmyAssetRecordPrefix *linkedAsset;
   int linksRemaining;
   bool technologyLocked;
   ArmyAssetLookupResult registryLookup;
-  
-  linksRemaining = 0x10;
+
+  /* armyAssetRecord walks the link list in 4-byte steps, so [3].byteSize is the current link at +0x30;
+     on the linked asset [1].selectionDetailTemplateVariantIndex is the flags dword +0x14 (bit 0 = enabled)
+     and [1].rootNodeOffsetOrPointer the model-tree pointer +0x1C */
+  linksRemaining = ARMY_ASSET_LINKED_ID_COUNT;
   do {
     if (armyAssetRecord[3].byteSize != 0) {
       registryLookup = ArmyAssetRegistry_FindById(armyAssetRecord[3].byteSize);
-      definitionNode = registryLookup.recordOrError;
-      if ((!registryLookup.notFound) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+      linkedAsset = registryLookup.recordOrError;
+      if ((!registryLookup.notFound) && ((linkedAsset[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
         technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-                          (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
+                          (factionIndex,(ModelDefinitionHierarchyNodeAddress32)linkedAsset);
         if ((!technologyLocked) &&
-           ((definitionNode[1].rootNodeOffsetOrPointer != 0 &&
-            ((definitionNode[1].selectionDetailTemplateVariantIndex & requiredDefinitionFlags) != 0)
+           ((linkedAsset[1].rootNodeOffsetOrPointer != 0 &&
+            ((linkedAsset[1].selectionDetailTemplateVariantIndex & requiredDefinitionFlags) != 0)
             ))) {
           return true;
         }
       }
     }
-    armyAssetRecord = (ArmyAssetRecordPrefix *)&armyAssetRecord->selectionDetailTemplateVariantIndex
-    ;
-    linksRemaining = linksRemaining + -1;
+    armyAssetRecord = (ArmyAssetRecordPrefix *)&armyAssetRecord->selectionDetailTemplateVariantIndex;
+    linksRemaining--;
     if (linksRemaining == 0) {
       return false;
     }
@@ -705,11 +703,8 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegis
 
 
 /* Address: 0x0051B6D0.
-   Ownership: assets/army/catalog.
-   Purpose: Scans the fixed 768-pointer army registry for registryId. A match returns the record with CF clear.
-   Failure formats the requested identifier into the package error buffer and returns error 0x41 with CF set. Stock
-   ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and
-   does not imply gameplay class, tier, faction, or direction.
+   Looks an army asset up by its registry id in the 768-slot army registry and returns the record (CF clear).
+   An unknown id is written as decimal text to g_PackageLastErrorPath and fails with FATAL_ERROR_ARMY_ID_NOT_FOUND.
 */
 ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
@@ -720,19 +715,18 @@ ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetLookupResult failureResult;
   ArmyAssetLookupResult successResult;
-  ArmyAssetRecordPrefix *candidateAsset;
-  
+
   registryCursor = g_ArmyAssetRecordRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((matchedRecord = *registryCursor, matchedRecord == (ArmyAssetRecordPrefix *)0x0 ||
+  registrySlotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT;
+  while ((matchedRecord = *registryCursor, matchedRecord == NULL ||
          (matchedRecord->registryId != registryId))) {
     registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
       failureResult.notFound = true;
-      failureResult.recordOrError = (ArmyAssetRecordPrefix *)0x41;
+      failureResult.recordOrError = (ArmyAssetRecordPrefix *)FATAL_ERROR_ARMY_ID_NOT_FOUND;
       return failureResult;
     }
   }

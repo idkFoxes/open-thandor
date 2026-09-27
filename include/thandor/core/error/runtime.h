@@ -70,6 +70,50 @@
 #define FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES 0x3A /* the EFF/SHT/MDL/ARM lists name 0x200 or more files */
 #define FATAL_ERROR_TECHNOLOGY_ASSET_INVALID 0x4F /* the level's technology file is not a 'tec' asset of
                                                      converter version 0x20000 */
+/* Terrain visuals (world/terrain/visuals.c) */
+#define FATAL_ERROR_FIELD_ASSET_INVALID 0x38 /* TerrainVisualResources_Load*: the field grid is not an 'fld' asset of
+                                                converter version 0x60006 */
+/* Model definitions (assets/model/definitions.c) */
+#define FATAL_ERROR_MODEL_ASSET_INVALID 0x3D /* ModelAsset_PrepareRecords: not an 'mdl' asset of converter version
+                                                0x8000A */
+#define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindByIdWithError: the id is not in the
+                                                     768-slot registry */
+/* ROM registry (assets/rom/runtime) */
+#define FATAL_ERROR_ROM_REGISTRY_FULL 0x3B /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
+                                              path "engine\zentrale.rom" is left in g_PackageLastErrorPath */
+#define FATAL_ERROR_ROM_RECORD_NOT_REGISTERED 0x3C /* RomRegistry_FindRecordById/FindSlotValueByRecordId miss */
+/* Shot and effect catalogs (assets/shot/catalog.c, assets/effect/catalog.c). An invalid asset leaves its path,
+   the other codes leave the offending definition id (or registry index / slot count) in g_PackageLastErrorPath. */
+#define FATAL_ERROR_SHOT_ASSET_INVALID 0x43 /* not a 'sht' asset of converter version 0x60006 */
+#define FATAL_ERROR_SHOT_ID_NOT_FOUND 0x44 /* ShotDefinitionRegistry_FindByIdWithError: id not registered */
+#define FATAL_ERROR_SHOT_REGISTRY_FULL 0x45 /* all 256 shot-definition registry slots are taken */
+#define FATAL_ERROR_SHOT_TERRAIN_MATERIAL_INVALID 0x46 /* a shot names a terrain material that is out of
+                                                          range or not loaded */
+#define FATAL_ERROR_EFFECT_ASSET_INVALID 0x47 /* not an 'eff' asset of converter version 0x40007 */
+#define FATAL_ERROR_EFFECT_ID_NOT_FOUND 0x48 /* EffectDefinitionRegistry_FindByIdWithError: id not registered */
+#define FATAL_ERROR_EFFECT_REGISTRY_FULL 0x49 /* all 256 effect-definition registry slots are taken */
+#define FATAL_ERROR_SHOT_ID_DUPLICATE 0x4D /* a shot definition id is registered twice */
+#define FATAL_ERROR_EFFECT_ID_DUPLICATE 0x4E /* an effect definition id is registered twice */
+/* Movie_Open: the file is not an 'flm' of converter version 0x20001 (Movie_AdvanceFrame also returns it with
+   CF set when no movie is open) */
+#define FATAL_ERROR_MOVIE_INVALID 0x30
+/* Army catalog (assets/army/catalog.c), same scheme as the shot/effect codes above */
+#define FATAL_ERROR_ARMY_ASSET_INVALID 0x40 /* ArmyAsset_PrepareRecords: not an 'arm' asset of converter version
+                                               0x20008 (the path is left in g_PackageLastErrorPath) */
+#define FATAL_ERROR_ARMY_ID_NOT_FOUND 0x41 /* ArmyAssetRegistry_FindById: id not registered (the id is left in
+                                              g_PackageLastErrorPath) */
+#define FATAL_ERROR_ARMY_REGISTRY_FULL 0x42 /* all 768 army registry slots are taken */
+/* Display mode switch (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources); the number of completed setup
+   steps is left in g_PackageLastErrorPath. Named after the failing step. */
+#define FATAL_ERROR_DIRECTDRAW_CREATE 0x19 /* DirectDrawCreate, SetCooperativeLevel or the IDirectDraw2 query */
+#define FATAL_ERROR_DIRECTDRAW_SET_DISPLAY_MODE 0x1A /* IDirectDraw2::SetDisplayMode (also the Glide mode error) */
+#define FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES 0x1B /* primary or back surface creation/query */
+#define FATAL_ERROR_DIRECTDRAW_PIXEL_FORMAT 0x1C /* GetPixelFormat failed or reported an empty RGB mask */
+#define FATAL_ERROR_DIRECT3D_SETUP 0x1D /* the IDirect3D2 query or a SetRenderState call */
+#define FATAL_ERROR_DIRECT3D_ZBUFFER 0x1E /* Z-buffer surface creation, query or attachment */
+#define FATAL_ERROR_DIRECT3D_CREATE_DEVICE 0x1F /* IDirect3D2::CreateDevice */
+#define FATAL_ERROR_DIRECT3D_VIEWPORT 0x20 /* viewport creation, AddViewport or SetCurrentViewport */
+#define FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT 0x21 /* EnumTextureFormats failed or found no opaque/alpha format */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

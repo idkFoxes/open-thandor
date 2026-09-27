@@ -12,6 +12,13 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/settings. */
+
+/* Game menu / gameplay settings actions (InGameUiImage template) */
+#define INGAME_ACTION_SAVE_GAME_WINDOW 0x120E /* gameMenuSaveButton; not offered in network games */
+#define INGAME_ACTION_LINK_ROTATION_ZOOM 0x1214 /* linkRotationZoomCheckbox, excludes the tilt link */
+#define INGAME_ACTION_LINK_ROTATION_TILT 0x1215 /* linkRotationTiltCheckbox, excludes the zoom link */
+/* Highest per-player simulation step batch (InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks) */
+#define INGAME_SIMULATION_STEP_TICKS_MAX 5
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056AB50 */

@@ -358,42 +358,39 @@ TerrainEditBuffer_ConvertHeightsToDeltas
 
 
 /* Address: 0x00513790.
-   Ownership: world/terrain/editing.
-   Purpose: Marks one field cell as visited, removes matching occupancy bits, and appends the original occupancy
-   mask and optional rebased model-runtime pointer to the bounded connected-region collection. Typed parameters: p2
-   requiredOccupancyMask→FieldGridRegionMask. Nearby but non-identical semantic domains were explicitly deferred.
-   Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Visit step of the mining-region flood fill (TerrainRegionCollection_CollectConnectedCellsRecursive):
+   counts and marks the cell as visited and, when its extraction descriptor matches requiredOccupancyMask,
+   moves the descriptor and the extracting model's offset out of the cell into the region collection (at
+   most TERRAIN_REGION_COLLECTION_CAPACITY entries), so the per-tick mining pays each extractor once.
 */
-
 void __thandor_void_preserve_eax_ecx_edx
 TerrainRegionCollection_RecordConnectedCell
           (FieldGridRegionMask requiredOccupancyMask,FieldGridCell *cell)
 
 {
   ArmyRuntimeSavedOffset savedArmyOffset;
-  uint32_t originalOccupancyMask;
+  uint32_t extractionDescriptor;
   TerrainRegionCollectionCount storedCount;
   int entriesBase;
-  
+
   storedCount = g_TerrainRegionCollectionStoredCount;
-  g_TerrainRegionCollectionVisitedCount = g_TerrainRegionCollectionVisitedCount + 1;
-  originalOccupancyMask = cell->resourceExtractionDescriptor7C;
+  g_TerrainRegionCollectionVisitedCount++;
+  extractionDescriptor = cell->resourceExtractionDescriptor7C;
   cell->flagsAndMaterial = cell->flagsAndMaterial | FIELD_CELL_CONNECTED_REGION_VISITED;
-  if ((requiredOccupancyMask & originalOccupancyMask) != 0) {
+  if ((requiredOccupancyMask & extractionDescriptor) != 0) {
     cell->resourceExtractionDescriptor7C = 0;
+    /* XCHG: take the model offset and clear it in one instruction */
     LOCK();
     savedArmyOffset = cell->armyRuntimeSavedOffset6C;
     cell->armyRuntimeSavedOffset6C = 0;
     entriesBase = g_TerrainRegionCollectionEntries;
     UNLOCK();
-    if (storedCount < 0x800) {
-      g_TerrainRegionCollectionStoredCount = g_TerrainRegionCollectionStoredCount + 1;
-      *(uint32_t *)(g_TerrainRegionCollectionEntries + storedCount * 8) = originalOccupancyMask;
+    if (storedCount < TERRAIN_REGION_COLLECTION_CAPACITY) {
+      g_TerrainRegionCollectionStoredCount++;
+      *(uint32_t *)(g_TerrainRegionCollectionEntries + storedCount * 8) = extractionDescriptor;
       *(ArmyRuntimeSavedOffset *)(entriesBase + 4 + storedCount * 8) = savedArmyOffset;
     }
   }
-  return;
 }
 
 

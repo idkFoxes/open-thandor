@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/army/catalog. */
+
+/* Pointer slots in g_ArmyAssetRecordRegistry (the global is declared as an array of 768). */
+#define ARMY_ASSET_REGISTRY_SLOT_COUNT 768
+/* Number of linked army-asset ids stored from record offset +0x30 (ArmyAssetRecord_HasFactionUnlockedLinkedDefinition). */
+#define ARMY_ASSET_LINKED_ID_COUNT 16
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005719F0 */

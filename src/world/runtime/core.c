@@ -10,14 +10,15 @@
 
 /* Implementation ownership: world/runtime/core. */
 
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+/* Not a function of its own in the original: PUNPCKLBW mm,mm then PSRLW mm,shift, i.e. the four bytes b
+   of value as the words ((b << 8) | b) >> shift (b * 0x101 widens a byte to the full 16-bit range). */
 static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
@@ -208,11 +209,8 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 
 
 /* Address: 0x0050D100.
-   Ownership: world/runtime/core.
-   Purpose: Stores a three-component position at +0x60 through +0x68, computes its exact fixed-point distance from
-   +0x80 through +0x88, publishes the result at +0x7C and +0x8C, and clears the field-grid dirty state.
-   Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
-   Cross-module calls: FixedMath_Length3 [core/math/fixed].
+   Moves the camera (motion.position, +0x60) to the given point and keeps its target point (+0x80): the
+   target and committed distances become the new distance between the two.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_SetPosition60AndDistanceFromPosition80
@@ -236,12 +234,9 @@ WorldRuntime_SetPosition60AndDistanceFromPosition80
 
 
 /* Address: 0x0050D150.
-   Ownership: world/runtime/core.
-   Purpose: Stores motion fields +0x6C through +0x78 after enforcing magnitude >=0x400, masking the heading to 16
-   bits, and clamping the signed pitch to runtime limits and then to plus or minus 0x4000. Typed parameters: p0
-   value78→WorldMotionValue78_V344. Calling convention, complete VariableStorage serialization, function bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
+   Sets the camera's magnitude (at least 0x400 = 0.25 in Q12), heading (16-bit turn) and pitch and the
+   motion value at +0x78. The pitch is clamped to the world's pitch limits (unless the camera is unlimited)
+   and always to a quarter turn up or down (+-0x4000).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_SetMotionParameters6CThrough78Clamped
@@ -249,7 +244,7 @@ WorldRuntime_SetMotionParameters6CThrough78Clamped
           ,WorldRuntimeContext *runtime)
 
 {
-  if ((runtime->runtimeFlags & 0x40000) == 0) {
+  if ((runtime->runtimeFlags & WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA) == 0) {
     if ((int)(runtime->motion).maximumPitchAngle < (int)pitchAngle) {
       pitchAngle = (runtime->motion).maximumPitchAngle;
     }
@@ -262,7 +257,7 @@ WorldRuntime_SetMotionParameters6CThrough78Clamped
   }
   if ((int)pitchAngle < 0x4001) {
     if ((int)pitchAngle < -0x4000) {
-      pitchAngle = 0xffffc000;
+      pitchAngle = 0xffffc000; /* -0x4000 */
     }
   }
   else {
@@ -278,10 +273,9 @@ WorldRuntime_SetMotionParameters6CThrough78Clamped
 
 
 /* Address: 0x0050D1E0.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime set position80 and rebuild position60 from angles.
-   Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed].
+   Points the camera at a target: stores the target point (motion.targetPosition, +0x80), pitch, heading and
+   distance, and places the camera (motion.position, +0x60) that distance away from the target, looking at it
+   along the given angles (the offset uses the reversed direction: negated pitch, heading + half a turn).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
@@ -289,9 +283,8 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
           Q12 originX,WorldRuntimeContext *runtime)
 
 {
-  FixedDirectionXZEdxEax8 positionOffsetXZQ12;
   FixedDirection directionOffset;
-  
+
   (runtime->motion).targetPositionXQ12 = originX;
   (runtime->motion).targetPositionYQ12 = originY;
   (runtime->motion).targetPositionZQ12 = originZ;
@@ -309,9 +302,8 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
 
 
 /* Address: 0x0050D2C0.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime restore motion state from snapshot.
-   Local calls: WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface.
+   Restores the camera saved by WorldRuntime_CaptureMotionStateToSnapshot (position, magnitude, angles,
+   distance) and recomputes its target point where the view ray meets the field.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
@@ -342,12 +334,8 @@ WorldRuntime_RestoreMotionStateFromSnapshot(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x0050D670.
-   Ownership: world/runtime/core.
-   Purpose: Accepts only an asset whose first dword is the little-endian fld signature. A valid asset is stored at
-   context offset 0x54, prepared through the existing field helper, and followed by clearing context flag
-   0x00000800.
-   Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
-   Cross-module calls: FieldGrid_RecomputeInteriorTriangleNormalAngles [world/terrain/grid].
+   Attaches a field grid ('fld' asset) to the world and computes its triangle normals; any other asset is
+   ignored.
 */
 void __thandor_preserve_eax
 WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *world)
@@ -437,10 +425,8 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
 
 
 /* Address: 0x004BE7C0.
-   Ownership: world/runtime/core.
-   Purpose: Returns the interpolated field-grid top surface height or the 0x7FFFF000 sentinel when the runtime has
-   no field grid.
-   Cross-module calls: FieldGrid_InterpolateTopSurfaceHeight [world/terrain/grid].
+   Returns the field grid's top surface height (terrain plus the water above it) at a world point, or
+   WORLD_HEIGHT_NO_FIELD_GRID when the world has no field grid.
 */
 uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                 (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
@@ -448,9 +434,9 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 {
   uint32_t topSurfaceHeightQ12;
   HeightSampleResult heightResult;
-  
-  topSurfaceHeightQ12 = 0x7ffff000;
-  if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
+
+  topSurfaceHeightQ12 = WORLD_HEIGHT_NO_FIELD_GRID;
+  if (worldRuntime->fieldGrid != NULL) {
     heightResult = FieldGrid_InterpolateTopSurfaceHeight(worldYQ12,worldXQ12,worldRuntime->fieldGrid);
     topSurfaceHeightQ12 = heightResult.heightQ12;
   }
@@ -459,13 +445,9 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 
 
 /* Address: 0x0050A610.
-   Ownership: world/runtime/core.
-   Purpose: Transforms one runtime-node position to integer grid coordinates and returns carry set only when both
-   coordinates lie inside the four inclusive bounds stored at offsets 0x160-0x16C. Typed parameters: p3
-   boundsControl→WorldRuntimeExtendedMapControlAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], Graphics_ProjectViewPoint
-   [graphics/core/runtime].
+   Drag selection test: projects the node's world position to the screen and returns CF set when that pixel
+   lies inside the rectangle spanned by the two corners at +0x160/+0x164 and +0x168/+0x16C of boundsControl
+   (inclusive, in either corner order).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 WorldRuntimeNode_IsPositionInsideBounds
@@ -474,9 +456,9 @@ WorldRuntimeNode_IsPositionInsideBounds
 {
   int boundsSecondX;
   int boundsSecondY;
-  int projectedGridX;
+  int projectedScreenX;
   int boundsMaxX;
-  int projectedGridY;
+  int projectedScreenY;
   int boundsMinX;
   int boundsMaxY;
   int boundsMinY;
@@ -491,8 +473,9 @@ WorldRuntimeNode_IsPositionInsideBounds
   boundsSecondX = boundsControl->extendedCoordinate168;
   boundsMinY = boundsControl->extendedCoordinate164;
   boundsSecondY = boundsControl->extendedCoordinate16C;
-  projectedGridX = (int)projectedPositionPair >> 0xc;
-  projectedGridY = (int)((int64_t)projectedPositionPair >> 0x2c);
+  /* EAX = Q12 screen x, EDX = Q12 screen y */
+  projectedScreenX = (int)projectedPositionPair >> 12;
+  projectedScreenY = (int)((int64_t)projectedPositionPair >> (32 + 12));
   boundsMaxX = boundsSecondX;
   if (boundsSecondX < boundsMinX) {
     boundsMaxX = boundsMinX;
@@ -503,8 +486,8 @@ WorldRuntimeNode_IsPositionInsideBounds
     boundsMaxY = boundsMinY;
     boundsMinY = boundsSecondY;
   }
-  if ((((boundsMinX <= projectedGridX) && (projectedGridX <= boundsMaxX)) && (boundsMinY <= projectedGridY)) &&
-     (projectedGridY <= boundsMaxY)) {
+  if ((((boundsMinX <= projectedScreenX) && (projectedScreenX <= boundsMaxX)) && (boundsMinY <= projectedScreenY)) &&
+     (projectedScreenY <= boundsMaxY)) {
     return true;
   }
   return false;
@@ -564,9 +547,8 @@ WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x0050D4F0.
-   Ownership: world/runtime/core.
-   Purpose: Copies the dword at context offset 0x8C into offset 0x7C. The surrounding world-runtime layout remains
-   opaque.
+   Commits the camera's target distance (+0x8C) as its committed distance (+0x7C), the base that later
+   distance input is added to.
 */
 void __thandor_preserve_eax WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world)
 
@@ -803,9 +785,8 @@ WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
 
 
 /* Address: 0x0050D830.
-   Ownership: world/runtime/core.
-   Purpose: Sets runtime flag 0x80000000 and atomically inserts the node at the head pointer stored at owner +0xD8,
-   maintaining previous and next links at node +0x00 and +0x04.
+   Marks node as linked and puts it at the head of its world's owner list (head at +0xD8; the head is
+   swapped with XCHG, the neighbour links are then set without a lock).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
@@ -814,17 +795,17 @@ WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
   WorldOwnerListNode100 **ownerListHeadLink;
   WorldOwnerListNode100 *previousHeadNode;
   WorldRuntimeContext *ownerWorld;
-  
+
   ownerWorld = node->ownerWorld;
-  node->runtimeFlags = node->runtimeFlags | 0x80000000;
+  node->runtimeFlags = node->runtimeFlags | WORLD_OWNER_NODE_LINKED;
   LOCK();
   ownerListHeadLink = &ownerWorld->ownerListHead;
   previousHeadNode = *ownerListHeadLink;
   *ownerListHeadLink = node;
   UNLOCK();
-  node->previousNode = (WorldOwnerListNode100 *)0x0;
+  node->previousNode = NULL;
   node->nextNode = previousHeadNode;
-  if (previousHeadNode != (WorldOwnerListNode100 *)0x0) {
+  if (previousHeadNode != NULL) {
     previousHeadNode->previousNode = node;
   }
   return;
@@ -832,9 +813,8 @@ WorldRuntime_LinkNodeIntoOwnerListD8(WorldOwnerListNode100 *node)
 
 
 /* Address: 0x0050D880.
-   Ownership: world/runtime/core.
-   Purpose: When linked, removes the node from the owner +0xD8 intrusive list, repairs both neighbors or the head
-   pointer, then clears the complete runtime flag dword at +0x4C.
+   Takes a linked node out of its world's owner list (fixing the neighbours or the list head) and clears all
+   of its runtime flags, the linked mark included.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
@@ -842,17 +822,17 @@ WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
 {
   WorldOwnerListNode100 *previousNode;
   WorldOwnerListNode100 *nextNode;
-  
-  if ((node->runtimeFlags & 0x80000000) != 0) {
+
+  if ((node->runtimeFlags & WORLD_OWNER_NODE_LINKED) != 0) {
     previousNode = node->previousNode;
     nextNode = node->nextNode;
-    if (previousNode == (WorldOwnerListNode100 *)0x0) {
+    if (previousNode == NULL) {
       node->ownerWorld->ownerListHead = nextNode;
     }
     else {
       previousNode->nextNode = nextNode;
     }
-    if (nextNode != (WorldOwnerListNode100 *)0x0) {
+    if (nextNode != NULL) {
       nextNode->previousNode = previousNode;
     }
   }
@@ -895,9 +875,9 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndTog
 }
 
 /* Address: 0x0050ECA0.
-   Ownership: world/runtime/core.
-   Purpose: Inverts record zero serializationToggleDword after light.hex serialization while the caller preserves
-   serializer flags.
+   Post-serializer hook of the light.hex save segment: inverts serializationToggleDword of shading record 0
+   back (RuntimeHexSegment_GetLightImageAndToggleFlagRegs inverted it before), so the saved image carries the
+   inverted value while the live one is unchanged. The caller keeps the serializer flags.
 */
 void __cdecl RuntimeHexSegment_ToggleLightImageFlag(void)
 
@@ -968,9 +948,11 @@ WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwn
 
 
 /* Address: 0x0051D500.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime emit model definition overlay for matching entries.
-   Cross-module calls: ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
+   Applies the terrain-class overlay of sourceRuntime's model definition at every model of the world's active
+   faction: for each such owner-list node whose model has an overlay base (+0x19C of its first payload
+   record), the overlay callback of the definition's terrain class runs at the node's position on the field
+   grid. The extent is 0x800 << n for definitions of kind 0xE, else unlimited (-1).
+   The definitionRecord[n] indexing below addresses fields of the definition record at fixed offsets.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
@@ -985,7 +967,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
   ModelDefinitionResult definitionLookup;
   uint32_t overlayExtent;
   
-  if (sourceRuntime != (void *)0x0) {
+  if (sourceRuntime != NULL) {
     definitionLookup = ModelDefinitionRegistry_FindByIdWithError
                       (*(PckModelDefinitionIdCatalog *)(*(int *)((int)sourceRuntime + 0xc) + 0x20));
     definitionRecord = definitionLookup.modelDefinition;
@@ -993,7 +975,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
       overlayExtent = 0xffffffff;
       ownerNode = worldRuntime->ownerListHead;
       overlayBaseOffset = definitionRecord[0x23].flags;
-      if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+      if (ownerNode != NULL) {
         if (definitionRecord[6].flags == 0xe) {
           overlayExtent = 0x800 << ((uint8_t)definitionRecord[0x10].byteSize & 0x1f);
         }
@@ -1008,7 +990,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
                       worldRuntime->fieldGrid);
           }
           ownerNode = ownerNode->nextNode;
-        } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+        } while (ownerNode != NULL);
       }
     }
   }
@@ -1170,43 +1152,39 @@ WorldRuntimeNode_ReleaseShutdownBindingsCallback
 
 
 /* Address: 0x0050D3B0.
-   Ownership: world/runtime/core.
-   Purpose: Raycasts the terrain and secondary field surfaces according to the runtime surface-selection flag,
-   chooses the nearest accepted travel distance, rebuilds the endpoint coordinates and distance, and clears the
-   field-grid dirty flag.
-   Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
-   Cross-module calls: FieldGrid_RaycastTerrainSurfaceDistance [world/terrain/grid], FixedMath_SinCosScaled
-   [core/math/fixed], FixedMath_Length3 [core/math/fixed], FieldGrid_RaycastSecondarySurfaceDistance
-   [world/terrain/grid], FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed].
+   Recomputes the camera's target point: the first point where the view ray (from the camera along its
+   pitch and heading, up to four times the maximum camera distance) meets the field, i.e. the terrain or a
+   nearer secondary surface (only the secondary surface with WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY).
+   Without a hit the ray is intersected with the ground plane z = 0. Also updates the target distance.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *worldRuntime)
 
 {
   AngleTurn32 currentPitchAngle;
-  UQ12 scale;
+  UQ12 hitDistanceQ12;
   uint32_t endpointDistanceQ12;
   int rayLengthOrOffsetY;
   FixedSinCosEdxEax8 groundOffsetXY;
   TerrainRaycastResult raycastResult;
   TerrainRaycastResult secondaryRaycastResult;
   FixedDirection endpointOffset;
-  
-  if ((worldRuntime->runtimeFlags & 0x1000000) == 0) {
+
+  if ((worldRuntime->runtimeFlags & WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY) == 0) {
     rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
     raycastResult = FieldGrid_RaycastTerrainSurfaceDistance
                       ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-    scale = raycastResult.distanceQ12;
+    hitDistanceQ12 = raycastResult.distanceQ12;
     if (raycastResult.hit) {
       /* terrain hit: a nearer secondary-surface hit wins */
       secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistance
                         ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                          (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                          (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-      if ((secondaryRaycastResult.hit) && (secondaryRaycastResult.distanceQ12 < (int)scale)) {
-        scale = secondaryRaycastResult.distanceQ12;
+      if ((secondaryRaycastResult.hit) && (secondaryRaycastResult.distanceQ12 < (int)hitDistanceQ12)) {
+        hitDistanceQ12 = secondaryRaycastResult.distanceQ12;
       }
     }
   }
@@ -1216,7 +1194,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
                        worldRuntime->maximumCameraDistanceQ12 << 2,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-    scale = raycastResult.distanceQ12;
+    hitDistanceQ12 = raycastResult.distanceQ12;
   }
   if (!raycastResult.hit) {
     /* no hit: intersect the view ray with the ground plane z = 0 */
@@ -1235,9 +1213,9 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
     WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     return;
   }
-  (worldRuntime->motion).targetDistanceQ12 = scale;
+  (worldRuntime->motion).targetDistanceQ12 = hitDistanceQ12;
   endpointOffset = FixedMath_DirectionFromAnglesScaledRegs
-                    ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,scale);
+                    ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,hitDistanceQ12);
   (worldRuntime->motion).targetPositionXQ12 = endpointOffset.x + (worldRuntime->motion).positionXQ12;
   (worldRuntime->motion).targetPositionYQ12 = endpointOffset.y + (worldRuntime->motion).positionYQ12;
   (worldRuntime->motion).targetPositionZQ12 = endpointOffset.z + (worldRuntime->motion).positionZQ12;
@@ -1297,14 +1275,14 @@ WorldRuntime_RecomputeFieldRegionNormalsAndLighting
 
 
 /* Address: 0x0050D6B0.
-   Ownership: world/runtime/core.
-   Purpose: Clears bit 0x00000800 in the dword at context offset 0x4C.
+   Clears WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY; called after every change of the camera state and when a
+   field grid is attached.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_ClearFieldGridDirtyFlag(WorldRuntimeContext *world)
 
 {
-  world->runtimeFlags = world->runtimeFlags & 0xfffff7ff;
+  world->runtimeFlags = world->runtimeFlags & ~WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY;
   return;
 }
 

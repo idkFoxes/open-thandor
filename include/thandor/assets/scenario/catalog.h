@@ -25,6 +25,10 @@
    level text page aliases, see TextResourcePage_LoadCompatibilityAliases). */
 #define TEXT_ID_LEVEL_TITLE_BASE 0x2230
 #define TEXT_ID_CAMPAIGN_TITLE_BASE 0x2220
+/* A level's description text is 0x230010 + 0x10 * its title index (record +0x70), registered by
+   TextResourcePage_LoadCompatibilityAliases. 0x215D fills a scenario description box while no row is selected. */
+#define TEXT_ID_LEVEL_DESCRIPTION_BASE 0x230010
+#define TEXT_ID_SCENARIO_DESCRIPTION_EMPTY 0x215D
 
 /* Index of the "Choose game" page (gameSelectPage) in the frontend page stack. */
 #define FRONTEND_PAGE_STACK_CHOOSE_GAME 10
@@ -79,7 +83,8 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void);
 
 /* 0x00545290 */
 void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t arg3);
+ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
+                                                 uint32_t unusedArg3);
 
 /* 0x00547860 */
 void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void);
@@ -117,7 +122,7 @@ ScenarioCatalog_MergeRecordsByName
 /* 0x00544870 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestLevelAsset
-          (uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t selectedRecordIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex);
 
 /* 0x00545140 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -137,6 +142,6 @@ FrontendScenarioSelection_ActivateSelectedRecord
 /* 0x005451F0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField70DisplayId
-          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex);
 
 #endif /* THANDOR_ASSETS_SCENARIO_CATALOG_H */

@@ -166,12 +166,9 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
 
 
 /* Address: 0x0053CD10.
-   Ownership: core/math/interpolation.
-   Purpose: Builds and solves six cubic channels for an exact 0x20-byte keyframe array. RET 8 proves two stack
-   arguments. Role: Unwraps the angle-like channel and builds/solves six natural cubic splines. Inputs: Keyframe
-   count and array of 0x20-byte WorldMotionSplineKeyframe records. Outputs: Six coefficient tables used by runtime
-   evaluation.
-   Local calls: CubicSpline_BuildNaturalCoefficientSystem, CubicSpline_SolveCoefficientSystem.
+   Prepares a world motion path (the frontend ROM transition's view flight): makes the yaw channel (4) continuous, so the spline turns the
+   short way across the 0/0x10000 wrap, then builds and solves a natural cubic spline for each of the six
+   keyframe channels into the global coefficient tables the evaluators read.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldMotionSpline_BuildSixChannelCurves
@@ -183,27 +180,29 @@ WorldMotionSpline_BuildSixChannelCurves
   int remainingCount;
   uint32_t previousAngle;
   int unwrapDelta;
-  
+
   if (1 < keyframeCount) {
     unwrappedAngle = keyframes->channel4Q12;
-    remainingCount = keyframeCount + -1;
+    remainingCount = keyframeCount - 1;
     previousAngle = unwrappedAngle;
     keyframeCursor = keyframes;
     do {
+      /* shortest signed turn from the previous yaw to the next one */
       unwrapDelta = (keyframeCursor[1].channel4Q12 & 0xffffU) - (previousAngle & 0xffff);
-      if (0x8000 < unwrapDelta) {
-        unwrapDelta = unwrapDelta + -0x10000;
+      if (FIXED_ANGLE16_HALF_TURN < unwrapDelta) {
+        unwrapDelta = unwrapDelta - FIXED_ANGLE16_FULL_TURN;
       }
-      if (unwrapDelta < -0x8000) {
-        unwrapDelta = unwrapDelta + 0x10000;
+      if (unwrapDelta < -FIXED_ANGLE16_HALF_TURN) {
+        unwrapDelta = unwrapDelta + FIXED_ANGLE16_FULL_TURN;
       }
       unwrappedAngle = unwrappedAngle + unwrapDelta;
       previousAngle = (previousAngle & 0xffff) + unwrapDelta;
       keyframeCursor[1].channel4Q12 = unwrappedAngle;
-      remainingCount = remainingCount + -1;
-      keyframeCursor = keyframeCursor + 1;
+      remainingCount--;
+      keyframeCursor++;
     } while (remainingCount != 0);
   }
+  /* the sixth argument is the channel's byte offset in the keyframe (channel n at n * 4) */
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[0],
              (CubicSplineEquationCount *)g_WorldMotionSplineEquationCounts,
@@ -223,17 +222,17 @@ WorldMotionSpline_BuildSixChannelCurves
             (g_WorldMotionSplineCachedDerivatives[3],
              (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 3),
              g_WorldMotionSplineCoefficientTables[3],g_WorldMotionSplineMatrixWorkspaces[3],
-             keyframeCount,0xc,keyframes);
+             keyframeCount,12,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[4],
              (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 4),
              g_WorldMotionSplineCoefficientTables[4],g_WorldMotionSplineMatrixWorkspaces[4],
-             keyframeCount,0x10,keyframes);
+             keyframeCount,16,keyframes);
   CubicSpline_BuildNaturalCoefficientSystem
             (g_WorldMotionSplineCachedDerivatives[5],
              (CubicSplineEquationCount *)(g_WorldMotionSplineEquationCounts + 5),
              g_WorldMotionSplineCoefficientTables[5],g_WorldMotionSplineMatrixWorkspaces[5],
-             keyframeCount,0x14,keyframes);
+             keyframeCount,20,keyframes);
   CubicSpline_SolveCoefficientSystem
             (g_WorldMotionSplineEquationCounts[0],g_WorldMotionSplineCoefficientTables[0],
              g_WorldMotionSplineMatrixWorkspaces[0]);
@@ -252,58 +251,59 @@ WorldMotionSpline_BuildSixChannelCurves
   CubicSpline_SolveCoefficientSystem
             (g_WorldMotionSplineEquationCounts[5],g_WorldMotionSplineCoefficientTables[5],
              g_WorldMotionSplineMatrixWorkspaces[5]);
-  return;
 }
 
 
 /* Address: 0x004CCC00.
-   Ownership: core/math/interpolation.
-   Purpose: Stores a negated transition duration in a GraphicsShadingRuntimeRecord or rescales its elapsed
-   progress, then clears color/radius state when the transition reaches zero.
+   Starts fading out a dynamic light (shading record) over fadeOutTicks: a negative transition duration
+   makes InterpolationStateTable_Advance256ByTicks shrink the radius to zero and then free the light. A
+   light still fading in keeps its current fraction; a zero duration switches the light off at once.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InterpolationState_SetNegatedTargetAndRescaleProgress
-          (GraphicsTransitionTickCount transitionDurationTicks,
-          GraphicsShadingRuntimeRecord *interpolationState)
+          (GraphicsTransitionTickCount fadeOutTicks,GraphicsShadingRuntimeRecord *shadingRecord)
 
 {
-  PackedRgb24 negatedDurationOrZero;
+  PackedRgb24 negatedDurationOrZero; /* EAX, also the value the switch-off path stores */
   int durationOrElapsed;
-  
-  if (interpolationState == (GraphicsShadingRuntimeRecord *)0x0) {
+
+  if (shadingRecord == NULL) {
     return;
   }
-  negatedDurationOrZero = -transitionDurationTicks;
-  if (((int)negatedDurationOrZero < 0) && (-1 < interpolationState->radiusTransitionDurationTicks)) {
-    if (interpolationState->radiusTransitionDurationTicks == 0) {
-      interpolationState->radiusTransitionDurationTicks = negatedDurationOrZero;
-      interpolationState->radiusTransitionElapsedTicks = negatedDurationOrZero;
+  negatedDurationOrZero = -fadeOutTicks;
+  if (((int)negatedDurationOrZero < 0) && (-1 < shadingRecord->radiusTransitionDurationTicks)) {
+    if (shadingRecord->radiusTransitionDurationTicks == 0) {
+      /* steady light: elapsed runs from -fadeOutTicks up to 0 */
+      shadingRecord->radiusTransitionDurationTicks = negatedDurationOrZero;
+      shadingRecord->radiusTransitionElapsedTicks = negatedDurationOrZero;
       return;
     }
+    /* fading in: XCHG in the new duration, rescale elapsed to keep the reached radius fraction */
     LOCK();
-    durationOrElapsed = interpolationState->radiusTransitionDurationTicks;
-    interpolationState->radiusTransitionDurationTicks = negatedDurationOrZero;
+    durationOrElapsed = shadingRecord->radiusTransitionDurationTicks;
+    shadingRecord->radiusTransitionDurationTicks = negatedDurationOrZero;
     UNLOCK();
-    durationOrElapsed = (int)(((int64_t)(int)negatedDurationOrZero * (int64_t)interpolationState->radiusTransitionElapsedTicks
+    durationOrElapsed = (int)(((int64_t)(int)negatedDurationOrZero * (int64_t)shadingRecord->radiusTransitionElapsedTicks
                   ) / (int64_t)durationOrElapsed);
-    interpolationState->radiusTransitionElapsedTicks = durationOrElapsed;
+    shadingRecord->radiusTransitionElapsedTicks = durationOrElapsed;
     negatedDurationOrZero = 0;
     if (durationOrElapsed != 0) {
       return;
     }
   }
-  *(PackedRgb24 *)((int)&interpolationState->squaredRadiusQ24 + 4) = negatedDurationOrZero;
-  *(PackedRgb24 *)&interpolationState->squaredRadiusQ24 = negatedDurationOrZero;
-  interpolationState->packedColorRgbActive = negatedDurationOrZero;
-  interpolationState->targetRadiusQ12 = negatedDurationOrZero;
-  return;
+  /* Switch-off path. The original stores EAX here, which is -fadeOutTicks (not 0) when the light
+     was already fading out (0x004CCC19). */
+  *(PackedRgb24 *)((int)&shadingRecord->squaredRadiusQ24 + 4) = negatedDurationOrZero;
+  *(PackedRgb24 *)&shadingRecord->squaredRadiusQ24 = negatedDurationOrZero;
+  shadingRecord->packedColorRgbActive = negatedDurationOrZero;
+  shadingRecord->targetRadiusQ12 = negatedDurationOrZero;
 }
 
 
 /* Address: 0x004CCC80.
-   Ownership: core/math/interpolation.
-   Purpose: Advances radius transitions for all 256 GraphicsShadingRuntimeRecord entries, recomputes
-   squaredRadiusQ24, and clears expired active/color/radius state.
+   Advances the radius transitions of all 256 dynamic lights (shading records) by elapsedTicks. An active
+   light in transition gets radius = target * elapsed / duration (squared for the shading pass); a finished
+   fade-in becomes steady, a finished fade-out (negative duration) frees the light.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
@@ -312,35 +312,36 @@ InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
   int durationTicks;
   int currentRadius;
   int remainingCount;
-  GraphicsShadingRuntimeRecord *stateRecord;
-  
-  stateRecord = g_GraphicsShadingRuntimeRecords;
-  remainingCount = 0x100;
+  GraphicsShadingRuntimeRecord *shadingRecord;
+
+  shadingRecord = g_GraphicsShadingRuntimeRecords;
+  remainingCount = 256;
   do {
-    durationTicks = stateRecord->radiusTransitionDurationTicks;
-    if ((stateRecord->packedColorRgbActive != 0) && (durationTicks != 0)) {
-      currentRadius = (int)(((int64_t)stateRecord->targetRadiusQ12 *
-                    (int64_t)stateRecord->radiusTransitionElapsedTicks) / (int64_t)durationTicks);
-      stateRecord->radiusTransitionElapsedTicks = stateRecord->radiusTransitionElapsedTicks + elapsedTicks;
-      stateRecord->squaredRadiusQ24 = (int64_t)currentRadius * (int64_t)currentRadius;
+    durationTicks = shadingRecord->radiusTransitionDurationTicks;
+    if ((shadingRecord->packedColorRgbActive != 0) && (durationTicks != 0)) {
+      /* the radius uses the elapsed time from before this step */
+      currentRadius = (int)(((int64_t)shadingRecord->targetRadiusQ12 *
+                    (int64_t)shadingRecord->radiusTransitionElapsedTicks) / (int64_t)durationTicks);
+      shadingRecord->radiusTransitionElapsedTicks = shadingRecord->radiusTransitionElapsedTicks + elapsedTicks;
+      shadingRecord->squaredRadiusQ24 = (int64_t)currentRadius * (int64_t)currentRadius;
       if (durationTicks < 0) {
-        if ((uint32_t)stateRecord->radiusTransitionElapsedTicks < 0x80000000) {
-          /* deactivation transition finished: clear the light */
-          stateRecord->squaredRadiusQ24 = 0;
-          stateRecord->targetRadiusQ12 = 0;
-          stateRecord->packedColorRgbActive = 0;
-          stateRecord->radiusTransitionElapsedTicks = 0;
-          stateRecord->radiusTransitionDurationTicks = 0;
+        if ((uint32_t)shadingRecord->radiusTransitionElapsedTicks < 0x80000000) { /* elapsed >= 0 */
+          /* fade-out finished: free the light */
+          shadingRecord->squaredRadiusQ24 = 0;
+          shadingRecord->targetRadiusQ12 = 0;
+          shadingRecord->packedColorRgbActive = 0;
+          shadingRecord->radiusTransitionElapsedTicks = 0;
+          shadingRecord->radiusTransitionDurationTicks = 0;
         }
       }
-      else if (durationTicks < stateRecord->radiusTransitionElapsedTicks) {
-        /* transition complete */
-        stateRecord->radiusTransitionElapsedTicks = 0;
-        stateRecord->radiusTransitionDurationTicks = 0;
+      else if (durationTicks < shadingRecord->radiusTransitionElapsedTicks) {
+        /* fade-in complete: the light stays at its last radius */
+        shadingRecord->radiusTransitionElapsedTicks = 0;
+        shadingRecord->radiusTransitionDurationTicks = 0;
       }
     }
-    stateRecord = stateRecord + 1;
-    remainingCount = remainingCount + -1;
+    shadingRecord++;
+    remainingCount--;
     if (remainingCount == 0) {
       return;
     }
@@ -597,44 +598,41 @@ void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(vo
 
 
 /* Address: 0x0053D2E0.
-   Ownership: core/math/interpolation.
-   Purpose: Evaluates one cubic segment and returns a Q12 scalar. RET 0x0C proves three stack arguments. Role:
-   Evaluates one cubic segment value at Q12 time. Inputs: Time, segment index and solved coefficient table.
-   Outputs: Q12 channel value.
+   Value of one solved spline segment at a Q12 time: the segment's four float coefficients a + b*t +
+   c*t^2 + d*t^3 are evaluated (Horner) at t = time / 4096 and the result is rounded back to Q12.
 */
 int32_t CubicSpline_EvaluateValueQ12
                  (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex,
                  float *coefficients)
 
 {
-  float *segmentCoefficientCursor;
-  float normalizedSplineTime;
-  
-  normalizedSplineTime = (float)timeQ12 / g_Q12FloatScale4096;
-  segmentCoefficientCursor = coefficients + segmentIndex * 4;
-  return (int)ROUND((((normalizedSplineTime * segmentCoefficientCursor[3] +
-                      segmentCoefficientCursor[2]) * normalizedSplineTime +
-                     segmentCoefficientCursor[1]) * normalizedSplineTime + *segmentCoefficientCursor
+  float *segmentCoefficients;
+  float splineTime;
+
+  splineTime = (float)timeQ12 / g_Q12FloatScale4096;
+  segmentCoefficients = coefficients + segmentIndex * 4;
+  return (int)ROUND((((splineTime * segmentCoefficients[3] +
+                      segmentCoefficients[2]) * splineTime +
+                     segmentCoefficients[1]) * splineTime + *segmentCoefficients
                     ) * g_Q12FloatScale4096);
 }
 
 /* Address: 0x0053D320.
-   Ownership: core/math/interpolation.
-   Purpose: Evaluates the first derivative of one cubic segment. RET 0x0C proves three stack arguments. Role:
-   Evaluates one cubic segment derivative at Q12 time. Inputs: Time, segment index and solved coefficient table.
-   Outputs: Floating derivative cached per channel.
+   First derivative b + 2c*t + 3d*t^2 of one spline segment at a Q12 time. Unlike the value it stays a
+   float (per 1.0 = 4096 units of Q12 time), which the evaluators cache per channel as the current motion.
 */
 float CubicSpline_EvaluateDerivativeQ12
                 (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex,
                 float *coefficients)
 
 {
-  float scaledCubicTerm;
+  float cubicTimesTime;
   float partialSum;
-  
-  scaledCubicTerm = ((float)timeQ12 / g_Q12FloatScale4096) * coefficients[segmentIndex * 4 + 3];
-  partialSum = scaledCubicTerm + coefficients[segmentIndex * 4 + 2];
-  return (partialSum + partialSum + scaledCubicTerm) * ((float)timeQ12 / g_Q12FloatScale4096) +
+
+  cubicTimesTime = ((float)timeQ12 / g_Q12FloatScale4096) * coefficients[segmentIndex * 4 + 3];
+  partialSum = cubicTimesTime + coefficients[segmentIndex * 4 + 2];
+  /* (2 * (d*t + c) + d*t) * t + b */
+  return (partialSum + partialSum + cubicTimesTime) * ((float)timeQ12 / g_Q12FloatScale4096) +
          coefficients[segmentIndex * 4 + 1];
 }
 

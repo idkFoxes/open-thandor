@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: assets/effect/catalog. */
+
+/* Slots of g_EffectDefinitionRegistry (0x0051DBD0, 256 pointers; a null slot is free). */
+#define EFFECT_DEFINITION_REGISTRY_SLOT_COUNT 256
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051E0B0 */

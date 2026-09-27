@@ -17,6 +17,15 @@
 /* Size of g_PackageScratchBuffer (8 MiB), allocated once by FileSystem_Init and used as the default
    load/enumeration buffer (the original repeats the literal 0x800000 at every use). */
 #define PACKAGE_SCRATCH_BUFFER_BYTES 0x800000
+/* Mount table and archive layout (Package_Mount, Package_FindEntry*, Package_Unmount, Package_DecodeEntryInto) */
+#define PACKAGE_MOUNT_SLOT_COUNT 0x400 /* g_PackageMountSlots */
+#define PACKAGE_DIRECTORY_BYTES 0x80000 /* entry-header array allocated per mount (0x400 headers) */
+#define PCK_ENTRY_HEADER_BYTES 0x200 /* sizeof(PckEntryHeader); the archive header has the same size */
+#define PCK_ENTRY_PATH_UNITS 0xF6 /* UTF-16 code units of PckEntryHeader.path, terminator included */
+/* High bits of the Package_LoadEntryIntoBuffer capacity argument */
+#define PACKAGE_LOAD_CAPACITY_MASK 0x3FFFFFFF
+#define PACKAGE_LOAD_SKIP_PACKAGES 0x80000000 /* load only the loose file */
+#define PACKAGE_LOAD_EXECUTABLE_DIRECTORY_FIRST 0x40000000 /* try the loose file next to the executable first */
 
 /* 0x005460E0 */
 bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);

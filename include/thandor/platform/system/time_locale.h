@@ -30,7 +30,7 @@ void __cdecl TimerSystem_Init(void);
 /* 0x005867E0 */
 void __stdcall WinMM_TimerDispatchCallback
           (WinMmTimerId timerId,uint32_t message,TimerCallbackSlotByteOffset slotOffset,
-          uint32_t callbackData0,uint32_t callbackData1);
+          uint32_t reserved1,uint32_t reserved2);
 
 /* 0x00586820 */
 void __thandor_void_preserve_eax_ecx_edx

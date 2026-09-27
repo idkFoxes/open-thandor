@@ -29,6 +29,7 @@
 #define KEYBOARD_KEY_CODE_CHAR(asciiCode) (0x30000 + (asciiCode))
 #define KEYBOARD_KEY_CODE_SPACE 0x20
 #define KEYBOARD_KEY_CODE_BACKSPACE 0x10003
+#define KEYBOARD_KEY_CODE_ESCAPE 0x10000 /* VK_ESCAPE (Keyboard_OnKeyDown); Game_PlayIntroMovies skips all intros */
 #define KEYBOARD_KEY_CODE_NUMPAD_5 0x10015 /* also VK_SELECT */
 /* Indices into g_KeyboardSpecialKeyDown: the low word of a 0x10000-family key code, 1 while the key is held
    (Keyboard_OnKeyDown); the numpad keys map to the same codes. Used by the in-game camera keys. */

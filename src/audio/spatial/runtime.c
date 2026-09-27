@@ -207,10 +207,10 @@ SpatialSound_UpdateDesiredPositionedGains
 
 
 /* Address: 0x0050B8C0.
-   Ownership: audio/spatial/runtime.
-   Purpose: Creates a DirectSound sample voice set, claims the first free slot in the 256-entry spatial pool,
-   stores the voice set, clears activeVoice and both desired gains, and returns the slot in EAX with CF clear. A
-   full pool releases the new voice set and returns error 0x14 with CF set.
+   Creates a voice set for the 'sam' asset and gives it the first free spatial-sound slot, silent and not
+   playing, so that SpatialSound_UpdateDesiredPositionedGains can drive it as a looping positioned sound.
+   Returns the slot with CF clear; CF set with the voice-set error, or FATAL_ERROR_GENERAL_FAILURE when the
+   pool is full (the new voice set is released again).
 */
 SpatialSoundSlotResult __thandor_eax_cf_preserve_ecx_edx
 SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
@@ -226,23 +226,23 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
   createResult = g_SoundCreateSampleVoiceSet(sampleAsset);
   voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
   if (!createResult.failed) {
-    slotsRemaining = 0x100;
+    slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
     slotCursor = g_SpatialSoundSlots;
     do {
-      if (slotCursor->voiceSet == (DirectSoundVoiceSet *)0x0) {
+      if (slotCursor->voiceSet == NULL) {
         slotCursor->voiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
         slotCursor->desiredLeftGainQ15 = 0;
         slotCursor->desiredRightGainQ15 = 0;
-        slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
+        slotCursor->activeVoice = NULL;
         successResult.failed = false;
         successResult.soundSlot = slotCursor;
         return successResult;
       }
-      slotCursor = slotCursor + 1;
-      slotsRemaining = slotsRemaining + -1;
+      slotCursor++;
+      slotsRemaining--;
     } while (slotsRemaining != 0);
     g_SoundReleaseSampleVoiceSet((DirectSoundVoiceSet *)voiceSetOrError);
-    voiceSetOrError = (SpatialSoundSlot *)0x14;
+    voiceSetOrError = (SpatialSoundSlot *)FATAL_ERROR_GENERAL_FAILURE;
   }
   failureResult.failed = true;
   failureResult.soundSlot = voiceSetOrError;
@@ -291,9 +291,8 @@ SpatialSoundSlot_CreateFromPcm
 
 
 /* Address: 0x0050B9D0.
-   Ownership: audio/spatial/runtime.
-   Purpose: Releases the slot's sample voice set through DirectSound_ReleaseSampleVoiceSet and clears all four slot
-   dwords. Null is accepted.
+   Releases the sample voice set of a slot from SpatialSoundSlot_CreateFromSampleAsset and clears the slot
+   (all four dwords), which makes it free again. A NULL slot is ignored.
 */
 void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSoundSlot *slot)
 
@@ -301,9 +300,9 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleaseSample(SpatialSound
   int slotEntriesRemaining;
   
   slotEntriesRemaining = 4;
-  if (slot != (SpatialSoundSlot *)0x0) {
+  if (slot != NULL) {
     g_SoundReleaseSampleVoiceSet(slot->voiceSet);
-    for (; slotEntriesRemaining != 0; slotEntriesRemaining = slotEntriesRemaining + -1) {
+    for (; slotEntriesRemaining != 0; slotEntriesRemaining--) {
       slot->voiceSet = (DirectSoundVoiceSet *)0x0;
       slot = (SpatialSoundSlot *)&slot->activeVoice;
     }
@@ -335,9 +334,8 @@ void __thandor_void_preserve_eax_ecx SpatialSoundSlot_ReleasePcm(SpatialSoundSlo
 
 
 /* Address: 0x0050BA30.
-   Ownership: audio/spatial/runtime.
-   Purpose: Clears desiredLeftGainQ15 and desiredRightGainQ15 in every occupied spatial-sound slot. activeVoice is
-   left intact until SpatialSoundPool_ApplyDesiredGains processes the zero-gain request.
+   Start of a frame's positioned-sound pass: sets the desired gains of every used slot to 0, so that only the
+   sounds whose gains are set again this frame keep playing when SpatialSoundPool_ApplyDesiredGains runs.
 */
 void __thandor_void_preserve_eax_ecx SpatialSoundPool_ClearDesiredGains(void)
 
@@ -345,24 +343,23 @@ void __thandor_void_preserve_eax_ecx SpatialSoundPool_ClearDesiredGains(void)
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
   
-  slotsRemaining = 0x100;
+  slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
   do {
-    if (slotCursor->voiceSet != (DirectSoundVoiceSet *)0x0) {
+    if (slotCursor->voiceSet != NULL) {
       slotCursor->desiredLeftGainQ15 = 0;
       slotCursor->desiredRightGainQ15 = 0;
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   return;
 }
 
 
 /* Address: 0x0050BA60.
-   Ownership: audio/spatial/runtime.
-   Purpose: Walks all 256 slots. Zero desired gains stop and clear an active voice. Nonzero desired gains update an
-   active voice or start a one-shot voice from voiceSet and store the returned activeVoice pointer.
+   End of a frame's positioned-sound pass: for every used slot, starts a looping voice when it has gains but
+   is not playing, stops the voice when both gains are 0, and otherwise updates the voice's gains.
 */
 void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void)
 
@@ -373,12 +370,12 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
   SpatialSoundSlot *slotCursor;
   SoundPlayResult playResult;
   
-  slotsRemaining = 0x100;
+  slotsRemaining = SPATIAL_SOUND_SLOT_COUNT;
   slotCursor = g_SpatialSoundSlots;
   do {
-    if (slotCursor->voiceSet != (DirectSoundVoiceSet *)0x0) {
+    if (slotCursor->voiceSet != NULL) {
       existingVoice = slotCursor->activeVoice;
-      if (existingVoice == (IDirectSoundBuffer *)0x0) {
+      if (existingVoice == NULL) {
         if (slotCursor->desiredLeftGainQ15 != 0 || slotCursor->desiredRightGainQ15 != 0) {
           playResult = g_SoundPlayLooping
                             (slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,
@@ -389,15 +386,14 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
       }
       else if (slotCursor->desiredLeftGainQ15 == 0 && slotCursor->desiredRightGainQ15 == 0) {
         g_SoundStopVoice(existingVoice);
-        slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
+        slotCursor->activeVoice = NULL;
       }
       else {
-        g_SoundSetVoiceGains(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice)
-        ;
+        g_SoundSetVoiceGains(slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,existingVoice);
       }
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   return;
 }

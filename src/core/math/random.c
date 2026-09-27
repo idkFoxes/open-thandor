@@ -11,19 +11,18 @@
 /* Implementation ownership: core/math/random. */
 
 /* Address: 0x004030B0.
-   Ownership: core/math/random.
-   Purpose: Advances RandomGeneratorState.primarySeed twice with 32-bit wraparound using state=state*33+101. The
-   first advanced value is shifted left 14 bits, the second becomes the stored seed and is shifted right 2 bits,
-   and the two values are XORed for the return value.
+   Primary random stream (the default g_RandomGeneratorState.next): steps the linear congruential seed
+   twice and returns (first step << 14) ^ (second step >> 2), mixing both steps so the weak low bits of
+   the LCG do not show up directly.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
 
 {
-  int firstGeneratorStepState;
-  
-  firstGeneratorStepState = g_RandomGeneratorState.primarySeed * 0x21 + 0x65;
-  g_RandomGeneratorState.primarySeed = firstGeneratorStepState * 0x21 + 0x65;
-  return firstGeneratorStepState * 0x4000 ^ g_RandomGeneratorState.primarySeed >> 2;
+  int firstStepSeed;
+
+  firstStepSeed = g_RandomGeneratorState.primarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
+  g_RandomGeneratorState.primarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
+  return firstStepSeed * 0x4000 ^ g_RandomGeneratorState.primarySeed >> 2;
 }
 
 

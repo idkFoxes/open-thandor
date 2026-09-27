@@ -154,8 +154,9 @@ void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *s
 
 
 /* Address: 0x0055F520.
-   Ownership: ui/ingame/settings.
-   Purpose: Handles in game simulation speed adjust player and recompute minimum ticks.
+   In-game command handler (keys G / Alt+G): changes the player's simulation step batch by stepDelta, kept within
+   1..INGAME_SIMULATION_STEP_TICKS_MAX, and sets g_InGameSimulationStepTicks to the smallest batch of all players,
+   so the slowest request wins in a network game.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
@@ -168,7 +169,7 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
   InGameSimulationStepBatchTicks stepTicks;
   
   stepTicks = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks + stepDelta;
-  if ((stepTicks != 0) && (stepTicks < 6)) {
+  if ((stepTicks != 0) && (stepTicks < INGAME_SIMULATION_STEP_TICKS_MAX + 1)) {
     g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->simulationStepTicks = stepTicks;
     remainingCount = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -177,8 +178,8 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
           stepTicks) {
         stepTicks = g_SelectionPlayerRuntimeBlockPointers[playerRecord->playerRuntimeId]->simulationStepTicks;
       }
-      playerRecord = playerRecord + 1;
-      remainingCount = remainingCount - 1;
+      playerRecord++;
+      remainingCount--;
       g_InGameSimulationStepTicks = stepTicks;
     } while (remainingCount != 0);
   }
@@ -1072,17 +1073,10 @@ InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 
 /* Address: 0x0056C440.
-   Ownership: ui/ingame/settings.
-   Purpose: Toggles the in-game settings page from a selectable control. When selected, activates root page-stack
-   index 3, marks the root settings state active, synchronizes persistent optionFlags40, optionFlags5C, and
-   cameraScrollStep into verified controls, applies mutual-exclusion suppression, and updates
-   g_UiCommandRuntimeFlags. When cleared, restores page index 0 and clears the corresponding root/runtime state.
-   Queued UI action handler for INGAME_PAGE10[3] (0x1003). Return datatype is preserved for non-queue direct
-   callers.
-   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], UiSelectableControl_SetSelected [ui/controls/lists], UiKeyboardFocus_ReleaseNode
-   [ui/controls/input], PersistentSettings_ReadDword [core/settings/persistent], UiNodeList_SuppressActionId
-   [ui/controls/lists].
+   UI action 0x1003 (game menu button): opening shows the game menu window (page 3) with the gameplay options
+   loaded from the persistent settings, blocks the world input and pauses a local game; network games cannot
+   save, so the save button is suppressed there. Closing hides the window and resumes as
+   InGameUiAction101F_Handler does.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsToggle)
@@ -1092,61 +1086,70 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
   UiNodeBase *uiRoot;
   uint32_t settingValue;
   bool isSelected;
-  
+
   parentCursor = (settingsToggle->base).parent;
   uiRoot = &settingsToggle->base;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     uiRoot = uiRoot->parent;
     parentCursor = uiRoot->parent;
   }
   isSelected = (bool)UiSelectableControl_IsSelected(settingsToggle);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
-    INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags & 0xfffffff7;
+    INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
-      if ((g_UiCommandRuntimeFlags & 0x400) == 0) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffbffe;
+      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW) == 0) {
+        g_UiCommandRuntimeFlags =
+             g_UiCommandRuntimeFlags & ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
       }
       else {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffbbff;
+        g_UiCommandRuntimeFlags =
+             g_UiCommandRuntimeFlags &
+             ~(UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW);
       }
     }
     return;
   }
   UiSelectableControl_SetSelected(0,(UiSelectableControl *)INGAME_UI(uiRoot,missionObjectivesButton));
-  INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags | 8;
+  INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags | UI_NODE_SUPPRESSED;
   UiKeyboardFocus_ReleaseNode(INGAME_UI(uiRoot,worldView));
   UiPageStack_SetActiveIndex(3,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
-  settingValue = PersistentSettings_Read(0,0x40);
-  UiSelectableControl_SetSelected(settingValue & 1,(UiSelectableControl *)INGAME_UI(uiRoot,autoZoomOffCheckbox));
-  UiSelectableControl_SetSelected(settingValue & 2,(UiSelectableControl *)INGAME_UI(uiRoot,autoRotationOffCheckbox));
+  settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
+  UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ZOOM_OFF,
+                                  (UiSelectableControl *)INGAME_UI(uiRoot,autoZoomOffCheckbox));
+  UiSelectableControl_SetSelected(settingValue & PERSISTENT_MAP_OPTION_AUTOMATIC_ROTATION_OFF,
+                                  (UiSelectableControl *)INGAME_UI(uiRoot,autoRotationOffCheckbox));
+  /* bit 4: "right button does not scroll" per the frontend settings page (persistent.h names it
+     PERSISTENT_MAP_OPTION_SIDE_PANEL_HIDDEN, which the Tab key also toggles) */
   UiSelectableControl_SetSelected
             (settingValue & 4,(UiSelectableControl *)INGAME_UI(uiRoot,rightButtonNoScrollCheckbox));
-  settingValue = PersistentSettings_Read(0,0x5c);
+  /* bit 1 links rotation with zoom, bit 2 with tilt; each excludes the other */
+  settingValue = PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
   if ((settingValue & 1) != 0) {
-    UiNodeList_SuppressActionId(0x1215,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_TILT,uiRoot);
   }
   UiSelectableControl_SetSelected
             (settingValue & 1,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationZoomCheckbox));
   if ((settingValue & 2) != 0) {
-    UiNodeList_SuppressActionId(0x1214,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_LINK_ROTATION_ZOOM,uiRoot);
   }
   UiSelectableControl_SetSelected
             (settingValue & 2,(UiSelectableControl *)INGAME_UI(uiRoot,linkRotationTiltCheckbox));
-  settingValue = PersistentSettings_Read(0x20,0x48);
+  settingValue = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
   ((UiRangeSliderControl *)INGAME_UI(uiRoot,scrollSpeedSlider))->value = settingValue;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    if ((g_UiCommandRuntimeFlags & 0x4000) == 0) {
-      if ((g_UiCommandRuntimeFlags & 1) != 0) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x400;
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE) == 0) {
+      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0) {
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PAUSED_BEFORE_WINDOW;
       }
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x4001;
+      g_UiCommandRuntimeFlags =
+           g_UiCommandRuntimeFlags | (UI_COMMAND_RUNTIME_FLAG_WINDOW_PAUSE | UI_COMMAND_RUNTIME_FLAG_PAUSED);
     }
   }
   else {
-    UiNodeList_SuppressActionId(0x120e,uiRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_WINDOW,uiRoot);
   }
   return;
 }

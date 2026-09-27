@@ -29,6 +29,16 @@
 #define FRONTEND_PACKET_COMMAND_SUBMIT FRONTEND_PACKET_10021   /* client -> host: its next command record */
 #define FRONTEND_PACKET_COMMAND_WAIT FRONTEND_PACKET_10022     /* host -> client: command received, batch pending */
 #define FRONTEND_PACKET_COMMAND_WAIT_ACK FRONTEND_PACKET_10023 /* client -> host: answer to COMMAND_WAIT */
+/* Frontend (lobby / session start) command batch from the host: unit count = command records, handled by
+   FrontendTransfer_HandleHostSessionAndCommandBatchPackets and FrontendTransfer_HandleGameplayCommandAndRosterPackets. */
+#define FRONTEND_PACKET_LOBBY_COMMAND_BATCH_TYPE 0x10
+/* High word of every Thandor sequence token (the low word is random, see
+   UiTransferMailbox_RandomizeSequenceToken); a host answers only discovery probes that carry it. */
+#define FRONTEND_SEQUENCE_TOKEN_HIGH_MASK 0xffff0000
+#define FRONTEND_SEQUENCE_TOKEN_HIGH_WORD 0x12340000
+/* Player capability bit of the 0x10006 heartbeat and the 0x20002 descriptor (FrontendTransfer_SendPacket10006
+   always sets it); the host then shows L"CD" in that player's list row. */
+#define FRONTEND_CAPABILITY_CD 0x100
 /* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
 #define FRONTEND_PEER_TIMEOUT_TICKS 0x100
 

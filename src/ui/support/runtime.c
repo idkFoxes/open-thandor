@@ -66,10 +66,9 @@ RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
 
 
 /* Address: 0x0050F130.
-   Ownership: ui/support/runtime.
-   Purpose: Finds the slot with the lowest serial, assigns the current serial counter, and copies up to 0x100 bytes
-   of UTF-16 text into that slot.
-   Cross-module calls: RichTextCommandStream_CopyExpanded [assets/text/richtext].
+   Adds a chat message to the recent-text history: it replaces the oldest slot (lowest serial, an empty
+   slot has serial 0; on ties the last one) and gets the current serial, the text being copied with its
+   rich-text commands expanded, truncated to the slot's 256 bytes.
 */
 void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text)
 
@@ -79,10 +78,10 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text
   int currentIndex;
   int oldestIndex;
   uint32_t *serialCursor;
-  
+
   serialCursor = g_RecentTextEntrySerials;
   oldestSerial = 0xffffffff;
-  slotsRemaining = 8;
+  slotsRemaining = RECENT_TEXT_HISTORY_SLOT_COUNT;
   currentIndex = 0;
   oldestIndex = -1;
   do {
@@ -90,15 +89,15 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text
       oldestSerial = *serialCursor;
       oldestIndex = currentIndex;
     }
-    serialCursor = serialCursor + 1;
-    currentIndex = currentIndex + 1;
-    slotsRemaining = slotsRemaining + -1;
+    serialCursor++;
+    currentIndex++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = g_RecentTextSerialCounter;
-    RichTextCommandStream_CopyExpanded(0x100,g_RecentTextSlotStorage[oldestIndex].text,text);
+    RichTextCommandStream_CopyExpanded
+              (sizeof g_RecentTextSlotStorage[0].text,g_RecentTextSlotStorage[oldestIndex].text,text);
   }
-  return;
 }
 
 
@@ -191,11 +190,10 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 
 /* Address: 0x0054D5D0.
-   Ownership: ui/support/runtime.
-   Purpose: Sanitizes a UTF-16 source leaf, loads and decodes its PCX resource, accepts only a 64 by 64 image, and
-   copies 256 RGB palette entries plus 0x400 pixel dwords. CF clear means success.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode
-   [core/text/path], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
+   Loads a 64x64 8-bit PCX picture named by sourcePath (a leaf name; path and wildcard characters are
+   dropped, the extension becomes .pcx, the file is looked up next to the executable) into outputPreview:
+   its 256-colour RGB palette followed by the 4096 pixel indices. CF set when the file is missing, cannot
+   be decoded or has another size.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
@@ -204,61 +202,68 @@ PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourc
   uint16_t pathChar;
   int headerOrPixelDataOffset;
   void *sourceBytes;
-  void *memory;
+  void *decodedImage;
   int dwordsRemaining;
-  uint32_t *pcxDwordReadCursor;
+  uint32_t *paletteEntryCursor;
   uint32_t *pixelDwordCursor;
   uint16_t *sanitizedPathCursor;
   PcxDecodeResult pcxDecodeResult;
   ResourceLoadResult resourceLoadResult;
-  
+
+  /* copy the leaf, dropping every character that is not allowed in a file name, and '.' */
   sanitizedPathCursor = g_LevelEndingMovieSourcePath;
   while( true ) {
     pathChar = *sourcePath;
     *sanitizedPathCursor = pathChar;
-    sourcePath = sourcePath + 1;
+    sourcePath++;
     if (pathChar == 0) break;
-    if ((((pathChar != 0x2a) && (pathChar != 0x2e)) &&
-        ((pathChar != 0x3f && ((pathChar != 0x2f && (pathChar != 0x5c)))))) &&
-       ((pathChar != 0x3c &&
-        ((((pathChar != 0x3e && (pathChar != 0x22)) && (pathChar != 0x3a)) && (pathChar != 0x7c)))))) {
-      sanitizedPathCursor = sanitizedPathCursor + 1;
+    if ((((pathChar != '*') && (pathChar != '.')) &&
+        ((pathChar != '?' && ((pathChar != '/' && (pathChar != '\\')))))) &&
+       ((pathChar != '<' &&
+        ((((pathChar != '>' && (pathChar != '"')) && (pathChar != ':')) && (pathChar != '|')))))) {
+      sanitizedPathCursor++;
     }
   }
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  WidePath_SetExtensionCode(0x786370,(uint16_t *)&g_LevelResourcePathScratchUtf16);
+  WidePath_SetExtensionCode(0x786370,(uint16_t *)&g_LevelResourcePathScratchUtf16); /* ".pcx" */
   resourceLoadResult = Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16);
   sourceBytes = (void *)resourceLoadResult.bufferOrError;
   if (!resourceLoadResult.failed) {
     pcxDecodeResult = g_PcxFunctionExport2(g_PcxFunctionModule,resourceLoadResult.byteCount,sourceBytes);
-    memory = pcxDecodeResult.decodedImageOrError;
+    decodedImage = pcxDecodeResult.decodedImageOrError;
     if (!pcxDecodeResult.failed) {
-      headerOrPixelDataOffset = *(int *)((int)memory + 0xb8);
-      if (((*(int *)((int)memory + headerOrPixelDataOffset + 8) == 0) &&
-          (*(int *)((int)memory + headerOrPixelDataOffset + 0x18) == 0x40)) &&
-         (*(int *)((int)memory + headerOrPixelDataOffset + 0x1c) == 0x40)) {
-        pcxDwordReadCursor = (uint32_t *)((int)memory + 0x200);
-        dwordsRemaining = 0x100;
-        headerOrPixelDataOffset = *(int *)((int)memory + headerOrPixelDataOffset + 0xc);
+      /* the decoder's image record: +0xB8 offset of the image header, which holds +0x08 (must be 0),
+         +0x0C the offset of the pixels, +0x18 width and +0x1C height; the palette is at +0x200 with
+         one 8-byte entry per colour */
+      headerOrPixelDataOffset = *(int *)((int)decodedImage + 0xb8);
+      if (((*(int *)((int)decodedImage + headerOrPixelDataOffset + 8) == 0) &&
+          (*(int *)((int)decodedImage + headerOrPixelDataOffset + 0x18) == 64)) &&
+         (*(int *)((int)decodedImage + headerOrPixelDataOffset + 0x1c) == 64)) {
+        paletteEntryCursor = (uint32_t *)((int)decodedImage + 0x200);
+        dwordsRemaining = 256;
+        headerOrPixelDataOffset = *(int *)((int)decodedImage + headerOrPixelDataOffset + 0xc);
+        /* each colour is stored as a whole dword and the output advances by 3 bytes: the fourth byte is
+           overwritten by the next colour (the last one by the first pixel dword) */
         do {
-          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *pcxDwordReadCursor;
-          pcxDwordReadCursor = pcxDwordReadCursor + 2;
+          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *paletteEntryCursor;
+          paletteEntryCursor = paletteEntryCursor + 2;
           outputPreview = (PcxPreview64 *)(outputPreview->paletteRgbTriplets256 + 1);
-          dwordsRemaining = dwordsRemaining + -1;
+          dwordsRemaining--;
         } while (dwordsRemaining != 0);
-        pixelDwordCursor = (uint32_t *)((int)memory + headerOrPixelDataOffset);
-        for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+        /* 64 * 64 pixel bytes as 1024 dwords; the output cursor steps 4 bytes (triplet + 1) */
+        pixelDwordCursor = (uint32_t *)((int)decodedImage + headerOrPixelDataOffset);
+        for (dwordsRemaining = 1024; dwordsRemaining != 0; dwordsRemaining--) {
           *(uint32_t *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
-          pixelDwordCursor = pixelDwordCursor + 1;
+          pixelDwordCursor++;
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
-        g_MemoryApi.free(memory);
+        g_MemoryApi.free(decodedImage);
         Resource_Release(sourceBytes);
         return false;
       }
-      g_MemoryApi.free(memory);
+      g_MemoryApi.free(decodedImage);
     }
     Resource_Release(sourceBytes);
   }
@@ -267,11 +272,9 @@ PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourc
 
 
 /* Address: 0x0050F1A0.
-   Ownership: ui/support/runtime.
-   Purpose: Swaps two serial values and their complete 0x100-byte recent-text slots using thirty-two 8-byte
-   exchanges. Typed parameters: p0 firstIndex→UiListRowIndex_V300, p1 secondIndex→UiListRowIndex_V300. Nearby but
-   non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Swaps two entries of the recent-text history, for the sort in RecentTextHistory_SortAndBuildPointerList:
+   their serials and their whole 256-byte text slots (in 32 steps of two dwords; the LOCK pairs are the
+   original's XCHG instructions).
 */
 void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
@@ -289,7 +292,7 @@ RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex
   g_RecentTextEntrySerials[firstIndex] = serialOrFirstLowDword;
   secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
   firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
-  dwordPairsRemaining = 0x20;
+  dwordPairsRemaining = 32;
   do {
     secondHighDword = secondSlotDwords[1];
     LOCK();
@@ -304,8 +307,7 @@ RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex
     secondSlotDwords[1] = firstHighDword;
     firstSlotDwords = firstSlotDwords + 2;
     secondSlotDwords = secondSlotDwords + 2;
-    dwordPairsRemaining = dwordPairsRemaining + -1;
+    dwordPairsRemaining--;
   } while (dwordPairsRemaining != 0);
-  return;
 }
 

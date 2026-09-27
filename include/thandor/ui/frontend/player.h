@@ -12,6 +12,16 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/frontend/player. */
+
+/* Selection groups (keys 1..8): each faction record holds 8 groups of 32 army pointers (runtimeGroupMembers8x32),
+   a player's selection holds 32 entries. transferModeFlags of
+   FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh: */
+#define SELECTION_GROUP_COUNT 8
+#define SELECTION_GROUP_ENTRY_COUNT 32
+#define SELECTION_TRANSFER_TO_GROUP 0x1 /* selection -> group (else group -> selection); its entries are first
+                                           removed from every group of the faction */
+#define SELECTION_TRANSFER_MERGE 0x2 /* add missing entries instead of replacing the destination */
+#define SELECTION_TRANSFER_CENTER_VIEW 0x4 /* local player: move the camera to the selection's average position */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00548CD0 */
@@ -115,13 +125,13 @@ FrontendPlayerSelection_InsertThreeEntriesAndRefresh
 /* 0x0055FC30 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
-          (FrontendPlayerIndex playerIndex,RuntimeToken selectionEntryToken2,
-          RuntimeToken selectionEntryToken1,RuntimeToken selectionEntryToken0);
+          (FrontendPlayerIndex playerRuntimeId,RuntimeToken armyRuntimeOffset2,
+          RuntimeToken armyRuntimeOffset1,RuntimeToken armyRuntimeOffset0);
 
 /* 0x0055FCD0 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_ClearAndRefreshLocalPanels
-          (FrontendPlayerIndex playerIndex,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
+          (FrontendPlayerIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3);
 
 /* 0x0055FD10 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -194,8 +204,8 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
 /* 0x0055FAD0 */
 void __thandor_preserve_eax
 FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-          (FactionRuntimeIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
-          RuntimeToken modelToken);
+          (FactionRuntimeIndex playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
+          RuntimeToken armyRuntimeOffset);
 
 /* 0x005607E0 */
 void __thandor_void_preserve_eax_ecx

@@ -389,37 +389,32 @@ GraphicsFramebuffer_CaptureRegion32Bit
 
 
 /* Address: 0x00579D90.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Dispatches framebuffer access by active backend. Glide3 uses Glide3_Framebuffer_BeginAccess; DirectDraw
-   restores and locks the back surface, then updates g_GlideFramebufferAccess-compatible width and pixel fields.
-   ABI: CF clear means success. CF set means failure.
-   Cross-module calls: Glide3_Framebuffer_BeginAccess [graphics/backend/glide], Memory_ZeroDwords
-   [core/memory/allocator].
+   Gives the CPU direct access to the frame being drawn: on the Glide adapter via
+   Glide3_Framebuffer_BeginAccess, otherwise by restoring (if lost) and locking the DirectDraw back surface
+   and publishing its pixels and width in pixels in g_DisplayFramebufferAccess. Fails (CF set) while
+   texture uploads are active or when the restore or lock fails.
 */
 bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
 
 {
-  TH_LEGACY_HRESULT surfaceOperationResult;
-  int surfaceRestoreResult;
+  TH_LEGACY_HRESULT isLostResult;
+  int restoreResult;
   TH_LEGACY_HRESULT lockResult;
-  bool glideAccessFailed;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == 1) {
-    glideAccessFailed = Glide3_Framebuffer_BeginAccess();
-    return glideAccessFailed;
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
+    return Glide3_Framebuffer_BeginAccess();
   }
   if (g_ActiveTextureUploads == 0) {
-    surfaceOperationResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
-    surfaceRestoreResult = 0;
-    if (surfaceOperationResult != 0) {
-      surfaceRestoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
+    isLostResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
+    restoreResult = 0;
+    if (isLostResult != 0) {
+      restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
-    if (surfaceRestoreResult == 0) {
-      Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = 0x6c;
+    if (restoreResult == 0) {
+      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
       lockResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,1,(TH_LEGACY_HANDLE)0x0
-                        );
+                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT,NULL);
       if (lockResult == 0) {
         g_FramebufferRowStrideBytes = g_SurfaceDesc.lPitch;
         if (g_DisplayFramebufferAccess.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
@@ -438,20 +433,17 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
 
 
 /* Address: 0x00579E60.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Dispatches framebuffer end-access by active backend. Glide3 releases its locked buffers; DirectDraw
-   unlocks the back surface and clears the shared pixels pointer.
-   Cross-module calls: Glide3_Framebuffer_EndAccess [graphics/backend/glide].
+   Ends the CPU access begun by GraphicsFramebuffer_BeginAccess: Glide releases its locked buffers,
+   DirectDraw unlocks the back surface and clears the published pixel pointer.
 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccess(void)
 
 {
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == 1) {
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
     Glide3_Framebuffer_EndAccess();
     return;
   }
   g_BackSurface3->lpVtbl->Unlock(g_BackSurface3,g_DisplayFramebufferAccess.pixels);
-  g_DisplayFramebufferAccess.pixels = (uint8_t *)0x0;
-  return;
+  g_DisplayFramebufferAccess.pixels = NULL;
 }
 

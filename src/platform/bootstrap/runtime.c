@@ -109,19 +109,16 @@ void __cdecl ProcessEntry(void)
 
 
 /* Address: 0x00512E70.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Clears the 0x100-byte auxiliary state and the first 0x3A00 bytes of the faction image, initializes
-   eight 0x740-byte runtime records with verified defaults, allocates a fresh 0x38000-byte stat table, replaces the
-   prior allocation, zeroes it, and writes a terminal 0xFFFFFFFF dword.
-   [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Initializes faction economy defaults: Xenite/Tritium storage
-   limits are 0xFA0 Q4; baseline Energy supply and initial Energy generation-capacity ceiling are both 0x280 Q4
-   (40). These are separate resource/fuel/utility domains.
+   Resets the game data to the defaults of a new game: clears the auxiliary state and the eight faction
+   records, gives every faction its own capability bit, the base technology, a rotated relation pattern
+   (0xF for itself, 1 for everyone else) and the starting economy limits, and replaces the stat table with a
+   fresh zeroed one. CF is set when the stat table cannot be allocated (the old one then stays).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
 
 {
   FactionCapabilityFlags *capabilityFlagsSlot;
-  void *memory;
+  void *previousStatTable;
   int remainingCount;
   uint32_t relationStatePattern;
   uint32_t factionBit;
@@ -130,22 +127,23 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
   uint32_t *statTableCursor;
   ArenaAllocResult allocResult;
   StatusResult status;
-  
+
   remainingCount = 0x40;
   dwordCursor = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (; remainingCount != 0; remainingCount--) {
     *dwordCursor = 0;
-    dwordCursor = dwordCursor + 1;
+    dwordCursor++;
   }
+  /* clears the eight records (0x3A00 bytes) dword by dword, not the image tail */
   factionRecordCursor = &g_GameFactionRuntimeImage;
-  for (remainingCount = 0xe80; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = 0xe80; remainingCount != 0; remainingCount--) {
     factionRecordCursor->records[0].xeniteCurrentQ4 = 0;
     factionRecordCursor = (GameFactionRuntimeImage *)&factionRecordCursor->records[0].xeniteStorageLimitQ4;
   }
   factionRecordCursor = &g_GameFactionRuntimeImage;
   remainingCount = 8;
   factionBit = 1;
-  relationStatePattern = 0x1111111f;
+  relationStatePattern = 0x1111111f; /* one nibble per faction, rotated by one nibble per record */
   do {
     capabilityFlagsSlot = &factionRecordCursor->records[0].capabilityFlags;
     *capabilityFlagsSlot = *capabilityFlagsSlot | factionBit;
@@ -160,29 +158,29 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
     factionRecordCursor->records[0].secondaryAnchorYQ12 = -0xc000;
     factionRecordCursor->records[0].secondaryAnchorXQ12 = 0;
     factionRecordCursor->records[0].relationTransitionTick = 0x11;
-    factionRecordCursor->records[0].energyGenerationCapacityQ4 = 0x280;
-    factionRecordCursor->records[0].baselineEnergySupplyQ4 = 0x280;
-    factionRecordCursor->records[0].xeniteStorageLimitQ4 = 4000;
-    factionRecordCursor->records[0].tritiumStorageLimitQ4 = 4000;
-    factionRecordCursor->records[0].terrainContributionScaleQ8 = 0x100;
+    factionRecordCursor->records[0].energyGenerationCapacityQ4 = 0x280; /* 40.0 */
+    factionRecordCursor->records[0].baselineEnergySupplyQ4 = 0x280; /* 40.0 */
+    factionRecordCursor->records[0].xeniteStorageLimitQ4 = 4000; /* 250.0 */
+    factionRecordCursor->records[0].tritiumStorageLimitQ4 = 4000; /* 250.0 */
+    factionRecordCursor->records[0].terrainContributionScaleQ8 = 0x100; /* 1.0 */
     factionBit = factionBit * 2;
     relationStatePattern = relationStatePattern << 4 | relationStatePattern >> 0x1c;
     factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  allocResult = g_MemoryApi.alloc(0x38000);
-  memory = g_GameStatTableImage;
+  allocResult = g_MemoryApi.alloc(GAME_STAT_TABLE_BYTES);
+  previousStatTable = g_GameStatTableImage;
   if (!allocResult.failed) {
     LOCK();
     UNLOCK();
     g_GameStatTableImage = (void *)allocResult.payloadOrError;
-    g_MemoryApi.free(memory);
+    g_MemoryApi.free(previousStatTable);
     statTableCursor = (uint32_t *)allocResult.payloadOrError;
-    for (remainingCount = 0xe000; remainingCount != 0; remainingCount = remainingCount + -1) {
+    for (remainingCount = GAME_STAT_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
       *statTableCursor = 0;
-      statTableCursor = statTableCursor + 1;
+      statTableCursor++;
     }
-    statTableCursor[-1] = 0xffffffff;
+    statTableCursor[-1] = 0xffffffff; /* end marker */
     g_GameFactionRuntimeImage.tail.periodicClockTick = 0;
     allocResult.payloadOrError = 0;
     allocResult.failed = false;
@@ -194,53 +192,51 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
 
 
 /* Address: 0x00512F60.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Clears the auxiliary state, loads exactly 0x3A20 bytes from daten.hex into the faction image, replaces
-   the heap-backed stat table with stat.hex, and imports oldunit.hex into fixed 0x4000-byte primary and 0x100-byte
-   secondary buffers. A missing oldunit file clears both buffers and the count; earlier load failures return with
-   CF set.
-   Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], Package_LoadEntry
-   [assets/package/runtime], Resource_Release [assets/resource/runtime].
+   Loads the game data of a level or savegame from the mounted packages: daten.hex is the faction image,
+   stat.hex replaces the stat table and oldunit.hex (record count, primary table, secondary table) fills the
+   old-unit tables; without oldunit.hex both tables and the count are cleared. CF is set when daten.hex or
+   stat.hex cannot be loaded.
 */
 bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
 
 {
-  void *memory;
+  void *previousStatTable;
   uint32_t *oldUnitBufferOrCursor;
   int remainingCount;
   uint32_t *sourceCursor;
   uint32_t *destinationCursor;
   StatusResult loadStatus;
   PackageLoadResult packageEntry;
-  
+
   remainingCount = 0x40;
   oldUnitBufferOrCursor = g_GameDataAuxState.pairPressureMatrix8x8;
-  for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (; remainingCount != 0; remainingCount--) {
     *oldUnitBufferOrCursor = 0;
-    oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
+    oldUnitBufferOrCursor++;
   }
   loadStatus = Package_LoadEntryIntoBuffer
-                    (0x3a20,(uint8_t *)&g_GameFactionRuntimeImage,(uint16_t *)u_daten_hex_0050e054);
+                    (GAME_FACTION_IMAGE_BYTES,(uint8_t *)&g_GameFactionRuntimeImage,
+                     (uint16_t *)u_daten_hex_0050e054);
   if (!loadStatus.failed) {
     packageEntry = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082);
-    memory = g_GameStatTableImage;
+    previousStatTable = g_GameStatTableImage;
     if (!packageEntry.failed) {
       LOCK();
       UNLOCK();
       g_GameStatTableImage = packageEntry.bufferOrError;
-      g_MemoryApi.free(memory);
+      g_MemoryApi.free(previousStatTable);
       packageEntry = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094);
       oldUnitBufferOrCursor = packageEntry.bufferOrError;
       if (packageEntry.failed) {
         oldUnitBufferOrCursor = g_OldUnitPrimaryTable;
-        for (remainingCount = 0x1000; remainingCount != 0; remainingCount = remainingCount + -1) {
+        for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
           *oldUnitBufferOrCursor = 0;
-          oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
+          oldUnitBufferOrCursor++;
         }
         oldUnitBufferOrCursor = g_OldUnitSecondaryTable;
-        for (remainingCount = 0x40; remainingCount != 0; remainingCount = remainingCount + -1) {
+        for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
           *oldUnitBufferOrCursor = 0;
-          oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
+          oldUnitBufferOrCursor++;
         }
         g_OldUnitRecordCount = 0;
       }
@@ -248,15 +244,17 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
         g_OldUnitRecordCount = *oldUnitBufferOrCursor;
         destinationCursor = g_OldUnitPrimaryTable;
         sourceCursor = oldUnitBufferOrCursor;
-        for (remainingCount = 0x1000; sourceCursor = sourceCursor + 1, remainingCount != 0; remainingCount = remainingCount + -1) {
+        /* the source advances before each copy, so the first dword (the count) is skipped */
+        for (remainingCount = OLD_UNIT_PRIMARY_TABLE_BYTES / 4; sourceCursor++, remainingCount != 0;
+            remainingCount--) {
           *destinationCursor = *sourceCursor;
-          destinationCursor = destinationCursor + 1;
+          destinationCursor++;
         }
         destinationCursor = g_OldUnitSecondaryTable;
-        for (remainingCount = 0x40; remainingCount != 0; remainingCount = remainingCount + -1) {
+        for (remainingCount = OLD_UNIT_SECONDARY_TABLE_BYTES / 4; remainingCount != 0; remainingCount--) {
           *destinationCursor = *sourceCursor;
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
+          sourceCursor++;
+          destinationCursor++;
         }
         Resource_Release(oldUnitBufferOrCursor);
       }
@@ -268,10 +266,10 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
 
 
 /* Address: 0x00573BC0.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns resolved
-   function pointer in EAX.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Resolves procedureName in module with GetProcAddress, stores it in *destination and returns it with CF
+   clear. The name is left in g_PackageLastErrorPath and, on failure, the name of the module (when it is one
+   of g_DynamicModules) in g_FatalErrorDetail1Utf16 for the fatal-error message; CF set with
+   FATAL_ERROR_DLL_PROCEDURE_MISSING.
 */
 DynApiResolveResult __thandor_eax_cf_preserve_ecx_edx
 DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
@@ -282,10 +280,10 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   DynamicModuleEntry *moduleEntryCursor;
   DynApiResolveResult successResult;
   DynApiResolveResult failureResult;
-  
+
   Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
-  if (resolvedProcedure != (FARPROC)0x0) {
+  if (resolvedProcedure != NULL) {
     *destination = resolvedProcedure;
     successResult.failed = false;
     successResult.procedureOrError = resolvedProcedure;
@@ -303,16 +301,16 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
     moduleEntryCursor = moduleEntryCursor + 1;
   }
   failureResult.failed = true;
-  failureResult.procedureOrError = (void *)0x10;
+  failureResult.procedureOrError = (void *)FATAL_ERROR_DLL_PROCEDURE_MISSING;
   return failureResult;
 }
 
 
 /* Address: 0x00573C50.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns HMODULE in
-   EAX.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Loads the DLL moduleName with the bound LoadLibraryA and records it in g_DynamicModules so that
+   DynDLL_UnloadAll frees it; returns the module with CF clear. Fails with CF set and FATAL_ERROR_DLL_LOAD_FAILED
+   (the name left in g_PackageLastErrorPath) when LoadLibraryA is not bound yet, the table is full or the load
+   fails.
 */
 DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 
@@ -321,23 +319,25 @@ DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
   DllLoadResult successResult;
   DllLoadResult failureResult;
   uint32_t moduleSlotIndex;
-  
+
   Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
-  if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) && (g_DynamicModuleCount < 0x10))
+  /* dynapi_9 is the string "LoadLibraryA": the slot still holds the name until DynAPI_Bootstrap binds it */
+  if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) &&
+      (g_DynamicModuleCount < DYNAMIC_MODULE_CAPACITY))
   {
     loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(moduleName);
     moduleSlotIndex = g_DynamicModuleCount;
-    if (loadedModule != (HINSTANCE)0x0) {
+    if (loadedModule != NULL) {
       g_DynamicModules[g_DynamicModuleCount].module = loadedModule;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
-      g_DynamicModuleCount = g_DynamicModuleCount + 1;
+      g_DynamicModuleCount++;
       successResult.failed = false;
       successResult.moduleOrError = loadedModule;
       return successResult;
     }
   }
   failureResult.failed = true;
-  failureResult.moduleOrError = (HINSTANCE)0x11;
+  failureResult.moduleOrError = (HINSTANCE)FATAL_ERROR_DLL_LOAD_FAILED;
   return failureResult;
 }
 
@@ -412,8 +412,8 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
 
 
 /* Address: 0x00573EB0.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Releases all cached dynamic modules.
+   Frees every DLL recorded in g_DynamicModules with the bound FreeLibrary at shutdown; each slot is cleared
+   before the call so a module is never freed twice. The count is left unchanged.
 */
 void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 
@@ -421,16 +421,16 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
   uint32_t modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
   HINSTANCE loadedModule;
-  
+
   moduleEntryCursor = g_DynamicModules;
   for (modulesRemaining = g_DynamicModuleCount; modulesRemaining != 0;
       modulesRemaining = modulesRemaining - 1) {
-    if (moduleEntryCursor->module != (HINSTANCE)0x0) {
+    if (moduleEntryCursor->module != NULL) {
       loadedModule = moduleEntryCursor->module;
-      moduleEntryCursor->module = (HINSTANCE)0x0;
+      moduleEntryCursor->module = NULL;
       ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(loadedModule);
     }
-    moduleEntryCursor = moduleEntryCursor + 1;
+    moduleEntryCursor++;
   }
   return;
 }
@@ -519,18 +519,18 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
 
 
 /* Address: 0x00587370.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Executes CPUID leaf 1, sets g_CpuFeatureFlags bit 0 when EDX bit 23 reports MMX support, and returns
-   constant 5.
+   Sets CPU_FEATURE_MMX in g_CpuFeatureFlags when CPUID reports MMX; ProcessEntry refuses to run without it
+   (FATAL_ERROR_CPU_WITHOUT_MMX). The constant return value 5 has no known use.
 */
 uint32_t __cdecl CPU_DetectFeatures(void)
 
 {
   int cpuidVersionInfo;
-  
-  cpuidVersionInfo = cpuid_Version_info(1);
-  if ((*(uint32_t *)(cpuidVersionInfo + 8) & 0x800000) != 0) {
-    g_CpuFeatureFlags = g_CpuFeatureFlags | 1;
+
+  cpuidVersionInfo = cpuid_Version_info(CPUID_LEAF_VERSION_INFO);
+  /* offset 8 of the CPUID result is EDX */
+  if ((*(uint32_t *)(cpuidVersionInfo + 8) & CPUID_EDX_MMX) != 0) {
+    g_CpuFeatureFlags = g_CpuFeatureFlags | CPU_FEATURE_MMX;
   }
   return 5;
 }
@@ -589,15 +589,9 @@ void __cdecl Game_Run(void)
 
 
 /* Address: 0x0050BB10.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Runs the exact ordered startup chain for the spatial-sound pool, two rendering lookup-table
-   allocations, the software-renderer display-mode hook, and the global primitive queue with capacity 0xA000. Each
-   step runs only after CF-clear success from the preceding step; the final CF reports the first failure or final
-   allocation result.
-   Cross-module calls: SpatialSoundPool_Init [audio/spatial/runtime], TerrainByteClampLookup_Initialize
-   [world/terrain/visuals], GraphicsIntensityClampTable_Initialize [graphics/render/shading],
-   SoftwareRenderer_InstallDisplayModeHook [graphics/backend/software], GraphicsPrimitiveQueue_AllocateGlobalPool
-   [graphics/render/primitives].
+   Game_Run's first startup step: initialises the spatial-sound pool, the terrain and intensity clamp tables,
+   the software renderer's display-mode hook and the global primitive queue (0xA000 packets), in that order.
+   Stops at the first step that fails and returns its result.
 */
 StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
@@ -625,21 +619,21 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 
 /* Address: 0x00573140.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], WidePath_CombineDirectoryAndLeaf
-   [core/text/path], Package_Mount [assets/package/runtime], LevelPackage_ValidateAndMount
-   [assets/package/runtime], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
+   Loads everything the frontend needs once at startup: takes the CD path from the registry, mounts the patch,
+   level and core packages, creates the seven UI button sounds, moves the screenshot name past the existing
+   screen??.pcx files, loads the text pages, applies the sound settings, binds the PCX codec module and
+   allocates the fixed runtime buffers. Returns 0, or the error code of the first failing step (the caller
+   treats non-zero as failure).
 */
 uint32_t __cdecl Game_LoadCoreAssets(void)
 
 {
   wchar_t screenshotTensDigit;
   int statusOrCount;
-  SoundSampleAsset *loadedResource;
-  FncModuleHeader *module;
+  SoundSampleAsset *loadedResource; /* a button sample, later the engine\pcx.fnc package buffer */
+  FncModuleHeader *module; /* a voice set or a PCX export; the error code on the failure paths */
   uint16_t *textBuffer;
-  uint32_t settingsOrBufferBase;
+  uint32_t soundOptionsOrBufferBase;
   AudioMixerGainQ15 uiSoundGain;
   MovieAudioGainQ15 movieGain;
   MovieAudioGainQ15 alternateMovieGain;
@@ -659,15 +653,16 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
   ArenaAllocResult allocResult;
   ResourceLoadResult resourceLoadResult;
   
+  /* HKLM\Software\Planet4\Thandor "CD": movies are looked up under <CD>\Thandor first */
   if ((g_MemoryApi.alloc == ArenaHeap_Alloc) &&
      (statusOrCount = ((BootstrapRegOpenKeyExAProc)g_BootstrapApiBindings[5].destination)
-                        (0x80000002,s_Software_Planet4_Thandor_00572e20,0,0x20019,
-                         &g_InstallRegistryKeyHandle), statusOrCount == 0)) {
+                        (HKEY_LOCAL_MACHINE,s_Software_Planet4_Thandor_00572e20,0,KEY_READ,
+                         &g_InstallRegistryKeyHandle), statusOrCount == ERROR_SUCCESS)) {
     statusOrCount = ((BootstrapRegQueryValueExAProc)g_BootstrapApiBindings[6].destination)
                       (g_InstallRegistryKeyHandle,&s_InstallRegistryValueNameCD,0,
                        &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
                        &g_InstallRegistryValueDataCapacityBytes);
-    if ((statusOrCount == 0) && (g_InstallRegistryValueType == 1)) {
+    if ((statusOrCount == ERROR_SUCCESS) && (g_InstallRegistryValueType == REG_SZ)) {
       Text_CopyNarrowToUtf16
                 (0x200,(uint16_t *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
       WidePath_CombineDirectoryAndLeaf
@@ -700,7 +695,11 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
     narrow[k] = 0;
     Thandor_Log("movie CD path: \"%s\"", narrow);
   }
-  g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x300030;
+  /* patchNN.pck and then levelNN.pck, NN counting down to "00". decimalDigits.codeUnits[0] is the tens
+     digit, [1] the ones digit; adding 0x9FFFF to the packed pair decrements the tens digit and, through the
+     carry, turns the ones digit from '0' - 1 back into '9'. The patch count starts at "00", so only
+     patch00.pck is tried. */
+  g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x300030; /* "00" */
   do {
     do {
       Package_Mount(g_PatchArchivePathTemplateUtf16.prefixCodeUnits);
@@ -710,7 +709,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
     g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_PatchArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
   } while (0x2f < g_PatchArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x390039;
+  g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits = 0x390039; /* "99" */
   do {
     do {
       LevelPackage_ValidateAndMount(g_LevelArchivePathTemplateUtf16.prefixCodeUnits);
@@ -814,20 +813,24 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
               if (!voiceSetResult.failed) {
                 Resource_Release(loadedResource);
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
+                /* u_Dscreen00_pcx_00572e3a + 1 is "screen00.pcx" ([7] tens digit, [8] ones digit): count up
+                   to the first screenshot file that does not exist yet */
                 do {
                   do {
                     openResult = g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
                     if (openResult.failed)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
-                    u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
+                    u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + 1;
                     g_FileSystemClose((void *)openResult.handleOrError);
                     screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
                   } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
-                  u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + L'\x01';
-                  u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6';
+                  u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + 1;
+                  u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6'; /* -10 */
                 } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
+                /* all 100 names exist: the tens digit goes back to '0' (the last seen '9' - 9) */
                 u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit + L'\xfff7';
 Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
+                /* bind placeholders 0..13 of texts 0x112..0x117 to the debug-overlay text slots */
                 resourceId = 0x112;
                 do {
                   textResolveResult = TextResource_Resolve(resourceId);
@@ -904,28 +907,33 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 }
                 textResolveResult = TextResource_Resolve(0x2402);
                 RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,textResolveResult.text);
-                settingsOrBufferBase = PersistentSettings_Read(3,0x20);
+                /* sound effects off: every gain is 0 */
+                soundOptionsOrBufferBase =
+                     PersistentSettings_Read(PERSISTENT_SOUND_OPTION_DEFAULT,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
                 uiSoundGain = 0;
-                if ((settingsOrBufferBase & 1) != 0) {
-                  uiSoundGain = PersistentSettings_Read(0x8000,0x24);
+                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+                  uiSoundGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
                 }
                 movieGain = 0;
                 g_UiSoundGainQ15 = uiSoundGain;
                 g_SoundEffectsGainQ15 = uiSoundGain;
-                if ((settingsOrBufferBase & 1) != 0) {
-                  movieGain = PersistentSettings_Read(0x8000,0x28);
+                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+                  movieGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_DEFAULT_GAIN);
                 }
                 alternateMovieGain = 0;
                 g_MovieDefaultAudioGainQ15 = movieGain;
-                if ((settingsOrBufferBase & 1) != 0) {
-                  alternateMovieGain = PersistentSettings_Read(0x8000,0x4c);
+                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_EFFECTS) != 0) {
+                  alternateMovieGain = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MOVIE_ALTERNATE_GAIN);
                 }
                 g_ReverseStereoMask = 0;
-                if ((settingsOrBufferBase & 4) != 0) {
+                if ((soundOptionsOrBufferBase & PERSISTENT_SOUND_OPTION_REVERSE_STEREO) != 0) {
                   g_ReverseStereoMask = 0xffffffff;
                 }
                 g_MovieAlternateAudioGainQ15 = alternateMovieGain;
-                g_ModelLodDepthThresholdQ8 = PersistentSettings_Read(g_ReverseStereoMask,0x34);
+                /* the original passes the reverse-stereo mask (0 or 0xFFFFFFFF) as the default here, still in
+                   EAX from the store above (PUSH EAX at 0x00573674) */
+                g_ModelLodDepthThresholdQ8 =
+                     PersistentSettings_Read(g_ReverseStereoMask,PERSISTENT_SETTING_MODEL_LOD_DEPTH_THRESHOLD);
                 status = AiRuntime_InitWorkspace();
                 if (status.failed) {
                   return status.valueOrError;
@@ -957,45 +965,45 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_InGameStatusPanelTextureSource = panelTextureResult.textureSource;
                       allocResult = g_MemoryApi.alloc(0x800);
                       if (allocResult.failed) {
-                        return (uint32_t)(RecentTextHistorySlot *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_RecentTextSlotStorage = (RecentTextHistorySlot *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x100);
+                      allocResult = g_MemoryApi.alloc(OLD_UNIT_SECONDARY_TABLE_BYTES);
                       if (allocResult.failed) {
-                        return (uint32_t)(uint32_t *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_OldUnitSecondaryTable = (uint32_t *)allocResult.payloadOrError;
-                      allocResult = g_MemoryApi.alloc(0x4000);
+                      allocResult = g_MemoryApi.alloc(OLD_UNIT_PRIMARY_TABLE_BYTES);
                       if (allocResult.failed) {
-                        return (uint32_t)(uint32_t *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_OldUnitPrimaryTable = (uint32_t *)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x400);
-                      settingsOrBufferBase = allocResult.payloadOrError;
+                      soundOptionsOrBufferBase = allocResult.payloadOrError;
                       if (allocResult.failed) {
-                        return settingsOrBufferBase;
+                        return soundOptionsOrBufferBase;
                       }
-                      g_FrontendPlayerListRow1 = settingsOrBufferBase + 0x80;
-                      g_FrontendPlayerListRow2 = settingsOrBufferBase + 0x100;
-                      g_FrontendPlayerListRow3 = settingsOrBufferBase + 0x180;
-                      g_FrontendPlayerListRow4 = settingsOrBufferBase + 0x200;
-                      g_FrontendPlayerListRow5 = settingsOrBufferBase + 0x280;
-                      g_FrontendPlayerListRow6 = settingsOrBufferBase + 0x300;
-                      g_FrontendPlayerListRow7 = settingsOrBufferBase + 0x380;
-                      g_FrontendPlayerListRows = settingsOrBufferBase;
+                      g_FrontendPlayerListRow1 = soundOptionsOrBufferBase + 0x80;
+                      g_FrontendPlayerListRow2 = soundOptionsOrBufferBase + 0x100;
+                      g_FrontendPlayerListRow3 = soundOptionsOrBufferBase + 0x180;
+                      g_FrontendPlayerListRow4 = soundOptionsOrBufferBase + 0x200;
+                      g_FrontendPlayerListRow5 = soundOptionsOrBufferBase + 0x280;
+                      g_FrontendPlayerListRow6 = soundOptionsOrBufferBase + 0x300;
+                      g_FrontendPlayerListRow7 = soundOptionsOrBufferBase + 0x380;
+                      g_FrontendPlayerListRows = soundOptionsOrBufferBase;
                       allocResult = g_MemoryApi.alloc(0x800);
                       if (allocResult.failed) {
-                        return (uint32_t)(RomRegistrySlot *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_RomRegistrySlots = (RomRegistrySlot *)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x80);
                       if (allocResult.failed) {
-                        return (uint32_t)(FrontendSessionDiscoveryRecordB0 **)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x1600);
                       if (allocResult.failed) {
-                        return (uint32_t)(FrontendSessionDiscoveryRecordB0 *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_FrontendSessionDiscoveryRecords =
                            (FrontendSessionDiscoveryRecordB0 *)allocResult.payloadOrError;
@@ -1008,7 +1016,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
                       allocResult = g_MemoryApi.alloc(0x160);
                       if (allocResult.failed) {
-                        return (uint32_t)(uint16_t *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_InGamePlayerListTextScratchUtf16 = (uint16_t *)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x6000);
@@ -1035,7 +1043,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
                       allocResult = g_MemoryApi.alloc(0x408c0);
                       if (allocResult.failed) {
-                        return (uint32_t)(SelectionPlayerRuntimeBlock *)allocResult.payloadOrError;
+                        return allocResult.payloadOrError;
                       }
                       g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)allocResult.payloadOrError;
                       allocResult = g_MemoryApi.alloc(0x1300);
@@ -1071,10 +1079,9 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       statusOrCount = 0x20;
                       do {
                         *playerRuntimePointerTableWriteCursor = playerRecordCursor;
-                        playerRuntimePointerTableWriteCursor =
-                             playerRuntimePointerTableWriteCursor + 1;
-                        playerRecordCursor = playerRecordCursor + 1;
-                        statusOrCount = statusOrCount + -1;
+                        playerRuntimePointerTableWriteCursor++;
+                        playerRecordCursor++;
+                        statusOrCount--;
                       } while (statusOrCount != 0);
                       allocResult = g_MemoryApi.alloc(0xe00);
                       scratchCursor = (uint8_t *)allocResult.payloadOrError;
@@ -1088,12 +1095,12 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_CoreAssetScratchSlice5 = scratchCursor + 0xa00;
                       g_CoreAssetScratchSlice6 = scratchCursor + 0xc00;
                       g_CoreAssetScratchSlice0 = scratchCursor;
-                      for (statusOrCount = 0x380; statusOrCount != 0; statusOrCount = statusOrCount + -1) {
+                      for (statusOrCount = 0x380; statusOrCount != 0; statusOrCount--) {
                         scratchCursor[0] = 0;
                         scratchCursor[1] = 0;
                         scratchCursor[2] = 0;
                         scratchCursor[3] = 0;
-                        scratchCursor = scratchCursor + 4;
+                        scratchCursor += 4;
                       }
                       return 0;
                     }
@@ -1418,14 +1425,10 @@ static void DebugMovie_Run(const char *which)
 }
 
 /* Address: 0x005739D0.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Clears and presents the framebuffer, honors the NOINTRO option, plays sequentially numbered files
-   beginning with flm\intro0.flm, advances at most three timer-pending frames per loop, centers the active
-   MovieRuntime, and aborts on keyboard or qualifying cursor input. Escape writes digit 8 before cleanup so the
-   next increment exits through intro9. CF reports completion versus movie-open/decode failure.
-   Cross-module calls: Movie_Open [movie/runtime/playback], Movie_AdvanceFrame [movie/runtime/playback],
-   Movie_Close [movie/runtime/playback], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout],
-   Movie_GetFrameDimensions [movie/runtime/playback].
+   Plays the intro movies flm\intro0.flm, intro1.flm, ... until one cannot be opened, unless -NOINTRO is given.
+   Each movie runs at its own rate from IntroMovie_TimerTick, centred on the screen;
+   a key or mouse-button release skips to the next one, Escape skips all of them (the number jumps to 9).
+   CF is set only when the first frame of an opened movie cannot be decoded.
 */
 bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 
@@ -1495,19 +1498,23 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
         keyEvent = g_KeyboardReadEvent();
         if (!keyEvent.queueEmpty) break;
         cursorEvent = g_GraphicsCursorConsumeEvent();
+        /* event types above RIGHT_PRESS are the button releases */
         if ((!cursorEvent.queueEmpty) && (3 < cursorEvent.eventType)) goto GameIntroMovies_StopCurrentPlayback;
         if (g_IntroMoviePendingTicks != 0) {
+          /* catch up at most three frames per pass */
           frameAdvanceBudget = 3;
           do {
             advanceResult = Movie_AdvanceFrame();
             frameHeightSnapshot = g_FramebufferHeight;
             if (advanceResult.ended) goto GameIntroMovies_StopCurrentPlayback;
-            g_IntroMoviePendingTicks = g_IntroMoviePendingTicks - 1;
-          } while ((g_IntroMoviePendingTicks != 0) && (frameAdvanceBudget = frameAdvanceBudget + -1, frameAdvanceBudget != 0));
+            g_IntroMoviePendingTicks--;
+          } while ((g_IntroMoviePendingTicks != 0) && (--frameAdvanceBudget != 0));
           quarterFrameHeight = g_FramebufferHeight >> 2;
           accessFailed = g_GraphicsFramebufferBeginAccess();
           if (accessFailed) goto GameIntroMovies_StopCurrentPlayback;
-          frameDimensions = Movie_GetFrameDimensions();
+          frameDimensions = Movie_GetFrameDimensions(); /* EDX:EAX = height:width */
+          /* y = (H - H/4 - frameHeight) / 2 + H/8, i.e. vertically centred; the source is the movie
+             returned by the first Movie_AdvanceFrame */
           g_GraphicsTextureSourceBlitSourceAlpha
                     (g_FramebufferHeight,g_FramebufferWidth,0,0,
                      ((int)((frameHeightSnapshot - quarterFrameHeight) - (int)(frameDimensions >> 0x20)) >> 1) + (frameHeightSnapshot >> 3),
@@ -1517,13 +1524,14 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
           g_GraphicsFramebufferPresent(g_FramebufferAccess);
         }
       }
-      if (keyEvent.eventCode == 0x10000) {
+      /* [9] is the digit of "flm\intro0.flm"; Escape moves on to intro9 (normally absent, which ends the intros) */
+      if (keyEvent.eventCode == KEYBOARD_KEY_CODE_ESCAPE) {
         u_flm_intro0_flm_00573046[9] = L'8';
       }
 GameIntroMovies_StopCurrentPlayback:
       g_TimerUnregisterPeriodic(IntroMovie_TimerTick);
       Movie_Close();
-      u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + L'\x01';
+      u_flm_intro0_flm_00573046[9] = u_flm_intro0_flm_00573046[9] + 1;
     }
   }
   return false;

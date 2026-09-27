@@ -304,9 +304,8 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomTransition_RequestStop(void)
 
 
 /* Address: 0x005487F0.
-   Ownership: assets/rom/runtime.
-   Purpose: Typed parameters: p0 slotValue→RomRegistrySlotValue_V344. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Reverse lookup in the ROM registry: returns the ROM record whose slot holds the given runtime root node, or
+   NULL when no slot does.
 */
 RomAssetRecordPrefix * __thandor_eax_preserve_ecx_edx
 RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
@@ -314,17 +313,17 @@ RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
 {
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  
-  slotsRemaining = 0x100;
+
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
   do {
     if ((WorldRuntimeNode *)slotValue == slotCursor->runtimeRootNode) {
       return slotCursor->record;
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  return (RomAssetRecordPrefix *)0x0;
+  return NULL;
 }
 
 
@@ -352,37 +351,33 @@ uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
 }
 
 /* Address: 0x00548890.
-   Ownership: assets/rom/runtime.
-   Purpose: Scans the active fixed-stride ROM record table and returns the first 0x200-byte record whose identifier
-   at offset 0x1C matches recordId, or null. Typed parameters: p0 recordId→RomRecordId_V308. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
+   Returns the entry of a ROM record table (0x200-byte header with the entry count, then 0x200-byte entries)
+   whose record id matches, or NULL. Used to find the target record of a frontend camera flight.
 */
 void * __thandor_eax_preserve_ecx_edx
 RomRecordTable_FindRecordById(RomRecordId recordId,void *recordTable)
 
 {
   int recordsRemaining;
-  
-  recordsRemaining = *(int *)((int)recordTable + 0x3c);
+
+  recordsRemaining = *(int *)((int)recordTable + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET);
+  /* the cursor starts at the header, so the entry it tests lies one header size further on */
   while( true ) {
     if (recordsRemaining == 0) {
-      return (void *)0x0;
+      return NULL;
     }
-    if (recordId == *(RomRecordId *)((int)recordTable + 0x21c)) break;
-    recordsRemaining = recordsRemaining + -1;
-    recordTable = (void *)((int)recordTable + 0x200);
+    if (recordId == *(RomRecordId *)((int)recordTable + (FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
+                                                          ROM_RECORD_TABLE_ENTRY_ID_OFFSET))) break;
+    recordsRemaining--;
+    recordTable = (void *)((int)recordTable + FRONTEND_ROM_ACTION_ENTRY_SIZE);
   }
-  return (void *)((int)recordTable + 0x200);
+  return (void *)((int)recordTable + FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE);
 }
 
 
 /* Address: 0x005488D0.
-   Ownership: assets/rom/runtime.
-   Purpose: Scans the count at table offset +0x3C over exact 0x200-byte records, compares each record ID at +0x1C,
-   and returns the zero-based index or -1 in EAX. EDX is preserved. Typed parameters: p0 recordId→RomRecordId_V308.
-   Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Same scan as RomRecordTable_FindRecordById, but returns the zero-based entry index, or -1 when no entry of
+   the table has the record id.
 */
 RomRecordTableIndex __thandor_eax_preserve_ecx_edx
 RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
@@ -390,17 +385,18 @@ RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
 {
   int recordIndex;
   int recordsRemaining;
-  
-  recordsRemaining = *(int *)((int)table + 0x3c);
+
+  recordsRemaining = *(int *)((int)table + FRONTEND_ROM_ACTION_TABLE_COUNT_OFFSET);
   recordIndex = 0;
   while( true ) {
     if (recordsRemaining == 0) {
       return 0xffffffff;
     }
-    if (recordId == *(RomRecordId *)((int)table + 0x21c)) break;
-    recordIndex = recordIndex + 1;
-    recordsRemaining = recordsRemaining + -1;
-    table = (void *)((int)table + 0x200);
+    if (recordId == *(RomRecordId *)((int)table + (FRONTEND_ROM_ACTION_TABLE_HEADER_SIZE +
+                                                    ROM_RECORD_TABLE_ENTRY_ID_OFFSET))) break;
+    recordIndex++;
+    recordsRemaining--;
+    table = (void *)((int)table + FRONTEND_ROM_ACTION_ENTRY_SIZE);
   }
   return recordIndex;
 }
@@ -566,37 +562,29 @@ RomRuntime_UpdateRecordVisibilityAndDescriptors
 
 
 /* Address: 0x00546330.
-   Ownership: assets/rom/runtime.
-   Purpose: Inserts a ROM record into the first free slot of a 256-entry, 8-byte runtime registry; converts its
-   root-node offset and recursive child offsets to pointers; loads each referenced sprite asset; reuses an existing
-   sprite by registryId when possible; otherwise prepares and registers the newly loaded sprite. CF and EAX errors
-   are preserved.
-   Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], WidePath_SetExtensionCode
-   [core/text/path], Package_LoadEntry [assets/package/runtime], SpriteAssetRegistry_FindById
-   [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers [assets/sprite/catalog], Resource_Release
-   [assets/resource/runtime].
+   Registers a ROM record in the first free slot of g_RomRegistrySlots and relocates its serialized node tree:
+   child offsets become pointers, and every node's ".spr" sprite is loaded, or an already registered sprite with
+   the same registry id is reused. Fails with FATAL_ERROR_ROM_REGISTRY_FULL or the loader's error.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase)
 
 {
-  int *unusedCounter;
   uint32_t rootNodeOffset;
   RomAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
   uint8_t *rootSerializedNode;
-  bool unusedFlag;
   StatusResult failureResult;
   PackageLoadResult loadResult;
   SpriteRegisterResult registerResult;
   StatusResult successResult;
   
-  slotsRemaining = 0x100;
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
   do {
-    if (slotCursor->record == (RomAssetRecordPrefix *)0x0) {
+    if (slotCursor->record == NULL) {
       rootNodeOffset = record->rootNodeOffsetOrPointer;
       slotCursor->record = record;
       if (rootNodeOffset == 0) {
@@ -627,12 +615,12 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
           }
           asset = loadResult.bufferOrError;
           existingSprite = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((uint8_t *)asset + 0xb8));
-          if (existingSprite != (SpriteAssetHeader *)0x0) {
+          if (existingSprite != NULL) {
             *(SpriteAssetHeader **)(node + 0x2c) = existingSprite;
             Resource_Release(asset);
           }
           else {
-            *(int *)(node + 0x30) = *(int *)(node + 0x30) + 1;
+            (*(int *)(node + 0x30))++; /* set only for sprites this node loaded itself */
             *(RomAssetHeader **)(node + 0x2c) = asset;
             registerResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
             if (registerResult.failed) {
@@ -663,13 +651,12 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
         }
       }
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
-  asset = (RomAssetHeader *)0x3b;
   failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)asset;
+  failureResult.valueOrError = FATAL_ERROR_ROM_REGISTRY_FULL;
   return failureResult;
 }
 
@@ -810,11 +797,8 @@ FrontendRomTransition_InitializeFromRecord
 
 
 /* Address: 0x005487A0.
-   Ownership: assets/rom/runtime.
-   Purpose: Finds a ROM record by recordId and returns the second dword stored in the matching RomRegistrySlot.
-   Error 0x3C is returned with CF set on a miss. Typed parameters: p0 recordId→RomRecordId_V308. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
+   Returns the runtime root node registered for the ROM record with the given id; fails with
+   FATAL_ERROR_ROM_RECORD_NOT_REGISTERED when no registry slot holds such a record.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
@@ -824,16 +808,16 @@ RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
   RomRegistrySlot *slotCursor;
   StatusResult foundResult;
   StatusResult missResult;
-  
-  slotsRemaining = 0x100;
+
+  slotsRemaining = ROM_REGISTRY_SLOT_COUNT;
   slotCursor = g_RomRegistrySlots;
-  while ((slotCursor->record == (RomAssetRecordPrefix *)0x0 ||
+  while ((slotCursor->record == NULL ||
          (recordId != slotCursor->record->recordId))) {
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
     if (slotsRemaining == 0) {
       missResult.failed = true;
-      missResult.valueOrError = 0x3c;
+      missResult.valueOrError = FATAL_ERROR_ROM_RECORD_NOT_REGISTERED;
       return missResult;
     }
   }
@@ -844,12 +828,10 @@ RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
 
 
 /* Address: 0x00548410.
-   Ownership: assets/rom/runtime.
-   Purpose: Bounds-checks an entry index against record dword +0x38, scans the associated descriptor table for type
-   4 with the same high index, and forwards the record and descriptor values to the existing graphics runtime
-   helper. EAX is preserved. Typed parameters: p0 entryIndex→RomRecordTableIndex_V331. Calling convention,
-   parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading].
+   Creates light entryIndex of a ROM record: finds the point-light descriptor with that index in the sprite of
+   the record's root node and allocates a shading light at its world position, using the colour and radius the
+   record stores for the entry (0x10-byte entries from +0x50). Indices beyond the record's count (+0x38) are
+   ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record)
@@ -857,20 +839,22 @@ RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordP
 {
   uint32_t descriptorsRemaining;
   uint32_t *descriptorCursor;
-  PackedRgb24 *descriptorColorPair;
-  int modelRuntimeNodeBaseAddress;
-  
+  PackedRgb24 *entryColorAndRadius;
+  int rootSpriteAddress;
+
   if (entryIndex < record[4].recordId) {
-    modelRuntimeNodeBaseAddress = *(int *)(record->rootNodeOffsetOrPointer + 0x2c);
-    descriptorColorPair = (PackedRgb24 *)(entryIndex * 0x10 + 0x50 + (int)record);
+    rootSpriteAddress = *(int *)(record->rootNodeOffsetOrPointer + 0x2c);
+    entryColorAndRadius = (PackedRgb24 *)(entryIndex * 0x10 + 0x50 + (int)record);
     descriptorCursor =
-         (uint32_t *)(modelRuntimeNodeBaseAddress + *(int *)(modelRuntimeNodeBaseAddress + 0xe4));
-    for (descriptorsRemaining = *(uint32_t *)(modelRuntimeNodeBaseAddress + 0xe8);
-        descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
-      if (((*descriptorCursor & 0xf) == 4) && (*descriptorCursor >> 4 == (entryIndex & 0xfffffff)))
+         (uint32_t *)(rootSpriteAddress + *(int *)(rootSpriteAddress + 0xe4));
+    for (descriptorsRemaining = *(uint32_t *)(rootSpriteAddress + 0xe8);
+        descriptorsRemaining != 0; descriptorsRemaining--) {
+      if (((*descriptorCursor & ROM_NODE_DESCRIPTOR_KIND_MASK) == ROM_NODE_DESCRIPTOR_KIND_LIGHT) &&
+          (*descriptorCursor >> 4 == (entryIndex & 0xfffffff)))
       {
+        /* descriptor dwords 1..3: world x, y, z (Q12) */
         GraphicsShadingRuntime_AllocateRecordRegs
-                  (0,descriptorColorPair[1],*descriptorColorPair,descriptorCursor[3],
+                  (0,entryColorAndRadius[1],*entryColorAndRadius,descriptorCursor[3],
                    descriptorCursor[2],descriptorCursor[1]);
         return;
       }

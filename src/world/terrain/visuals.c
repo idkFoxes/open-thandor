@@ -285,13 +285,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize
 
 
 /* Address: 0x00503F30.
-   Ownership: world/terrain/visuals.
-   Purpose: CF set propagates any resource failure. Ends in cell/boundary init + first direction-table pass (see
-   W10 bl...
-   Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
-   [movie/runtime/playback], Package_LoadEntry [assets/package/runtime],
-   FieldGrid_InitializeRuntimeCellsAndBoundaryFlags [world/terrain/grid], Random_NextPrimary [core/math/random],
-   TerrainDirectionTable_AdvanceAndRebuildVectors [world/terrain/grid].
+   Loads the terrain graphics of a field (fld asset, else FATAL_ERROR_FIELD_ASSET_INVALID): the 26 material
+   texture sets <secondary>a..z.gfx (those flagged in field->fieldFlags are required, the others optional),
+   <primary>.dat/.gfx/.pal and <secondary>.pal/.dat, then initialises the field's runtime cells and the
+   animated direction table. Advances the loading movie between steps; CF set with the error on failure.
 */
 StatusResult __thandor_void_preserve_ecx_edx
 TerrainVisualResources_LoadPrimary
@@ -317,29 +314,29 @@ TerrainVisualResources_LoadPrimary
   StatusResult failureStatus;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
   
-  loopCounter = 0x100;
+  loopCounter = 256; /* the path is scanned for at most 256 characters */
   pathScanCursor = secondaryResourcePath;
   do {
     pathScanNext = pathScanCursor;
     if (loopCounter == 0) break;
-    loopCounter = loopCounter + -1;
+    loopCounter--;
     pathScanNext = pathScanCursor + 1;
     pathCharOrRotationRate = *pathScanCursor;
     pathScanCursor = pathScanNext;
   } while (pathCharOrRotationRate != 0);
-  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext + -1);
-  loadedResourceOrError = (GraphicsPaletteAsset *)0x38;
+  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext - 1);
+  loadedResourceOrError = (GraphicsPaletteAsset *)FATAL_ERROR_FIELD_ASSET_INVALID;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
     materialFlagBits = field->fieldFlags;
     loopCounter = 0;
     do {
       if ((materialFlagBits & 1) != 0) {
-        loopCounter = loopCounter + 1;
+        loopCounter++;
       }
       materialFlagBits = materialFlagBits >> 1;
     } while (materialFlagBits != 0);
-    materialSlotsRemaining = 0x1a;
+    materialSlotsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
     materialFlagBits = field->fieldFlags;
     g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
     suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
@@ -347,17 +344,17 @@ TerrainVisualResources_LoadPrimary
     do {
       if ((materialFlagBits & 1) == 0) {
         *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         materialTextureSet = textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
-          materialTextureSet = (GraphicsTextureSet *)0x0;
+          materialTextureSet = NULL; /* optional material: missing is fine */
         }
         *materialTextureSetSlot = materialTextureSet;
       }
       else {
         *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
@@ -369,25 +366,25 @@ TerrainVisualResources_LoadPrimary
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
-      suffixLetterCursor = suffixLetterCursor + 1;
-      materialTextureSetSlot = materialTextureSetSlot + 1;
+      suffixLetterCursor++;
+      materialTextureSetSlot++;
       materialFlagBits = materialFlagBits >> 1;
-      materialSlotsRemaining = materialSlotsRemaining + -1;
+      materialSlotsRemaining--;
     } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(0x746164,primaryResourcePath);
+    WidePath_SetExtensionCode(0x746164,primaryResourcePath); /* ".dat" */
     packageLoad = Package_LoadEntry(primaryResourcePath);
     loadedResourceOrError = packageLoad.bufferOrError;
     if (!packageLoad.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
            &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
-      WidePath_SetExtensionCode(0x786667,primaryResourcePath);
+      WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
       textureSetLoad = g_GraphicsTextureSetLoadPackage(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
       if (!textureSetLoad.failed) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
-        WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
         paletteLoad = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath);
         loadedResourceOrError = paletteLoad.paletteAsset;
         if (!paletteLoad.failed) {
@@ -395,7 +392,7 @@ TerrainVisualResources_LoadPrimary
           g_TerrainPrimaryPalette = loadedResourceOrError;
           pathSuffixEntry->lowercaseLetterUtf16 = 0;
           pathSuffixEntry->terminator = 0;
-          WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
+          WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
           paletteLoad = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath);
           loadedResourceOrError = paletteLoad.paletteAsset;
           if (!paletteLoad.failed) {
@@ -403,7 +400,7 @@ TerrainVisualResources_LoadPrimary
             g_TerrainSecondaryPalette = loadedResourceOrError;
             pathSuffixEntry->lowercaseLetterUtf16 = 0;
             pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
+            WidePath_SetExtensionCode(0x746164,secondaryResourcePath); /* ".dat" */
             packageLoad = Package_LoadEntry(secondaryResourcePath);
             loadedResourceOrError = packageLoad.bufferOrError;
             if (!packageLoad.failed) {
@@ -412,12 +409,14 @@ TerrainVisualResources_LoadPrimary
                    &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
               FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              loopCounter = 0x100;
+              /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
+                 per step, random start angles */
+              loopCounter = 256;
               directionRecord = g_TerrainDirectionRecordTable256;
               do {
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -426,7 +425,7 @@ TerrainVisualResources_LoadPrimary
                 *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -437,8 +436,8 @@ TerrainVisualResources_LoadPrimary
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
-                directionRecord = directionRecord + 1;
-                loopCounter = loopCounter + -1;
+                directionRecord++;
+                loopCounter--;
               } while (loopCounter != 0);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               TerrainDirectionTable_AdvanceAndRebuildVectors();
@@ -457,16 +456,9 @@ TerrainVisualResources_LoadPrimary
 
 
 /* Address: 0x005041C0.
-   Ownership: world/terrain/visuals.
-   Purpose: Performs the same verified terrain texture, palette, data, lookup, and animation setup as
-   TerrainVisualResources_LoadPrimary, then clears bit 0x10000000 in flagsAndMaterial for every 0x80-byte field
-   cell. CF set propagates any resource failure. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Clears FLD +0x50 bit
-   0x10000000 over all cells. The clear operation is exact; the higher-level semantic meaning remains unresolved
-   and must stay conservatively named.
-   Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
-   [movie/runtime/playback], Package_LoadEntry [assets/package/runtime], FieldGrid_RebuildCellLookupPointers
-   [world/terrain/grid], Random_NextPrimary [core/math/random], TerrainDirectionTable_AdvanceAndRebuildVectors
-   [world/terrain/grid].
+   Variant of TerrainVisualResources_LoadPrimary for a field whose runtime cells already exist (loading a
+   savegame): the same resources are loaded, but the cells only get their lookup pointers rebuilt, and
+   flagsAndMaterial bit 28 (meaning unresolved) is cleared in every cell.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 TerrainVisualResources_LoadAndClearCellOverlayFlags
@@ -493,29 +485,29 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
   StatusResult failureStatus;
   TerrainMaterialSuffixEntry *pathSuffixEntry;
   
-  loopCounter = 0x100;
+  loopCounter = 256; /* the path is scanned for at most 256 characters */
   pathScanCursor = secondaryResourcePath;
   do {
     pathScanNext = pathScanCursor;
     if (loopCounter == 0) break;
-    loopCounter = loopCounter + -1;
+    loopCounter--;
     pathScanNext = pathScanCursor + 1;
     pathCharOrRotationRate = *pathScanCursor;
     pathScanCursor = pathScanNext;
   } while (pathCharOrRotationRate != 0);
-  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext + -1);
-  loadedResourceOrError = (GraphicsPaletteAsset *)0x38;
+  pathSuffixEntry = (TerrainMaterialSuffixEntry *)(pathScanNext - 1);
+  loadedResourceOrError = (GraphicsPaletteAsset *)FATAL_ERROR_FIELD_ASSET_INVALID;
   if (((field->common).magic == ASSET_MAGIC_FLD) &&
      ((field->common).converterVersion == PCK_CONVERTER_FLD_SHT_00060006)) {
     materialFlagBits = field->fieldFlags;
     loopCounter = 0;
     do {
       if ((materialFlagBits & 1) != 0) {
-        loopCounter = loopCounter + 1;
+        loopCounter++;
       }
       materialFlagBits = materialFlagBits >> 1;
     } while (materialFlagBits != 0);
-    materialSlotsRemaining = 0x1a;
+    materialSlotsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
     materialFlagBits = field->fieldFlags;
     g_MoviePlaybackScheduleSpan = loopCounter * 2 + 10;
     suffixLetterCursor = g_TerrainMaterialTextureSuffixLettersUtf16AtoZ;
@@ -523,17 +515,17 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
     do {
       if ((materialFlagBits & 1) == 0) {
         *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         materialTextureSet = textureSetLoad.textureSet;
         if (textureSetLoad.failed) {
-          materialTextureSet = (GraphicsTextureSet *)0x0;
+          materialTextureSet = NULL; /* optional material: missing is fine */
         }
         *materialTextureSetSlot = materialTextureSet;
       }
       else {
         *pathSuffixEntry = *suffixLetterCursor;
-        WidePath_SetExtensionCode(0x786667,secondaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_GFX,secondaryResourcePath);
         MoviePlayback_AdvanceScheduledFrameAndTick();
         textureSetLoad = g_GraphicsTextureSetLoadPackage(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
@@ -545,25 +537,25 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
-      suffixLetterCursor = suffixLetterCursor + 1;
-      materialTextureSetSlot = materialTextureSetSlot + 1;
+      suffixLetterCursor++;
+      materialTextureSetSlot++;
       materialFlagBits = materialFlagBits >> 1;
-      materialSlotsRemaining = materialSlotsRemaining + -1;
+      materialSlotsRemaining--;
     } while (materialSlotsRemaining != 0);
-    WidePath_SetExtensionCode(0x746164,primaryResourcePath);
+    WidePath_SetExtensionCode(0x746164,primaryResourcePath); /* ".dat" */
     packageLoad = Package_LoadEntry(primaryResourcePath);
     loadedResourceOrError = packageLoad.bufferOrError;
     if (!packageLoad.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       g_TerrainSurfacePacketTablePayload =
            &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
-      WidePath_SetExtensionCode(0x786667,primaryResourcePath);
+      WidePath_SetExtensionCode(ASSET_MAGIC_GFX,primaryResourcePath);
       textureSetLoad = g_GraphicsTextureSetLoadPackage(primaryResourcePath);
       loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
       if (!textureSetLoad.failed) {
         MoviePlayback_AdvanceScheduledFrameAndTick();
         g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)loadedResourceOrError;
-        WidePath_SetExtensionCode(0x6c6170,primaryResourcePath);
+        WidePath_SetExtensionCode(ASSET_MAGIC_PAL,primaryResourcePath);
         paletteLoad = g_GraphicsPaletteAssetLoadPackage(primaryResourcePath);
         loadedResourceOrError = paletteLoad.paletteAsset;
         if (!paletteLoad.failed) {
@@ -571,7 +563,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
           g_TerrainPrimaryPalette = loadedResourceOrError;
           pathSuffixEntry->lowercaseLetterUtf16 = 0;
           pathSuffixEntry->terminator = 0;
-          WidePath_SetExtensionCode(0x6c6170,secondaryResourcePath);
+          WidePath_SetExtensionCode(ASSET_MAGIC_PAL,secondaryResourcePath);
           paletteLoad = g_GraphicsPaletteAssetLoadPackage(secondaryResourcePath);
           loadedResourceOrError = paletteLoad.paletteAsset;
           if (!paletteLoad.failed) {
@@ -579,7 +571,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
             g_TerrainSecondaryPalette = loadedResourceOrError;
             pathSuffixEntry->lowercaseLetterUtf16 = 0;
             pathSuffixEntry->terminator = 0;
-            WidePath_SetExtensionCode(0x746164,secondaryResourcePath);
+            WidePath_SetExtensionCode(0x746164,secondaryResourcePath); /* ".dat" */
             packageLoad = Package_LoadEntry(secondaryResourcePath);
             loadedResourceOrError = packageLoad.bufferOrError;
             if (!packageLoad.failed) {
@@ -588,12 +580,14 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                    &((GraphicsTextureSetEntry *)loadedResourceOrError->reserved08_AF)->reserved18;
               FieldGrid_RebuildCellLookupPointers(field);
               MoviePlayback_AdvanceScheduledFrameAndTick();
-              loopCounter = 0x100;
+              /* random animation for the 256 direction records: scales 0x80..0x9F, rates +-(0x200..0x27F)
+                 per step, random start angles */
+              loopCounter = 256;
               directionRecord = g_TerrainDirectionRecordTable256;
               do {
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -602,7 +596,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                 *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 16) & 0x7f) + 0x200;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -613,8 +607,8 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                 directionRecord->angleAComponent0ScaledQ28 = 0;
                 directionRecord->angleAComponent1ScaledQ28 = 0;
                 directionRecord->angleBComponent0ScaledQ28 = 0;
-                directionRecord = directionRecord + 1;
-                loopCounter = loopCounter + -1;
+                directionRecord++;
+                loopCounter--;
               } while (loopCounter != 0);
               MoviePlayback_AdvanceScheduledFrameAndTick();
               loopCounter = field->gridWidth * field->gridHeight;
@@ -623,8 +617,8 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                 fieldCell->flagsAndMaterial =
                      fieldCell->flagsAndMaterial &
                      ~FIELD_CELL_TERRAIN_VISUAL_CLEARABLE_UNRESOLVED_BIT28;
-                fieldCell = fieldCell + 1;
-                loopCounter = loopCounter + -1;
+                fieldCell++;
+                loopCounter--;
               } while (loopCounter != 0);
               TerrainDirectionTable_AdvanceAndRebuildVectors();
               randomOrSuccessStatus.failed = false;
@@ -642,11 +636,9 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
 
 
 /* Address: 0x00504470.
-   Ownership: world/terrain/visuals.
-   Purpose: Releases and clears all 26 material texture sets, the shared primary texture set, both palettes, and
-   both package-backed data images. The data pointers are converted back from their verified +0x20 payload
-   addresses before Resource_Release.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Releases everything TerrainVisualResources_Load* loaded: the 26 material texture sets, the primary
+   texture set, both palettes and both .dat tables (their globals point 0x20 bytes into the loaded
+   resource, past its header, so that offset is undone before Resource_Release).
 */
 void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
 
@@ -654,42 +646,39 @@ void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void)
   int materialTextureSetsRemaining;
   GraphicsTextureSet **materialTextureSetCursor;
   void *surfacePacketTablePayload;
-  GraphicsTextureSet *releasedPrimaryTextureSet;
-  
+
   materialTextureSetCursor = g_TerrainMaterialTextureSets;
-  materialTextureSetsRemaining = 0x1a;
+  materialTextureSetsRemaining = TERRAIN_MATERIAL_TEXTURE_SET_COUNT;
   do {
-    if (*materialTextureSetCursor != (GraphicsTextureSet *)0x0) {
+    if (*materialTextureSetCursor != NULL) {
       g_GraphicsTextureSetReleasePackage(*materialTextureSetCursor);
-      *materialTextureSetCursor = (GraphicsTextureSet *)0x0;
+      *materialTextureSetCursor = NULL;
     }
-    materialTextureSetCursor = materialTextureSetCursor + 1;
-    materialTextureSetsRemaining = materialTextureSetsRemaining + -1;
+    materialTextureSetCursor++;
+    materialTextureSetsRemaining--;
   } while (materialTextureSetsRemaining != 0);
   g_GraphicsTextureSetReleasePackage(g_TerrainPrimaryTextureSet);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainSecondaryPalette);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_TerrainPrimaryPalette);
   surfacePacketTablePayload = g_TerrainSurfacePacketTablePayload;
-  if (g_TerrainSoilPacketTablePayload != (void *)0x0) {
-    Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload + -0x20));
+  if (g_TerrainSoilPacketTablePayload != NULL) {
+    Resource_Release((void *)((int)g_TerrainSoilPacketTablePayload - 0x20));
   }
-  if (surfacePacketTablePayload != (void *)0x0) {
-    Resource_Release((void *)((int)surfacePacketTablePayload + -0x20));
+  if (surfacePacketTablePayload != NULL) {
+    Resource_Release((void *)((int)surfacePacketTablePayload - 0x20));
   }
-  g_TerrainPrimaryTextureSet = (GraphicsTextureSet *)0x0;
-  g_TerrainSecondaryPalette = (GraphicsPaletteAsset *)0x0;
-  g_TerrainPrimaryPalette = (GraphicsPaletteAsset *)0x0;
-  g_TerrainSoilPacketTablePayload = (void *)0x0;
-  g_TerrainSurfacePacketTablePayload = (void *)0x0;
-  return;
+  g_TerrainPrimaryTextureSet = NULL;
+  g_TerrainSecondaryPalette = NULL;
+  g_TerrainPrimaryPalette = NULL;
+  g_TerrainSoilPacketTablePayload = NULL;
+  g_TerrainSurfacePacketTablePayload = NULL;
 }
 
 
 /* Address: 0x00505780.
-   Ownership: world/terrain/visuals.
-   Purpose: Typed parameters: p2 secondaryColorArgb→PackedArgb32, p3 baseColorArgb→PackedArgb32, p4
-   rampStepColorArgb→PackedArgb32. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Sets up the terrain lighting colours: g_TerrainLightingColorRampArgb256[i] = base + ramp * (256 - i) / 256
+   per colour channel (saturated at 0xFF, alpha taken from base), the directional-light LUT is filled with
+   the base colour and the secondary colour is stored in g_TerrainDirectionalLightSecondaryColor.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainLighting_BuildColorRampAndSetBaseColor
@@ -703,52 +692,52 @@ TerrainLighting_BuildColorRampAndSetBaseColor
   PackedArgb32 *lightLutCursor;
   
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
-  rampStepsRemaining = 0x100;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & 0xff) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff);
     if (0xff < channelValue) {
       channelValue = 0xff;
     }
     *rampEntryCursor = channelValue;
-    rampEntryCursor = rampEntryCursor + 1;
-    rampStepsRemaining = rampStepsRemaining + -1;
+    rampEntryCursor++;
+    rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
-  rampStepsRemaining = 0x100;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & 0xff00) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff00);
     if (0xffff < channelValue) {
       channelValue = 0xff00;
     }
     *rampEntryCursor = *rampEntryCursor | channelValue & 0xff00;
-    rampEntryCursor = rampEntryCursor + 1;
-    rampStepsRemaining = rampStepsRemaining + -1;
+    rampEntryCursor++;
+    rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
-  rampStepsRemaining = 0x100;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     channelValue = ((rampStepColorArgb & 0xff0000) * rampStepsRemaining >> 8) + (baseColorArgb & 0xff0000);
     if (0xffffff < channelValue) {
       channelValue = 0xff0000;
     }
     *rampEntryCursor = *rampEntryCursor | channelValue & 0xff0000;
-    rampEntryCursor = rampEntryCursor + 1;
-    rampStepsRemaining = rampStepsRemaining + -1;
+    rampEntryCursor++;
+    rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
-  rampStepsRemaining = 0x100;
+  rampStepsRemaining = TERRAIN_LIGHTING_RAMP_ENTRY_COUNT;
   do {
     *rampEntryCursor = *rampEntryCursor | baseColorArgb & 0xff000000;
-    rampEntryCursor = rampEntryCursor + 1;
-    rampStepsRemaining = rampStepsRemaining + -1;
+    rampEntryCursor++;
+    rampStepsRemaining--;
   } while (rampStepsRemaining != 0);
   g_TerrainDirectionalLightSecondaryColor = secondaryColorArgb;
   lightLutCursor = g_TerrainDirectionalLightColorLut;
-  for (rampStepsRemaining = 0x101; rampStepsRemaining != 0; rampStepsRemaining = rampStepsRemaining + -1) {
+  for (rampStepsRemaining = TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT; rampStepsRemaining != 0;
+       rampStepsRemaining--) {
     *lightLutCursor = baseColorArgb;
-    lightLutCursor = lightLutCursor + 1;
+    lightLutCursor++;
   }
-  return;
 }
 
 
@@ -797,9 +786,9 @@ TerrainLighting_AdjustDirectionAndRecomputeField
 
 
 /* Address: 0x0053D560.
-   Ownership: world/terrain/visuals.
-   Purpose: Rebuilds sourceEntries[1] using field-grid terrain height, material selection, active palette data, and
-   the verified height-dependent shading table.
+   Renders plane 1 of the terrain composite texture (the minimap image, one ARGB pixel per field cell):
+   dry cells get their material's panel colour shaded by terrain height, flooded cells the water colour
+   (palette entry 0) shaded by water depth, both through g_PackedLightingLookupTable.
 */
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void)
 
@@ -830,7 +819,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
   do {
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
-        lightingLevelIndex = fieldCell->terrainHeight >> 7;
+        lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
         materialColorArgb = *(uint32_t *)
                  (panelTextureSource[panelSubresourceIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                  (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
@@ -850,7 +839,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
         *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       else {
-        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
+        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
         waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
         if (lightingLevelIndex < 0) {
           if (lightingLevelIndex < -0x3f) {
@@ -868,21 +857,20 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
                     g_PackedLightingLookupTable[lightingLevelIndex]);
         *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue1);
       }
-      fieldCell = fieldCell + 1;
+      fieldCell++;
       planePixelCursor = planePixelCursor + 4;
-      columnsRemaining = columnsRemaining - 1;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = textureWidth;
   } while (rowsRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x0053D680.
-   Ownership: world/terrain/visuals.
-   Purpose: Rebuilds sourceEntries[2] using secondary field flags, palette data, terrain height, and the verified
-   shading paths.
+   Renders plane 2 of the terrain composite texture, the resource view of the minimap: Xenite, Tritium and
+   plain soil cells get their panel colours shaded by terrain height, and water is blended 50/50 over
+   flooded cells.
 */
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void)
 
@@ -919,7 +907,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
     do {
       if ((fieldCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
         if ((fieldCell->flagsAndMaterial & FIELD_CELL_TRITIUM_SUPPORT) == 0) {
-          lightingLevelIndex = fieldCell->terrainHeight >> 7;
+          lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
           soilColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.magic;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = 0x70;
@@ -936,7 +924,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
           *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue3);
         }
         else {
-          lightingLevelIndex = fieldCell->terrainHeight >> 7;
+          lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
           tritiumColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.buildMetadata.timestamps.dateValue0;
           if (lightingLevelIndex < 0) {
             lightingLevelIndex = 0x70;
@@ -954,7 +942,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         }
       }
       else {
-        lightingLevelIndex = fieldCell->terrainHeight >> 7;
+        lightingLevelIndex = fieldCell->terrainHeight >> 7; /* height levels 0x70..0xCF */
         xeniteColorArgb = panelTextureSource[panelSubresourceIndex * 4 + 2].common.formatVersion;
         if (lightingLevelIndex < 0) {
           lightingLevelIndex = 0x70;
@@ -971,7 +959,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
-        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
+        lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5; /* depth levels 0xBF down to 0x80 */
         waterColorArgb = g_TerrainPrimaryPalette->paletteEntries[0].argb8888;
         if (lightingLevelIndex < 0) {
           if (lightingLevelIndex < -0x3f) {
@@ -993,25 +981,23 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
              TerrainColor_PackWordsUnsignedSaturate
                        (TerrainColor_AverageWordsWithPixelBytes(mm0PackedValue1,existingPixelArgb));
       }
-      fieldCell = fieldCell + 1;
+      fieldCell++;
       planePixelCursor = planePixelCursor + 4;
-      columnsRemaining = columnsRemaining - 1;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = textureWidth;
   } while (rowsRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x0053D840.
-   Ownership: world/terrain/visuals.
-   Purpose: Copies either plane one or plane two into sourceEntries[0] according to active mode bit 1, applies per-
-   cell attenuation masks, and overlays eligible active entities at their field-grid positions.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid], SelectionInfo_FindEntry
-   [gameplay/selection/runtime].
+   Builds the displayed minimap (plane 0): copies plane 1 (terrain) or, with bit 1 of
+   observedTerrainCompositeFlags4938, plane 2 (resources), hides cells the active faction has never seen
+   (almost black) and darkens those it does not see now, then draws a pixel for each model runtime with an
+   alpha tint whose faction has a non-zero factionClassOrMode, in the panel colour of variant
+   factionClassOrMode when selected, variant 0 otherwise (blended 50/50 for a tint alpha below 0xFF).
 */
-
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(void)
 
 {
@@ -1051,7 +1037,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
   pixelCursor = (g_TerrainCompositeTexture->textureSource).common.buildMetadata.
             assetRelativeAddressAnchor28 + (assetOffset - 0x28);
   plane0WriteCursor = plane0Pixels;
-  for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn = counterOrGridColumn + -1) {
+  for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn--) {
     *(uint32_t *)plane0WriteCursor = *(uint32_t *)pixelCursor;
     pixelCursor = pixelCursor + 4;
     plane0WriteCursor = plane0WriteCursor + 4;
@@ -1060,27 +1046,28 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
   fieldCell = ((inGameRoot->worldRuntime0A30).fieldGrid)->cells;
   pixelCursor = plane0Pixels;
   do {
-    visibilityFlags = fieldCell->runtime60_6B[counterOrGridColumn + 0x10];
+    visibilityFlags = fieldCell->runtime60_6B[counterOrGridColumn + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK];
     pixelArgb = (uint32_t)visibilityFlags;
-    if ((visibilityFlags & 0x79) == 0) {
-      if ((visibilityFlags & 0xf9) != 0) {
+    if ((visibilityFlags & FIELD_CELL_OCCUPANCY_CURRENT_PRESENCE_BITS) == 0) {
+      if ((visibilityFlags & FIELD_CELL_OCCUPANCY_PRESENCE_BITS) != 0) {
+        /* seen before: halve every channel */
         pixelArgb = (*(uint32_t *)pixelCursor & 0xfefefefe) >> 1;
       }
       *(uint32_t *)pixelCursor = pixelArgb;
     }
-    fieldCell = fieldCell + 1;
+    fieldCell++;
     pixelCursor = pixelCursor + 4;
-    cellsRemainingOrRowQ12 = cellsRemainingOrRowQ12 + -1;
+    cellsRemainingOrRowQ12--;
   } while (cellsRemainingOrRowQ12 != 0);
-  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+  for (ownerNode = (inGameRoot->worldRuntime0A30).ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (0xffffff < ownerNode->modelTintArgb)) {
       gridCoordinates = FieldGrid_WorldToGridQ12(ownerNode->worldYQ12,ownerNode->worldXQ12);
       panelTextureSource = g_InGamePanelTextureSource;
       cellsRemainingOrRowQ12 = gridCoordinates.rowQ12;
-      counterOrGridColumn = gridCoordinates.columnQ12 + 0x800 >> 0xc;
+      counterOrGridColumn = gridCoordinates.columnQ12 + 0x800 >> 12; /* round to the nearest cell */
       if ((SCARRY4(cellsRemainingOrRowQ12,0x800) == counterOrGridColumn < 0) &&
-         (((gridRow = cellsRemainingOrRowQ12 + 0x800 >> 0xc, SCARRY4(cellsRemainingOrRowQ12,0x800) == gridRow < 0 &&
+         (((gridRow = cellsRemainingOrRowQ12 + 0x800 >> 12, SCARRY4(cellsRemainingOrRowQ12,0x800) == gridRow < 0 &&
            (counterOrGridColumn < (int)textureWidth)) && (gridRow < (int)textureHeight)))) {
         ownerEntity = *(GameEntityRuntime **)((int)ownerNode->runtimePayload + 8);
         colorVariant = g_GameFactionRuntimeImage.records[(ownerEntity->common).ownership.ownerIndex].
@@ -1103,6 +1090,5 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
       }
     }
   }
-  return;
 }
 

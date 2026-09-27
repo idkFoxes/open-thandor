@@ -12,6 +12,18 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/technology. */
+
+/* Technology window actions (InGameUiImage.technologyResearchButton, technologyAreaTab1..7) */
+#define INGAME_ACTION_TECHNOLOGY_RESEARCH 0x1013
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB1 0x1014
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB2 0x1015
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB3 0x1016
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB4 0x1017
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB5 0x1018
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB6 0x1019
+#define INGAME_ACTION_TECHNOLOGY_AREA_TAB7 0x101A
+/* Technology texts: name 0x300000 + 2 * technology id, description the id after it */
+#define TECHNOLOGY_TEXT_ID_BASE 0x300000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056AE70 */

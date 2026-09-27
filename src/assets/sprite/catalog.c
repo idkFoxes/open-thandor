@@ -24,14 +24,13 @@ void SpriteAsset_ValidateGroupCount(void)
 }
 
 /* Address: 0x004BE480.
-   Ownership: assets/sprite/catalog.
-   Purpose: Clears the global linked-list head used to reuse already prepared sprite assets by registryId.
+   Empties the registry of already relocated sprite assets (the list SpriteAssetRegistry_FindById walks),
+   so the next load of any sprite registers and relocates it afresh.
 */
 void SpriteAssetRegistry_Reset(void)
 
 {
-  g_SpriteAssetRegistryHead = (SpriteAssetHeader *)0x0;
-  return;
+  g_SpriteAssetRegistryHead = NULL;
 }
 
 /* Address: 0x004BE490.

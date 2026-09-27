@@ -598,13 +598,12 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
 
 
 /* Address: 0x00545290.
-   Ownership: assets/scenario/catalog.
-   Purpose: Exact four-argument callback wrapper that ignores its arguments and invokes
-   FrontendRomTransition_RequestStop.
-   Cross-module calls: FrontendRomTransition_RequestStop [assets/rom/runtime].
+   Handler of FRONTEND_COMMAND_STOP_ROM_TRANSITION (frontend command signature: player id and three arguments,
+   all ignored): skips the running menu-room camera flight via FrontendRomTransition_RequestStop.
 */
 void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t unusedArg0,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
+ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,
+                                                 uint32_t unusedArg3)
 
 {
   FrontendRomTransition_RequestStop();
@@ -1334,10 +1333,10 @@ ScenarioCatalog_RebuildCampaignRecordListPage
 
 
 /* Address: 0x00549F70.
-   Ownership: assets/scenario/catalog.
-   Purpose: Merges source records of exactly 0x100 bytes into a destination array. It compares the first 0x40
-   identifier bytes, replaces matching records, appends new identifiers, and returns the updated destination count
-   in EDX; EAX is preserved by the original routine.
+   Merges sourceByteCount / 0x100 catalog records into destinationRecords, matching them by their 0x40-byte
+   UTF-16 identifier: a match is overwritten, a new identifier is appended. Returns the new destination
+   record count (EDX in the original). The original scans with REPE CMPSD and copies with REP MOVSD; like it,
+   the loops assume at least one source and one existing destination record.
 */
 ScenarioCatalogRecordCount __thandor_void_preserve_eax_ecx
 ScenarioCatalog_MergeRecordsByName
@@ -1355,35 +1354,37 @@ ScenarioCatalog_MergeRecordsByName
   bool recordNamesEqual;
   
   recordNamesEqual = true;
-  sourceRecordsRemaining = sourceByteCount / 0x100;
+  sourceRecordsRemaining = sourceByteCount / SCENARIO_CATALOG_RECORD_SIZE;
   destinationRecordsRemaining = existingRecordCount;
   destinationRecordCursor = destinationRecords;
   do {
+    /* compare the 0x40-byte identifiers dword by dword (the cursors advance by 4 bytes) */
     dwordsRemaining = 0x10;
     sourceNameCursor = sourceRecords;
     destinationNameCursor = destinationRecordCursor;
     do {
       if (dwordsRemaining == 0) break;
-      dwordsRemaining = dwordsRemaining + -1;
+      dwordsRemaining--;
       recordNamesEqual =
            *(int *)sourceNameCursor->identifier == *(int *)destinationNameCursor->identifier;
       sourceNameCursor = (ScenarioCatalogRecord *)(sourceNameCursor->identifier + 2);
       destinationNameCursor = (ScenarioCatalogRecord *)(destinationNameCursor->identifier + 2);
     } while (recordNamesEqual);
     if (!recordNamesEqual) {
-      destinationRecordCursor = destinationRecordCursor + 1;
-      destinationRecordsRemaining = destinationRecordsRemaining - 1;
+      destinationRecordCursor++;
+      destinationRecordsRemaining--;
       recordNamesEqual = destinationRecordsRemaining == 0;
       if (!recordNamesEqual) continue; /* compare with the next destination record */
       /* No match: append after the existing records. */
-      existingRecordCount = existingRecordCount + 1;
+      existingRecordCount++;
     }
-    for (copyDwordsRemaining = 0x40; copyDwordsRemaining != 0; copyDwordsRemaining = copyDwordsRemaining + -1) {
+    /* copy the whole 0x100-byte record; this also advances sourceRecords to the next source record */
+    for (copyDwordsRemaining = 0x40; copyDwordsRemaining != 0; copyDwordsRemaining--) {
       *(uint32_t *)destinationRecordCursor->identifier = *(uint32_t *)sourceRecords->identifier;
       sourceRecords = (ScenarioCatalogRecord *)(sourceRecords->identifier + 2);
       destinationRecordCursor = (ScenarioCatalogRecord *)(destinationRecordCursor->identifier + 2);
     }
-    sourceRecordsRemaining = sourceRecordsRemaining - 1;
+    sourceRecordsRemaining--;
     recordNamesEqual = false;
     destinationRecordsRemaining = existingRecordCount;
     destinationRecordCursor = destinationRecords;
@@ -1395,29 +1396,28 @@ ScenarioCatalog_MergeRecordsByName
 
 
 /* Address: 0x00544870.
-   Ownership: assets/scenario/catalog.
-   Purpose: Builds the selected level path, releases the previous level asset, loads or requests the level image,
-   optionally publishes an encoded host copy, and marks matching player blocks as level-ready.
-   Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode
-   [core/text/path], UiPageStack_SetActiveIndex [ui/controls/layout], FrontendState_DispatchCode
-   [ui/frontend/runtime], Resource_Release [assets/resource/runtime], Package_LoadEntry [assets/package/runtime].
+   Handler for starting a single-game level (frontend command 0x920 in a network game): builds the level path,
+   returns the frontend to the main page, drops the previously loaded level and its field grid, then loads the
+   level. The host also packs it into the transfer mailbox for the clients; a client loads it from its own disk
+   only when its catalog level mask has it, otherwise it requests it (SCENARIO_TRANSFER_LEVEL). Every other
+   player whose mask has the level is marked as having it locally with a finished transfer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestLevelAsset
-          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRecordIndex)
+          (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t selectedRowIndex)
 
 {
   FrontendRoleStateFlags *roleFlags;
-  UiPageStackControl *stack;
-  PckDecodedByteCount sourceSizeBytes;
+  UiPageStackControl *pageStack;
+  PckDecodedByteCount levelSizeBytes;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
-  FrontendLoadedLevelRuntimeImage370 *source;
-  uint32_t maskWordIndex;
-  uint32_t byteCountOrOffset;
+  FrontendLoadedLevelRuntimeImage370 *levelAsset;
+  uint32_t maskWordIndex; /* also the dword counter of the mailbox copy */
+  uint32_t byteCountOrOffset; /* packed size (host) or byte offset of the level record in the catalog */
   int rootOrRemaining;
-  uint8_t *destination;
-  uint32_t *encodedSourceDwords;
+  uint8_t *packedDestination;
+  uint32_t *packedSourceDwords;
   FrontendPlayerRuntimeRecord *playerCursor;
   uint32_t *outgoingDwordCursor;
   PackageLoadResult loadedEntry;
@@ -1427,56 +1427,61 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   bool levelLoadedLocally;
 
   rootOrRemaining = g_FrontendRootNode;
-  stack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);
+  pageStack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
              (uint16_t *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                     [selectedRecordIndex],
+                     [selectedRowIndex],
              (uint16_t *)u_level_0050daac);
-  WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
-  UiPageStack_SetActiveIndex(0,stack);
+  WidePath_SetExtensionCode(0x76656c /* "lev" */,&g_FrontendScenarioPathScratchUtf16);
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,pageStack);
   FRONTEND_UI_FIELD(rootOrRemaining,menuRoomModelView,0x4C,uint32_t) =
-       FRONTEND_UI_FIELD(rootOrRemaining,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
-  FrontendState_DispatchCode(1);
-  if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
-     (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
-    Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
-                             levelPathOffsetOrLoadedFieldGrid);
+       FRONTEND_UI_FIELD(rootOrRemaining,menuRoomModelView,0x4C,uint32_t) & ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  FrontendState_DispatchCode(1); /* ROM action table entry 1 */
+  /* levelPathOffsetOrLoadedFieldGrid holds the field-grid path offset until the grid is loaded, then its
+     pointer: only values above 0xFFFF are loaded grids */
+  if ((g_FrontendLoadedLevelAsset != NULL) &&
+     (0xffff < g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid)) {
+    Resource_Release((void *)g_FrontendLoadedLevelAsset->header.pathState.levelPathOffsetOrLoadedFieldGrid);
   }
   Resource_Release(g_FrontendLoadedLevelAsset);
-  g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
-  roleFlags = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
-  *roleFlags = *roleFlags | 2;
+  g_FrontendLoadedLevelAsset = NULL;
+  roleFlags = &g_FrontendPlayerRuntimeBlocks->factionAssignment.roleStateFlags;
+  *roleFlags = *roleFlags | FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
     checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
-    encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
-    source = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
+    packedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
+    levelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
-      sourceSizeBytes = (source->header).common.allocationSizeBytes;
-      destination = g_PackageScratchBuffer + 4;
-      g_FrontendLoadedLevelAsset = source;
-      *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceSizeBytes;
-      encodeResult = PckCodec_EncodeHuffmanRle(0x7ffffc,destination,sourceSizeBytes,(uint8_t *)source);
+      /* host: mailbox packet = unpacked size dword + Huffman/RLE-packed level */
+      levelSizeBytes = levelAsset->header.common.allocationSizeBytes;
+      packedDestination = g_PackageScratchBuffer + 4;
+      g_FrontendLoadedLevelAsset = levelAsset;
+      *(PckDecodedByteCount *)g_PackageScratchBuffer = levelSizeBytes;
+      encodeResult = PckCodec_EncodeHuffmanRle(PACKAGE_SCRATCH_BUFFER_BYTES - 4,packedDestination,levelSizeBytes,
+                                               (uint8_t *)levelAsset);
       checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       byteCountOrOffset = checkedResult.valueOrError + 4;
       allocation = g_MemoryApi.alloc(byteCountOrOffset);
       checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
       outgoingDwordCursor = (uint32_t *)checkedResult.valueOrError;
-      for (maskWordIndex = byteCountOrOffset >> 2; maskWordIndex != 0; maskWordIndex = maskWordIndex - 1) {
-        *outgoingDwordCursor = *encodedSourceDwords;
-        encodedSourceDwords = encodedSourceDwords + 1;
-        outgoingDwordCursor = outgoingDwordCursor + 1;
+      for (maskWordIndex = byteCountOrOffset >> 2; maskWordIndex != 0; maskWordIndex--) {
+        *outgoingDwordCursor = *packedSourceDwords;
+        packedSourceDwords++;
+        outgoingDwordCursor++;
       }
       UiTransferMailbox_SetOutgoingBuffer(byteCountOrOffset,(uint32_t *)checkedResult.valueOrError);
-      source = g_FrontendLoadedLevelAsset;
+      levelAsset = g_FrontendLoadedLevelAsset;
     }
   }
   else {
+    /* The level's bit in the players' level masks: record offset / 0x100 is the level index, split into
+       mask dword (offset >> 13) and bit ((offset >> 8) & 31); there are three mask dwords (96 levels). */
     byteCountOrOffset = ((int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                                   [selectedRecordIndex] -
+                                   [selectedRowIndex] -
             (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
-    maskWordIndex = byteCountOrOffset >> 0xd;
+    maskWordIndex = byteCountOrOffset >> 13;
     /* Client: load the level locally when the local player's level mask has it, else request it. */
     levelLoadedLocally = false;
     if (maskWordIndex < 3) {
@@ -1487,36 +1492,37 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
           if ((*(uint32_t *)(playerCursor[1].reserved78_7F + maskWordIndex * 4 + 0xc) &
               1 << ((uint8_t)(byteCountOrOffset >> 8) & 0x1f)) != 0) {
             loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-            source = loadedEntry.bufferOrError;
+            levelAsset = loadedEntry.bufferOrError;
             levelLoadedLocally = !loadedEntry.failed;
           }
           break;
         }
-        rootOrRemaining = rootOrRemaining + -1;
-        playerCursor = playerCursor + 1;
+        rootOrRemaining--;
+        playerCursor++;
       } while (rootOrRemaining != 0);
     }
     if (!levelLoadedLocally) {
       UiTransferMailbox_MarkUnavailable();
-      g_FrontendScenarioTransferState = 2;
-      source = g_FrontendLoadedLevelAsset;
+      g_FrontendScenarioTransferState = SCENARIO_TRANSFER_LEVEL;
+      levelAsset = g_FrontendLoadedLevelAsset;
     }
   }
-  g_FrontendLoadedLevelAsset = source;
+  g_FrontendLoadedLevelAsset = levelAsset;
   byteCountOrOffset = ((int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
-                                 [selectedRecordIndex] -
+                                 [selectedRowIndex] -
           (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
-  maskWordIndex = byteCountOrOffset >> 0xd;
+  maskWordIndex = byteCountOrOffset >> 13;
   playerCursor = g_FrontendPlayerRuntimeBlocks;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   if (maskWordIndex < 3) {
+    /* every other player (block 1..) */
     while (playerRecord = playerCursor, playersRemaining = playersRemaining - 1, playersRemaining != 0) {
       playerCursor = playerRecord + 1;
       if ((*(uint32_t *)(playerRecord[1].reserved78_7F + maskWordIndex * 4 + 0xc) & 1 << ((uint8_t)(byteCountOrOffset >> 8) & 0x1f))
           != 0) {
         roleFlags = &playerRecord[1].factionAssignment.roleStateFlags;
-        *roleFlags = *roleFlags | 0x12;
-        playerRecord[1].runtimeState70 = 0x7fffffff;
+        *roleFlags = *roleFlags | (FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY | FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT);
+        playerRecord[1].runtimeState70 = 0x7fffffff; /* transfer progress: complete */
       }
     }
   }
@@ -1692,30 +1698,29 @@ FrontendScenarioSelection_ActivateSelectedRecord
 
 
 /* Address: 0x005451F0.
-   Ownership: assets/scenario/catalog.
-   Purpose: Selection-change callback for the second scenario list. It derives the output display ID as record
-   field +0x70 times 0x10 plus 0x230010. Typed parameters: p3 selectionIndex→UiListRowIndex_V300. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiPointerList_SelectIndexVariantB [ui/controls/lists].
+   Selection callback of the single-game (missions) list: selects the row and shows the level's description
+   text (TEXT_ID_LEVEL_DESCRIPTION_BASE + 0x10 * the record's title index at +0x70) in the description box,
+   which keeps the empty placeholder while the list has no rows.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField70DisplayId
           (uint32_t playerRuntimeId,uint32_t unusedArg1,uint32_t unusedArg2,UiListRowIndex selectionIndex)
 
 {
-  UiPointerListControl *control;
+  UiPointerListControl *listControl;
   int rowPointers;
   int frontendRoot;
-  
+
   frontendRoot = g_FrontendRootNode;
   rowPointers = (int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots;
-  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
-  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text = (uint16_t *)0x215d;
+  listControl = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
+  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text =
+       (uint16_t *)TEXT_ID_SCENARIO_DESCRIPTION_EMPTY;
   if (rowPointers != 0) {
-    UiPointerList_SelectIndexVariantB(selectionIndex,control);
+    UiPointerList_SelectIndexVariantB(selectionIndex,listControl);
     ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,missionDescriptionText))->text =
-         (uint16_t *)(*(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x70) * 0x10 + 0x230010);
+         (uint16_t *)(*(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x70) * 0x10 +
+                      TEXT_ID_LEVEL_DESCRIPTION_BASE);
   }
   return;
 }

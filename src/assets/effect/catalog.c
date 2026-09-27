@@ -11,13 +11,10 @@
 /* Implementation ownership: assets/effect/catalog. */
 
 /* Address: 0x0051E0B0.
-   Ownership: assets/effect/catalog.
-   Purpose: Validates the 'eff' magic and converter version 0x00040007, then prepares entryCount fixed 0xC0-byte
-   entries beginning at +0x200. Preparation stops on the first CF-set entry failure. Invalid headers are copied to
-   the package last-error path. Payload fields remain opaque. Role: Walks the EFF asset table and registers every
-   serialized effect definition.
-   Local calls: EffectDefinition_RegisterAndLoadSprite.
-   Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
+   Registers every effect definition of a loaded EFF asset: checks the 'eff' magic and converter version
+   0x40007, then hands each 0xC0-byte record after the 0x200-byte header to
+   EffectDefinition_RegisterAndLoadSprite, stopping at the first failure. An invalid header leaves the asset
+   path in g_PackageLastErrorPath and fails with FATAL_ERROR_EFFECT_ASSET_INVALID.
 */
 StatusResult __thandor_void_preserve_ecx_edx
 EffectAsset_PrepareEntries(EffectAssetHeader *asset)
@@ -25,27 +22,27 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 {
   uint32_t registrationStatusCode;
   AssetRecordCount remainingEntryCount;
-  EffectAssetHeader *definition;
-  EffectDefinition *definitionCursor;
+  EffectDefinition *definition;
   StatusResult registrationResult;
   StatusResult failureResult;
-  
-  registrationStatusCode = 0x47;
-  if (((asset->entryCountHeader).common.magic == ASSET_MAGIC_EFF) &&
-     ((asset->entryCountHeader).common.converterVersion == PCK_CONVERTER_EFF_00040007)) {
-    remainingEntryCount = (asset->entryCountHeader).entryCount;
-    definition = asset + 1;
+
+  registrationStatusCode = FATAL_ERROR_EFFECT_ASSET_INVALID;
+  if ((asset->entryCountHeader.common.magic == ASSET_MAGIC_EFF) &&
+     (asset->entryCountHeader.common.converterVersion == PCK_CONVERTER_EFF_00040007)) {
+    remainingEntryCount = asset->entryCountHeader.entryCount;
+    definition = (EffectDefinition *)(asset + 1);
     while( true ) {
       if (remainingEntryCount == 0) {
+        /* success hands back EAX as it was: the error code preset or the last registration result */
         registrationResult.failed = false;
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
       }
-      registrationResult = EffectDefinition_RegisterAndLoadSprite((EffectDefinition *)definition);
+      registrationResult = EffectDefinition_RegisterAndLoadSprite(definition);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
-      definition = (EffectAssetHeader *)(definition->reservedB4_1FF + 0xc);
-      remainingEntryCount = remainingEntryCount - 1;
+      definition++;
+      remainingEntryCount--;
     }
   }
   else {
@@ -58,11 +55,9 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 
 
 /* Address: 0x0051E3E0.
-   Ownership: assets/effect/catalog.
-   Purpose: Walks all effect definitions and resolves stored effect and shot definition identifiers into runtime
-   pointers.
-   Local calls: EffectDefinitionRegistry_FindByIdWithError.
-   Cross-module calls: ShotDefinitionRegistry_FindByIdWithError [assets/shot/catalog].
+   Runs once all effect and shot assets are registered: replaces the linked effect and linked shot ids stored
+   in every registered effect definition by pointers to those definitions. Fails with the lookup's error when
+   an id is not registered.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossReferences(void)
 
@@ -75,12 +70,12 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
   EffectDefinitionResult effectLookup;
   ShotDefinitionResult shotLookup;
   EffectDefinition *currentDefinition;
-  
+
   registryCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
+  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
   do {
     currentDefinition = *registryCursor;
-    if (currentDefinition != (EffectDefinition *)0x0) {
+    if (currentDefinition != NULL) {
       if (currentDefinition->linkedEffectPresent != 0) {
         effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
@@ -100,8 +95,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
         currentDefinition->linkedShotDefinition = shotLookup.definitionOrError;
       }
     }
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
   } while (registrySlotsRemaining != 0);
   successResult.failed = false;
   successResult.valueOrError = lastResolvedDefinition;
@@ -188,9 +183,9 @@ EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError:
 
 
 /* Address: 0x0051E440.
-   Ownership: assets/effect/catalog.
-   Purpose: Returns null for identifier zero, otherwise scans the 256-slot effect registry. On a miss it formats
-   the identifier into g_PackageLastErrorPath and returns error 0x48 with CF set.
+   Looks up a registered effect definition by id, used to turn serialized effect ids into pointers. Id 0
+   means "no effect" and yields NULL. An unknown id is written as decimal text to g_PackageLastErrorPath and
+   fails with FATAL_ERROR_EFFECT_ID_NOT_FOUND.
 */
 EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId)
@@ -201,20 +196,20 @@ EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definiti
   EffectDefinition **registryCursor;
   EffectDefinitionResult missResult;
   EffectDefinitionResult foundResult;
-  
+
   registryCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
-  candidateDefinition = (EffectDefinition *)0x0;
+  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
+  candidateDefinition = NULL;
   if (definitionId != 0) {
-    while ((candidateDefinition = *registryCursor, candidateDefinition == (EffectDefinition *)0x0 ||
+    while ((candidateDefinition = *registryCursor, candidateDefinition == NULL ||
            (candidateDefinition->definitionId != definitionId))) {
-      registryCursor = registryCursor + 1;
-      registrySlotsRemaining = registrySlotsRemaining + -1;
+      registryCursor++;
+      registrySlotsRemaining--;
       if (registrySlotsRemaining == 0) {
         g_WideNumberFormatUtf16
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
         missResult.notFound = true;
-        missResult.definitionOrError = (EffectDefinition *)0x48;
+        missResult.definitionOrError = (EffectDefinition *)FATAL_ERROR_EFFECT_ID_NOT_FOUND;
         return missResult;
       }
     }

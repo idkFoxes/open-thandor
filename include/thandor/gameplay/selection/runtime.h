@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/selection/runtime. */
+
+/* Entries of a SelectionPointerArray32 / SelectionInfoEntitySlots (empty entries are NULL). */
+#define SELECTION_ENTRY_CAPACITY 32
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052E350 */
@@ -36,14 +39,14 @@ InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
 /* 0x0055FE70 */
 void __thandor_preserve_eax_edx
 InGamePlayerSelection_ApplyPositionCommandVariantB
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
-          CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FEA0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
-          CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 worldXQ12,
+          CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FED0 */
 void __thandor_preserve_eax
@@ -54,8 +57,8 @@ InGamePlayerSelection_SelectArmyRuntimeIndex
 /* 0x0055FF10 */
 void __thandor_void_preserve_eax_ecx_edx
 InGamePlayerSelection_ApplyTargetPositionCommand
-          (PlayerRuntimeId playerId,CommandPayloadDword04 payloadDword04,
-          CommandPayloadDword08 payloadDword08,CommandPayloadDword0C payloadDword0C);
+          (PlayerRuntimeId playerId,CommandPayloadDword04 surfaceHeightQ12,
+          CommandPayloadDword08 worldXQ12,CommandPayloadDword0C worldYQ12);
 
 /* 0x0055FF40 */
 void __thandor_preserve_eax

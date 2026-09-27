@@ -147,23 +147,22 @@ Q12 g_ArmyPlacementValidatedWorldXQ12;
 Q12 g_ArmyPlacementValidatedWorldYQ12;
 
 /* Address: 0x0051D380.
-   Ownership: gameplay/army/placement.
-   Purpose: Validates one army asset placement at the requested point and aligned cell corners; CF carries
-   acceptance. Typed parameters: p0 placementMode→ArmyPlacementMode_V344, p4
-   placementContext→ArmyPlacementContext_V344. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyPlacement_DispatchAssetAtFieldPoint.
+   Tests whether an army asset can be placed at a point (the placement cursor, a build command): first at
+   the point itself, then at four points around it (the point rounded down to a multiple of 0x100, plus 0 or
+   0x240 on each axis). Returns false (CF clear) when one fits and leaves the accepted point in
+   g_ArmyPlacementValidatedWorldXQ12/YQ12 (the original's ECX/EDX); true when none fits.
 */
 bool __thandor_preserve_eax
 ArmyPlacement_ValidateAssetAtPointAndCellCorners
-          (ArmyPlacementMode placementMode,PckArmyAssetIdCatalog armyAssetId,Q12 worldYQ12,
-          Q12 worldXQ12,ArmyPlacementContext placementContext,FactionRuntimeIndex ownerFactionId,
+          (ArmyPlacementMode placementMode,uint32_t placementHeading,Q12 worldYQ12,
+          Q12 worldXQ12,PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime)
 
 {
   /* Rewritten from the assembly (0x0051D380-0x0051D447): the original also returns the point it
      accepted in ECX (x) / EDX (y) - the input point, or the first free snapped cell corner - which the
      decompiler dropped. Callers read it from g_ArmyPlacementValidatedWorldX/YQ12. */
+  /* corner order as in the original: (0,0), (+0x240,0), (+0x240,+0x240), (0,+0x240) */
   static const int cornerDx[4] = {0,0x240,0x240,0};
   static const int cornerDy[4] = {0,0,0x240,0x240};
   PlacementDispatchResult dispatched;
@@ -172,7 +171,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCorners
   g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
   g_ArmyPlacementValidatedWorldYQ12 = worldYQ12;
   dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
-                         (placementMode,0,armyAssetId,worldYQ12,worldXQ12,placementContext,
+                         (placementMode,0,placementHeading,worldYQ12,worldXQ12,armyAssetId,
                           ownerFactionId,inGameRuntime);
   if (!dispatched.failed) {
     return false;
@@ -181,7 +180,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCorners
     Q12 x = (Q12)(((uint32_t)worldXQ12 & 0xffffff00) + cornerDx[corner]);
     Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
     dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
-                           (placementMode,0,armyAssetId,y,x,placementContext,ownerFactionId,
+                           (placementMode,0,placementHeading,y,x,armyAssetId,ownerFactionId,
                             inGameRuntime);
     if (!dispatched.failed) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
@@ -787,20 +786,17 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnit
 
 
 /* Address: 0x0051D450.
-   Ownership: gameplay/army/placement.
-   Purpose: Typed parameters: p2 placementMode→ArmyPlacementMode_V344, p3
-   placementAuxiliaryValue→ArmyPlacementAuxiliaryValue_V344, p8 placementContext→ArmyPlacementContext_V344. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog],
-   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
+   Looks up the army asset and its model definition, samples the terrain height at the point with the
+   definition's interpolation callback (index at +0x278), and hands the placement test to the handler of the
+   definition's class (+0x4C) in the placement dispatch table. Returns that handler's result, or the lookup
+   error with CF set.
 */
 PlacementDispatchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyPlacement_DispatchAssetAtFieldPoint
           (ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
-          FactionRuntimeIndex ownerFactionIndex,Q12 worldYQ12,Q12 worldXQ12,
-          PckArmyAssetIdCatalog armyAssetId,ArmyPlacementContext placementContext,
+          uint32_t placementHeading,Q12 worldYQ12,Q12 worldXQ12,
+          PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex ownerFactionIndex,
           UiRootNode *inGameRoot)
 
 {
@@ -812,17 +808,20 @@ ArmyPlacement_DispatchAssetAtFieldPoint
   
   lookupResult = ArmyAssetRegistry_FindById(armyAssetId);
   if (!lookupResult.notFound) {
+    /* the army asset's model definition id is at +0x20 of the record at +0xC */
     lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithError
                       (*(PckModelDefinitionIdCatalog *)((lookupResult.recordOrError)->rootNodeOffsetOrPointer + 0x20)
                       ));
     modelDefinition = lookupResult.recordOrError;
     if (!lookupResult.notFound) {
       assetClassIndex = modelDefinition[4].rootNodeOffsetOrPointer;
+      /* modelDefinition[0x27].registryId is +0x278, the height interpolation mode; the field grid is at
+         +0x54 of the in-game runtime */
       terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
       lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyAssetLookupResult, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
-              )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,terrainHeight.heightQ12,
-                worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
+              )(placementMode,placementClearancePaddingQ12,placementHeading,terrainHeight.heightQ12,
+                worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,ownerFactionIndex,
                 (WorldRuntimeContext *)inGameRoot));
     }
   }

@@ -463,17 +463,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
 
 
 /* Address: 0x0056B050.
-   Ownership: ui/ingame/technology.
-   Purpose: Rebuilds the selected entity technology panel, toggles actions 0x1013 through 0x101A, formats available
-   technology names and Xenite costs through resources 0x217C and 0x2181, and refreshes detail layout. Immutable
-   entry: 0x0056B050. Closed fields: TEC +0x20 Xenite cost Q4, +0x24 Energy cost Q4, +0x28 research duration Q5.
-   Binary sites 0x0056B284 and 0x0056B2DE perform the exact shifts and the UI labels the first cost through the
-   Xenite resource path. Boundary: research source/category/level/direction and attachment routing remain
-   independent axes; gameplay branch names require a complete STR/TEC/ARM/MDL/SPR/SHT/EFF chain.
-   Cross-module calls: SelectionInfo_GetFirstEntry [gameplay/selection/runtime], UiNodeList_UnsuppressActionId
-   [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], TextResource_Resolve
-   [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext],
-   ArmyAssetRegistry_FindById [assets/army/catalog].
+   Rebuilds the technology window for the first selected entity: the research button (off for definitions with
+   flag 0x40 at +0xEC), the unit picture, and one area tab per technology the owner may research (at most seven;
+   the definition's 28 technology slots are dealt out cyclically over the tab slots 6..0), each labelled with the
+   technology name and its Xenite cost. With no tab selected it shows the general text; otherwise the selected
+   technology's description with its Xenite cost (red when unaffordable), Energy cost and research time.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
 
@@ -511,28 +505,30 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
   
   previousTechnologyId = g_InGameSelectedTechnologyId;
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  if (firstSelectedEntity != (GameEntityRuntime *)0x0) {
+  if (firstSelectedEntity != NULL) {
     entityDefinition = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
     definitionOrEnergyCost = *entityDefinition;
     if ((entityDefinition[0x3b] & 0x40U) == 0) {
-      UiNodeList_UnsuppressActionId(0x1013,&inGameRoot->base);
+      UiNodeList_UnsuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
     }
     else {
-      UiNodeList_SuppressActionId(0x1013,&inGameRoot->base);
+      UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
     }
+    /* window title: text 0x217C with the unit name (0x18004F + name index) patched in */
     resolvedText = TextResource_Resolve(0x217c);
     resolvedName = TextResource_Resolve(*(int *)(definitionOrEnergyCost + 4) + 0x18004f);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
     armyRecord = ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
          (GraphicsTextureSourceAsset *)armyRecord.recordOrError[1].rootNodeOffsetOrPointer;
-    UiNodeList_SuppressActionId(0x1014,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x1015,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x1016,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x1017,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x1018,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x1019,&inGameRoot->base);
-    UiNodeList_SuppressActionId(0x101a,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB1,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB2,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB3,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB4,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB5,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB6,&inGameRoot->base);
+    UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_AREA_TAB7,&inGameRoot->base);
+    /* technology slots 28..1 (definition +0x1C8..), area tabs cycling 6..0 */
     remainingCount = 0x1c;
     areaIndex = 6;
     do {
@@ -549,8 +545,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         /* rowFlagOffset is the area tab technologyAreaTabN; the dwords 8 and 4 bytes before it (the +0x60/+0x64
            slots of the preceding 0x68-byte text button) hold the area's text id and a text pointer */
         actionId = ((UiSelectableControl *)THANDOR_UI_AT(inGameRoot,rowFlagOffset))->actionId;
-        THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,int) = technologyId * 2 + 0x300000;
+        THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,int) = technologyId * 2 + TECHNOLOGY_TEXT_ID_BASE;
         firstNode = inGameRoot;
+        /* tab label: text 0x2181 with the technology name (payload 0) and Xenite cost (payload 1), the number
+           formatted into the text buffer at word 0xC0 */
         resolvedText = TextResource_Resolve(0x2181);
         labelText = resolvedText.text;
         formatBuffer = labelText;
@@ -568,11 +566,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         RichTextCommandStream_CopyExpanded(0x180,labelText,source);
         UiNodeList_UnsuppressActionId(actionId,&firstNode->base);
       }
-      areaIndex = areaIndex + -1;
+      areaIndex--;
       if (areaIndex < 0) {
         areaIndex = 6;
       }
-      remainingCount = remainingCount + -1;
+      remainingCount--;
     } while (remainingCount != 0);
     selectedArea = UiSelectableGroup_NoneVisibleSelected(7,
       INGAME_UI(inGameRoot,technologyAreaTab7),
@@ -586,12 +584,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
+      /* the text field holds a text resource id here, resolved when drawn */
       ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)0x217f;
       ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x2180;
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
       INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
       if ((playerBlock->assignmentFlags80A4 & 0x80) == 0) {
-        UiNodeList_SuppressActionId(0x1013,&inGameRoot->base);
+        UiNodeList_SuppressActionId(INGAME_ACTION_TECHNOLOGY_RESEARCH,&inGameRoot->base);
       }
       scrollableControl = (UiScrollableControl *)INGAME_UI(inGameRoot,technologyDescriptionScroll);
       UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
@@ -600,9 +599,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     else {
       ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x217e;
       technologyAsset = g_TechnologyAsset;
+      /* the selected tab's name text id; the description is the next text */
       definitionOrEnergyCost = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t);
       resourceId = (UiNodeBase *)(definitionOrEnergyCost + 1);
-      selectedTechnologyId = definitionOrEnergyCost - 0x300000U >> 1;
+      selectedTechnologyId = (definitionOrEnergyCost - (uint32_t)TECHNOLOGY_TEXT_ID_BASE) >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
       costColor = g_RichTextColorPalette0Argb;
       if ((int)g_GameFactionRuntimeImage.records[(firstSelectedEntity->common).ownership.ownerIndex].

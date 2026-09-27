@@ -460,14 +460,9 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
 
 
 /* Address: 0x0054CE80.
-   Ownership: ui/frontend/network.
-   Purpose: Initializes the frontend network-setup page for one local player, seeds the first 0x13B0-byte player
-   block and endpoint data, loads the 64x64 player preview when available, and refreshes action 0x2006. Queued UI
-   action handler for FRONTEND_PAGE20[4] (0x2004). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiPageStack_SetActiveIndex
-   [ui/controls/layout], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   PcxPreview_Load64x64PaletteAndPixels [ui/support/runtime],
-   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction [ui/frontend/player].
+   Action handler of the host game setup page's create button: opens the host lobby page and makes the local
+   player the only player of a new hosted session (player block 0 with the local name and endpoint, id 0, no
+   timeout, "CD" capability, its 64x64 preview image as snapshot payload when it loads), then refreshes the lobby.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
@@ -484,13 +479,13 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
   bool previewLoadFailed;
   
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(createButton,-0x4ff4);
-  UiNodeList_SuppressActionId(0x200b,FRONTEND_UI(frontendUi,frontendRoot));
-  UiPageStack_SetActiveIndex(3,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
+  UiNodeList_SuppressActionId(FRONTEND_ACTION_KICK_PLAYER,FRONTEND_UI(frontendUi,frontendRoot));
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_LOBBY,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  g_FrontendNetworkState = 2;
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_HOSTING;
   UiPointerList_InitializeColumnLayout
             (1,(void **)g_FrontendPlayerRuntimeRecordPointers32,
              (UiPointerListControl *)FRONTEND_UI(frontendUi,hostLobbyPlayerList));
@@ -498,43 +493,48 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,1,(uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   sequenceToken = g_UiTransferSequenceToken;
-  g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff;
+  g_FrontendPlayerRuntimeBlocks->heartbeatExpiryTicks = 0xffffffff; /* the local player never times out */
   firstPlayerRecord->peerSequenceToken = sequenceToken;
   firstPlayerRecord->playerRuntimeId = 0;
   localPlayerNameCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   localPlayerRecordDwordCursor = (uint32_t *)&firstPlayerRecord->playerName;
-  for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+  for (remainingDwords = sizeof(FrontendPlayerNameUtf16_28) / sizeof(uint32_t); remainingDwords != 0;
+       remainingDwords--) {
     *(uint32_t *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 = *localPlayerNameCursor;
     localPlayerNameCursor = localPlayerNameCursor + 1;
     localPlayerRecordDwordCursor =
          (uint32_t *)(((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 + 2);
   }
   localEndpointDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
-  for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+  for (remainingDwords = sizeof(UiTransferEndpointDescriptor) / sizeof(uint32_t); remainingDwords != 0;
+       remainingDwords--) {
     *localPlayerRecordDwordCursor = *localEndpointDwordCursor;
     localEndpointDwordCursor = localEndpointDwordCursor + 1;
     localPlayerRecordDwordCursor = localPlayerRecordDwordCursor + 1;
   }
-  *localPlayerRecordDwordCursor = 1;
+  /* the cursor now points at +0x50 of the player record; the indices below are dwords from there */
+  *localPlayerRecordDwordCursor = FRONTEND_COMMAND_SYNC_PENDING; /* commandSyncPending */
   g_FrontendPendingSessionPlayerCount = 0;
   g_FrontendPlayerRuntimeCount = 1;
   g_LocalPlayerRuntimeId = 0;
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
-  localPlayerRecordDwordCursor[6] = 0;
+  localPlayerRecordDwordCursor[6] = 0; /* snapshotTransferFlags */
+  /* the preview goes into snapshotPayloadB0_13AF (+0xB0), its name is the player name (+0x18) */
   previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
                     ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
                      (uint16_t *)(localPlayerRecordDwordCursor + -0xe));
   if (!previewLoadFailed) {
-    localPlayerRecordDwordCursor[6] = 3;
+    localPlayerRecordDwordCursor[6] = FRONTEND_SNAPSHOT_SOURCE_AVAILABLE | FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE;
   }
+  /* +0x90..+0x9B: two empty code units, then L"0ms" */
   localPlayerRecordDwordCursor[0x10] = 0;
   localPlayerRecordDwordCursor[0x11] = 0x6d0030;
   localPlayerRecordDwordCursor[0x12] = 0x73;
-  localPlayerRecordDwordCursor[9] = 0x100;
+  localPlayerRecordDwordCursor[9] = FRONTEND_CAPABILITY_CD; /* capabilityFlags */
   localPlayerRecordDwordCursor[10] = 0;
   localPlayerRecordDwordCursor[0xb] = 0;
-  localPlayerRecordDwordCursor[10] = 0x440043;
+  localPlayerRecordDwordCursor[10] = 0x440043; /* L"CD" at +0x78 */
   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
   return;
 }

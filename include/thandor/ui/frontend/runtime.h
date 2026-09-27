@@ -45,6 +45,9 @@
 #define FRONTEND_PLAYER_STATE_LEVEL_LOADED 0x04 /* level package loaded locally */
 #define FRONTEND_PLAYER_STATE_LEVEL_RECEIVED 0x08 /* level package received from / confirmed to the host */
 #define FRONTEND_PLAYER_STATE_LEVEL_READY_MASK 0x0C
+/* set by FrontendScenarioSession_LoadOrRequestLevelAsset for players whose catalog level mask has the selected
+   level, i.e. who can load it from their own disk instead of receiving it */
+#define FRONTEND_PLAYER_STATE_HAS_LEVEL_LOCALLY 0x10
 
 /* Pages of FrontendUiImage.frontendPageStack (see generated/ui_templates.h). */
 #define FRONTEND_PAGE_MAIN 0 /* no dialog page: only the menu room */
@@ -67,6 +70,7 @@
    [id - 0x2000]). UiNodeList_SuppressActionId/UnsuppressActionId hide and show the controls carrying one. */
 #define FRONTEND_ACTION_HOST_GAME 0x2001 /* networkGameHostButton */
 #define FRONTEND_ACTION_JOIN_GAME 0x2002 /* networkGameJoinButton */
+#define FRONTEND_ACTION_CREATE_HOSTED_GAME 0x2004 /* hostGameCreateButton (FrontendNetworkSetupPage_InitializeSingleLocalPlayer) */
 #define FRONTEND_ACTION_KICK_PLAYER 0x200B /* hostLobbyKickPlayerButton */
 #define FRONTEND_ACTION_LINK_ROTATION_ZOOM 0x203E /* linkRotationZoomCheckbox */
 #define FRONTEND_ACTION_LINK_ROTATION_TILT 0x203F /* linkRotationTiltCheckbox */
@@ -196,7 +200,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 /* 0x00548700 */
-void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode stateCode);
+void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode romRecordIndex);
 
 /* 0x00548910 */
 uint32_t __thandor_eax_preserve_ecx_edx

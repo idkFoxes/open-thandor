@@ -12,6 +12,20 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/bootstrap/runtime. */
+
+/* Game data tables (GameData_ResetDefaults, GameData_LoadExternalTables, Game_LoadCoreAssets). */
+#define GAME_FACTION_IMAGE_BYTES 0x3A20 /* sizeof(GameFactionRuntimeImage): 8 records of 0x740 bytes + 0x20 tail;
+                                           daten.hex holds exactly this image */
+#define GAME_STAT_TABLE_BYTES 0x38000 /* g_GameStatTableImage (stat.hex); the last dword is 0xFFFFFFFF */
+#define OLD_UNIT_PRIMARY_TABLE_BYTES 0x4000 /* g_OldUnitPrimaryTable (oldunit.hex after the record count) */
+#define OLD_UNIT_SECONDARY_TABLE_BYTES 0x100 /* g_OldUnitSecondaryTable (oldunit.hex after the primary table) */
+/* CPU_DetectFeatures */
+#define CPUID_LEAF_VERSION_INFO 1
+#define CPUID_EDX_MMX 0x00800000 /* CPUID leaf 1, EDX bit 23 */
+#define CPU_FEATURE_MMX 0x1 /* bit of g_CpuFeatureFlags */
+/* DynDLL_Load: capacity of g_DynamicModules */
+#define DYNAMIC_MODULE_CAPACITY 16
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00585D40 */

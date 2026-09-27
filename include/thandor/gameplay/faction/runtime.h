@@ -39,7 +39,7 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
 /* 0x00513CA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRuntime_TestCapabilityBitClear
-          (uint32_t capabilityBitIndex,FactionRuntimeIndex factionIndex);
+          (uint32_t otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513CD0 */
 FactionRelationState __thandor_eax_preserve_ecx_edx

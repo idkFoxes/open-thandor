@@ -15,6 +15,17 @@
 
 /* WorldObjectRecord.common.allocationFlags value of a record in use (WorldObjectArray_AllocateFreeRecord). */
 #define WORLD_OBJECT_RECORD_ALLOCATED 0x40000000
+/* WorldRuntimeContext.runtimeFlags bits (world/runtime/core, world/motion/runtime):
+   UNLIMITED_CAMERA skips the camera distance and pitch limits; FIELD_GRID_DIRTY is cleared whenever the
+   camera state or the field grid is (re)set (WorldRuntime_ClearFieldGridDirtyFlag); SECONDARY_SURFACE_ONLY
+   makes the view ray test only the secondary field surface (set by UiCommandModeG_SetNodeFlag01000000). */
+#define WORLD_RUNTIME_FLAG_UNLIMITED_CAMERA 0x40000
+#define WORLD_RUNTIME_FLAG_FIELD_GRID_DIRTY 0x800
+#define WORLD_RUNTIME_FLAG_SECONDARY_SURFACE_ONLY 0x1000000
+/* WorldOwnerListNode100.runtimeFlags bit: the node is linked into its world's owner list. */
+#define WORLD_OWNER_NODE_LINKED 0x80000000
+/* Height returned by the WorldRuntime_Interpolate*HeightOrSentinel functions when no field grid is attached. */
+#define WORLD_HEIGHT_NO_FIELD_GRID 0x7ffff000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00532FA0 */
