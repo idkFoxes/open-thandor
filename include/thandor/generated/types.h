@@ -14549,11 +14549,11 @@ struct LevelInitialArmyPlacementRecord20 {
 };
 
 
-/* Single-line rich-text label (g_UiFocusProxyControlVtable, g_UiCommandVisibilitySingleLineTextVtable) that
+/* Single-line rich-text label (g_UiSingleLineTextControlVtable, g_UiCommandVisibilitySingleLineTextVtable) that
    optionally forwards focus and pointer/keyboard input to one child (a slider or button it frames). 0x5C bytes;
    template extents beyond 0x5C are unrelated data placed after the node. */
-typedef struct UiFocusProxyControl UiFocusProxyControl;
-struct UiFocusProxyControl {
+typedef struct UiSingleLineTextControl UiSingleLineTextControl;
+struct UiSingleLineTextControl {
     struct UiNodeBase base;
     dword labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
     struct UiNodeBase *focusChild; // Child that receives focus and forwarded input; relocated, may be null.
@@ -14561,10 +14561,10 @@ struct UiFocusProxyControl {
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
-/* Wrapped multi-line rich-text block (g_UiListOffsetControlVtable, g_UiCommandVisibilityWrappedTextVtable).
+/* Wrapped multi-line rich-text block (g_UiWrappedTextControlVtable, g_UiCommandVisibilityWrappedTextVtable).
    0x5C bytes; template extents beyond 0x5C are unrelated data placed after the node (e.g. countdown state). */
-typedef struct UiListOffsetControl UiListOffsetControl;
-struct UiListOffsetControl {
+typedef struct UiWrappedTextControl UiWrappedTextControl;
+struct UiWrappedTextControl {
     struct UiNodeBase base;
     dword labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
     UiPixelExtent wrapWidth; // Maximum line width for wrapping.

@@ -2128,24 +2128,24 @@ ImageData_004B7914 g_ImageData_004B7914 = {
 ImageData_004B9530 g_ImageData_004B9530 = {
     /* 004B9530 g_UiFocusProxyControlVtable */
     {
-        .relocate = (void *)UiFocusProxyControl_RelocateChild,
+        .relocate = (void *)UiSingleLineTextControl_RelocateChild,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiSingleLineTextControl_DrawClipped,
         .layout = (void *)UiContainer_LayoutChildren,
-        .nonRightPress = (void *)UiFocusProxyControl_ForwardNonRightPressToChild,
-        .nonRightRelease = (void *)UiFocusProxyControl_ForwardNonRightReleaseToChild,
-        .rightPress = (void *)UiFocusProxyControl_ForwardRightPressToChild,
-        .rightRelease = (void *)UiFocusProxyControl_ForwardRightReleaseToChild,
-        .nonRightDrag = (void *)UiFocusProxyControl_ForwardNonRightDragToChild,
-        .rightDrag = (void *)UiFocusProxyControl_ForwardRightDragToChild,
-        .pointerMove = (void *)UiFocusProxyControl_ForwardPointerMoveToChild,
-        .hitTest = (void *)UiFocusProxyControl_HitTestChildProxy,
-        .keyboardEventCf = (void *)UiFocusProxyControl_ForwardKeyboardEventToChildCf,
+        .nonRightPress = (void *)UiSingleLineTextControl_ForwardNonRightPressToChild,
+        .nonRightRelease = (void *)UiSingleLineTextControl_ForwardNonRightReleaseToChild,
+        .rightPress = (void *)UiSingleLineTextControl_ForwardRightPressToChild,
+        .rightRelease = (void *)UiSingleLineTextControl_ForwardRightReleaseToChild,
+        .nonRightDrag = (void *)UiSingleLineTextControl_ForwardNonRightDragToChild,
+        .rightDrag = (void *)UiSingleLineTextControl_ForwardRightDragToChild,
+        .pointerMove = (void *)UiSingleLineTextControl_ForwardPointerMoveToChild,
+        .hitTest = (void *)UiSingleLineTextControl_HitTestChildProxy,
+        .keyboardEventCf = (void *)UiSingleLineTextControl_ForwardKeyboardEventToChildCf,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
-        .tick = (void *)UiFocusProxyControl_ForwardTickToChild,
-        .pointerWheel = (void *)UiFocusProxyControl_ForwardPointerWheelToChildOrParent},
+        .tick = (void *)UiSingleLineTextControl_ForwardTickToChild,
+        .pointerWheel = (void *)UiSingleLineTextControl_ForwardPointerWheelToChildOrParent},
     {
         0x90909090, 0x90909090},
 };
@@ -2269,7 +2269,7 @@ ImageData_004BC404 g_ImageData_004BC404 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 004BC404 gap */
     /* 004BC410 g_UiListOffsetControlVtable */
     {
-        .relocate = (void *)UiListOffsetControl_RelocateAndApplyDeferredOffset,
+        .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiWrappedTextControl_DrawClipped,
         .layout = (void *)UiContainer_LayoutChildren,
@@ -3473,7 +3473,7 @@ ImageData_00517F00 g_ImageData_00517F00 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00517F00 gap */
     /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
     {
-        .relocate = (void *)UiListOffsetControl_RelocateAndApplyDeferredOffset,
+        .relocate = (void *)UiWrappedTextControl_RelocateAndApplyDeferredOffset,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiCommandVisibilityWrappedText_DrawWhenAllowed,
         .layout = (void *)UiContainer_LayoutChildren,
@@ -3499,7 +3499,7 @@ ImageData_00517FBC g_ImageData_00517FBC = {
     {0x90, 0x90, 0x90, 0x90}, /* 00517FBC gap */
     /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
     {
-        .relocate = (void *)UiFocusProxyControl_RelocateChild,
+        .relocate = (void *)UiSingleLineTextControl_RelocateChild,
         .method04 = (void *)UiNode_DefaultMethod04_NoOp,
         .drawClipped = (void *)UiCommandVisibilitySingleLineText_DrawWhenAllowed,
         .layout = (void *)UiContainer_LayoutChildren,
@@ -6190,7 +6190,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x0000000A, 0x00000000, 0x00000112},
-        { /* +47AC bottomBarCornerNode g_UiNodeVtable_00517DE0 */
+        { /* +47AC transferProgressGauge g_UiNodeVtable_00517DE0 */
             .nextSibling = UI_TEMPLATE_LINK(0xB0), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x4694),
             .vtable = (void *)&g_UiNodeVtable_00517DE0,
             .left = -1, .top = -1, .right = -1, .bottom = -1,

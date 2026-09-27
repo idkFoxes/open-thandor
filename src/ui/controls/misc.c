@@ -872,9 +872,9 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
     /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
-    ((UiFocusProxyControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
+    ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
          &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,word);
-    ((UiFocusProxyControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
+    ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
          &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,word);
     UiRuntime_FormatSignedValues140And144(root);
     UiActionHandlers_SetPageCf(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);

@@ -197,7 +197,7 @@ void __thandor_preserve_eax UiTextEditControl_TickCaretBlink(UiTextEditControl *
 void __thandor_void_preserve_eax_ecx_edx
 UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiFocusProxyControl *control);
+          UiPixelCoordinate clipRight,UiSingleLineTextControl *control);
 
 /* 0x004B9E90 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -237,7 +237,7 @@ UiPointerList_InitializeMeasuredTextRows
 void __thandor_void_preserve_eax_ecx_edx
 UiWrappedTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiListOffsetControl *control);
+          UiPixelCoordinate clipRight,UiWrappedTextControl *control);
 
 /* 0x004BCC80 */
 void __thandor_void_preserve_eax_ecx_edx

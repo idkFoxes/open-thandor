@@ -3126,8 +3126,8 @@ UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiListOffsetControl_RelocateAndApplyDeferredOffset
-          (UiSerializedRelocationDelta relocationDelta,UiListOffsetControl *control)
+UiWrappedTextControl_RelocateAndApplyDeferredOffset
+          (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control)
 
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);

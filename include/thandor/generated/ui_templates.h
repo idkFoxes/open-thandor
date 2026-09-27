@@ -483,8 +483,8 @@ typedef struct FrontendUiImage {
     dword bottomBarConditionalAction_fields[5];
     UiNodeBase bottomBarStatusText; /* +4750 g_UiFocusProxyControlVtable: Full-size caption (style 0xA, text 0x112) in the bottom bar; probably the status/help line (role inferred). */
     dword bottomBarStatusText_fields[4];
-    UiNodeBase bottomBarCornerNode; /* +47AC g_UiNodeVtable_00517DE0: Class 00517DE0 node at the bottom-right corner of the bottom bar; role unknown. */
-    dword bottomBarCornerNode_fields[4];
+    UiNodeBase transferProgressGauge; /* +47AC g_UiNodeVtable_00517DE0: Horizontal gauge (UiHorizontalGaugeControl subclass 00517DE0) in the bottom-right corner of the bottom bar; reloads its range from the transfer mailbox before drawing: the file-transfer progress. */
+    dword transferProgressGauge_fields[4];
     UiNodeBase networkGamePage; /* +4808 g_UiImagePanelControlVtable: Page-stack page 1 (action 0x2003): network protocol, player name, host address and session list. */
     dword networkGamePage_fields[4];
     UiNodeBase networkGameTitle; /* +4864 g_UiFocusProxyControlVtable: Page title caption (text 0x2107) of the network game page. */

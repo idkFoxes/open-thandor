@@ -3408,23 +3408,23 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
         UiPageStack_SetActiveIndex
                   (0,(UiPageStackControl *)
                      ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[slotIndex]));
-        ((UiFocusProxyControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
+        ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
              (word *)(*(int *)(factionIndexOrRecord + 0x38) + 0x2173);
-        ((UiFocusProxyControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
+        ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
              (word *)(candidateFactionIndex + 0x2190);
         relationState = g_GameFactionRuntimeImage.records[node[0x23].bottom].packedRelationStates >>
                 ((byte)(candidateFactionIndex << 2) & 0x1f) & 0xf;
         candidateFactionIndex = candidateFactionIndex & 0x3fffffff;
-        ((UiFocusProxyControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
+        ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
              (word *)(relationState + 0x21a3);
         controlOffset = g_UiAction1012IconImageOffsets[slotIndex];
-        ((UiFocusProxyControl *)((int)node + controlOffset))->text = (word *)&g_EmptyFrontendPlayerNameUtf16;
+        ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (word *)&g_EmptyFrontendPlayerNameUtf16;
         playerBlock = g_FrontendPlayerRuntimeBlocks;
         remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
         remainingNetworkPlayers = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
         while (remainingNetworkPlayers != SESSION_NETWORK_ROLE_LOCAL) {
           if ((playerBlock->factionAssignment).factionAssignmentIndex == candidateFactionIndex) {
-            ((UiFocusProxyControl *)((int)node + controlOffset))->text = (word *)&playerBlock->playerName;
+            ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (word *)&playerBlock->playerName;
             break;
           }
           playerBlock = playerBlock + 1;

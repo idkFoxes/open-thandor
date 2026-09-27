@@ -36,14 +36,14 @@ UiRangeSliderControl_HandleKeyboardCf
 
 /* 0x004B9CB0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiFocusProxyControl_ForwardKeyboardEventToChildCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiFocusProxyControl *control);
+UiSingleLineTextControl_ForwardKeyboardEventToChildCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 /* 0x004B9DA0 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardPointerWheelToChildOrParent
+UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B07F0 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
@@ -63,57 +63,57 @@ UiRangeSliderControl_HandlePointerWheel
 
 /* 0x004B9580 */
 void __thandor_void_preserve_eax_ecx_edx
-UiFocusProxyControl_RelocateChild
-          (UiSerializedRelocationDelta relocationDelta,UiFocusProxyControl *control);
+UiSingleLineTextControl_RelocateChild
+          (UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control);
 
 /* 0x004B99A0 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightPressToChild
+UiSingleLineTextControl_ForwardNonRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9A00 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightReleaseToChild
+UiSingleLineTextControl_ForwardNonRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9A60 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightPressToChild
+UiSingleLineTextControl_ForwardRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9AD0 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightReleaseToChild
+UiSingleLineTextControl_ForwardRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9B30 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightDragToChild
+UiSingleLineTextControl_ForwardNonRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9B90 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightDragToChild
+UiSingleLineTextControl_ForwardRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control);
+          UiSingleLineTextControl *control);
 
 /* 0x004B9BF0 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiFocusProxyControl_ForwardPointerMoveToChild
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFocusProxyControl *control);
+UiSingleLineTextControl_ForwardPointerMoveToChild
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
 /* 0x004B9C50 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiFocusProxyControl_HitTestChildProxy
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFocusProxyControl *control);
+UiSingleLineTextControl_HitTestChildProxy
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control);
 
 /* 0x004B9D40 */
-void __thandor_preserve_eax_edx UiFocusProxyControl_ForwardTickToChild(UiFocusProxyControl *control);
+void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control);
 
 /* 0x004BCA70 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx

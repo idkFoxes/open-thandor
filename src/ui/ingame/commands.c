@@ -459,9 +459,9 @@ UiCommandVisibilityWrappedText_DrawWhenAllowed
 
 {
   if (((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-     ((((((UiListOffsetControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)) &&
+     ((((((UiWrappedTextControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)) &&
       ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
-    UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiListOffsetControl *)control);
+    UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiWrappedTextControl *)control);
   }
   return;
 }
@@ -482,12 +482,12 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
   
   drawOffsetAdjust = 0;
   if ((((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-      (((((UiFocusProxyControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
-     (((((UiFocusProxyControl *)control)->labelFlags & 0x1000) == 0 ||
+      (((((UiSingleLineTextControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
+     (((((UiSingleLineTextControl *)control)->labelFlags & 0x1000) == 0 ||
       (drawOffsetAdjust = g_InGameSimulationStepTicks - 2, 1 < g_InGameSimulationStepTicks)))) {
-    ((UiFocusProxyControl *)control)->text = (word *)((int)((UiFocusProxyControl *)control)->text + drawOffsetAdjust);
-    UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiFocusProxyControl *)control);
-    ((UiFocusProxyControl *)control)->text = (word *)((int)((UiFocusProxyControl *)control)->text - drawOffsetAdjust);
+    ((UiSingleLineTextControl *)control)->text = (word *)((int)((UiSingleLineTextControl *)control)->text + drawOffsetAdjust);
+    UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiSingleLineTextControl *)control);
+    ((UiSingleLineTextControl *)control)->text = (word *)((int)((UiSingleLineTextControl *)control)->text - drawOffsetAdjust);
   }
   return;
 }

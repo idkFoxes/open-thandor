@@ -348,8 +348,8 @@ UiRangeSliderControl_DecreaseValueAndNotify:
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiFocusProxyControl_ForwardKeyboardEventToChildCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiFocusProxyControl *control)
+UiSingleLineTextControl_ForwardKeyboardEventToChildCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -384,9 +384,9 @@ UiFocusProxyControl_ForwardKeyboardEventToChildCf
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardPointerWheelToChildOrParent
+UiSingleLineTextControl_ForwardPointerWheelToChildOrParent
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -533,13 +533,13 @@ UiRangeSliderControl_HandlePointerWheel
    Cross-module calls: UiContainer_RelocateChildren [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiFocusProxyControl_RelocateChild
-          (UiSerializedRelocationDelta relocationDelta,UiFocusProxyControl *control)
+UiSingleLineTextControl_RelocateChild
+          (UiSerializedRelocationDelta relocationDelta,UiSingleLineTextControl *control)
 
 {
   /* EBX is the control, the same node as the stack argument; the relocate vtable slot passes
      only (delta, control). */
-  UiFocusProxyControl *controlReg = control;
+  UiSingleLineTextControl *controlReg = control;
   UiNodeFlags *childNodeFlagsField;
 
   if ((((controlReg->base).nodeFlags &
@@ -569,9 +569,9 @@ UiFocusProxyControl_RelocateChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightPressToChild
+UiSingleLineTextControl_ForwardNonRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -599,9 +599,9 @@ UiFocusProxyControl_ForwardNonRightPressToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightReleaseToChild
+UiSingleLineTextControl_ForwardNonRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -629,9 +629,9 @@ UiFocusProxyControl_ForwardNonRightReleaseToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightPressToChild
+UiSingleLineTextControl_ForwardRightPressToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -661,9 +661,9 @@ UiFocusProxyControl_ForwardRightPressToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightReleaseToChild
+UiSingleLineTextControl_ForwardRightReleaseToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -691,9 +691,9 @@ UiFocusProxyControl_ForwardRightReleaseToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardNonRightDragToChild
+UiSingleLineTextControl_ForwardNonRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -721,9 +721,9 @@ UiFocusProxyControl_ForwardNonRightDragToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
-UiFocusProxyControl_ForwardRightDragToChild
+UiSingleLineTextControl_ForwardRightDragToChild
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiFocusProxyControl *control)
+          UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -751,8 +751,8 @@ UiFocusProxyControl_ForwardRightDragToChild
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
-UiFocusProxyControl_ForwardPointerMoveToChild
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFocusProxyControl *control)
+UiSingleLineTextControl_ForwardPointerMoveToChild
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;
@@ -782,8 +782,8 @@ UiFocusProxyControl_ForwardPointerMoveToChild
    Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiFocusProxyControl_HitTestChildProxy
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiFocusProxyControl *control)
+UiSingleLineTextControl_HitTestChildProxy
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiSingleLineTextControl *control)
 
 {
   UiNodeBase *hitNode;
@@ -812,7 +812,7 @@ UiFocusProxyControl_HitTestChildProxy
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[16]@004B9530.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
-void __thandor_preserve_eax_edx UiFocusProxyControl_ForwardTickToChild(UiFocusProxyControl *control)
+void __thandor_preserve_eax_edx UiSingleLineTextControl_ForwardTickToChild(UiSingleLineTextControl *control)
 
 {
   UiNodeBase *childControl;

@@ -214,8 +214,8 @@ void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListContro
 
 /* 0x004BC460 */
 void __thandor_void_preserve_eax_ecx_edx
-UiListOffsetControl_RelocateAndApplyDeferredOffset
-          (UiSerializedRelocationDelta relocationDelta,UiListOffsetControl *control);
+UiWrappedTextControl_RelocateAndApplyDeferredOffset
+          (UiSerializedRelocationDelta relocationDelta,UiWrappedTextControl *control);
 
 /* 0x00516580 */
 void __thandor_void_preserve_eax_ecx_edx

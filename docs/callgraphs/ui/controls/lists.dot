@@ -44,7 +44,7 @@ digraph thandor {
   "UiTimedListControl_RelocateChildren" [label="0x004BB9E0\nUiTimedListControl_RelocateChildren"];
   "UiTimedListControl_DrawRowsAndSelection" [label="0x004BBA00\nUiTimedListControl_DrawRowsAndSelection"];
   "UiTimedListControl_TickActionDelay" [label="0x004BC180\nUiTimedListControl_TickActionDelay"];
-  "UiListOffsetControl_RelocateAndApplyDeferredOffset" [label="0x004BC460\nUiListOffsetControl_RelocateAndApplyDeferredOffset"];
+  "UiWrappedTextControl_RelocateAndApplyDeferredOffset" [label="0x004BC460\nUiWrappedTextControl_RelocateAndApplyDeferredOffset"];
   "UiCatalogEntryControl_DrawClipped" [label="0x00516580\nUiCatalogEntryControl_DrawClipped"];
   "UiCatalogEntryControl_PointerMove" [label="0x00516B90\nUiCatalogEntryControl_PointerMove"];
   "UiCatalogEntryControl_NonRightRelease" [label="0x00516C50\nUiCatalogEntryControl_NonRightRelease"];
