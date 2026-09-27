@@ -442,10 +442,10 @@ SoftwarePixelFormat_BuildChannelPackTables
 
 /* Address: 0x004A93C0.
    Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a two-byte framebuffer. Transparent pixels are skipped,
-   fully opaque pixels are copied, and partial alpha uses the verified RGB blend-factor tables. ABI: the
-   implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
-   not a semantic API result. CF is cleared before normal return.
+   Purpose: Clips and draws one source subresource into a two-byte framebuffer (source-alpha blit, see
+   docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is copied, anything else is blended. A
+   paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
+   entry's ARGB colour (+0) with the alpha of that colour. ABI: all registers are preserved and CF is cleared.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SoftwareTextureSource_BlitSourceAlpha16
@@ -456,277 +456,32 @@ SoftwareTextureSource_BlitSourceAlpha16
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  short destPixel16;
-  int sourceStrideOrPaletteBank;
-  int indexedSourceStride;
-  uint sourceColor;
-  int destLeft;
-  GraphicsPixelDimension destBottom;
-  int entryOffsetOrColumnsLeft;
-  int destTop;
-  GraphicsPixelDimension destRightOrPitchPixels;
-  int spanWidth;
-  byte *sourceIndexCursor;
-  uint *sourceTexelCursor;
-  byte *destCursor;
-  ulonglong destLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue1ByteLane2;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue0ByteLane1;
-  undefined8 mm1PackedValue0;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue1ByteLane3;
-  undefined8 mm1PackedValue1;
-  
-  if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-     (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    entryOffsetOrColumnsLeft = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-    if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-      destLeft = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x18);
-      destTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x20)
-          == -1) {
-        destRightOrPitchPixels = destLeft + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0x10);
-        destBottom = destTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0xc);
-        if (destLeft < 0) {
-          destLeft = 0;
+  BlitRegion region;
+  int x;
+  int y;
+
+  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
+                             clipMinY, clipMinX, &region)) {
+    return false;
+  }
+  for (y = 0; y < region.height; y++) {
+    const byte *texel = region.texels + y * region.texelStride;
+    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
+      if (region.palette != NULL) {
+        dword converted = Blit_PalettePixel(&region, *texel);
+        if (Blit_IsTransparent(converted)) {
+          continue;
         }
-        if (destTop < 0) {
-          destTop = 0;
-        }
-        if ((int)framebuffer->width < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = framebuffer->width;
-        }
-        if ((int)framebuffer->height < (int)destBottom) {
-          destBottom = framebuffer->height;
-        }
-        if (destLeft < clipMinX) {
-          destLeft = clipMinX;
-        }
-        if (destTop < clipMinY) {
-          destTop = clipMinY;
-        }
-        if (clipMaxX < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = clipMaxX;
-        }
-        if (clipMaxY < (int)destBottom) {
-          destBottom = clipMaxY;
-        }
-        spanWidth = destRightOrPitchPixels - destLeft;
-        if ((spanWidth != 0 && destLeft <= (int)destRightOrPitchPixels) &&
-           (clipMinY = destBottom - destTop, clipMinY != 0 && destTop <= (int)destBottom)) {
-          destRightOrPitchPixels = framebuffer->width;
-          sourceStrideOrPaletteBank = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x10);
-          destCursor = framebuffer->pixels + (destRightOrPitchPixels * destTop + destLeft) * 2;
-          sourceTexelCursor = (uint *)((int)sourceAsset +
-                            ((destTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x14)) -
-                            drawY) * sourceStrideOrPaletteBank * 4 +
-                            ((destLeft - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x1c));
-          entryOffsetOrColumnsLeft = spanWidth;
-          do {
-            do {
-              sourceColor = *sourceTexelCursor;
-              if (0xffffff < sourceColor) {
-                if (sourceColor < 0xff000000) {
-                  destPixel16 = *(short *)destCursor;
-                  mm1PackedValue1ByteLane3 = (byte)(sourceColor >> 0x18);
-                  mm1PackedValue1ByteLane2 = (byte)(sourceColor >> 0x10);
-                  mm1PackedValue1ByteLane1 = (byte)(sourceColor >> 8);
-                  destLanes = CONCAT44(CONCAT22(destPixel16,destPixel16),CONCAT22(destPixel16,destPixel16)) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                  mm1PackedValue1 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,sourceColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceColor,
-                                                                              (char)sourceColor) >> 2))),
-                              g_SoftwareBlendAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue2 =
-                       pmulhw(CONCAT26((ushort)((short)(destLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
-                              g_SoftwareBlendInverseAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue3 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue2 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue1 >> 0x10
-                                                                 ),(short)mm0PackedValue2 +
-                                                                   (short)mm1PackedValue1))) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
-                               g_SoftwarePixelMmxConstants.packWeights);
-                  *(short *)destCursor =
-                       (short)((ulonglong)mm0PackedValue3 >> 8) +
-                       (short)((ulonglong)mm0PackedValue3 >> 0x28);
-                }
-                else {
-                  *(short *)destCursor =
-                       (short)g_SoftwarePixelPackTables->blue[sourceColor & 0xff] +
-                       (short)*(undefined4 *)
-                               ((int)g_SoftwarePixelPackTables->green + ((sourceColor & 0xff00) >> 6)) +
-                       (short)*(undefined4 *)
-                               ((int)g_SoftwarePixelPackTables->red + ((sourceColor & 0xff0000) >> 0xe));
-                }
-              }
-              sourceTexelCursor = sourceTexelCursor + 1;
-              destCursor = destCursor + 2;
-              entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-            } while (entryOffsetOrColumnsLeft != 0);
-            sourceTexelCursor = sourceTexelCursor + (sourceStrideOrPaletteBank - spanWidth);
-            destCursor = destCursor + (destRightOrPitchPixels - spanWidth) * 2;
-            clipMinY = clipMinY + -1;
-            entryOffsetOrColumnsLeft = spanWidth;
-          } while (clipMinY != 0);
-          return false;
-        }
+        *pixel = Blit_IsOpaque(converted) ? (word)converted
+                                          : Blit_BlendArgb16(Blit_PaletteColor(&region, *texel), *pixel);
       }
-      else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        destRightOrPitchPixels = destLeft + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0x10);
-        destBottom = destTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0xc);
-        if (destLeft < 0) {
-          destLeft = 0;
+      else {
+        dword argb = *(const dword *)texel;
+        if (Blit_IsTransparent(argb)) {
+          continue;
         }
-        if (destTop < 0) {
-          destTop = 0;
-        }
-        if ((int)framebuffer->width < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = framebuffer->width;
-        }
-        if ((int)framebuffer->height < (int)destBottom) {
-          destBottom = framebuffer->height;
-        }
-        if (destLeft < clipMinX) {
-          destLeft = clipMinX;
-        }
-        if (destTop < clipMinY) {
-          destTop = clipMinY;
-        }
-        if (clipMaxX < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = clipMaxX;
-        }
-        if (clipMaxY < (int)destBottom) {
-          destBottom = clipMaxY;
-        }
-        spanWidth = destRightOrPitchPixels - destLeft;
-        if ((spanWidth != 0 && destLeft <= (int)destRightOrPitchPixels) &&
-           (clipMinY = destBottom - destTop, clipMinY != 0 && destTop <= (int)destBottom)) {
-          sourceStrideOrPaletteBank = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x20);
-          destRightOrPitchPixels = framebuffer->width;
-          indexedSourceStride = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x10);
-          destCursor = framebuffer->pixels + (destRightOrPitchPixels * destTop + destLeft) * 2;
-          sourceIndexCursor = (byte *)((int)sourceAsset +
-                            ((destTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x14)) -
-                            drawY) * indexedSourceStride +
-                            ((destLeft - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x1c));
-          entryOffsetOrColumnsLeft = spanWidth;
-          do {
-            do {
-              sourceColor = *(uint *)(sourceAsset[sourceStrideOrPaletteBank * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x24);
-              if (0xffffff < sourceColor) {
-                if (sourceColor < 0xff000000) {
-                  sourceColor = *(uint *)(sourceAsset[sourceStrideOrPaletteBank * 4 + 1].common.buildMetadata.
-                                    assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
-                  destPixel16 = *(short *)destCursor;
-                  mm1PackedValue0ByteLane3 = (byte)(sourceColor >> 0x18);
-                  mm1PackedValue0ByteLane2 = (byte)(sourceColor >> 0x10);
-                  mm1PackedValue0ByteLane1 = (byte)(sourceColor >> 8);
-                  destLanes = CONCAT44(CONCAT22(destPixel16,destPixel16),CONCAT22(destPixel16,destPixel16)) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                  mm1PackedValue0 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,sourceColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceColor,
-                                                                              (char)sourceColor) >> 2))),
-                              g_SoftwareBlendAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue0 =
-                       pmulhw(CONCAT26((ushort)((short)(destLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
-                              g_SoftwareBlendInverseAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue1 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue0 >> 0x10
-                                                                 ),(short)mm0PackedValue0 +
-                                                                   (short)mm1PackedValue0))) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
-                               g_SoftwarePixelMmxConstants.packWeights);
-                  *(short *)destCursor =
-                       (short)((ulonglong)mm0PackedValue1 >> 8) +
-                       (short)((ulonglong)mm0PackedValue1 >> 0x28);
-                }
-                else {
-                  *(short *)destCursor = (short)sourceColor;
-                }
-              }
-              sourceIndexCursor = sourceIndexCursor + 1;
-              destCursor = destCursor + 2;
-              entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-            } while (entryOffsetOrColumnsLeft != 0);
-            sourceIndexCursor = sourceIndexCursor + (indexedSourceStride - spanWidth);
-            destCursor = destCursor + (destRightOrPitchPixels - spanWidth) * 2;
-            clipMinY = clipMinY + -1;
-            entryOffsetOrColumnsLeft = spanWidth;
-          } while (clipMinY != 0);
-        }
+        *pixel = Blit_IsOpaque(argb) ? (word)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
       }
     }
   }
@@ -736,10 +491,12 @@ SoftwareTextureSource_BlitSourceAlpha16
 
 /* Address: 0x004A9710.
    Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a four-byte framebuffer. ARGB source pixels are converted
-   through g_SoftwarePixelPackTables before opaque writes; partial alpha is blended in 8-bit RGB lanes. ABI: the
-   implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
-   not a semantic API result. CF is cleared before normal return.
+   Purpose: Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see
+   docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is converted through
+   g_SoftwarePixelPackTables and written, anything else is blended in 8-bit lanes. Unlike the 16-bit version, a
+   paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
+   opaque write, which converts it through the pack tables again. ABI: all registers are preserved and CF is
+   cleared.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SoftwareTextureSource_BlitSourceAlpha32
@@ -750,278 +507,23 @@ SoftwareTextureSource_BlitSourceAlpha32
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  int sourceStrideOrPaletteBank;
-  int indexedSourceStride;
-  uint sourceColor;
-  byte mm0PackedValue0ByteLane3;
-  ushort alphaPairOrBlueSum;
-  byte mm0PackedValue1ByteLane1;
-  ushort greenSum;
-  byte mm0PackedValue1ByteLane3;
-  byte mm0PackedValue0ByteLane2;
-  int destLeftOrPixel;
-  GraphicsPixelDimension destBottom;
-  int entryOffsetOrColumnsLeft;
-  int destTop;
-  GraphicsPixelDimension destRightOrPitchPixels;
-  int spanWidth;
-  byte *sourceIndexCursor;
-  uint *sourceTexelCursor;
-  byte *destCursor;
-  undefined1 alphaOrGreenByte;
-  ushort redSum;
-  undefined8 mm0PackedValue0;
-  byte mm0PackedValue1ByteLane2;
-  ushort alphaSum;
-  undefined8 mm0PackedValue1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane2;
-  byte mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
-  
-  if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-     (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    entryOffsetOrColumnsLeft = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-    if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT) {
-      destLeftOrPixel = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x18);
-      destTop = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x14);
-      if (*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x20)
-          == -1) {
-        destRightOrPitchPixels = destLeftOrPixel + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0x10);
-        destBottom = destTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0xc);
-        if (destLeftOrPixel < 0) {
-          destLeftOrPixel = 0;
-        }
-        if (destTop < 0) {
-          destTop = 0;
-        }
-        if ((int)framebuffer->width < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = framebuffer->width;
-        }
-        if ((int)framebuffer->height < (int)destBottom) {
-          destBottom = framebuffer->height;
-        }
-        if (destLeftOrPixel < clipMinX) {
-          destLeftOrPixel = clipMinX;
-        }
-        if (destTop < clipMinY) {
-          destTop = clipMinY;
-        }
-        if (clipMaxX < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = clipMaxX;
-        }
-        if (clipMaxY < (int)destBottom) {
-          destBottom = clipMaxY;
-        }
-        spanWidth = destRightOrPitchPixels - destLeftOrPixel;
-        if ((spanWidth != 0 && destLeftOrPixel <= (int)destRightOrPitchPixels) &&
-           (clipMinY = destBottom - destTop, clipMinY != 0 && destTop <= (int)destBottom)) {
-          destRightOrPitchPixels = framebuffer->width;
-          sourceStrideOrPaletteBank = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x10);
-          destCursor = framebuffer->pixels + (destRightOrPitchPixels * destTop + destLeftOrPixel) * 4;
-          sourceTexelCursor = (uint *)((int)sourceAsset +
-                            ((destTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x14)) -
-                            drawY) * sourceStrideOrPaletteBank * 4 +
-                            ((destLeftOrPixel - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x18)) * 4 +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x1c));
-          entryOffsetOrColumnsLeft = spanWidth;
-          do {
-            do {
-              sourceColor = *sourceTexelCursor;
-              if (0xffffff < sourceColor) {
-                if (sourceColor < 0xff000000) {
-                  destLeftOrPixel = *(int *)destCursor;
-                  alphaOrGreenByte = (undefined1)(sourceColor >> 0x18);
-                  alphaPairOrBlueSum = CONCAT11(alphaOrGreenByte,alphaOrGreenByte);
-                  mm1PackedValue1ByteLane2 = (byte)(sourceColor >> 0x10);
-                  mm1PackedValue1ByteLane1 = (byte)(sourceColor >> 8);
-                  mm0PackedValue1ByteLane3 = (byte)((uint)destLeftOrPixel >> 0x18);
-                  mm0PackedValue1ByteLane2 = (byte)((uint)destLeftOrPixel >> 0x10);
-                  mm0PackedValue1ByteLane1 = (byte)((uint)destLeftOrPixel >> 8);
-                  mm1PackedValue1 =
-                       pmulhw(CONCAT26(alphaPairOrBlueSum >> 2,
-                                       CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPairOrBlueSum,
-                                                  mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,sourceColor)) >> 0x20)
-                                                >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                       mm1PackedValue1ByteLane1) >>
-                                                              2,CONCAT11((char)sourceColor,(char)sourceColor) >>
-                                                                2))),
-                              g_SoftwareBlendAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue1 =
-                       pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3)
-                                                  ,mm0PackedValue1ByteLane2),
-                                                  CONCAT14(mm0PackedValue1ByteLane2,destLeftOrPixel)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
-                                                                         mm0PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)destLeftOrPixel,
-                                                                              (char)destLeftOrPixel) >> 2))),
-                              g_SoftwareBlendInverseAlphaFactors[sourceColor >> 0x18]);
-                  alphaPairOrBlueSum = (ushort)((short)mm0PackedValue1 + (short)mm1PackedValue1) >> 4;
-                  greenSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                                   (short)((ulonglong)mm1PackedValue1 >> 0x10)) >> 4;
-                  redSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                                   (short)((ulonglong)mm1PackedValue1 >> 0x20)) >> 4;
-                  alphaSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) +
-                                   (short)((ulonglong)mm1PackedValue1 >> 0x30)) >> 4;
-                  *(int *)destCursor =
-                       CONCAT13((alphaSum != 0) * (alphaSum < 0x100) * (char)alphaSum - (0xff < alphaSum),
-                                CONCAT12((redSum != 0) * (redSum < 0x100) * (char)redSum -
-                                         (0xff < redSum),
-                                         CONCAT11((greenSum != 0) * (greenSum < 0x100) * (char)greenSum -
-                                                  (0xff < greenSum),
-                                                  (alphaPairOrBlueSum != 0) * (alphaPairOrBlueSum < 0x100) * (char)alphaPairOrBlueSum -
-                                                  (0xff < alphaPairOrBlueSum))));
-                }
-                else {
-                  *(dword *)destCursor =
-                       g_SoftwarePixelPackTables->blue[sourceColor & 0xff] + (sourceColor & 0xff000000) +
-                       *(int *)((int)g_SoftwarePixelPackTables->green + ((sourceColor & 0xff00) >> 6)) +
-                       *(int *)((int)g_SoftwarePixelPackTables->red + ((sourceColor & 0xff0000) >> 0xe));
-                }
-              }
-              sourceTexelCursor = sourceTexelCursor + 1;
-              destCursor = destCursor + 4;
-              entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-            } while (entryOffsetOrColumnsLeft != 0);
-            sourceTexelCursor = sourceTexelCursor + (sourceStrideOrPaletteBank - spanWidth);
-            destCursor = destCursor + (destRightOrPitchPixels - spanWidth) * 4;
-            clipMinY = clipMinY + -1;
-            entryOffsetOrColumnsLeft = spanWidth;
-          } while (clipMinY != 0);
-          return false;
-        }
+  BlitRegion region;
+  int x;
+  int y;
+
+  if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 4, drawX, drawY, clipMaxY, clipMaxX,
+                             clipMinY, clipMinX, &region)) {
+    return false;
+  }
+  for (y = 0; y < region.height; y++) {
+    const byte *texel = region.texels + y * region.texelStride;
+    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
+      dword color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      if (Blit_IsTransparent(color)) {
+        continue;
       }
-      else if (*(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x20) < (sourceAsset->tableDescriptor).paletteBankCount) {
-        destRightOrPitchPixels = destLeftOrPixel + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0x10);
-        destBottom = destTop + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                                entryOffsetOrColumnsLeft + -0xc);
-        if (destLeftOrPixel < 0) {
-          destLeftOrPixel = 0;
-        }
-        if (destTop < 0) {
-          destTop = 0;
-        }
-        if ((int)framebuffer->width < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = framebuffer->width;
-        }
-        if ((int)framebuffer->height < (int)destBottom) {
-          destBottom = framebuffer->height;
-        }
-        if (destLeftOrPixel < clipMinX) {
-          destLeftOrPixel = clipMinX;
-        }
-        if (destTop < clipMinY) {
-          destTop = clipMinY;
-        }
-        if (clipMaxX < (int)destRightOrPitchPixels) {
-          destRightOrPitchPixels = clipMaxX;
-        }
-        if (clipMaxY < (int)destBottom) {
-          destBottom = clipMaxY;
-        }
-        spanWidth = destRightOrPitchPixels - destLeftOrPixel;
-        if ((spanWidth != 0 && destLeftOrPixel <= (int)destRightOrPitchPixels) &&
-           (clipMinY = destBottom - destTop, clipMinY != 0 && destTop <= (int)destBottom)) {
-          sourceStrideOrPaletteBank = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x20);
-          destRightOrPitchPixels = framebuffer->width;
-          indexedSourceStride = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x10);
-          destCursor = framebuffer->pixels + (destRightOrPitchPixels * destTop + destLeftOrPixel) * 4;
-          sourceIndexCursor = (byte *)((int)sourceAsset +
-                            ((destTop - *(int *)((sourceAsset->common).buildMetadata.
-                                               assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x14)) -
-                            drawY) * indexedSourceStride +
-                            ((destLeftOrPixel - drawX) -
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x18)) +
-                            *(int *)((sourceAsset->common).buildMetadata.
-                                     assetRelativeAddressAnchor28 + entryOffsetOrColumnsLeft + -0x1c));
-          entryOffsetOrColumnsLeft = spanWidth;
-          do {
-            do {
-              sourceColor = *(uint *)(sourceAsset[sourceStrideOrPaletteBank * 4 + 1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x24);
-              if (0xffffff < sourceColor) {
-                if (sourceColor < 0xff000000) {
-                  destLeftOrPixel = *(int *)destCursor;
-                  alphaOrGreenByte = (undefined1)(sourceColor >> 0x18);
-                  alphaPairOrBlueSum = CONCAT11(alphaOrGreenByte,alphaOrGreenByte);
-                  mm1PackedValue0ByteLane2 = (byte)(sourceColor >> 0x10);
-                  mm1PackedValue0ByteLane1 = (byte)(sourceColor >> 8);
-                  mm0PackedValue0ByteLane3 = (byte)((uint)destLeftOrPixel >> 0x18);
-                  mm0PackedValue0ByteLane2 = (byte)((uint)destLeftOrPixel >> 0x10);
-                  alphaOrGreenByte = (undefined1)((uint)destLeftOrPixel >> 8);
-                  mm1PackedValue0 =
-                       pmulhw(CONCAT26(alphaPairOrBlueSum >> 2,
-                                       CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPairOrBlueSum,
-                                                  mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,sourceColor)) >> 0x20)
-                                                >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                       mm1PackedValue0ByteLane1) >>
-                                                              2,CONCAT11((char)sourceColor,(char)sourceColor) >>
-                                                                2))),
-                              g_SoftwareBlendAlphaFactors[sourceColor >> 0x18]);
-                  mm0PackedValue0 =
-                       pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3)
-                                                  ,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,destLeftOrPixel)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(alphaOrGreenByte,alphaOrGreenByte) >> 2,
-                                                                CONCAT11((char)destLeftOrPixel,(char)destLeftOrPixel) >>
-                                                                2))),
-                              g_SoftwareBlendInverseAlphaFactors[sourceColor >> 0x18]);
-                  alphaPairOrBlueSum = (ushort)((short)mm0PackedValue0 + (short)mm1PackedValue0) >> 4;
-                  greenSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                   (short)((ulonglong)mm1PackedValue0 >> 0x10)) >> 4;
-                  redSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                   (short)((ulonglong)mm1PackedValue0 >> 0x20)) >> 4;
-                  alphaSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                   (short)((ulonglong)mm1PackedValue0 >> 0x30)) >> 4;
-                  *(int *)destCursor =
-                       CONCAT13((alphaSum != 0) * (alphaSum < 0x100) * (char)alphaSum - (0xff < alphaSum),
-                                CONCAT12((redSum != 0) * (redSum < 0x100) * (char)redSum -
-                                         (0xff < redSum),
-                                         CONCAT11((greenSum != 0) * (greenSum < 0x100) * (char)greenSum -
-                                                  (0xff < greenSum),
-                                                  (alphaPairOrBlueSum != 0) * (alphaPairOrBlueSum < 0x100) * (char)alphaPairOrBlueSum -
-                                                  (0xff < alphaPairOrBlueSum))));
-                }
-                else {
-                  *(dword *)destCursor =
-                       g_SoftwarePixelPackTables->blue[sourceColor & 0xff] + (sourceColor & 0xff000000) +
-                       *(int *)((int)g_SoftwarePixelPackTables->green + ((sourceColor & 0xff00) >> 6)) +
-                       *(int *)((int)g_SoftwarePixelPackTables->red + ((sourceColor & 0xff0000) >> 0xe));
-                }
-              }
-              sourceIndexCursor = sourceIndexCursor + 1;
-              destCursor = destCursor + 4;
-              entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-            } while (entryOffsetOrColumnsLeft != 0);
-            sourceIndexCursor = sourceIndexCursor + (indexedSourceStride - spanWidth);
-            destCursor = destCursor + (destRightOrPitchPixels - spanWidth) * 4;
-            clipMinY = clipMinY + -1;
-            entryOffsetOrColumnsLeft = spanWidth;
-          } while (clipMinY != 0);
-        }
-      }
+      *pixel = Blit_IsOpaque(color) ? Blit_ConvertArgb(color) : Blit_BlendArgb32(color, *pixel);
     }
   }
   return false;
@@ -4618,14 +4120,10 @@ SoftwareTextureSource_BlitModulatedSourceAlpha32
 
 /* Address: 0x004AD110.
    Ownership: graphics/backend/software.
-   Purpose: Alpha below 1 draws nothing, alpha 255 writes a converted packed color, and partial alpha blends
-   through the verified RGB factor tables. The effective rectangle is the intersection of the draw rectangle,
-   clipping rectangle, and framebuffer bounds. argb8888 alpha below 1 is ignored; alpha 255 takes the direct-fill
-   path; values 1-254 take the source-alpha blend path. ABI: CF is cleared before return. Typed parameters: p0
-   clipMaxY→GraphicsScreenCoordinate_V307, p1 clipMaxX→GraphicsScreenCoordinate_V307, p2
-   clipMinY→GraphicsScreenCoordinate_V307, p3 clipMinX→GraphicsScreenCoordinate_V307, p4
-   rectMaxY→GraphicsScreenCoordinate_V307, p5 rectMaxX→GraphicsScreenCoordinate_V307, p6
-   rectMinY→GraphicsScreenCoordinate_V307, p7 rectMinX→GraphicsScreenCoordinate_V307, p8 argb8888→PackedArgb32.
+   Purpose: Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip
+   rectangle of a two-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the colour
+   converted through g_SoftwarePixelPackTables, anything else blends it over every pixel (see
+   docs/software_raster.md "Blits"). ABI: all registers are preserved and CF is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareFramebuffer_FillRectArgb16
@@ -4636,139 +4134,31 @@ SoftwareFramebuffer_FillRectArgb16
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  short destPixel16;
-  int rowSkipBytes;
-  dword packedBlue;
-  undefined4 packedGreen;
-  undefined4 packedRed;
-  ushort alphaPair;
-  int columnsRemaining;
-  int spanWidth;
-  byte *pixelCursor;
-  ulonglong destLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  
-  if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-    if (rectMinX < 0) {
-      rectMinX = 0;
-    }
-    if (rectMinY < 0) {
-      rectMinY = 0;
-    }
-    if ((int)framebuffer->width < rectMaxX) {
-      rectMaxX = framebuffer->width;
-    }
-    if ((int)framebuffer->height < rectMaxY) {
-      rectMaxY = framebuffer->height;
-    }
-    if (rectMinX < clipMinX) {
-      rectMinX = clipMinX;
-    }
-    if (rectMinY < clipMinY) {
-      rectMinY = clipMinY;
-    }
-    if (clipMaxX < rectMaxX) {
-      rectMaxX = clipMaxX;
-    }
-    if (clipMaxY < rectMaxY) {
-      rectMaxY = clipMaxY;
-    }
-    spanWidth = rectMaxX - rectMinX;
-    if ((spanWidth != 0 && rectMinX <= rectMaxX) &&
-       (clipMinY = rectMaxY - rectMinY, clipMinY != 0 && rectMinY <= rectMaxY)) {
-      rowSkipBytes = (framebuffer->width - spanWidth) * 2;
-      pixelCursor = framebuffer->pixels + (rectMinY * framebuffer->width + rectMinX) * 2;
-      if (0xffffff < argb8888) {
-        columnsRemaining = spanWidth;
-        if (argb8888 < 0xff000000) {
-          do {
-            do {
-              destPixel16 = *(short *)pixelCursor;
-              mm1PackedValue0ByteLane1 = (undefined1)(argb8888 >> 0x18);
-              alphaPair = CONCAT11(mm1PackedValue0ByteLane1,mm1PackedValue0ByteLane1);
-              mm1PackedValue0ByteLane2 = (undefined1)(argb8888 >> 0x10);
-              mm1PackedValue0ByteLane1 = (undefined1)(argb8888 >> 8);
-              destLanes = CONCAT44(CONCAT22(destPixel16,destPixel16),CONCAT22(destPixel16,destPixel16)) &
-                       THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
-              mm1PackedValue0 =
-                   pmulhw(CONCAT26(alphaPair >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPair,
-                                                  mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,argb8888)) >>
-                                                  0x20) >> 2,
-                                            CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                              mm1PackedValue0ByteLane1) >> 2,
-                                                     CONCAT11((char)argb8888,(char)argb8888) >> 2)))
-                          ,g_SoftwareBlendAlphaFactors[argb8888 >> 0x18]);
-              mm0PackedValue0 =
-                   pmulhw(CONCAT26((ushort)((short)(destLanes >> 0x30) *
-                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                   CONCAT24((ushort)((short)(destLanes >> 0x20) *
-                                                    g_SoftwarePixelMmxConstants.unpackScales.red) >>
-                                            2,CONCAT22((ushort)((short)(destLanes >> 0x10) *
-                                                               g_SoftwarePixelMmxConstants.
-                                                               unpackScales.green) >> 2,
-                                                       (ushort)((short)destLanes *
-                                                               g_SoftwarePixelMmxConstants.
-                                                               unpackScales.blue) >> 2))),
-                          g_SoftwareBlendInverseAlphaFactors[argb8888 >> 0x18]);
-              mm0PackedValue1 =
-                   pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                    (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                    CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                             (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                             CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                                      (short)((ulonglong)mm1PackedValue0 >> 0x10),
-                                                      (short)mm0PackedValue0 +
-                                                      (short)mm1PackedValue0))) &
-                           THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
-                           g_SoftwarePixelMmxConstants.packWeights);
-              *(short *)pixelCursor =
-                   (short)((ulonglong)mm0PackedValue1 >> 8) +
-                   (short)((ulonglong)mm0PackedValue1 >> 0x28);
-              pixelCursor = pixelCursor + 2;
-              columnsRemaining = columnsRemaining + -1;
-            } while (columnsRemaining != 0);
-            pixelCursor = pixelCursor + rowSkipBytes;
-            clipMinY = clipMinY + -1;
-            columnsRemaining = spanWidth;
-          } while (clipMinY != 0);
-          return;
-        }
-        packedBlue = g_SoftwarePixelPackTables->blue[argb8888 & 0xff];
-        packedGreen = *(undefined4 *)((int)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6));
-        packedRed = *(undefined4 *)
-                 ((int)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
-        do {
-          for (; columnsRemaining != 0; columnsRemaining = columnsRemaining + -1) {
-            *(short *)pixelCursor = (short)packedBlue + (short)packedGreen + (short)packedRed;
-            pixelCursor = pixelCursor + 2;
-          }
-          pixelCursor = pixelCursor + rowSkipBytes;
-          clipMinY = clipMinY + -1;
-          columnsRemaining = spanWidth;
-        } while (clipMinY != 0);
-      }
+  word opaque;
+  int x;
+  int y;
+
+  if (framebuffer->bytesPerPixel != SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT ||
+      !Blit_ClipRect(framebuffer, clipMaxY, clipMaxX, clipMinY, clipMinX, &rectMinX, &rectMinY, &rectMaxX,
+                     &rectMaxY) ||
+      Blit_IsTransparent(argb8888)) {
+    return;
+  }
+  opaque = Blit_IsOpaque(argb8888) ? (word)Blit_ConvertArgb(argb8888) : 0;
+  for (y = rectMinY; y < rectMaxY; y++) {
+    word *pixel = (word *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
+    for (x = rectMinX; x < rectMaxX; x++, pixel++) {
+      *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb16(argb8888, *pixel);
     }
   }
-  return;
 }
 
 
 /* Address: 0x004AD2A0.
    Ownership: graphics/backend/software.
-   Purpose: Opaque pixels are written directly after RGB packing and partial alpha is blended in 8-bit RGB lanes.
-   The effective rectangle is the intersection of the draw rectangle, clipping rectangle, and framebuffer bounds.
-   argb8888 alpha below 1 is ignored; alpha 255 takes the direct-fill path; values 1-254 take the source-alpha
-   blend path. ABI: CF is cleared before return. Typed parameters: p0 clipMaxY→GraphicsScreenCoordinate_V307, p1
-   clipMaxX→GraphicsScreenCoordinate_V307, p2 clipMinY→GraphicsScreenCoordinate_V307, p3
-   clipMinX→GraphicsScreenCoordinate_V307, p4 rectMaxY→GraphicsScreenCoordinate_V307, p5
-   rectMaxX→GraphicsScreenCoordinate_V307, p6 rectMinY→GraphicsScreenCoordinate_V307, p7
-   rectMinX→GraphicsScreenCoordinate_V307, p8 argb8888→PackedArgb32.
+   Purpose: Four-byte framebuffer version of SoftwareFramebuffer_FillRectArgb16: alpha 0 draws nothing, alpha
+   0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included). ABI: all
+   registers are preserved and CF is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareFramebuffer_FillRectArgb32
@@ -4779,128 +4169,23 @@ SoftwareFramebuffer_FillRectArgb32
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  int rowSkipBytes;
-  dword packedBlue;
-  int destPixelOrPackedRed;
-  byte mm0PackedValue0ByteLane3;
-  int opaqueColumnsLeft;
-  int columnsLeftOrPackedGreen;
-  int spanWidth;
-  byte *pixelCursor;
-  ushort alphaPairOrBlueSum;
-  undefined1 alphaOrGreenByte;
-  undefined1 mm0PackedValue0ByteLane2;
-  ushort greenSum;
-  ushort redSum;
-  undefined8 mm0PackedValue0;
-  ushort alphaSum;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  
-  if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT) {
-    if (rectMinX < 0) {
-      rectMinX = 0;
-    }
-    if (rectMinY < 0) {
-      rectMinY = 0;
-    }
-    if ((int)framebuffer->width < rectMaxX) {
-      rectMaxX = framebuffer->width;
-    }
-    if ((int)framebuffer->height < rectMaxY) {
-      rectMaxY = framebuffer->height;
-    }
-    if (rectMinX < clipMinX) {
-      rectMinX = clipMinX;
-    }
-    if (rectMinY < clipMinY) {
-      rectMinY = clipMinY;
-    }
-    if (clipMaxX < rectMaxX) {
-      rectMaxX = clipMaxX;
-    }
-    if (clipMaxY < rectMaxY) {
-      rectMaxY = clipMaxY;
-    }
-    spanWidth = rectMaxX - rectMinX;
-    if ((spanWidth != 0 && rectMinX <= rectMaxX) &&
-       (clipMinY = rectMaxY - rectMinY, clipMinY != 0 && rectMinY <= rectMaxY)) {
-      rowSkipBytes = (framebuffer->width - spanWidth) * 4;
-      pixelCursor = framebuffer->pixels + (rectMinY * framebuffer->width + rectMinX) * 4;
-      if (0xffffff < argb8888) {
-        columnsLeftOrPackedGreen = spanWidth;
-        if (argb8888 < 0xff000000) {
-          do {
-            do {
-              destPixelOrPackedRed = *(int *)pixelCursor;
-              alphaOrGreenByte = (undefined1)(argb8888 >> 0x18);
-              alphaPairOrBlueSum = CONCAT11(alphaOrGreenByte,alphaOrGreenByte);
-              mm1PackedValue0ByteLane2 = (undefined1)(argb8888 >> 0x10);
-              mm1PackedValue0ByteLane1 = (undefined1)(argb8888 >> 8);
-              mm0PackedValue0ByteLane3 = (byte)((uint)destPixelOrPackedRed >> 0x18);
-              mm0PackedValue0ByteLane2 = (undefined1)((uint)destPixelOrPackedRed >> 0x10);
-              alphaOrGreenByte = (undefined1)((uint)destPixelOrPackedRed >> 8);
-              mm1PackedValue0 =
-                   pmulhw(CONCAT26(alphaPairOrBlueSum >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPairOrBlueSum,
-                                                  mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,argb8888)) >>
-                                                  0x20) >> 2,
-                                            CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                              mm1PackedValue0ByteLane1) >> 2,
-                                                     CONCAT11((char)argb8888,(char)argb8888) >> 2)))
-                          ,g_SoftwareBlendAlphaFactors[argb8888 >> 0x18]);
-              mm0PackedValue0 =
-                   pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3)
-                                                  ,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,destPixelOrPackedRed)) >> 0x20)
-                                            >> 2,CONCAT22(CONCAT11(alphaOrGreenByte,alphaOrGreenByte) >> 2,
-                                                          CONCAT11((char)destPixelOrPackedRed,(char)destPixelOrPackedRed) >> 2))),
-                          g_SoftwareBlendInverseAlphaFactors[argb8888 >> 0x18]);
-              alphaPairOrBlueSum = (ushort)((short)mm0PackedValue0 + (short)mm1PackedValue0) >> 4;
-              greenSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                               (short)((ulonglong)mm1PackedValue0 >> 0x10)) >> 4;
-              redSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                               (short)((ulonglong)mm1PackedValue0 >> 0x20)) >> 4;
-              alphaSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                               (short)((ulonglong)mm1PackedValue0 >> 0x30)) >> 4;
-              *(int *)pixelCursor =
-                   CONCAT13((alphaSum != 0) * (alphaSum < 0x100) * (char)alphaSum - (0xff < alphaSum),
-                            CONCAT12((redSum != 0) * (redSum < 0x100) * (char)redSum -
-                                     (0xff < redSum),
-                                     CONCAT11((greenSum != 0) * (greenSum < 0x100) * (char)greenSum -
-                                              (0xff < greenSum),
-                                              (alphaPairOrBlueSum != 0) * (alphaPairOrBlueSum < 0x100) * (char)alphaPairOrBlueSum -
-                                              (0xff < alphaPairOrBlueSum))));
-              pixelCursor = pixelCursor + 4;
-              columnsLeftOrPackedGreen = columnsLeftOrPackedGreen + -1;
-            } while (columnsLeftOrPackedGreen != 0);
-            pixelCursor = pixelCursor + rowSkipBytes;
-            clipMinY = clipMinY + -1;
-            columnsLeftOrPackedGreen = spanWidth;
-          } while (clipMinY != 0);
-          return;
-        }
-        packedBlue = g_SoftwarePixelPackTables->blue[argb8888 & 0xff];
-        columnsLeftOrPackedGreen = *(int *)((int)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6));
-        destPixelOrPackedRed = *(int *)((int)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
-        opaqueColumnsLeft = spanWidth;
-        do {
-          for (; opaqueColumnsLeft != 0; opaqueColumnsLeft = opaqueColumnsLeft + -1) {
-            *(dword *)pixelCursor = packedBlue + (argb8888 & 0xff000000) + columnsLeftOrPackedGreen + destPixelOrPackedRed;
-            pixelCursor = pixelCursor + 4;
-          }
-          pixelCursor = pixelCursor + rowSkipBytes;
-          clipMinY = clipMinY + -1;
-          opaqueColumnsLeft = spanWidth;
-        } while (clipMinY != 0);
-      }
+  dword opaque;
+  int x;
+  int y;
+
+  if (framebuffer->bytesPerPixel != SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT ||
+      !Blit_ClipRect(framebuffer, clipMaxY, clipMaxX, clipMinY, clipMinX, &rectMinX, &rectMinY, &rectMaxX,
+                     &rectMaxY) ||
+      Blit_IsTransparent(argb8888)) {
+    return;
+  }
+  opaque = Blit_IsOpaque(argb8888) ? Blit_ConvertArgb(argb8888) : 0;
+  for (y = rectMinY; y < rectMaxY; y++) {
+    dword *pixel = (dword *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
+    for (x = rectMinX; x < rectMaxX; x++, pixel++) {
+      *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb32(argb8888, *pixel);
     }
   }
-  return;
 }
 
 

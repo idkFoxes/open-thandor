@@ -250,6 +250,193 @@ section named after your package.
 WP1 and WP2 share the 16-bit alpha-tested depth rule, and WP3/WP5 share the 32-bit rule. The
 first package to need a rule should add it as a helper and tell the others its name. For the
 alpha-tested depth rule of untextured modes, reproduce the current C condition. The
-`SoftwareTextureSource_*` blits in the same file are not triangle handlers and are out of scope.
-Only the two `StretchDirectColorBilinear*` blits have a differential test (`stretchcmp`); the
-others would need their own harness.
+`SoftwareTextureSource_*` blits in the same file are not triangle handlers and are out of scope
+here; see [Blits](#blits) below.
+
+# Blits
+
+`software.c` also holds the 2D paths that draw a texture-source subresource or a coloured
+rectangle straight into the framebuffer. They are installed per framebuffer depth by
+`directdraw.c` (`g_GraphicsTextureSourceBlit*`, `g_GraphicsFramebufferFillRectArgb`) and wrapped by
+the Glide3 versions in `glide.c`. Like the rasterizer they were hand-written MMX, and the
+decompiled C was full of `CONCAT`/`pmulhw` emulation.
+
+`OPEN_THANDOR_SELFTEST=blitcmp` (`src/platform/bootstrap/selftest_blit.c`) compares each of them
+with the original machine code:
+
+| function | original | C status |
+|---|---|---|
+| `SoftwareTextureSource_BlitSourceAlpha16/32` | 0x4A93C0, 0x4A9710 | rewritten (reference) |
+| `SoftwareFramebuffer_FillRectArgb16/32` | 0x4AD110, 0x4AD2A0 | rewritten (reference) |
+| `SoftwareTextureSource_BlitHalfSourceRgb16/32` | 0x4A9B20, 0x4A9E10 | decompiled, identical |
+| `SoftwareTextureSource_BlitSourceAlphaPaletteBank16/32` | 0x4AADE0, 0x4AB150 | decompiled, identical |
+| `SoftwareTextureSource_BlitModulatedSourceAlpha16/32` | 0x4AC040, 0x4AC4C0 | decompiled, identical |
+| `SoftwareTextureSource_BlitSaturatedAddRgb16/32` | 0x4AB4A0, 0x4AB750 | decompiled, identical |
+| `SoftwareTextureSource_BlitHalfRgbSaturatedAdd16/32` | 0x4ABA70, 0x4ABD20 | decompiled, identical |
+| `SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32` | 0x4AA630, 0x4AAA40 | decompiled, identical |
+| `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | decompiled, identical |
+
+"Identical" means blitcmp found no difference in 3000 runs on seeds 1 and 7: the decompiled C
+of all 17 functions already matched the original.
+
+## ABI
+
+All of them are `__stdcall` in the original (`ret 0x24` / `0x28`, `ret 4` for the mask step),
+preserve every register and clear CF on return. The C versions are plain cdecl and return
+`false` where the header declares `bool`. Argument order:
+
+- plain blits: `(clipMaxY, clipMaxX, clipMinY, clipMinX, drawY, drawX, subresourceIndex, asset, framebuffer)`
+- `IntegerScaled`, `PaletteBank`, `Modulated`: the extra argument (scale, bank, ARGB) comes before `subresourceIndex`
+- fills: `(clipMaxY, clipMaxX, clipMinY, clipMinX, rectMaxY, rectMaxX, rectMinY, rectMinX, argb, framebuffer)`
+
+The framebuffer (`SoftwareFramebufferAccess`) is `width, height, bytesPerPixel, pixels`, and its row
+stride is `width * bytesPerPixel`. Every function first checks `bytesPerPixel` (2 or 4) and
+returns if it does not match.
+
+## Asset layout
+
+A texture source asset has the magic `ASSET_MAGIC_GFX` and, at +0xB0, `subresourceCount`,
+`paletteBankCount` and `subresourceTableOffset`. The subresource table holds 32-byte
+`GraphicsTextureSourceEntry` records: `paletteIndex` +8, `dataOffset` +0xC, `originX/Y`
++0x10/+0x14, `pixelWidth/Height` +0x18/+0x1C. Palette banks are 256 entries of 8 bytes each, at
+`asset + 0x200 + bank * 0x800`:
+
+- +0: the ARGB colour.
+- +4: the colour converted to 16-bit pixel format, with the alpha in the top byte.
+
+`paletteIndex == -1` means one ARGB dword per texel. Any other value must be below
+`paletteBankCount` (compared unsigned), or nothing is drawn.
+
+Palette quirk, kept as it is: the 16-bit blits test the alpha of +4, write its low word when opaque,
+and blend +0 using +0's own alpha. The 32-bit blits use +4 for everything: the alpha test, the
+blend colour, and the opaque write. The opaque write converts +4 through
+`g_SoftwarePixelPackTables` a second time.
+
+## Common structure
+
+Every clipped blit (all except `IntegerScaled`) and both fills follow the same steps:
+
+1. **Validate** the magic, `subresourceIndex < subresourceCount` (unsigned), `bytesPerPixel`, and
+   the palette index.
+2. **Place** the image. Its rectangle is `[drawX + originX, + pixelWidth) x [drawY + originY, + pixelHeight)`.
+   A fill uses the rect arguments instead.
+3. **Clip** (`Blit_ClipRect`). Clamp the rectangle to 0 and to the framebuffer size, then to the
+   clip rectangle. All compares are signed. Return if nothing is left.
+4. **Walk** the clipped rows. The source starts at
+   `data + ((top - drawY - originY) * pixelWidth + (left - drawX - originX)) * texelBytes`.
+5. **Per pixel**, apply the function's operation. Transparent texels leave the pixel alone.
+
+`Blit_SetupSubresource` does steps 1 to 3 and fills a `BlitRegion` (texel and pixel pointers,
+strides, palette, size). A rewritten blit is then only the loop over the region with its pixel
+operation. See `SoftwareTextureSource_BlitSourceAlpha16`:
+
+```c
+if (!Blit_SetupSubresource(sourceAsset, subresourceIndex, framebuffer, 2, drawX, drawY, clipMaxY, clipMaxX,
+                           clipMinY, clipMinX, &region)) {
+  return false;
+}
+for (y = 0; y < region.height; y++) {
+  const byte *texel = region.texels + y * region.texelStride;
+  word *pixel = (word *)(region.pixels + y * region.pixelStride);
+  for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
+    ... Blit_IsTransparent / Blit_IsOpaque / Blit_BlendArgb16 ...
+  }
+}
+```
+
+## Pixel operations and helpers
+
+The blit helpers are in `software_raster.h`, in the section "Texture-source blits and rectangle
+fills". They reuse `RasterColor` and `Raster_MulHigh`.
+
+| helper | MMX it reproduces |
+|---|---|
+| `Blit_IsTransparent`, `Blit_IsOpaque` | `CMP EAX,0x1000000 / JC` and `CMP EAX,0xFF000000 / JC` on the whole dword |
+| `Blit_PaletteColor`, `Blit_PalettePixel` | the palette entry's +0 and +4 dwords |
+| `Blit_ConvertArgb` | the `g_SoftwarePixelPackTables` lookup (blue + alpha + green + red, dword adds) |
+| `Blit_ArgbLanes(argb, shift)` | `PUNPCKLBW x,x` + `PSRLW shift`: lanes `(c * 0x101) >> shift` |
+| `Blit_Unpack16` | broadcast, `PAND` with the pixel masks, `PMULLW` with the unpack scales, `PSRLW 2` |
+| `Blit_BlendLanes(src, dst, alpha)` | `PMULHW` with `g_SoftwareBlendAlphaFactors[alpha]` and `...InverseAlphaFactors[alpha]`, then `PADDW` |
+| `Blit_PackLanes16` | `PAND` with the quantize masks, `PMADDWD` with the pack weights, then `PSRLQ 8/40` + `PADDW` |
+| `Blit_PackLanes32` | `PSRLW 4` (logical) + `PACKUSWB` (the alpha lane is written too) |
+| `Blit_BlendArgb16/32` | the source-alpha blend of one ARGB colour over one pixel |
+
+Operations of the functions that are not rewritten yet, read from their asm:
+
+- **HalfSourceRgb**: there is no opaque shortcut, so alpha 0xFF also blends (factor index 0xFF).
+  The source lanes are `(c * 0x101) >> 3` (half), except in the 32-bit direct-colour path, which
+  uses `>> 2`. The destination is `Blit_Unpack16` / `Blit_ArgbLanes(d, 2)`.
+- **PaletteBank**: the same as SourceAlpha, but the palette bank argument replaces the entry's bank
+  after clipping. It is checked with `bank < paletteBankCount`. The entry's own `paletteIndex`
+  must still be valid (or -1).
+- **Modulated**: before the alpha tests, each source channel is multiplied by the matching
+  modulation channel. Blue is `(b * mb) >> 8`; green, red and alpha are `((c * mc) & 0xFF00)`
+  shifted into place. The rest is the same as SourceAlpha.
+- **SaturatedAddRgb**: skip the texel if `argb & 0xFFFFFF == 0`.
+  - 16-bit: `PADDUSW` of the source lanes `c * 0x101` and the unmasked scaled destination
+    `(p & mask) * scale`, then `PSRLW 4`, then `Blit_PackLanes16`'s mask and pack.
+  - 32-bit: `PADDUSW` of `c * 0x101` and `d * 0x101`, then `PSRLW 8` + `PACKUSWB`.
+- **HalfRgbSaturatedAdd**: the same as SaturatedAddRgb, with the source lanes `>> 1` first.
+- **IntegerScaled**: no source clipping. The clip rectangle is clamped to `[0, framebuffer)`.
+  Every texel is replicated `scale x scale` times, and each written pixel is tested against the
+  clip rectangle. The destination pointer walks the unclipped image, starting at
+  `(drawY + originY * scale) * width + drawX + originX * scale`. Scale 0, or an image size of 0,
+  makes the original loop 2^32 times, so blitcmp does not generate them.
+- **Mask step**: every nonzero byte of `maskPixels` gets `+ 0x1F`, saturated at 0xFF
+  (`PCMPEQB` / `PAND` / `PXOR` / `PADDUSB`). It works on 32-byte blocks,
+  `width * height >> 5` of them, with the size taken from `g_GraphicsTextureSourceGetLogicalSize`.
+  With fewer than 32 pixels the count is 0, and the original loops 2^32 times.
+
+Do not clamp or "fix" anything: wrapping lanes, the logical `PSRLW` and the palette +0/+4 mix-up
+are all part of the original output.
+
+## blitcmp
+
+It needs the mapped-image build and `thandor_original.exe` next to the executable. The test copies
+0x4A93C0..0x4AD410 and 0x519270..0x519318 from `thandor_original.exe` and runs both versions on
+identical copies of random input:
+
+- **Asset**: 1 to 4 banks and 1 to 4 subresources, each 1..48 x 1..40 texels with origins -24..24.
+  Subresources are paletted or direct, and some have an invalid bank. Palette dwords and texels
+  get alpha 0, 0xFF or random, and sometimes RGB 0.
+- **Early returns**: sometimes an invalid magic, subresource index or pixel size.
+- **Framebuffer**: 16 or 32 bit, 1..160 x 1..120 pixels with random contents.
+- **Clipping**: clip rectangles partly outside, sometimes inverted. Three runs in four place the
+  image so that it overlaps the framebuffer; the rest also produce fully clipped cases.
+- **Pixel constants**: 565 or 555 `g_SoftwarePixelMmxConstants` and random `g_SoftwarePixelPackTables`.
+- **Extra arguments**: scale 1..4, palette banks (sometimes out of range), modulation colours
+  (random, opaque, or 0xFFFFFFFF) and fill colours.
+- **Mask step**: sizes of at least 32 pixels, mask bytes 0, 1..0x40, 0xD8..0xFF or random, and
+  sometimes `maskPixels == NULL`. `g_GraphicsTextureSourceGetLogicalSize` is replaced by two
+  stubs: one for the C code (struct return) and one for the original (EAX/EDX, ECX preserved).
+
+It compares the framebuffer with 1 KB guards on both sides, the mask buffer with guards, the asset,
+and the carry flag. Run it like this:
+
+- `OPEN_THANDOR_SELFTEST=blitcmp`
+- `OPEN_THANDOR_BLITCMP_RUNS`: default 500
+- `OPEN_THANDOR_BLITCMP_SEED`: default 1
+- `OPEN_THANDOR_BLITCMP_FILTER`: substring of the function name, e.g. `SaturatedAdd`
+
+Log lines start with `blitcmp`. A mismatch line gives the byte, the pixel, the framebuffer size
+and format, the clip rectangle, the draw position, the extra argument and the subresource. As a
+sanity check, a deliberately wrong alpha threshold in `BlitSourceAlpha16` produced 233
+mismatches in 2000 runs.
+
+A rewrite is done when all of the following hold:
+
+- Its functions report `identical` with 0 faults for at least 3000 runs on two seeds.
+- The whole blitcmp run still reports `0 with mismatches/faults`.
+- `build-rel` compiles without new warnings in `software.c`.
+
+## Remaining work
+
+These are three independent packages. Each one touches only its own function bodies in
+`software.c`, and they are in separate regions of the file. Add any new blit helper at the end of
+the blit section of `software_raster.h`, under a comment that names your package.
+
+| package | functions | new helpers needed |
+|---|---|---|
+| B1: clipped blend variants | `BlitHalfSourceRgb16/32`, `BlitSourceAlphaPaletteBank16/32`, `BlitModulatedSourceAlpha16/32` (6) | none for PaletteBank (reuse `Blit_SetupSubresource`, then swap `region.palette`); a `>> 3` source for HalfSourceRgb (use `Blit_ArgbLanes(argb, 3)` with `Blit_BlendLanes`); `Blit_Modulate(argb, modulation)` |
+| B2: saturated add | `BlitSaturatedAddRgb16/32`, `BlitHalfRgbSaturatedAdd16/32` (4) | a `PADDUSW` lane add, and the unshifted 16-bit unpack (`(p & mask) * scale`), e.g. `Blit_AddArgb16/32(argb, pixel, sourceShift)` |
+| B3: scaled blit and mask step | `BlitIntegerScaledSourceAlpha16/32`, `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` (3) | its own validation (it does not use `Blit_SetupSubresource`, because nothing is clipped at the source) and a per-pixel clip test; the mask step is a byte loop |

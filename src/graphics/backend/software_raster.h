@@ -9,7 +9,8 @@
 
 /*
 Shared helpers of the software triangle rasterizer (SoftwareRaster{16,Non16,Aux}_ModeNN in
-software.c). Internal to graphics/backend/software.c; see docs/software_raster.md.
+software.c), and at the end those of the texture-source blits and rectangle fills. Internal to
+graphics/backend/software.c; see docs/software_raster.md.
 
 The original handlers are hand-written MMX. These helpers reproduce its arithmetic bit for bit in
 plain C (16-bit lanes wrap like PADDW/PSUBW, PSRAW is an arithmetic shift, PACKUSWB saturates to
@@ -569,6 +570,244 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
 static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
 {
     return (word)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
+}
+
+/* ---- Texture-source blits and rectangle fills --------------------------------------------- */
+/*
+SoftwareTextureSource_Blit*, SoftwareFramebuffer_FillRectArgb* (see docs/software_raster.md,
+"Blits"). OPEN_THANDOR_SELFTEST=blitcmp compares them with the original machine code.
+
+Texture source asset: "gfx" magic, tableDescriptor at +0xB0 (subresourceCount, paletteBankCount,
+subresourceTableOffset), palette banks of 256 * 8 bytes at +0x200, and a table of 32-byte
+GraphicsTextureSourceEntry records. A palette entry holds two dwords: the ARGB colour at +0 and,
+at +4, the colour converted to the 16-bit framebuffer format with the alpha in its top byte. The
+16-bit blits test the alpha of +4, write its low word and blend +0; the 32-bit blits use +4 for
+everything (they treat it as ARGB). An entry with paletteIndex -1 stores ARGB dwords instead of
+8-bit indices.
+
+A source colour whose alpha is 0 is skipped, alpha 0xFF is written as is (converted), anything in
+between is blended through g_SoftwareBlendAlphaFactors / g_SoftwareBlendInverseAlphaFactors. The
+original tests the whole dword (< 0x1000000, >= 0xFF000000); Blit_IsTransparent / Blit_IsOpaque do
+the same.
+*/
+
+/* One clipped image in the framebuffer, and where its first texel is. */
+typedef struct BlitRegion {
+    const byte *texels;    /* texel of the top-left drawn pixel */
+    int texelBytes;        /* 1 (palette index) or 4 (ARGB) */
+    int texelStride;       /* bytes per source row */
+    const byte *palette;   /* palette bank of a paletted image (256 entries of 8 bytes), else NULL */
+    byte *pixels;          /* top-left drawn pixel */
+    int pixelBytes;        /* 2 or 4 */
+    int pixelStride;       /* bytes per framebuffer row (framebuffer->width pixels) */
+    int width;             /* drawn size in pixels, both > 0 */
+    int height;
+} BlitRegion;
+
+static __inline int Blit_IsTransparent(dword argb)
+{
+    return argb < 0x1000000u;
+}
+
+static __inline int Blit_IsOpaque(dword argb)
+{
+    return argb >= 0xff000000u;
+}
+
+/* The two dwords of a palette entry: +0 ARGB colour, +4 converted (16-bit) pixel with the alpha on top. */
+static __inline dword Blit_PaletteColor(const BlitRegion *region, byte index)
+{
+    return *(const dword *)(region->palette + index * 8u);
+}
+
+static __inline dword Blit_PalettePixel(const BlitRegion *region, byte index)
+{
+    return *(const dword *)(region->palette + index * 8u + 4u);
+}
+
+/* ARGB -> framebuffer pixel through the g_SoftwarePixelPackTables channel tables. The alpha byte is
+   added on top; a 16-bit framebuffer keeps the low word. */
+static __inline dword Blit_ConvertArgb(dword argb)
+{
+    const SoftwarePixelPackTables *tables = g_SoftwarePixelPackTables;
+    return tables->blue[argb & 0xff] + (argb & 0xff000000u) + tables->green[(argb >> 8) & 0xff] +
+           tables->red[(argb >> 16) & 0xff];
+}
+
+/* ARGB (or a 32-bit pixel) as lanes of (c * 0x101) >> shift (PUNPCKLBW with itself + PSRLW). */
+static __inline RasterColor Blit_ArgbLanes(dword argb, int shift)
+{
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        result.lane[i] = (short)((Raster_Channel(argb, i) * 0x101) >> shift);
+    }
+    return result;
+}
+
+/* A 16-bit framebuffer pixel as lanes: masked channel scaled to the top of 16 bits (PAND + PMULLW
+   with the 565/555 constants), then >> 2 (PSRLW). Same scale as Blit_ArgbLanes(argb, 2). */
+static __inline RasterColor Blit_Unpack16(word pixel)
+{
+    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
+    const word masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
+                                           k->packedPixelMasks.red, (word)k->packedPixelMasks.zero};
+    const word scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
+                                            (word)k->unpackScales.zero};
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        word scaled = (word)((pixel & masks[i]) * scales[i]);
+        result.lane[i] = (short)(scaled >> 2);
+    }
+    return result;
+}
+
+/* source * alpha + destination * (1 - alpha) through the blend factor tables (two PMULHW + PADDW).
+   alpha is the source alpha byte (1..254 for the blits). */
+static __inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor destination, unsigned alpha)
+{
+    const SoftwareRgbWordLanes *factor = &g_SoftwareBlendAlphaFactors[alpha];
+    const SoftwareRgbWordLanes *inverse = &g_SoftwareBlendInverseAlphaFactors[alpha];
+    const short factorLanes[RASTER_LANE_COUNT] = {(short)factor->blue, (short)factor->green, (short)factor->red,
+                                                  (short)factor->zero};
+    const short inverseLanes[RASTER_LANE_COUNT] = {(short)inverse->blue, (short)inverse->green,
+                                                   (short)inverse->red, (short)inverse->zero};
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        result.lane[i] = (short)(Raster_MulHigh(source.lane[i], factorLanes[i]) +
+                                 Raster_MulHigh(destination.lane[i], inverseLanes[i]));
+    }
+    return result;
+}
+
+/* Blended lanes (channel << 4, 12 bits) -> 16-bit pixel: PAND with the quantize masks, PMADDWD with
+   the pack weights, and the word sum of bits 8..23 of both dword halves (PSRLQ 8 / 40 + PADDW). */
+static __inline word Blit_PackLanes16(RasterColor lanes)
+{
+    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
+    const word masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
+                                           k->quantizeMasksQ12.red, (word)k->quantizeMasksQ12.zero};
+    const word weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
+                                             (word)k->packWeights.zero};
+    short q[RASTER_LANE_COUNT];
+    dword low;
+    dword high;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        q[i] = (short)(lanes.lane[i] & masks[i]);
+    }
+    low = (dword)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
+    high = (dword)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
+    return (word)((low >> 8) + (high >> 8));
+}
+
+/* Blended lanes -> 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included. */
+static __inline dword Blit_PackLanes32(RasterColor lanes)
+{
+    int channel[RASTER_LANE_COUNT];
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        channel[i] = Raster_SaturateByte((word)lanes.lane[i] >> 4);
+    }
+    return Raster_Pack32(channel);
+}
+
+/* Source-alpha blend of an ARGB colour over a 16-bit / 32-bit pixel, alpha = the colour's top byte. */
+static __inline word Blit_BlendArgb16(dword argb, word destination)
+{
+    return Blit_PackLanes16(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_Unpack16(destination), argb >> 24));
+}
+
+static __inline dword Blit_BlendArgb32(dword argb, dword destination)
+{
+    return Blit_PackLanes32(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_ArgbLanes(destination, 2), argb >> 24));
+}
+
+/* Intersects [left, right) x [top, bottom) with the framebuffer and the clip rectangle, in the
+   original's order: rectangle clamped to 0 and to the framebuffer size, then to the clip
+   rectangle (all compares signed). Returns 0 when nothing is left. */
+static __inline int Blit_ClipRect(const SoftwareFramebufferAccess *framebuffer, int clipMaxY, int clipMaxX,
+                                  int clipMinY, int clipMinX, int *left, int *top, int *right, int *bottom)
+{
+    if (*left < 0) {
+        *left = 0;
+    }
+    if (*top < 0) {
+        *top = 0;
+    }
+    if (*right > (int)framebuffer->width) {
+        *right = (int)framebuffer->width;
+    }
+    if (*bottom > (int)framebuffer->height) {
+        *bottom = (int)framebuffer->height;
+    }
+    if (*left < clipMinX) {
+        *left = clipMinX;
+    }
+    if (*top < clipMinY) {
+        *top = clipMinY;
+    }
+    if (*right > clipMaxX) {
+        *right = clipMaxX;
+    }
+    if (*bottom > clipMaxY) {
+        *bottom = clipMaxY;
+    }
+    return *right > *left && *bottom > *top; /* SUB + JLE */
+}
+
+/* Common setup of the clipped blits: validates the asset (magic, subresource index), the framebuffer
+   pixel size and the entry's palette bank, places the subresource at (drawX, drawY) + its origin and
+   clips it. Returns 0 when nothing is drawn. */
+static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sourceAsset,
+                                          GraphicsSubresourceIndex subresourceIndex,
+                                          SoftwareFramebufferAccess *framebuffer, int pixelBytes, int drawX, int drawY,
+                                          int clipMaxY, int clipMaxX, int clipMinY, int clipMinX, BlitRegion *region)
+{
+    const byte *asset = (const byte *)sourceAsset;
+    const GraphicsTextureSourceEntry *entry;
+    int left;
+    int top;
+    int right;
+    int bottom;
+
+    if (sourceAsset->common.magic != ASSET_MAGIC_GFX ||
+        subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount ||
+        (int)framebuffer->bytesPerPixel != pixelBytes) {
+        return 0;
+    }
+    entry = (const GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset) +
+            subresourceIndex;
+    if (entry->paletteIndex == -1) {
+        region->texelBytes = 4;
+        region->palette = NULL;
+    }
+    else if ((dword)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
+        region->texelBytes = 1;
+        region->palette = asset + 0x200 + (dword)entry->paletteIndex * 0x800;
+    }
+    else {
+        return 0;
+    }
+    left = drawX + entry->originX;
+    top = drawY + entry->originY;
+    right = left + (int)entry->pixelWidth;
+    bottom = top + (int)entry->pixelHeight;
+    if (!Blit_ClipRect(framebuffer, clipMaxY, clipMaxX, clipMinY, clipMinX, &left, &top, &right, &bottom)) {
+        return 0;
+    }
+    region->width = right - left;
+    region->height = bottom - top;
+    region->texelStride = (int)entry->pixelWidth * region->texelBytes;
+    region->texels = asset + entry->dataOffset +
+                     ((top - drawY - entry->originY) * (int)entry->pixelWidth + (left - drawX - entry->originX)) *
+                         region->texelBytes;
+    region->pixelBytes = pixelBytes;
+    region->pixelStride = (int)framebuffer->width * pixelBytes;
+    region->pixels = framebuffer->pixels + (top * (int)framebuffer->width + left) * pixelBytes;
+    return 1;
 }
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
