@@ -4741,7 +4741,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00000000, 0x000021A0},
-        { /* +0A28 opponentStrengthSlider g_UiRangeSliderControlVtable */
+        { /* +0A28 gameSpeedSlider g_UiRangeSliderControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x914),
             .vtable = (void *)&g_UiRangeSliderControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
@@ -6848,7 +6848,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
     {
         .frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInputCf,
-        .keyboardFallbackCf = (void *)EndGameResultsUiRuntime_DispatchCommandByFlagsCf},
+        .keyboardFallbackCf = (void *)InGameHotkeys_DispatchCommandByFlagsCf},
     0, /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
     0, /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
     {0}, /* 0054FBDC g_InGamePlayerStatusTextSlots */
@@ -7070,7 +7070,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000001, 0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF},
-        { /* +08E4 levelMovieOverlay g_UiConditionalActionControlVtable */
+        { /* +08E4 playerStatusBox g_UiConditionalActionControlVtable */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x880),
             .vtable = (void *)&g_UiConditionalActionControlVtable,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
@@ -8115,7 +8115,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .layoutWidth = -1, .layoutHeight = -1},
         {
             0x00000000, 0x00002132},
-        { /* +37C0 textureQualityHighButton g_UiNodeVtable_004B2CE0 */
+        { /* +37C0 textureQualityLowButton g_UiNodeVtable_004B2CE0 */
             .nextSibling = UI_TEMPLATE_LINK(0x3820), .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x376C),
             .vtable = (void *)&g_UiNodeVtable_004B2CE0,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
@@ -8133,7 +8133,7 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
             .layoutWidth = -1, .layoutHeight = -1, .nodeFlags = 0x20},
         {
             0x00000081, 0x00001207, 0x00002137},
-        { /* +3880 textureQualityLowButton g_UiNodeVtable_004B2CE0 */
+        { /* +3880 textureQualityHighButton g_UiNodeVtable_004B2CE0 */
             .nextSibling = UI_TEMPLATE_NO_LINK, .firstChild = UI_TEMPLATE_NO_LINK, .parent = UI_TEMPLATE_LINK(0x376C),
             .vtable = (void *)&g_UiNodeVtable_004B2CE0,
             .left = -1, .top = -1, .right = -1, .bottom = -1,
@@ -10807,9 +10807,9 @@ ImageData_00562498 g_ImageData_00562498 = {
             /* 30 */ (void *)InGameSettingsAction_CloseAndDepartPlayerMode1,
             /* 31 */ (void *)InGameUiAction101F_Handler,
             /* 32 */ (void *)InGameSettingsAction_CloseAlternatePanel,
-            /* 33 */ (void *)InGameSettingsPage_SelectTab0,
-            /* 34 */ (void *)InGameSettingsPage_SelectTab1,
-            /* 35 */ (void *)InGameSettingsPage_SelectTab2,
+            /* 33 */ (void *)InGameMissionHelpPage_SelectTab0,
+            /* 34 */ (void *)InGameMissionHelpPage_SelectTab1,
+            /* 35 */ (void *)InGameMissionHelpPage_SelectTab2,
             /* 36 */ (void *)InGameUiAction1024_Handler,
             /* 37 */ (void *)InGameCommandState_SetRuntimeFlag1000,
             /* 38 */ (void *)InGameCommandState_SelectAndPropagateBinaryMode,

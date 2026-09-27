@@ -43,7 +43,7 @@ FrontendRomActionTable_ExecuteRecord
   frontendRootNode = g_FrontendRootNode;
   if (recordIndex < *(uint *)(g_FrontendActiveRomRecordTable + 0x3c)) {
     record = (RomAssetRecordPrefix *)(recordIndex * 0x200 + 0x200 + g_FrontendActiveRomRecordTable);
-    source = (void *)(g_FrontendRootNode + 0x368);
+    source = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
     recordId = record[3].rootNodeOffsetOrPointer;
     actionOrCopiedValue = record[2].recordId;
     if ((((((actionOrCopiedValue != 3) && (actionOrCopiedValue != 4)) && (actionOrCopiedValue != 9)) && (-1 < (int)actionOrCopiedValue)) ||
@@ -71,14 +71,16 @@ FrontendRomActionTable_ExecuteRecord
       }
       else if ((recordId != 0) && (1 < (int)record[3].byteSize)) {
         transitionSlotIndex = record[3].byteSize - 1;
-        actionOrCopiedValue = *(RomRecordId *)(frontendRootNode + 0x3cc);
-        record[5].rootNodeOffsetOrPointer = *(dword *)(frontendRootNode + 0x3c8);
+        /* Snapshot of the menu room camera: WorldRuntimeContext.motion (+0x60) of menuRoomModelView,
+           positionX/Y/Z, positionMagnitude, headingAngle, pitchAngle. */
+        actionOrCopiedValue = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x64,RomRecordId);
+        record[5].rootNodeOffsetOrPointer = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x60,dword);
         record[5].recordId = actionOrCopiedValue;
-        copiedDword = *(dword *)(frontendRootNode + 0x3d4);
-        record[6].byteSize = *(RomRecordByteSize *)(frontendRootNode + 0x3d0);
+        copiedDword = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x6C,dword);
+        record[6].byteSize = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x68,RomRecordByteSize);
         record[6].rootNodeOffsetOrPointer = copiedDword;
-        copiedByteSize = *(RomRecordByteSize *)(frontendRootNode + 0x3dc);
-        record[6].recordId = *(RomRecordId *)(frontendRootNode + 0x3d8);
+        copiedByteSize = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x74,RomRecordByteSize);
+        record[6].recordId = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x70,RomRecordId);
         record[7].byteSize = copiedByteSize;
         record[7].rootNodeOffsetOrPointer = 0;
         targetLookup = RomRegistry_FindRecordByIdCf(recordId);
@@ -210,7 +212,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
   
   (*g_SpinLockAcquire)(&g_FrontendStateTickSpinLock);
   recordId = g_FrontendRomTransitionPendingCount;
-  worldRuntime = (WorldRuntimeContext *)(g_FrontendRootNode + 0x368);
+  worldRuntime = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
   if (g_FrontendRomTransitionPendingCount != 0) {
     splineStillRunning = WorldMotionSpline_EvaluateAndApplyAtTime
                       (g_FrontendRomTransitionSplineKeyframeCount,

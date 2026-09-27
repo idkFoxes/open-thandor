@@ -39,6 +39,7 @@ or to other layout-compatible structs, which C only allows through a union.
 #pragma warning(disable: 4116) /* unnamed type definition in parentheses (THANDOR_BITCAST) */
 #endif
 
+#include <stddef.h> /* offsetof (THANDOR_UI_SIBLING) */
 #include <thandor/core/ghidra.h>
 /* Where the original image data lives. By default the generated C data (src/generated/image_data.c,
    tools/data/gen_image_data.py); with THANDOR_MAPPED_IMAGE the copy of the original executable mapped
@@ -80,6 +81,11 @@ static __inline StatusValueEaxCf5 StatusValue_Fail(dword errorCode)
 /* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
    UiNodeBase; the node offsets are those of the template in src/generated/image_data.c. */
 #define THANDOR_UI_FIELD(base, offset, type) (*(type *)((byte *)(uintptr_t)(base) + (int)(offset)))
+
+/* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same
+   copy (ImageType is the template struct, e.g. InGameUiImage): the nodes' fixed distance in the template. */
+#define THANDOR_UI_SIBLING(self, ImageType, selfNode, node) \
+    THANDOR_UI_AT(self, (int)offsetof(ImageType, node) - (int)offsetof(ImageType, selfNode))
 
 /* The top-level UI node: follow parent links until the -1 sentinel (the original's inline loop). */
 static __inline UiNodeBase *Thandor_UiRoot(const void *node)

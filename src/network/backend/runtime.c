@@ -357,12 +357,13 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
     frontendRootBase = g_FrontendRootNode;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if ((g_FrontendRuntimeFlags & 0x10) != 0) {
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(g_FrontendRootNode + 0x508));
-      frontendRootFlags = (uint *)(frontendRootBase + 0x3b4);
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
+      frontendRootFlags = &FRONTEND_UI_FIELD(frontendRootBase,menuRoomModelView,0x4C,uint);
       *frontendRootFlags = *frontendRootFlags & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
-      FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(frontendRootBase + 0x368));
+      FrontendRomTransition_ActivateRecordByIdCf
+                (1,(WorldRuntimeContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView));
     }
     resolvedText = TextResource_Resolve(0xff01);
     RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.eax);

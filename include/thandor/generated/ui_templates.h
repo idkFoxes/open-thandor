@@ -159,8 +159,8 @@ typedef struct FrontendUiImage {
     dword opponentWeakLabel_fields[4];
     UiNodeBase opponentStrongLabel; /* +09CC g_UiFocusProxyControlVtable: Label "strong" at the right end of the opponent slider. */
     dword opponentStrongLabel_fields[4];
-    UiNodeBase opponentStrengthSlider; /* +0A28 g_UiRangeSliderControlVtable: Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it. */
-    dword opponentStrengthSlider_fields[7];
+    UiNodeBase gameSpeedSlider; /* +0A28 g_UiRangeSliderControlVtable: Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it. */
+    dword gameSpeedSlider_fields[7];
     UiNodeBase factionSetupPage; /* +0A90 g_UiImagePanelControlVtable: Page 11 "Choose faction": faction roster (colour, mode, play checkbox, participants) and task description. */
     dword factionSetupPage_fields[4];
     UiNodeBase factionSetupBackButton; /* +0AEC g_UiNodeVtable_004B1D80: "Back" button (action 0x2040). */
@@ -590,15 +590,15 @@ typedef struct InGameUiImage {
     dword endMovieLetterboxBottom_fields[4];
     UiNodeBase endMoviePageStack; /* +02F8 g_UiLayoutContainerControlVtable: Two-page stack (movie only or results screen); set to page 1 after the end movie to show the results screen. */
     dword endMoviePageStack_fields[3];
-    UiNodeBase resultsScreenPanel; /* +0350 g_UiImagePanelControlVtable: End-of-game results screen background panel holding the chart tabs, charts and summary text. */
+    UiNodeBase resultsScreenPanel; /* +0350 g_UiImagePanelControlVtable: End-of-game results screen background panel holding the chart tabs, charts and summary text; its image subresource is set to the chart mode index (action 0x1026). */
     dword resultsScreenPanel_fields[4];
     UiNodeBase resultsChartPageStack; /* +03AC g_UiLayoutContainerControlVtable: Page stack switching between the three results charts; page chosen by the chart tab buttons (action 0x101C). */
     dword resultsChartPageStack_fields[4];
-    UiNodeBase resultsChart1; /* +0408 g_UiNodeVtable_00516F60: First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified. */
+    UiNodeBase resultsChart1; /* +0408 g_UiNodeVtable_00516F60: First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     dword resultsChart1_fields[12];
-    UiNodeBase resultsChart2; /* +0484 g_UiNodeVtable_00516F60: Second results statistics chart; its display mode is mirrored from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart2; /* +0484 g_UiNodeVtable_00516F60: Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     dword resultsChart2_fields[12];
-    UiNodeBase resultsChart3; /* +0500 g_UiNodeVtable_00516F60: Third results statistics chart (8 series); its display mode is mirrored from the chart mode buttons (action 0x1026). */
+    UiNodeBase resultsChart3; /* +0500 g_UiNodeVtable_00516F60: Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026). */
     dword resultsChart3_fields[14];
     UiNodeBase resultsTabMilitary; /* +0584 g_UiNodeVtable_004B1D80: Results chart tab button labelled Military (text 0x21B1); action 0x101C selects the chart page. */
     dword resultsTabMilitary_fields[5];
@@ -618,8 +618,8 @@ typedef struct InGameUiImage {
     dword resultsSummaryText_fields[4];
     UiNodeBase levelMovieView; /* +0880 g_UiImageActionControlVtable: Image/action surface playing the level movie (levelMovieRuntime08D4 lives in this node). */
     dword levelMovieView_fields[6];
-    UiNodeBase levelMovieOverlay; /* +08E4 g_UiConditionalActionControlVtable: Conditional-action node inside the level movie view (types.h: playerStatusNode08E4), invalidated during movie playback; exact role unverified. */
-    dword levelMovieOverlay_fields[12];
+    UiNodeBase playerStatusBox; /* +08E4 g_UiConditionalActionControlVtable: Multiplayer player status box (types.h: playerStatusNode08E4): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback. */
+    dword playerStatusBox_fields[12];
     UiNodeBase messageHistoryPanel; /* +0960 g_UiConditionalActionControlVtable: Recent message history display (recentTextHistory09B8 lives inside it); action 0x100F trims the history to three lines. */
     dword messageHistoryPanel_fields[12];
     UiNodeBase worldViewArea; /* +09DC g_UiLayoutContainerControlVtable: Container for the main play area left of the side panel (right offset set from the panel width); holds world view, windows, messages and chat input. */
@@ -852,12 +852,12 @@ typedef struct InGameUiImage {
     dword modelDetailSlider_fields[7];
     UiNodeBase textureQualityGroup; /* +376C g_UiTitledWindowControlVtable: Titled frame (text 0x2132) holding the three texture-quality radio buttons. */
     dword textureQualityGroup_fields[2];
-    UiNodeBase textureQualityHighButton; /* +37C0 g_UiNodeVtable_004B2CE0: Texture quality choice High (action 0x1207, text 0x2136). */
-    dword textureQualityHighButton_fields[5];
+    UiNodeBase textureQualityLowButton; /* +37C0 g_UiNodeVtable_004B2CE0: Texture quality choice Low (action 0x1207, text 0x2136): stores TEXTURE_QUALITY_LOW (downsample shift 2). */
+    dword textureQualityLowButton_fields[5];
     UiNodeBase textureQualityMediumButton; /* +3820 g_UiNodeVtable_004B2CE0: Texture quality choice Medium (action 0x1207, text 0x2137). */
     dword textureQualityMediumButton_fields[5];
-    UiNodeBase textureQualityLowButton; /* +3880 g_UiNodeVtable_004B2CE0: Texture quality choice Low (action 0x1207, text 0x2138). */
-    dword textureQualityLowButton_fields[5];
+    UiNodeBase textureQualityHighButton; /* +3880 g_UiNodeVtable_004B2CE0: Texture quality choice High (action 0x1207, text 0x2138): stores TEXTURE_QUALITY_HIGH (no downsampling). */
+    dword textureQualityHighButton_fields[5];
     UiNodeBase soundOptionsBackButton; /* +38E0 g_UiNodeVtable_004B1D80: Sound options page button (action 0x1218, text 0x211F) returning to the in-game menu. */
     dword soundOptionsBackButton_fields[5];
     UiNodeBase soundOptionsTitleLabel; /* +3940 g_UiFocusProxyControlVtable: Title text 0x213A of the in-game sound options page (menu page index 7). */

@@ -33,7 +33,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
 
 /* 0x00567060 */
 bool __thandor_cf_preserve_eax_ecx_edx
-EndGameResultsUiRuntime_DispatchCommandByFlagsCf
+InGameHotkeys_DispatchCommandByFlagsCf
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
 

@@ -600,13 +600,15 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
 
 /* Address: 0x00567060.
    Ownership: gameplay/session/runtime.
-   Purpose: End-game results command dispatcher selected by command code and modifier flags. Typed parameters: p0
+   Purpose: In-game hotkeys (the in-game root's keyboard fallback, also installed by the frontend for
+   the running game): chat, windows, save, quit, panels and the cheat keys, selected by command code and
+   modifier flags. Typed parameters: p0
    modifierFlags→UiKeyboardStateMask_V297, p1 commandCode→UiActionId_V338. Nearby but non-identical semantic
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-EndGameResultsUiRuntime_DispatchCommandByFlagsCf
+InGameHotkeys_DispatchCommandByFlagsCf
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
@@ -620,8 +622,6 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
   dword target = 0;
   bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
 
-#define RT(offset) ((void *)(rt + (offset)))
-#define RT_DWORD(offset) (*(dword *)(rt + (offset)))
   for (;; record++) {
     uint flags = record->modifierClassFlags;
     if (record->commandCode == 0) {
@@ -653,31 +653,32 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     break;
   case 0x567200: /* cheat: add xenite */
     if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740) += 0x3e80;
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740) += 0x3e80;
     }
     break;
   case 0x567230: /* cheat: add energy */
     if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740 + 0x20) += 0x640;
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + RT_DWORD(0xa80) * 0x740 + 0x24) += 0x640;
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x20) += 0x640;
+      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x24) += 0x640;
     }
     break;
   case 0x567270:
-    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)RT(0x58));
-    RT_DWORD(0x10c) = 0;
-    RT_DWORD(0x110) = 0;
-    RT_DWORD(0x114) = 0;
+    UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rt,chatInputPageStack));
+    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->cursorIndex = 0;
+    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionStart = 0;
+    ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionEnd = 0;
     if (!localSession) {
       UiSelectableNodeEaxEcxCf9 visible;
       int i;
       for (i = 0; i < 0x18; i++) {
-        RT_DWORD(0x11c + i * 4) = 0;
+        INGAME_UI_FIELD(rt,chatInputTextEdit,0x6c + i * 4,dword) = 0;
       }
-      visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
+      visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
+                                                    INGAME_UI(rt,messageRecipientPlayersTab));
       (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
                 (visible.node);
     }
-    UiKeyboardFocus_Set((UiNodeBase *)RT(0xb0));
+    UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
     break;
   case 0x567340:
   case 0x5673a0:
@@ -687,7 +688,8 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     if ((target == 0x5673a0) && !localSession) {
       break;
     }
-    toggle = (UiSelectableControl *)RT(target == 0x567460 ? 0x4400 : 0x4388);
+    toggle = (UiSelectableControl *)(target == 0x567460 ? INGAME_UI(rt,missionObjectivesButton) :
+                                                     INGAME_UI(rt,inGameMenuButton));
     UiSelectableControl_SetSelected(1,toggle);
     if (((*(dword *)((byte *)toggle + 0x4c) & 0x200) != 0) &&
         (*(dword *)((byte *)toggle + 0x70) != 0)) {
@@ -700,10 +702,10 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     }
     InGameSettingsPage_ToggleAndSynchronizeControls(toggle);
     if (target == 0x567340) {
-      InGameCommandPanel_OpenPage4AndRefreshAvailability((InGameCommandPanelSourceAddress32)RT(0x25b0));
+      InGameCommandPanel_OpenPage4AndRefreshAvailability((InGameCommandPanelSourceAddress32)INGAME_UI(rt,gameMenuQuitButton));
     }
     else if (target == 0x5673a0) {
-      InGameSaveGamePage_RebuildCatalog((UiNodeBase *)RT(0x2550));
+      InGameSaveGamePage_RebuildCatalog(INGAME_UI(rt,gameMenuSaveButton));
     }
     break;
   }
@@ -715,22 +717,25 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     if (localSession) {
       break;
     }
-    stack = (UiPageStackControl *)RT(0xbd0);
+    stack = (UiPageStackControl *)INGAME_UI(rt,gameWindowPageStack);
     index = (UiPageStack_ActivePageNotInListCf(stack).valueOrError == 1) ? 0 : 1;
     UiPageStack_SetActiveIndex(index,stack);
-    RT_DWORD(0xa78) = RT_DWORD(0xa78) & 0xfffffff7;
+    INGAME_UI(rt,worldView)->nodeFlags =
+         INGAME_UI(rt,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
     if (index != 1) {
       break;
     }
-    RT_DWORD(0xa78) = RT_DWORD(0xa78) | 8;
-    UiKeyboardFocus_ReleaseNode((UiNodeBase *)RT(0xa30));
-    RT_DWORD(0x1cf4) = 0;
-    RT_DWORD(0x1cf8) = 0;
-    RT_DWORD(0x1cfc) = 0;
+    INGAME_UI(rt,worldView)->nodeFlags =
+         INGAME_UI(rt,worldView)->nodeFlags | UI_NODE_SUPPRESSED;
+    UiKeyboardFocus_ReleaseNode(INGAME_UI(rt,worldView));
+    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->cursorIndex = 0;
+    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionStart = 0;
+    ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionEnd = 0;
     for (i = 0; i < 0x18; i++) {
-      RT_DWORD(0x1d04 + i * 4) = 0;
+      INGAME_UI_FIELD(rt,messageTextEdit,0x6c + i * 4,dword) = 0;
     }
-    visible = UiSelectableGroup_NoneVisibleSelectedCf(3,RT(0x1f44),RT(0x1ee4),RT(0x1e84));
+    visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
+                                                    INGAME_UI(rt,messageRecipientPlayersTab));
     (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
               (visible.node);
     (*g_KeyboardFlushEvents)();
@@ -757,19 +762,19 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
   }
   case 0x5676a0: {
     dword settings = PersistentSettings_ReadDword(0,0x40);
-    UiPageStackControl *stack = (UiPageStackControl *)RT(0x40ac);
+    UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
     if (UiPageStack_ActivePageNotInListCf(stack).valueOrError != 0) {
       UiPageStack_SetActiveIndex(0,stack);
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4530));
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4644));
-      RT_DWORD(0xa04) = RT_DWORD(0x4124);
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
+      INGAME_UI(rt,worldViewArea)->rightOffset = INGAME_UI(rt,sidePanelFrameLeftEdge)->leftOffset;
       settings = settings & 0xfffffffb;
     }
     else {
       UiPageStack_SetActiveIndex(1,stack);
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4530));
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)RT(0x4644));
-      RT_DWORD(0xa04) = 0;
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
+      INGAME_UI(rt,worldViewArea)->rightOffset = 0;
       settings = settings | 4;
     }
     UiContainer_LayoutChildren((UiNodeBase *)rt);
@@ -819,8 +824,6 @@ EndGameResultsUiRuntime_DispatchCommandByFlagsCf
     Thandor_Log("EndGameResults dispatch: unhandled continuation %08x",target);
     break;
   }
-#undef RT
-#undef RT_DWORD
   return false;
 }
 
@@ -2435,15 +2438,17 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
 
 /* Address: 0x005651A0.
    Ownership: gameplay/session/runtime.
-   Purpose: Copies the world-state pointer at root offset 0x23D8 into the shared runtime mirror and global world-
-   state slot before shutdown traversal.
+   Purpose: Before shutdown traversal, saves the text resource id currently shown by the in-game copy's
+   worldViewCyclingInfoText (root offset 0x23D8, cycled 0x112..0x117) back into the in-game template and into the
+   frontend template's bottomBarStatusText, so the choice survives the next template copy.
 */
 void __thandor_void_preserve_eax_ecx
 InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 
 {
-  g_InGameWorldStatePointerMirror = INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,sdword);
-  g_SharedWorldStatePointer = g_InGameWorldStatePointerMirror;
+  g_InGameTemplateWorldViewInfoTextResourceId =
+       INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,sdword);
+  g_FrontendTemplateStatusTextResourceId = g_InGameTemplateWorldViewInfoTextResourceId;
   return;
 }
 

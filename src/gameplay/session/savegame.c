@@ -19,9 +19,12 @@
    [assets/text/richtext], UiNode_GetRoot [ui/core/runtime], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr catalogList)
+InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
 
 {
+  /* catalogList is the save page's saveGameList node of the in-game UI copy. */
+  UiPageStackControl *saveNameEntryStack;
+  UiWrappedTextControl *descriptionBox;
   void **rowSlotArray;
   void *selectedRowRecord;
   TextResourceId resourceId;
@@ -32,27 +35,32 @@ InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr 
   TextResourceResolveEaxCf5 descriptionText;
   TextResourceResolveEaxCf5 fieldText;
   
+  saveNameEntryStack =
+       (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
+  descriptionBox =
+       (UiWrappedTextControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameDescriptionText);
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
   selectionResult = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
   selectedIndex = selectionResult.rowIndex;
   selectedRowRecord = rowSlotArray[selectedIndex];
   if (selectionResult.carry) {
-    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
+    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),saveNameEntryStack);
     if (selectedIndex != lastRowIndex) {
-      InGameSaveGame_SaveSelectedOrTypedName(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList));
+      InGameSaveGame_SaveSelectedOrTypedName
+                (THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameSaveButton));
       return;
     }
   }
   else {
-    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),&THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack);
-    THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215d;
+    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),saveNameEntryStack);
+    descriptionBox->text = (word *)0x215d;
     if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
         descriptionText = TextResource_Resolve(resourceId);
         *descriptionText.eax = 0x8000;
-        THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = resourceId;
+        descriptionBox->text = (word *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(0x215e);
@@ -61,16 +69,17 @@ InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr 
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,descriptionText.eax);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,descriptionText.eax);
-        THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->activeDetailTextResourceId = 0x215e;
+        descriptionBox->text = (word *)0x215e;
       }
-      firstNode = UiNode_GetRoot(&(THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->detailPageStack).base);
+      firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
       UiNodeList_UnsuppressActionId(0x1219,firstNode);
       goto InGameUiAction120F_Handler_UnsuppressAction1210AndReturn;
     }
   }
   firstNode = UiNode_GetRoot(&catalogList->base);
   UiNodeList_SuppressActionId(0x1219,firstNode);
-  if (((THANDOR_CONTAINER_OF(catalogList, InGameCatalogDetailPage32C, catalogList)->action1210Control).nodeFlags & 1) == 0) {
+  if ((((UiTextEditControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEdit))->
+       editStateFlags & UI_TEXT_EDIT_VALUE_VALID) == 0) {
     UiNodeList_SuppressActionId(0x1210,firstNode);
     return;
   }
@@ -269,9 +278,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
    InGameUiAction1210_ResourceRegistrationHelper [ui/ingame/runtime], UiSelectableControl_SetSelected
    [ui/controls/lists], InGameSettingsPage_ToggleAndSynchronizeControls [ui/ingame/settings].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(void *source)
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton)
 
 {
+  /* saveButton is the save page's saveGameSaveButton node of the in-game UI copy. */
+  UiPointerListControl *saveList;
   dword errorOrValue;
   word *leaf;
   byte saveStatus;
@@ -279,11 +290,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   uint saveCarry;
   
   (*g_GraphicsCursorSetFrame)(6);
-  selectionResult = UiPointerList_GetSelectedIndexVariantBCf((UiPointerListControl *)((int)source + 0x150));
+  saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
+  selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
   errorOrValue = selectionResult.rowIndex + 1;
-  leaf = (word *)((int)source + 0x348);
-  if (errorOrValue != *(dword *)((int)source + 0x1a4)) {
-    leaf = *(word **)(*(int *)((int)source + 0x1a0) + -4 + errorOrValue * 4);
+  /* the typed name of the trailing new-save row, else the selected row's file name */
+  leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
+         textPrefix6C;
+  if (errorOrValue != saveList->rowCount) {
+    leaf = (word *)saveList->rowSlots[errorOrValue - 1];
   }
   WidePath_CombineDirectoryAndLeaf
             ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
@@ -294,12 +308,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
   /* The error check below uses the save routine's CF, not the extension helper's. */
   saveStatus = InGameUiAction1210_ResourceRegistrationHelper
-                    ((void *)((int)source + -0x2220),&g_ScenarioCatalogPathScratchUtf16);
+                    (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
+                     &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint)(saveStatus & 1);
   (*g_GraphicsCursorSetFrame)(0);
   (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(saveCarry & 1) != 0);
-  UiSelectableControl_SetSelected(0,(UiSelectableControl *)((int)source + 0x1738));
-  InGameSettingsPage_ToggleAndSynchronizeControls((UiSelectableControl *)((int)source + 0x1738));
+  UiSelectableControl_SetSelected
+            (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
+  InGameSettingsPage_ToggleAndSynchronizeControls
+            ((UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
   return;
 }
 

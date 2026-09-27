@@ -7,9 +7,9 @@ digraph thandor {
   "InGameSettingsPage_CloseViaSharedToggle" [label="0x0056C5E0\nInGameSettingsPage_CloseViaSharedToggle"];
   "InGameSettingsPage_OpenViaSharedToggle" [label="0x0056C620\nInGameSettingsPage_OpenViaSharedToggle"];
   "InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks" [label="0x0055F520\nInGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks"];
-  "InGameSettingsPage_SelectTab0" [label="0x0056AA90\nInGameSettingsPage_SelectTab0"];
-  "InGameSettingsPage_SelectTab1" [label="0x0056AAD0\nInGameSettingsPage_SelectTab1"];
-  "InGameSettingsPage_SelectTab2" [label="0x0056AB10\nInGameSettingsPage_SelectTab2"];
+  "InGameMissionHelpPage_SelectTab0" [label="0x0056AA90\nInGameMissionHelpPage_SelectTab0"];
+  "InGameMissionHelpPage_SelectTab1" [label="0x0056AAD0\nInGameMissionHelpPage_SelectTab1"];
+  "InGameMissionHelpPage_SelectTab2" [label="0x0056AB10\nInGameMissionHelpPage_SelectTab2"];
   "InGameGameplaySettings_SetRightButtonDoesNotScroll" [label="0x0056BAF0\nInGameGameplaySettings_SetRightButtonDoesNotScroll"];
   "InGameGameplaySettings_SetCameraScrollStep" [label="0x0056BBB0\nInGameGameplaySettings_SetCameraScrollStep"];
   "InGameGameplaySettings_SetAutomaticZoomOff" [label="0x0056BBD0\nInGameGameplaySettings_SetAutomaticZoomOff"];

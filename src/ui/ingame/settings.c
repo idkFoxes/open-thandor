@@ -7,12 +7,6 @@
 
 #include <thandor/ui/ingame/settings.h>
 #include <thandor/thandor.h>
-#include <stddef.h>
-
-/* The handlers below get one node of the in-game UI template copy and address sibling nodes by their
-   fixed distance in the template: node `node` seen from node `self`, which is template node `selfNode`. */
-#define INGAME_UI_FROM(self, selfNode, node) \
-  THANDOR_UI_AT(self, offsetof(InGameUiImage,node) - offsetof(InGameUiImage,selfNode))
 
 /* Implementation ownership: ui/ingame/settings. */
 
@@ -199,14 +193,15 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode)
 
 {
+  /* sourceNode is missionHelpBriefingTab of the in-game UI template copy */
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_AT(sourceNode,0xc0),
-      THANDOR_UI_AT(sourceNode,0x60),
-      THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0x120));
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpMouseTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpKeyboardTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpBriefingTab,missionHelpTabPageStack));
   return;
 }
 
@@ -218,14 +213,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBas
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode)
 
 {
+  /* sourceNode is missionHelpKeyboardTab of the in-game UI template copy */
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_AT(sourceNode,0x60),
-      THANDOR_UI_AT(sourceNode,-0x60),
-      THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0xc0));
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpMouseTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpBriefingTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpKeyboardTab,missionHelpTabPageStack));
   return;
 }
 
@@ -237,14 +233,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBas
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode)
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode)
 
 {
+  /* sourceNode is missionHelpMouseTab of the in-game UI template copy */
   UiSelectableGroup_SelectExclusive(3,sourceNode,
-      THANDOR_UI_AT(sourceNode,-0xc0),
-      THANDOR_UI_AT(sourceNode,-0x60),
-      THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0x60));
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpBriefingTab),
+      THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpKeyboardTab),
+      sourceNode);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_SIBLING(sourceNode,InGameUiImage,missionHelpMouseTab,missionHelpTabPageStack));
   return;
 }
 
@@ -269,32 +266,32 @@ InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
   
   optionFlags = PersistentSettings_ReadDword(0,0x40);
   /* control is rightButtonNoScrollCheckbox of the in-game UI template copy */
-  stack = (UiPageStackControl *)INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,sidePanelStack);
+  stack = (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 4;
     UiPageStack_SetActiveIndex(1,stack);
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)
-                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,resourceBarModeStack));
+                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,resourceBarModeStack));
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)
-                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,gamePanelsModeStack));
-    INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset = 0;
+                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,gamePanelsModeStack));
+    THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset = 0;
   }
   else {
     value = optionFlags & 0xfffffffb;
     UiPageStack_SetActiveIndex(0,stack);
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)
-                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,resourceBarModeStack));
+                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,resourceBarModeStack));
     UiPageStack_SetActiveIndex
               (0,(UiPageStackControl *)
-                 INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,gamePanelsModeStack));
-    INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset =
-         INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
+                 THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,gamePanelsModeStack));
+    THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,worldViewArea)->rightOffset =
+         THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelFrameLeftEdge)->leftOffset;
   }
-  UiContainer_LayoutChildren(INGAME_UI_FROM(control,rightButtonNoScrollCheckbox,inGameRootPanel));
+  UiContainer_LayoutChildren(THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,inGameRootPanel));
   PersistentSettings_WriteDword(value,0x40);
   return;
 }
@@ -336,7 +333,7 @@ InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   if (isSelected) {
     value = optionFlags | 1;
     /* control is autoZoomOffCheckbox; reset the minimap zoom */
-    ((UiSelectionGeometryControl *)INGAME_UI_FROM(control,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
+    ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoZoomOffCheckbox,minimapView))->sampleScaleQ12 =
          0x800;
   }
   else {
@@ -368,7 +365,7 @@ InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   if (isSelected) {
     value = optionFlags | 2;
     /* control is autoRotationOffCheckbox; reset the minimap rotation */
-    ((UiSelectionGeometryControl *)INGAME_UI_FROM(control,autoRotationOffCheckbox,minimapView))->
+    ((UiSelectionGeometryControl *)THANDOR_UI_SIBLING(control,InGameUiImage,autoRotationOffCheckbox,minimapView))->
     rotationAngle = 0x2000;
   }
   else {
@@ -403,7 +400,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
     value = optionFlags | 1;
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationZoomCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationZoomCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x40000000;
     UiNodeList_SuppressActionId(0x1215,(control->base).parent);
   }
@@ -411,7 +408,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
     value = optionFlags & 0xfffffffe;
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationZoomCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationZoomCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0xbfffffff;
     UiNodeList_UnsuppressActionId(0x1215,(control->base).parent);
   }
@@ -444,7 +441,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
     value = optionFlags | 2;
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationTiltCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationTiltCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x80000000;
     UiNodeList_SuppressActionId(0x1214,(control->base).parent);
   }
@@ -452,7 +449,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
     value = optionFlags & 0xfffffffd;
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,linkRotationTiltCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,linkRotationTiltCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0x7fffffff;
     UiNodeList_UnsuppressActionId(0x1214,(control->base).parent);
   }
@@ -484,14 +481,14 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
     value = optionFlags | 4;
     /* control is hidePanelCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,hidePanelCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,hidePanelCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x4000000;
   }
   else {
     value = optionFlags & 0xfffffffb;
     /* control is hidePanelCheckbox; the world view's runtime flags */
     runtimeFlagsField =
-         &((WorldRuntimeContext *)INGAME_UI_FROM(control,hidePanelCheckbox,worldView))->runtimeFlags;
+         &((WorldRuntimeContext *)THANDOR_UI_SIBLING(control,InGameUiImage,hidePanelCheckbox,worldView))->runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0xfbffffff;
   }
   PersistentSettings_WriteDword(value,0x5c);
@@ -508,81 +505,84 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
    [ui/controls/lists].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source)
+InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
 
 {
-  InGameGraphicsRuntimeSettingsPageState12D0 *firstNode;
+  UiNodeBase *firstNode;
   dword settingValue;
   dword storedSubresourceCount;
   int scaledSubresourceCount;
   UiNodeBase *parentOrSelectedRow;
   
-  UiPageStack_SetActiveIndex(6,(UiPageStackControl *)(source[-2].reserved4C_CBB + 0xb14));
+/* graphicsButton is gameMenuGraphicsButton of the in-game UI template copy */
+#define GRAPHICS_UI(node) THANDOR_UI_SIBLING(graphicsButton,InGameUiImage,gameMenuGraphicsButton,node)
+  UiPageStack_SetActiveIndex(6,(UiPageStackControl *)GRAPHICS_UI(gameWindowPageStack));
   settingValue = PersistentSettings_ReadDword(1,0x1c);
-  UiSelectableControl_SetSelected(settingValue,&source->shadingEnabledControl);
-  parentOrSelectedRow = (source->base).parent;
-  firstNode = source;
+  UiSelectableControl_SetSelected(settingValue,(UiSelectableControl *)GRAPHICS_UI(shadingEnabledCheckbox));
+  parentOrSelectedRow = graphicsButton->parent;
+  firstNode = graphicsButton;
   while (parentOrSelectedRow != (UiNodeBase *)0xffffffff) {
-    firstNode = (InGameGraphicsRuntimeSettingsPageState12D0 *)(firstNode->base).parent;
-    parentOrSelectedRow = (firstNode->base).parent;
+    firstNode = firstNode->parent;
+    parentOrSelectedRow = firstNode->parent;
   }
   if (settingValue == 0) {
-    UiNodeList_SuppressActionId(0x1205,&firstNode->base);
+    UiNodeList_SuppressActionId(0x1205,firstNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x1205,&firstNode->base);
+    UiNodeList_UnsuppressActionId(0x1205,firstNode);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
-    UiNodeList_UnsuppressActionId(0x1207,&firstNode->base);
+    UiNodeList_UnsuppressActionId(0x1207,firstNode);
   }
   else {
-    UiNodeList_SuppressActionId(0x1207,&firstNode->base);
+    UiNodeList_SuppressActionId(0x1207,firstNode);
   }
   settingValue = PersistentSettings_ReadDword(0x20,0x10);
   storedSubresourceCount = PersistentSettings_ReadDword(0x10,0x18);
   scaledSubresourceCount = storedSubresourceCount * 4;
   if (settingValue == 0x20) {
-    parentOrSelectedRow = (UiNodeBase *)&source->shadingResolutionRows;
+    parentOrSelectedRow = GRAPHICS_UI(shadingLevel32x32Button);
     if (scaledSubresourceCount == 0x40) {
-      parentOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 1);
+      parentOrSelectedRow = GRAPHICS_UI(shadingLevel32x64Button);
     }
     else if (scaledSubresourceCount == 0x80) {
-      parentOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 2);
+      parentOrSelectedRow = GRAPHICS_UI(shadingLevel32x128Button);
     }
   }
   else if (settingValue == 0x40) {
-    parentOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 3);
+    parentOrSelectedRow = GRAPHICS_UI(shadingLevel64x64Button);
     if (scaledSubresourceCount == 0x80) {
-      parentOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 4);
+      parentOrSelectedRow = GRAPHICS_UI(shadingLevel64x128Button);
     }
   }
   else {
-    parentOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
+    parentOrSelectedRow = GRAPHICS_UI(shadingLevel128x128Button);
   }
   UiSelectableGroup_SelectExclusive(6,parentOrSelectedRow,
-      THANDOR_UI_AT(source,0xf78),
-      THANDOR_UI_AT(source,0xf10),
-      THANDOR_UI_AT(source,0xea8),
-      THANDOR_UI_AT(source,0xe40),
-      THANDOR_UI_AT(source,0xdd8),
-      THANDOR_UI_AT(source,0xd70));
+      GRAPHICS_UI(shadingLevel128x128Button),
+      GRAPHICS_UI(shadingLevel64x128Button),
+      GRAPHICS_UI(shadingLevel64x64Button),
+      GRAPHICS_UI(shadingLevel32x128Button),
+      GRAPHICS_UI(shadingLevel32x64Button),
+      GRAPHICS_UI(shadingLevel32x32Button));
   settingValue = PersistentSettings_ReadDword(1,0x30);
   if (settingValue == 0) {
-    parentOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
+    parentOrSelectedRow = GRAPHICS_UI(textureQualityHighButton);
   }
   else if (settingValue == 1) {
-    parentOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 1);
+    parentOrSelectedRow = GRAPHICS_UI(textureQualityMediumButton);
   }
   else {
-    parentOrSelectedRow = (UiNodeBase *)&source->textureResolutionRows;
+    parentOrSelectedRow = GRAPHICS_UI(textureQualityLowButton);
   }
   UiSelectableGroup_SelectExclusive(3,parentOrSelectedRow,
-      THANDOR_UI_AT(source,0x1270),
-      THANDOR_UI_AT(source,0x1210),
-      THANDOR_UI_AT(source,0x11b0));
+      GRAPHICS_UI(textureQualityHighButton),
+      GRAPHICS_UI(textureQualityMediumButton),
+      GRAPHICS_UI(textureQualityLowButton));
   settingValue = PersistentSettings_ReadDword(0x10000,0x34);
-  source->polygonResolutionLodThresholdQ8 = settingValue;
+  ((UiRangeSliderControl *)GRAPHICS_UI(modelDetailSlider))->value = settingValue;
+#undef GRAPHICS_UI
   return;
 }
 
@@ -724,32 +724,33 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
     PersistentSettings_WriteDword(newGridHalfSize,0x10);
     PersistentSettings_WriteDword(value,0x18);
     scaledSubresourceCount = value << 2;
+    /* control is one of the shading level buttons, its parent is shadingLevelGroup */
     settingsRoot = (control->base).parent;
     if (newGridHalfSize == 0x20) {
-      selectedControl = THANDOR_UI_AT(settingsRoot,0x54);
+      selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button);
       if (scaledSubresourceCount == 0x40) {
-        selectedControl = THANDOR_UI_AT(settingsRoot,0xbc);
+        selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel32x64Button);
       }
       else if (scaledSubresourceCount == 0x80) {
-        selectedControl = THANDOR_UI_AT(settingsRoot,0x124);
+        selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel32x128Button);
       }
     }
     else if (newGridHalfSize == 0x40) {
-      selectedControl = THANDOR_UI_AT(settingsRoot,0x18c);
+      selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel64x64Button);
       if (scaledSubresourceCount == 0x80) {
-        selectedControl = THANDOR_UI_AT(settingsRoot,0x1f4);
+        selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel64x128Button);
       }
     }
     else {
-      selectedControl = THANDOR_UI_AT(settingsRoot,0x25c);
+      selectedControl = THANDOR_UI_SIBLING(settingsRoot,InGameUiImage,shadingLevelGroup,shadingLevel128x128Button);
     }
     UiSelectableGroup_SelectExclusive(6,selectedControl,
-      THANDOR_UI_AT((control->base).parent,0x25c),
-      THANDOR_UI_AT((control->base).parent,0x1f4),
-      THANDOR_UI_AT((control->base).parent,0x18c),
-      THANDOR_UI_AT((control->base).parent,0x124),
-      THANDOR_UI_AT((control->base).parent,0xbc),
-      THANDOR_UI_AT((control->base).parent,0x54));
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel128x128Button),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel64x128Button),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel64x64Button),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x128Button),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x64Button),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,shadingLevelGroup,shadingLevel32x32Button));
     return;
   }
   textureDimension = PersistentSettings_ReadDword(0x40,0x14);
@@ -798,23 +799,24 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
   UiNodeBase *graphicsSettingsRoot;
   
   (*g_GraphicsCursorSetFrame)(6);
+  /* control is one of the texture quality buttons, its parent is textureQualityGroup */
   graphicsSettingsRoot = (control->base).parent;
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x54) == control) {
+  if ((UiSelectableControl *)THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityLowButton) == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x54);
+    selectedQualityControl = THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityLowButton);
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0xb4) == control) {
+  if ((UiSelectableControl *)THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityMediumButton) == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0xb4);
+    selectedQualityControl = THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityMediumButton);
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x114) == control) {
+  if ((UiSelectableControl *)THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityHighButton) == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x114);
+    selectedQualityControl = THANDOR_UI_SIBLING(graphicsSettingsRoot,InGameUiImage,textureQualityGroup,textureQualityHighButton);
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      THANDOR_UI_AT((control->base).parent,0x114),
-      THANDOR_UI_AT((control->base).parent,0xb4),
-      THANDOR_UI_AT((control->base).parent,0x54));
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityHighButton),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityMediumButton),
+      THANDOR_UI_SIBLING((control->base).parent,InGameUiImage,textureQualityGroup,textureQualityLowButton));
   PersistentSettings_WriteDword(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel;
   (*g_GraphicsRebuildAllStagingTextures)();

@@ -364,7 +364,8 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 /* Address: 0x00544130.
    Ownership: ui/frontend/player.
    Purpose: Four-argument frontend callback. In mode bit 1 it marks the matching player's +0x54 dword and clears
-   root flag 0x08 when every player is ready; in mode bit 0 it sets flag 0x08 for the local player. EAX is
+   UI_NODE_SUPPRESSED (0x08) on the briefingBeginButton when every player is ready; in mode bit 0 it suppresses
+   that button for the local player. EAX is
    preserved. Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
    asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
 */
@@ -383,7 +384,8 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
     if (playerId != g_LocalPlayerRuntimeId) {
       return;
     }
-    *(uint *)(g_FrontendRootNode + 0x750) = *(uint *)(g_FrontendRootNode + 0x750) | 8;
+    FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags =
+         FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags | UI_NODE_SUPPRESSED;
     return;
   }
   searchRemaining = g_FrontendPlayerRuntimeBlockCount;
@@ -404,7 +406,8 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
   do {
     remainingBlocks = remainingBlocks - 1;
     if (remainingBlocks == 0) {
-      *(uint *)(g_FrontendRootNode + 0x750) = *(uint *)(g_FrontendRootNode + 0x750) & 0xfffffff7;
+      FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags =
+           FRONTEND_UI(g_FrontendRootNode,briefingBeginButton)->nodeFlags & ~UI_NODE_SUPPRESSED;
       return;
     }
     nextBlock = playerBlock + 1;
@@ -640,14 +643,18 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
   FrontendPlayerRuntimeRecord *firstPlayerBlock;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   uint sessionTickInterval;
-  
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&source[-0x10b].left);
+  /* source is the frontend template's hostLobbyBackButton (+0x543C). */
+  FrontendUiImage *frontendUi;
+
+  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x543c);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < 0x281) {
-    source[-0x110].rightAnchorQ31 = source[-0x110].rightAnchorQ31 | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) | 0x2000;
   }
   g_FrontendNetworkState = 0;
-  source[-8].rightOffset = sessionTickInterval >> 1;
+  ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = sessionTickInterval >> 1;
   firstPlayerBlock = g_FrontendPlayerRuntimeBlocks;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   g_FrontendPlayerRuntimeBlockCount = 1;
@@ -1372,7 +1379,7 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
           FrontendConsensusValue consensusValue)
 
 {
-  UiAnchorFractionQ31 *rootAnchorFlags;
+  UiNodeFlags *nextButtonFlags;
   UiRootNode *taskAssignmentRoot;
   uint combinedConsensus;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -1393,13 +1400,13 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
         remainingBlocks = remainingBlocks - 1;
       } while (remainingBlocks != 0);
       if (combinedConsensus == 0) {
-        rootAnchorFlags = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
-        *rootAnchorFlags = *rootAnchorFlags | 8;
+        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->nodeFlags;
+        *nextButtonFlags = *nextButtonFlags | UI_NODE_SUPPRESSED;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL
               ) {
-        rootAnchorFlags = &((UiRootNode *)(uintptr_t)g_FrontendRootNode)[0x21].base.bottomAnchorQ31;
-        *rootAnchorFlags = *rootAnchorFlags & 0xfffffff7;
+        nextButtonFlags = &FRONTEND_UI(g_FrontendRootNode,factionSetupNextButton)->nodeFlags;
+        *nextButtonFlags = *nextButtonFlags & ~UI_NODE_SUPPRESSED;
       }
       FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(taskAssignmentRoot);
       return;

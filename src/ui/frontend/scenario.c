@@ -179,7 +179,7 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedSettingValue = PersistentSettings_ReadDword(100,0x44);
-    FRONTEND_UI_FIELD(frontendRoot,opponentStrengthSlider,0x58,dword) = savedSettingValue;
+    FRONTEND_UI_FIELD(frontendRoot,gameSpeedSlider,0x58,dword) = savedSettingValue;
   }
   UiPageStack_SetActiveIndex(0xc,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;

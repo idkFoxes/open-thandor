@@ -37,7 +37,8 @@ FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *list
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)&listControl[-8].rowHeight);
+            ((FrontendScenarioSelectionControlAddress32)THANDOR_UI_AT(listControl,-0x2c8)
+             /* savedGamesList -> gameSelectStartButton */);
   return;
 }
 
@@ -70,7 +71,8 @@ FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listContro
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)&listControl[-0xc].base.leftOffset);
+            ((FrontendScenarioSelectionControlAddress32)THANDOR_UI_AT(listControl,-0x490)
+             /* missionsList -> gameSelectStartButton */);
   return;
 }
 
@@ -103,7 +105,8 @@ FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listContro
     return;
   }
   FrontendScenarioSelection_ActivateSelectedRecord
-            ((FrontendScenarioSelectionControlAddress32)&listControl[-0x11].base.topAnchorQ31);
+            ((FrontendScenarioSelectionControlAddress32)THANDOR_UI_AT(listControl,-0x670)
+             /* campaignsList -> gameSelectStartButton */);
   return;
 }
 
@@ -145,9 +148,9 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     *controlFlags = *controlFlags | 0x2000;
   }
   selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
-      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
+      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
   activeGroupIndex = selectedGroup.controlIndexOrCount;
   if (selectedGroup.carry) {
     activeGroupIndex = 1;
@@ -155,17 +158,17 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL) {
     UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
-      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
+      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
     activeGroupIndex = 1;
   }
   mapOption = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
   if (!mapOption.carry) {
     UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&scenarioSelectionPage->scenarioOptionRow3,
-      THANDOR_UI_AT(scenarioSelectionPage,0x1d54),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1db4),
-      THANDOR_UI_AT(scenarioSelectionPage,0x1e14));
+      FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
+      FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
     activeGroupIndex = 1;
   }
   (*g_FrontendUiActionHandlersPage20.scenarioCatalogRebuildCallbacks[activeGroupIndex])(0,0,0,0);
@@ -209,14 +212,15 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
         codeUnit = *(short *)textCursor;
         textCursor = scanCursor;
       } while (codeUnit != 0);
-      remainingCount = *(int *)(g_FrontendRootNode + 0x21d8);
+      remainingCount = ((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowCount;
       if (remainingCount != 0) {
         selectionIndex = 0;
         namesMatch = true;
         do {
           compareUnitsRemaining = (uint)((int)scanCursor - (int)g_PackageScratchBuffer) >> 1;
           textCursor = g_PackageScratchBuffer;
-          levelNameCursor = *(short **)(*(int *)(g_FrontendRootNode + 0x21d4) + selectionIndex * 4);
+          levelNameCursor =
+               (short *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots[selectionIndex];
           do {
             if (compareUnitsRemaining == 0) break;
             compareUnitsRemaining = compareUnitsRemaining - 1;
@@ -1023,7 +1027,7 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     WidePath_CombineDirectoryAndLeaf
               (&g_FrontendScenarioPathScratchUtf16,
-               *(word **)(*(int *)(frontendRoot + 0x23b4) + selectedRecordIndex * 4),
+               (word *)((UiListControl *)FRONTEND_UI(frontendRoot,campaignsList))->rowSlots[selectedRecordIndex],
                (word *)u_level_0050dab8);
     WidePath_SetExtensionCode(0x6e6763,&g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
@@ -1110,8 +1114,9 @@ FrontendScenarioSession_UseSelectedCampaignLevelRecord:
     UiTransferMailbox_MarkUnavailable();
     g_FrontendScenarioTransferState = 4;
   }
-  *(uint *)(frontendRoot + 0x3b4) = *(uint *)(frontendRoot + 0x3b4) & 0xffffdfff;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(frontendRoot + 0x508));
+  FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,uint) =
+       FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,uint) & 0xffffdfff;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   OldUnitRuntime_ResetPendingTables();
   FrontendState_DispatchCode(3);
   return;
@@ -1144,10 +1149,10 @@ ScenarioCatalog_RebuildSaveRecordListPage
   void **rowPointerCursor;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x62].bottomAnchorQ31,
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     rowCount = g_ScenarioCatalog->saveRecordCount;
@@ -1201,10 +1206,10 @@ ScenarioCatalog_RebuildLevelRecordListPage
   ScenarioCatalogRuntimeExpandedRecord100 **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[100].firstChild,
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->levelRecordCount;
@@ -1278,10 +1283,10 @@ ScenarioCatalog_RebuildCampaignRecordListPage
   void **rowPointers;
   
   firstNode = g_FrontendRootNode;
-  UiSelectableGroup_SelectExclusive(3,(UiNodeBase *)&((UiNodeBase *)(uintptr_t)g_FrontendRootNode)[0x65].right,
-      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
+  UiSelectableGroup_SelectExclusive(3,FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
+      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
-      FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
+      FRONTEND_UI(g_FrontendRootNode,loadGameTabButton));
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(firstNode,gameSelectTabStack));
   if (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0) {
     remainingRows = g_ScenarioCatalog->campaignRecordCount;
@@ -1414,14 +1419,16 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   ArenaAllocEaxCf5 allocation;
   
   rootOrRemaining = g_FrontendRootNode;
-  stack = (UiPageStackControl *)(g_FrontendRootNode + 0x508);
+  stack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
-             *(word **)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4),
+             (word *)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                     [selectedRecordIndex],
              (word *)u_level_0050daac);
   WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
   UiPageStack_SetActiveIndex(0,stack);
-  *(uint *)(rootOrRemaining + 0x3b4) = *(uint *)(rootOrRemaining + 0x3b4) & 0xffffdfff;
+  FRONTEND_UI_FIELD(rootOrRemaining,menuRoomModelView,0x4C,uint) =
+       FRONTEND_UI_FIELD(rootOrRemaining,menuRoomModelView,0x4C,uint) & 0xffffdfff;
   FrontendState_DispatchCode(1);
   if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
      (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
@@ -1458,7 +1465,8 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
     }
   }
   else {
-    byteCountOrOffset = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
+    byteCountOrOffset = ((int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                                   [selectedRecordIndex] -
             (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
     maskWordIndex = byteCountOrOffset >> 0xd;
     if (maskWordIndex < 3) {
@@ -1484,7 +1492,8 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   }
 FrontendScenarioSession_CommitLoadedLevelAsset:
   g_FrontendLoadedLevelAsset = source;
-  byteCountOrOffset = (*(int *)(*(int *)(g_FrontendRootNode + 0x21d4) + selectedRecordIndex * 4) -
+  byteCountOrOffset = ((int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
+                                 [selectedRecordIndex] -
           (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
   maskWordIndex = byteCountOrOffset >> 0xd;
   playerCursor = g_FrontendPlayerRuntimeBlocks;
@@ -1527,9 +1536,9 @@ ScenarioCatalog_RefreshSelectedRecordLocalizedText
   TextResourceResolveEaxCf5 fieldText;
   
   frontendRoot = g_FrontendRootNode;
-  rowTableOrRecord = *(int *)(g_FrontendRootNode + 0x200c);
-  control = (UiPointerListControl *)(g_FrontendRootNode + 0x1fbc);
-  *(undefined4 *)(g_FrontendRootNode + 0x20ec) = 0x215d;
+  rowTableOrRecord = (int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList))->rowSlots;
+  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,savedGamesList);
+  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,savedGameDescriptionText))->text = (word *)0x215d;
   if (rowTableOrRecord != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
     rowTableOrRecord = *(int *)(rowTableOrRecord + selectionIndex * 4);
@@ -1537,7 +1546,7 @@ ScenarioCatalog_RefreshSelectedRecordLocalizedText
       resourceId = *(TextResourceId *)(rowTableOrRecord + 0x70);
       primaryText = TextResource_Resolve(resourceId);
       *primaryText.eax = 0x8000;
-      *(TextResourceId *)(frontendRoot + 0x20ec) = resourceId;
+      ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text = (word *)resourceId;
     }
     else {
       primaryText = TextResource_Resolve(0x215e);
@@ -1546,7 +1555,7 @@ ScenarioCatalog_RefreshSelectedRecordLocalizedText
       RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,primaryText.eax);
       fieldText = TextResource_Resolve(*(TextResourceId *)(rowTableOrRecord + 0x90));
       RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,primaryText.eax);
-      *(undefined4 *)(frontendRoot + 0x20ec) = 0x215e;
+      ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,savedGameDescriptionText))->text = (word *)0x215e;
     }
   }
   return;
@@ -1571,12 +1580,13 @@ ScenarioCatalog_RefreshSelectedRecordField50DisplayId
   int frontendRoot;
   
   frontendRoot = g_FrontendRootNode;
-  rowPointers = *(int *)(g_FrontendRootNode + 0x23b4);
-  control = (UiPointerListControl *)(g_FrontendRootNode + 0x2364);
-  *(undefined4 *)(g_FrontendRootNode + 0x249c) = 0x215d;
+  rowPointers = (int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList))->rowSlots;
+  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,campaignsList);
+  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,campaignDescriptionText))->text = (word *)0x215d;
   if (rowPointers != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
-    *(int *)(frontendRoot + 0x249c) = *(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x50) + 0x230000;
+    ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,campaignDescriptionText))->text =
+         (word *)(*(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x50) + 0x230000);
   }
   return;
 }
@@ -1606,11 +1616,14 @@ FrontendScenarioSelection_ActivateSelectedRecord
   UiListRowIndexEaxCf5 selectedRow;
   UiSelectableNodeEaxEcxCf9 selectedGroup;
   int scenarioPathPointerTableAddress;
-  
+
+  /* selectionControl is the frontend template's gameSelectStartButton (+0x1CF4); the offsets below are
+     relative to it: +0x60 loadGameTabButton, +0xC0 singleGameTabButton, +0x120 campaignsTabButton,
+     +0x2C8 savedGamesList, +0x490 missionsList, +0x670 campaignsList. */
   selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
-      THANDOR_UI_AT(selectionControl,0x60),
-      THANDOR_UI_AT(selectionControl,0xc0),
-      THANDOR_UI_AT(selectionControl,0x120));
+      THANDOR_UI_AT(selectionControl,0x60) /* loadGameTabButton */,
+      THANDOR_UI_AT(selectionControl,0xc0) /* singleGameTabButton */,
+      THANDOR_UI_AT(selectionControl,0x120) /* campaignsTabButton */);
   if (selectedGroup.carry) {
     return;
   }
@@ -1619,7 +1632,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
       Resource_Release(g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = (void *)0x0;
       selectedRow = UiPointerList_GetSelectedIndexVariantBCf
-                        ((UiPointerListControl *)(selectionControl + 0x490));
+                        ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x490) /* missionsList */);
       selectedRowIndex = selectedRow.rowIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -1634,7 +1647,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
     Resource_Release(g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = (void *)0x0;
     selectedRow = UiPointerList_GetSelectedIndexVariantBCf
-                      ((UiPointerListControl *)(selectionControl + 0x670));
+                      ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x670) /* campaignsList */);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
       FrontendScenarioSession_LoadOrRequestCampaignBundle(g_LocalPlayerRuntimeId,0,0,selectedRow.rowIndex)
@@ -1645,11 +1658,12 @@ FrontendScenarioSelection_ActivateSelectedRecord
     }
     return;
   }
-  scenarioPathPointerTableAddress = *(int *)(selectionControl + 0x318);
+  scenarioPathPointerTableAddress =
+       (int)((UiListControl *)THANDOR_UI_AT(selectionControl,0x2c8) /* savedGamesList */)->rowSlots;
   Resource_Release(g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = (void *)0x0;
   selectedRow = UiPointerList_GetSelectedIndexVariantBCf
-                    ((UiPointerListControl *)(selectionControl + 0x2c8));
+                    ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x2c8) /* savedGamesList */);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,
              *(word **)(scenarioPathPointerTableAddress + selectedRow.rowIndex * 4),
@@ -1684,13 +1698,13 @@ ScenarioCatalog_RefreshSelectedRecordField70DisplayId
   int frontendRoot;
   
   frontendRoot = g_FrontendRootNode;
-  rowPointers = *(int *)(g_FrontendRootNode + 0x21d4);
-  control = (UiPointerListControl *)(g_FrontendRootNode + 0x2184);
-  *(undefined4 *)(g_FrontendRootNode + 0x22cc) = 0x215d;
+  rowPointers = (int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots;
+  control = (UiPointerListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList);
+  ((UiWrappedTextControl *)FRONTEND_UI(g_FrontendRootNode,missionDescriptionText))->text = (word *)0x215d;
   if (rowPointers != 0) {
     UiPointerList_SelectIndexVariantB(selectionIndex,control);
-    *(int *)(frontendRoot + 0x22cc) =
-         *(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x70) * 0x10 + 0x230010;
+    ((UiWrappedTextControl *)FRONTEND_UI(frontendRoot,missionDescriptionText))->text =
+         (word *)(*(int *)(*(int *)(rowPointers + selectionIndex * 4) + 0x70) * 0x10 + 0x230010);
   }
   return;
 }

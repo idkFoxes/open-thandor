@@ -16,7 +16,7 @@
 
 /* 0x0056C030 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameSaveGameList_SelectAndRefreshDetail(InGameCatalogDetailPageCatalogListPtr catalogList);
+InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList);
 
 /* 0x0056C190 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -27,7 +27,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
 void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNodeBase *saveMenuButton);
 
 /* 0x0056C230 */
-void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(void *source);
+void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(UiNodeBase *saveButton);
 
 /* 0x0056C2F0 */
 void __thandor_void_preserve_eax_ecx_edx

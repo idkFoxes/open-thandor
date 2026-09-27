@@ -36,13 +36,13 @@ InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
   isSelected = (bool)UiSelectableControl_IsSelectedCf(selectableControl);
   if (isSelected) {
     UiSelectableGroup_SelectExclusive(7,&selectableControl->base,
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x17b4),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x174c),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x16e4),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x167c),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x1614),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x15ac),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x1544));
+      INGAME_UI(inGameRoot,technologyAreaTab7),
+      INGAME_UI(inGameRoot,technologyAreaTab6),
+      INGAME_UI(inGameRoot,technologyAreaTab5),
+      INGAME_UI(inGameRoot,technologyAreaTab4),
+      INGAME_UI(inGameRoot,technologyAreaTab3),
+      INGAME_UI(inGameRoot,technologyAreaTab2),
+      INGAME_UI(inGameRoot,technologyAreaTab1));
   }
   InGameTechnologyPanel_Rebuild(inGameRoot);
   return;
@@ -425,21 +425,22 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
     source = *(void **)((int)source + 8);
     parentLink = *(int *)((int)source + 8);
   }
-  *(uint *)((int)source + 0xa78) = *(uint *)((int)source + 0xa78) & 0xfffffff7;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)((int)source + 0xbd0));
+  INGAME_UI(source,worldView)->nodeFlags =
+       INGAME_UI(source,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(source,gameWindowPageStack));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   if (firstSelectedEntity != (GameEntityRuntime *)0x0) {
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     doubledTechnologyId = 0;
     selectedArea = UiSelectableGroup_NoneVisibleSelectedCf(7,
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x17b4),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x174c),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x16e4),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x167c),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1614),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x15ac),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1544));
+      INGAME_UI(source,technologyAreaTab7),
+      INGAME_UI(source,technologyAreaTab6),
+      INGAME_UI(source,technologyAreaTab5),
+      INGAME_UI(source,technologyAreaTab4),
+      INGAME_UI(source,technologyAreaTab3),
+      INGAME_UI(source,technologyAreaTab2),
+      INGAME_UI(source,technologyAreaTab1));
     if (!selectedArea.carry) {
       /* the dword 8 bytes before the selected area tab (see InGameTechnologyPanel_Rebuild) */
       doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,sdword) - 0x300000;
@@ -570,13 +571,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
     selectedArea = UiSelectableGroup_NoneVisibleSelectedCf(7,
-      THANDOR_UI_AT(inGameRoot,0x17b4),
-      THANDOR_UI_AT(inGameRoot,0x174c),
-      THANDOR_UI_AT(inGameRoot,0x16e4),
-      THANDOR_UI_AT(inGameRoot,0x167c),
-      THANDOR_UI_AT(inGameRoot,0x1614),
-      THANDOR_UI_AT(inGameRoot,0x15ac),
-      THANDOR_UI_AT(inGameRoot,0x1544));
+      INGAME_UI(inGameRoot,technologyAreaTab7),
+      INGAME_UI(inGameRoot,technologyAreaTab6),
+      INGAME_UI(inGameRoot,technologyAreaTab5),
+      INGAME_UI(inGameRoot,technologyAreaTab4),
+      INGAME_UI(inGameRoot,technologyAreaTab3),
+      INGAME_UI(inGameRoot,technologyAreaTab2),
+      INGAME_UI(inGameRoot,technologyAreaTab1));
     if (selectedArea.carry) {
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];

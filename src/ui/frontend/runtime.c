@@ -105,7 +105,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
           UiFrame_FlushInputAndResetPendingTicks();
           g_FrontendPendingPageActionDepth = g_FrontendPendingPageActionDepth + 1;
           if (g_FrontendPendingPageAction != 2) break;
-          FrontendNetworkSetupPage_InitializeBackendMode(g_FrontendRootNode);
+          FrontendNetworkSetupPage_InitializeBackendMode((FrontendUiImage *)g_FrontendRootNode);
           g_FrontendPendingPageAction = 0;
         }
         if (g_FrontendPendingPageAction != 3) break;
@@ -301,7 +301,7 @@ joined_r0x0054707a:
           initialRomRecordId = frontendEntryRecordId;
           goto FrontendMainLoop_InitializeRequestedPage;
         }
-        FrontendSession_ShowPage9WithCompactLayout(g_FrontendRootNode);
+        FrontendSession_ShowPage9WithCompactLayout((FrontendUiImage *)g_FrontendRootNode);
         g_FrontendPendingPageAction = 0;
       }
     } while( true );
@@ -1472,7 +1472,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
   }
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(root + 0x508)).valueOrError == 0xb) {
+    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).valueOrError == 0xb) {
       if ((g_SessionNetworkRoleFlags & 3) != 0) {
         FrontendCommandQueue_EnqueueLocalPlayerCommand(0x3b0,0,0,1);
       }
@@ -1495,11 +1495,13 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
       g_FrontendNetworkState = 0;
       (*g_NetworkBackendSlot3)();
       (*g_NetworkBackendSlot1)();
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root + 0x508));
-      *(dword *)(root + 0x3b4) = *(dword *)(root + 0x3b4) & 0xffffdfff;
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
+      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,dword) =
+           FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,dword) & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
-      FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(root + 0x368));
+      FrontendRomTransition_ActivateRecordByIdCf
+                (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       break;
     }
     /* Leaving a network session: host (bit 0, 0x00548320) or client (bit 1, 0x00548250). */
@@ -1510,12 +1512,14 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
       g_FrontendScenarioInitializationCount = 0;
       (*g_NetworkBackendSlot3)();
       (*g_NetworkBackendSlot1)();
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root + 0x508));
-      *(dword *)(root + 0x3b4) = *(dword *)(root + 0x3b4) & 0xffffdfff;
+      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
+      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,dword) =
+           FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,dword) & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
       player = (FrontendPlayerRuntimeRecord *)g_FrontendPlayerRuntimeBlocks;
-      FrontendRomTransition_ActivateRecordByIdCf(1,(WorldRuntimeContext *)(root + 0x368));
+      FrontendRomTransition_ActivateRecordByIdCf
+                (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       text = TextResource_Resolve(wasHost ? 0xff02 : 0xff04);
       RichTextCommandStream_PatchPayloadBySelector(0,(byte *)player + 0x18,text.eax);
       FrontendRecentTextHistory_InsertAndRebuild5(text.eax);
@@ -1799,7 +1803,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebu
 {
   RecentTextHistoryPointerList *output;
   
-  output = (RecentTextHistoryPointerList *)(g_FrontendRootNode + 0x350);
+  /* lineCount + textLines of the chat history box form the pointer list. */
+  output = (RecentTextHistoryPointerList *)
+           &((UiConditionalActionControl *)FRONTEND_UI(g_FrontendRootNode,chatMessageHistory))->lineCount;
   RecentTextHistory_Insert(text);
   RecentTextHistory_SortAndBuildPointerList(5,output);
   return;
@@ -2601,7 +2607,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
       playbackRateHz = movieOpenResult.playbackRateHzEcx; /* ECX left by Movie_Open */
       (*g_TimerRegisterPeriodic)(playbackRateHz,FrontendSession_PeriodicTick);
       /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
-      stack = (UiPageStackControl *)((byte *)runtimeRoot + 0x17c);
+      stack = (UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack);
       UiPageStack_SetActiveIndex(1,stack);
       frameAdvanceResult = Movie_AdvanceFrame();
       if (!frameAdvanceResult.carry) {
@@ -2701,7 +2707,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
   g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
 Frontend_PlaySelectedEndMovie_RestoreEndGameResultsCallbacksAndReturn:
   rootCallbacks = (g_InGameRuntimeRoot->rootUi0000).callbacks;
-  rootCallbacks->keyboardFallbackCf = EndGameResultsUiRuntime_DispatchCommandByFlagsCf;
+  rootCallbacks->keyboardFallbackCf = InGameHotkeys_DispatchCommandByFlagsCf;
   rootCallbacks->frameUpdate = EndGameResultsUiRuntime_UpdateAndHandleInputCf;
   return;
 }
@@ -3371,9 +3377,8 @@ FrontendUiAction2046_IndexedSelectionHelper
   FrontendPlayerRuntimeRecord *matchedPlayerBlock;
   
   selectedControl =
-       (UiNodeBase *)
-       ((int)&(((UiRootNode *)(uintptr_t)g_FrontendRootNode)->base).nextSibling +
-       g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[selectionIndex + 1]);
+       THANDOR_UI_AT(g_FrontendRootNode,
+                     g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[selectionIndex + 1]);
   generationCursor = 7;
   if ((((UiSelectableControl *)selectedControl)->stateFlags & 0x400) == 0) {
     if (argument1 == g_LocalPlayerRuntimeId) {
@@ -3459,7 +3464,7 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
     g_TextureBindStateChangeCount = 0;
     g_TextureDeviceReloadCount = 0;
   }
-  world = (WorldRuntimeContext *)(g_FrontendRootNode + 0x368);
+  world = (WorldRuntimeContext *)FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
   worldVector0 = WorldRuntime_GetVector0Regs(world);
   WideNumber_FormatUtf16
             (WIDE_FORMAT_GROUP_THOUSANDS|WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,

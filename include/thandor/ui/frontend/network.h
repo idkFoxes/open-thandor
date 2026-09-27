@@ -16,7 +16,7 @@
 
 /* 0x0054C260 */
 void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeBackendMode(FrontendNetworkSettingsControlView250 *networkPage);
+FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi);
 
 /* 0x005474A0 */
 void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root);
@@ -30,12 +30,10 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
 
 /* 0x0054C830 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendNetworkSetupPage_InitializeFromCommandLine
-          (FrontendNetworkSettingsControlView250 *networkPage);
+FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton);
 
 /* 0x0054CE80 */
 void __thandor_void_preserve_eax_ecx
-FrontendNetworkSetupPage_InitializeSingleLocalPlayer
-          (FrontendNetworkSettingsControlView250 *networkPage);
+FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton);
 
 #endif /* THANDOR_UI_FRONTEND_NETWORK_H */

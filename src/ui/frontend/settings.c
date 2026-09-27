@@ -270,9 +270,9 @@ FrontendDisplaySettingsAction_ApplyPendingResolution(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-       THANDOR_UI_FIELD(optionButton,0x60,sdword) /* the option's value */;
+       ((UiNumericPairTextButton *)optionButton)->firstValue;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-       THANDOR_UI_FIELD(optionButton,0x64,sdword);
+       ((UiNumericPairTextButton *)optionButton)->secondValue;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
   return;
 }
@@ -292,7 +292,7 @@ FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
 
 {
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = THANDOR_UI_FIELD(optionButton,0x60,sdword) /* the option's value */;
+  bitsPerPixel = ((UiNumericPairTextButton *)optionButton)->firstValue;
   FrontendDisplaySettingsPage_UpdateModeActionAvailability(optionButton);
   return;
 }
@@ -386,11 +386,14 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
     control = *(void **)((int)control + 8);
     colorBitsCounterOrParentLink = *(int *)((int)control + 8);
   }
+  /* control is now the frontend template root. */
   if ((int)g_FramebufferWidth < 0x281) {
-    *(uint *)((int)control + 0x3b4) = *(uint *)((int)control + 0x3b4) | 0x2000;
+    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) =
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) | 0x2000;
   }
   else {
-    *(uint *)((int)control + 0x3b4) = *(uint *)((int)control + 0x3b4) & 0xffffdfff;
+    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) =
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) & 0xffffdfff;
   }
   return;
 }
@@ -719,11 +722,14 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   dword shadingDepthQuarter;
   int shadingDepth;
   UiNodeBase *parentCursorOrSelectedRow;
+  /* source is the frontend template's settings3DButton (+0x2794). */
+  FrontendUiImage *frontendUi;
   
-  UiPageStack_SetActiveIndex(7,(UiPageStackControl *)(source[-2].reserved4C_1067 + 0xa20));
+  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x2794);
+  UiPageStack_SetActiveIndex(7,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    *(uint *)(source[-2].reserved4C_1067 + 0x8cc) =
-         *(uint *)(source[-2].reserved4C_1067 + 0x8cc) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) | 0x2000;
   }
   persistedValue = PersistentSettings_ReadDword(1,0x1c);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
@@ -761,12 +767,12 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
     parentCursorOrSelectedRow = (UiNodeBase *)((source->shadingResolutionRows).rows + 5);
   }
   UiSelectableGroup_SelectExclusive(6,parentCursorOrSelectedRow,
-      THANDOR_UI_AT(source,0x1324),
-      THANDOR_UI_AT(source,0x12bc),
-      THANDOR_UI_AT(source,0x1254),
-      THANDOR_UI_AT(source,0x11ec),
-      THANDOR_UI_AT(source,0x1184),
-      THANDOR_UI_AT(source,0x111c));
+      FRONTEND_UI(frontendUi,shadingLevelGrid128Depth128),
+      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth128),
+      FRONTEND_UI(frontendUi,shadingLevelGrid64Depth64),
+      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128),
+      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64),
+      FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32));
   persistedValue = PersistentSettings_ReadDword(1,0x30);
   if (persistedValue == 0) {
     parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
@@ -778,9 +784,9 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
     parentCursorOrSelectedRow = (UiNodeBase *)&source->textureResolutionRows;
   }
   UiSelectableGroup_SelectExclusive(3,parentCursorOrSelectedRow,
-      THANDOR_UI_AT(source,0x161c),
-      THANDOR_UI_AT(source,0x15bc),
-      THANDOR_UI_AT(source,0x155c));
+      FRONTEND_UI(frontendUi,textureQualityHigh),
+      FRONTEND_UI(frontendUi,textureQualityMedium),
+      FRONTEND_UI(frontendUi,textureQualityLow));
   persistedValue = PersistentSettings_ReadDword(0x10000,0x34);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
   return;
@@ -896,7 +902,7 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
   sdword shadingGridSize;
-  UiNodeBase *shadingGroupRoot;
+  UiNodeBase *shadingLevelGroup;
   uint shadingDepthQuarter;
   UiNodeBase *selectedControl;
   
@@ -905,32 +911,33 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   PersistentSettings_WriteDword((int)shadingGridSize * 2,0x14);
   PersistentSettings_WriteDword((PersistentSettingsDwordValue)shadingGridSize,0x10);
   PersistentSettings_WriteDword(shadingDepthQuarter,0x18);
-  shadingGroupRoot = (control->base).parent;
+  /* The parent is the frontend template's shadingLevelGroup (+0x385C). */
+  shadingLevelGroup = (control->base).parent;
   if (shadingGridSize == 0x20) {
-    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x54);
+    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x54) /* shadingLevelGrid32Depth32 */;
     if (shadingDepthQuarter == 0x10) {
-      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0xbc);
+      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0xbc) /* shadingLevelGrid32Depth64 */;
     }
     else if (shadingDepthQuarter == 0x20) {
-      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x124);
+      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x124) /* shadingLevelGrid32Depth128 */;
     }
   }
   else if (shadingGridSize == 0x40) {
-    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x18c);
+    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x18c) /* shadingLevelGrid64Depth64 */;
     if (shadingDepthQuarter == 0x20) {
-      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x1f4);
+      selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x1f4) /* shadingLevelGrid64Depth128 */;
     }
   }
   else {
-    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x25c);
+    selectedControl = THANDOR_UI_AT(shadingLevelGroup,0x25c) /* shadingLevelGrid128Depth128 */;
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
-      THANDOR_UI_AT((control->base).parent,0x25c),
-      THANDOR_UI_AT((control->base).parent,0x1f4),
-      THANDOR_UI_AT((control->base).parent,0x18c),
-      THANDOR_UI_AT((control->base).parent,0x124),
-      THANDOR_UI_AT((control->base).parent,0xbc),
-      THANDOR_UI_AT((control->base).parent,0x54));
+      THANDOR_UI_AT((control->base).parent,0x25c) /* shadingLevelGrid128Depth128 */,
+      THANDOR_UI_AT((control->base).parent,0x1f4) /* shadingLevelGrid64Depth128 */,
+      THANDOR_UI_AT((control->base).parent,0x18c) /* shadingLevelGrid64Depth64 */,
+      THANDOR_UI_AT((control->base).parent,0x124) /* shadingLevelGrid32Depth128 */,
+      THANDOR_UI_AT((control->base).parent,0xbc) /* shadingLevelGrid32Depth64 */,
+      THANDOR_UI_AT((control->base).parent,0x54) /* shadingLevelGrid32Depth32 */);
   return;
 }
 
@@ -969,25 +976,26 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
 {
   PersistentTextureQualityLevel qualityLevel;
   UiNodeBase *selectedQualityControl;
-  UiNodeBase *graphicsSettingsRoot;
+  UiNodeBase *textureQualityGroup;
   
-  graphicsSettingsRoot = (control->base).parent;
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x54) == control) {
+  /* The parent is the frontend template's textureQualityGroup (+0x3C9C). */
+  textureQualityGroup = (control->base).parent;
+  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0x54) /* textureQualityLow */ == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x54);
+    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0x54) /* textureQualityLow */;
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0xb4) == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0xb4) /* textureQualityMedium */ == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0xb4);
+    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0xb4) /* textureQualityMedium */;
   }
-  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x114) == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(textureQualityGroup,0x114) /* textureQualityHigh */ == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x114);
+    selectedQualityControl = THANDOR_UI_AT(textureQualityGroup,0x114) /* textureQualityHigh */;
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
-      THANDOR_UI_AT((control->base).parent,0x114),
-      THANDOR_UI_AT((control->base).parent,0xb4),
-      THANDOR_UI_AT((control->base).parent,0x54));
+      THANDOR_UI_AT((control->base).parent,0x114) /* textureQualityHigh */,
+      THANDOR_UI_AT((control->base).parent,0xb4) /* textureQualityMedium */,
+      THANDOR_UI_AT((control->base).parent,0x54) /* textureQualityLow */);
   PersistentSettings_WriteDword(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel >> 1;
   (*g_GraphicsRebuildAllStagingTextures)();
@@ -1356,7 +1364,7 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
       dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
       *dirtyFlagsSlot = (UiNodeBase *)((uint)*dirtyFlagsSlot & 0xfffffffb);
       FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
-                ((FrontendNetworkSettingsControlView250 *)((int)firstNode + 0x4980));
+                ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(firstNode,networkGameJoinButton));
     }
   }
   return;

@@ -254,7 +254,6 @@ typedef struct WAVEFORMATEX WAVEFORMATEX, *PWAVEFORMATEX;
 typedef struct IDirectSound IDirectSound, *PIDirectSound;
 typedef struct DSBUFFERDESC_DX6 DSBUFFERDESC_DX6, *PDSBUFFERDESC_DX6;
 typedef struct IDirectSound_Vtbl IDirectSound_Vtbl, *PIDirectSound_Vtbl;
-typedef struct InGameCatalogDetailPage32C InGameCatalogDetailPage32C, *PInGameCatalogDetailPage32C;
 typedef struct UiPointerListControl UiPointerListControl, *PUiPointerListControl;
 typedef struct FrontendPersistentSettingsPage417C FrontendPersistentSettingsPage417C, *PFrontendPersistentSettingsPage417C;
 typedef struct FrontendNetworkSetupPageState4BCC FrontendNetworkSetupPageState4BCC, *PFrontendNetworkSetupPageState4BCC;
@@ -533,7 +532,6 @@ typedef union FrontendUiDisplayModeAndTaskAssignmentScratch280 FrontendUiDisplay
 typedef struct UiSelectableOptionRow60 UiSelectableOptionRow60, *PUiSelectableOptionRow60;
 typedef struct FrontendGraphicsSecondaryRows120 FrontendGraphicsSecondaryRows120, *PFrontendGraphicsSecondaryRows120;
 typedef struct UiSelectableOptionRow68 UiSelectableOptionRow68, *PUiSelectableOptionRow68;
-typedef struct InGameGraphicsRuntimeSettingsPageState12D0 InGameGraphicsRuntimeSettingsPageState12D0, *PInGameGraphicsRuntimeSettingsPageState12D0;
 typedef struct FrontendGraphicsQualityRows270 FrontendGraphicsQualityRows270, *PFrontendGraphicsQualityRows270;
 typedef struct FrontendGraphicsRuntimeSettingsPageState167C FrontendGraphicsRuntimeSettingsPageState167C, *PFrontendGraphicsRuntimeSettingsPageState167C;
 typedef struct InGamePlayerStatusTextSlot InGamePlayerStatusTextSlot, *PInGamePlayerStatusTextSlot;
@@ -5451,8 +5449,6 @@ typedef int PriorityPairHeapCount;
 
 typedef int PersistentModelLodDepthQ8;
 
-typedef struct UiPointerListControl *InGameCatalogDetailPageCatalogListPtr; /* Ghidra shifted pointer: points at InGameCatalogDetailPage32C.catalogList; ADJ() -> InGameCatalogDetailPage32C */
-
 typedef dword UiTextResourceId;
 
 typedef dword UiListRowCount;
@@ -5467,18 +5463,6 @@ struct UiPointerListControl {
     UiPixelExtent rowHeight; 
     UiActionId actionId; 
     void **selectedRowSlot; 
-};
-
-struct InGameCatalogDetailPage32C {
-    struct UiNodeBase pageRoot; 
-    byte reserved004C_014F[260]; 
-    struct UiPointerListControl catalogList; 
-    byte reserved01B4_027B[200]; 
-    UiTextResourceId activeDetailTextResourceId; 
-    byte reserved0280_0283[4]; 
-    struct UiPageStackControl detailPageStack; 
-    byte reserved02D8_02DF[8]; 
-    struct UiNodeBase action1210Control; 
 };
 
 typedef qword FixedEulerPairEdxEax8;
@@ -9803,18 +9787,6 @@ struct UiSelectableOptionRow68 {
 
 struct FrontendGraphicsQualityRows270 {
     struct UiSelectableOptionRow68 rows[6]; 
-};
-
-struct InGameGraphicsRuntimeSettingsPageState12D0 {
-    struct UiNodeBase base; 
-    byte reserved4C_CBB[3184]; 
-    struct UiSelectableControl shadingEnabledControl; 
-    byte reserved0D10_0D6F[96]; 
-    struct FrontendGraphicsQualityRows270 shadingResolutionRows; 
-    byte reserved0FE0_114B[364]; 
-    dword polygonResolutionLodThresholdQ8; 
-    byte reserved1150_11AF[96]; 
-    struct FrontendGraphicsSecondaryRows120 textureResolutionRows; 
 };
 
 struct FrontendGraphicsRuntimeSettingsPageState167C {

@@ -581,9 +581,9 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       RichTextCommandStream_CopyToNarrowCf
                 (0x30,g_UiSevenSlotCommandPayloadText.textBytes,commandTextEdit->textBuffer);
       visibleSelection = UiSelectableGroup_NoneVisibleSelectedCf(3,
-      THANDOR_UI_AT(commandTextEdit,0x1e94),
-      THANDOR_UI_AT(commandTextEdit,0x1e34),
-      THANDOR_UI_AT(commandTextEdit,0x1dd4));
+      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientAllTab),
+      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientGroupsTab),
+      THANDOR_UI_SIBLING(commandTextEdit,InGameUiImage,chatInputTextEdit,messageRecipientPlayersTab));
       remainingDwords = (int)visibleSelection.node - (int)commandTextEdit;
       if (remainingDwords == 0x1dd4) {
         slotIndex = 0;
@@ -2623,9 +2623,9 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
           INGAME_UI_FIELD(inGameRoot,linkRotationTiltCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,hidePanelCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,shadingEnabledCheckbox,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,textureQualityHighButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,textureQualityMediumButton,0x5C,sdword) = (sdword)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,textureQualityLowButton,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,textureQualityMediumButton,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,textureQualityHighButton,0x5C,sdword) = (sdword)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,musicEnabledCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,effectsEnabledCheckbox,0x5C,sdword) = (sdword)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,reverseStereoCheckbox,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
@@ -2917,6 +2917,7 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
   RichTextExtentRegs textExtent;
   TextResourceResolveEaxCf5 resolvedText;
   GraphicsTextureSizeEaxEdxCf9 windowTextureSize;
+  UiConditionalActionControl *statusBox;
   
   (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
@@ -2929,10 +2930,12 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
                       (g_UiTextStyleNormal,(word *)u_gfx_panel_panel0_gfx_005630d0);
     panelHalfHeight = (textExtent.heightPixels * remainingPlayers >> 1) + windowTextureSize.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
-    *(FrontendPlayerRuntimeBlockCount *)((int)uiState + 0x93c) = remainingPlayers;
-    *(int *)((int)uiState + 0x910) = panelHalfHeight;
-    *(int *)((int)uiState + 0x908) = -panelHalfHeight;
-    UiContainer_LayoutChildren(*(UiNodeBase **)((int)uiState + 0x8ec));
+    /* playerStatusBox is the multiplayer player status box: one text line per player */
+    statusBox = (UiConditionalActionControl *)INGAME_UI(uiState,playerStatusBox);
+    statusBox->lineCount = remainingPlayers;
+    (statusBox->base).bottomOffset = panelHalfHeight;
+    (statusBox->base).topOffset = -panelHalfHeight;
+    UiContainer_LayoutChildren((statusBox->base).parent);
     do {
       if (((FrontendPlayerFactionAssignmentState10 *)
           ((int)((UiTransferEndpointDescriptor *)(replacementPayload + 1) + 1) + 4))->
@@ -3158,13 +3161,19 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
 
 /* Address: 0x00569750.
    Ownership: ui/ingame/runtime.
-   Purpose: One-argument in-game UI callback that clears transient state value 0x1B at context offset +0x911C.
+   Purpose: One-argument in-game UI callback (world view fieldRegion.clearTransientStateCallback) that resets the
+   notification target button's cursor frame 0x1B to 0 (context offset +0x911C, template offset 0x9B4C).
 */
 void InGameUiRuntime_ClearTransientState1BCallback(void *context)
 
 {
-  if (*(int *)((int)context + 0x911c) == 0x1b) {
-    *(undefined4 *)((int)context + 0x911c) = 0;
+  UiImageActionControl *notificationButton;
+  
+  /* context is the world view node (WorldRuntimeContext) of the in-game UI template copy */
+  notificationButton = (UiImageActionControl *)
+       THANDOR_UI_SIBLING(context,InGameUiImage,worldView,notificationTargetButton);
+  if (notificationButton->cursorFrame == 0x1b) {
+    notificationButton->cursorFrame = 0;
   }
   return;
 }
@@ -3639,17 +3648,16 @@ InGameUiAction101C_Handler(UiSelectableControl *selectableControl)
     parentNodeAddress = *(int *)((int)rootNodeCursor + 8);
   }
   UiSelectableGroup_SelectExclusive(3,&selectableControl->base,
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x644),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x5e4),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x584));
+      INGAME_UI(rootNodeCursor,resultsTabThird),
+      INGAME_UI(rootNodeCursor,resultsTabEconomy),
+      INGAME_UI(rootNodeCursor,resultsTabMilitary));
   visibleSelection = UiSelectableGroup_NoneVisibleSelectedCf(3,
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x644),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x5e4),
-      THANDOR_UI_AT(Thandor_UiRoot(selectableControl),0x584));
+      INGAME_UI(rootNodeCursor,resultsTabThird),
+      INGAME_UI(rootNodeCursor,resultsTabEconomy),
+      INGAME_UI(rootNodeCursor,resultsTabMilitary));
   UiPageStack_SetActiveIndex
             (visibleSelection.controlIndexOrCount,
-             (UiPageStackControl *)
-             &(((UiSelectableControl *)((int)rootNodeCursor + 0x39c))->base).left);
+             (UiPageStackControl *)INGAME_UI(rootNodeCursor,resultsChartPageStack));
   return;
 }
 
@@ -3734,7 +3742,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
 
 {
-  sdword *controlField;
+  UiPageStackControl *gameWindowStack;
   UiNodeBase *ancestorParent;
   void *definitionRecord;
   UiPageIndex pageIndex;
@@ -3748,17 +3756,16 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
     ancestorParent = (((UiRootNode *)source)->base).parent;
   }
   if ((g_UiCommandRuntimeFlags & 0x101) == 0) {
-    controlField = &(((UiRootNode *)((int)source + 0xa50))->base).rightOffset;
-    *controlField = *controlField & 0xfffffff7;
-    controlField = &(((UiRootNode *)((int)source + 0xbb0))->base).leftOffset;
-    pageNotInListResult = UiPageStack_ActivePageNotInListCf((UiPageStackControl *)controlField);
+    INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & 0xfffffff7;
+    gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
+    pageNotInListResult = UiPageStack_ActivePageNotInListCf(gameWindowStack);
     if (pageNotInListResult.valueOrError == 2) {
       pageIndex = 0;
     }
     else {
       pageIndex = 2;
     }
-    UiPageStack_SetActiveIndex(pageIndex,(UiPageStackControl *)controlField);
+    UiPageStack_SetActiveIndex(pageIndex,gameWindowStack);
     if ((pageIndex == 2) &&
        (firstSelectedEntity = SelectionInfo_GetFirstEntry(), firstSelectedEntity != (GameEntityRuntime *)0x0)) {
       definitionRecord = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
@@ -3811,9 +3818,9 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
     ancestorParent = uiRootNode->parent;
   }
   UiSelectableGroup_SelectExclusive(3,source,
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
+      INGAME_UI(uiRootNode,messageRecipientAllTab),
+      INGAME_UI(uiRootNode,messageRecipientGroupsTab),
+      INGAME_UI(uiRootNode,messageRecipientPlayersTab));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
   resourceId = 0x216d;
   filledSlotCount = 0;
@@ -3877,9 +3884,9 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     ancestorParent = uiRootNode->parent;
   }
   UiSelectableGroup_SelectExclusive(3,source,
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
+      INGAME_UI(uiRootNode,messageRecipientAllTab),
+      INGAME_UI(uiRootNode,messageRecipientGroupsTab),
+      INGAME_UI(uiRootNode,messageRecipientPlayersTab));
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRootNode,messageRecipientPageStack));
   resourceId = 0x216d;
   filledSlotCount = 0;
@@ -3929,9 +3936,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionPage_ShowSubpage1(UiNode
     parentNode = rootNodeCursor->parent;
   }
   UiSelectableGroup_SelectExclusive(3,source,
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1f44),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1ee4),
-      THANDOR_UI_AT(Thandor_UiRoot(source),0x1e84));
+      INGAME_UI(rootNodeCursor,messageRecipientAllTab),
+      INGAME_UI(rootNodeCursor,messageRecipientGroupsTab),
+      INGAME_UI(rootNodeCursor,messageRecipientPlayersTab));
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rootNodeCursor,messageRecipientPageStack));
   return;
 }
@@ -5137,7 +5144,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
          InGameUiRuntime_DispatchWorldContextActionCallback;
     runtimeFlagsField = &(root->worldRuntime0A30).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField | 0x400;
-    g_UiRootCallbacks_0054FBC0.keyboardFallbackCf = EndGameResultsUiRuntime_DispatchCommandByFlagsCf
+    g_UiRootCallbacks_0054FBC0.keyboardFallbackCf = InGameHotkeys_DispatchCommandByFlagsCf
     ;
     registrySlot = g_ArmyAssetRecordRegistry;
     remainingCount = 0x300;

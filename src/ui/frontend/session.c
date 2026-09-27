@@ -193,7 +193,7 @@ FrontendSession_SetGameSpeedPercent
           (dword argument1,dword argument2,dword argument3,GameSpeedPercent gameSpeedPercent)
 
 {
-  *(GameSpeedPercent *)(g_FrontendRootNode + 0xa80) = gameSpeedPercent;
+  FRONTEND_UI_FIELD(g_FrontendRootNode,gameSpeedSlider,0x58,GameSpeedPercent) = gameSpeedPercent;
   return;
 }
 
@@ -204,12 +204,13 @@ FrontendSession_SetGameSpeedPercent
    most 640 pixels. EAX is preserved.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout].
 */
-void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(void *frontendRuntime)
+void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(FrontendUiImage *frontendUi)
 
 {
-  UiPageStack_SetActiveIndex(9,(UiPageStackControl *)((int)frontendRuntime + 0x508));
+  UiPageStack_SetActiveIndex(9,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    *(uint *)((int)frontendRuntime + 0x3b4) = *(uint *)((int)frontendRuntime + 0x3b4) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) | 0x2000;
   }
   return;
 }
@@ -232,15 +233,19 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
 {
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
-  
+  /* source is the frontend template's clientLobbyLeaveButton (+0x5784). */
+  FrontendUiImage *frontendUi;
+
   g_FrontendNetworkState = 1;
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&source[-0x116].vtable);
+  frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x5784);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    source[-0x11b].topAnchorQ31 = source[-0x11b].topAnchorQ31 | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) | 0x2000;
   }
-  UiNodeList_SuppressActionId(0x2002,(UiNodeBase *)&source[-0x127].left);
+  UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
-            (0,g_FrontendSessionListRows,(UiPointerListControl *)&source[-0x29].left);
+            (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
   UiTransfer_SendPacketType10000Value2931Cf();
@@ -604,8 +609,9 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
   
   frontendRootAddress = g_FrontendRootNode;
   Movie_Close();
-  g_GameFactionRuntimeImage.tail.gameSpeedQ8 = (uint)(*(int *)(frontendRootAddress + 0xa80) * 0x28f5c) >> 0x10;
-  runtimeFlags = (uint *)(frontendRootAddress + 0x8fc);
+  g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
+       (uint)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 0x10;
+  runtimeFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *runtimeFlags = *runtimeFlags | 8;
   FrontendSession_ReturnToMainPage(callbackContext,0,0,stateCode);
   return;
@@ -630,8 +636,9 @@ FrontendSession_ReturnToMainPage
   int frontendRootAddress;
   
   frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(g_FrontendRootNode + 0x508));
-  *(uint *)(frontendRootAddress + 0x3b4) = *(uint *)(frontendRootAddress + 0x3b4) & 0xffffdfff;
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
+  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint) =
+       FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint) & 0xffffdfff;
   FrontendState_DispatchCode(stateCode);
   return;
 }

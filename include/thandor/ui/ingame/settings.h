@@ -36,13 +36,13 @@ InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
           int stepDelta);
 
 /* 0x0056AA90 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab0(UiNodeBase *sourceNode);
 
 /* 0x0056AAD0 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab1(UiNodeBase *sourceNode);
 
 /* 0x0056AB10 */
-void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBase *sourceNode);
+void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab2(UiNodeBase *sourceNode);
 
 /* 0x0056BAF0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -74,7 +74,7 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control);
 
 /* 0x0056C6D0 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameGraphicsSettings_OpenAndSynchronize(InGameGraphicsRuntimeSettingsPageState12D0 *source);
+InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton);
 
 /* 0x0056C860 */
 void __thandor_void_preserve_eax_ecx_edx

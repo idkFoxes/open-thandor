@@ -5,7 +5,7 @@ digraph thandor {
   "EndGameResultsUiRuntime_UpdateAndHandleInputCf" [label="0x00566290\nEndGameResultsUiRuntime_UpdateAndHandleInputCf"];
   "InGameConditionRuntime_RebaseLoadedRecords" [label="0x0050EA90\nInGameConditionRuntime_RebaseLoadedRecords"];
   "InGameRuntime_PeriodicCountdownAndClockTick" [label="0x00565E10\nInGameRuntime_PeriodicCountdownAndClockTick"];
-  "EndGameResultsUiRuntime_DispatchCommandByFlagsCf" [label="0x00567060\nEndGameResultsUiRuntime_DispatchCommandByFlagsCf"];
+  "InGameHotkeys_DispatchCommandByFlagsCf" [label="0x00567060\nInGameHotkeys_DispatchCommandByFlagsCf"];
   "InGameRuntime_ProcessQueuedSessionNotificationTimer" [label="0x00569920\nInGameRuntime_ProcessQueuedSessionNotificationTimer"];
   "InGameRuntime_InitializeNewSession" [label="0x005641D0\nInGameRuntime_InitializeNewSession"];
   "InGameRuntime_InitializeLoadedSession" [label="0x00564920\nInGameRuntime_InitializeLoadedSession"];

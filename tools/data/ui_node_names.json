@@ -239,7 +239,7 @@
    "note": "Label \"strong\" at the right end of the opponent slider."
   },
   "0x0A28": {
-   "name": "OpponentStrengthSlider",
+   "name": "GameSpeedSlider",
    "note": "Slider 80..120 (default 100); action 0x204A applies it as game-speed percent and persists it."
   },
   "0x0A90": {
@@ -1090,7 +1090,7 @@
   },
   "0x0350": {
    "name": "ResultsScreenPanel",
-   "note": "End-of-game results screen background panel holding the chart tabs, charts and summary text."
+   "note": "End-of-game results screen background panel holding the chart tabs, charts and summary text; its image subresource is set to the chart mode index (action 0x1026)."
   },
   "0x03AC": {
    "name": "ResultsChartPageStack",
@@ -1098,15 +1098,15 @@
   },
   "0x0408": {
    "name": "ResultsChart1",
-   "note": "First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified."
+   "note": "First results statistics chart (graph control 0x00516F60); which category (points/economy/military) is not verified. Its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026)."
   },
   "0x0484": {
    "name": "ResultsChart2",
-   "note": "Second results statistics chart; its display mode is mirrored from the chart mode buttons (action 0x1026)."
+   "note": "Second results statistics chart; its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026)."
   },
   "0x0500": {
    "name": "ResultsChart3",
-   "note": "Third results statistics chart (8 series); its display mode is mirrored from the chart mode buttons (action 0x1026)."
+   "note": "Third results statistics chart (8 series); its modeFlags (+0x4C, table vs graph) is set from the chart mode buttons (action 0x1026)."
   },
   "0x0584": {
    "name": "ResultsTabMilitary",
@@ -1145,8 +1145,8 @@
    "note": "Image/action surface playing the level movie (levelMovieRuntime08D4 lives in this node)."
   },
   "0x08E4": {
-   "name": "LevelMovieOverlay",
-   "note": "Conditional-action node inside the level movie view (types.h: playerStatusNode08E4), invalidated during movie playback; exact role unverified."
+   "name": "PlayerStatusBox",
+   "note": "Multiplayer player status box (types.h: playerStatusNode08E4): UiConditionalActionControl whose eight text lines are g_InGamePlayerStatusTextSlots; InGamePanel_RebuildPlayerStatusRows sets lineCount to the player count and sizes it. Invalidated during movie playback."
   },
   "0x0960": {
    "name": "MessageHistoryPanel",
@@ -1613,16 +1613,16 @@
    "note": "Titled frame (text 0x2132) holding the three texture-quality radio buttons."
   },
   "0x37C0": {
-   "name": "TextureQualityHighButton",
-   "note": "Texture quality choice High (action 0x1207, text 0x2136)."
+   "name": "TextureQualityLowButton",
+   "note": "Texture quality choice Low (action 0x1207, text 0x2136): stores TEXTURE_QUALITY_LOW (downsample shift 2)."
   },
   "0x3820": {
    "name": "TextureQualityMediumButton",
    "note": "Texture quality choice Medium (action 0x1207, text 0x2137)."
   },
   "0x3880": {
-   "name": "TextureQualityLowButton",
-   "note": "Texture quality choice Low (action 0x1207, text 0x2138)."
+   "name": "TextureQualityHighButton",
+   "note": "Texture quality choice High (action 0x1207, text 0x2138): stores TEXTURE_QUALITY_HIGH (no downsampling)."
   },
   "0x38E0": {
    "name": "SoundOptionsBackButton",
