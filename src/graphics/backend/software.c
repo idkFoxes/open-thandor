@@ -45139,14 +45139,67 @@ StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 }
 
 
+/* One byte of the cross-fade in SoftwareTexture_BilinearBlendScaleSubresources: both images and the
+   factor are widened to (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), then
+   (b * (unity - f) + a * f) >> 16 per product (PMULHW), >> 4 (PSRLW) and saturated (PACKUSWB). */
+static byte SoftwareTexture_CrossFadeByte(byte a, byte b, byte factor, short unity)
+{
+    short wideA = (short)((a * 0x101) >> 2);
+    short wideB = (short)((b * 0x101) >> 2);
+    short wideFactor = (short)((factor * 0x101) >> 2);
+    word sum = (word)(Raster_MulHigh(wideB, (short)(unity - wideFactor)) + Raster_MulHigh(wideA, wideFactor));
+    sum = (word)(sum >> 4);
+    return (byte)(sum > 0xff ? 0xff : sum);
+}
+
+/* Fills g_SoftwarePixelIntensityToNativeColorLut256 with native grey pixels of the current
+   framebuffer format. The table runs from white down to black: entry i is intensity 255 - i. */
+static void SoftwareTexture_BuildIntensityLut(void)
+{
+    const SoftwarePixelFormatConfig *format = &g_SoftwarePixelFormatConfig;
+    dword entry;
+    for (entry = 0; entry < 256; entry++) {
+        dword intensity = 255 - entry;
+        g_SoftwarePixelIntensityToNativeColorLut256[entry] =
+            ((intensity >> ((8 - format->redBitCount) & 31)) << (format->redShift & 31)) |
+            ((intensity >> ((8 - format->greenBitCount) & 31)) << (format->greenShift & 31)) |
+            ((intensity >> ((8 - format->blueBitCount) & 31)) << (format->blueShift & 31));
+    }
+}
+
+/* Bilinear sample of an 8-bit image at column xFixed (8.8 fixed point) between `row` and the row
+   below it. Horizontal: the two neighbours, widened like SoftwareTexture_CrossFadeByte, weighted by
+   g_SoftwareBilinearPackedInterpolationWeights256[fraction] (PMADDWD, high half kept). Vertical:
+   the two results times the first lane of the row weights (PMULHW), summed, >> 2, clamped to 255. */
+static dword SoftwareTexture_SampleIntensity(const byte *row, dword sourceWidth, dword xFixed, short upperWeight,
+                                             short lowerWeight)
+{
+    const short *weights = (const short *)(&g_SoftwareBilinearPackedInterpolationWeights256 + (xFixed & 0xff) * 8);
+    const byte *upper = row + (xFixed >> 8);
+    const byte *lower = upper + sourceWidth;
+    dword upperSum = (dword)(((upper[0] * 0x101) >> 2) * weights[0] + ((upper[1] * 0x101) >> 2) * weights[1]);
+    dword lowerSum = (dword)(((lower[0] * 0x101) >> 2) * weights[0] + ((lower[1] * 0x101) >> 2) * weights[1]);
+    word sum = (word)(Raster_MulHigh((short)(upperSum >> 16), upperWeight) +
+                      Raster_MulHigh((short)(lowerSum >> 16), lowerWeight));
+    dword intensity = (dword)(sum >> 2);
+    return intensity > 0xff ? 0xff : intensity;
+}
+
 /* Address: 0x00518CE0.
    Ownership: graphics/backend/software.
-   Purpose: Validates two graphics subresources, blends them through the verified MMX and interpolation tables,
-   bilinearly rescales the result into the active 16-bit or 32-bit software framebuffer format, and refreshes the
-   color-conversion lookup. It selects an existing resource facet and does not imply sprite, model, or effect
-   identity. Typed parameters: p8 sourceSubresourceIndexA→GraphicsSubresourceIndex_V338, p9
-   sourceSubresourceIndexB→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow,
-   and executable data remain unchanged. Typed parameters: p2 destinationHeight→GraphicsPixelDimension_V302.
+   Purpose: Draws the cross-fade of two 8-bit subresources of a texture source, scaled to
+   destinationWidth x destinationHeight at (destinationLeft, destinationTop) of the software
+   framebuffer (16 or 32 bit), as grey levels. Used by UiSoftwareTexturePreviewControl.
+   1. blendedSourcePixels = per-pixel cross-fade of B (sourceSubresourceIndexB) to A through the
+      factor image blendFactorPixels, eight pixels per step (SoftwareTexture_CrossFadeByte).
+   2. g_SoftwarePixelIntensityToNativeColorLut256 is rebuilt for the current pixel format.
+   3. Each destination pixel is a bilinear sample of the blended image (8.8 fixed-point steps
+      (size - 1) * 256 / (destinationSize - 1)), looked up in that table.
+   Nothing is drawn unless the asset is a texture source, both indices are valid and both entries
+   are paletted (paletteIndex >= 0). Original quirks kept: B's size is compared with itself, so A
+   is assumed to be as large as B; the loops are do-while, so fewer than 8 source pixels or a zero
+   destination size run 2^32 times, and a destination size of 1 divides by zero; the scale reads
+   one row below the blended image.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareTexture_BilinearBlendScaleSubresources
@@ -45156,353 +45209,90 @@ SoftwareTexture_BilinearBlendScaleSubresources
           GraphicsSubresourceIndex sourceSubresourceIndexA,
           GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
           int *framebufferAccess)
-
 {
-  undefined8 sourceQwordB;
-  undefined8 sourceQwordA;
-  qword blendFactorQword;
-  undefined2 upperTexelPair;
-  undefined2 lowerTexelPair;
-  int sourceWidth;
-  int entryOffsetBOrPitch;
-  byte mm0PackedValue0ByteLane3;
-  byte mm0PackedValue0ByteLane1;
-  ushort lowAlphaPairAOrLowSum0;
-  byte mm0PackedValue1ByteLane1;
-  byte mm0PackedValue3ByteLane1;
-  int entryOffsetAOrStepX;
-  int sourceHeightOrStepY;
-  int destPixelOffset;
-  uint countOrSourceXFixed;
-  undefined8 *sourceCursorA;
-  uint sourceYFixed;
-  uint intensityLevel;
-  undefined8 *sourceCursorB;
-  qword *blendCursorOrSourceRow;
-  uint *lutCursor;
-  undefined2 *destCursor16;
-  undefined4 *destCursor32;
-  undefined1 byteLaneOrTexelHighByte;
-  ushort highAlphaPairAOrLowSum2;
-  undefined8 mm0PackedValue0;
-  ushort highAlphaPairBOrLowSum1;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  undefined8 mm0PackedValue4;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
-  undefined8 mm1PackedValue2;
-  undefined8 mm1PackedValue3;
-  undefined8 mm1PackedValue4;
-  undefined1 mm2PackedValue0ByteLane0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  SoftwareBgraWordLanes rowInverseFactors;
-  undefined1 mm3PackedValue0ByteLane0;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  SoftwareBgraWordLanes rowForwardFactors;
-  undefined1 factorByte3OrByte1;
-  ushort lowFactor0OrHighSum1;
-  undefined1 factorByte2;
-  ushort lowFactor1OrHighSum2;
-  ushort lowFactor2OrHighSum3;
-  ushort lowFactor3OrLowSum3;
-  undefined1 factorByte7OrByte4;
-  undefined1 factorByte5;
-  ushort highFactor0;
-  undefined1 factorByte6;
-  ushort highFactor1;
-  ushort highFactor2;
-  ushort highFactor3OrHighSum0;
-  short unityLane1;
-  short unityLane2;
-  short unityLane3;
-  GraphicsPixelDimension columnsLeft;
-  undefined4 *destRowStart;
-  
-  if ((((graphicsTextureAsset != (int *)0x0) && (*graphicsTextureAsset == 0x786667)) &&
-      (sourceSubresourceIndexB < (uint)graphicsTextureAsset[0x2c])) &&
-     (sourceSubresourceIndexA < (uint)graphicsTextureAsset[0x2c])) {
-    entryOffsetBOrPitch = sourceSubresourceIndexB * 0x20 + graphicsTextureAsset[0x2e];
-    entryOffsetAOrStepX = sourceSubresourceIndexA * 0x20 + graphicsTextureAsset[0x2e];
-    if ((-1 < *(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 8)) &&
-       (-1 < *(int *)((int)graphicsTextureAsset + entryOffsetAOrStepX + 8))) {
-      sourceWidth = *(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 0x18);
-      sourceHeightOrStepY = *(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 0x1c);
-      if ((sourceWidth == *(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 0x18)) &&
-         (sourceHeightOrStepY == *(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 0x1c))) {
-        sourceCursorB = (undefined8 *)
-                  (*(int *)((int)graphicsTextureAsset + entryOffsetBOrPitch + 0xc) + (int)graphicsTextureAsset);
-        sourceCursorA = (undefined8 *)
-                  (*(int *)((int)graphicsTextureAsset + entryOffsetAOrStepX + 0xc) + (int)graphicsTextureAsset);
-        countOrSourceXFixed = (uint)(sourceHeightOrStepY * sourceWidth) >> 3;
-        blendCursorOrSourceRow = blendedSourcePixels;
-        do {
-          sourceQwordB = *sourceCursorB;
-          sourceQwordA = *sourceCursorA;
-          blendFactorQword = *blendFactorPixels;
-          mm0PackedValue0ByteLane3 = (byte)((ulonglong)sourceQwordB >> 0x18);
-          byteLaneOrTexelHighByte = (undefined1)((ulonglong)sourceQwordB >> 0x10);
-          mm0PackedValue0ByteLane1 = (byte)((ulonglong)sourceQwordB >> 8);
-          mm1PackedValue0ByteLane1 = (undefined1)((ulonglong)sourceQwordA >> 0x18);
-          lowAlphaPairAOrLowSum0 = CONCAT11(mm1PackedValue0ByteLane1,mm1PackedValue0ByteLane1);
-          mm1PackedValue0ByteLane2 = (undefined1)((ulonglong)sourceQwordA >> 0x10);
-          mm1PackedValue0ByteLane1 = (undefined1)((ulonglong)sourceQwordA >> 8);
-          mm2PackedValue0ByteLane0 = (undefined1)((ulonglong)sourceQwordB >> 0x38);
-          highAlphaPairBOrLowSum1 = CONCAT11(mm2PackedValue0ByteLane0,mm2PackedValue0ByteLane0);
-          mm2PackedValue0ByteLane2 = (undefined1)((ulonglong)sourceQwordB >> 0x30);
-          mm2PackedValue0ByteLane1 = (undefined1)((ulonglong)sourceQwordB >> 0x28);
-          mm2PackedValue0ByteLane0 = (undefined1)((ulonglong)sourceQwordB >> 0x20);
-          mm3PackedValue0ByteLane0 = (undefined1)((ulonglong)sourceQwordA >> 0x38);
-          highAlphaPairAOrLowSum2 = CONCAT11(mm3PackedValue0ByteLane0,mm3PackedValue0ByteLane0);
-          mm3PackedValue0ByteLane2 = (undefined1)((ulonglong)sourceQwordA >> 0x30);
-          mm3PackedValue0ByteLane1 = (undefined1)((ulonglong)sourceQwordA >> 0x28);
-          mm3PackedValue0ByteLane0 = (undefined1)((ulonglong)sourceQwordA >> 0x20);
-          factorByte3OrByte1 = (undefined1)(blendFactorQword >> 0x18);
-          lowFactor3OrLowSum3 = CONCAT11(factorByte3OrByte1,factorByte3OrByte1);
-          factorByte2 = (undefined1)(blendFactorQword >> 0x10);
-          factorByte3OrByte1 = (undefined1)(blendFactorQword >> 8);
-          factorByte7OrByte4 = (undefined1)(blendFactorQword >> 0x38);
-          highFactor3OrHighSum0 = CONCAT11(factorByte7OrByte4,factorByte7OrByte4);
-          factorByte6 = (undefined1)(blendFactorQword >> 0x30);
-          factorByte5 = (undefined1)(blendFactorQword >> 0x28);
-          factorByte7OrByte4 = (undefined1)(blendFactorQword >> 0x20);
-          lowFactor0OrHighSum1 = CONCAT11((char)blendFactorQword,(char)blendFactorQword) >> 2;
-          lowFactor1OrHighSum2 = CONCAT11(factorByte3OrByte1,factorByte3OrByte1) >> 2;
-          lowFactor2OrHighSum3 = (ushort)CONCAT31(CONCAT21(lowFactor3OrLowSum3,factorByte2),factorByte2) >> 2;
-          lowFactor3OrLowSum3 = lowFactor3OrLowSum3 >> 2;
-          highFactor0 = CONCAT11(factorByte7OrByte4,factorByte7OrByte4) >> 2;
-          highFactor1 = CONCAT11(factorByte5,factorByte5) >> 2;
-          highFactor2 = (ushort)CONCAT31(CONCAT21(highFactor3OrHighSum0,factorByte6),factorByte6) >> 2;
-          highFactor3OrHighSum0 = highFactor3OrHighSum0 >> 2;
-          unityLane1 = (short)((ulonglong)g_SoftwareBlendUnityWordLanesQ14 >> 0x10);
-          unityLane2 = (short)((ulonglong)g_SoftwareBlendUnityWordLanesQ14 >> 0x20);
-          unityLane3 = (short)((ulonglong)g_SoftwareBlendUnityWordLanesQ14 >> 0x30);
-          mm0PackedValue0 =
-               pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 2,
-                               CONCAT24((ushort)CONCAT31(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
-                                                                           mm0PackedValue0ByteLane3)
-                                                                  ,byteLaneOrTexelHighByte),byteLaneOrTexelHighByte) >> 2,
-                                        CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                          mm0PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)sourceQwordB,(char)sourceQwordB) >> 2))),
-                      CONCAT26(unityLane3 - lowFactor3OrLowSum3,
-                               CONCAT24(unityLane2 - lowFactor2OrHighSum3,
-                                        CONCAT22(unityLane1 - lowFactor1OrHighSum2,
-                                                 (short)g_SoftwareBlendUnityWordLanesQ14 - lowFactor0OrHighSum1)))
-                     );
-          mm1PackedValue0 =
-               pmulhw(CONCAT26(lowAlphaPairAOrLowSum0 >> 2,
-                               CONCAT24((ushort)CONCAT31(CONCAT21(lowAlphaPairAOrLowSum0,mm1PackedValue0ByteLane2),
-                                                         mm1PackedValue0ByteLane2) >> 2,
-                                        CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                          mm1PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)sourceQwordA,(char)sourceQwordA) >> 2))),
-                      CONCAT26(lowFactor3OrLowSum3,CONCAT24(lowFactor2OrHighSum3,CONCAT22(lowFactor1OrHighSum2,lowFactor0OrHighSum1))));
-          mm2PackedValue0 =
-               pmulhw(CONCAT26(highAlphaPairBOrLowSum1 >> 2,
-                               CONCAT24((ushort)CONCAT31(CONCAT21(highAlphaPairBOrLowSum1,mm2PackedValue0ByteLane2),
-                                                         mm2PackedValue0ByteLane2) >> 2,
-                                        CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                          mm2PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11(mm2PackedValue0ByteLane0,
-                                                          mm2PackedValue0ByteLane0) >> 2))),
-                      CONCAT26(unityLane3 - highFactor3OrHighSum0,
-                               CONCAT24(unityLane2 - highFactor2,
-                                        CONCAT22(unityLane1 - highFactor1,
-                                                 (short)g_SoftwareBlendUnityWordLanesQ14 - highFactor0)))
-                     );
-          mm3PackedValue0 =
-               pmulhw(CONCAT26(highAlphaPairAOrLowSum2 >> 2,
-                               CONCAT24((ushort)CONCAT31(CONCAT21(highAlphaPairAOrLowSum2,mm3PackedValue0ByteLane2),
-                                                         mm3PackedValue0ByteLane2) >> 2,
-                                        CONCAT22(CONCAT11(mm3PackedValue0ByteLane1,
-                                                          mm3PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11(mm3PackedValue0ByteLane0,
-                                                          mm3PackedValue0ByteLane0) >> 2))),
-                      CONCAT26(highFactor3OrHighSum0,CONCAT24(highFactor2,CONCAT22(highFactor1,highFactor0))));
-          lowAlphaPairAOrLowSum0 = (ushort)((short)mm0PackedValue0 + (short)mm1PackedValue0) >> 4;
-          highAlphaPairBOrLowSum1 = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                           (short)((ulonglong)mm1PackedValue0 >> 0x10)) >> 4;
-          highAlphaPairAOrLowSum2 = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                           (short)((ulonglong)mm1PackedValue0 >> 0x20)) >> 4;
-          lowFactor3OrLowSum3 = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                           (short)((ulonglong)mm1PackedValue0 >> 0x30)) >> 4;
-          highFactor3OrHighSum0 = (ushort)((short)mm2PackedValue0 + (short)mm3PackedValue0) >> 4;
-          lowFactor0OrHighSum1 = (ushort)((short)((ulonglong)mm2PackedValue0 >> 0x10) +
-                           (short)((ulonglong)mm3PackedValue0 >> 0x10)) >> 4;
-          lowFactor1OrHighSum2 = (ushort)((short)((ulonglong)mm2PackedValue0 >> 0x20) +
-                           (short)((ulonglong)mm3PackedValue0 >> 0x20)) >> 4;
-          lowFactor2OrHighSum3 = (ushort)((short)((ulonglong)mm2PackedValue0 >> 0x30) +
-                           (short)((ulonglong)mm3PackedValue0 >> 0x30)) >> 4;
-          *blendCursorOrSourceRow = CONCAT44(CONCAT13((lowFactor2OrHighSum3 != 0) * (lowFactor2OrHighSum3 < 0x100) * (char)lowFactor2OrHighSum3 -
-                                       (0xff < lowFactor2OrHighSum3),
-                                       CONCAT12((lowFactor1OrHighSum2 != 0) * (lowFactor1OrHighSum2 < 0x100) * (char)lowFactor1OrHighSum2 -
-                                                (0xff < lowFactor1OrHighSum2),
-                                                CONCAT11((lowFactor0OrHighSum1 != 0) * (lowFactor0OrHighSum1 < 0x100) *
-                                                         (char)lowFactor0OrHighSum1 - (0xff < lowFactor0OrHighSum1),
-                                                         (highFactor3OrHighSum0 != 0) * (highFactor3OrHighSum0 < 0x100) *
-                                                         (char)highFactor3OrHighSum0 - (0xff < highFactor3OrHighSum0)))),
-                              CONCAT13((lowFactor3OrLowSum3 != 0) * (lowFactor3OrLowSum3 < 0x100) * (char)lowFactor3OrLowSum3 -
-                                       (0xff < lowFactor3OrLowSum3),
-                                       CONCAT12((highAlphaPairAOrLowSum2 != 0) * (highAlphaPairAOrLowSum2 < 0x100) * (char)highAlphaPairAOrLowSum2 -
-                                                (0xff < highAlphaPairAOrLowSum2),
-                                                CONCAT11((highAlphaPairBOrLowSum1 != 0) * (highAlphaPairBOrLowSum1 < 0x100) *
-                                                         (char)highAlphaPairBOrLowSum1 - (0xff < highAlphaPairBOrLowSum1),
-                                                         (lowAlphaPairAOrLowSum0 != 0) * (lowAlphaPairAOrLowSum0 < 0x100) *
-                                                         (char)lowAlphaPairAOrLowSum0 - (0xff < lowAlphaPairAOrLowSum0)))));
-          sourceCursorB = sourceCursorB + 1;
-          sourceCursorA = sourceCursorA + 1;
-          blendFactorPixels = blendFactorPixels + 1;
-          blendCursorOrSourceRow = blendCursorOrSourceRow + 1;
-          countOrSourceXFixed = countOrSourceXFixed - 1;
-        } while (countOrSourceXFixed != 0);
-        countOrSourceXFixed = 0xff;
-        lutCursor = g_SoftwarePixelIntensityToNativeColorLut256;
-        do {
-          *lutCursor = (countOrSourceXFixed >> (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f)) <<
-                     ((byte)g_SoftwarePixelFormatConfig.redShift & 0x1f) |
-                     (countOrSourceXFixed >> (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f)) <<
-                     ((byte)g_SoftwarePixelFormatConfig.greenShift & 0x1f) |
-                     (countOrSourceXFixed >> (8U - (char)g_SoftwarePixelFormatConfig.blueBitCount & 0x1f)) <<
-                     ((byte)g_SoftwarePixelFormatConfig.blueShift & 0x1f);
-          countOrSourceXFixed = countOrSourceXFixed - 1;
-          lutCursor = lutCursor + 1;
-        } while (-1 < (int)countOrSourceXFixed);
-        entryOffsetAOrStepX = (int)(((ulonglong)(sourceWidth - 1U >> 0x18) << 0x20 |
-                      (ulonglong)(sourceWidth - 1U) * 0x100 & 0xffffffff) /
-                     (ulonglong)(destinationWidth - 1));
-        sourceHeightOrStepY = (int)(((ulonglong)(sourceHeightOrStepY - 1U >> 0x18) << 0x20 |
-                      (ulonglong)(sourceHeightOrStepY - 1U) * 0x100 & 0xffffffff) /
-                     (ulonglong)(destinationHeight - 1));
-        entryOffsetBOrPitch = *framebufferAccess;
-        destPixelOffset = destinationTop * entryOffsetBOrPitch + destinationLeft;
-        if (framebufferAccess[2] == 2) {
-          destCursor16 = (undefined2 *)(framebufferAccess[3] + destPixelOffset * 2);
-          countOrSourceXFixed = 0;
-          sourceYFixed = 0;
-          columnsLeft = destinationWidth;
-          blendCursorOrSourceRow = blendedSourcePixels;
-          rowInverseFactors = g_SoftwareBilinearInverseFactors[0];
-          rowForwardFactors = g_SoftwareBilinearForwardFactors[0];
-          destRowStart = (undefined4 *)destCursor16;
-          do {
-            do {
-              upperTexelPair = *(undefined2 *)((countOrSourceXFixed >> 8) + (int)blendCursorOrSourceRow);
-              lowerTexelPair = *(undefined2 *)((countOrSourceXFixed >> 8) + sourceWidth + (int)blendCursorOrSourceRow);
-              mm0PackedValue1ByteLane1 = (byte)((ushort)upperTexelPair >> 8);
-              byteLaneOrTexelHighByte = (undefined1)((ushort)lowerTexelPair >> 8);
-              mm0PackedValue1 =
-                   pmaddwd((ulonglong)
-                           CONCAT22((ushort)(CONCAT13(mm0PackedValue1ByteLane1,
-                                                      CONCAT12(mm0PackedValue1ByteLane1,upperTexelPair)) >>
-                                            0x12),CONCAT11((char)upperTexelPair,(char)upperTexelPair) >> 2),
-                           *(undefined8 *)
-                            (&g_SoftwareBilinearPackedInterpolationWeights256 + (countOrSourceXFixed & 0xff) * 8)
-                          );
-              mm1PackedValue1 =
-                   pmaddwd((ulonglong)
-                           CONCAT22((ushort)(CONCAT13(byteLaneOrTexelHighByte,CONCAT12(byteLaneOrTexelHighByte,lowerTexelPair)) >> 0x12),
-                                    CONCAT11((char)lowerTexelPair,(char)lowerTexelPair) >> 2),
-                           *(undefined8 *)
-                            (&g_SoftwareBilinearPackedInterpolationWeights256 + (countOrSourceXFixed & 0xff) * 8)
-                          );
-              mm0PackedValue2 =
-                   pmulhw(CONCAT44((uint)((ulonglong)mm0PackedValue1 >> 0x30),
-                                   (uint)mm0PackedValue1 >> 0x10),rowInverseFactors);
-              mm1PackedValue2 =
-                   pmulhw(CONCAT44((uint)((ulonglong)mm1PackedValue1 >> 0x30),
-                                   (uint)mm1PackedValue1 >> 0x10),rowForwardFactors);
-              intensityLevel = CONCAT22((ushort)((short)((ulonglong)mm0PackedValue2 >> 0x10) +
-                                        (short)((ulonglong)mm1PackedValue2 >> 0x10)) >> 2,
-                                (ushort)((short)mm0PackedValue2 + (short)mm1PackedValue2) >> 2);
-              if ((intensityLevel & 0xffffff00) != 0) {
-                intensityLevel = 0xff;
-              }
-              *destCursor16 = (short)g_SoftwarePixelIntensityToNativeColorLut256[intensityLevel];
-              destCursor16 = destCursor16 + 1;
-              countOrSourceXFixed = countOrSourceXFixed + entryOffsetAOrStepX;
-              columnsLeft = columnsLeft - 1;
-            } while (columnsLeft != 0);
-            sourceYFixed = sourceYFixed + sourceHeightOrStepY;
-            destCursor16 = (undefined2 *)((int)destRowStart + entryOffsetBOrPitch * 2);
-            columnsLeft = destinationWidth;
-            countOrSourceXFixed = 0;
-            blendCursorOrSourceRow = (qword *)((sourceYFixed >> 8) * sourceWidth + (int)blendedSourcePixels);
-            rowInverseFactors = g_SoftwareBilinearInverseFactors[sourceYFixed & 0xff];
-            rowForwardFactors = g_SoftwareBilinearForwardFactors[sourceYFixed & 0xff];
-            destinationHeight = destinationHeight - 1;
-            destRowStart = (undefined4 *)destCursor16;
-          } while (destinationHeight != 0);
-        }
-        else {
-          destCursor32 = (undefined4 *)(framebufferAccess[3] + destPixelOffset * 4);
-          countOrSourceXFixed = 0;
-          sourceYFixed = 0;
-          columnsLeft = destinationWidth;
-          blendCursorOrSourceRow = blendedSourcePixels;
-          rowInverseFactors = g_SoftwareBilinearInverseFactors[0];
-          rowForwardFactors = g_SoftwareBilinearForwardFactors[0];
-          destRowStart = destCursor32;
-          do {
-            do {
-              upperTexelPair = *(undefined2 *)((countOrSourceXFixed >> 8) + (int)blendCursorOrSourceRow);
-              lowerTexelPair = *(undefined2 *)((countOrSourceXFixed >> 8) + sourceWidth + (int)blendCursorOrSourceRow);
-              mm0PackedValue3ByteLane1 = (byte)((ushort)upperTexelPair >> 8);
-              byteLaneOrTexelHighByte = (undefined1)((ushort)lowerTexelPair >> 8);
-              mm0PackedValue3 =
-                   pmaddwd((ulonglong)
-                           CONCAT22((ushort)(CONCAT13(mm0PackedValue3ByteLane1,
-                                                      CONCAT12(mm0PackedValue3ByteLane1,upperTexelPair)) >>
-                                            0x12),CONCAT11((char)upperTexelPair,(char)upperTexelPair) >> 2),
-                           *(undefined8 *)
-                            (&g_SoftwareBilinearPackedInterpolationWeights256 + (countOrSourceXFixed & 0xff) * 8)
-                          );
-              mm1PackedValue3 =
-                   pmaddwd((ulonglong)
-                           CONCAT22((ushort)(CONCAT13(byteLaneOrTexelHighByte,CONCAT12(byteLaneOrTexelHighByte,lowerTexelPair)) >> 0x12),
-                                    CONCAT11((char)lowerTexelPair,(char)lowerTexelPair) >> 2),
-                           *(undefined8 *)
-                            (&g_SoftwareBilinearPackedInterpolationWeights256 + (countOrSourceXFixed & 0xff) * 8)
-                          );
-              mm0PackedValue4 =
-                   pmulhw(CONCAT44((uint)((ulonglong)mm0PackedValue3 >> 0x30),
-                                   (uint)mm0PackedValue3 >> 0x10),rowInverseFactors);
-              mm1PackedValue4 =
-                   pmulhw(CONCAT44((uint)((ulonglong)mm1PackedValue3 >> 0x30),
-                                   (uint)mm1PackedValue3 >> 0x10),rowForwardFactors);
-              intensityLevel = CONCAT22((ushort)((short)((ulonglong)mm0PackedValue4 >> 0x10) +
-                                        (short)((ulonglong)mm1PackedValue4 >> 0x10)) >> 2,
-                                (ushort)((short)mm0PackedValue4 + (short)mm1PackedValue4) >> 2);
-              if ((intensityLevel & 0xffffff00) != 0) {
-                intensityLevel = 0xff;
-              }
-              *destCursor32 = g_SoftwarePixelIntensityToNativeColorLut256[intensityLevel];
-              destCursor32 = destCursor32 + 1;
-              countOrSourceXFixed = countOrSourceXFixed + entryOffsetAOrStepX;
-              columnsLeft = columnsLeft - 1;
-            } while (columnsLeft != 0);
-            sourceYFixed = sourceYFixed + sourceHeightOrStepY;
-            destCursor32 = destRowStart + entryOffsetBOrPitch;
-            columnsLeft = destinationWidth;
-            countOrSourceXFixed = 0;
-            blendCursorOrSourceRow = (qword *)((sourceYFixed >> 8) * sourceWidth + (int)blendedSourcePixels);
-            rowInverseFactors = g_SoftwareBilinearInverseFactors[sourceYFixed & 0xff];
-            rowForwardFactors = g_SoftwareBilinearForwardFactors[sourceYFixed & 0xff];
-            destinationHeight = destinationHeight - 1;
-            destRowStart = destCursor32;
-          } while (destinationHeight != 0);
-        }
-      }
-    }
+  const GraphicsTextureSourceAsset *asset = (const GraphicsTextureSourceAsset *)graphicsTextureAsset;
+  const SoftwareFramebufferAccess *framebuffer = (const SoftwareFramebufferAccess *)framebufferAccess;
+  const short *unity = (const short *)&g_SoftwareBlendUnityWordLanesQ14;
+  const GraphicsTextureSourceEntry *entries;
+  const GraphicsTextureSourceEntry *entryA;
+  const GraphicsTextureSourceEntry *entryB;
+  const byte *sourceA;
+  const byte *sourceB;
+  const byte *factor;
+  byte *blended;
+  byte *destinationRow;
+  dword sourceWidth;
+  dword sourceHeight;
+  dword blocks;
+  dword stepX;
+  dword stepY;
+  dword yFixed;
+  dword rowsLeft;
+  int pixelBytes;
+  int lane;
+
+  if (asset == NULL || asset->common.magic != ASSET_MAGIC_GFX ||
+      sourceSubresourceIndexB >= asset->tableDescriptor.subresourceCount ||
+      sourceSubresourceIndexA >= asset->tableDescriptor.subresourceCount) {
+    return;
   }
-  return;
+  entries = (const GraphicsTextureSourceEntry *)((const byte *)asset +
+                                                 asset->tableDescriptor.subresourceTableOffset);
+  entryA = &entries[sourceSubresourceIndexA];
+  entryB = &entries[sourceSubresourceIndexB];
+  if (entryB->paletteIndex < 0 || entryA->paletteIndex < 0) {
+    return;
+  }
+  sourceWidth = entryB->pixelWidth;
+  sourceHeight = entryB->pixelHeight;
+
+  /* 1. cross-fade B -> A */
+  sourceA = (const byte *)asset + entryA->dataOffset;
+  sourceB = (const byte *)asset + entryB->dataOffset;
+  factor = (const byte *)blendFactorPixels;
+  blended = (byte *)blendedSourcePixels;
+  blocks = (sourceHeight * sourceWidth) >> 3;
+  do {
+    for (lane = 0; lane < 8; lane++) {
+      blended[lane] = SoftwareTexture_CrossFadeByte(sourceA[lane], sourceB[lane], factor[lane], unity[lane & 3]);
+    }
+    sourceA += 8;
+    sourceB += 8;
+    factor += 8;
+    blended += 8;
+  } while (--blocks != 0);
+
+  /* 2. grey levels of the current pixel format */
+  SoftwareTexture_BuildIntensityLut();
+
+  /* 3. bilinear scale into the framebuffer */
+  stepX = (dword)(((unsigned long long)(sourceWidth - 1) << 8) / (dword)(destinationWidth - 1));
+  stepY = (dword)(((unsigned long long)(sourceHeight - 1) << 8) / (dword)(destinationHeight - 1));
+  /* framebuffer->width is the row pitch in pixels; anything but 2 bytes per pixel is drawn as 4 */
+  pixelBytes = framebuffer->bytesPerPixel == 2 ? 2 : 4;
+  destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * pixelBytes;
+  yFixed = 0;
+  rowsLeft = destinationHeight;
+  do {
+    const byte *row = (const byte *)blendedSourcePixels + (yFixed >> 8) * sourceWidth;
+    short upperWeight = (short)g_SoftwareBilinearInverseFactors[yFixed & 0xff].blue;
+    short lowerWeight = (short)g_SoftwareBilinearForwardFactors[yFixed & 0xff].blue;
+    dword xFixed = 0;
+    dword column = 0;
+    do {
+      dword color = g_SoftwarePixelIntensityToNativeColorLut256[
+          SoftwareTexture_SampleIntensity(row, sourceWidth, xFixed, upperWeight, lowerWeight)];
+      if (pixelBytes == 2) {
+        ((word *)destinationRow)[column] = (word)color;
+      }
+      else {
+        ((dword *)destinationRow)[column] = color;
+      }
+      xFixed += stepX;
+    } while (++column != destinationWidth);
+    yFixed += stepY;
+    destinationRow += (int)framebuffer->width * pixelBytes;
+  } while (--rowsLeft != 0);
 }
 
 

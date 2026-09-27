@@ -136,6 +136,7 @@ static void Thandor_SelfTestStretch(void)
    mapped entries jump to the C versions, so the original bytes are copied from the file; both
    routines only use absolute data addresses and internal relative jumps. */
 void Thandor_SelfTestRasterCompare(void);
+void Thandor_SelfTestBlendScaleCompare(void);
 
 typedef void (__stdcall *OriginalStretchProc)(dword, dword, dword, dword, dword, void *, void *);
 
@@ -480,6 +481,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "rastercmp") == 0) {
             Thandor_SelfTestRasterCompare(); /* selftest_raster.c */
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "blendscalecmp") == 0) {
+            Thandor_SelfTestBlendScaleCompare(); /* selftest_blendscale.c */
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {
