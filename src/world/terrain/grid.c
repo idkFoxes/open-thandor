@@ -881,7 +881,7 @@ FieldGrid_ApplyCallerMask
    that cell's worldX in EAX, worldY in ECX, and terrainHeight in EDX. CF clear means success; CF set returns the
    original input coordinates and zero height.
 */
-FieldGridNearestPointRegsCf13
+TerrainPointResult
 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
@@ -890,7 +890,7 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   int gridRowIndex;
   Q12 terrainHeightQ12;
   bool outOfBounds;
-  FieldGridNearestPointRegsCf13 nearestPoint;
+  TerrainPointResult nearestPoint;
   
   gridHalfRowCoordinateQ12 =
        (int)((uint64_t)((int64_t)worldY * -0x20c8cc) >> 0x20) << 0xb |
@@ -911,10 +911,10 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
     terrainHeightQ12 = field->cells[columnOrCellIndex].terrainHeight;
     outOfBounds = 0;
   }
-  nearestPoint.ecx = worldY;
-  nearestPoint.eax = worldX;
-  nearestPoint.carry = outOfBounds;
-  nearestPoint.edx = terrainHeightQ12;
+  nearestPoint.worldYQ12 = worldY;
+  nearestPoint.worldXQ12 = worldX;
+  nearestPoint.outOfBounds = outOfBounds;
+  nearestPoint.terrainHeightQ12 = terrainHeightQ12;
   return nearestPoint;
 }
 
@@ -1383,8 +1383,8 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
   HeightNormalSampleResult sampleResult;
-  FixedMathVectorAnglesRegs8 blendedNormalAngles;
-  FixedDirectionXyzRegs12 scaledNormal;
+  FixedVectorAngles blendedNormalAngles;
+  FixedDirection scaledNormal;
   
   rowFractionOrNormalAngles = (int)((uint64_t)((int64_t)worldY * -0x20c8cc) >> 0x20) << 0xb |
           (uint32_t)((int64_t)worldY * -0x20c8cc) >> 0x15;
@@ -1415,20 +1415,20 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
                            cellOffsetOrNormalSum + -0x20);
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           columnFractionOrNormalAngles = *(uint32_t *)(field->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
-          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.x;
+          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)(field->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
-          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          columnOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         else {
@@ -1445,22 +1445,22 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           cornerNormalAngles = *(uint32_t *)(field->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
-          columnOrNormalSum = firstNormalEax - scaledNormal.eax;
-          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnOrNormalSum = firstNormalEax - scaledNormal.x;
+          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)(field[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                            cellOffsetOrNormalSum + -0x20);
-          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
@@ -1505,8 +1505,8 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
   HeightNormalSampleResult sampleResult;
-  FixedMathVectorAnglesRegs8 blendedNormalAngles;
-  FixedDirectionXyzRegs12 scaledNormal;
+  FixedVectorAngles blendedNormalAngles;
+  FixedDirection scaledNormal;
   
   rowFractionOrNormalAngles = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
@@ -1537,20 +1537,20 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
                            cellOffsetOrNormalSum + -0x20);
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
-          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          cellOffsetOrNormalSum = firstNormalEax - scaledNormal.x;
+          diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
-          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          columnOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         else {
@@ -1567,22 +1567,22 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           cornerNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
-          columnOrNormalSum = firstNormalEax - scaledNormal.eax;
-          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+          columnOrNormalSum = firstNormalEax - scaledNormal.x;
+          rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                            cellOffsetOrNormalSum + -0x20);
-          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
@@ -1626,8 +1626,8 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
   HeightNormalSampleResult sampleResult;
-  FixedMathVectorAnglesRegs8 blendedNormalAngles;
-  FixedDirectionXyzRegs12 scaledNormal;
+  FixedVectorAngles blendedNormalAngles;
+  FixedDirection scaledNormal;
   int normalSumEcx;
   
   rowFractionOrNormalAngles = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
@@ -1658,20 +1658,20 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
                            rowOffsetBytes + 8);
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetBytes + 0x18);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.eax;
-          normalSumEcx = firstNormalEcx - scaledNormal.ecx;
+          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.x;
+          normalSumEcx = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + 0x18);
-          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          columnOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (columnOrNormalSum + scaledNormal.edx,normalSumEcx + scaledNormal.ecx,diagonalWeightOrNormalSum + scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (columnOrNormalSum + scaledNormal.z,normalSumEcx + scaledNormal.y,diagonalWeightOrNormalSum + scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         else {
@@ -1688,22 +1688,22 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           interpolatedHeightQ12 = (uint32_t)weightedHeightAccumulator >> 0xc | (int)((uint64_t)weightedHeightAccumulator >> 0x20) << 0x14;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,diagonalWeightOrNormalSum)
           ;
-          firstNormalEdx = scaledNormal.edx;
-          firstNormalEcx = scaledNormal.ecx;
-          firstNormalEax = scaledNormal.eax;
+          firstNormalEdx = scaledNormal.z;
+          firstNormalEcx = scaledNormal.y;
+          firstNormalEax = scaledNormal.x;
           cornerNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetBytes + 0x18);
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles - 0x1000);
-          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.eax;
-          normalSumEcx = firstNormalEcx - scaledNormal.ecx;
+          diagonalWeightOrNormalSum = firstNormalEax - scaledNormal.x;
+          normalSumEcx = firstNormalEcx - scaledNormal.y;
           columnFractionOrNormalAngles = *(uint32_t *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
                            rowOffsetBytes + 8);
-          columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+          columnOrNormalSum = firstNormalEdx - scaledNormal.z;
           scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                              ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles - 0x1000);
           blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                             (columnOrNormalSum - scaledNormal.edx,normalSumEcx - scaledNormal.ecx,diagonalWeightOrNormalSum - scaledNormal.eax);
-          rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                             (columnOrNormalSum - scaledNormal.z,normalSumEcx - scaledNormal.y,diagonalWeightOrNormalSum - scaledNormal.x);
+          rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
           sampleFailed = false;
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
@@ -1752,8 +1752,8 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
   HeightNormalSampleResult sampleResult;
-  FixedMathVectorAnglesRegs8 blendedNormalAngles;
-  FixedDirectionXyzRegs12 scaledNormal;
+  FixedVectorAngles blendedNormalAngles;
+  FixedDirection scaledNormal;
   
   rowFractionOrNormalAngles = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
@@ -1788,41 +1788,41 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
                              cellOffsetOrNormalSum + -0x20);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
-            firstNormalEdx = scaledNormal.edx;
-            firstNormalEcx = scaledNormal.ecx;
-            firstNormalEax = scaledNormal.eax;
+            firstNormalEdx = scaledNormal.z;
+            firstNormalEcx = scaledNormal.y;
+            firstNormalEax = scaledNormal.x;
             columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum].runtime0C_3F + rowOffsetOrNormalSum + -4);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
-            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
-            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.x;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.y;
             columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
-            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            columnOrNormalSum = firstNormalEdx - scaledNormal.z;
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                               (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
-            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                               (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
+            rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
             sampleFailed = false;
           }
           else {
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)cornerNormalAngles >> 0x10,cornerNormalAngles & 0xffff,columnFractionOrNormalAngles);
-            firstNormalEdx = scaledNormal.edx;
-            firstNormalEcx = scaledNormal.ecx;
-            firstNormalEax = scaledNormal.eax;
+            firstNormalEdx = scaledNormal.z;
+            firstNormalEcx = scaledNormal.y;
+            firstNormalEax = scaledNormal.x;
             columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum].runtime60_6B + rowOffsetOrNormalSum + 0x18);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
-            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
-            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.x;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.y;
             columnFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + 0x18);
-            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            columnOrNormalSum = firstNormalEdx - scaledNormal.z;
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)columnFractionOrNormalAngles >> 0x10,columnFractionOrNormalAngles & 0xffff,rowFractionOrNormalAngles);
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                               (columnOrNormalSum + scaledNormal.edx,diagonalWeightOrNormalSum + scaledNormal.ecx,cellOffsetOrNormalSum + scaledNormal.eax);
-            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                               (columnOrNormalSum + scaledNormal.z,diagonalWeightOrNormalSum + scaledNormal.y,cellOffsetOrNormalSum + scaledNormal.x);
+            rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
             sampleFailed = false;
           }
         }
@@ -1845,43 +1845,43 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
                              rowLength * 0x80 + cellOffsetOrNormalSum + -0x20);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
-            firstNormalEdx = scaledNormal.edx;
-            firstNormalEcx = scaledNormal.ecx;
-            firstNormalEax = scaledNormal.eax;
+            firstNormalEdx = scaledNormal.z;
+            firstNormalEcx = scaledNormal.y;
+            firstNormalEax = scaledNormal.x;
             rowFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime0C_3F + rowOffsetOrNormalSum + -4);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,columnWeightQ12);
-            columnOrNormalSum = firstNormalEax - scaledNormal.eax;
-            rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            columnOrNormalSum = firstNormalEax - scaledNormal.x;
+            rowOffsetOrNormalSum = firstNormalEcx - scaledNormal.y;
             rowFractionOrNormalAngles = *(uint32_t *)(fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                              cellOffsetOrNormalSum + -0x20);
-            cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            cellOffsetOrNormalSum = firstNormalEdx - scaledNormal.z;
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,rowWeightQ12);
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                               (cellOffsetOrNormalSum - scaledNormal.edx,rowOffsetOrNormalSum - scaledNormal.ecx,columnOrNormalSum - scaledNormal.eax);
-            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                               (cellOffsetOrNormalSum - scaledNormal.z,rowOffsetOrNormalSum - scaledNormal.y,columnOrNormalSum - scaledNormal.x);
+            rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
             sampleFailed = false;
           }
           else {
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,diagonalWeightOrNormalSum);
-            firstNormalEdx = scaledNormal.edx;
-            firstNormalEcx = scaledNormal.ecx;
-            firstNormalEax = scaledNormal.eax;
+            firstNormalEdx = scaledNormal.z;
+            firstNormalEcx = scaledNormal.y;
+            firstNormalEax = scaledNormal.x;
             rowFractionOrNormalAngles = *(uint32_t *)(fieldGrid->cells[columnOrNormalSum + rowLength].runtime60_6B + rowOffsetOrNormalSum + 0x18);
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,columnWeightQ12);
-            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.eax;
-            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.ecx;
+            cellOffsetOrNormalSum = firstNormalEax - scaledNormal.x;
+            diagonalWeightOrNormalSum = firstNormalEcx - scaledNormal.y;
             rowFractionOrNormalAngles = *(uint32_t *)((int)(&fieldGrid[1].common.buildMetadata.names)[columnOrNormalSum].sourceName +
                              rowOffsetOrNormalSum + 8);
-            columnOrNormalSum = firstNormalEdx - scaledNormal.edx;
+            columnOrNormalSum = firstNormalEdx - scaledNormal.z;
             scaledNormal = FixedMath_DirectionFromAnglesScaledRegs
                                ((int)rowFractionOrNormalAngles >> 0x10,rowFractionOrNormalAngles & 0xffff,rowWeightQ12);
             blendedNormalAngles = FixedMath_VectorToAngles3Regs
-                               (columnOrNormalSum - scaledNormal.edx,diagonalWeightOrNormalSum - scaledNormal.ecx,cellOffsetOrNormalSum - scaledNormal.eax);
-            rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
+                               (columnOrNormalSum - scaledNormal.z,diagonalWeightOrNormalSum - scaledNormal.y,cellOffsetOrNormalSum - scaledNormal.x);
+            rowFractionOrNormalAngles = blendedNormalAngles.elevationAngle << 0x10 | blendedNormalAngles.azimuthAngle & 0xffff;
             sampleFailed = false;
           }
         }
@@ -2215,7 +2215,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
   TerrainRayTriangleResult triangleHit;
   TerrainRaycastResult missResult;
   TerrainRaycastResult hitResult;
-  FixedDirectionXyzRegs12 rayDirection;
+  FixedDirection rayDirection;
   
   boundsGridWidth = fieldGrid->gridWidth;
   boundsGridHeight = fieldGrid->gridHeight;
@@ -2230,8 +2230,8 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
                 (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
                 ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
   rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  rayEndYProduct = (int64_t)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
-  rayEndXProduct = (int64_t)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  rayEndYProduct = (int64_t)(int)(rayDirection.x + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (int64_t)(int)(rayDirection.y + rayOriginXQ12) * -0x20c8cc;
   endHalfCoordOrCurrentCoord1Q12 = (int)((uint64_t)rayEndXProduct >> 0x20) << 0xb | (uint32_t)rayEndXProduct >> 0x15;
   rayEndCoord1Q12 = ((int)((uint64_t)rayEndYProduct >> 0x20) << 0xc | (uint32_t)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
   rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
@@ -2246,7 +2246,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
        ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
       cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
       triangleHit = TerrainTriangle_IntersectRayDistanceCf
-                         (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
+                         (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
                           currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
@@ -2310,7 +2310,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
   TerrainRayTriangleResult triangleHit;
   TerrainRaycastResult missResult;
   TerrainRaycastResult hitResult;
-  FixedDirectionXyzRegs12 rayDirection;
+  FixedDirection rayDirection;
   
   boundsGridWidth = fieldGrid->gridWidth;
   boundsGridHeight = fieldGrid->gridHeight;
@@ -2325,8 +2325,8 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
                 (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
                 ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
   rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  rayEndYProduct = (int64_t)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
-  rayEndXProduct = (int64_t)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  rayEndYProduct = (int64_t)(int)(rayDirection.x + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (int64_t)(int)(rayDirection.y + rayOriginXQ12) * -0x20c8cc;
   endHalfCoordOrCurrentCoord1Q12 = (int)((uint64_t)rayEndXProduct >> 0x20) << 0xb | (uint32_t)rayEndXProduct >> 0x15;
   rayEndCoord1Q12 = ((int)((uint64_t)rayEndYProduct >> 0x20) << 0xc | (uint32_t)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
   rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
@@ -2341,7 +2341,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
        ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
       cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
       triangleHit = TerrainTriangle_IntersectRayDistanceCf
-                         (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
+                         (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight +
                           currentCell[rowLength + 1].waterSurfaceDelta,
@@ -2408,7 +2408,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   TerrainRayTriangleResult triangleHit;
   TerrainRaycastResult hitResult;
   TerrainRaycastResult missResult;
-  FixedDirectionXyzRegs12 rayDirection;
+  FixedDirection rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
   FieldCellPersistedAux cornerHeight2Q12;
@@ -2425,8 +2425,8 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   rowLength = fieldGrid->gridWidth;
   rowStrideBytes = rowLength * 0x80;
   rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  rayEndYProduct = (int64_t)(int)(rayDirection.eax + rayOriginYQ12) * 0x1c6e9c;
-  rayEndXProduct = (int64_t)(int)(rayDirection.ecx + rayOriginXQ12) * -0x20c8cc;
+  rayEndYProduct = (int64_t)(int)(rayDirection.x + rayOriginYQ12) * 0x1c6e9c;
+  rayEndXProduct = (int64_t)(int)(rayDirection.y + rayOriginXQ12) * -0x20c8cc;
   endHalfCoordOrCurrentCoord1Q12 = (int)((uint64_t)rayEndXProduct >> 0x20) << 0xb | (uint32_t)rayEndXProduct >> 0x15;
   rayEndCoord1Q12 = ((int)((uint64_t)rayEndYProduct >> 0x20) << 0xc | (uint32_t)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
   rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
@@ -2510,7 +2510,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
       }
     }
     triangleHit = TerrainTriangle_IntersectRayDistanceCf
-                       (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
+                       (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
                         cornerHeight3Q12,cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
     if (!triangleHit.missed) {
@@ -3648,7 +3648,7 @@ FieldGridCell_RecomputeTriangleNormalAngles
   int neighborDeltaD;
   int neighborDeltaE;
   int neighborDeltaF;
-  FixedMathVectorAnglesRegs8 normalAngles;
+  FixedVectorAngles normalAngles;
   
   rightDeltaOrNegativeStride = cell[1].terrainHeight - cell->terrainHeight;
   neighborDeltaA = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - cell->terrainHeight;
@@ -3670,7 +3670,7 @@ FieldGridCell_RecomputeTriangleNormalAngles
                        (cell[-1].worldX - cell->worldX) * neighborDeltaC) -
                       (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaD
                       ) - (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * neighborDeltaE);
-  cell->triangle0NormalAngles = normalAngles.ecx | normalAngles.edx << 0x10;
+  cell->triangle0NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 0x10;
   rightDeltaOrNegativeStride = -rowStrideBytes;
   neighborDeltaA = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
@@ -3699,7 +3699,7 @@ FieldGridCell_RecomputeTriangleNormalAngles
                        (cell[-1].worldX - cell->worldX) * neighborDeltaD) -
                       (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaE
                       ) - (*(int *)((int)cell + rightDeltaOrNegativeStride + 0xc0) - cell->worldX) * neighborDeltaF);
-  cell->triangle1NormalAngles = normalAngles.ecx | normalAngles.edx << 0x10;
+  cell->triangle1NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 0x10;
   return;
 }
 
@@ -3717,7 +3717,7 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 {
   FixedDirectionXZEdxEax8 triangleNormalDirectionXZQ28;
-  FixedDirectionXyzRegs12 normalDirection;
+  FixedDirection normalDirection;
   PackedArgb32 directionalLightColor;
   
   normalDirection = FixedMath_DirectionFromAnglesQ28Regs
@@ -3726,9 +3726,9 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
      before this table and holds the shaded half */
   directionalLightColor =
        ((PackedArgb32 *)g_TerrainDirectionalLightColorLut)
-       [(int)((uint64_t)((int64_t)(int)normalDirection.eax * (int64_t)(int)g_TerrainLightDirectionX) >> 0x20) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.ecx * (int64_t)(int)g_TerrainLightDirectionY) >> 0x20) +
-        (int)((uint64_t)((int64_t)(int)normalDirection.edx * (int64_t)(int)g_TerrainLightDirectionZ) >> 0x20) >>
+       [(int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)(int)g_TerrainLightDirectionX) >> 0x20) +
+        (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)(int)g_TerrainLightDirectionY) >> 0x20) +
+        (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)(int)g_TerrainLightDirectionZ) >> 0x20) >>
         0x10];
   cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor58 = directionalLightColor;

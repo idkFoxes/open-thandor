@@ -45,7 +45,7 @@ ModelLookupTable_ContainsPackedKeyCf
           ModelResourceHitTestAndRenderView210 *modelDefinition);
 
 /* 0x0050AEA0 */
-TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
+MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangle);
 
 /* 0x005289C0 */

@@ -371,8 +371,8 @@ ShotRuntimePool_CreateProjectileFromDefinition
   WorldObjectAllocResult allocatedRecord;
   ModelLookupEntryResult lookupEntry;
   ShadingRecordResult shadingAllocation;
-  FixedDirectionXyzRegs12 launchDirection;
-  ModelLocalPointRegs12 localPoint;
+  FixedDirection launchDirection;
+  ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   char runtimeClassIndex;
   
@@ -417,13 +417,13 @@ ShotRuntimePool_CreateProjectileFromDefinition
   (shotModelNode->modelPayload).worldRotationAngle2 = launchAngles.headingAngle;
   launchDirection = FixedMath_DirectionFromAnglesScaledRegs
                      (launchAngles.elevationAngle,launchAngles.headingAngle,shotDefinition->launchSpeedQ12);
-  directionZOrNeighborhoodMask = launchDirection.edx;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent0Q12 = launchDirection.eax;
+  directionZOrNeighborhoodMask = launchDirection.z;
+  (shotRuntimeCursor->ownerAndTrajectory).directionComponent0Q12 = launchDirection.x;
   if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
     directionZOrNeighborhoodMask = directionZOrNeighborhoodMask + (shotDefinition->ballisticDivisorQ12 >> 1);
   }
   shotModelNode->renderDepthBiasOrState = 0;
-  (shotRuntimeCursor->ownerAndTrajectory).directionComponent1Q12 = launchDirection.ecx;
+  (shotRuntimeCursor->ownerAndTrajectory).directionComponent1Q12 = launchDirection.y;
   (shotRuntimeCursor->ownerAndTrajectory).directionComponent2Q12 = directionZOrNeighborhoodMask;
   shotRuntimeCursor->projectileAgeTicks = 0;
   shotPalette = g_ShotPalette;
@@ -456,7 +456,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
     shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                        (shotDefinition->shadingTransitionDurationTicks,
                         (shotDefinition->shadingColorArgb >> 0x18) << 8,
-                        shotDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+                        shotDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
     shotModelNode->shadingRecord = shadingAllocation.record;
   }
   shotModelNode->parentNode = (ModelRuntimeNode *)0x0;
@@ -480,12 +480,12 @@ ShotRuntimePool_CreateProjectileFromDefinition
   if (!lookupEntry.notFound) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
-    worldXQ12 = localPoint.ecx;
+    worldXQ12 = localPoint.yQ12;
     EffectRuntimePool_CreateInstanceFromDefinitionCf
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (shotModelNode->modelPayload).worldRotationAngle2,
                (shotModelNode->modelPayload).worldRotationAngle1,
-               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.edx,worldXQ12,localPoint.eax,
+               (shotModelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,worldXQ12,localPoint.xQ12,
                shotDefinition->launchEffectDefinition,worldRuntime);
   }
   return;

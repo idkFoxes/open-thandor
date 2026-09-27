@@ -102,13 +102,13 @@ GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
    clocks. A press within 16 clock units and within plus/minus four pixels of the previous press sets bit 31 in
    g_CursorButtonState.
 */
-GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
+CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void)
 
 {
   GraphicsCursorEventType consumedEventType;
   uint32_t nextReadIndex;
-  GraphicsCursorInputEventRegsCf21 eventResult;
-  GraphicsCursorInputEventRegsCf21 emptyResult;
+  CursorEventResult eventResult;
+  CursorEventResult emptyResult;
   GraphicsCursorEventType eventType;
   GraphicsCursorClockValue eventClock;
   uint32_t eventIndex;
@@ -119,7 +119,7 @@ GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_Co
   nextReadIndex = g_CursorInputReadIndex + 1;
   if (g_CursorInputReadIndex == g_CursorInputWriteIndex) {
     memset(&emptyResult, 0, sizeof emptyResult);
-    emptyResult.carry = true;
+    emptyResult.queueEmpty = true;
     return emptyResult;
   }
   if (0xff < nextReadIndex) {
@@ -149,12 +149,12 @@ GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_Co
   }
   /* Called through GraphicsCursorConsumeEventProc: the event also leaves the button state in EBX,
      position in ECX/EDX and wheel delta in ESI, which Ghidra's EAX/CF view of this function dropped. */
-  eventResult.eventCode = consumedEventType;
+  eventResult.eventType = consumedEventType;
   eventResult.buttonState = g_CursorButtonState;
   eventResult.pointerX = g_CursorInputEvents[eventIndex].pointerX08;
   eventResult.pointerY = g_CursorInputEvents[eventIndex].pointerY0C;
   eventResult.wheelDelta = g_CursorInputEvents[eventIndex].wheelDelta10;
-  eventResult.carry = false;
+  eventResult.queueEmpty = false;
   return eventResult;
 }
 
@@ -384,7 +384,7 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
   uint32_t sideAzimuthAngle16;
   int scale;
   uint32_t elevationAngle;
-  FixedDirectionXyzRegs12 viewDirection;
+  FixedDirection viewDirection;
   uint32_t viewElevationAngle16;
   uint32_t viewAzimuthAngle16;
   
@@ -392,9 +392,9 @@ void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
   viewAzimuthAngle16 = g_ViewAngle0;
   scale = 1 << (0xcU - (char)g_ProjectionShift & 0x1f);
   viewDirection = FixedMath_DirectionFromAnglesScaledRegs(g_ViewAngle1,g_ViewAngle0,g_ProjectionScaleFixed);
-  forwardZ = viewDirection.edx;
-  forwardY = viewDirection.ecx;
-  forwardX = viewDirection.eax;
+  forwardZ = viewDirection.z;
+  forwardY = viewDirection.y;
+  forwardX = viewDirection.x;
   cornerAzimuthAngle16 = viewAzimuthAngle16 + 0x4000 & 0xffff;
   FixedMath_WriteDirectionScaled(g_FrustumCornerRayFixed_0,0,cornerAzimuthAngle16,scale);
   sideAzimuthAngle16 = cornerAzimuthAngle16 - 0x8000 & 0xffff;
@@ -473,13 +473,13 @@ GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsO
    [core/math/fixed], FixedTransform_ApplyPoint [core/math/fixed], FixedMath_VectorToAnglesVec3Regs
    [core/math/fixed].
 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedElevationAzimuth __thandor_preserve_eax
 GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject)
 
 {
-  FixedMathVectorAnglesRegs8 localAngles;
+  FixedElevationAzimuth localAngles;
   
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0),(GraphicsFixedMatrix3x4 *)(graphicsObject + 0x10));
@@ -539,7 +539,7 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
   int remainingChildCount;
   int parentObjectOrCursor;
   GraphicsFixedMatrix3x4 *output;
-  FixedDirectionXyzRegs12 translationDirection;
+  FixedDirection translationDirection;
   
   output = (GraphicsFixedMatrix3x4 *)THANDOR_ADDR(g_GraphicsDirectionInverseTransform,0);
   parentObjectOrCursor = *(int *)(graphicsObjectAddress + 100);
@@ -554,9 +554,9 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
                     ((int)*(uint32_t *)(graphicsObjectAddress + 0x44) >> 0x10,
                      *(uint32_t *)(graphicsObjectAddress + 0x44) & 0xffff,
                      *(FixedMathScale32 *)(graphicsObjectAddress + 0x40));
-  (output->translation).x = translationDirection.eax;
-  (output->translation).y = translationDirection.ecx;
-  (output->translation).z = translationDirection.edx;
+  (output->translation).x = translationDirection.x;
+  (output->translation).y = translationDirection.y;
+  (output->translation).z = translationDirection.z;
   remainingChildCount = *(int *)(graphicsObjectAddress + 0xc);
   if (parentObjectOrCursor != 0) {
     FixedTransform_Compose

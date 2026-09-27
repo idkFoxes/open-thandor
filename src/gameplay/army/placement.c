@@ -102,7 +102,7 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
   int referenceHeightQ12;
   bool blocked;
   ModelLookupEntryResult anchorLookup;
-  ModelLocalPointRegs12 anchorWorldPoint;
+  ModelWorldPoint anchorWorldPoint;
   
   modelNodeRuntime = modelRuntime->rootModelNode;
   blocked = ArmyPlacementCollision_TestCurrentRuntimeCf(worldRuntime,modelRuntime);
@@ -112,10 +112,10 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
     ;
     if (!anchorLookup.notFound) {
       anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
-      worldXQ12 = anchorWorldPoint.ecx;
-      worldYQ12 = anchorWorldPoint.eax;
+      worldXQ12 = anchorWorldPoint.yQ12;
+      worldYQ12 = anchorWorldPoint.xQ12;
       referenceHeightQ12 =
-           (anchorWorldPoint.edx - placementDefinition->placementHeightOffsetQ12) -
+           (anchorWorldPoint.zQ12 - placementDefinition->placementHeightOffsetQ12) -
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
       blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
                         ((WorldOwnerListNode100 *)modelNodeRuntime,worldXQ12,worldYQ12,
@@ -806,28 +806,28 @@ ArmyPlacement_DispatchAssetAtFieldPoint
 {
   uint32_t assetClassIndex;
   ArmyAssetRecordPrefix *modelDefinition;
-  ArmyRegistryEaxCf5_51b6d0 lookupResult;
+  ArmyAssetLookupResult lookupResult;
   HeightSampleResult terrainHeight;
   PlacementDispatchResult dispatchResult;
   
   lookupResult = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  if (!lookupResult.carry) {
-    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
-                      (*(PckModelDefinitionIdCatalog *)((lookupResult.eax)->rootNodeOffsetOrPointer + 0x20)
+  if (!lookupResult.notFound) {
+    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithErrorCf
+                      (*(PckModelDefinitionIdCatalog *)((lookupResult.recordOrError)->rootNodeOffsetOrPointer + 0x20)
                       ));
-    modelDefinition = lookupResult.eax;
-    if (!lookupResult.carry) {
+    modelDefinition = lookupResult.recordOrError;
+    if (!lookupResult.notFound) {
       assetClassIndex = modelDefinition[4].rootNodeOffsetOrPointer;
       terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-      lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
+      lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyAssetLookupResult, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
               )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,terrainHeight.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
                 (WorldRuntimeContext *)inGameRoot));
     }
   }
-  dispatchResult.value = (uint32_t)lookupResult.eax;
-  dispatchResult.failed = lookupResult.carry;
+  dispatchResult.value = (uint32_t)lookupResult.recordOrError;
+  dispatchResult.failed = lookupResult.notFound;
   return dispatchResult;
 }
 
@@ -1184,13 +1184,13 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
   ModelRuntimeNode *modelNodeRuntime;
   uint32_t anchorDistanceQ12;
   ModelLookupEntryResult anchorLookup;
-  ModelLocalPointRegs12 anchorWorldPoint;
+  ModelWorldPoint anchorWorldPoint;
   
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
   anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
   if (!anchorLookup.notFound) {
     anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
-    anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.ecx - targetWorldXQ12,anchorWorldPoint.eax - targetWorldYQ12);
+    anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,anchorWorldPoint.xQ12 - targetWorldYQ12);
     if ((int)anchorDistanceQ12 <= queryRadiusQ12 + 0xc00) {
       g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
       return true;

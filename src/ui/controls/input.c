@@ -48,7 +48,7 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
   UiPixelCoordinate pointerY;
   GraphicsCursorButtonState buttonMask;
   UiPointerWheelDelta wheelDelta;
-  GraphicsCursorInputEventRegsCf21 pointerEvent;
+  CursorEventResult pointerEvent;
   
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   if (g_PointerSetPosition == DirectInputMouse_SetPosition) {
@@ -61,8 +61,8 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
     wheelDelta = pointerEvent.wheelDelta;
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
-    if (pointerEvent.carry) break;
-    eventKind = (char)pointerEvent.eventCode;
+    if (pointerEvent.queueEmpty) break;
+    eventKind = (char)pointerEvent.eventType;
     if (eventKind < '\a') {
       if (eventKind == '\x06') {
         if ((control != (UiNodeBase *)0xffffffff) &&

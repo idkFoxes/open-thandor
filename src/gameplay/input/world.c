@@ -42,7 +42,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
   int payloadEntityAddress;
   CommandPayloadDword04 modelToken;
   CommandPayloadDword08 armyToken;
-  FieldGridNearestPointRegsCf13 nearestTerrainPoint;
+  TerrainPointResult nearestTerrainPoint;
   
   if (targetingContext->actionState == INGAME_TARGETING_OBSERVED_CANCEL_AND_RESTORE) {
     InGameTargetingContext_CancelAndRestoreState(targetingContext);
@@ -100,7 +100,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
       WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                 ((targetingContext->worldRuntime0A30).motion.pitchAngle,
                  (targetingContext->activeNotificationPayload9E40).primaryOrientationAngle08,
-                 (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,nearestTerrainPoint.edx,
+                 (targetingContext->worldRuntime0A30).motion.targetDistanceQ12,nearestTerrainPoint.terrainHeightQ12,
                  (targetingContext->activeNotificationPayload9E40).secondaryWorldCoordinateQ12_04,
                  (targetingContext->activeNotificationPayload9E40).primaryWorldCoordinateQ12_00,
                  &targetingContext->worldRuntime0A30);

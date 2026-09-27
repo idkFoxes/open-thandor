@@ -58,7 +58,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
   SelectionPanelAdvanceEaxEdx8 bottomRightAdvance;
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
   RuntimeGroupIndexResult groupIndexResult;
-  ArmyMetric6CDefinitionC4Regs8 armyMetrics;
+  ArmySegmentMeter armyMetrics;
   
   inGameRoot = g_InGameRuntimeRoot;
   framebufferBusy = (*g_GraphicsFramebufferBeginAccess)();
@@ -261,11 +261,11 @@ SelectionPanel_RenderArmyRuntimeMetrics
                      bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          halfFilledSegments = armyMetrics.ebx >> 1;
-          runtimeKindOrValue = armyMetrics.ecx >> 1;
+          halfFilledSegments = armyMetrics.filledSegments >> 1;
+          runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                      panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
@@ -305,11 +305,11 @@ SelectionPanel_RenderArmyRuntimeMetrics
                      bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          halfFilledSegments = armyMetrics.ebx >> 1;
-          runtimeKindOrValue = armyMetrics.ecx >> 1;
+          halfFilledSegments = armyMetrics.filledSegments >> 1;
+          runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                      panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
@@ -350,11 +350,11 @@ SelectionPanel_RenderArmyRuntimeMetrics
                      bottomLeftAdvance.nextDrawY,(UiNumericValue32)(scaleRatio >> 0x20),(UiNumericValue32)scaleRatio,
                      0x19);
           armyMetrics = ArmyRuntime_QueryMetric6CAndDefinitionC4Regs((ArmyRuntimeSlot *)armyRuntime);
-          halfFilledSegments = armyMetrics.ebx >> 1;
-          runtimeKindOrValue = armyMetrics.ecx >> 1;
+          halfFilledSegments = armyMetrics.filledSegments >> 1;
+          runtimeKindOrValue = armyMetrics.totalSegments >> 1;
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomLeftAdvance.nextDrawX,topLeftAdvance.nextDrawX,
-                     panelLeft,armyMetrics.ecx - runtimeKindOrValue,armyMetrics.ebx - halfFilledSegments,0xf);
+                     panelLeft,armyMetrics.totalSegments - runtimeKindOrValue,armyMetrics.filledSegments - halfFilledSegments,0xf);
           SelectionPanel_DrawSegmentedCappedBar
                     (clipTop,clipLeft,clipBottom,clipRight,bottomRightAdvance.nextDrawX,topRightAdvance.nextDrawX,
                      panelRight,runtimeKindOrValue,halfFilledSegments,0x10);
@@ -1766,7 +1766,7 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
   GameEntityRuntime *currentEntity;
   GameEntityRuntime **selectionEntryCursor;
   ModelLookupEntryResult lookupEntry;
-  ModelLocalPointRegs12 localPoint;
+  ModelWorldPoint localPoint;
   
   entriesRemaining = 0x20;
   selectionEntryCursor = selectionEntries;
@@ -1819,8 +1819,8 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
     ;
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
-      *(uint32_t *)((int)class13Record + 0x78) = localPoint.eax;
-      *(uint32_t *)((int)class13Record + 0x7c) = localPoint.ecx;
+      *(uint32_t *)((int)class13Record + 0x78) = localPoint.xQ12;
+      *(uint32_t *)((int)class13Record + 0x7c) = localPoint.yQ12;
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }

@@ -121,7 +121,7 @@ typedef void __stdcall GrVertexLayoutImportProc(uint32_t arg0, uint32_t arg1, ui
 typedef void __stdcall GrViewportImportProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3); /* Ghidra FunctionDefinition /Thandor/Graphics/Glide/Imports */
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBackendRefreshActiveAdapterProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsBeginScenePreserveAllProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
-typedef GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursorConsumeEventProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
+typedef CursorEventResult __thandor_input_event_regs_cf GraphicsCursorConsumeEventProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsDrawPrimitiveQueueProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, GraphicsPrimitiveQueue * arg4); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsEndSceneProc(void); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
 typedef OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx GraphicsOffscreenRenderModelListToTextureSourceProc(GraphicsOffscreenSceneExtents * sceneExtents, uint32_t param_2, GraphicsOffscreenViewParameters * viewParameters, GraphicsPixelDimension outputWidth, GraphicsPixelDimension outputHeight, ModelRuntimeCount modelCount, ModelRuntimeNode * * modelNodes); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */

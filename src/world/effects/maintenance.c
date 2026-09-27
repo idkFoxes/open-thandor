@@ -164,8 +164,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   ShadingRecordResult shadingAllocation;
   ArmyRuntimeCreateResult armyCreateResult;
   HeightNormalSampleResult terrainSample;
-  ModelLocalPointRegs12 localPoint;
-  FixedDirectionXyzRegs12 scaledDirection;
+  ModelWorldPoint localPoint;
+  FixedDirection scaledDirection;
   GraphicsFixedVec3 terrainNormalDirection;
   GraphicsFixedVec3 motionDirection;
   EffectDefinition *periodicDefinition;
@@ -209,7 +209,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
                              (effectDefinition->shadingTransitionDurationTicks,
                               (effectDefinition->shadingColorArgb >> 0x18) << 8,
-                              effectDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+                              effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
           modelNode->shadingRecord = shadingAllocation.record;
         }
       }
@@ -279,11 +279,11 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         spawnWorldRuntime = worldRuntime;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
-        worldZQ12 = localPoint.edx;
-        worldXQ12 = localPoint.ecx;
+        worldZQ12 = localPoint.zQ12;
+        worldXQ12 = localPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                   worldZQ12,worldXQ12,localPoint.eax,periodicDefinition,spawnWorldRuntime);
+                   worldZQ12,worldXQ12,localPoint.xQ12,periodicDefinition,spawnWorldRuntime);
       }
     }
                     // WARNING: Switch is manually overridden
@@ -301,8 +301,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,localPoint.edx,localPoint.ecx,
-                       localPoint.eax,effectDefinition->linkedEffectDefinition,worldRuntime);
+                       (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
+                       localPoint.xQ12,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
       }
@@ -323,12 +323,12 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
                       (0,(ArmyRuntimeSlot *)0x0,
-                       (localPoint.edx - (modelNode->worldTransform).translation.z) * 2 +
+                       (localPoint.zQ12 - (modelNode->worldTransform).translation.z) * 2 +
                        (modelNode->worldTransform).translation.z,
-                       (localPoint.ecx - (modelNode->worldTransform).translation.y) * 2 +
+                       (localPoint.yQ12 - (modelNode->worldTransform).translation.y) * 2 +
                        (modelNode->worldTransform).translation.y,
-                       (localPoint.eax - (modelNode->worldTransform).translation.x) * 2 +
-                       (modelNode->worldTransform).translation.x,localPoint.edx,localPoint.ecx,localPoint.eax,
+                       (localPoint.xQ12 - (modelNode->worldTransform).translation.x) * 2 +
+                       (modelNode->worldTransform).translation.x,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,
                        effectDefinition->linkedShotDefinition,worldRuntime);
           }
         }
@@ -343,8 +343,8 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
-                       (modelNode->modelPayload).worldRotationAngle0,localPoint.edx,localPoint.ecx,
-                       localPoint.eax,effectDefinition->linkedEffectDefinition,worldRuntime);
+                       (modelNode->modelPayload).worldRotationAngle0,localPoint.zQ12,localPoint.yQ12,
+                       localPoint.xQ12,effectDefinition->linkedEffectDefinition,worldRuntime);
           }
         }
         completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;
@@ -401,17 +401,17 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       previousRotationAngle1 = (modelNode->modelPayload).worldRotationAngle1;
       activeShadingRecord = modelNode->shadingRecord;
       translationPtr = &(modelNode->worldTransform).translation;
-      translationPtr->x = translationPtr->x + scaledDirection.eax;
+      translationPtr->x = translationPtr->x + scaledDirection.x;
       translationAxisPtr = &(modelNode->worldTransform).translation.y;
-      *translationAxisPtr = *translationAxisPtr + scaledDirection.ecx;
+      *translationAxisPtr = *translationAxisPtr + scaledDirection.y;
       translationAxisPtr = &(modelNode->worldTransform).translation.z;
-      *translationAxisPtr = *translationAxisPtr + scaledDirection.edx;
+      *translationAxisPtr = *translationAxisPtr + scaledDirection.z;
       ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
       (modelNode->modelPayload).worldRotationAngle1 = (int)(previousRotationAngle1 * 0x3f + 0x4000) >> 6;
       if (activeShadingRecord != (GraphicsShadingRuntimeRecord *)0x0) {
-        activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.eax;
-        activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.ecx;
-        activeShadingRecord->worldZQ12 = activeShadingRecord->worldZQ12 + scaledDirection.edx;
+        activeShadingRecord->worldXQ12 = activeShadingRecord->worldXQ12 + scaledDirection.x;
+        activeShadingRecord->worldYQ12 = activeShadingRecord->worldYQ12 + scaledDirection.y;
+        activeShadingRecord->worldZQ12 = activeShadingRecord->worldZQ12 + scaledDirection.z;
       }
       break;
     case EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT:
@@ -424,16 +424,16 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                   ((int)terrainSample.packedNormalAngles >> 0x10,terrainSample.packedNormalAngles & 0xffff,
                    0x10000000);
-        terrainNormalDirection.x = scaledDirection.eax;
-        terrainNormalDirection.y = scaledDirection.ecx;
-        terrainNormalDirection.z = scaledDirection.edx;
+        terrainNormalDirection.x = scaledDirection.x;
+        terrainNormalDirection.y = scaledDirection.y;
+        terrainNormalDirection.z = scaledDirection.z;
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs
                   ((modelNode->modelPayload).worldRotationAngle1 -
                    effectSlot->effectAgeTicks * effectSlot->effectAgeTicks * effectDefinition->unknown58,
                    (modelNode->modelPayload).worldRotationAngle0,0x10000000);
-        motionDirection.x = scaledDirection.eax;
-        motionDirection.y = scaledDirection.ecx;
-        motionDirection.z = scaledDirection.edx;
+        motionDirection.x = scaledDirection.x;
+        motionDirection.y = scaledDirection.y;
+        motionDirection.z = scaledDirection.z;
         normalDotMotion = FixedVec3_DotQ28(&terrainNormalDirection,&motionDirection);
         if (normalDotMotion < 0) {
           if (effectSlot->stateTintArgb < 0x1000000) {

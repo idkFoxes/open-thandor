@@ -253,7 +253,7 @@ ModelLookupTable_ContainsPackedKeyCf
    Purpose: Intersects the shared model-space ray with one exact 0x40-byte triangle record. EAX is Q12 distance; CF
    set means hit, CF clear means no hit.
 */
-TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
+MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangle)
 
 {
@@ -281,8 +281,8 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
   int hitRelativeZ;
   uint32_t offsetHighOrCrossZ;
   int halfOffsetOrEdge1Y;
-  TerrainRayTriangleResult missResult;
-  TerrainRayTriangleResult hitResult;
+  MeshRayTriangleResult missResult;
+  MeshRayTriangleResult hitResult;
   bool hitFound;
 
   normalX = triangle->planeNormalX << 0x10;
@@ -380,12 +380,12 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
                       (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
     }
     if (hitFound) {
-      hitResult.missed = true;
+      hitResult.hit = true;
       return hitResult;
     }
   }
 ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
-  missResult.missed = false;
+  missResult.hit = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;
 }

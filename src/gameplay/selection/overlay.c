@@ -464,7 +464,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   TextureSizeResult markerSize;
-  FieldGridNearestPointRegsCf13 terrainPoint;
+  TerrainPointResult terrainPoint;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
@@ -478,10 +478,10 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
         terrainPoint = FieldGrid_GetNearestTerrainPoint
                           ((int)((uint64_t)packedCoordinate0 >> 0x20) << 0x14 | (uint32_t)packedCoordinate0 >> 0xc,
                            (int)((uint64_t)packedCoordinate1 >> 0x20) << 0x13 | (uint32_t)packedCoordinate1 >> 0xd,fieldGrid);
-        if (!terrainPoint.carry) {
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.eax;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.ecx;
-          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.edx;
+        if (!terrainPoint.outOfBounds) {
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.worldXQ12;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.worldYQ12;
+          g_GraphicsTransformScratchMatrix3x4.basisRow0[2] = terrainPoint.terrainHeightQ12;
           FixedTransform_ApplyPoint
                     (&g_GraphicsTransformInputScratchVec3,
                      (GraphicsFixedVec3 *)&g_GraphicsTransformScratchMatrix3x4,
@@ -531,14 +531,14 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
   GraphicsProjectedPointPair projectedPoint;
   TextureSizeResult markerSize;
   SurfacePointResult topSurfacePoint;
-  FieldGridNearestPointRegsCf13 terrainPoint;
+  TerrainPointResult terrainPoint;
   
   if (useTopSurface == 0) {
     terrainPoint = FieldGrid_GetNearestTerrainPoint(worldCoordinate0Q12,worldCoordinate1Q12,fieldGrid);
-    pointZ = terrainPoint.edx;
-    pointY = terrainPoint.ecx;
-    pointX = terrainPoint.eax;
-    if (terrainPoint.carry) {
+    pointZ = terrainPoint.terrainHeightQ12;
+    pointY = terrainPoint.worldYQ12;
+    pointX = terrainPoint.worldXQ12;
+    if (terrainPoint.outOfBounds) {
       return;
     }
   }

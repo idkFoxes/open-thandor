@@ -41,7 +41,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   ScenarioCatalogRecordCount levelsRemaining;
   uint32_t maskWordIndex;
   MovieFrameResult movieFrame;
-  StatusResult activePageStatus;
+  PageStackSearchResult activePageStatus;
   TextResolveResult markerText;
   SelectableGroupIndexResult selectedGroup;
   uint16_t availabilityMarker;
@@ -102,7 +102,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   }
   activePageStatus = UiPageStack_ActivePageNotInListCf
                      ((UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0x508));
-  if (activePageStatus.valueOrError == 10) {
+  if (activePageStatus.pageIndex == 10) {
     selectedGroup = UiSelectableGroup_NoneSelectedCf(3,
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),

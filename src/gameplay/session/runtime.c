@@ -149,7 +149,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
   InGameConditionScheduleImageView480 *scheduledCondition;
   bool voicePlaying;
   FieldGridCoordinatesEaxEdx8 targetGridPosition;
-  StatusResult pageStackStatus;
+  PageStackSearchResult pageStackStatus;
   SoundPlayResult playVoiceResult;
   uint32_t cursorFrameOrScratch;
   
@@ -198,7 +198,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
     InGameHud_UpdateStatusCountersAndSessionPrompts();
     pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->endGameResultsPageStack09DC);
     if ((((((endGameResultsRuntime->worldRuntime0A30).runtimeFlags & 0x90) == 0) &&
-         (pageStackStatus.valueOrError == 0)) &&
+         (pageStackStatus.pageIndex == 0)) &&
         (((endGameResultsRuntime->worldRuntime0A30).interaction.interactionFlags48 & 8) == 0)) &&
        (((g_CursorButtonState & 4) == 0 &&
         (candidateFrameOrScore = WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(worldRuntime), candidateFrameOrScore != 0)))) {
@@ -330,7 +330,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       if ((g_UiCommandRuntimeFlags & 1) != 0)
       goto EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn;
       pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->gameWindowPageStack0BD0);
-      if (pageStackStatus.valueOrError == 2) {
+      if (pageStackStatus.pageIndex == 2) {
         InGameTechnologyPanel_Rebuild(&endGameResultsRuntime->rootUi0000);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
@@ -718,7 +718,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       break;
     }
     stack = (UiPageStackControl *)INGAME_UI(rt,gameWindowPageStack);
-    index = (UiPageStack_ActivePageNotInListCf(stack).valueOrError == 1) ? 0 : 1;
+    index = (UiPageStack_ActivePageNotInListCf(stack).pageIndex == 1) ? 0 : 1;
     UiPageStack_SetActiveIndex(index,stack);
     INGAME_UI(rt,worldView)->nodeFlags =
          INGAME_UI(rt,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
@@ -763,7 +763,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
   case 0x5676a0: {
     uint32_t settings = PersistentSettings_ReadDword(0,0x40);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
-    if (UiPageStack_ActivePageNotInListCf(stack).valueOrError != 0) {
+    if (UiPageStack_ActivePageNotInListCf(stack).pageIndex != 0) {
       UiPageStack_SetActiveIndex(0,stack);
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));

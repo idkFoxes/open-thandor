@@ -49,7 +49,7 @@ ModelNodeRuntime_UpdateDepthBinMasks
           (DepthIntervalRadius32 intervalRadiusQ14,ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x004BEB80 */
-ModelLocalPointRegs12
+ModelWorldPoint
 ModelNodeRuntime_TransformLocalPointRegs
           (ModelPackedPointRecord *localPointRecord,ModelRuntimeNode *modelNodeRuntime);
 
@@ -57,7 +57,7 @@ ModelNodeRuntime_TransformLocalPointRegs
 ModelRelativeDirectionAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x0050A7A0 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context);

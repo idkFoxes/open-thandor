@@ -16,50 +16,40 @@
 typedef struct MovieOpenResult MovieOpenResult, *PMovieOpenResult;
 typedef struct Win32FileSeekResult Win32FileSeekResult, *PWin32FileSeekResult;
 typedef struct GridScratchAllocResult GridScratchAllocResult, *PGridScratchAllocResult;
-typedef struct ArmyRegistryEaxCf5_51b6d0 ArmyRegistryEaxCf5_51b6d0, *PArmyRegistryEaxCf5_51b6d0;
+typedef struct ArmyAssetLookupResult ArmyAssetLookupResult, *PArmyAssetLookupResult;
 typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
 typedef struct ResourceLoadResult ResourceLoadResult, *PResourceLoadResult;
-typedef struct ArmyRegistryIdEaxCf5_571ca0 ArmyRegistryIdEaxCf5_571ca0, *PArmyRegistryIdEaxCf5_571ca0;
-typedef struct ArmyRegistryIdEaxCf5_5719f0 ArmyRegistryIdEaxCf5_5719f0, *PArmyRegistryIdEaxCf5_5719f0;
-typedef struct ArmyRegistryEaxCf5_51b740 ArmyRegistryEaxCf5_51b740, *PArmyRegistryEaxCf5_51b740;
+typedef struct ArmyAssetIdSearchResult ArmyAssetIdSearchResult, *PArmyAssetIdSearchResult;
 typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
 typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
 typedef struct MovieFrameResult MovieFrameResult, *PMovieFrameResult;
 typedef struct NetworkReceiveResult NetworkReceiveResult, *PNetworkReceiveResult;
-typedef struct FixedMathVectorAnglesRegs8 FixedMathVectorAnglesRegs8, *PFixedMathVectorAnglesRegs8;
+typedef struct FixedVectorAngles FixedVectorAngles, *PFixedVectorAngles;
 typedef struct NetworkOpenBindResult NetworkOpenBindResult, *PNetworkOpenBindResult;
 typedef struct Win32FileOpenResult Win32FileOpenResult, *PWin32FileOpenResult;
 typedef struct FileSystemReadResult FileSystemReadResult, *PFileSystemReadResult;
 typedef struct RichTextCopyResult RichTextCopyResult, *PRichTextCopyResult;
-typedef struct ArmyRegistryIdEaxCf5_571a60 ArmyRegistryIdEaxCf5_571a60, *PArmyRegistryIdEaxCf5_571a60;
-typedef struct ArmyRegistryIdEaxCf5_571d40 ArmyRegistryIdEaxCf5_571d40, *PArmyRegistryIdEaxCf5_571d40;
-typedef struct ArmyRegistryIdEaxCf5_571b00 ArmyRegistryIdEaxCf5_571b00, *PArmyRegistryIdEaxCf5_571b00;
 typedef struct FileSystemSizeResult FileSystemSizeResult, *PFileSystemSizeResult;
 typedef struct ArenaFreeResult ArenaFreeResult, *PArenaFreeResult;
 typedef struct Win32FileSizeResult Win32FileSizeResult, *PWin32FileSizeResult;
 typedef struct NetworkSendResult NetworkSendResult, *PNetworkSendResult;
-typedef struct ArmyMetric6CDefinitionC4Regs8 ArmyMetric6CDefinitionC4Regs8, *PArmyMetric6CDefinitionC4Regs8;
+typedef struct ArmySegmentMeter ArmySegmentMeter, *PArmySegmentMeter;
 typedef struct ArmyCollisionResult ArmyCollisionResult, *PArmyCollisionResult;
-typedef struct ArmyRegistryIdEaxCf5_571c30 ArmyRegistryIdEaxCf5_571c30, *PArmyRegistryIdEaxCf5_571c30;
 typedef struct FileSystemWriteResult FileSystemWriteResult, *PFileSystemWriteResult;
 typedef struct FileSystemOpenResult FileSystemOpenResult, *PFileSystemOpenResult;
 typedef struct FatalErrorCheckResult FatalErrorCheckResult, *PFatalErrorCheckResult;
 typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
-typedef struct FieldGridNearestPointRegsCf13 FieldGridNearestPointRegsCf13, *PFieldGridNearestPointRegsCf13;
-typedef struct ArmyRegistryIdEaxCf5_571cf0 ArmyRegistryIdEaxCf5_571cf0, *PArmyRegistryIdEaxCf5_571cf0;
-typedef struct ModelLocalPointRegs12 ModelLocalPointRegs12, *PModelLocalPointRegs12;
-typedef struct ArmyRegistryIdEaxCf5_571ab0 ArmyRegistryIdEaxCf5_571ab0, *PArmyRegistryIdEaxCf5_571ab0;
+typedef struct TerrainPointResult TerrainPointResult, *PTerrainPointResult;
+typedef struct ModelWorldPoint ModelWorldPoint, *PModelWorldPoint;
 typedef struct TextResolveResult TextResolveResult, *PTextResolveResult;
 typedef struct PackageDecodeResult PackageDecodeResult, *PPackageDecodeResult;
 typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
 typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
-typedef struct FixedDirectionXyzRegs12 FixedDirectionXyzRegs12, *PFixedDirectionXyzRegs12;
+typedef struct FixedDirection FixedDirection, *PFixedDirection;
 typedef struct MailboxReceiveResult MailboxReceiveResult, *PMailboxReceiveResult;
 typedef struct ArmyRuntimeCreateResult ArmyRuntimeCreateResult, *PArmyRuntimeCreateResult;
 typedef struct PackageEntryLookupResult PackageEntryLookupResult, *PPackageEntryLookupResult;
 typedef struct NetworkSetSessionResult NetworkSetSessionResult, *PNetworkSetSessionResult;
-typedef struct ArmyRegistryIdEaxCf5_571c50 ArmyRegistryIdEaxCf5_571c50, *PArmyRegistryIdEaxCf5_571c50;
-typedef struct ArmyRegistryIdEaxCf5_571a10 ArmyRegistryIdEaxCf5_571a10, *PArmyRegistryIdEaxCf5_571a10;
 /* Graphics/display result records. */
 typedef struct DisplayModeResult DisplayModeResult, *PDisplayModeResult;
 typedef struct CursorFrameResult CursorFrameResult, *PCursorFrameResult;
@@ -668,7 +658,7 @@ typedef struct SoftwareFramebufferResult SoftwareFramebufferResult, *PSoftwareFr
 typedef struct OffscreenRenderResult OffscreenRenderResult, *POffscreenRenderResult;
 typedef struct StatusResult StatusResult, *PStatusResult;
 typedef struct EffectDefinitionResult EffectDefinitionResult, *PEffectDefinitionResult;
-typedef struct CompareFlagsCfZf2 CompareFlagsCfZf2, *PCompareFlagsCfZf2;
+typedef struct TextCompareResult TextCompareResult, *PTextCompareResult;
 typedef struct WorldVector1EaxEcxEdx12 WorldVector1EaxEcxEdx12, *PWorldVector1EaxEcxEdx12;
 typedef struct PrimitiveQueueResult PrimitiveQueueResult, *PPrimitiveQueueResult;
 typedef struct ShotLaunchAnglesEaxEdx8 ShotLaunchAnglesEaxEdx8, *PShotLaunchAnglesEaxEdx8;
@@ -724,7 +714,7 @@ typedef struct FileLoadResult FileLoadResult, *PFileLoadResult;
 typedef struct EnumerationStringTableResult EnumerationStringTableResult, *PEnumerationStringTableResult;
 typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
 typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
-typedef struct GraphicsCursorInputEventRegsCf21 GraphicsCursorInputEventRegsCf21, *PGraphicsCursorInputEventRegsCf21;
+typedef struct CursorEventResult CursorEventResult, *PCursorEventResult;
 typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
 typedef struct ShadingRecordResult ShadingRecordResult, *PShadingRecordResult;
 typedef struct GraphicsTextureSourceHeaderViewBC GraphicsTextureSourceHeaderViewBC, *PGraphicsTextureSourceHeaderViewBC;
@@ -998,9 +988,9 @@ struct GridScratchAllocResult {
     bool failed; // Physical ABI component CF
 };
 
-struct ArmyRegistryEaxCf5_51b6d0 {
-    struct ArmyAssetRecordPrefix *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ArmyAssetLookupResult {
+    struct ArmyAssetRecordPrefix *recordOrError; // Physical ABI component EAX
+    bool notFound; // Physical ABI component CF
 };
 
 struct CommandLineOptionResult {
@@ -1014,19 +1004,50 @@ struct ResourceLoadResult {
     bool failed; // Physical ABI component CF
 };
 
-struct ArmyRegistryIdEaxCf5_571ca0 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct CursorFrameResult {
+    uint32_t errorCode; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct ArmyRegistryIdEaxCf5_5719f0 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct DisplayModeResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct ArmyRegistryEaxCf5_51b740 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FramebufferCaptureResult {
+    struct GraphicsCapturedTextureSourceAsset *capture; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+};
+
+struct PcmVoiceSetResult {
+    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+};
+
+struct SampleVoiceSetResult {
+    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+};
+
+struct SoundPlayResult {
+    struct IDirectSoundBuffer *soundBuffer; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+};
+
+struct TextureSizeResult {
+    uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
+    uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
+    bool failed; // Carry/status: false on success; true on failure
+};
+
+struct TextureSourceLoadResult {
+    struct GraphicsTextureSourceAsset *textureSource; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+};
+
+struct ArmyAssetIdSearchResult {
+    uint32_t armyAssetId; // Physical ABI component EAX
+    bool notFound; // Physical ABI component CF
 };
 
 struct Win32FileReadResult {
@@ -1049,9 +1070,17 @@ struct NetworkReceiveResult {
     bool failed; // Physical ABI component CF
 };
 
-struct FixedMathVectorAnglesRegs8 {
-    uint32_t ecx; // Physical ABI component ECX
-    uint32_t edx; // Physical ABI component EDX
+struct FixedVectorAngles {
+    uint32_t azimuthAngle; // Physical ABI component ECX
+    uint32_t elevationAngle; // Physical ABI component EDX
+};
+
+/* The angle pair of FixedMath_VectorToAnglesVec3Regs, which returns them in the opposite
+   order to FixedVectorAngles (elevation first). */
+typedef struct FixedElevationAzimuth FixedElevationAzimuth;
+struct FixedElevationAzimuth {
+    uint32_t elevationAngle; 
+    uint32_t azimuthAngle; 
 };
 
 struct NetworkOpenBindResult {
@@ -1074,21 +1103,6 @@ struct RichTextCopyResult {
     bool overflowed; // Physical ABI component CF
 };
 
-struct ArmyRegistryIdEaxCf5_571a60 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-
-struct ArmyRegistryIdEaxCf5_571d40 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-
-struct ArmyRegistryIdEaxCf5_571b00 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-
 struct FileSystemSizeResult {
     uint32_t sizeOrError; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
@@ -1109,19 +1123,14 @@ struct NetworkSendResult {
     bool failed; // Physical ABI component CF
 };
 
-struct ArmyMetric6CDefinitionC4Regs8 {
-    uint32_t ebx; // Physical ABI component EBX
-    uint32_t ecx; // Physical ABI component ECX
+struct ArmySegmentMeter {
+    uint32_t filledSegments; // Physical ABI component EBX
+    uint32_t totalSegments; // Physical ABI component ECX
 };
 
 struct ArmyCollisionResult {
     uint32_t blockingArmy; // Physical ABI component EAX
     bool blocked; // Physical ABI component CF
-};
-
-struct ArmyRegistryIdEaxCf5_571c30 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
 };
 
 struct FileSystemWriteResult {
@@ -1144,27 +1153,17 @@ struct PckCodecResult {
     bool failed; // Physical ABI component CF
 };
 
-struct FieldGridNearestPointRegsCf13 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ecx; // Physical ABI component ECX
-    uint32_t edx; // Physical ABI component EDX
-    bool carry; // Physical ABI component CF
+struct TerrainPointResult {
+    uint32_t worldXQ12; // Physical ABI component EAX
+    uint32_t worldYQ12; // Physical ABI component ECX
+    uint32_t terrainHeightQ12; // Physical ABI component EDX
+    bool outOfBounds; // Physical ABI component CF
 };
 
-struct ArmyRegistryIdEaxCf5_571cf0 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-
-struct ModelLocalPointRegs12 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ecx; // Physical ABI component ECX
-    uint32_t edx; // Physical ABI component EDX
-};
-
-struct ArmyRegistryIdEaxCf5_571ab0 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ModelWorldPoint {
+    uint32_t xQ12; // Physical ABI component EAX
+    uint32_t yQ12; // Physical ABI component ECX
+    uint32_t zQ12; // Physical ABI component EDX
 };
 
 struct PackageDecodeResult {
@@ -1182,10 +1181,10 @@ struct Win32FileWriteResult {
     bool failed; // Physical ABI component CF
 };
 
-struct FixedDirectionXyzRegs12 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ecx; // Physical ABI component ECX
-    uint32_t edx; // Physical ABI component EDX
+struct FixedDirection {
+    uint32_t x; // Physical ABI component EAX
+    uint32_t y; // Physical ABI component ECX
+    uint32_t z; // Physical ABI component EDX
 };
 
 struct MailboxReceiveResult {
@@ -1207,49 +1206,6 @@ struct PackageEntryLookupResult {
 
 struct NetworkSetSessionResult {
     uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-
-struct ArmyRegistryIdEaxCf5_571c50 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-
-struct ArmyRegistryIdEaxCf5_571a10 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-};
-struct DisplayModeResult {
-    uint32_t valueOrError; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct CursorFrameResult {
-    uint32_t errorCode; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct TextureSizeResult {
-    uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
-    uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
-    bool failed; // Carry/status: false on success; true on failure
-};
-struct FramebufferCaptureResult {
-    struct GraphicsCapturedTextureSourceAsset *capture; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct TextureSourceLoadResult {
-    struct GraphicsTextureSourceAsset *textureSource; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct SampleVoiceSetResult {
-    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct PcmVoiceSetResult {
-    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
-    bool failed; // Physical ABI component CF
-};
-struct SoundPlayResult {
-    struct IDirectSoundBuffer *soundBuffer; // Physical ABI component EAX
     bool failed; // Physical ABI component CF
 };
 
@@ -10906,9 +10862,9 @@ struct EffectDefinitionResult {
     bool notFound; // CF status
 };
 
-struct CompareFlagsCfZf2 {
-    bool zero; // ZF equality flag
-    bool carry; // CF unsigned-order flag
+struct TextCompareResult {
+    bool equal; // ZF equality flag
+    bool less; // CF unsigned-order flag
 };
 
 struct WorldVector1EaxEcxEdx12 {
@@ -11123,6 +11079,39 @@ struct TerrainRayTriangleResult {
     bool missed; // CF status
 };
 
+/* Result of UiPageStack_ActivePageNotInListCf: the active page's index in the stack (or the page
+   count), notFound when the active child is not one of the stack's pages. */
+typedef struct PageStackSearchResult PageStackSearchResult;
+struct PageStackSearchResult {
+    uint32_t pageIndex; 
+    bool notFound; 
+};
+
+/* Result of ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf: distance to the hit, missed when
+   neither the node nor a child was hit (the distance is then meaningless). */
+typedef struct ModelHitTestResult ModelHitTestResult;
+struct ModelHitTestResult {
+    uint32_t distanceQ12; 
+    bool missed; 
+};
+
+/* Result of RichTextCommandStream_QueryNthCommandFlags: the command's variant (code & 3),
+   endOfStream when the stream has fewer commands. */
+typedef struct RichTextCommandQueryResult RichTextCommandQueryResult;
+struct RichTextCommandQueryResult {
+    uint32_t commandVariant; 
+    bool endOfStream; 
+};
+
+/* Result of ModelMesh_IntersectTriangleRayDistanceCf: hit is set when the ray hits the triangle
+   (the opposite sense to TerrainRayTriangleResult). */
+typedef struct MeshRayTriangleResult MeshRayTriangleResult;
+struct MeshRayTriangleResult {
+    Q12 distanceQ12; 
+    bool hit; 
+};
+
+
 struct DllLoadResult {
     HINSTANCE moduleOrError; // EAX module handle or error-coded value
     bool failed; // CF status
@@ -11225,13 +11214,13 @@ struct GeneratedTextureRenderContextView {
     uint32_t *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
 };
 
-struct GraphicsCursorInputEventRegsCf21 {
-    uint32_t eventCode; // EAX event code when CF clear
+struct CursorEventResult {
+    uint32_t eventType; // EAX event code when CF clear
     enum GraphicsCursorButtonState buttonState; // EBX button state when CF clear
     UiPixelCoordinate pointerX; // ECX X when CF clear
     UiPixelCoordinate pointerY; // EDX Y when CF clear
     UiPointerWheelDelta wheelDelta; // ESI wheel/event payload when CF clear
-    bool carry; // CF set when input queue empty
+    bool queueEmpty; // CF set when input queue empty
 };
 
 struct GraphicsProjectedPointPair {

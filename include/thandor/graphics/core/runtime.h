@@ -22,7 +22,7 @@ CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 /* 0x004168E0 */
-GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void);
+CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputEvent(void);
 
 /* 0x00486430 */
 GraphicsProjectedPointPair __thandor_eax_edx_cf_preserve_ecx
@@ -75,7 +75,7 @@ FixedEulerAnglesEaxEcxEdx12
 GraphicsObject_ExtractTransformEulerAnglesRegs(GraphicsObjectAddress32 graphicsObject);
 
 /* 0x004BD000 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedElevationAzimuth __thandor_preserve_eax
 GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,
           GraphicsObjectAddress32 graphicsObject);

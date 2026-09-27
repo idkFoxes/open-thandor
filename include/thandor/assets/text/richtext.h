@@ -69,7 +69,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream);
 
 /* 0x0041B840 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandQueryResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream);
 
 /* 0x0041B950 */

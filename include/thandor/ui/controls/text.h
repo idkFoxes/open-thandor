@@ -319,7 +319,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control);
 
 /* 0x004BB570 */
-CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
+TextCompareResult __thandor_void_preserve_eax_ecx_edx
 UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x004B5D00 */

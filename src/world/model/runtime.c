@@ -747,7 +747,7 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
   int modelPointRecordsRemaining;
   ModelPackedPointRecord *localPointRecord;
   WorldPositionXYRegisterPairQ12 attachmentWorldPointPairQ12;
-  ModelLocalPointRegs12 launchPointWorld;
+  ModelWorldPoint launchPointWorld;
   AssetRecordByteCount modelPointTableBase;
   
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
@@ -764,9 +764,9 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
                  (ArmyRuntimeSlot *)
                  ((modelNodeRuntime->runtimePayload).armyRuntime)->linkedEntityRuntime,
                  targetWorldZQ12,
-                 (launchPointWorld.ecx - (modelNodeRuntime->worldTransform).translation.y) + targetWorldYQ12,
-                 (launchPointWorld.eax - (modelNodeRuntime->worldTransform).translation.x) + targetWorldXQ12,
-                 launchPointWorld.edx,launchPointWorld.ecx,launchPointWorld.eax,shotDefinition,worldRuntime);
+                 (launchPointWorld.yQ12 - (modelNodeRuntime->worldTransform).translation.y) + targetWorldYQ12,
+                 (launchPointWorld.xQ12 - (modelNodeRuntime->worldTransform).translation.x) + targetWorldXQ12,
+                 launchPointWorld.zQ12,launchPointWorld.yQ12,launchPointWorld.xQ12,shotDefinition,worldRuntime);
     }
     localPointRecord = localPointRecord + 1;
   }

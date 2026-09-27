@@ -130,7 +130,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 
 /* 0x004B4920 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack);
 
 /* 0x004B7970 */

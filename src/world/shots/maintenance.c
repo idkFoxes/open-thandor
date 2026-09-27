@@ -60,7 +60,7 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   FieldGridRegionMask primaryOccupancyMask;
   uint32_t probeOccupancyMask;
   uint64_t mm0PackedValue0;
-  FixedDirectionXyzRegs12 probeOffset;
+  FixedDirection probeOffset;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   uint32_t combinedOccupancyMask;
   ShotRuntimeSlot *shotRuntime;
@@ -77,8 +77,8 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                         (modelNode->modelPayload).worldRotationAngle0,
                         modelNode->renderDepthBiasOrState >> 1);
     probeOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                      (0x1000,probeOffset.ecx + (modelNode->worldTransform).translation.y,
-                       probeOffset.eax + (modelNode->worldTransform).translation.x,
+                      (0x1000,probeOffset.y + (modelNode->worldTransform).translation.y,
+                       probeOffset.x + (modelNode->worldTransform).translation.x,
                        worldRuntime->fieldGrid);
     combinedOccupancyMask = primaryOccupancyMask | probeOccupancyMask;
     probeOffset = FixedMath_DirectionFromAnglesScaledRegs
@@ -86,8 +86,8 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                         (modelNode->modelPayload).worldRotationAngle0,
                         modelNode->renderDepthBiasOrState);
     probeOccupancyMask = TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-                      (0x1000,probeOffset.ecx + (modelNode->worldTransform).translation.y,
-                       probeOffset.eax + (modelNode->worldTransform).translation.x,
+                      (0x1000,probeOffset.y + (modelNode->worldTransform).translation.y,
+                       probeOffset.x + (modelNode->worldTransform).translation.x,
                        worldRuntime->fieldGrid);
     primaryOccupancyMask = probeOccupancyMask | combinedOccupancyMask;
   }
@@ -217,10 +217,10 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   ModelLookupEntryResult emitterLookup;
   ModelRaycastResult armyRaycast;
   TerrainRaycastResult surfaceRaycast;
-  FixedMathVectorAnglesRegs8 targetAngles;
-  ModelLocalPointRegs12 emitterWorldPoint;
+  FixedVectorAngles targetAngles;
+  ModelWorldPoint emitterWorldPoint;
   FixedLengthAnglesEaxEcxEdx12 ballisticAngles;
-  FixedDirectionXyzRegs12 directionOffset;
+  FixedDirection directionOffset;
   EffectDefinition *effectDefinition;
   WorldRuntimeContext *effectWorldRuntime;
   AngleTurn32 rotationAngle;
@@ -269,10 +269,10 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
         effectWorldRuntime = worldRuntime;
         emitterWorldPoint = ModelNodeRuntime_TransformLocalPointRegs
                            (emitterLookup.entry,(ModelRuntimeNode *)modelNode);
-        worldXQ12 = emitterWorldPoint.ecx;
+        worldXQ12 = emitterWorldPoint.yQ12;
         EffectRuntimePool_CreateInstanceFromDefinitionCf
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                   emitterWorldPoint.edx,worldXQ12,emitterWorldPoint.eax,effectDefinition,effectWorldRuntime);
+                   emitterWorldPoint.zQ12,worldXQ12,emitterWorldPoint.xQ12,effectDefinition,effectWorldRuntime);
       }
     }
     if (shotDefinition->trajectoryMode == SHOT_TRAJECTORY_DIRECT_LINE) {
@@ -341,9 +341,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                 (modelNode->modelPayload).worldRotationAngle0,secondaryHitDistance);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                       directionOffset.edx + (modelNode->worldTransform).translation.z,
-                       directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                       directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
+                       directionOffset.z + (modelNode->worldTransform).translation.z,
+                       directionOffset.y + (modelNode->worldTransform).translation.y,
+                       directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
           }
         }
         else {
@@ -380,9 +380,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                         (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
-                         directionOffset.edx + (modelNode->worldTransform).translation.z,
-                         directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                         directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
+                         directionOffset.z + (modelNode->worldTransform).translation.z,
+                         directionOffset.y + (modelNode->worldTransform).translation.y,
+                         directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
             }
             ArmyRuntime_ApplyImpactDamageToRuntimeAndParent(rotationAngle,ownerFactionIndex,workingValue,ownerOrHitArmy);
           }
@@ -406,9 +406,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           EffectRuntimePool_CreateInstanceFromDefinitionCf
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
                      THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 + terrainMaterialIndex)),0,
-                     0x4000,0,directionOffset.edx + (modelNode->worldTransform).translation.z,
-                     directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                     directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
+                     0x4000,0,directionOffset.z + (modelNode->worldTransform).translation.z,
+                     directionOffset.y + (modelNode->worldTransform).translation.y,
+                     directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,effectWorldRuntime);
           shotRuntime = modelNode->shotRuntime;
         }
       }
@@ -481,9 +481,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                                 (modelNode->modelPayload).worldRotationAngle0,frameAccumulatorOrDistance);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
-                       directionOffset.edx + (modelNode->worldTransform).translation.z,
-                       directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                       directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime);
+                       directionOffset.z + (modelNode->worldTransform).translation.z,
+                       directionOffset.y + (modelNode->worldTransform).translation.y,
+                       directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime);
             WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
             (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
             return;
@@ -518,9 +518,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                         (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
-                         directionOffset.edx + (modelNode->worldTransform).translation.z,
-                         directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                         directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime
+                         directionOffset.z + (modelNode->worldTransform).translation.z,
+                         directionOffset.y + (modelNode->worldTransform).translation.y,
+                         directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime
                         );
             }
             WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
@@ -548,9 +548,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           EffectRuntimePool_CreateInstanceFromDefinitionCf
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
                      THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 + terrainMaterialIndex)),0,
-                     0x4000,0,directionOffset.edx + (modelNode->worldTransform).translation.z,
-                     directionOffset.ecx + (modelNode->worldTransform).translation.y,
-                     directionOffset.eax + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime);
+                     0x4000,0,directionOffset.z + (modelNode->worldTransform).translation.z,
+                     directionOffset.y + (modelNode->worldTransform).translation.y,
+                     directionOffset.x + (modelNode->worldTransform).translation.x,effectDefinition,worldRuntime);
           WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode);
           return;
         }
@@ -562,20 +562,20 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                             shotRuntime->elevationOffsetAngle16,
                             (modelNode->modelPayload).worldRotationAngle0,
                             shotRuntime->launchSpeedQ12);
-        trajectoryStepYQ12 = directionOffset.ecx;
+        trajectoryStepYQ12 = directionOffset.y;
         nodeShadingRecord = modelNode->shadingRecord;
         translationPtr = &(modelNode->worldTransform).translation;
-        translationPtr->x = translationPtr->x + directionOffset.eax;
+        translationPtr->x = translationPtr->x + directionOffset.x;
         if (nodeShadingRecord != (GraphicsShadingRuntimeRecord *)0x0) {
-          nodeShadingRecord->worldXQ12 = nodeShadingRecord->worldXQ12 + directionOffset.eax;
+          nodeShadingRecord->worldXQ12 = nodeShadingRecord->worldXQ12 + directionOffset.x;
           nodeShadingRecord->worldYQ12 = nodeShadingRecord->worldYQ12 + trajectoryStepYQ12;
-          nodeShadingRecord->worldZQ12 = nodeShadingRecord->worldZQ12 + directionOffset.edx;
+          nodeShadingRecord->worldZQ12 = nodeShadingRecord->worldZQ12 + directionOffset.z;
         }
         translationAxisPtr = &(modelNode->worldTransform).translation.y;
         *translationAxisPtr = *translationAxisPtr + trajectoryStepYQ12;
         shotDefinition = (shotRuntime->definitionOrSavedId).definition;
         translationAxisPtr = &(modelNode->worldTransform).translation.z;
-        *translationAxisPtr = *translationAxisPtr + directionOffset.edx;
+        *translationAxisPtr = *translationAxisPtr + directionOffset.z;
         targetStateRecord = (shotRuntime->runtimeStateOrSavedOffset).runtimeStatePointer;
         if ((shotDefinition->guidanceTurnLimitAngle16 != 0) && (targetStateRecord != (int *)0x0)) {
           workingValue = targetStateRecord[1];
@@ -591,10 +591,10 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                               *(int *)(workingValue + 0x94) -
                               (modelNodeRuntime->worldTransform).translation.x);
           elevationTurnDeltaAngle16 =
-               targetAngles.edx - (modelNodeRuntime->modelPayload).worldRotationAngle1;
+               targetAngles.elevationAngle - (modelNodeRuntime->modelPayload).worldRotationAngle1;
           workingValue = shotDefinition->guidanceTurnLimitAngle16;
           headingTurnDeltaAngle16 =
-               (int)((targetAngles.ecx - (modelNodeRuntime->modelPayload).worldRotationAngle0) * 0x10000)
+               (int)((targetAngles.azimuthAngle - (modelNodeRuntime->modelPayload).worldRotationAngle0) * 0x10000)
                >> 0x10;
           if (workingValue < elevationTurnDeltaAngle16) {
             elevationTurnDeltaAngle16 = workingValue;

@@ -136,7 +136,7 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntimeClass_UpdateTimedTargetProje
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntimeClass_UpdatePositionedSoundsVariantB (WorldRuntimeContext *worldRuntime, ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime);
 
 /* 0x00526FE0 */
-ArmyMetric6CDefinitionC4Regs8 __thandor_regs_ebx_ecx_preserve_eax_edx
+ArmySegmentMeter __thandor_regs_ebx_ecx_preserve_eax_edx
 ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00527150 */

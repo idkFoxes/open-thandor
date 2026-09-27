@@ -285,7 +285,7 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
 
 {
   FixedDirectionXZEdxEax8 positionOffsetXZQ12;
-  FixedDirectionXyzRegs12 directionOffset;
+  FixedDirection directionOffset;
   
   (runtime->motion).targetPositionXQ12 = originX;
   (runtime->motion).targetPositionYQ12 = originY;
@@ -295,9 +295,9 @@ WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
   (runtime->motion).targetDistanceQ12 = distance;
   (runtime->motion).committedDistanceQ12 = distance;
   directionOffset = FixedMath_DirectionFromAnglesScaledRegs(-pitchAngle,headingAngle ^ 0x8000,distance);
-  (runtime->motion).positionXQ12 = directionOffset.eax + (runtime->motion).targetPositionXQ12;
-  (runtime->motion).positionYQ12 = directionOffset.ecx + (runtime->motion).targetPositionYQ12;
-  (runtime->motion).positionZQ12 = directionOffset.edx + (runtime->motion).targetPositionZQ12;
+  (runtime->motion).positionXQ12 = directionOffset.x + (runtime->motion).targetPositionXQ12;
+  (runtime->motion).positionYQ12 = directionOffset.y + (runtime->motion).targetPositionYQ12;
+  (runtime->motion).positionZQ12 = directionOffset.z + (runtime->motion).targetPositionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(runtime);
   return;
 }
@@ -1187,7 +1187,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
   FixedSinCosEdxEax8 groundOffsetXY;
   TerrainRaycastResult raycastResult;
   TerrainRaycastResult secondaryRaycastResult;
-  FixedDirectionXyzRegs12 endpointOffset;
+  FixedDirection endpointOffset;
   
   if ((worldRuntime->runtimeFlags & 0x1000000) == 0) {
     rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
@@ -1235,9 +1235,9 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
   (worldRuntime->motion).targetDistanceQ12 = scale;
   endpointOffset = FixedMath_DirectionFromAnglesScaledRegs
                     ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,scale);
-  (worldRuntime->motion).targetPositionXQ12 = endpointOffset.eax + (worldRuntime->motion).positionXQ12;
-  (worldRuntime->motion).targetPositionYQ12 = endpointOffset.ecx + (worldRuntime->motion).positionYQ12;
-  (worldRuntime->motion).targetPositionZQ12 = endpointOffset.edx + (worldRuntime->motion).positionZQ12;
+  (worldRuntime->motion).targetPositionXQ12 = endpointOffset.x + (worldRuntime->motion).positionXQ12;
+  (worldRuntime->motion).targetPositionYQ12 = endpointOffset.y + (worldRuntime->motion).positionYQ12;
+  (worldRuntime->motion).targetPositionZQ12 = endpointOffset.z + (worldRuntime->motion).positionZQ12;
   WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
   return;
 }

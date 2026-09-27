@@ -496,7 +496,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
   RichTextExtentRegs textExtent;
   TextResolveResult resolvedText;
   TextResolveResult resolvedName;
-  ArmyRegistryEaxCf5_51b6d0 armyRecord;
+  ArmyAssetLookupResult armyRecord;
   SelectableGroupNodeResult selectedArea;
   uint16_t *formatBuffer;
   uint16_t *formattedText;
@@ -521,7 +521,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
     armyRecord = ArmyAssetRegistry_FindByIdCf((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
-         (GraphicsTextureSourceAsset *)armyRecord.eax[1].rootNodeOffsetOrPointer;
+         (GraphicsTextureSourceAsset *)armyRecord.recordOrError[1].rootNodeOffsetOrPointer;
     UiNodeList_SuppressActionId(0x1014,&inGameRoot->base);
     UiNodeList_SuppressActionId(0x1015,&inGameRoot->base);
     UiNodeList_SuppressActionId(0x1016,&inGameRoot->base);

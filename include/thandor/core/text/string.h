@@ -22,7 +22,7 @@ WideNumber_FormatUtf16
           WideNumberSignedValue32 value,uint16_t *destination);
 
 /* 0x00403010 */
-CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
+TextCompareResult __thandor_void_preserve_eax_ecx_edx
 Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x0041BAA0 */

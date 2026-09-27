@@ -990,7 +990,7 @@ ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   int nodeWorldY;
   int nodeWorldZ;
   GraphicsFixedMatrix3x4 *transformA;
-  FixedMathVectorAnglesRegs8 viewAngles;
+  FixedVectorAngles viewAngles;
   
   nodeWorldX = (modelNodeRuntime->worldTransform).translation.x;
   nodeWorldY = (modelNodeRuntime->worldTransform).translation.y;
@@ -1002,7 +1002,7 @@ ModelRender_PrepareViewDirections(ModelRuntimeNode *modelNodeRuntime)
   viewAngles = FixedMath_VectorToAngles3Regs
                     (nodeWorldZ - g_ViewOriginFixed.z,nodeWorldY - g_ViewOriginFixed.y,
                      nodeWorldX - g_ViewOriginFixed.x);
-  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,viewAngles.edx,viewAngles.ecx);
+  FixedMath_WriteDirectionQ28((GraphicsFixedVec3 *)&g_ModelViewDirectionWorld,viewAngles.elevationAngle,viewAngles.azimuthAngle);
   FixedTransform_ApplyTransposeDirection
             ((GraphicsFixedVec3 *)&g_ModelViewDirectionLocal,transformA,
              (GraphicsFixedVec3 *)&g_ModelViewDirectionWorld);

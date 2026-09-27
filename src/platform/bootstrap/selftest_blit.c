@@ -233,7 +233,7 @@ static TextureSizeResult BlitMaskSizeForC(uint32_t reserved, GraphicsTextureSour
     (void)asset;
     size.logicalWidthPixels = s_BlitMaskWidth;
     size.logicalHeightPixels = s_BlitMaskHeight;
-    size.carry = false;
+    size.failed = false;
     return size;
 }
 
@@ -258,7 +258,7 @@ static unsigned BlitCallOriginal(void *entry, const uint32_t *args, int count)
         mov ecx, count
         mov esi, args
     push_next:
-        push uint32_t ptr [esi + ecx * 4 - 4]
+        push dword ptr [esi + ecx * 4 - 4]
         dec ecx
         jnz push_next
         cld

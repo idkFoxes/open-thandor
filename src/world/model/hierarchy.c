@@ -231,14 +231,14 @@ ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 
 {
   uint32_t angle0;
-  FixedMathVectorAnglesRegs8 viewAngles;
+  FixedVectorAngles viewAngles;
   
   viewAngles = FixedMath_VectorToAngles3Regs
                     ((modelNodeRuntime->worldTransform).translation.z - g_ViewOriginFixed.z,
                      (modelNodeRuntime->worldTransform).translation.y - g_ViewOriginFixed.y,
                      (modelNodeRuntime->worldTransform).translation.x - g_ViewOriginFixed.x);
-  angle0 = viewAngles.ecx + 0x8000 & 0xffff;
-  FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.edx,angle0);
+  angle0 = viewAngles.azimuthAngle + 0x8000 & 0xffff;
+  FixedTransform_BuildRotationBasis(&modelNodeRuntime->worldTransform,angle0,-viewAngles.elevationAngle,angle0);
   return;
 }
 
@@ -318,19 +318,19 @@ ModelNodeRuntime_UpdateDepthBinMasks
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed].
 */
-ModelLocalPointRegs12
+ModelWorldPoint
 ModelNodeRuntime_TransformLocalPointRegs
           (ModelPackedPointRecord *localPointRecord,ModelRuntimeNode *modelNodeRuntime)
 
 {
-  ModelLocalPointRegs12 transformedPoint;
+  ModelWorldPoint transformedPoint;
   
   FixedTransform_ApplyPoint
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,&localPointRecord->localPosition,
              &modelNodeRuntime->worldTransform);
-  transformedPoint.ecx = g_ModelTransformOutputY;
-  transformedPoint.eax = g_ModelTransformOutputX;
-  transformedPoint.edx = g_ModelTransformOutputZ;
+  transformedPoint.yQ12 = g_ModelTransformOutputY;
+  transformedPoint.xQ12 = g_ModelTransformOutputX;
+  transformedPoint.zQ12 = g_ModelTransformOutputZ;
   return transformedPoint;
 }
 
@@ -351,7 +351,7 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
 
 {
   uint32_t negatedAngle2;
-  FixedMathVectorAnglesRegs8 directionAngles;
+  FixedVectorAngles directionAngles;
   FixedVectorEaxEcxEdx12 rotatedDirection;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
 
@@ -363,8 +363,8 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
   ;
   directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
   relativeAngles.relativeYawAngle =
-       directionAngles.ecx + (modelNodeRuntime->modelPayload).localRotationAngle2 & 0xffff;
-  relativeAngles.relativePitchAngle = directionAngles.edx;
+       directionAngles.azimuthAngle + (modelNodeRuntime->modelPayload).localRotationAngle2 & 0xffff;
+  relativeAngles.relativePitchAngle = directionAngles.elevationAngle;
   return relativeAngles;
 }
 
@@ -376,7 +376,7 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
    Graphics_ProjectViewPoint [graphics/core/runtime], GraphicsProjectedPoint_IsInsideTriangleCf
    [graphics/render/projection], FixedMath_Length3 [core/math/fixed].
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context)
@@ -385,15 +385,15 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   ModelResourceHitTestAndRenderView210 *resourceView;
   GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
-  StatusResult missResult;
+  ModelHitTestResult missResult;
   uint8_t clippedCornerMask;
   GraphicsFixedMatrix3x4 *transformA;
   uint32_t childrenRemaining;
   int childByteOffset;
   bool cornerVisibleOrHit;
   GraphicsProjectedPointPair projectedCorner;
-  StatusResult boundsCenterHit;
-  StatusResult hitOrChildResult;
+  ModelHitTestResult boundsCenterHit;
+  ModelHitTestResult hitOrChildResult;
   
   resourceView = (modelNode->modelPayload).modelResource;
   transformA = &modelNode->worldTransform;
@@ -567,7 +567,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)))))))) {
       if ((context->contextFlags & 0x80000) != 0) {
-        boundsCenterHit.valueOrError =
+        boundsCenterHit.distanceQ12 =
              FixedMath_Length3(((resourceView->localBoundsZ0Q12 + resourceView->localBoundsZ1Q12 >> 1) +
                                (modelNode->worldTransform).translation.z) -
                                context->hitReferenceWorldZQ12,
@@ -577,17 +577,17 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                                ((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12 >> 1) +
                                (modelNode->worldTransform).translation.x) -
                                context->hitReferenceWorldXQ12);
-        boundsCenterHit.failed = false;
+        boundsCenterHit.missed = false;
         return boundsCenterHit;
       }
-      hitOrChildResult.valueOrError =
+      hitOrChildResult.distanceQ12 =
            FixedMath_Length3((modelNode->worldTransform).translation.z -
                              context->hitReferenceWorldZQ12,
                              (modelNode->worldTransform).translation.y -
                              context->hitReferenceWorldYQ12,
                              (modelNode->worldTransform).translation.x -
                              context->hitReferenceWorldXQ12);
-      hitOrChildResult.failed = false;
+      hitOrChildResult.missed = false;
       return hitOrChildResult;
     }
   }
@@ -595,16 +595,16 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   childByteOffset = 0;
   do {
     if (childrenRemaining == 0) {
-      missResult.failed = true;
-      missResult.valueOrError = (uint32_t)transformA;
+      missResult.missed = true;
+      missResult.distanceQ12 = (uint32_t)transformA;
       return missResult;
     }
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
     if (childNode != (ModelRuntimeNode *)0x0) {
       hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                          (pointerY,pointerX,childNode,context);
-      transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.valueOrError;
-      if (!hitOrChildResult.failed) {
+      transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.distanceQ12;
+      if (!hitOrChildResult.missed) {
         return hitOrChildResult;
       }
     }
@@ -642,7 +642,7 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
   ModelRuntimeNode *nearestModelNode;
-  TerrainRayTriangleResult triangleHit;
+  MeshRayTriangleResult triangleHit;
   ModelRaycastResult childOrNearestHit;
   ModelRaycastResult missResult;
   
@@ -711,7 +711,7 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
           for (trianglesRemaining = *triangleCountField; trianglesRemaining != (GraphicsFixedVec3 *)0x0;
               trianglesRemaining = (GraphicsFixedVec3 *)((int)&trianglesRemaining[-1].z + 3)) {
             triangleHit = ModelMesh_IntersectTriangleRayDistanceCf(triangle);
-            if ((triangleHit.missed) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
+            if ((triangleHit.hit) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
               radiusNodeXOrNearest = triangleHit.distanceQ12;
             }
             triangle = triangle + 1;

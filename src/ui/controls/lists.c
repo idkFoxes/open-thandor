@@ -2008,13 +2008,13 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
    Ownership: ui/controls/lists.
    Purpose: CF=0 when base.firstChild matches an entry in the page array; CF=1 when the active child is absent.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
 
 {
   uint32_t pageIndex;
   bool notFound;
-  StatusResult result;
+  PageStackSearchResult result;
   
   /* Page 0 is always compared, even when pageCount is 0 (do/while as in the original). */
   pageIndex = 0;
@@ -2023,8 +2023,8 @@ UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
     if (!notFound) break;
     pageIndex = pageIndex + 1;
   } while (pageIndex < stack->pageCount);
-  result.failed = notFound;
-  result.valueOrError = pageIndex;
+  result.notFound = notFound;
+  result.pageIndex = pageIndex;
   return result;
 }
 

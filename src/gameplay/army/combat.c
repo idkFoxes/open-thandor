@@ -666,7 +666,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   uint32_t worldZQ12;
   AngleTurn32 orientationAngle0;
   ModelLookupEntryResult lookupResult;
-  ModelLocalPointRegs12 transformedPoint;
+  ModelWorldPoint transformedPoint;
   EffectDefinition *effectDefinition;
   
   if ((armyRuntime->runtimeFlags & 0x210) != 0) {
@@ -709,9 +709,9 @@ ArmyRuntime_EmitDamageThresholdEffect
   }
   else {
     transformedPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
-    worldZQ12 = transformedPoint.edx;
-    worldXQ12 = transformedPoint.ecx;
-    randomOrPointX = transformedPoint.eax;
+    worldZQ12 = transformedPoint.zQ12;
+    worldXQ12 = transformedPoint.yQ12;
+    randomOrPointX = transformedPoint.xQ12;
     armyRuntime->selectionMetric4 = armyRuntime->selectionMetric4 + 1;
   }
   effectDefinition = *(EffectDefinition **)(definitionOrRandom + 0x254);

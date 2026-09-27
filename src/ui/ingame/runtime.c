@@ -37,16 +37,16 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   UiCommandModeIndex materialIndex;
   int remainingSteps;
   uint32_t *dispatchRecord;
-  StatusResult pageNotInListResult;
-  ArmyRegistryIdEaxCf5_571b00 previousModeGArmy;
-  ArmyRegistryIdEaxCf5_571d40 previousMode4Army;
-  ArmyRegistryIdEaxCf5_571ab0 nextModeGArmy;
-  ArmyRegistryIdEaxCf5_571cf0 nextMode4Army;
-  ArmyRegistryIdEaxCf5_571a10 steppedForwardModeGArmy;
-  ArmyRegistryIdEaxCf5_571c50 steppedForwardMode4Army;
-  ArmyRegistryIdEaxCf5_571a60 steppedBackwardModeGArmy;
-  ArmyRegistryIdEaxCf5_571ca0 steppedBackwardMode4Army;
-  ArmyRegistryEaxCf5_51b6d0 foundArmyAsset;
+  PageStackSearchResult pageNotInListResult;
+  ArmyAssetIdSearchResult previousModeGArmy;
+  ArmyAssetIdSearchResult previousMode4Army;
+  ArmyAssetIdSearchResult nextModeGArmy;
+  ArmyAssetIdSearchResult nextMode4Army;
+  ArmyAssetIdSearchResult steppedForwardModeGArmy;
+  ArmyAssetIdSearchResult steppedForwardMode4Army;
+  ArmyAssetIdSearchResult steppedBackwardModeGArmy;
+  ArmyAssetIdSearchResult steppedBackwardMode4Army;
+  ArmyAssetLookupResult foundArmyAsset;
   FatalErrorCheckResult hoverRecordResult;
   FramebufferCaptureResult capturedFramebuffer;
   
@@ -68,7 +68,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   case 0x56e5e0:
     stack = (struct UiNodeVtable * *)INGAME_UI(uiRoot,sidePanelStack);
     pageNotInListResult = UiPageStack_ActivePageNotInListCf((UiPageStackControl *)stack);
-    if (pageNotInListResult.valueOrError == 0) {
+    if (pageNotInListResult.pageIndex == 0) {
       UiPageStack_SetActiveIndex(1,(UiPageStackControl *)stack);
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,resourceBarModeStack));
       UiPageStack_SetActiveIndex(2,(UiPageStackControl *)INGAME_UI(uiRoot,gamePanelsModeStack));
@@ -146,19 +146,19 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       else if (g_UiCommandModeG == 3) {
         previousModeGArmy = ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf
                            (g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = previousModeGArmy.eax;
+        g_UiCommandModeGArmyAssetId = previousModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
         previousMode4Army = ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf
                            (g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = previousMode4Army.eax;
+        g_UiCommandMode4ArmyAssetId = previousMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
@@ -202,18 +202,18 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       else if (g_UiCommandModeG == 3) {
         nextModeGArmy = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(g_UiCommandModeGArmyAssetId)
         ;
-        g_UiCommandModeGArmyAssetId = nextModeGArmy.eax;
+        g_UiCommandModeGArmyAssetId = nextModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
         nextMode4Army = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = nextMode4Army.eax;
+        g_UiCommandMode4ArmyAssetId = nextMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
@@ -258,18 +258,18 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       }
       else if (g_UiCommandModeG == 3) {
         steppedForwardModeGArmy = ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = steppedForwardModeGArmy.eax;
+        g_UiCommandModeGArmyAssetId = steppedForwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
         steppedForwardMode4Army = ArmyAssetRegistry_StepForwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.eax;
+        g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
@@ -314,18 +314,18 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       }
       else if (g_UiCommandModeG == 3) {
         steppedBackwardModeGArmy = ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
-        g_UiCommandModeGArmyAssetId = steppedBackwardModeGArmy.eax;
+        g_UiCommandModeGArmyAssetId = steppedBackwardModeGArmy.armyAssetId;
         modeGPreviewTexture = (UiNodeVtable *)
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
       else if (g_UiCommandModeG == 4) {
         steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
-        g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.eax;
+        g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.armyAssetId;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
         INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
@@ -433,7 +433,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -447,7 +447,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -461,7 +461,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -3037,14 +3037,14 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
     InGameTargetingContext_CancelAndRestoreState((InGameTargetingRootTraversalView9E60 *)(rt + 0x90cc));
     break;
   case 0x567e40: { /* camera to the last event position */
-    FieldGridNearestPointRegsCf13 point;
+    TerrainPointResult point;
     if ((RT_DWORD(0x9428) == 0) || (RT_DWORD(0x942c) == 0)) {
       break;
     }
     point = FieldGrid_GetNearestTerrainPoint(RT_DWORD(0x942c),RT_DWORD(0x9428),
                                              *(FieldGridAsset **)(rt + 0x54));
     WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-              (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x8c),point.edx,RT_DWORD(0x942c),
+              (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x8c),point.terrainHeightQ12,RT_DWORD(0x942c),
                RT_DWORD(0x9428),inGameRuntime);
     break;
   }
@@ -3108,7 +3108,7 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
     if (commandsBlocked || ((RT_DWORD(0x96e4) & 8) != 0)) {
       break;
     }
-    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(rt + 0x957c)).valueOrError != 1) {
+    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(rt + 0x957c)).pageIndex != 1) {
       break;
     }
     if (((*(uint32_t *)(button + 0x4c) & 0x200) != 0) && (*(uint32_t *)(button + 0x70) != 0)) {
@@ -3489,7 +3489,7 @@ InGameMusic_ComputeTrackSuitabilityScore
   ArmyAssetRuntimeSemanticView80 *armyDefinition;
   int modelRuntimeOrBonus;
   int registryWeight;
-  ArmyRegistryEaxCf5_51b6d0 foundArmyAsset;
+  ArmyAssetLookupResult foundArmyAsset;
   int flag10BonusSum;
   int class74Sum;
   int weightedClass78Sum;
@@ -3508,8 +3508,8 @@ InGameMusic_ComputeTrackSuitabilityScore
       if ((ownerListNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeOrBonus = *(int *)((int)ownerListNode->runtimePayload + 8), activeFactionIndex == *(int *)(modelRuntimeOrBonus + 0xc))) {
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(modelRuntimeOrBonus + 0xa0));
-        armyDefinition = (ArmyAssetRuntimeSemanticView80 *)foundArmyAsset.eax;
-        if (!foundArmyAsset.carry) {
+        armyDefinition = (ArmyAssetRuntimeSemanticView80 *)foundArmyAsset.recordOrError;
+        if (!foundArmyAsset.notFound) {
           registryWeight = 1;
           if ((*(uint32_t *)(modelRuntimeOrBonus + 0x2c) & 1) != 0) {
             registryWeight = 3;
@@ -3745,7 +3745,7 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
   UiPageIndex pageIndex;
   GameEntityRuntime *firstSelectedEntity;
   CommandPayloadDword04 modelOffset;
-  StatusResult pageNotInListResult;
+  PageStackSearchResult pageNotInListResult;
   
   ancestorParent = source->parent;
   while (ancestorParent != (UiNodeBase *)0xffffffff) {
@@ -3756,7 +3756,7 @@ InGameSelectionPage_ToggleAndRefreshPage2(UiNodeBase *source)
     INGAME_UI(source,worldView)->nodeFlags = INGAME_UI(source,worldView)->nodeFlags & 0xfffffff7;
     gameWindowStack = (UiPageStackControl *)INGAME_UI(source,gameWindowPageStack);
     pageNotInListResult = UiPageStack_ActivePageNotInListCf(gameWindowStack);
-    if (pageNotInListResult.valueOrError == 2) {
+    if (pageNotInListResult.pageIndex == 2) {
       pageIndex = 0;
     }
     else {
@@ -4113,7 +4113,7 @@ InGameUiCommand_BeginInteractionByMode
   uint32_t snappedWorldY;
   uint32_t worldCoordinateTerm;
   int cellY;
-  FieldGridNearestPointRegsCf13 nearestTerrainPoint;
+  TerrainPointResult nearestTerrainPoint;
   
   if ((armyRuntimeUnderPointer != (ArmyRuntimeSlot *)0x0) &&
      (armyRuntimeUnderPointer->runtimeStateA4 != 0)) {
@@ -4131,8 +4131,8 @@ InGameUiCommand_BeginInteractionByMode
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
       g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       g_UiCommandDragAnchorWorldXQ12 =
            (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
@@ -4155,8 +4155,8 @@ InGameUiCommand_BeginInteractionByMode
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
       g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       g_UiCommandDragAnchorWorldXQ12 =
            (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
@@ -4187,8 +4187,8 @@ InGameUiCommand_BeginInteractionByMode
           return;
         }
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
         snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
         worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
                 0xfffff000;
@@ -4214,8 +4214,8 @@ InGameUiCommand_BeginInteractionByMode
       }
       if (pointerRegionCode != 0x7fffffff) {
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
         snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
         worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
                 0xfffff000;
@@ -4239,8 +4239,8 @@ InGameUiCommand_BeginInteractionByMode
         g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
         g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
         worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
         g_UiCommandDragAnchorWorldXQ12 =
              (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
@@ -4256,8 +4256,8 @@ InGameUiCommand_BeginInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       mapFieldGrid = mapControl->fieldGrid;
       cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff
@@ -4288,8 +4288,8 @@ InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     mapFieldGrid = mapControl->fieldGrid;
     cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
@@ -4403,8 +4403,8 @@ InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     mapFieldGrid = mapControl->fieldGrid;
     cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
@@ -4446,8 +4446,8 @@ InGameUiCommand_BeginInteractionByMode
       }
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     g_UiCommandSelectionAnchorWorldXQ12 =
          ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm;
@@ -4497,7 +4497,7 @@ InGameUiCommand_UpdateInteractionByMode
   WorldOwnerListNode100 *runtimeNode;
   CommandPayloadDword04 *tripletEntry;
   bool conditionResult;
-  FieldGridNearestPointRegsCf13 nearestTerrainPoint;
+  TerrainPointResult nearestTerrainPoint;
   GameEntityRuntime *entry;
   
   if ((mapControl->runtimeFlags & 0x80) != 0) {
@@ -4628,8 +4628,8 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
@@ -4659,8 +4659,8 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
@@ -4706,8 +4706,8 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
       columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
@@ -4726,8 +4726,8 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
             0xfffff000;
@@ -4787,8 +4787,8 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
             0xfffff000;
@@ -4805,8 +4805,8 @@ InGameUiCommand_UpdateInteractionByMode
   }
   if ((pointerRegionCode != 0x7fffffff) && (g_UiCommandSelectionAnchorWorldXQ12 != 0x7fffffff)) {
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.worldXQ12 * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.worldYQ12 * -0x20c8cc;
     encodedValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     boundWorldY = ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - encodedValue;
     workValue = encodedValue * 2;
@@ -5017,9 +5017,9 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
   TerrainDirectionRecord *directionRecord;
   FieldGridCell *fieldCellCursor;
   ArmyAssetRecordPrefix **registrySlot;
-  StatusResult pageNotInListResult;
-  ArmyRegistryIdEaxCf5_5719f0 normalizedModeGArmy;
-  ArmyRegistryIdEaxCf5_571c30 normalizedMode4Army;
+  PageStackSearchResult pageNotInListResult;
+  ArmyAssetIdSearchResult normalizedModeGArmy;
+  ArmyAssetIdSearchResult normalizedMode4Army;
   FieldGridAsset *worldFieldGrid;
   
   modeOrValue = g_UiCommandModeG;
@@ -5039,7 +5039,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
                 (g_UiCommandModeGTertiaryPageIndices[modeOrValue],
                  (UiPageStackControl *)(root->opaqueA06C_C3E3 + 0x1130));
       pageNotInListResult = UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
-      if (pageNotInListResult.valueOrError == 0) {
+      if (pageNotInListResult.pageIndex == 0) {
         UiPageStack_SetActiveIndex(1,&root->optionalUiPageStack4530);
         UiPageStack_SetActiveIndex(1,&root->optionalUiPageStack4644);
       }
@@ -5088,11 +5088,11 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       *(GraphicsTextureSourceAsset **)(root->opaque9B58_9E3F + 0xb8) = textureSourceValue;
       UiCommandMatrix_SelectIndex(g_UiCommandAbsoluteSelectionIndex,(UiNodeBase *)root);
       normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
-      g_UiCommandModeGArmyAssetId = normalizedModeGArmy.eax;
+      g_UiCommandModeGArmyAssetId = normalizedModeGArmy.armyAssetId;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
       *(uint32_t *)(root->opaque9B58_9E3F + 0x1cc) = modeOrValue;
       normalizedMode4Army = ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
-      g_UiCommandMode4ArmyAssetId = normalizedMode4Army.eax;
+      g_UiCommandMode4ArmyAssetId = normalizedMode4Army.armyAssetId;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
       *(uint32_t *)(root->opaque9B58_9E3F + 0x284) = modeOrValue;
       FieldGrid_SetOccupancyMaskByteBit0AllCells
@@ -5132,7 +5132,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)root->opaque9EE0_9FAB);
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root->opaqueA06C_C3E3 + 0x1130));
     pageNotInListResult = UiPageStack_ActivePageNotInListCf(&root->optionalUiPageStack40AC);
-    if (pageNotInListResult.valueOrError == 0) {
+    if (pageNotInListResult.pageIndex == 0) {
       UiPageStack_SetActiveIndex(0,&root->optionalUiPageStack4530);
       UiPageStack_SetActiveIndex(0,&root->optionalUiPageStack4644);
     }
@@ -5457,7 +5457,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
   GameEntityRuntime **entitySlot;
   uint16_t *destinationText;
   bool conditionResult;
-  ArmyRegistryEaxCf5_51b6d0 foundArmyAsset;
+  ArmyAssetLookupResult foundArmyAsset;
   FatalErrorCheckResult armyAssetResult;
   TextResolveResult resolvedText;
   ModelDefinitionResult unlockedDefinition;
@@ -5513,7 +5513,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         }
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
         ;
-        armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
+        armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         UiPageStack_SetActiveIndex(1,stack);
         detailValue = *(uint32_t *)(armyAssetResult.valueOrError + 0x1c);
         workValue = ModelRuntimeHierarchy_SumMetric3C((int *)lastSelectedEntity);
@@ -5555,7 +5555,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
                              ((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId);
           workValue = *(int *)selectedModelRuntime->reserved100_117;
           *(ArmySelectionDetailTemplateVariantIndex *)(rootCursor->opaqueA06C_C3E3 + 0x54) =
-               (foundArmyAsset.eax)->selectionDetailTemplateVariantIndex + 0x18003c;
+               (foundArmyAsset.recordOrError)->selectionDetailTemplateVariantIndex + 0x18003c;
           resolvedText = TextResource_Resolve(workValue * 2 + 0x300000);
           RichTextCommandStream_CopyExpandedCf
                     (0x80,g_InGameSelectionDetailTextSlot09Utf16,resolvedText.text);
@@ -5610,14 +5610,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
             return;
           }
           foundArmyAsset = ArmyAssetRegistry_FindByIdCf(recordCursor[0x18]);
-          linkedArmyAsset = foundArmyAsset.eax;
+          linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         else if (workValue == 0xb) {
           if (recordCursor[0x2e] != 1) {
             return;
           }
           foundArmyAsset = ArmyAssetRegistry_FindByIdCf(recordCursor[0x18]);
-          linkedArmyAsset = foundArmyAsset.eax;
+          linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         else {
           if (workValue != 0xd) {
@@ -5633,7 +5633,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
             return;
           }
           foundArmyAsset = ArmyAssetRegistry_FindByIdCf(recordCursor[0x18]);
-          linkedArmyAsset = foundArmyAsset.eax;
+          linkedArmyAsset = foundArmyAsset.recordOrError;
         }
         linkedDefinitionListView =
              (ModelLinkedDefinitionBranchView18 *)linkedArmyAsset->rootNodeOffsetOrPointer;
@@ -5665,7 +5665,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
           foundArmyAsset = ArmyAssetRegistry_FindByIdCf
                              ((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId);
           *(PckArmyAssetIdCatalog *)(rootCursor->opaque0058_017B + slotCounterOrOffset + -4) =
-               foundArmyAsset.eax[1].registryId;
+               foundArmyAsset.recordOrError[1].registryId;
           rootCursor = (InGameRuntimeRootImageC3E4 *)((int)rootCursor + (slotCounterOrOffset - *recordCursor));
           workValue = workValue + -1;
           recordCursor = recordCursor + 1;

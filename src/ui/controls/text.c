@@ -1578,7 +1578,7 @@ UiPointerList_SortByExpandedTextFieldAscending
   UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
-  CompareFlagsCfZf2 compareFlags;
+  TextCompareResult compareFlags;
   void *selectedRecord;
   
   rowSlotCursor = control->rowSlots;
@@ -1594,7 +1594,7 @@ UiPointerList_SortByExpandedTextFieldAscending
           compareFlags = UiPointerList_CompareExpandedTextFlags
                             ((uint16_t *)((int)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((int)*passAnchorSlot + fieldOffset));
-          if (!compareFlags.carry) {
+          if (!compareFlags.less) {
             LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -1651,7 +1651,7 @@ UiPointerList_SortByExpandedTextFieldDescending
   UiListRowCount remainingRows;
   void **passAnchorSlot;
   void **rowSlotCursor;
-  CompareFlagsCfZf2 compareFlags;
+  TextCompareResult compareFlags;
   void *selectedRecord;
   
   rowSlotCursor = control->rowSlots;
@@ -1667,7 +1667,7 @@ UiPointerList_SortByExpandedTextFieldDescending
           compareFlags = UiPointerList_CompareExpandedTextFlags
                             ((uint16_t *)((int)*rowSlotCursor + fieldOffset),
                              (uint16_t *)((int)*passAnchorSlot + fieldOffset));
-          if (compareFlags.carry || compareFlags.zero) {
+          if (compareFlags.less || compareFlags.equal) {
             LOCK();
             swappedRecord = *rowSlotCursor;
             *rowSlotCursor = *passAnchorSlot;
@@ -4272,17 +4272,17 @@ UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
    UTF-16 comparator. EAX and EDX remain preserved.
    Cross-module calls: RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
 */
-CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
+TextCompareResult __thandor_void_preserve_eax_ecx_edx
 UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
 
 {
-  CompareFlagsCfZf2 compareFlags;
+  TextCompareResult compareFlags;
   
   RichTextCommandStream_CopyExpandedCf(0x400,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText)
   ;
   RichTextCommandStream_CopyExpandedCf(0x400,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
   /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
-  compareFlags = (*(CompareFlagsCfZf2 (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
+  compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
   return compareFlags;
 }

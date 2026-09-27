@@ -208,14 +208,14 @@ FixedVector_StepBackwardAlongOwnDirection
 
 {
   FixedDirectionXZEdxEax8 stepDirectionXZQ12;
-  FixedDirectionXyzRegs12 stepDirection;
-  FixedMathVectorAnglesRegs8 vectorAngles;
+  FixedDirection stepDirection;
+  FixedElevationAzimuth vectorAngles;
   
   vectorAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)(vectorState + 0x18));
-  stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.ecx,vectorAngles.edx,directionScale);
-  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - stepDirection.eax * stepMultiplier;
-  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - stepDirection.ecx * stepMultiplier;
-  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - stepDirection.edx * stepMultiplier;
+  stepDirection = FixedMath_DirectionFromAnglesScaledRegs(vectorAngles.elevationAngle,vectorAngles.azimuthAngle,directionScale);
+  *(int *)(vectorState + 0x18) = *(int *)(vectorState + 0x18) - stepDirection.x * stepMultiplier;
+  *(int *)(vectorState + 0x1c) = *(int *)(vectorState + 0x1c) - stepDirection.y * stepMultiplier;
+  *(int *)(vectorState + 0x20) = *(int *)(vectorState + 0x20) - stepDirection.z * stepMultiplier;
   return;
 }
 
@@ -311,11 +311,11 @@ FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
    ECX=azimuth angle.
    Local calls: FixedMath_VectorToAngles3Regs.
 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedVectorAngles __thandor_preserve_eax
 FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
-  FixedMathVectorAnglesRegs8 forwardAngles;
+  FixedVectorAngles forwardAngles;
   
   forwardAngles = FixedMath_VectorToAngles3Regs
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
@@ -822,7 +822,7 @@ FixedTransform_RotateDirectionScaledCoreRegs
    Purpose: Pointer form of FixedMath_VectorToAngles3Regs. EDX=elevation angle and ECX=azimuth angle.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedElevationAzimuth __thandor_preserve_eax
 FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 
 {
@@ -831,7 +831,7 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
   int y;
   int x;
   int64_t horizontalSquaredLengthAccumulatorQ24;
-  FixedMathVectorAnglesRegs8 vectorAngles;
+  FixedElevationAzimuth vectorAngles;
   
   x = vector->x;
   y = vector->y;
@@ -842,11 +842,10 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
   magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
   /* The original returns EDX = elevation and ECX = azimuth & 0xffff (as FixedMath_VectorToAngles3Regs).
-     This port stores the pair swapped here (.ecx = elevation, .edx = azimuth), and the consumers
-     (FixedVector_StepBackwardAlongOwnDirection, ArmyArticulatedRuntime_UpdateSuspensionHierarchy; the
-     pass-through GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs is unreferenced) read it that way. */
-  vectorAngles.ecx = magnitudeOrElevationAngle;
-  vectorAngles.edx = azimuthAngle16 & 0xffff;
+     The port returns them elevation first (FixedElevationAzimuth), which its consumers
+     (FixedVector_StepBackwardAlongOwnDirection, ArmyArticulatedRuntime_UpdateSuspensionHierarchy) expect. */
+  vectorAngles.elevationAngle = magnitudeOrElevationAngle;
+  vectorAngles.azimuthAngle = azimuthAngle16 & 0xffff;
   return vectorAngles;
 }
 
@@ -862,14 +861,14 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
 {
   uint32_t extractedRotationAngle2;
   uint32_t gimbalAngle16;
-  FixedMathVectorAnglesRegs8 forwardAngles;
+  FixedVectorAngles forwardAngles;
   FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
   forwardAngles = FixedMath_VectorToAngles3Regs
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
-  eulerAngles.edxAngle = forwardAngles.edx;
-  eulerAngles.ecxAngle = forwardAngles.ecx;
-  if ((int)forwardAngles.edx < 0) { /* TEST EDX,EDX: elevation sign */
+  eulerAngles.edxAngle = forwardAngles.elevationAngle;
+  eulerAngles.ecxAngle = forwardAngles.azimuthAngle;
+  if ((int)forwardAngles.elevationAngle < 0) { /* TEST EDX,EDX: elevation sign */
     gimbalAngle16 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
@@ -938,7 +937,7 @@ FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
    velocity seeding in the shot creator. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment
    ordinals, and raw renderer flags.
 */
-FixedDirectionXyzRegs12
+FixedDirection
 FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
 
@@ -947,7 +946,7 @@ FixedMath_DirectionFromAnglesScaledRegs
   uint32_t sumAngle16;
   uint32_t elevationAngle16;
   uint32_t differenceAngle16;
-  FixedDirectionXyzRegs12 scaledDirection;
+  FixedDirection scaledDirection;
   int64_t scaledHorizontalComponentProduct;
   
   elevationAngle16 = elevationAngle & 0xffff;
@@ -956,11 +955,11 @@ FixedMath_DirectionFromAnglesScaledRegs
   scaledHorizontalComponentProduct =
        (int64_t)(g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16]) * (int64_t)scale;
   scaledYComponentProduct = (int64_t)(g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16]) * (int64_t)scale;
-  scaledDirection.edx = (int)((uint64_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x20
+  scaledDirection.z = (int)((uint64_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x20
                    ) << 4 |
               (uint32_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x1c;
-  scaledDirection.ecx = (int)((uint64_t)scaledYComponentProduct >> 0x20) << 3 | (uint32_t)scaledYComponentProduct >> 0x1d;
-  scaledDirection.eax = (int)((uint64_t)scaledHorizontalComponentProduct >> 0x20) << 3 |
+  scaledDirection.y = (int)((uint64_t)scaledYComponentProduct >> 0x20) << 3 | (uint32_t)scaledYComponentProduct >> 0x1d;
+  scaledDirection.x = (int)((uint64_t)scaledHorizontalComponentProduct >> 0x20) << 3 |
               (uint32_t)scaledHorizontalComponentProduct >> 0x1d;
   return scaledDirection;
 }
@@ -973,21 +972,21 @@ FixedMath_DirectionFromAnglesScaledRegs
    rotation-basis row builder. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and
    raw renderer flags.
 */
-FixedDirectionXyzRegs12
+FixedDirection
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
   uint32_t sumAngle16;
   uint32_t elevationAngle16;
   uint32_t differenceAngle16;
-  FixedDirectionXyzRegs12 directionQ28;
+  FixedDirection directionQ28;
   
   elevationAngle16 = elevationAngle & 0xffff;
   sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
   differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
-  directionQ28.eax = g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16] >> 1;
-  directionQ28.ecx = g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16] >> 1;
-  directionQ28.edx = g_FixedSinQ28[elevationAngle16];
+  directionQ28.x = g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16] >> 1;
+  directionQ28.y = g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16] >> 1;
+  directionQ28.z = g_FixedSinQ28[elevationAngle16];
   return directionQ28;
 }
 
@@ -1129,7 +1128,7 @@ FixedTransform_Compose
    control flow, globals, locals, and executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedVectorAngles __thandor_preserve_eax
 FixedMath_VectorToAngles3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
@@ -1138,7 +1137,7 @@ FixedMath_VectorToAngles3Regs
   uint32_t elevationAngle16;
   uint32_t azimuthAngle16;
   int64_t horizontalMagnitudeSquaredQ24;
-  FixedMathVectorAnglesRegs8 vectorAngles;
+  FixedVectorAngles vectorAngles;
   
   horizontalMagnitudeSquaredQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
   horizontalMagnitudeQ12 =
@@ -1147,8 +1146,8 @@ FixedMath_VectorToAngles3Regs
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
   elevationAngle16 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
-  vectorAngles.ecx = azimuthAngle16 & 0xffff;
-  vectorAngles.edx = elevationAngle16;
+  vectorAngles.azimuthAngle = azimuthAngle16 & 0xffff;
+  vectorAngles.elevationAngle = elevationAngle16;
   return vectorAngles;
 }
 
@@ -1211,20 +1210,20 @@ FixedTransform_BuildRotationBasis
   uint32_t primarySymmetricAngleIndex16;
   FixedDirectionXZEdxEax8 directionSamplePairQ28;
   FixedDirectionXZEdxEax8 secondaryDirectionSamplePairQ28;
-  FixedDirectionXyzRegs12 directionRow;
+  FixedDirection directionRow;
   int64_t currentComponentTimesVerticalSinProduct;
   int verticalSinQ28;
   int64_t componentTimesVerticalSinProduct;
   int64_t secondaryComponentTimesVerticalSinProduct;
   
   directionRow = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
-  output->basisRow0[2] = directionRow.eax;
-  output->basisRow1[2] = directionRow.ecx;
-  output->basisRow2[2] = directionRow.edx;
+  output->basisRow0[2] = directionRow.x;
+  output->basisRow1[2] = directionRow.y;
+  output->basisRow2[2] = directionRow.z;
   directionRow = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle0 - angle2);
   secondarySymmetricAngleIndex16 = (angle0 - angle2) + angle2;
-  output->basisRow2[1] = directionRow.ecx;
-  output->basisRow2[0] = -directionRow.eax;
+  output->basisRow2[1] = directionRow.y;
+  output->basisRow2[0] = -directionRow.x;
   primarySymmetricAngleIndex16 = secondarySymmetricAngleIndex16 & 0xffff;
   differenceAngleIndex16 = secondarySymmetricAngleIndex16 + angle2 * -2 & 0xffff;
   currentSymmetricComponentQ28 =

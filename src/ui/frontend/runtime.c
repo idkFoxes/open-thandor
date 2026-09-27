@@ -1308,7 +1308,7 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
   UQ12 targetDistance;
   UQ12 convergenceStep;
   UQ12 clampedCommittedDistance;
-  FixedDirectionXyzRegs12 cameraOffset;
+  FixedDirection cameraOffset;
   
   if ((callbackContext->runtimeFlags & 0x40) != 0) {
     callbackStateCounter = &(callbackContext->selection).reservedCallbackState40;
@@ -1335,11 +1335,11 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
                       (-(callbackContext->motion).pitchAngle,
                        (callbackContext->motion).headingAngle ^ 0x8000,targetDistance + convergenceStep);
     (callbackContext->motion).positionXQ12 =
-         cameraOffset.eax + (callbackContext->motion).targetPositionXQ12;
+         cameraOffset.x + (callbackContext->motion).targetPositionXQ12;
     (callbackContext->motion).positionYQ12 =
-         cameraOffset.ecx + (callbackContext->motion).targetPositionYQ12;
+         cameraOffset.y + (callbackContext->motion).targetPositionYQ12;
     (callbackContext->motion).positionZQ12 =
-         cameraOffset.edx + (callbackContext->motion).targetPositionZQ12;
+         cameraOffset.z + (callbackContext->motion).targetPositionZQ12;
     WorldRuntime_ClearFieldGridDirtyFlag(callbackContext);
   }
   return;
@@ -1472,7 +1472,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
   }
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).valueOrError == 0xb) {
+    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex == 0xb) {
       if ((g_SessionNetworkRoleFlags & 3) != 0) {
         FrontendCommandQueue_EnqueueLocalPlayerCommand(0x3b0,0,0,1);
       }
@@ -1598,7 +1598,7 @@ FrontendRuntime_UpdatePointerContextAndSceneViewCf
   int keyframeChannel5;
   int channel4OrHalfHeight;
   RichTextExtentRegs textExtent;
-  StatusResult pageStackStatus;
+  PageStackSearchResult pageStackStatus;
   TextResolveResult hintTextResult;
   TextureSizeResult windowTextureSize;
   
@@ -1606,7 +1606,7 @@ FrontendRuntime_UpdatePointerContextAndSceneViewCf
   channel3OrHintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
      (pageStackStatus = UiPageStack_ActivePageNotInListCf(&frontendRuntime->activePageStack1A0),
-     pageStackStatus.valueOrError == 0)) {
+     pageStackStatus.pageIndex == 0)) {
     pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedRecord);
     recordId = 0xf0000000;
     if (pointedRomRecord != (RomAssetRecordPrefix *)0x0) {
@@ -3572,7 +3572,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   ModelRuntimeNode *modelNode;
   uint32_t bestHitMetric;
   ModelRuntimeNode *bestModelNode;
-  StatusResult hitTestResult;
+  ModelHitTestResult hitTestResult;
   int candidatePriority;
   int bestPriority;
 
@@ -3586,9 +3586,9 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
               ((modelNode->runtimeFlags & 0x20) != 0)))) {
       hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                         (pointerY,pointerX,modelNode,context);
-      if (hitTestResult.failed) continue;
+      if (hitTestResult.missed) continue;
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
-        if ((int)bestHitMetric <= (int)hitTestResult.valueOrError) continue;
+        if ((int)bestHitMetric <= (int)hitTestResult.distanceQ12) continue;
       }
       else if (bestModelNode != (ModelRuntimeNode *)0x0) {
         /* Higher model-class priority wins; equal priority falls back to the smaller hit metric. */
@@ -3601,10 +3601,10 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
                   [*(int *)((((bestModelNode->runtimePayload).modelRuntime)->definitionOrSavedId).
                             savedIdOrOffset + 0x4c)];
         if (candidatePriority < bestPriority) continue;
-        if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitTestResult.valueOrError))
+        if ((candidatePriority == bestPriority) && ((int)bestHitMetric <= (int)hitTestResult.distanceQ12))
         continue;
       }
-      bestHitMetric = hitTestResult.valueOrError;
+      bestHitMetric = hitTestResult.distanceQ12;
       bestModelNode = modelNode;
     }
   }

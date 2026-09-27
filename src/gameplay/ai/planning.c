@@ -416,7 +416,7 @@ AiConstructionPlanner_ProcessPendingAssetRequests
   int remainingRequests;
   AiRuntimeWorkspaceEntry *requestEntry;
   bool hasUnassignedEntry;
-  ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
+  ArmyAssetLookupResult armyAssetLookup;
   ModelDefinitionResult linkedDefinitionLookup;
   
   g_AiConstructionPendingAssetConsumedCount = 0;
@@ -448,11 +448,11 @@ AiConstructionPlanner_ProcessPendingAssetRequests
     }
     else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
       armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-      if (!armyAssetLookup.carry) {
+      if (!armyAssetLookup.notFound) {
         /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
            CF), but both outcomes call the same placement handler. */
         linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                          (factionIndex,(armyAssetLookup.eax)->rootNodeOffsetOrPointer);
+                          (factionIndex,(armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer);
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
@@ -1054,7 +1054,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
   RuntimeToken technologyIndex;
   AiWorkspace00EntryView8 *workspaceEntry;
   bool technologyAvailable;
-  ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
+  ArmyAssetLookupResult armyAssetLookup;
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & 0xffff;
   if ((candidateEntry->weightedScoreAndKind & 0xf) == 2) {
@@ -1079,7 +1079,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
   }
   else {
     armyAssetLookup = ArmyAssetRegistry_FindByIdCf(technologyIndex);
-    countOrClassMask = armyAssetLookup.eax[1].selectionDetailTemplateVariantIndex;
+    countOrClassMask = armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
     if ((g_AiWorkspace00Count != 0) && ((g_AiPurchaseAppliedArmyClassMask & countOrClassMask) == 0)) {
       remainingEntries = g_AiWorkspace00Count;
       workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
@@ -1146,7 +1146,7 @@ AiPurchaseCandidate_ApplyToFaction
   AiWorkspace00EntryView8 *workspaceEntry;
   int technologySlotIndex;
   RuntimeToken technologyIndex;
-  ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
+  ArmyAssetLookupResult armyAssetLookup;
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & 0xffff;
   remainingEntries = g_AiWorkspace00Count;
@@ -1173,9 +1173,9 @@ AiPurchaseCandidate_ApplyToFaction
   else {
     GameFactionRuntime_RegisterArmyAssetPointers(0xffffffff,1,technologyIndex,factionIndex);
     armyAssetLookup = ArmyAssetRegistry_FindByIdCf(technologyIndex);
-    if (!armyAssetLookup.carry) {
+    if (!armyAssetLookup.notFound) {
       g_AiPurchaseAppliedArmyClassMask =
-           g_AiPurchaseAppliedArmyClassMask | armyAssetLookup.eax[1].selectionDetailTemplateVariantIndex;
+           g_AiPurchaseAppliedArmyClassMask | armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
     }
   }
   return;
@@ -1661,7 +1661,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int distanceY;
   FieldGridCell **gridCellCursor;
   bool regionUnreachable;
-  ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
+  ArmyAssetLookupResult armyAssetLookup;
   ModelDefinitionResult modelDefinitionLookup;
   PlacementDispatchResult placementResult;
   ArmyRuntimeCreateResult createdInstance;
@@ -1669,11 +1669,11 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   int bestScore;
   
   armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-  if ((!armyAssetLookup.carry) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
+  if ((!armyAssetLookup.notFound) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
      ) {
     modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
                        (*(PckModelDefinitionIdCatalog *)
-                         ((armyAssetLookup.eax)->rootNodeOffsetOrPointer + 0x20));
+                         ((armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer + 0x20));
     if (!modelDefinitionLookup.notFound) {
       radiusMetric = modelDefinitionLookup.modelDefinition[0x12].flags;
       if (g_AiWorkspace10Count != 0) {
@@ -1764,7 +1764,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   FactionArmyAssetCount *pendingAssetCount;
   FactionArmyAssetCount remainingAssets;
   uint32_t *assetPointerCursor;
-  ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
+  ArmyAssetLookupResult armyAssetLookup;
   
   g_AiConstructionPendingAssetConsumedCount = g_AiConstructionPendingAssetConsumedCount + 1;
   remainingAssets = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
@@ -1776,7 +1776,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
     if (remainingAssets == 0) {
       return;
     }
-    if (armyAssetLookup.eax == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
+    if (armyAssetLookup.recordOrError == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
     assetPointerCursor = assetPointerCursor + 1;
     remainingAssets = remainingAssets - 1;
   }

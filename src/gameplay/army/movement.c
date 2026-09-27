@@ -2573,8 +2573,8 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedLengthAnglesEaxEcxEdx12 leftLegVector;
   FixedLengthAnglesEaxEcxEdx12 rightLegVector;
   FixedEulerAnglesEaxEcxEdx12 extractedAngles;
-  FixedMathVectorAnglesRegs8 leftBlendAngles;
-  FixedMathVectorAnglesRegs8 rightBlendAngles;
+  FixedElevationAzimuth leftBlendAngles;
+  FixedElevationAzimuth rightBlendAngles;
   UQ12 scale;
   GraphicsWorldCoordinateQ12 leftContactX;
   GraphicsWorldCoordinateQ12 leftContactY;
@@ -2849,8 +2849,8 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  leftBlendAngleEdx = leftBlendAngles.edx;
-  leftBlendAngleEcx = leftBlendAngles.ecx;
+  leftBlendAngleEdx = leftBlendAngles.azimuthAngle;
+  leftBlendAngleEcx = leftBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
              (((leftHeading - leftPreviousHeading) * 0x10000 >> 0x10) * leftBlendQ12 >> 0xc) + leftHeadingBase & 0xffff,leftBlendAngleEcx,leftBlendAngleEdx
@@ -2872,8 +2872,8 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedTransform_InvertRigidQ28
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchA,
              (GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB);
-  rightBlendAngleEdx = rightBlendAngles.edx;
-  rightBlendAngleEcx = rightBlendAngles.ecx;
+  rightBlendAngleEdx = rightBlendAngles.azimuthAngle;
+  rightBlendAngleEcx = rightBlendAngles.elevationAngle;
   FixedTransform_BuildRotationBasis
             ((GraphicsFixedMatrix3x4 *)&g_ArmySuspensionRotationMatrixScratchB,
              (((inverseBlendOrRightHeading - rightPreviousHeading) * 0x10000 >> 0x10) * rightBlendQ12 >> 0xc) + rightHeadingBase & 0xffff,rightBlendAngleEcx,

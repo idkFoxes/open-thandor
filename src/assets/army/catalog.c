@@ -19,22 +19,22 @@
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf,
    ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf.
 */
-ArmyRegistryIdEaxCf5_5719f0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
-  ArmyRegistryIdEaxCf5_571ab0 searchResult;
-  ArmyRegistryIdEaxCf5_5719f0 normalizedResult;
+  ArmyAssetIdSearchResult searchResult;
+  ArmyAssetIdSearchResult normalizedResult;
   
   idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-  searchResult.carry = idAbsent;
-  searchResult.eax = recordId;
+  searchResult.notFound = idAbsent;
+  searchResult.armyAssetId = recordId;
   if (idAbsent) {
     searchResult = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId);
   }
-  normalizedResult.eax = searchResult.eax;
-  normalizedResult.carry = searchResult.carry;
+  normalizedResult.armyAssetId = searchResult.armyAssetId;
+  normalizedResult.notFound = searchResult.notFound;
   return normalizedResult;
 }
 
@@ -47,21 +47,21 @@ ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog reco
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
 */
-ArmyRegistryIdEaxCf5_571a10 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571a10 stepResult;
+  ArmyAssetIdSearchResult stepResult;
   
   while( true ) {
     baseId = recordId;
-    stepResult.eax = baseId + 1;
-    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.eax);
-    if (!stepResult.carry) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.eax);
-    recordId = stepResult.eax;
+    stepResult.armyAssetId = baseId + 1;
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.armyAssetId);
+    if (!stepResult.notFound) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.armyAssetId);
+    recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId - 1;
@@ -82,21 +82,21 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
 */
-ArmyRegistryIdEaxCf5_571a60 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571a60 stepResult;
+  ArmyAssetIdSearchResult stepResult;
   
   while( true ) {
     baseId = recordId;
-    stepResult.eax = baseId - 1;
-    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.eax);
-    if (!stepResult.carry) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.eax);
-    recordId = stepResult.eax;
+    stepResult.armyAssetId = baseId - 1;
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.armyAssetId);
+    if (!stepResult.notFound) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.armyAssetId);
+    recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId + 1;
@@ -116,12 +116,12 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
    stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
 */
-ArmyRegistryIdEaxCf5_571b00 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571b00 searchResult;
+  ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
@@ -134,14 +134,14 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-    if (!searchResult.carry) break;
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!searchResult.notFound) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
       recordId = 0x1000;
     }
   }
-  searchResult.eax = recordId;
+  searchResult.armyAssetId = recordId;
   return searchResult;
 }
 
@@ -154,22 +154,22 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf.
 */
-ArmyRegistryIdEaxCf5_571c30 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
-  ArmyRegistryIdEaxCf5_571cf0 searchResult;
-  ArmyRegistryIdEaxCf5_571c30 normalizedResult;
+  ArmyAssetIdSearchResult searchResult;
+  ArmyAssetIdSearchResult normalizedResult;
   
   idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-  searchResult.carry = idAbsent;
-  searchResult.eax = recordId;
+  searchResult.notFound = idAbsent;
+  searchResult.armyAssetId = recordId;
   if (idAbsent) {
     searchResult = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId);
   }
-  normalizedResult.eax = searchResult.eax;
-  normalizedResult.carry = searchResult.carry;
+  normalizedResult.armyAssetId = searchResult.armyAssetId;
+  normalizedResult.notFound = searchResult.notFound;
   return normalizedResult;
 }
 
@@ -182,21 +182,21 @@ ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordI
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
 */
-ArmyRegistryIdEaxCf5_571c50 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571c50 stepResult;
+  ArmyAssetIdSearchResult stepResult;
   
   while( true ) {
     baseId = recordId;
-    stepResult.eax = baseId + 1;
-    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.eax);
-    if (!stepResult.carry) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.eax);
-    recordId = stepResult.eax;
+    stepResult.armyAssetId = baseId + 1;
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.armyAssetId);
+    if (!stepResult.notFound) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.armyAssetId);
+    recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId - 1;
@@ -217,21 +217,21 @@ ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
    class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
 */
-ArmyRegistryIdEaxCf5_571ca0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571ca0 stepResult;
+  ArmyAssetIdSearchResult stepResult;
   
   while( true ) {
     baseId = recordId;
-    stepResult.eax = baseId - 1;
-    stepResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.eax);
-    if (!stepResult.carry) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.eax);
-    recordId = stepResult.eax;
+    stepResult.armyAssetId = baseId - 1;
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.armyAssetId);
+    if (!stepResult.notFound) break;
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.armyAssetId);
+    recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId + 1;
@@ -251,12 +251,12 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
    32-bit registry key and does not imply gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
 */
-ArmyRegistryIdEaxCf5_571d40 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571d40 searchResult;
+  ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
@@ -269,14 +269,14 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-    if (!searchResult.carry) break;
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!searchResult.notFound) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
       recordId = 0x1000;
     }
   }
-  searchResult.eax = recordId;
+  searchResult.armyAssetId = recordId;
   return searchResult;
 }
 
@@ -338,12 +338,12 @@ ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
 
 {
   bool missingOrDisabled;
-  ArmyRegistryEaxCf5_51b6d0 registryLookup;
+  ArmyAssetLookupResult registryLookup;
   
   registryLookup = ArmyAssetRegistry_FindByIdCf(recordId);
-  missingOrDisabled = registryLookup.carry;
+  missingOrDisabled = registryLookup.notFound;
   if (!missingOrDisabled) {
-    missingOrDisabled = (registryLookup.eax[1].selectionDetailTemplateVariantIndex & 1) == 0;
+    missingOrDisabled = (registryLookup.recordOrError[1].selectionDetailTemplateVariantIndex & 1) == 0;
   }
   return missingOrDisabled;
 }
@@ -367,14 +367,14 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
   ArmyAssetRecordPrefix *definitionNode;
   int linksRemaining;
   bool technologyLocked;
-  ArmyRegistryEaxCf5_51b6d0 registryLookup;
+  ArmyAssetLookupResult registryLookup;
   
   linksRemaining = 0x10;
   do {
     if (armyAssetRecord[3].byteSize != 0) {
       registryLookup = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
-      definitionNode = registryLookup.eax;
-      if ((!registryLookup.carry) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
+      definitionNode = registryLookup.recordOrError;
+      if ((!registryLookup.notFound) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
         technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
         if ((!technologyLocked) &&
@@ -516,12 +516,12 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    gameplay class, tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
 */
-ArmyRegistryIdEaxCf5_571ab0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571ab0 searchResult;
+  ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
@@ -529,14 +529,14 @@ ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
     recordId = recordId + 1;
   }
   while( true ) {
-    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
-    if (!searchResult.carry) break;
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    if (!searchResult.notFound) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
       recordId = 0;
     }
   }
-  searchResult.eax = recordId;
+  searchResult.armyAssetId = recordId;
   return searchResult;
 }
 
@@ -549,12 +549,12 @@ ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
    tier, faction, or direction.
    Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
 */
-ArmyRegistryIdEaxCf5_571cf0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
-  ArmyRegistryIdEaxCf5_571cf0 searchResult;
+  ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
@@ -562,14 +562,14 @@ ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
     recordId = recordId + 1;
   }
   while( true ) {
-    searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
-    if (!searchResult.carry) break;
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    if (!searchResult.notFound) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
       recordId = 0;
     }
   }
-  searchResult.eax = recordId;
+  searchResult.armyAssetId = recordId;
   return searchResult;
 }
 
@@ -626,11 +626,11 @@ ArmyAssetRecord_RegisterAndRelocate
      the machine stack, which the decompiler could not express. */
   ArmyAssetRecordPrefix **slot;
   int slotsRemaining;
-  ArmyRegistryEaxCf5_51b6d0 existing;
+  ArmyAssetLookupResult existing;
   StatusResult status;
 
   existing = ArmyAssetRegistry_FindByIdCf(record->registryId);
-  if (!existing.carry) {
+  if (!existing.notFound) {
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
     status.failed = true;
@@ -711,15 +711,15 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetReg
    ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and
    does not imply gameplay class, tier, faction, or direction.
 */
-ArmyRegistryEaxCf5_51b6d0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
 
 {
   ArmyAssetRecordPrefix *matchedRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyRegistryEaxCf5_51b6d0 failureResult;
-  ArmyRegistryEaxCf5_51b6d0 successResult;
+  ArmyAssetLookupResult failureResult;
+  ArmyAssetLookupResult successResult;
   ArmyAssetRecordPrefix *candidateAsset;
   
   registryCursor = g_ArmyAssetRecordRegistry;
@@ -731,13 +731,13 @@ ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,registryId,g_PackageLastErrorPath);
-      failureResult.carry = true;
-      failureResult.eax = (ArmyAssetRecordPrefix *)0x41;
+      failureResult.notFound = true;
+      failureResult.recordOrError = (ArmyAssetRecordPrefix *)0x41;
       return failureResult;
     }
   }
-  successResult.carry = false;
-  successResult.eax = matchedRecord;
+  successResult.notFound = false;
+  successResult.recordOrError = matchedRecord;
   return successResult;
 }
 

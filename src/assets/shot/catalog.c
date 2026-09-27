@@ -171,7 +171,7 @@ ShotDefinition_ComputeLaunchAnglesRegs
   ShotLaunchAnglesEaxEdx8 fixedRangeAngles;
   FixedLengthAngleEaxEdx8 planarLengthAngle;
   ShotLaunchAnglesEaxEdx8 launchAngles;
-  FixedMathVectorAnglesRegs8 vectorAngles;
+  FixedVectorAngles vectorAngles;
   
   deltaX = point0X - point1X;
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
@@ -197,8 +197,8 @@ ShotDefinition_ComputeLaunchAnglesRegs
       return fixedRangeAngles;
     }
     vectorAngles = FixedMath_VectorToAngles3Regs(deltaX,point0Y - point1Y,point0Z - point1Z);
-    computedHeading = vectorAngles.ecx;
-    computedElevation = vectorAngles.edx + definition->elevationOffsetAngle16;
+    computedHeading = vectorAngles.azimuthAngle;
+    computedElevation = vectorAngles.elevationAngle + definition->elevationOffsetAngle16;
     if (0x4000 < (int)computedElevation) {
       clampedAngles.elevationAngle = 0x4000;
       clampedAngles.headingAngle = computedHeading;

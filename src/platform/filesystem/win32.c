@@ -1023,7 +1023,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
   uint32_t *copyDestination;
   DirectoryEnumerationResult enumerationResult;
   DirectoryEnumerationResult volumeResult;
-  CompareFlagsCfZf2 compareFlags;
+  TextCompareResult compareFlags;
   int passesRemaining;
   
   if (mode == FILESYSTEM_ENUMERATE_VOLUME_LABEL) {
@@ -1087,7 +1087,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
         do {
           compareFlags = Utf16String_CompareAsciiCaseInsensitiveFlags
                             ((uint16_t *)rightRecordDwords,(uint16_t *)leftRecordDwords);
-          if (!compareFlags.carry && !compareFlags.zero) {
+          if (!compareFlags.less && !compareFlags.equal) {
             copySource = rightRecordDwords;
             copyDestination = (uint32_t *)g_Win32PathScratchA;
             for (dwordsRemaining = 0x80; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {

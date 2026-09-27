@@ -571,15 +571,15 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
    Typed parameters: p1 param_2→RichTextCommandOrdinal_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx
+RichTextCommandQueryResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
 
 {
   uint16_t commandCodeUnit;
   int remainingCount;
   uint32_t *commandCursor;
-  StatusResult foundResult;
-  StatusResult endResult;
+  RichTextCommandQueryResult foundResult;
+  RichTextCommandQueryResult endResult;
   
   remainingCount = commandOrdinal + 1;
   do {
@@ -587,8 +587,8 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
       commandCursor = (uint32_t *)commandStream;
       commandCodeUnit = (uint16_t)*commandCursor;
       if (commandCodeUnit == 0) {
-        endResult.valueOrError = 0;
-        endResult.failed = true;
+        endResult.commandVariant = 0;
+        endResult.endOfStream = true;
         return endResult;
       }
       commandStream = (uint16_t *)((int)commandCursor + 2);
@@ -603,8 +603,8 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
       remainingCount = remainingCount + -1;
       commandStream = (uint16_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
-        foundResult.valueOrError = *commandCursor & 3;
-        foundResult.failed = false;
+        foundResult.commandVariant = *commandCursor & 3;
+        foundResult.endOfStream = false;
         return foundResult;
       }
       break;

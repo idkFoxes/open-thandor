@@ -707,7 +707,7 @@ AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
 {
   uint32_t resolvedEntityValue;
   RuntimeToken registryId;
-  ArmyRegistryEaxCf5_51b6d0 registryLookup;
+  ArmyAssetLookupResult registryLookup;
   
   registryId = entry->entityIdAndMultiplicity & 0xffff;
   if ((entry->weightedScoreAndKind & 0xf) == 2) {
@@ -716,8 +716,8 @@ AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
   else {
     registryLookup = ArmyAssetRegistry_FindByIdCf(registryId);
     resolvedEntityValue = 0x7fffffff;
-    if (!registryLookup.carry) {
-      resolvedEntityValue = registryLookup.eax[2].registryId;
+    if (!registryLookup.notFound) {
+      resolvedEntityValue = registryLookup.recordOrError[2].registryId;
     }
   }
   return resolvedEntityValue;

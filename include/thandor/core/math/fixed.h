@@ -55,7 +55,7 @@ FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);
 
 /* 0x00484E50 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedVectorAngles __thandor_preserve_eax
 FixedTransform_ExtractForwardAnglesRegs(GraphicsFixedMatrix3x4 *transform);
 
 /* 0x004857A0 */
@@ -120,7 +120,7 @@ FixedTransform_RotateDirectionScaledCoreRegs
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
 /* 0x00484A70 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedElevationAzimuth __thandor_preserve_eax
 FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector);
 
 /* 0x00484E00 */
@@ -134,12 +134,12 @@ uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y);
 
 /* 0x00484770 */
-FixedDirectionXyzRegs12
+FixedDirection
 FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale);
 
 /* 0x004847E0 */
-FixedDirectionXyzRegs12
+FixedDirection
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x00484840 */
@@ -155,7 +155,7 @@ FixedTransform_Compose
           GraphicsFixedMatrix3x4 *transformB);
 
 /* 0x00484990 */
-FixedMathVectorAnglesRegs8 __thandor_preserve_eax
+FixedVectorAngles __thandor_preserve_eax
 FixedMath_VectorToAngles3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
 

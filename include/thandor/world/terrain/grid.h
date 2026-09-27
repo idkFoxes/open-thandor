@@ -89,7 +89,7 @@ FieldGrid_ApplyCallerMask
           Q12 worldXQ12);
 
 /* 0x004FEA80 */
-FieldGridNearestPointRegsCf13
+TerrainPointResult
 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEB10 */

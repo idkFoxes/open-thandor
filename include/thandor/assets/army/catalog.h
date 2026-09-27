@@ -15,35 +15,35 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005719F0 */
-ArmyRegistryIdEaxCf5_5719f0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571A10 */
-ArmyRegistryIdEaxCf5_571a10 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId);
 
 /* 0x00571A60 */
-ArmyRegistryIdEaxCf5_571a60 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId);
 
 /* 0x00571B00 */
-ArmyRegistryIdEaxCf5_571b00 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x00571C30 */
-ArmyRegistryIdEaxCf5_571c30 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571C50 */
-ArmyRegistryIdEaxCf5_571c50 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId);
 
 /* 0x00571CA0 */
-ArmyRegistryIdEaxCf5_571ca0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId);
 
 /* 0x00571D40 */
-ArmyRegistryIdEaxCf5_571d40 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x0051B5E0 */
@@ -74,11 +74,11 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x00571AB0 */
-ArmyRegistryIdEaxCf5_571ab0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x00571CF0 */
-ArmyRegistryIdEaxCf5_571cf0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x0051B4A0 */
@@ -90,7 +90,7 @@ ArmyAssetRecord_RegisterAndRelocate
 uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetRegistryId);
 
 /* 0x0051B6D0 */
-ArmyRegistryEaxCf5_51b6d0 __thandor_eax_cf_preserve_ecx_edx
+ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId);
 
 /* 0x00571910 */

@@ -1256,12 +1256,12 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   start = Thandor_TickCount();
   for (;;) {
     KeyboardEventResult key;
-    GraphicsCursorInputEventRegsCf21 cursor;
+    CursorEventResult cursor;
     (*g_Win32PumpMessages)();
     key = (*g_KeyboardReadEvent)();
     if (!key.queueEmpty) break;
     cursor = (*g_GraphicsCursorConsumeEvent)();
-    if ((!cursor.carry) && (3 < cursor.eventCode)) break;
+    if ((!cursor.queueEmpty) && (3 < cursor.eventType)) break;
     if (Thandor_TickCount() - start > 10000) break;
     if (g_IntroMoviePendingTicks != 0) {
       int burst = 3;
@@ -1359,7 +1359,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
   MovieFrameResult advanceResult;
   KeyboardEventResult keyEvent;
   CommandLineOptionResult noIntroOption;
-  GraphicsCursorInputEventRegsCf21 cursorEvent;
+  CursorEventResult cursorEvent;
   
     {
     const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
@@ -1402,7 +1402,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
         keyEvent = (*g_KeyboardReadEvent)();
         if (!keyEvent.queueEmpty) break;
         cursorEvent = (*g_GraphicsCursorConsumeEvent)();
-        if ((!cursorEvent.carry) && (3 < cursorEvent.eventCode)) goto GameIntroMovies_StopCurrentPlayback;
+        if ((!cursorEvent.queueEmpty) && (3 < cursorEvent.eventType)) goto GameIntroMovies_StopCurrentPlayback;
         if (g_IntroMoviePendingTicks != 0) {
           frameAdvanceBudget = 3;
           do {

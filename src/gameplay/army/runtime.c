@@ -472,7 +472,7 @@ ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode
   WorldRuntimeNode *ownerNodeCursor;
   uint32_t *dwordCursor;
   bool testResult;
-  ArmyRegistryEaxCf5_51b6d0 assetLookup;
+  ArmyAssetLookupResult assetLookup;
   ModelDefinitionResult definitionLookup;
   ModelLookupPayloadResult lookupPayload;
   Q12 translationStep;
@@ -597,7 +597,7 @@ ArmyRuntimeClass_StoreCompletedSecondaryArmyAssetId:
           if (factionIndexOrLimit == worldRuntime->activeFactionRuntimeIndex) {
             assetLookup = ArmyAssetRegistry_FindByIdCf(secondaryAssetId);
             definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                               (entityRuntime1->factionIndex,(assetLookup.eax)->rootNodeOffsetOrPointer);
+                               (entityRuntime1->factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
             modelDefinition1 = definitionLookup.modelDefinition;
             modelDefinition1[0x24].byteSize = modelDefinition1[0x24].byteSize + 1;
             notificationMovieId = modelDefinition1[0x1d].flags;
@@ -842,7 +842,7 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
   bool cellMasked;
   ModelLookupEntryResult lookupEntry;
   ArmyRuntimeCreateResult createResult;
-  ModelLocalPointRegs12 localPoint;
+  ModelWorldPoint localPoint;
   InGameNotificationMovieId notificationMovieId;
   ArmyRuntimeSlot *entityRuntime1;
   
@@ -851,8 +851,8 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
     lookupEntry = ModelLookupTable_ContainsPackedKeyCf(1,5,(rootNode->modelPayload).modelResource);
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
-      (modelRuntime->classLinkState).classState78 = localPoint.eax;
-      (modelRuntime->classLinkState).classState7C = localPoint.ecx;
+      (modelRuntime->classLinkState).classState78 = localPoint.xQ12;
+      (modelRuntime->classLinkState).classState7C = localPoint.yQ12;
       reservedFlags = (modelRuntime->classState).reservedBC_BF;
       *(uint32_t *)reservedFlags = *(uint32_t *)reservedFlags & 0xfffffffe;
     }
@@ -926,15 +926,15 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
         lookupEntry = ModelLookupTable_ContainsPackedKeyCf(1,5,(rootNode->modelPayload).modelResource);
         if (!lookupEntry.notFound) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
-          secondaryValue = localPoint.ecx;
-          stateValue = localPoint.eax;
+          secondaryValue = localPoint.yQ12;
+          stateValue = localPoint.xQ12;
           lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,5,(rootNode->modelPayload).modelResource);
           if (!lookupEntry.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
-            stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.ecx,stateValue - localPoint.eax);
+            stateValue = FixedMath_Atan2Angle16(secondaryValue - localPoint.yQ12,stateValue - localPoint.xQ12);
             entityRuntime1 = modelRuntime->ownerArmyRuntime;
             createResult = ArmyRuntime_CreateInstanceFromAssetCf
-                               (4,stateValue,localPoint.ecx,localPoint.eax,entityRuntime1->factionIndex,
+                               (4,stateValue,localPoint.yQ12,localPoint.xQ12,entityRuntime1->factionIndex,
                                 (modelRuntime->classLinkState).modelLinkOrState60.classState,
                                 worldRuntime);
             armySlot1 = (ArmyRuntimeSlot *)createResult.armyRuntimeOrError;
@@ -1003,11 +1003,11 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
       if (!lookupEntry.notFound) {
         entityRuntime1 = (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
-        targetWorldXQ12 = localPoint.ecx;
+        targetWorldXQ12 = localPoint.yQ12;
         linkedModelRuntime = (entityRuntime1->modelRuntimeOrSavedOffset).modelRuntime;
         ArmyRuntime_StartMoveCommandWithAuxiliaryValues
                   ((modelRuntime->classLinkState).classState7C,
-                   (modelRuntime->classLinkState).classState78,targetWorldXQ12,localPoint.eax,
+                   (modelRuntime->classLinkState).classState78,targetWorldXQ12,localPoint.xQ12,
                    (ArmyMovementRuntime *)entityRuntime1);
         (linkedModelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime =
              (ArmyRuntimeSlot *)modelRuntime;
@@ -1089,7 +1089,7 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
   FactionArmyAssetCount remainingAssetCount;
   uint32_t tickOrCount;
   uint32_t *dwordCursor;
-  ArmyRegistryEaxCf5_51b6d0 assetLookup;
+  ArmyAssetLookupResult assetLookup;
   ModelDefinitionResult definitionLookup;
   PckModelDefinitionIdCatalog notificationMovieId;
   ArmyRuntimeSlot *entityRuntime1;
@@ -1163,15 +1163,15 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
         assetLookup = ArmyAssetRegistry_FindByIdCf
                            ((modelRuntime->classLinkState).modelLinkOrState60.classState);
         (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime = (ModelRuntimeSlot *)0x0;
-        if (!assetLookup.carry) {
+        if (!assetLookup.notFound) {
           tickOrCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
           if (tickOrCount < 0x40) {
             activeFactionIndex = worldRuntime->activeFactionRuntimeIndex;
-            *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + tickOrCount * 4) = assetLookup.eax;
+            *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + tickOrCount * 4) = assetLookup.recordOrError;
             assetCountField = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
             *assetCountField = *assetCountField + 1;
             if (activeFactionIndex == entityRuntime1->factionIndex) {
-              candidateValue = (assetLookup.eax)->rootNodeOffsetOrPointer;
+              candidateValue = (assetLookup.recordOrError)->rootNodeOffsetOrPointer;
               UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)worldRuntime);
               definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                                  (entityRuntime1->factionIndex,candidateValue);
@@ -1805,7 +1805,7 @@ ArmyRuntime_ResolveShotAimPointCf
   int aimWorldZ;
   ModelRuntimeNode *modelNode1;
   ShotRangeLimitResult rangeLimit;
-  FixedDirectionXyzRegs12 leadDirection;
+  FixedDirection leadDirection;
   WorldPositionResult position;
   GameEntityRuntime *entityRuntime1;
 
@@ -1851,8 +1851,8 @@ ArmyRuntime_ResolveShotAimPointCf
                             (*(int *)(targetClassRecord + 0x5c) - *(int *)(*(int *)(targetClassRecord + 4) + 0x98),
                              *(int *)(targetClassRecord + 0x58) - *(int *)(*(int *)(targetClassRecord + 4) + 0x94));
           leadDirection = FixedMath_DirectionFromAnglesScaledRegs(0,distanceOrAngle,leadDistance);
-          directionY = leadDirection.ecx;
-          distanceOrAngle = leadDirection.eax;
+          directionY = leadDirection.y;
+          distanceOrAngle = leadDirection.x;
           entityRuntime1 = (targetState->common).commandTarget.targetEntity;
           definitionOrDelta = (entityRuntime1->common).damageState.trackedCoordinate0Q12;
           if (definitionOrDelta == (entityRuntime1->common).pathCoordinate0Q12) {
@@ -1876,7 +1876,7 @@ ArmyRuntime_ResolveShotAimPointCf
               return position;
             }
           }
-          aimWorldZ = leadDirection.edx + aimWorldZ;
+          aimWorldZ = leadDirection.z + aimWorldZ;
           aimWorldY = directionY + aimWorldY;
           aimWorldX = distanceOrAngle + aimWorldX;
         }
@@ -2477,15 +2477,15 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantB
    Purpose: Loads EBX from army-runtime offset 0x6C and ECX from the linked model-definition offset 0xC4. The
    selection-panel renderer consumes both register results when composing metric bars.
 */
-ArmyMetric6CDefinitionC4Regs8 __thandor_regs_ebx_ecx_preserve_eax_edx
+ArmySegmentMeter __thandor_regs_ebx_ecx_preserve_eax_edx
 ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
 
 {
-  ArmyMetric6CDefinitionC4Regs8 metricRegs;
+  ArmySegmentMeter metricRegs;
   
-  metricRegs.ecx = *(uint32_t *)(((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
+  metricRegs.totalSegments = *(uint32_t *)(((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
                         reservedC4_C7;
-  metricRegs.ebx = (uint32_t)armyRuntime->linkedArmyRuntimeOrSavedOffset;
+  metricRegs.filledSegments = (uint32_t)armyRuntime->linkedArmyRuntimeOrSavedOffset;
   return metricRegs;
 }
 
@@ -2704,7 +2704,7 @@ ArmyRuntime_ResolveShotLaunchFromModelAttachmentCf
   Q12 launchWorldZQ12;
   ModelPackedLookupTableEntryCount remainingEntries;
   ModelPackedPointRecord *localPointRecord;
-  ModelLocalPointRegs12 launchPoint;
+  ModelWorldPoint launchPoint;
   
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNode);
   spriteModelResource = (definitionNode->spriteAssetReference).modelResource;
@@ -2720,13 +2720,13 @@ ArmyRuntime_ResolveShotLaunchFromModelAttachmentCf
     remainingEntries = remainingEntries - 1;
   }
   launchPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNode);
-  launchWorldZQ12 = launchPoint.edx;
-  launchWorldYQ12 = launchPoint.ecx;
+  launchWorldZQ12 = launchPoint.zQ12;
+  launchWorldYQ12 = launchPoint.yQ12;
   ShotRuntimePool_CreateProjectileFromDefinition
             (shotRuntimeState14,
              (ArmyRuntimeSlot *)((modelNode->runtimePayload).armyRuntime)->linkedEntityRuntime,
              targetWorldXQ12,targetWorldYQ12,targetWorldZQ12,launchWorldZQ12,launchWorldYQ12,
-             launchPoint.eax,shotDefinition,worldRuntime);
+             launchPoint.xQ12,shotDefinition,worldRuntime);
   return false;
 }
 
@@ -3396,7 +3396,7 @@ ArmyRuntime_TestClass13ProximityCandidateCf
   ModelRuntimeNode *modelNodeRuntime;
   uint32_t anchorDistance;
   ModelLookupEntryResult lookupEntry;
-  ModelLocalPointRegs12 anchorPoint;
+  ModelWorldPoint anchorPoint;
   ModelRuntimeNode *modelNode1;
   
   if (((sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xd) {
@@ -3408,8 +3408,8 @@ ArmyRuntime_TestClass13ProximityCandidateCf
     ;
     if (!lookupEntry.notFound) {
       anchorPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
-      anchorDistance = FixedMath_Length2(anchorPoint.ecx - (modelNode1->worldTransform).translation.y,
-                                anchorPoint.eax - (modelNode1->worldTransform).translation.x);
+      anchorDistance = FixedMath_Length2(anchorPoint.yQ12 - (modelNode1->worldTransform).translation.y,
+                                anchorPoint.xQ12 - (modelNode1->worldTransform).translation.x);
       if ((int)anchorDistance <= (int)(attachmentChildRuntime + 6)) {
         return true;
       }
@@ -3486,7 +3486,7 @@ ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
   uint32_t metricSum;
   uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
-  ArmyRegistryEaxCf5_51b6d0 assetLookup;
+  ArmyAssetLookupResult assetLookup;
   ModelDefinitionResult definitionLookup;
   
   metricSum = 0;
@@ -3498,9 +3498,9 @@ ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
     if (((armyRuntime->articulatedContact).linkedChildSlotMaskState.linkedChildSlotMask & slotBit) ==
         0) {
       assetLookup = ArmyAssetRegistry_FindByIdCf(slotCursor->movementTarget0Q12);
-      if (!assetLookup.carry) {
+      if (!assetLookup.notFound) {
         definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                          (factionIndex,(assetLookup.eax)->rootNodeOffsetOrPointer);
+                          (factionIndex,(assetLookup.recordOrError)->rootNodeOffsetOrPointer);
         metricSum = metricSum + definitionLookup.modelDefinition[0x20].flags;
       }
     }
@@ -3654,7 +3654,7 @@ ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   int radiusOrCount;
   WorldOwnerListNode100 *worldNode1;
   ModelPackedPointRecord *localPointRecord;
-  ModelLocalPointRegs12 localPoint;
+  ModelWorldPoint localPoint;
   WorldOwnerListNode100 *worldNode2;
   uint32_t pointOffsetMask;
   
@@ -3703,9 +3703,9 @@ ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,sourceRuntime);
       ShotRuntimePool_CreateProjectileFromDefinition
                 (effectFlags,*(ArmyRuntimeSlot **)(*(int *)((int)sourceRuntime + 0x48) + 8),
-                 worldZQ12,(localPoint.ecx - *(int *)((int)sourceRuntime + 0x98) & pointOffsetMask) + worldYQ12
-                 ,(localPoint.eax - *(int *)((int)sourceRuntime + 0x94) & pointOffsetMask) + worldXQ12,
-                 localPoint.edx,localPoint.ecx,localPoint.eax,(ShotDefinition *)effectDefinitionId,worldContext);
+                 worldZQ12,(localPoint.yQ12 - *(int *)((int)sourceRuntime + 0x98) & pointOffsetMask) + worldYQ12
+                 ,(localPoint.xQ12 - *(int *)((int)sourceRuntime + 0x94) & pointOffsetMask) + worldXQ12,
+                 localPoint.zQ12,localPoint.yQ12,localPoint.xQ12,(ShotDefinition *)effectDefinitionId,worldContext);
     }
     localPointRecord = localPointRecord + 1;
   }
@@ -3737,7 +3737,7 @@ ArmyRuntime_ProcessReadyAttachmentChannels
   int recordCountOrTable;
   int tableOrRecordCount;
   ModelPackedPointRecord *pointRecord;
-  ModelLocalPointRegs12 localPoint;
+  ModelWorldPoint localPoint;
   ModelRuntimeNode *modelNode1;
   
   channelIndex = 0;
@@ -3752,7 +3752,7 @@ ArmyRuntime_ProcessReadyAttachmentChannels
           if (channelIndex * 0x10 + 3 == pointRecord->packedLookupKey) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                               (pointRecord,(modelRuntime->rootModelNodeOrSavedOffset).modelNode);
-            worldXQ12 = localPoint.ecx;
+            worldXQ12 = localPoint.yQ12;
             modelNode1 = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
             EffectRuntimePool_CreateInstanceFromDefinitionCf
                       (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
@@ -3760,7 +3760,7 @@ ArmyRuntime_ProcessReadyAttachmentChannels
                         &modelRuntime->linkedModelRuntimeOrSavedOffset,
                        (modelNode1->modelPayload).worldRotationAngle2,
                        (modelNode1->modelPayload).worldRotationAngle1,
-                       (modelNode1->modelPayload).worldRotationAngle0,localPoint.edx,worldXQ12,localPoint.eax,
+                       (modelNode1->modelPayload).worldRotationAngle0,localPoint.zQ12,worldXQ12,localPoint.xQ12,
                        *(EffectDefinition **)
                         ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x80 + channelIndex * 8),
                        worldRuntime);
@@ -3788,12 +3788,12 @@ ArmyRuntime_ProcessReadyAttachmentChannels
                (modelNode1 = ((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->childNodes[0],
                modelNode1 != (ModelRuntimeNode *)0x0)) {
               localPoint = ModelNodeRuntime_TransformLocalPointRegs(pointRecord,modelNode1);
-              childWorldXQ12 = localPoint.ecx;
+              childWorldXQ12 = localPoint.yQ12;
               EffectRuntimePool_CreateInstanceFromDefinitionCf
                         (EFFECT_RUNTIME_COMPLETION_DESTROY_MODEL_HIERARCHY,
                          *(EffectRuntimeOwnerReference4 *)
-                          &modelRuntime->linkedModelRuntimeOrSavedOffset,0,0x4000,0,localPoint.edx,
-                         childWorldXQ12,localPoint.eax,
+                          &modelRuntime->linkedModelRuntimeOrSavedOffset,0,0x4000,0,localPoint.zQ12,
+                         childWorldXQ12,localPoint.xQ12,
                          *(EffectDefinition **)
                           ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x80 + channelIndex * 8),
                          worldRuntime);
@@ -4236,8 +4236,8 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
   EffectDefinition *effectDefinition1;
   bool timerOverflow;
   ModelLookupEntryResult lookupEntry;
-  FixedDirectionXyzRegs12 launchDirection;
-  ModelLocalPointRegs12 localPoint;
+  FixedDirection launchDirection;
+  ModelWorldPoint localPoint;
   AngleTurn32 orientationAngle2;
   GraphicsWorldCoordinateQ12 launchWorldZQ12;
   GraphicsWorldCoordinateQ12 launchWorldYQ12;
@@ -4268,8 +4268,8 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
                        ((modelNode1->modelPayload).worldRotationAngle1,
                         (modelNode1->modelPayload).worldRotationAngle0,0x1000);
     ShotRuntimePool_CreateProjectileFromDefinition
-              (0,modelRuntime->ownerArmyRuntime,launchDirection.edx + launchWorldZQ12,
-               launchDirection.ecx + launchWorldYQ12,launchDirection.eax + launchWorldXQ12,launchWorldZQ12,
+              (0,modelRuntime->ownerArmyRuntime,launchDirection.z + launchWorldZQ12,
+               launchDirection.y + launchWorldYQ12,launchDirection.x + launchWorldXQ12,launchWorldZQ12,
                launchWorldYQ12,launchWorldXQ12,shotDefinition,worldContext1);
   }
   emitterDefinition = modelRuntime->modelDefinition;
@@ -4329,9 +4329,9 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
       modelNode1 = modelNode1->childNodes[0];
     }
     localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNode1);
-    worldZQ12 = localPoint.edx;
-    worldY = localPoint.ecx;
-    nodeOrWorldX = localPoint.eax;
+    worldZQ12 = localPoint.zQ12;
+    worldY = localPoint.yQ12;
+    nodeOrWorldX = localPoint.xQ12;
   }
   effectDefinition1 = (emitterDefinition->effectDefinitionReference174).definition;
   effectDefinition = effectDefinition1;

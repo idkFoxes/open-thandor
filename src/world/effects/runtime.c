@@ -247,7 +247,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   ShadingRecordResult shadingAlloc;
   EffectCreateResult successResult;
   EffectCreateResult failureResult;
-  ModelLocalPointRegs12 localPoint;
+  ModelWorldPoint localPoint;
   TerrainOccupancyResolvedMasksRegs12 occupancyMasks;
   char runtimeClassIndex;
   uint32_t soundTableIndex;
@@ -333,7 +333,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
             shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
                                (effectDefinition->shadingTransitionDurationTicks,
                                 (effectDefinition->shadingColorArgb >> 0x18) << 8,
-                                effectDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+                                effectDefinition->shadingColorArgb,localPoint.zQ12,localPoint.yQ12,localPoint.xQ12);
             effectModelNode->shadingRecord = shadingAlloc.record;
           }
           else {

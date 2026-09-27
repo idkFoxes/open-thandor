@@ -147,14 +147,14 @@ WideNumber_FormatUtf16
    Purpose: Compares two UTF-16 streams while folding ASCII A-Z/a-z only. EAX and EDX are restored; ordering is
    returned through flags.
 */
-CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
+TextCompareResult __thandor_void_preserve_eax_ecx_edx
 Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
 
 {
   uint16_t leftCodeUnit;
   uint16_t otherCodeUnit;
   uint16_t rightCodeUnit;
-  CompareFlagsCfZf2 compareFlags;
+  TextCompareResult compareFlags;
   
   do {
     do {
@@ -164,8 +164,8 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
       rightText = rightText + 1;
       otherCodeUnit = rightCodeUnit;
       if ((leftCodeUnit == 0) || (otherCodeUnit = leftCodeUnit, rightCodeUnit == 0)) {
-        compareFlags.zero = otherCodeUnit == 0;
-        compareFlags.carry = false;
+        compareFlags.equal = otherCodeUnit == 0;
+        compareFlags.less = false;
         return compareFlags;
       }
     } while (leftCodeUnit == rightCodeUnit);
@@ -181,7 +181,7 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
       }
     }
   } while (leftCodeUnit == rightCodeUnit);
-  return THANDOR_BITCAST(int, CompareFlagsCfZf2, ((uint16_t)(leftCodeUnit < rightCodeUnit) << 8));
+  return THANDOR_BITCAST(int, TextCompareResult, ((uint16_t)(leftCodeUnit < rightCodeUnit) << 8));
 }
 
 
