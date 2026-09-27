@@ -2995,24 +2995,29 @@ bool MapEditor_DirectStartRequested(void)
 
 void MapEditor_Open(void)
 {
-  /* The terrain tools accumulate height deltas in a per-player dword plane of gridWidth * gridHeight cells
-     (terrainHeightScratchPlane8088). No code in the shipped game allocates it, so do it here, once per grid
-     size; it is never freed. */
-  static int *editorScratchPlane;
-  static uint32_t editorScratchPlaneCells;
+  /* The terrain tools work on two per-player dword planes of gridWidth * gridHeight cells: height deltas
+     (terrainHeightScratchPlane8088) and material ids (terrainMaterialEditPlane808C). No code in the shipped game
+     allocates them, so do it here, once per grid size; they are never freed. */
+  static int *heightPlane;
+  static uint32_t *materialPlane;
+  static uint32_t planeCells;
+  SelectionPlayerRuntimeBlock *player;
   FieldGridAsset *fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   uint32_t cells = fieldGrid->gridWidth * fieldGrid->gridHeight;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  if ((editorScratchPlane == NULL) || (editorScratchPlaneCells != cells)) {
-    editorScratchPlane = (int *)calloc(cells,sizeof(int));
-    editorScratchPlaneCells = cells;
+  if ((heightPlane == NULL) || (materialPlane == NULL) || (planeCells != cells)) {
+    heightPlane = (int *)calloc(cells,sizeof(int));
+    materialPlane = (uint32_t *)calloc(cells,sizeof(uint32_t));
+    planeCells = cells;
   }
-  if (editorScratchPlane == NULL) {
+  if ((heightPlane == NULL) || (materialPlane == NULL)) {
     return;
   }
-  g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->terrainHeightScratchPlane8088 = editorScratchPlane;
+  player = g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId];
+  player->terrainHeightScratchPlane8088 = heightPlane;
+  player->terrainMaterialEditPlane808C = materialPlane;
   Thandor_Log("editor: open (%u cells)",cells);
   InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,0);
 }
