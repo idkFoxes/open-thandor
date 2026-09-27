@@ -732,20 +732,18 @@ UiImageControl_NonRightRelease
 
 
 /* Address: 0x004BD2A0.
-   Ownership: ui/controls/misc.
-   Purpose: Obtains the current UI state tint and propagates it through the attached model hierarchy when it
-   differs from the stored model tint.
-   Cross-module calls: UiNode_GetStateTintArgb [ui/core/runtime], ModelNodeRuntime_ApplyTintRecursive
-   [world/model/hierarchy].
+   Re-tints a world model (army, effect or shot) after its runtime state bits changed: the tint chosen by
+   UiNode_GetStateTintArgb from runtimeFlags 0x04/0x08/0x10 is applied to the whole hierarchy only when it
+   differs from the tint the model already has.
 */
-void __thandor_preserve_eax UiModelControl_RefreshStateTint(ModelRuntimeNode *control)
+void __thandor_preserve_eax ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode)
 
 {
   PackedArgb32 tintArgb;
   
-  tintArgb = UiNode_GetStateTintArgb((UiNodeBase *)control);
-  if (tintArgb != control->tintArgb) {
-    ModelNodeRuntime_ApplyTintRecursive(tintArgb,control);
+  tintArgb = UiNode_GetStateTintArgb((UiNodeBase *)modelNode);
+  if (tintArgb != modelNode->tintArgb) {
+    ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode);
   }
   return;
 }
@@ -1098,10 +1096,9 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
 
 
 /* Address: 0x004BC9B0.
-   Ownership: ui/controls/misc.
-   Purpose: Returns the image control only for an opaque texture-source pixel, optionally descends into children,
-   and clears the transient opaque-hit state when no pixel matches.
-   Cross-module calls: UiContainer_HitTestChildren [ui/controls/layout].
+   Hit test of an image control: only opaque pixels of its current image count, so irregular shapes react
+   precisely. A miss clears state bit 0x200 and, in persistent activation mode, passes the test on to the
+   children. Returns the hit node or UI_NODE_NONE.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiImageControl_HitTestOpaque
@@ -1109,16 +1106,16 @@ UiImageControl_HitTestOpaque
 
 {
   UiImageControl *hitNode;
-  bool opaquePixelHit;
   bool opaqueHit;
   UiSelectableStateFlags *stateFlagsField;
   
-  hitNode = (UiImageControl *)0xffffffff;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
-    if (((control->selectable).stateFlags & 0x40) == 0) {
+  hitNode = (UiImageControl *)UI_NODE_NONE;
+  if ((control->selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+    /* state bit 0x40 selects the alternate image as the hit mask */
+    if ((control->selectable.stateFlags & 0x40) == 0) {
       opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                        (pointerY,pointerX,(control->selectable).base.top,
-                         (control->selectable).base.left,control->normalSubresource,
+                        (pointerY,pointerX,control->selectable.base.top,
+                         control->selectable.base.left,control->normalSubresource,
                          control->textureSource);
       if (opaqueHit) {
         return (UiNodeBase *)control;
@@ -1126,21 +1123,23 @@ UiImageControl_HitTestOpaque
     }
     else {
       opaqueHit = g_GraphicsTextureSourceTestOpaquePixel
-                        (pointerY,pointerX,(control->selectable).base.top,
-                         (control->selectable).base.left,control->alternateSubresource,
+                        (pointerY,pointerX,control->selectable.base.top,
+                         control->selectable.base.left,control->alternateSubresource,
                          control->textureSource);
       if (opaqueHit) {
         return (UiNodeBase *)control;
       }
     }
-    stateFlagsField = &(control->selectable).stateFlags;
+    stateFlagsField = &control->selectable.stateFlags;
     *stateFlagsField = *stateFlagsField & 0xfffffdff;
-    hitNode = (UiImageControl *)0xffffffff;
-    if (((((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) &&
+    hitNode = (UiImageControl *)UI_NODE_NONE;
+    /* UiContainer_HitTestChildren returns the control itself when no child is hit; that only counts
+       while g_UiImageControlHoverTarget is NULL */
+    if ((((control->selectable.stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) != 0) &&
         (hitNode = (UiImageControl *)
                    UiContainer_HitTestChildren(pointerY,pointerX,(UiNodeBase *)control),
-        hitNode == control)) && (g_UiImageControlHoverTarget != (UiImageControl *)0x0)) {
-      hitNode = (UiImageControl *)0xffffffff;
+        hitNode == control)) && (g_UiImageControlHoverTarget != NULL)) {
+      hitNode = (UiImageControl *)UI_NODE_NONE;
     }
   }
   return (UiNodeBase *)hitNode;

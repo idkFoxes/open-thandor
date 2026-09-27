@@ -50,67 +50,57 @@ InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
 
 
 /* Address: 0x0056B450.
-   Ownership: ui/ingame/technology.
-   Purpose: Releases technology-panel focus, clears all seven area selections, maps the selected entity technology
-   area to one control, resets detail state, and rebuilds the panel.
-   Local calls: InGameTechnologyPanel_Rebuild.
-   Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input], SelectionInfo_GetFirstEntry
-   [gameplay/selection/runtime].
+   Opens the technology panel for the first selected entity: suppresses the world view and releases its keyboard
+   focus, deselects the seven area tabs and, when the entity is researching (runtime flags +0xEC bit 0x40/0x80),
+   selects the tab of the area that holds its current technology; then resets the shown technology to the basic
+   one and rebuilds the panel.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
 
 {
-  int32_t *flagSlot;
-  UiNodeBase **parentFlagSlot;
-  UiAnchorFractionQ31 *anchorFlagSlot;
-  UiNodeFlags *nodeFlagsSlot;
-  uint32_t *rowFlags;
-  int *entityDefinition;
+  uint32_t *tabStateFlags;
+  int *selectedModelRuntime;
   GameEntityRuntime *firstSelectedEntity;
-  int technologyCursor;
+  int technologySlotAddress;
   int remainingCount;
   uint32_t areaIndex;
-  
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,worldView,0x48,int32_t);
-  *flagSlot = *flagSlot | 8;
+
+  INGAME_UI_FIELD(inGameRoot,worldView,0x48,int32_t) |= UI_NODE_SUPPRESSED; /* nodeFlags */
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)INGAME_UI(inGameRoot,worldView));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
-  entityDefinition = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x4C,int32_t);
-  *flagSlot = *flagSlot & 0xfffffffd;
-  INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint32_t)INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) & 0xfffffffd);
-  parentFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x4C,struct UiNodeBase *);
-  *parentFlagSlot = (UiNodeBase *)((uint32_t)*parentFlagSlot & 0xfffffffd);
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x4C,int32_t);
-  *flagSlot = *flagSlot & 0xfffffffd;
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x4C,int32_t);
-  *flagSlot = *flagSlot & 0xfffffffd;
-  anchorFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x4C,uint32_t);
-  *anchorFlagSlot = *anchorFlagSlot & 0xfffffffd;
-  nodeFlagsSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab7,0x4C,enum UiNodeFlags);
-  *nodeFlagsSlot = *nodeFlagsSlot & ~UI_NODE_PREFERRED_FOCUS_TARGET;
-  if ((entityDefinition[0x3b] & 0xc0U) != 0) {
-    technologyCursor = *entityDefinition;
+  selectedModelRuntime = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
+  /* +0x4C is UiSelectableControl.stateFlags of each tab */
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab7,0x4C,uint32_t) &= ~UI_SELECTABLE_SELECTED_OR_CHECKED;
+  if ((selectedModelRuntime[0x3b] & 0xc0U) != 0) {
+    /* The definition lists 28 technology ids from +0x1C8, cycling through the seven areas; the one equal to
+       the entity's current technology (runtime +0x100) picks the tab. */
+    technologySlotAddress = *selectedModelRuntime;
     areaIndex = 0xffffffff;
-    remainingCount = 0x1c;
+    remainingCount = 28;
     do {
-      areaIndex = areaIndex + 1;
+      areaIndex++;
       if (6 < areaIndex) {
         areaIndex = 0;
       }
-      if (*(int *)(technologyCursor + 0x1c8) == entityDefinition[0x40]) {
-        rowFlags = (uint32_t *)((int)&inGameRoot->rootFlags + *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0)));
-        *rowFlags = *rowFlags | 2;
+      if (*(int *)(technologySlotAddress + 0x1c8) == selectedModelRuntime[0x40]) {
+        tabStateFlags = (uint32_t *)((int)&inGameRoot->rootFlags +
+                                     *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0)));
+        *tabStateFlags = *tabStateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
         break;
       }
-      technologyCursor = technologyCursor + 4;
-      remainingCount = remainingCount + -1;
+      technologySlotAddress = technologySlotAddress + 4;
+      remainingCount--;
     } while (remainingCount != 0);
   }
   g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
   InGameTechnologyPanel_Rebuild(inGameRoot);
-  return;
 }
 
 

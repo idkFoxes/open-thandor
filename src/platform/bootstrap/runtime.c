@@ -343,31 +343,33 @@ DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 
 
 /* Address: 0x00573CD0.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Frees a DLL loaded by DynDLL_Load; the module is found by its name pointer (not by comparing text), as the
+   Glide backend passes the same name string it loaded with. Returns FreeLibrary's non-zero result, or
+   FATAL_ERROR_LOADER_MODULE_MISSING with the name in g_PackageLastErrorPath. The table entry stays in place.
+   The original also reports success/failure in CF (clear/set); the callers ignore both.
 */
 uint32_t DynDLL_Unload(char *moduleName)
 
 {
-  uint32_t modulesRemainingOrResult;
+  uint32_t modulesRemainingOrResult; /* one register in the original: the loop count, then FreeLibrary's result */
   DynamicModuleEntry *moduleEntryCursor;
-  
+
   moduleEntryCursor = g_DynamicModules;
   modulesRemainingOrResult = g_DynamicModuleCount;
-  for (; modulesRemainingOrResult != 0; modulesRemainingOrResult = modulesRemainingOrResult - 1) {
+  for (; modulesRemainingOrResult != 0; modulesRemainingOrResult--) {
     if (moduleName == moduleEntryCursor->name) {
+      /* g_BootstrapApiBindings[1] is FreeLibrary */
       modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
       if (modulesRemainingOrResult != 0) {
         return modulesRemainingOrResult;
       }
       break;
     }
-    moduleEntryCursor = moduleEntryCursor + 1;
+    moduleEntryCursor++;
   }
   /* module not loaded, or FreeLibrary failed */
   Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
-  return 0xf;
+  return FATAL_ERROR_LOADER_MODULE_MISSING;
 }
 
 /* Address: 0x00573D40.
@@ -1314,8 +1316,8 @@ static void DebugMovie_ExportOne(const char *name)
 {
   uint16_t path[0x40];
   char fileName[0x80];
-  int n = 0;
-  int i;
+  int pathLength = 0;
+  int nameIndex;
   uint32_t frames = 0;
   uint32_t width;
   uint32_t height;
@@ -1323,10 +1325,13 @@ static void DebugMovie_ExportOne(const char *name)
   MovieFrameResult frame;
   FILE *video;
   FILE *info;
-  path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm'; path[n++] = '\\';
-  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (uint16_t)name[i];
-  path[n++] = '.'; path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm';
-  path[n] = 0;
+  /* L"flm\<name>.flm", the name cut so that the extension and terminator still fit */
+  path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
+  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 0x38; nameIndex++) {
+    path[pathLength++] = (uint16_t)name[nameIndex];
+  }
+  path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
+  path[pathLength] = 0;
   CreateDirectoryA("moviedump", NULL);
   opened = Movie_Open(1,path);
   if (opened.failed) {
@@ -1345,7 +1350,7 @@ static void DebugMovie_ExportOne(const char *name)
     uint32_t bytes2 = 0;
     memset(&format, 0, sizeof format);
     buffer->lpVtbl->GetFormat(buffer, &format, sizeof format, &formatBytes);
-    if (buffer->lpVtbl->Lock(buffer, 0, 0, &part1, &bytes1, &part2, &bytes2, 2 /* DSBLOCK_ENTIREBUFFER */) == 0) {
+    if (buffer->lpVtbl->Lock(buffer, 0, 0, &part1, &bytes1, &part2, &bytes2, DSBLOCK_ENTIREBUFFER) == 0) {
       FILE *wav;
       sprintf(fileName, "moviedump\\%s.wav", name);
       wav = fopen(fileName, "wb");
@@ -1391,6 +1396,9 @@ static void DebugMovie_ExportOne(const char *name)
   Movie_Close();
 }
 
+/* Debug tool: OPEN_THANDOR_MOVIE=<name> plays flm\<name>.flm, OPEN_THANDOR_MOVIE=all plays every name
+   listed in movies.txt (up to 256, one per line) one after another, each with a frame counter overlay.
+   OPEN_THANDOR_MOVIE_STRETCH=1 stretches the frames to the screen. The process exits afterwards. */
 static void DebugMovie_Run(const char *which)
 {
   const char *stretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");

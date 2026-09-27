@@ -46,7 +46,7 @@ static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
    terrainStateRefresh, object kind effect. The 4x3 table bytes, target body, calling convention, and RET 0x08
    contract remain unchanged.
    Cross-module calls: TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy],
-   TerrainOccupancyMask_ResolveRuntimeClassFlags [world/terrain/occupancy], UiModelControl_RefreshStateTint
+   TerrainOccupancyMask_ResolveRuntimeClassFlags [world/terrain/occupancy], ModelNodeRuntime_RefreshStateTint
    [ui/controls/misc].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -72,7 +72,7 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
                       (char)worldRuntime->activeFactionRuntimeIndex);
   modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
   effectRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  UiModelControl_RefreshStateTint((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
   if ((modelNode->tintArgb & 0xff000000) != 0) {
     effectTintArgb = effectRuntime->stateTintArgb;
     definitionTintArgb = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;

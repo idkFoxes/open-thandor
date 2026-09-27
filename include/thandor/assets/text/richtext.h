@@ -43,6 +43,9 @@
 #define RICHTEXT_RECORD_UNITS_INLINE_IMAGE 5
 /* The 0x18 return resumes 8 bytes (the four payload code units) after the saved position. */
 #define RICHTEXT_NESTED_PAYLOAD_BYTES 8
+/* Code units of g_FontRuntimeBuffer that RichTextCommandStream_FlattenNestedToRuntimeBuffer fills (the terminator
+   is written behind them). */
+#define RICHTEXT_RUNTIME_BUFFER_UNITS 0x2000
 
 /* UiPackedTextStyle fields as the rich-text interpreters decode them. */
 #define TEXT_STYLE_ALIGN_RIGHT 0x1 /* the line ends at the given x */

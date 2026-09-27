@@ -147,11 +147,8 @@ TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
 
 
 /* Address: 0x0041CEB0.
-   Ownership: assets/text/resources.
-   Purpose: Queries one glyph from the currently active font texture. Width is returned in EAX and line height in
-   EDX. It selects an existing resource facet and does not imply sprite, model, or effect identity. Typed
-   parameters: p0 glyphSubresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control
-   flow, and executable data remain unchanged.
+   Returns the width of one glyph (EAX, 0 when the font has no such glyph) and the line height (EDX, the height
+   of glyph 0) in the active font; used to measure text before it is laid out.
 */
 GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
@@ -206,12 +203,9 @@ FontGlyph_GetLogicalSizeForStyleRegs
 
 
 /* Address: 0x0041D370.
-   Ownership: assets/text/resources.
-   Purpose: EAX returns glyph width and CF is cleared. It selects an existing resource facet and does not imply
-   sprite, model, or effect identity. Typed parameters: p4 glyphSubresource→GraphicsSubresourceIndex_V338. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters: p0
-   clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
-   clipRight→UiPixelCoordinate_V297, p5 baselineY→UiPixelCoordinate_V297.
+   Draws one glyph of the active font with its bottom edge on baselineY at drawX, clipped to the given
+   rectangle, in the current rich-text colour; with a shadow offset set, a half-transparent black copy is drawn
+   first, shifted down and right. Returns the glyph width (0 without a loaded font) so the caller can advance.
 */
 uint32_t FontGlyph_DrawBottomAligned
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
@@ -224,9 +218,9 @@ uint32_t FontGlyph_DrawBottomAligned
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
-  
+
   fontTexture = g_FontTextureSources[g_ActiveFontIndex];
-  if (fontTexture != (GraphicsTextureSourceAsset *)0x0) {
+  if (fontTexture != NULL) {
     textureSize = g_GraphicsTextureSourceGetLogicalSize(glyphSubresource,fontTexture);
     drawY = baselineY - textureSize.logicalHeightPixels;
     colorArgb = g_RichTextCurrentColorArgb;
@@ -234,7 +228,7 @@ uint32_t FontGlyph_DrawBottomAligned
     if (g_RichTextCurrentShadowOffset != 0) {
       g_GraphicsTextureSourceBlitModulatedSourceAlpha
                 (clipTop,clipLeft,clipBottom,clipRight,drawY + g_RichTextCurrentShadowOffset,
-                 drawX + g_RichTextCurrentShadowOffset,0x7f000000,glyphSubresource,fontTexture,
+                 drawX + g_RichTextCurrentShadowOffset,TEXT_SHADOW_COLOR_ARGB,glyphSubresource,fontTexture,
                  g_FramebufferAccess);
     }
     g_GraphicsTextureSourceBlitModulatedSourceAlpha
@@ -421,10 +415,9 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
 
 
 /* Address: 0x0041CCF0.
-   Ownership: assets/text/resources.
-   Purpose: A null table or full table leaves state unchanged. Kept distinct from glyph/subresource selectors and
-   localized string pointers. Typed parameters: p0 resourceId→TextResourceId_V338. Calling convention, storage,
-   body bytes, control flow, and executable data remain unchanged.
+   Makes resourceId resolve to text (checked by TextResource_Resolve before the locale blocks) by storing the
+   pair in the first override entry whose id is zero. Without an override table, or when it is full, nothing
+   is registered.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
@@ -434,22 +427,24 @@ TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
   TextResourceOverrideParallelWord4 *overrideWordScanCursor;
   TextResourceOverrideParallelWord4 *overrideWordCursorAfterScan;
   bool availableOverrideSlotFound;
-  
-  overrideSlotsRemaining = 0x1000;
-  availableOverrideSlotFound = g_TextResourceOverrides == (TextResourceOverrideTable *)0x0;
+
+  overrideSlotsRemaining = TEXT_RESOURCE_OVERRIDE_CAPACITY;
+  availableOverrideSlotFound = g_TextResourceOverrides == NULL;
   overrideWordScanCursor = (TextResourceOverrideParallelWord4 *)g_TextResourceOverrides;
   if (!availableOverrideSlotFound) {
+    /* REPNE SCASD over the id array for a zero id; the cursor ends one entry past the match */
     do {
       overrideWordCursorAfterScan = overrideWordScanCursor;
       if (overrideSlotsRemaining == 0) break;
-      overrideSlotsRemaining = overrideSlotsRemaining + -1;
+      overrideSlotsRemaining--;
       overrideWordCursorAfterScan = overrideWordScanCursor + 1;
       availableOverrideSlotFound = overrideWordScanCursor->resourceId == 0;
       overrideWordScanCursor = overrideWordCursorAfterScan;
     } while (!availableOverrideSlotFound);
     if (availableOverrideSlotFound) {
+      /* the text pointer array follows the id array, TEXT_RESOURCE_OVERRIDE_CAPACITY entries further on */
       overrideWordCursorAfterScan[-1].resourceId = resourceId;
-      overrideWordCursorAfterScan[0xfff].textPointer = text;
+      overrideWordCursorAfterScan[TEXT_RESOURCE_OVERRIDE_CAPACITY - 1].textPointer = text;
     }
   }
   return;

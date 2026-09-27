@@ -12,6 +12,23 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/primitives. */
+
+/* Primitive queue pool layout (GraphicsPrimitiveQueue_AllocateGlobalPool/ResetGlobal): a 0x20-byte header, then
+   per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself. */
+#define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES 0x20
+#define GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET 0xA0
+/* GraphicsPrimitiveQueue_RadixSortForRendering ends the sorted traversal list with this node pointer */
+#define GRAPHICS_PRIMITIVE_QUEUE_END_NODE ((GraphicsPrimitiveQueueNode *)0xffffffff)
+/* GraphicsPrimitivePacket.renderFlags: bits 12..17 select the raster handler ((flags & 0x3f000) >> 12). Bit 16
+   marks a textured packet, bits 12..14 the blend mode; Glide3_DrawPrimitiveQueue draws blend mode 0 opaque,
+   1 alpha-blended without depth writes, 2 additive without depth writes, every other mode alpha-blended with
+   depth writes, and treats bit 17 as blend mode 1. */
+#define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
+#define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
+#define GRAPHICS_PRIMITIVE_BLEND_MASK 0x7000
+#define GRAPHICS_PRIMITIVE_BLEND_OPAQUE 0
+#define GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT 0x1000
+#define GRAPHICS_PRIMITIVE_BLEND_ADDITIVE 0x2000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486080 */

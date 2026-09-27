@@ -11,11 +11,10 @@
 /* Implementation ownership: gameplay/army/audio. */
 
 /* Address: 0x0051D5F0.
-   Ownership: gameplay/army/audio.
-   Purpose: Finds the matching enabled frontend player runtime block, converts its 256 palette entries to ARGB, and
-   copies the associated 0x1000-byte texture payload into the army graphics asset. Typed parameters: p3
-   armyGraphicsAsset→ArmyGraphicsAssetAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Replaces one image of a freshly loaded faction graphics ('gfx') asset with the image a frontend player sent in
+   his snapshot payload, so the player's own picture shows in the game: the payload's 256 RGB palette entries
+   become opaque ARGB entries (pure black stays transparent), followed by 0x1000 bytes of pixel data. Nothing
+   changes when no player with a complete snapshot has frontendPlayerRuntimeId as faction assignment.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
@@ -23,30 +22,34 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
           ArmyGraphicsAssetAddress32 armyGraphicsAsset)
 
 {
-  int textureOffset;
+  int pixelDataOffset;
   uint32_t paletteColor;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   int remainingCount;
   FrontendPlayerRuntimeRecord *playerRecord;
   uint8_t *payloadCursor;
   uint32_t *destinationCursor;
-  
+
   remainingBlocks = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   while ((frontendPlayerRuntimeId != (playerRecord->factionAssignment).factionAssignmentIndex ||
          ((playerRecord->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0))) {
-    playerRecord = playerRecord + 1;
+    playerRecord++;
     remainingBlocks = remainingBlocks - 1;
     if (remainingBlocks == 0) {
       return;
     }
   }
   payloadCursor = playerRecord->snapshotPayloadB0_13AF;
-  textureOffset = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
-  remainingCount = 0x100;
+  /* The asset dword at +0xB8 is an offset; the record behind it holds at +0xE28 the index of the image's
+     palette (0x800-byte palettes of 256 8-byte entries from asset +0x200) and at +0xE2C the offset of its
+     pixel data. */
+  pixelDataOffset = *(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe2c + armyGraphicsAsset);
+  remainingCount = 256;
   destinationCursor = (uint32_t *)(*(int *)(*(int *)(armyGraphicsAsset + 0xb8) + 0xe28 + armyGraphicsAsset) * 0x800
                     + 0x200 + armyGraphicsAsset);
   do {
+    /* reads four bytes of a three-byte entry; the fourth is replaced by the alpha */
     paletteColor = *(uint32_t *)payloadCursor;
     if ((paletteColor & 0xffffff) == 0) {
       paletteColor = paletteColor & 0xffffff;
@@ -57,13 +60,14 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
     *destinationCursor = paletteColor;
     payloadCursor = payloadCursor + 3;
     destinationCursor = destinationCursor + 2;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  destinationCursor = (uint32_t *)(textureOffset + armyGraphicsAsset);
-  for (remainingCount = 0x400; remainingCount != 0; remainingCount = remainingCount + -1) {
+  destinationCursor = (uint32_t *)(pixelDataOffset + armyGraphicsAsset);
+  /* 0x400 dwords = 0x1000 bytes of pixel data */
+  for (remainingCount = 0x400; remainingCount != 0; remainingCount--) {
     *destinationCursor = *(uint32_t *)payloadCursor;
     payloadCursor = payloadCursor + 4;
-    destinationCursor = destinationCursor + 1;
+    destinationCursor++;
   }
   return;
 }

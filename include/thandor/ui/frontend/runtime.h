@@ -75,6 +75,7 @@
 #define FRONTEND_ACTION_LINK_ROTATION_ZOOM 0x203E /* linkRotationZoomCheckbox */
 #define FRONTEND_ACTION_LINK_ROTATION_TILT 0x203F /* linkRotationTiltCheckbox */
 #define FRONTEND_ACTION_GAME_SPEED 0x204A /* gameSpeedSlider on the mission briefing page */
+#define FRONTEND_ACTION_START_NETWORK_GAME 0x2006 /* hostLobbyStartButton: seeds the random streams and starts */
 /* g_FrontendNetworkState, dispatched by Frontend_StateTick (values 3..5 are set by network/protocol/transfer). */
 #define FRONTEND_NETWORK_STATE_IDLE 0
 #define FRONTEND_NETWORK_STATE_BROWSING 1 /* network game page: polls for sessions, handles join acks */

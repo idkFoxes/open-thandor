@@ -19,7 +19,7 @@ digraph thandor {
   "UiImageControl_DrawClipped" [label="0x004BC5C0\nUiImageControl_DrawClipped"];
   "UiImageControl_NonRightPress" [label="0x004BC6E0\nUiImageControl_NonRightPress"];
   "UiImageControl_NonRightRelease" [label="0x004BC7E0\nUiImageControl_NonRightRelease"];
-  "UiModelControl_RefreshStateTint" [label="0x004BD2A0\nUiModelControl_RefreshStateTint"];
+  "ModelNodeRuntime_RefreshStateTint" [label="0x004BD2A0\nUiModelControl_RefreshStateTint"];
   "UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw" [label="0x00517E30\nUiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw"];
   "UiDisplaySettings_OpenAndPopulateModeSelection" [label="0x00423600\nUiDisplaySettings_OpenAndPopulateModeSelectionCf"];
   "UiImageControl_HitTestOpaque" [label="0x004BC9B0\nUiImageControl_HitTestOpaque"];

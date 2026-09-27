@@ -11,20 +11,14 @@
 /* Implementation ownership: world/terrain/occupancy. */
 
 /* Address: 0x00507460.
-   Ownership: world/terrain/occupancy.
-   Purpose: Converts a world point to the field grid, bounds the directional radius, sets bit 1 in the selected
-   occupancy-mask byte at the center cell, and marks all six surrounding wedges. Typed parameters: p3
-   worldXQ12→Q12, p4 worldYQ12→Q12, p5 occupancyByteOffset→FieldGridOccupancyByteIndex. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged. Typed parameters: p2
-   radiusWorldUnits→FieldGridRadiusUnits.
-   Local calls: TerrainOccupancyBit2_MarkWedge0, TerrainOccupancyBit2_MarkWedge1, TerrainOccupancyBit2_MarkWedge2,
-   TerrainOccupancyBit2_MarkWedge3, TerrainOccupancyBit2_MarkWedge4, TerrainOccupancyBit2_MarkWedge5.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
+   Sets occupancy bit 1 (FIELD_CELL_OCCUPANCY_BIT1) in one faction slot's byte for every cell within the given
+   radius of a world point: the centre cell here, the rest through the six hexagon sectors. Part of the occupancy
+   rebuild that runs over every owned army (the army's radius at +0x90). Nothing happens when the centre is outside
+   the grid or on a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkAroundWorldPoint
-          (FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
+          (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12,
           FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid)
 
 {
@@ -38,44 +32,46 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
   FieldGridCell *wedge1Or4Cell;
   FieldGridCell *cell;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
-  
-  if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
+
+  if (fieldGrid != NULL) {
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
-    else if (0xff < g_TerrainScanStepLimit) {
-      g_TerrainScanStepLimit = 0xff;
+    else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
+      g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
     }
     g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex = occupancyByteOffset;
-    gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
-    cellColumn = gridCoordinates.columnQ12 >> 0xc;
-    g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7;
-    cellRow = gridCoordinates.rowQ12 >> 0xc;
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
+    cellColumn = gridCoordinates.columnQ12 >> 12;
+    g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7; /* 0x80-byte cells */
+    cellRow = gridCoordinates.rowQ12 >> 12;
     if ((((-1 < (int)cellColumn) && (gridColumnCount = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)cellRow)) &&
         (cellRow < fieldGrid->gridHeight)) &&
        ((cellColumn < gridColumnCount &&
-        (cellIndex = cellRow * gridColumnCount + cellColumn, (fieldGrid->cells[cellIndex].flagsAndMaterial & 0x88006000) == 0
-        )))) {
-      centerMaskByte = fieldGrid->cells[cellIndex].runtime60_6B + occupancyByteOffset + 0x10;
-      *centerMaskByte = *centerMaskByte | 2;
+        (cellIndex = cellRow * gridColumnCount + cellColumn,
+         (fieldGrid->cells[cellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0)))) {
+      centerMaskByte =
+           fieldGrid->cells[cellIndex].runtime60_6B + occupancyByteOffset + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK;
+      *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
+      /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
+         the first address is cells[cellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
       wedge0Or3Cell = (FieldGridCell *)
                (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-               cellIndex * 0x80 + -0x28);
+               cellIndex * 0x80 - 0x28);
       wedge1Or4Cell = (FieldGridCell *)((int)wedge0Or3Cell - g_TerrainScanRowStrideBytes);
       TerrainOccupancyBit2_MarkWedge0(0,wedge0Or3Cell);
-      cell = wedge1Or4Cell + -1;
+      cell = wedge1Or4Cell - 1;
       TerrainOccupancyBit2_MarkWedge1(0,wedge1Or4Cell);
-      wedge0Or3Cell = (FieldGridCell *)(cell[-1].runtime0C_3F + rowStrideBytes + -0xc);
+      wedge0Or3Cell = (FieldGridCell *)(cell[-1].runtime0C_3F + rowStrideBytes - 0xc);
       TerrainOccupancyBit2_MarkWedge2(0,cell);
-      wedge1Or4Cell = (FieldGridCell *)(wedge0Or3Cell->runtime0C_3F + rowStrideBytes + -0xc);
+      wedge1Or4Cell = (FieldGridCell *)(wedge0Or3Cell->runtime0C_3F + rowStrideBytes - 0xc);
       TerrainOccupancyBit2_MarkWedge3(0,wedge0Or3Cell);
       TerrainOccupancyBit2_MarkWedge4(0,wedge1Or4Cell);
       TerrainOccupancyBit2_MarkWedge5(0,wedge1Or4Cell + 1);
     }
   }
-  return;
 }
 
 
@@ -98,17 +94,15 @@ static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
 
 
 /* Address: 0x00507610.
-   Ownership: world/terrain/occupancy.
-   Purpose: Collects occupancy masks from the six bounded directional runs around a world point, filters the
-   combined mask through the fixed SIMD lookup constants, and returns the encoded neighborhood classification.
-   Typed parameters: p1 worldXQ12→Q12, p2 worldYQ12→Q12. Nearby but non-identical semantic domains were explicitly
-   deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
+   Answers "which factions are around this point": ORs the occupancy masks of the centre cell and of six straight
+   rays (right, left, up-right, up, down-left, down; length from the radius, 1..255 cells, stopping at map-edge
+   cells) and packs two bits per faction slot i: bit 2i+1 = a current presence bit is set, bit 2i = only the
+   persistent bit 7 is (bits 1 and 2 are ignored). TerrainOccupancyMask_ResolveRuntimeClassFlags consumes the
+   result. Returns 0 (in EDX) when the grid is missing or the point lies outside it or on a map-edge cell.
 */
 uint32_t __thandor_void_preserve_eax_ecx
 TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
-          (Q12 neighborhoodRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
+          (Q12 neighborhoodRadiusQ12,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   uint32_t radiusStepsOrGridWidth;
@@ -121,12 +115,13 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   int runRemainingA;
   int runRemainingB;
   uint64_t combinedMask;
-  uint64_t mm1PackedValue0;
-  uint64_t signBiasMatchBytes;
-  uint64_t mm2PackedValue0;
+  uint64_t currentPresenceSums;
+  uint64_t persistentOnlyBytes;
+  uint64_t persistentOnlySums;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
-  
-  if (fieldGrid != (FieldGridAsset *)0x0) {
+
+  if (fieldGrid != NULL) {
+    /* cells per ray, rounded; the original divides by 0x901, not by the cell size 0x900 */
     radiusStepsOrGridWidth = (neighborhoodRadiusQ12 + 0x7ffU) / 0x901;
     if (radiusStepsOrGridWidth == 0) {
       runStepCount = 2;
@@ -137,75 +132,81 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
     else {
       runStepCount = 0x100;
     }
-    gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
     radiusStepsOrGridWidth = fieldGrid->gridWidth;
-    cellColumn = (gridCoordinates.columnQ12 >> 0xb) + 1 >> 1;
-    cellRow = (gridCoordinates.rowQ12 >> 0xb) + 1 >> 1;
+    /* round the Q12 grid coordinates to the nearest cell */
+    cellColumn = (gridCoordinates.columnQ12 >> 11) + 1 >> 1;
+    cellRow = (gridCoordinates.rowQ12 >> 11) + 1 >> 1;
     if ((((-1 < (int)cellColumn) && (-1 < (int)cellRow)) && (cellRow < fieldGrid->gridHeight)) &&
        (cellColumn < radiusStepsOrGridWidth)) {
       centerCell = fieldGrid->cells + cellRow * radiusStepsOrGridWidth + cellColumn;
       combinedMask = centerCell->occupancyMask;
-      if ((centerCell->flagsAndMaterial & 0x88006000) == 0) {
-        runStepCount = runStepCount + -1;
+      if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        runStepCount--;
         runCursorA = centerCell;
         runRemainingA = runStepCount;
         if (runStepCount != 0) {
-          do {
+          /* each ray restarts at the centre; the edge cell that stops a ray is still counted */
+          do { /* right: +0x70 occupancyMask, +0x50 flags of the next cell */
             combinedMask = combinedMask | *(uint64_t *)((int)(runCursorA + 1) + 0x70);
             runCursorB = centerCell;
             runRemainingB = runStepCount;
-            if ((*(uint32_t *)((int)(runCursorA + 1) + 0x50) & 0x88006000) != 0) break;
-            runRemainingA = runRemainingA + -1;
+            if ((*(uint32_t *)((int)(runCursorA + 1) + 0x50) & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runRemainingA--;
             runCursorA = runCursorA + 1;
           } while (runRemainingA != 0);
-          do {
-            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorB + -1) + 0x70);
+          do { /* left */
+            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorB - 1) + 0x70);
             runCursorA = centerCell;
             runRemainingA = runStepCount;
-            if ((*(uint32_t *)((int)(runCursorB + -1) + 0x50) & 0x88006000) != 0) break;
-            runRemainingB = runRemainingB + -1;
-            runCursorB = runCursorB + -1;
+            if ((*(uint32_t *)((int)(runCursorB - 1) + 0x50) & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runRemainingB--;
+            runCursorB = runCursorB - 1;
           } while (runRemainingB != 0);
-          do {
+          do { /* up and right */
             runCursorA = runCursorA + (1 - radiusStepsOrGridWidth);
             combinedMask = combinedMask | runCursorA->occupancyMask;
             runCursorB = centerCell;
             runRemainingB = runStepCount;
-            if ((runCursorA->flagsAndMaterial & 0x88006000) != 0) break;
-            runRemainingA = runRemainingA + -1;
+            if ((runCursorA->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runRemainingA--;
           } while (runRemainingA != 0);
-          do {
+          do { /* up */
             runCursorB = runCursorB + -radiusStepsOrGridWidth;
             combinedMask = combinedMask | runCursorB->occupancyMask;
             runCursorA = centerCell;
             runRemainingA = runStepCount;
-            if ((runCursorB->flagsAndMaterial & 0x88006000) != 0) break;
-            runRemainingB = runRemainingB + -1;
+            if ((runCursorB->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runRemainingB--;
           } while (runRemainingB != 0);
-          do {
+          do { /* down and left */
             runCursorA = runCursorA + (radiusStepsOrGridWidth - 1);
             combinedMask = combinedMask | runCursorA->occupancyMask;
-            if ((runCursorA->flagsAndMaterial & 0x88006000) != 0) break;
-            runRemainingA = runRemainingA + -1;
+            if ((runCursorA->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runRemainingA--;
           } while (runRemainingA != 0);
-          do {
+          do { /* down */
             centerCell = centerCell + radiusStepsOrGridWidth;
             combinedMask = combinedMask | centerCell->occupancyMask;
-            if ((centerCell->flagsAndMaterial & 0x88006000) != 0) break;
-            runStepCount = runStepCount + -1;
+            if ((centerCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) break;
+            runStepCount--;
           } while (runStepCount != 0);
         }
+        /* MMX byte classification per faction byte (0xF9 mask drops bits 1 and 2): 0x80 alone -> persistent
+           only; any other non-zero value -> currently present. PAND 0x0280 and PMADDWD with the 2/0x20 and
+           4/0x40 weights move the flag of faction i to bit 2i (persistent) or 2i+1 (present), bytes 0..3 in
+           bits 8..15 of the low dword and bytes 4..7 in bits 8..15 of the high dword. */
         combinedMask = combinedMask & g_TerrainOccupancyMmxClearBits1And2Mask;
-        signBiasMatchBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
-        mm2PackedValue0 =
-             pmaddwd(signBiasMatchBytes & g_TerrainOccupancyMmxPackedScale0280,
+        persistentOnlyBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
+        persistentOnlySums =
+             pmaddwd(persistentOnlyBytes & g_TerrainOccupancyMmxPackedScale0280,
                      g_TerrainOccupancyMmxPackedWeights02_20);
-        mm1PackedValue0 =
+        currentPresenceSums =
              pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^
-                      g_TerrainOccupancyMmxAllBitsMask ^ signBiasMatchBytes) &
+                      g_TerrainOccupancyMmxAllBitsMask ^ persistentOnlyBytes) &
                      g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPackedWeights04_40);
-        return (int)((uint64_t)mm1PackedValue0 >> 0x20) + (int)((uint64_t)mm2PackedValue0 >> 0x20)
-               | (uint32_t)((int)mm1PackedValue0 + (int)mm2PackedValue0) >> 8;
+        return (int)((uint64_t)currentPresenceSums >> 32) + (int)((uint64_t)persistentOnlySums >> 32)
+               | (uint32_t)((int)currentPresenceSums + (int)persistentOnlySums) >> 8;
       }
     }
   }
@@ -214,37 +215,40 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
 
 
 /* Address: 0x005138F0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Combines the base runtime flags with two terrain occupancy masks for the selected two-bit class channel
-   and returns the verified state bits 0x08 and 0x04. Typed parameters: p0 baseRuntimeFlags→FieldGridRuntimeFlags,
-   p1 secondaryOccupancyMask→FieldGridRegionMask, p2 primaryOccupancyMask→FieldGridRegionMask. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
+   Turns a neighbourhood classification (primaryOccupancyMask, two bits per faction slot from
+   TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint) into model-node flags for the active faction:
+   TERRAIN_OCCUPANCY_FLAG_PRESENT when that faction is present around the object now, otherwise
+   TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE when its persistent bit is there and the object's history
+   (secondaryOccupancyMask, which gains both bits of every faction present now) says it was seen. Also returns
+   the updated history and the combined mask the callers store as terrain class state.
 */
 TerrainOccupancyResolvedMasksRegs12
 TerrainOccupancyMask_ResolveRuntimeClassFlags
           (FieldGridRuntimeFlags baseRuntimeFlags,FieldGridRegionMask secondaryOccupancyMask,
-          FieldGridRegionMask primaryOccupancyMask,char runtimeClassIndex)
+          FieldGridRegionMask primaryOccupancyMask,char activeFactionIndex)
 
 {
   FieldGridRuntimeFlags resolvedClassFlags;
   uint32_t combinedOccupancyMask;
-  uint32_t runtimeClassBit;
+  uint32_t factionSeenBit;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
-  
+
+  /* every faction present now (odd bit) sets both of its bits in the history */
   resolvedMasks.secondaryOccupancyMask =
-       secondaryOccupancyMask | ((primaryOccupancyMask & 0xaaaaaaaa) >> 1) * 3;
-  runtimeClassBit = 1 << (runtimeClassIndex * '\x02' & 0x1fU);
+       secondaryOccupancyMask | ((primaryOccupancyMask & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS) >> 1) * 3;
+  factionSeenBit = 1 << (activeFactionIndex * 2 & 0x1fU);
   combinedOccupancyMask = primaryOccupancyMask & resolvedMasks.secondaryOccupancyMask;
   resolvedClassFlags = 0;
-  if ((baseRuntimeFlags & 0x10) == 0) {
-    combinedOccupancyMask = combinedOccupancyMask | combinedOccupancyMask * 2 & 0xaaaaaaaa;
+  if ((baseRuntimeFlags & TERRAIN_OCCUPANCY_FLAG_NOT_REMEMBERED) == 0) {
+    /* remembered objects: a seen-before bit also counts as present in the stored mask */
+    combinedOccupancyMask =
+         combinedOccupancyMask | combinedOccupancyMask * 2 & TERRAIN_OCCUPANCY_CLASS_PRESENT_BITS;
   }
-  if ((runtimeClassBit & combinedOccupancyMask) != 0) {
-    resolvedClassFlags = 8;
+  if ((factionSeenBit & combinedOccupancyMask) != 0) {
+    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_SEEN_BEFORE;
   }
-  if ((primaryOccupancyMask & runtimeClassBit * 2) != 0) {
-    resolvedClassFlags = 4;
+  if ((primaryOccupancyMask & factionSeenBit * 2) != 0) {
+    resolvedClassFlags = TERRAIN_OCCUPANCY_FLAG_PRESENT;
   }
   resolvedMasks.primaryOccupancyMask = combinedOccupancyMask;
   resolvedMasks.runtimeFlags = resolvedClassFlags;

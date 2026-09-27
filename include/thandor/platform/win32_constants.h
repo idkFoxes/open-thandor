@@ -191,6 +191,9 @@
 #ifndef TRUE
 #define TRUE 1
 #endif
+#ifndef FALSE
+#define FALSE 0
+#endif
 #ifndef INVALID_HANDLE_VALUE
 #define INVALID_HANDLE_VALUE ((HANDLE)(intptr_t)-1)
 #endif
@@ -296,6 +299,151 @@
 #endif
 #ifndef VK_F12
 #define VK_F12 0x7B
+#endif
+/* Further virtual keys (Keyboard_OnKeyDown, Keyboard_OnKeyUp) */
+#ifndef VK_SHIFT
+#define VK_SHIFT 0x10
+#endif
+#ifndef VK_CONTROL
+#define VK_CONTROL 0x11
+#endif
+#ifndef VK_MENU
+#define VK_MENU 0x12
+#endif
+#ifndef VK_PRIOR
+#define VK_PRIOR 0x21
+#endif
+#ifndef VK_NEXT
+#define VK_NEXT 0x22
+#endif
+#ifndef VK_END
+#define VK_END 0x23
+#endif
+#ifndef VK_HOME
+#define VK_HOME 0x24
+#endif
+#ifndef VK_LEFT
+#define VK_LEFT 0x25
+#endif
+#ifndef VK_UP
+#define VK_UP 0x26
+#endif
+#ifndef VK_RIGHT
+#define VK_RIGHT 0x27
+#endif
+#ifndef VK_DOWN
+#define VK_DOWN 0x28
+#endif
+#ifndef VK_SELECT
+#define VK_SELECT 0x29
+#endif
+#ifndef VK_PRINT
+#define VK_PRINT 0x2A
+#endif
+#ifndef VK_EXECUTE
+#define VK_EXECUTE 0x2B
+#endif
+#ifndef VK_SNAPSHOT
+#define VK_SNAPSHOT 0x2C
+#endif
+#ifndef VK_INSERT
+#define VK_INSERT 0x2D
+#endif
+#ifndef VK_NUMPAD1
+#define VK_NUMPAD1 0x61
+#endif
+#ifndef VK_NUMPAD2
+#define VK_NUMPAD2 0x62
+#endif
+#ifndef VK_NUMPAD3
+#define VK_NUMPAD3 0x63
+#endif
+#ifndef VK_NUMPAD4
+#define VK_NUMPAD4 0x64
+#endif
+#ifndef VK_NUMPAD5
+#define VK_NUMPAD5 0x65
+#endif
+#ifndef VK_NUMPAD6
+#define VK_NUMPAD6 0x66
+#endif
+#ifndef VK_NUMPAD7
+#define VK_NUMPAD7 0x67
+#endif
+#ifndef VK_NUMPAD8
+#define VK_NUMPAD8 0x68
+#endif
+#ifndef VK_NUMPAD9
+#define VK_NUMPAD9 0x69
+#endif
+#ifndef VK_MULTIPLY
+#define VK_MULTIPLY 0x6A
+#endif
+#ifndef VK_ADD
+#define VK_ADD 0x6B
+#endif
+#ifndef VK_SEPARATOR
+#define VK_SEPARATOR 0x6C
+#endif
+#ifndef VK_SUBTRACT
+#define VK_SUBTRACT 0x6D
+#endif
+#ifndef VK_DECIMAL
+#define VK_DECIMAL 0x6E
+#endif
+#ifndef VK_DIVIDE
+#define VK_DIVIDE 0x6F
+#endif
+#ifndef VK_F1
+#define VK_F1 0x70
+#endif
+#ifndef VK_F2
+#define VK_F2 0x71
+#endif
+#ifndef VK_F3
+#define VK_F3 0x72
+#endif
+#ifndef VK_F4
+#define VK_F4 0x73
+#endif
+#ifndef VK_F5
+#define VK_F5 0x74
+#endif
+#ifndef VK_F6
+#define VK_F6 0x75
+#endif
+#ifndef VK_F7
+#define VK_F7 0x76
+#endif
+#ifndef VK_F8
+#define VK_F8 0x77
+#endif
+#ifndef VK_F9
+#define VK_F9 0x78
+#endif
+#ifndef VK_F10
+#define VK_F10 0x79
+#endif
+#ifndef VK_F11
+#define VK_F11 0x7A
+#endif
+#ifndef VK_LSHIFT
+#define VK_LSHIFT 0xA0
+#endif
+#ifndef VK_RSHIFT
+#define VK_RSHIFT 0xA1
+#endif
+#ifndef VK_LCONTROL
+#define VK_LCONTROL 0xA2
+#endif
+#ifndef VK_RCONTROL
+#define VK_RCONTROL 0xA3
+#endif
+#ifndef VK_LMENU
+#define VK_LMENU 0xA4
+#endif
+#ifndef VK_RMENU
+#define VK_RMENU 0xA5
 #endif
 
 /* timeSetEvent (TimerSystem_RegisterPeriodic) */
@@ -428,6 +576,29 @@
 /* IDirectDrawSurface::Lock flag (GraphicsFramebuffer_BeginAccess) */
 #ifndef DDLOCK_WAIT
 #define DDLOCK_WAIT 0x00000001
+#endif
+/* Lock/BltFast/Flip flags of GraphicsFramebuffer_Present and the GraphicsFramebuffer_CaptureRegion* functions */
+#ifndef DDLOCK_READONLY
+#define DDLOCK_READONLY 0x00000010
+#endif
+#ifndef DDBLTFAST_WAIT
+#define DDBLTFAST_WAIT 0x00000010
+#endif
+#ifndef DDFLIP_WAIT
+#define DDFLIP_WAIT 0x00000001
+#endif
+/* Texture surfaces (GraphicsTexture_CreateStagingTexture, GraphicsTexture_CreateDeviceTexture) */
+#ifndef DDSD_PIXELFORMAT
+#define DDSD_PIXELFORMAT 0x00001000
+#endif
+#ifndef DDSCAPS_TEXTURE
+#define DDSCAPS_TEXTURE 0x00001000
+#endif
+#ifndef DDSCAPS_ALLOCONLOAD
+#define DDSCAPS_ALLOCONLOAD 0x04000000
+#endif
+#ifndef DDERR_OUTOFVIDEOMEMORY
+#define DDERR_OUTOFVIDEOMEMORY ((TH_LEGACY_HRESULT)0x8876017CL)
 #endif
 #ifndef DDPF_ALPHAPIXELS
 #define DDPF_ALPHAPIXELS 0x00000001
@@ -583,6 +754,121 @@
 #endif
 #ifndef GR_RESOLUTION_1600x1200
 #define GR_RESOLUTION_1600x1200 0xE
+#endif
+
+/* IDirect3DDevice2::EnumTextureFormats callback result (GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback)
+   and the Glide 3 (glide.h) state values used by GraphicsGlide3_ApplyDisplayModeAndInitializeResources,
+   Glide3_DrawPrimitiveQueue, Glide3_ClearViewport and Glide3_Framebuffer_Begin/EndAccess */
+#ifndef D3DENUMRET_OK
+#define D3DENUMRET_OK 1
+#endif
+#ifndef FXFALSE
+#define FXFALSE 0
+#endif
+#ifndef FXTRUE
+#define FXTRUE 1
+#endif
+#ifndef GR_NUM_TMU
+#define GR_NUM_TMU 0x13
+#endif
+#ifndef GR_COLORFORMAT_ARGB
+#define GR_COLORFORMAT_ARGB 0x0
+#endif
+#ifndef GR_ORIGIN_UPPER_LEFT
+#define GR_ORIGIN_UPPER_LEFT 0x0
+#endif
+#ifndef GR_WINDOW_COORDS
+#define GR_WINDOW_COORDS 0x00
+#endif
+#ifndef GR_PARAM_XY
+#define GR_PARAM_XY 0x01
+#endif
+#ifndef GR_PARAM_Z
+#define GR_PARAM_Z 0x02
+#endif
+#ifndef GR_PARAM_Q
+#define GR_PARAM_Q 0x04
+#endif
+#ifndef GR_PARAM_PARGB
+#define GR_PARAM_PARGB 0x30
+#endif
+#ifndef GR_PARAM_ST0
+#define GR_PARAM_ST0 0x40
+#endif
+#ifndef GR_PARAM_ENABLE
+#define GR_PARAM_ENABLE 0x01
+#endif
+#ifndef GR_CULL_DISABLE
+#define GR_CULL_DISABLE 0x0
+#endif
+#ifndef GR_DEPTHBUFFER_ZBUFFER
+#define GR_DEPTHBUFFER_ZBUFFER 0x1
+#endif
+#ifndef GR_CMP_GEQUAL
+#define GR_CMP_GEQUAL 0x6
+#endif
+#ifndef GR_MIPMAP_DISABLE
+#define GR_MIPMAP_DISABLE 0x0
+#endif
+#ifndef GR_MIPMAPLEVELMASK_BOTH
+#define GR_MIPMAPLEVELMASK_BOTH 0x3
+#endif
+#ifndef GR_TEXTURECLAMP_WRAP
+#define GR_TEXTURECLAMP_WRAP 0x0
+#endif
+#ifndef GR_TEXTUREFILTER_BILINEAR
+#define GR_TEXTUREFILTER_BILINEAR 0x1
+#endif
+#ifndef GR_COMBINE_FUNCTION_LOCAL
+#define GR_COMBINE_FUNCTION_LOCAL 0x1
+#endif
+#ifndef GR_COMBINE_FUNCTION_SCALE_OTHER
+#define GR_COMBINE_FUNCTION_SCALE_OTHER 0x3
+#endif
+#ifndef GR_COMBINE_FACTOR_ZERO
+#define GR_COMBINE_FACTOR_ZERO 0x0
+#endif
+#ifndef GR_COMBINE_FACTOR_LOCAL
+#define GR_COMBINE_FACTOR_LOCAL 0x1
+#endif
+#ifndef GR_COMBINE_LOCAL_ITERATED
+#define GR_COMBINE_LOCAL_ITERATED 0x0
+#endif
+#ifndef GR_COMBINE_OTHER_TEXTURE
+#define GR_COMBINE_OTHER_TEXTURE 0x1
+#endif
+#ifndef GR_COMBINE_OTHER_CONSTANT
+#define GR_COMBINE_OTHER_CONSTANT 0x2
+#endif
+#ifndef GR_BLEND_ZERO
+#define GR_BLEND_ZERO 0x0
+#endif
+#ifndef GR_BLEND_SRC_ALPHA
+#define GR_BLEND_SRC_ALPHA 0x1
+#endif
+#ifndef GR_BLEND_ONE
+#define GR_BLEND_ONE 0x4
+#endif
+#ifndef GR_BLEND_ONE_MINUS_SRC_ALPHA
+#define GR_BLEND_ONE_MINUS_SRC_ALPHA 0x5
+#endif
+#ifndef GR_BLEND_ONE_MINUS_DST_ALPHA
+#define GR_BLEND_ONE_MINUS_DST_ALPHA 0x7
+#endif
+#ifndef GR_BUFFER_BACKBUFFER
+#define GR_BUFFER_BACKBUFFER 0x1
+#endif
+#ifndef GR_LFB_READ_ONLY
+#define GR_LFB_READ_ONLY 0x00
+#endif
+#ifndef GR_LFB_WRITE_ONLY
+#define GR_LFB_WRITE_ONLY 0x01
+#endif
+#ifndef GR_LFB_NOIDLE
+#define GR_LFB_NOIDLE 0x10
+#endif
+#ifndef GR_LFBWRITEMODE_565
+#define GR_LFBWRITEMODE_565 0x0
 #endif
 
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */

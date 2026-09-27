@@ -298,9 +298,8 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
 
 
 /* Address: 0x00513960.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Scans all eight faction records and clears every matching dword in each 256-entry technology-associated
-   table. Clears one tech bit across all eight faction unlock words for every faction.
+   Called when an army is destroyed: clears every slot of the eight factions' 256-entry runtime group member
+   tables that still points to it, so no group keeps a dangling pointer to the freed army slot.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runtimeGroupMember)
@@ -313,22 +312,22 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
   
   factionRecordCursor = &g_GameFactionRuntimeImage;
   factionsRemaining = 8;
-  groupSlotsRemaining = 0x100;
+  groupSlotsRemaining = 256;
   groupSlotIndex = 0;
   do {
     do {
       if (runtimeGroupMember ==
           factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex]) {
-        factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex] =
-             (ArmyRuntimeSlot *)0x0;
+        factionRecordCursor->records[0].runtimeGroupMembers8x32[groupSlotIndex] = NULL;
       }
-      groupSlotIndex = groupSlotIndex + 1;
-      groupSlotsRemaining = groupSlotsRemaining + -1;
+      groupSlotIndex++;
+      groupSlotsRemaining--;
     } while (groupSlotsRemaining != 0);
+    /* the cursor steps one faction record (0x740 bytes) at a time */
     factionRecordCursor = (GameFactionRuntimeImage *)(factionRecordCursor->records + 1);
-    groupSlotsRemaining = 0x100;
+    groupSlotsRemaining = 256;
     groupSlotIndex = 0;
-    factionsRemaining = factionsRemaining + -1;
+    factionsRemaining--;
   } while (factionsRemaining != 0);
   return;
 }
@@ -1568,7 +1567,7 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
        (recordOrCountOrIndex = *(int *)((int)ownerNode->runtimePayload + 8),
        *(int *)(recordOrCountOrIndex + 0xc) == secondFactionIndex)) {
       *(FactionRuntimeIndex *)(recordOrCountOrIndex + 0xc) = firstFactionIndex;
-      ModelRuntimeHierarchy_SetCommandTargetRecursive
+      ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
                 (survivingFactionPaletteAsset,survivingFactionTextureSet,
                  *(ModelRuntimeNode **)(recordOrCountOrIndex + 4));
     }

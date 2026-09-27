@@ -112,16 +112,11 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
 
 /* Address: 0x00560750.
-   Ownership: ui/frontend/player.
-   Purpose: Validates a model token and an army token, assigns both to a player, and switches and resets the local
-   technology panel for the local player. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
-   identity, and PCK-backed asset identifiers. Typed parameters: p2 armyToken→RuntimeToken, p3
-   modelToken→RuntimeToken. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection,
-   FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout],
-   InGameTechnologyPanel_ResetAndSelectCurrentArea [ui/ingame/technology].
+   Handler of INGAME_COMMAND_SELECT_MODEL_AND_ARMY: when both tokens still name live objects, selects the
+   object for the player (FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection), shows the technology
+   page of the game window for the local player and records the definition token
+   (FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80). Tokens are pointer offsets so they can travel in
+   network commands; dword +4 of the target is non-zero while it is alive.
 */
 void __thandor_preserve_eax
 FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
@@ -130,7 +125,8 @@ FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
 
 {
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  
+
+  /* note the crossed bases: modelToken is an army-slot offset, armyToken one from g_ModelRuntimeRebaseDelta */
   if ((((modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne != 0) &&
        (armyToken + g_ModelRuntimeRebaseDelta != 0)) &&
       (*(int *)(modelToken + (int)g_ArmyRuntimeRebaseBaseMinusOne + 4) != 0)) &&
@@ -138,6 +134,7 @@ FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
     FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection(playerIndex,0,0,modelToken);
     inGameRoot = g_InGameRuntimeRoot;
     if (playerIndex == g_LocalPlayerRuntimeId) {
+      /* page 2 of the game window: the technology panel */
       UiPageStack_SetActiveIndex(2,&g_InGameRuntimeRoot->gameWindowPageStack0BD0);
       InGameTechnologyPanel_ResetAndSelectCurrentArea(&inGameRoot->rootUi0000);
     }
@@ -305,10 +302,9 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
 
 
 /* Address: 0x00514EF0.
-   Ownership: ui/frontend/player.
-   Purpose: CF set reports another matching player; CF clear reports absence. EAX is preserved. Typed parameters:
-   p1 excludedPlayerId→PlayerRuntimeId. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Tells whether any player other than excludedPlayerId has assignmentToken recorded in assignmentToken80A0
+   (see FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80); the in-game HUD uses it to decide whether the
+   technology window of a selected object is offered. CF set when such a player exists.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
@@ -324,7 +320,7 @@ FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
          (g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId]->assignmentToken80A0 !=
           assignmentToken))) {
     playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    remainingBlocks--;
     if (remainingBlocks == 0) {
       return false;
     }
@@ -682,52 +678,47 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
 
 
 /* Address: 0x0054D720.
-   Ownership: ui/frontend/player.
-   Purpose: Counts active player blocks with flag 0x100 using the exact 0x13B0 stride. Action 0x2006 is suppressed
-   when three times the flagged count is below the total count and restored otherwise.
-   Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
-   [ui/controls/lists].
+   Host lobby: shows the start button (FRONTEND_ACTION_START_NETWORK_GAME) only while at least a third of the
+   players report FRONTEND_CAPABILITY_CD, i.e. run the game from the CD; otherwise hides it. Called whenever a
+   player joins or a heartbeat updates the capabilities.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 
 {
-  int flaggedCount;
+  int cdPlayerCount;
   uint32_t remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  
-  flaggedCount = 0;
+
+  cdPlayerCount = 0;
   remainingBlocks = g_FrontendPlayerRuntimeCount;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
-    if ((playerBlock->capabilityFlags & 0x100) != 0) {
-      flaggedCount = flaggedCount + 1;
+    if ((playerBlock->capabilityFlags & FRONTEND_CAPABILITY_CD) != 0) {
+      cdPlayerCount++;
     }
     playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
-  if ((uint32_t)(flaggedCount * 3) < g_FrontendPlayerRuntimeCount) {
-    UiNodeList_SuppressActionId(0x2006,g_FrontendRootNode);
+  if ((uint32_t)(cdPlayerCount * 3) < g_FrontendPlayerRuntimeCount) {
+    UiNodeList_SuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,g_FrontendRootNode);
   }
   else {
-    UiNodeList_UnsuppressActionId(0x2006,g_FrontendRootNode);
+    UiNodeList_UnsuppressActionId(FRONTEND_ACTION_START_NETWORK_GAME,g_FrontendRootNode);
   }
   return;
 }
 
 
 /* Address: 0x0055F470.
-   Ownership: ui/frontend/player.
-   Purpose: Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
-   asset identifiers. Typed parameters: p0 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body
-   bytes, control flow, and executable data remain unchanged. Typed parameters: p3
-   readyFlagMask→FrontendReadyFlagMask_V343. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Handler of INGAME_COMMAND_SET_SESSION_FLAGS: sets or clears PLAYER_SESSION_FLAG_SLOW_RENDERING of a player
+   (slowRenderingFlag is that bit or 0), which the player roster shows as a highlighted "W". Other session
+   flags are kept.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetReadyFlagById
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,
-          FrontendReadyFlagMask readyFlagMask)
+          FrontendReadyFlagMask slowRenderingFlag)
 
 {
   uint8_t *readyFlagsField;
@@ -735,8 +726,8 @@ FrontendPlayerRuntime_SetReadyFlagById
   
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   readyFlagsField = (uint8_t *)&playerRuntimeBlock->sessionFlags;
-  *(uint32_t *)readyFlagsField = *(uint32_t *)readyFlagsField & 0xfffffffd;
-  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | readyFlagMask;
+  *(uint32_t *)readyFlagsField = *(uint32_t *)readyFlagsField & ~PLAYER_SESSION_FLAG_SLOW_RENDERING;
+  playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | slowRenderingFlag;
   return;
 }
 
@@ -1619,12 +1610,10 @@ FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 
 
 /* Address: 0x005607E0.
-   Ownership: ui/frontend/player.
-   Purpose: Resolves an army token through g_ArmyRuntimeRebaseBaseMinusOne, stores the army pointer for the player,
-   captures army flag 0x80, and clears that flag on the army record. It is separate from FactionRuntimeIndex,
-   PlayerRuntimeId, network-player identity, and PCK-backed asset identifiers. Typed parameters: p3
-   modelOffset→ArmyRuntimeSavedOffset_V343. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Handler of INGAME_COMMAND_ASSIGN_ARMY_TOKEN: turns modelOffset (a definition record offset from
+   g_ModelRuntimeRebaseDelta, sent when the technology page of a selected object opens) back into a pointer
+   and, if the record is live (dword +4 non-zero), records it for the player in assignmentToken80A0. Bit 0x80
+   of the record's flags at +0xEC is moved into assignmentFlags80A4 (and cleared on the record).
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
@@ -1641,7 +1630,7 @@ FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
     armyFlags = *(uint32_t *)(armyAddress + 0xec);
     playerBlock->assignmentToken80A0 = armyAddress;
     playerBlock->assignmentFlags80A4 = armyFlags & 0x80;
-    *(uint32_t *)(armyAddress + 0xec) = *(uint32_t *)(armyAddress + 0xec) & 0xffffff7f;
+    *(uint32_t *)(armyAddress + 0xec) = *(uint32_t *)(armyAddress + 0xec) & ~0x80;
   }
   return;
 }

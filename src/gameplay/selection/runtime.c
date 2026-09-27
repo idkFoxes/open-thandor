@@ -1098,9 +1098,8 @@ void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
 
 
 /* Address: 0x0052FB20.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the first 32 pointers in each of eight exact 0x8118-byte player blocks and clears every entry
-   equal to target. All incoming general registers are restored.
+   Removes an entity from the selections of all eight players (every matching entry of each player block's
+   32-entry selection becomes NULL), so no selection keeps pointing at an entity that is being destroyed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
@@ -1110,26 +1109,28 @@ SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
   int playerBlocksRemaining;
   SelectionPlayerRuntimeBlock *currentSelectionEntry;
   SelectionPlayerRuntimeBlock *selectionEntryCursor;
-  
+
+  /* The cursor is typed as a block but walks the selection entries one pointer at a time: entries[0] of the
+     cursor is the current entry. */
   playerBlocksRemaining = 8;
-  entriesRemainingInBlock = 0x20;
+  entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = g_SelectionPlayerBlocks;
   do {
     do {
       currentSelectionEntry = selectionEntryCursor;
       if (target == (currentSelectionEntry->selection).entries[0]) {
-        (currentSelectionEntry->selection).entries[0] = (GameEntityRuntime *)0x0;
+        (currentSelectionEntry->selection).entries[0] = NULL;
       }
-      entriesRemainingInBlock = entriesRemainingInBlock + -1;
+      entriesRemainingInBlock--;
       selectionEntryCursor =
            (SelectionPlayerRuntimeBlock *)((currentSelectionEntry->selection).entries + 1);
     } while (entriesRemainingInBlock != 0);
-    entriesRemainingInBlock = 0x20;
-    playerBlocksRemaining = playerBlocksRemaining + -1;
+    entriesRemainingInBlock = SELECTION_ENTRY_CAPACITY;
+    playerBlocksRemaining--;
+    /* from the last entry (+0x7C) to the next block: 0x7C + 0x809C = 0x8118 = sizeof(SelectionPlayerRuntimeBlock) */
     selectionEntryCursor =
          (SelectionPlayerRuntimeBlock *)&currentSelectionEntry->packedSelectionState809C;
   } while (playerBlocksRemaining != 0);
-  return;
 }
 
 
@@ -1180,9 +1181,8 @@ WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPosition
 
 
 /* Address: 0x0052FD60.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans one exact 32-entry pointer array and clears only the first entry equal to target. EAX is
-   preserved.
+   Removes an entity from one 32-entry selection array: only the first matching entry is set to NULL
+   (an entity is in a selection at most once).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
@@ -1191,13 +1191,12 @@ SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointe
   int entryIndex;
 
   /* REPNE SCASD over the 32 entries; the first match is cleared. */
-  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (array->entries[entryIndex] == target) {
-      array->entries[entryIndex] = (GameEntityRuntime *)0x0;
+      array->entries[entryIndex] = NULL;
       return;
     }
   }
-  return;
 }
 
 
@@ -1467,9 +1466,8 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnega
 
 
 /* Address: 0x005300E0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Returns the first non-null pointer in the fixed 32-entry selection-info array, or null when every slot
-   is empty.
+   Returns the first entity of the local player's selection (the first non-NULL entry), or NULL when nothing is
+   selected; the in-game panels use it as the representative of the selection.
 */
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
 
@@ -1479,17 +1477,18 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
   GameEntityRuntime **selectionEntryCursor;
   GameEntityRuntime **nextSelectionEntryCursor;
   bool currentEntryIsEmpty;
-  
-  entriesRemaining = 0x20;
-  firstEntry = (GameEntityRuntime *)0x0;
+
+  /* REPE SCASD against 0 in the original */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
+  firstEntry = NULL;
   currentEntryIsEmpty = true;
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     nextSelectionEntryCursor = selectionEntryCursor;
     if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
     nextSelectionEntryCursor = selectionEntryCursor + 1;
-    currentEntryIsEmpty = *selectionEntryCursor == (GameEntityRuntime *)0x0;
+    currentEntryIsEmpty = *selectionEntryCursor == NULL;
     selectionEntryCursor = nextSelectionEntryCursor;
   } while (currentEntryIsEmpty);
   if (!currentEntryIsEmpty) {
@@ -1630,57 +1629,59 @@ SelectionPlayerPairList_ContainsPair
 
 
 /* Address: 0x005302B0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Typed parameters: p0 coordinateA→Q12, p1 coordinateB→Q12. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_IsSpatialSpreadTooLarge, SelectionPointerArray_Clear32.
-   Cross-module calls: ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement].
+   Move command for a selection (ArmyRuntime_QueueOrStartMoveCommandVariantA per entity): each entity is sent to
+   the target shifted by its offset from the selection's centre, so the group keeps its formation, unless the
+   selection is spread too widely, then all go to the target itself. If the selection is exactly one class-0xD
+   entity (a production structure, cf. gameplay/faction/runtime.c), the target becomes its point at model
+   runtime +0x78/+0x7C (flag 0x800 at +0xEC) and the selection is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyPositionCommandVariantB
-          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
+          (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
 
 {
   ArmyMovementRuntime *movementRuntime;
   void *class13Record;
   int entriesRemaining;
-  Q12 targetWorldY;
+  Q12 entryTargetY;
   int selectedEntryCount;
-  Q12 targetWorldX;
+  Q12 entryTargetX;
   int *singleClass13Entry;
   GameEntityRuntime **commandEntryCursor;
   GameEntityRuntime **selectionEntryCursor;
   bool spreadTooLarge;
   int entityDefinitionAddress;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
-  targetWorldY = coordinateA;
-  targetWorldX = coordinateB;
+  entryTargetY = targetWorldY;
+  entryTargetX = targetWorldX;
   commandEntryCursor = selection->entries;
   do {
     movementRuntime = (ArmyMovementRuntime *)*commandEntryCursor;
-    if (movementRuntime != (ArmyMovementRuntime *)0x0) {
+    if (movementRuntime != NULL) {
+      /* classState60/ownerValue64 are the entity's selection offsets (common +0x60/+0x64, centre - position)
+         written by SelectionPointerArray_RecenterOffsetsAroundAveragePosition */
       if (!spreadTooLarge) {
-        targetWorldX = targetWorldX - movementRuntime->classState60;
-        targetWorldY = targetWorldY - movementRuntime->ownerValue64;
+        entryTargetX = entryTargetX - movementRuntime->classState60;
+        entryTargetY = entryTargetY - movementRuntime->ownerValue64;
       }
-      ArmyRuntime_QueueOrStartMoveCommandVariantA(targetWorldY,targetWorldX,movementRuntime);
+      ArmyRuntime_QueueOrStartMoveCommandVariantA(entryTargetY,entryTargetX,movementRuntime);
       if (!spreadTooLarge) {
-        targetWorldX = targetWorldX + movementRuntime->classState60;
-        targetWorldY = targetWorldY + movementRuntime->ownerValue64;
+        entryTargetX = entryTargetX + movementRuntime->classState60;
+        entryTargetY = entryTargetY + movementRuntime->ownerValue64;
       }
     }
     commandEntryCursor = commandEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  entriesRemaining = 0x20;
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntryCount = 0;
-  singleClass13Entry = (int *)0x0;
+  singleClass13Entry = NULL;
   selectionEntryCursor = selection->entries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      selectedEntryCount = selectedEntryCount + 1;
+    if (*selectionEntryCursor != NULL) {
+      selectedEntryCount++;
       entityDefinitionAddress =
            *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
       if (*(int *)(entityDefinitionAddress + 0x18) != 0) {
@@ -1691,27 +1692,25 @@ SelectionPointerArray_ApplyPositionCommandVariantB
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
   if ((selectedEntryCount == 1) &&
-     ((GameEntityRuntime *)singleClass13Entry != (GameEntityRuntime *)0x0)) {
+     ((GameEntityRuntime *)singleClass13Entry != NULL)) {
     class13Record = (((GameEntityRuntime *)singleClass13Entry)->common).ownership.definitionOrClassRecord;
-    *(Q12 *)((int)class13Record + 0x78) = coordinateB;
-    *(Q12 *)((int)class13Record + 0x7c) = coordinateA;
+    *(Q12 *)((int)class13Record + 0x78) = targetWorldX;
+    *(Q12 *)((int)class13Record + 0x7c) = targetWorldY;
     *(uint32_t *)((int)class13Record + 0xec) = *(uint32_t *)((int)class13Record + 0xec) | 0x800;
     SelectionPointerArray_Clear32(selection);
   }
-  return;
 }
 
 
 /* Address: 0x00530420.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection runtime reset movement prune and recenter entries.
-   Local calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition, SelectionPointerArray_Clear32.
-   Cross-module calls: ArmyRuntime_ResetMovementStateFromModel [gameplay/army/movement],
-   ModelLookupTable_ContainsPackedKey [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
-   [world/model/hierarchy].
+   Stops the selected entities: every entity without command flag 0x2 has its movement reset to its current
+   model position and command-mode bit 0x10 and movement bit 0x200 cleared; class-0x16 entities are dropped
+   from the selection. The formation offsets are then recomputed, and a selection of exactly one class-0xD
+   entity gets its point at model runtime +0x78/+0x7C reset to its model's lookup point (1,5) (flag 0x800
+   cleared) and the selection cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **selectionEntries)
@@ -1727,12 +1726,14 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
   GameEntityRuntime **selectionEntryCursor;
   ModelLookupEntryResult lookupEntry;
   ModelWorldPoint localPoint;
-  
-  entriesRemaining = 0x20;
+
+  /* [6] is the dword at +0x18 (common.commandFlags / ArmyRuntimeSlot.movementStateFlags), [0xb] the one at
+     +0x2C (ArmyRuntimeSlot.commandModeFlags) */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectionEntryCursor = selectionEntries;
   do {
     currentEntity = *selectionEntryCursor;
-    if ((currentEntity != (GameEntityRuntime *)0x0) &&
+    if ((currentEntity != NULL) &&
        ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)[6].savedIdOrOffset & 2) == 0))
     {
       ArmyRuntime_ResetMovementStateFromModel((ArmyRuntimeSlot *)currentEntity);
@@ -1744,22 +1745,22 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
            0xfffffdff;
       entryModelRuntime = ((ModelRuntimeSlotReferenceOrSavedOffset4 *)&currentEntity->common)->modelRuntime;
       if (*(int *)((entryModelRuntime->definitionOrSavedId).savedIdOrOffset + 0x4c) == 0x16) {
-        *selectionEntryCursor = (GameEntityRuntime *)0x0;
+        *selectionEntryCursor = NULL;
         (entryModelRuntime->classState).classStateDC = 0;
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  entriesRemaining = 0x20;
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   selectedEntryCount = 0;
-  currentEntity = (GameEntityRuntime *)0x0;
+  currentEntity = NULL;
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition
             ((SelectionPointerArray32 *)selectionEntries);
   selectionEntryCursor = selectionEntries;
   do {
-    if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      selectedEntryCount = selectedEntryCount + 1;
+    if (*selectionEntryCursor != NULL) {
+      selectedEntryCount++;
       definitionAddress = *(int *)((*selectionEntryCursor)->common).ownership.definitionOrClassRecord;
       if (*(int *)(definitionAddress + 0x18) != 0) {
         return;
@@ -1769,14 +1770,13 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
       }
     }
     selectionEntryCursor = selectionEntryCursor + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  if ((selectedEntryCount == 1) && (currentEntity != (GameEntityRuntime *)0x0)) {
+  if ((selectedEntryCount == 1) && (currentEntity != NULL)) {
     class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (currentEntity->common).ownership.modelNode;
     *(uint32_t *)((int)class13Record + 0xec) = *(uint32_t *)((int)class13Record + 0xec) & 0xfffff7ff;
-    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource)
-    ;
+    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
       *(uint32_t *)((int)class13Record + 0x78) = localPoint.xQ12;
@@ -1784,14 +1784,12 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
       SelectionPointerArray_Clear32((SelectionPointerArray32 *)selectionEntries);
     }
   }
-  return;
 }
 
 
 /* Address: 0x0052FCE0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection pointer array add world entries matching runtime identity.
-   Local calls: SelectionPointerArray_InsertUniqueAndRecenter.
+   Adds to a selection every entity in the world of the same army type (army asset id) and faction as
+   sourceArmyRuntime, i.e. "select all units of this kind"; each insertion recomputes the formation offsets.
 */
 void __thandor_void_preserve_ecx_edx
 SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
@@ -1801,63 +1799,58 @@ SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
   PckArmyAssetIdCatalog sourceArmyAssetId;
   int sourceFactionIndex;
   GameEntityRuntime *entityRuntime;
-  RuntimeToken runtimeIdentity;
-  int ownerIndex;
   WorldRuntimeNode *worldNodeCursor;
-  
+
   sourceArmyAssetId = sourceArmyRuntime->armyAssetId;
   sourceFactionIndex = sourceArmyRuntime->factionIndex;
+  /* world owner list; worldNodeCursor[2].common.nextNode is the ownerClassId dword at +0xA4
+     (0 = WORLD_OWNER_RUNTIME_MODEL) */
   for (worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      worldNodeCursor != (WorldRuntimeNode *)0x0;
+      worldNodeCursor != NULL;
       worldNodeCursor = (worldNodeCursor->common).nextNode) {
-    if (((worldNodeCursor[2].common.nextNode == (WorldRuntimeNode *)0x0) &&
+    if (((worldNodeCursor[2].common.nextNode == NULL) &&
         (entityRuntime = *(GameEntityRuntime **)((int)worldNodeCursor->runtimePayload + 8),
         sourceArmyAssetId == (entityRuntime->common).runtimeIdentityOrArmyAssetId)) &&
        (sourceFactionIndex == (entityRuntime->common).ownership.ownerIndex)) {
       SelectionPointerArray_InsertUniqueAndRecenter(entityRuntime,selection);
     }
   }
-  return;
 }
 
 
 /* Address: 0x005303A0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Probes the fixed selection spread, then applies the existing position command to each of 32 possible
-   entries. EAX and CF-derived behavior are preserved. Typed parameters: p0 coordinateA→Q12, p1 coordinateB→Q12.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: SelectionPointerArray_IsSpatialSpreadTooLarge.
-   Cross-module calls: ArmyRuntime_QueueWaypointOrStartMoveVariantA [gameplay/army/movement].
+   Waypoint move for a selection (ArmyRuntime_QueueWaypointOrStartMoveVariantA per entity): like
+   SelectionPointerArray_ApplyPositionCommandVariantB each entity gets the target shifted by its formation
+   offset, unless the selection is spread too widely, but without the class-0xD special case.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyPositionCommand
-          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection)
+          (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection)
 
 {
   ArmyMovementRuntime *movementRuntime;
   int entriesRemaining;
   bool spreadTooLarge;
-  
-  entriesRemaining = 0x20;
+
+  /* selection is advanced as a cursor over its entries; the targets are shifted per entry and restored */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   do {
     movementRuntime = *(ArmyMovementRuntime **)selection;
-    if (movementRuntime != (ArmyMovementRuntime *)0x0) {
+    if (movementRuntime != NULL) {
       if (!spreadTooLarge) {
-        coordinateB = coordinateB - movementRuntime->classState60;
-        coordinateA = coordinateA - movementRuntime->ownerValue64;
+        targetWorldX = targetWorldX - movementRuntime->classState60;
+        targetWorldY = targetWorldY - movementRuntime->ownerValue64;
       }
-      ArmyRuntime_QueueWaypointOrStartMoveVariantA(coordinateA,coordinateB,movementRuntime);
+      ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
       if (!spreadTooLarge) {
-        coordinateB = coordinateB + movementRuntime->classState60;
-        coordinateA = coordinateA + movementRuntime->ownerValue64;
+        targetWorldX = targetWorldX + movementRuntime->classState60;
+        targetWorldY = targetWorldY + movementRuntime->ownerValue64;
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
@@ -2658,10 +2651,9 @@ SelectionPanel_DrawSegmentedCappedBar
 
 
 /* Address: 0x00530130.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection pointer array apply army runtime target.
-   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime],
-   ArmyRuntime_ResolveCommandTarget [gameplay/army/runtime].
+   Orders a selection onto a target entity: every entity with a non-zero state (+0x100) gets targetArmyRuntime as
+   its command target (ArmyRuntime_ResolveCommandTarget), stored again at +0x98, command-mode bits 0x14 set and
+   movement bit 0x200 cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyArmyRuntimeTarget
@@ -2671,11 +2663,12 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
   bool stateIsZero;
-  
-  entriesRemaining = 0x20;
+
+  /* selection is advanced as a cursor over its entries */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
-    if (runtimeState != (ArmyRuntimeSlot *)0x0) {
+    if (runtimeState != NULL) {
       stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
@@ -2685,19 +2678,15 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x00530190.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Applies the target-position command tuple to every eligible selected runtime. Typed parameters: p0
-   coordinateA→Q12, p2 coordinateC→Q12. Calling convention, complete VariableStorage serialization, function bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime],
-   ArmyRuntime_ApplyTargetPositionCommand [gameplay/army/runtime].
+   Orders a selection onto a target position: every entity with a non-zero state (+0x100) gets the three
+   command coordinates (ArmyRuntime_ApplyTargetPositionCommand), command-mode bits 0x14 set, movement bit 0x200
+   cleared and its command generation shifted left by 2.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyTargetPositionCommand
@@ -2707,11 +2696,12 @@ SelectionPointerArray_ApplyTargetPositionCommand
   ArmyRuntimeSlot *runtimeState;
   int entriesRemaining;
   bool stateIsZero;
-  
-  entriesRemaining = 0x20;
+
+  /* selection is advanced as a cursor over its entries */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
-    if (runtimeState != (ArmyRuntimeSlot *)0x0) {
+    if (runtimeState != NULL) {
       stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
@@ -2721,17 +2711,15 @@ SelectionPointerArray_ApplyTargetPositionCommand
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x00530540.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection runtime reset movement anchors and clear flag200 for eligible entries.
-   Cross-module calls: GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel
-   [gameplay/faction/runtime].
+   For every selected entity without command flag 0x2: resets its movement flags and anchor coordinates to the
+   current model position (GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel) and clears command
+   flag 0x200.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
@@ -2741,27 +2729,25 @@ SelectionRuntime_ResetMovementAnchorsAndClearFlag200ForEligibleEntries
   GameEntityCommandFlags *commandFlagsPtr;
   GameEntityRuntime *entityRuntime;
   int entriesRemaining;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     entityRuntime = *selectionEntries;
-    if ((entityRuntime != (GameEntityRuntime *)0x0) &&
+    if ((entityRuntime != NULL) &&
        (((entityRuntime->common).commandFlags & 2) == 0)) {
       GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(entityRuntime);
       commandFlagsPtr = &(entityRuntime->common).commandFlags;
       *commandFlagsPtr = *commandFlagsPtr & 0xfffffdff;
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x005305A0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection runtime interrupt targets and clear flag10 for eligible entries.
-   Cross-module calls: ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration [gameplay/army/movement].
+   For every selected entity without command flag 0x2: drops an active attack/follow target
+   (ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) and clears command-mode bit 0x10.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
@@ -2770,11 +2756,12 @@ SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
 {
   GameEntityRuntime *armyRuntime;
   int entriesRemaining;
-  
-  entriesRemaining = 0x20;
+
+  /* [6] is the dword at +0x18 (common.commandFlags), [0xb] the one at +0x2C (ArmyRuntimeSlot.commandModeFlags) */
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   do {
     armyRuntime = *selectionEntries;
-    if ((armyRuntime != (GameEntityRuntime *)0x0) &&
+    if ((armyRuntime != NULL) &&
        ((((ModelRuntimeSlotReferenceOrSavedOffset4 *)&armyRuntime->common)[6].savedIdOrOffset & 2)
         == 0)) {
       ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration((ArmyRuntimeSlot *)armyRuntime);
@@ -2783,16 +2770,14 @@ SelectionRuntime_InterruptTargetsAndClearFlag10ForEligibleEntries
            0xffffffef;
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x00530600.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection runtime apply flags418 unless bit8 to eligible entries.
-   Cross-module calls: ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive [world/model/hierarchy].
+   For every selected entity without command flag 0x2: sets runtime flags 0x418 on all nodes of its model
+   hierarchy that do not have flag 0x08 yet (ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive).
 */
 void __thandor_void_preserve_eax_ecx
 SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **selectionEntries)
@@ -2801,27 +2786,24 @@ SelectionRuntime_ApplyFlags418UnlessBit8ToEligibleEntries(GameEntityRuntime **se
   GameEntityRuntime *modelRuntime;
   int entriesRemaining;
   WorldRuntimeContext *contextArg;
-  
-  entriesRemaining = 0x20;
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
   contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
   do {
     modelRuntime = *selectionEntries;
-    if ((modelRuntime != (GameEntityRuntime *)0x0) &&
+    if ((modelRuntime != NULL) &&
        (((modelRuntime->common).commandFlags & 2) == 0)) {
       ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,(int *)modelRuntime);
     }
     selectionEntries = selectionEntries + 1;
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  return;
 }
 
 
 /* Address: 0x0052FCA0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Inserts a pointer into the first free slot of a 32-entry selection array when absent, then recomputes
-   relative offsets around the average position.
-   Local calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition.
+   Adds an entity to a 32-entry selection (into the first free entry, unless it is already in it or the
+   selection is full) and recomputes every entry's formation offset from the new centre.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_InsertUniqueAndRecenter
@@ -2831,26 +2813,25 @@ SelectionPointerArray_InsertUniqueAndRecenter
   int entryIndex;
 
   /* Two REPNE SCASD passes: look for entityRuntime, and when absent store it in the first null slot. */
-  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+  for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
     if (selection->entries[entryIndex] == entityRuntime) break;
   }
-  if (entryIndex == 0x20) {
-    for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
-      if (selection->entries[entryIndex] == (GameEntityRuntime *)0x0) {
+  if (entryIndex == SELECTION_ENTRY_CAPACITY) {
+    for (entryIndex = 0; entryIndex < SELECTION_ENTRY_CAPACITY; entryIndex++) {
+      if (selection->entries[entryIndex] == NULL) {
         selection->entries[entryIndex] = entityRuntime;
         break;
       }
     }
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition(selection);
-  return;
 }
 
 
 /* Address: 0x0052FBF0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Averages the positions referenced by up to 32 selection pointers and stores each selection record
-   offset relative to that average.
+   Computes the centre (average model world X/Y) of a selection and stores for every entity its offset
+   centre - position in common.selectionOffsetXQ12/YQ12 (+0x60/+0x64); move orders subtract that offset from
+   the target so the group keeps its formation.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray32 *selection)
@@ -2862,26 +2843,27 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
   int averageYQ12;
   int remainingOrEntryAddress;
   GameEntityRuntime **entryCursor;
-  
+
+  /* positionRecord is the entity's model node (+0x04); +0x94/+0x98 are its world translation X/Y */
   averageXQ12 = 0;
   averageYQ12 = 0;
   selectedCountOrRemaining = 0;
-  remainingOrEntryAddress = 0x20;
+  remainingOrEntryAddress = SELECTION_ENTRY_CAPACITY;
   entryCursor = selection->entries;
   do {
-    if (*entryCursor != (GameEntityRuntime *)0x0) {
+    if (*entryCursor != NULL) {
       positionRecord = *(int *)((int)*entryCursor + 4);
-      selectedCountOrRemaining = selectedCountOrRemaining + 1;
+      selectedCountOrRemaining++;
       averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
       averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
     }
     entryCursor = entryCursor + 1;
-    remainingOrEntryAddress = remainingOrEntryAddress + -1;
+    remainingOrEntryAddress--;
   } while (remainingOrEntryAddress != 0);
   if (selectedCountOrRemaining != 0) {
     averageXQ12 = averageXQ12 / selectedCountOrRemaining;
     averageYQ12 = averageYQ12 / selectedCountOrRemaining;
-    selectedCountOrRemaining = 0x20;
+    selectedCountOrRemaining = SELECTION_ENTRY_CAPACITY;
     do {
       remainingOrEntryAddress = *(int *)selection;
       if (remainingOrEntryAddress != 0) {
@@ -2889,15 +2871,14 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
         averageXQ12 = averageXQ12 - *(int *)(positionRecord + 0x94);
         averageYQ12 = averageYQ12 - *(int *)(positionRecord + 0x98);
         *(int *)(remainingOrEntryAddress + 0x60) = averageXQ12;
-        *(int *)(remainingOrEntryAddress + 100) = averageYQ12;
+        *(int *)(remainingOrEntryAddress + 0x64) = averageYQ12;
         averageXQ12 = averageXQ12 + *(int *)(positionRecord + 0x94);
         averageYQ12 = averageYQ12 + *(int *)(positionRecord + 0x98);
       }
       selection = (SelectionPointerArray32 *)((int)selection + 4);
-      selectedCountOrRemaining = selectedCountOrRemaining + -1;
+      selectedCountOrRemaining--;
     } while (selectedCountOrRemaining != 0);
   }
-  return;
 }
 
 
@@ -3047,19 +3028,18 @@ SelectionPointerArray_ApplyType16MarkerCoordinates
 
 
 /* Address: 0x0052FB00.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Handles selection pointer array clear32.
+   Empties a 32-entry selection array (all entries NULL).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_Clear32(SelectionPointerArray32 *array)
 
 {
   int entriesRemaining;
-  
-  for (entriesRemaining = 0x20; entriesRemaining != 0; entriesRemaining = entriesRemaining + -1) {
-    array->entries[0] = 0;
+
+  /* array is advanced as a cursor over its entries (REP STOSD in the original) */
+  for (entriesRemaining = SELECTION_ENTRY_CAPACITY; entriesRemaining != 0; entriesRemaining--) {
+    array->entries[0] = NULL;
     array = (SelectionPointerArray32 *)((int)array + 4);
   }
-  return;
 }
 

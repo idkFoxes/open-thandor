@@ -134,10 +134,12 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
 
 
 /* Address: 0x00578820.
-   Ownership: graphics/backend/direct3d.
-   Purpose: Semantic ABI remains deferred.
+   IDirect3DDevice2::EnumTextureFormats callback that picks the two texture formats the renderer uploads
+   to: the opaque format (the shallowest 16/32-bit RGB format, preferring one with more colour bits) and
+   the alpha format (the RGB format with the narrowest alpha mask of at least two bits). Each chosen
+   DDPIXELFORMAT is copied into g_Direct3DOpaqueTextureFormat / g_Direct3DAlphaTextureFormat.
+   __stdcall because DirectDraw calls it (the original returns with RET 8).
 */
-/* Called by IDirect3DDevice2::EnumTextureFormats: __stdcall (the original returns with RET 8). */
 int32_t __stdcall
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context)
@@ -147,26 +149,26 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   int currentAlphaLowBit;
   int candidateAlphaLowBit;
   int candidateAlphaHighBit;
-  uint32_t bitCountOrMaskDelta;
-  int highBitOrCopyCount;
+  uint32_t bitCountOrMaskDelta; /* first the candidate's bits per pixel, then the colour mask difference */
+  int highBitOrCopyCount; /* first the current alpha mask's highest bit, then the dword copy counter */
   uint32_t candidateColorMask;
   int replaceOpaqueFormat;
   DDPIXELFORMAT *pixelFormatCursor;
   TH_LEGACY_DWORD *formatDwordCursor;
-  
+
   bitCountOrMaskDelta = (surfaceDesc->ddpfPixelFormat).dwRGBBitCount;
   pixelFormatFlags = (surfaceDesc->ddpfPixelFormat).dwFlags;
   if (bitCountOrMaskDelta < 8) {
-    return 1;
+    return D3DENUMRET_OK;
   }
   if (bitCountOrMaskDelta == 8) {
-    return 1;
+    return D3DENUMRET_OK;
   }
-  if ((bitCountOrMaskDelta != 0x10) && (bitCountOrMaskDelta != 0x20)) {
-    return 1;
+  if ((bitCountOrMaskDelta != 16) && (bitCountOrMaskDelta != 32)) {
+    return D3DENUMRET_OK;
   }
-  if ((pixelFormatFlags & 0x40) == 0) {
-    return 1;
+  if ((pixelFormatFlags & DDPF_RGB) == 0) {
+    return D3DENUMRET_OK;
   }
   /* Take the candidate as the opaque format when none is chosen yet, when it has fewer bits per pixel, or
      when it has the same depth and color bits the current format lacks. */
@@ -188,46 +190,50 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   if (replaceOpaqueFormat) {
     pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
     formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
-    for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+    for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
+         highBitOrCopyCount--) {
       *formatDwordCursor = pixelFormatCursor->dwSize;
       pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
-      formatDwordCursor = formatDwordCursor + 1;
+      formatDwordCursor++;
     }
   }
-  if (((pixelFormatFlags & 1) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
-    highBitOrCopyCount = 0x1f;
+  if (((pixelFormatFlags & DDPF_ALPHAPIXELS) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
+    /* BSR/BSF of both alpha masks, compared as unsigned (low - high): a one-bit mask gives 0 and never wins,
+       otherwise the narrower mask gives the larger value (e.g. 4444 beats 8888). */
+    highBitOrCopyCount = 31;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> highBitOrCopyCount == 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+      for (; _g_Direct3DAlphaTextureFormatAlphaBitMask >> highBitOrCopyCount == 0; highBitOrCopyCount--) {
       }
     }
     currentAlphaLowBit = 0;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
-      for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> currentAlphaLowBit & 1) == 0; currentAlphaLowBit = currentAlphaLowBit + 1) {
+      for (; (_g_Direct3DAlphaTextureFormatAlphaBitMask >> currentAlphaLowBit & 1) == 0; currentAlphaLowBit++) {
       }
     }
     formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
-    candidateAlphaHighBit = 0x1f;
+    candidateAlphaHighBit = 31;
     if (*formatDwordCursor != 0) {
-      for (; *formatDwordCursor >> candidateAlphaHighBit == 0; candidateAlphaHighBit = candidateAlphaHighBit + -1) {
+      for (; *formatDwordCursor >> candidateAlphaHighBit == 0; candidateAlphaHighBit--) {
       }
     }
     formatDwordCursor = &(surfaceDesc->ddpfPixelFormat).dwRGBAlphaBitMask;
     candidateAlphaLowBit = 0;
     if (*formatDwordCursor != 0) {
-      for (; (*formatDwordCursor >> candidateAlphaLowBit & 1) == 0; candidateAlphaLowBit = candidateAlphaLowBit + 1) {
+      for (; (*formatDwordCursor >> candidateAlphaLowBit & 1) == 0; candidateAlphaLowBit++) {
       }
     }
     if ((uint32_t)(currentAlphaLowBit - highBitOrCopyCount) < (uint32_t)(candidateAlphaLowBit - candidateAlphaHighBit)) {
       pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
       formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
-      for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+      for (highBitOrCopyCount = sizeof(DDPIXELFORMAT) / sizeof(TH_LEGACY_DWORD); highBitOrCopyCount != 0;
+           highBitOrCopyCount--) {
         *formatDwordCursor = pixelFormatCursor->dwSize;
         pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
-        formatDwordCursor = formatDwordCursor + 1;
+        formatDwordCursor++;
       }
     }
   }
-  return 1;
+  return D3DENUMRET_OK;
 }
 
 

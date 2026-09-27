@@ -1676,7 +1676,7 @@ ArmyRuntimeNode_RebuildTerrainOccupancyAndVisualStateCallback
     /* the army runtime at +8 of the node's payload */
     ArmyRuntime_InitializeTerrainOccupancyFlags
               (armyContext,*(ArmyRuntimeSlot **)((int)node->runtimePayload + 8));
-    UiModelControl_RefreshStateTint((ModelRuntimeNode *)node);
+    ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)node);
   }
 }
 
@@ -1971,22 +1971,20 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 
 /* Address: 0x0051D310.
-   Ownership: gameplay/army/runtime.
-   Purpose: Tests the army-runtime dword at offset 0x100 and returns the result through carry. Carry is set exactly
-   when the field is zero.
+   Tests the army's state/technology id at +0x100 for zero (CF set when it is zero, SETZ / RCR); used by
+   ArmyRuntime_ResetMovementStateFromModel to decide whether a targeted command is dropped.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *runtimeState)
+ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime)
 
 {
-  return runtimeState->stateOrTechnologyId == 0;
+  return armyRuntime->stateOrTechnologyId == 0;
 }
 
 
 /* Address: 0x0051D330.
-   Ownership: gameplay/army/runtime.
-   Purpose: Tests whether the signed state field at army-runtime offset 0x100 is nonnegative; CF carries the
-   result.
+   Tests the army's signed state/technology id at +0x100 for being non-negative (CF set when it is >= 0,
+   SETGE / RCR). No C code calls it directly.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
@@ -1997,30 +1995,29 @@ ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Address: 0x0051D350.
-   Ownership: gameplay/army/runtime.
-   Purpose: Loads the pointed runtime node, selects one callback through the exact 0x0051FED8 type-index table, and
-   forwards the node plus caller argument. Placement-validation partition slots 24-47 receive (worldRuntime,
-   armyRuntime), with CF carrying acceptance.
+   Runs the placement-validation handler of the army's runtime class (table at 0x0051FED8, indexed by the class id
+   at model runtime +0x4C) for the army in *armyRuntimeHolder and returns its acceptance in CF.
 */
 bool __thandor_cf_preserve_eax_edx
 ArmyRuntimeNode_DispatchTypedCallback
-          (ArmyRuntimeSlot **modelRuntimeHolder,WorldRuntimeContext *worldRuntime)
+          (ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime)
 
 {
   bool accepted;
-  
+
+  /* the view's first field (modelDefinition) is the army's model runtime pointer */
   accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
-            [((ModelRuntimePlacementValidationView200 *)*modelRuntimeHolder)->modelDefinition->
+            [((ModelRuntimePlacementValidationView200 *)*armyRuntimeHolder)->modelDefinition->
              runtimeClassId4C])
-                    (worldRuntime,(ModelRuntimePlacementValidationView200 *)*modelRuntimeHolder);
+                    (worldRuntime,(ModelRuntimePlacementValidationView200 *)*armyRuntimeHolder);
   return accepted;
 }
 
 
 /* Address: 0x0051D4D0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Dispatches a two-argument army runtime command through the verified runtime-class handler table indexed
-   by the root model definition class. Dispatch wrapper for the typed twenty-four-entry class-command table.
+   Runs the class-command handler of the army's runtime class (indexed by the class id at model runtime +0x4C)
+   for the army in *armyRuntimeHolder; the AI planners call it to start the class-specific behaviour of the
+   armies they create or re-task.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_DispatchClassCommand
@@ -2491,8 +2488,9 @@ ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Address: 0x00527150.
-   Ownership: gameplay/army/runtime.
-   Purpose: Scans thirteen attachment slots and ORs effect-variant bits 1, 2, and 4 into EBX.
+   Returns in EBX which of the three linked-child asset ids (g_ArmyLinkedChildAssetIdSlot0/1/2 as bits 1/2/4)
+   occur among the army's 13 attachment asset-id slots (dwords from +0x78); the selection panel ORs these
+   masks over all selected armies.
 */
 int __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRuntime)
@@ -2501,10 +2499,11 @@ ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRunti
   int attachmentAssetId;
   int attachmentEffectSlotsRemaining;
   uint32_t variantMask;
-  
+
   variantMask = 0;
-  attachmentEffectSlotsRemaining = 0xd;
+  attachmentEffectSlotsRemaining = 13;
   do {
+    /* +0x78 of the current window; armyRuntime is moved one dword per slot below */
     attachmentAssetId = armyRuntime->movementTarget0Q12;
     if (attachmentAssetId == g_ArmyLinkedChildAssetIdSlot0) {
       variantMask = variantMask | 1;
@@ -2515,8 +2514,8 @@ ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRunti
     if (attachmentAssetId == g_ArmyLinkedChildAssetIdSlot2) {
       variantMask = variantMask | 4;
     }
-    armyRuntime = (ArmyRuntimeSlot *)&armyRuntime->modelNodeRuntime;
-    attachmentEffectSlotsRemaining = attachmentEffectSlotsRemaining + -1;
+    armyRuntime = (ArmyRuntimeSlot *)&armyRuntime->modelNodeRuntime; /* + 4 bytes (ADD ESI,4) */
+    attachmentEffectSlotsRemaining--;
   } while (attachmentEffectSlotsRemaining != 0);
   return variantMask;
 }
@@ -2847,17 +2846,10 @@ ArmyRuntime_HandleCollisionPartner
 
 
 /* Address: 0x0051BC00.
-   Ownership: gameplay/army/runtime.
-   Purpose: Creates a temporary army runtime instance, prepares its model view and transformed bounds, renders a
-   generated preview texture, applies the verified MMX reduction and color postprocess, destroys the temporary
-   instance, and returns status through carry. Typed parameters: p2 previewHeight→GraphicsPixelDimension_V302.
-   Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p3
-   previewWidth→GraphicsPixelDimension_V302.
-   Local calls: ArmyRuntime_CreateInstanceFromAsset, ArmyRuntime_DestroyInstanceAndRefreshUi.
-   Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core],
-   ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
-   ModelNodeRuntime_AccumulateTransformedBoundsRecursive [world/model/hierarchy].
+   Renders the picture of an army type for the in-game panels: spawns a temporary army of armyAssetId for
+   factionIndex, turns it to a fixed three-quarter view, frames its bounds and renders it off screen at twice the
+   requested size, then destroys the army and downsamples the image 2x2 -> 1 with alpha weighting (MMX) into a
+   previewWidth x previewHeight texture. Returns the texture, or CF set with the creation/render error.
 */
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
 #define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
@@ -2880,9 +2872,9 @@ ArmyRuntime_RenderPreviewTexture
   uint32_t pixelBottomLeft;
   uint32_t pixelBottomRight;
   GraphicsPixelDimension savedPreviewWidth;
-  GameEntityRuntime *entityRuntime1;
+  GameEntityRuntime *previewArmyOrValue;
   int boundsSpanY;
-  GameEntityRuntime *memory;
+  GameEntityRuntime *previewTexture;
   void *halvedWidth;
   int boundsSpanZ;
   int maxBoundsSpan;
@@ -2906,21 +2898,26 @@ ArmyRuntime_RenderPreviewTexture
   ArmyPreviewTextureResult failureResult;
   
   savedPreviewWidth = previewWidth;
+  /* a temporary army at world position (0x6000000, 0x6000000) Q12 */
   createResult = ArmyRuntime_CreateInstanceFromAsset
                      (1,0,0x6000000,0x6000000,factionIndex,armyAssetId,worldRuntime);
-  entityRuntime1 = (GameEntityRuntime *)createResult.armyRuntimeOrError;
+  previewArmyOrValue = (GameEntityRuntime *)createResult.armyRuntimeOrError;
   if (!createResult.failed) {
-    rootNodeOrSize = (entityRuntime1->common).ownership.modelNode;
-    if (((*(int *)(*(int *)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x4c) == 0xd
-         ) && (3 < rootNodeOrSize->childCount)) && (rootNodeOrSize->childNodes[3] != (ModelRuntimeNode *)0x0)) {
+    rootNodeOrSize = (previewArmyOrValue->common).ownership.modelNode;
+    /* armies of runtime class 13 lose their fourth child node (model runtime +0x4C = class id) */
+    if (((*(int *)(*(int *)(previewArmyOrValue->common).ownership.definitionOrClassRecord + 0x4c) ==
+          MODEL_RUNTIME_CLASS_13) && (3 < rootNodeOrSize->childCount)) &&
+       (rootNodeOrSize->childNodes[3] != NULL)) {
       WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)rootNodeOrSize->childNodes[3]);
-      rootNodeOrSize->childNodes[3] = (ModelRuntimeNode *)0x0;
+      rootNodeOrSize->childNodes[3] = NULL;
     }
+    /* angles are 16-bit turns: 0x2000 = 45 degrees, 0x3000 = 67.5 degrees */
     (rootNodeOrSize->modelPayload).worldRotationAngle2 = 0x2000;
     (rootNodeOrSize->modelPayload).worldRotationAngle1 = 0x3000;
     rootNodeOrSize->runtimeFlags = rootNodeOrSize->runtimeFlags | 1;
     rootNodeOrSize->tintArgb = 0xffffffff;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootNodeOrSize);
+    /* start the bounds at the root position; the recursion widens them over all nodes */
     g_ModelBoundsMinimumX = (rootNodeOrSize->worldTransform).translation.x;
     g_ModelBoundsMinimumY = (rootNodeOrSize->worldTransform).translation.y;
     g_ModelBoundsMinimumZ = (rootNodeOrSize->worldTransform).translation.z;
@@ -2934,6 +2931,7 @@ ArmyRuntime_RenderPreviewTexture
     if (boundsSpanZ < boundsSpanY) {
       maxBoundsSpan = boundsSpanY;
     }
+    /* camera centred on the bounds in Y and Z, backed off by four times the larger span in X */
     g_ArmyPreviewViewOriginYQ12 = boundsSpanY + g_ModelBoundsMinimumY * 2 >> 1;
     g_ArmyPreviewViewOriginZQ12 = boundsSpanZ + g_ModelBoundsMinimumZ * 2 >> 1;
     g_ArmyPreviewAuxiliaryOrientation0 = 0x6000;
@@ -2952,10 +2950,14 @@ ArmyRuntime_RenderPreviewTexture
                         (GraphicsOffscreenViewParameters *)&g_ArmyPreviewViewOriginXQ12,
                         previewHeight * 2,previewWidth * 2,1,
                         (ModelRuntimeNode **)&g_ArmyPreviewModelNodePointer);
-    memory = offscreenResult.allocation;
+    previewTexture = offscreenResult.allocation;
     if (!offscreenResult.failed) {
-      sourcePixels = &memory[1].common.commandTarget.targetWorldXQ12;
-      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime1);
+      /* the texture is typed as GameEntityRuntime here: its pixels start at +0x220 and the header fields
+         rewritten below (+0x200/+0x204 and +0x218/+0x21C) hold its width and height; +0x04 is the
+         allocation size */
+      sourcePixels = &previewTexture[1].common.commandTarget.targetWorldXQ12;
+      ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmyOrValue);
+      /* downsample in place: each output pixel averages a 2x2 block of the double-size image */
       destinationPixels = sourcePixels;
       previewWidth = savedPreviewWidth;
       do {
@@ -3013,28 +3015,30 @@ ArmyRuntime_RenderPreviewTexture
           destinationPixels = destinationPixels + 1;
           previewWidth = previewWidth - 1;
         } while (previewWidth != 0);
-        sourcePixels = sourcePixels + savedPreviewWidth * 2;
+        sourcePixels = sourcePixels + savedPreviewWidth * 2; /* skip the second source row of the pair */
         previewHeight = previewHeight - 1;
         previewWidth = savedPreviewWidth;
       } while (previewHeight != 0);
-      halvedWidth = (void *)((int)memory[1].common.commandFlags >> 1);
-      entityRuntime1 = (GameEntityRuntime *)((int)memory[1].common.commandTarget.targetEntity >> 1);
-      memory[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
-      memory[1].common.commandTarget.targetEntity = entityRuntime1;
-      memory[1].common.ownership.definitionOrClassRecord = halvedWidth;
-      memory[1].common.ownership.modelNode = (ModelRuntimeNode *)entityRuntime1;
-      rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)entityRuntime1 * 4 + 0x220);
-      (memory->common).ownership.modelNode = rootNodeOrSize;
-      g_MemoryApi.shrinkInPlace((uint32_t)rootNodeOrSize,memory);
+      /* halve the stored sizes (previewArmyOrValue now holds the halved height) and shrink the allocation
+         to the 0x220-byte header plus 32-bit pixels */
+      halvedWidth = (void *)((int)previewTexture[1].common.commandFlags >> 1);
+      previewArmyOrValue = (GameEntityRuntime *)((int)previewTexture[1].common.commandTarget.targetEntity >> 1);
+      previewTexture[1].common.commandFlags = (GameEntityCommandFlags)halvedWidth;
+      previewTexture[1].common.commandTarget.targetEntity = previewArmyOrValue;
+      previewTexture[1].common.ownership.definitionOrClassRecord = halvedWidth;
+      previewTexture[1].common.ownership.modelNode = (ModelRuntimeNode *)previewArmyOrValue;
+      rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)previewArmyOrValue * 4 + 0x220);
+      (previewTexture->common).ownership.modelNode = rootNodeOrSize;
+      g_MemoryApi.shrinkInPlace((uint32_t)rootNodeOrSize,previewTexture);
       successResult.failed = false;
-      successResult.previewTexture = (GraphicsTextureResource *)memory;
+      successResult.previewTexture = (GraphicsTextureResource *)previewTexture;
       return successResult;
     }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime1);
-    entityRuntime1 = memory;
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,previewArmyOrValue);
+    previewArmyOrValue = previewTexture; /* the render error */
   }
   failureResult.failed = true;
-  failureResult.previewTexture = (GraphicsTextureResource *)entityRuntime1;
+  failureResult.previewTexture = (GraphicsTextureResource *)previewArmyOrValue;
   return failureResult;
 }
 
@@ -3586,30 +3590,32 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
 
 
 /* Address: 0x005273D0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Compares squared XY distance between two position runtimes with the square of their combined Q12 radii
-   and returns the outside/inside status through CF.
+   Tests whether two model nodes are closer in the XY plane than the sum of their radii (collision/contact test
+   of two armies or attachments): CF clear when dx^2 + dy^2 <= (candidateRadius + sourceRadius)^2, in 64-bit
+   Q24 arithmetic.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
-          (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidatePositionRuntime,
-          void *sourcePositionRuntime)
+          (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
+          void *sourceModelNode)
 
 {
   int currentAxisDeltaQ12;
   int axisDeltaYQ12;
   int64_t remainingRadiusSquaredAfterXQ24;
   int64_t yDistanceSquaredQ24;
-  
+
+  /* +0x94 / +0x98: ModelRuntimeNode worldTransform.translation.x / .y */
   currentAxisDeltaQ12 =
-       *(int *)((int)sourcePositionRuntime + 0x94) - *(int *)((int)candidatePositionRuntime + 0x94);
+       *(int *)((int)sourceModelNode + 0x94) - *(int *)((int)candidateModelNode + 0x94);
   remainingRadiusSquaredAfterXQ24 =
        (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) *
        (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) -
        (int64_t)currentAxisDeltaQ12 * (int64_t)currentAxisDeltaQ12;
+  /* the second test is the 64-bit remainder - dy^2 >= 0, spelled out as high dwords minus the borrow */
   if ((-1 < remainingRadiusSquaredAfterXQ24) &&
-     (axisDeltaYQ12 = *(int *)((int)sourcePositionRuntime + 0x98) -
-              *(int *)((int)candidatePositionRuntime + 0x98),
+     (axisDeltaYQ12 = *(int *)((int)sourceModelNode + 0x98) -
+              *(int *)((int)candidateModelNode + 0x98),
      yDistanceSquaredQ24 = (int64_t)axisDeltaYQ12 * (int64_t)axisDeltaYQ12,
      -1 < (int)(((int)((uint64_t)remainingRadiusSquaredAfterXQ24 >> 0x20) -
                 (int)((uint64_t)yDistanceSquaredQ24 >> 0x20)) -
@@ -3843,10 +3849,10 @@ ArmyRuntimeHierarchy_DispatchClassMethodDRecursive
 
 
 /* Address: 0x0051C350.
-   Ownership: gameplay/army/runtime.
-   Purpose: Clears the verified derived selection and hierarchy metric fields, then rebuilds them recursively from
-   the attached model runtime hierarchy when present.
-   Cross-module calls: ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics [world/model/hierarchy].
+   Recomputes the army's derived combat figures shown on selection from its model hierarchy (after creation or
+   a change of attachments): the maxima at +0x90, +0x44, +0x48 and the shot selection range at +0x4C are
+   cleared, as are the eight per-target-class damage sums at +0x100, then
+   ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics adds up every node of the model.
 */
 void __thandor_void_preserve_eax_ecx
 ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
@@ -3854,21 +3860,22 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 {
   uint8_t *metricBytes;
   int metricIndex;
-  
+
   armyRuntime->runtimeState90 = 0;
   armyRuntime->runtimeState44 = 0;
   armyRuntime->runtimeState48 = 0;
   metricIndex = 7;
   armyRuntime->runtimeState4C = 0;
   do {
+    /* dword +0x100 + metricIndex * 4 (MOV [EAX+ECX*4+0x100],0) */
     metricBytes = armyRuntime->reservedF8_FF + metricIndex * 4 + 8;
     metricBytes[0] = 0;
     metricBytes[1] = 0;
     metricBytes[2] = 0;
     metricBytes[3] = 0;
-    metricIndex = metricIndex + -1;
+    metricIndex--;
   } while (-1 < metricIndex);
-  if ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime != (ModelRuntimeSlot *)0x0) {
+  if ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime != NULL) {
     ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics
               ((int *)(armyRuntime->modelRuntimeOrSavedOffset).modelRuntime);
   }
@@ -4046,7 +4053,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
           ModelNodeRuntime_UpdateDepthBinMasks
                     (*(DepthIntervalRadius32 *)(remainingOrDefinition + 0xdc),modelNodeRuntime);
           ArmyRuntime_InitializeTerrainOccupancyFlags(worldRuntime,armyRuntime);
-          UiModelControl_RefreshStateTint(modelNodeRuntime);
+          ModelNodeRuntime_RefreshStateTint(modelNodeRuntime);
           ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
           successResult.failed = false;
           successResult.armyRuntimeOrError = (uint32_t)armyRuntime;
@@ -4067,11 +4074,10 @@ ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure:
 
 
 /* Address: 0x0051D0B0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Classifies the army runtime position against terrain occupancy, stores the resulting masks, resolves
-   class-state flags, and applies the verified model-definition flag override.
-   Cross-module calls: TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy],
-   TerrainOccupancyMask_ResolveRuntimeClassFlags [world/terrain/occupancy].
+   Sets up the terrain occupancy of a newly placed army: classifies the field-grid neighbourhood of its model
+   node (within the model definition's radius at +0xDC), lets TerrainOccupancyMask_ResolveRuntimeClassFlags
+   derive the two occupancy masks and the node's occupancy flags (0x4, 0x8, 0x1000) from it, and forces node flag 0x1000
+   when the model runtime has flag 0x200 set at +0xEC.
 */
 void ArmyRuntime_InitializeTerrainOccupancyFlags
                (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
@@ -4081,8 +4087,9 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   uint64_t neighborhoodClassificationPair;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   ModelRuntimeNode *modelNode;
-  void *definition;
-  
+  void *modelRuntime;
+
+  /* the original stores EDX of the classification result (MOV [ECX+0x50],EDX) */
   THANDOR_PART(uint32_t, neighborhoodClassificationPair, 4) =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                  (*(Q12 *)((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
@@ -4097,12 +4104,13 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
                      armyRuntime->terrainOccupancyMask0,
                      (char)worldRuntime->activeFactionRuntimeIndex);
   occupancyRuntimeFlags = resolvedMasks.runtimeFlags;
+  /* replace node flags 0x4, 0x8 and 0x1000 by the resolved ones */
   modelNode->runtimeFlags = modelNode->runtimeFlags & 0xffffeff3;
   armyRuntime->terrainOccupancyMask0 = resolvedMasks.primaryOccupancyMask;
   armyRuntime->terrainOccupancyMask1 = resolvedMasks.secondaryOccupancyMask;
-  definition = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
+  modelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   modelNode->runtimeFlags = modelNode->runtimeFlags | occupancyRuntimeFlags;
-  if ((*(uint32_t *)((int)definition + 0xec) & 0x200) != 0) {
+  if ((*(uint32_t *)((int)modelRuntime + 0xec) & 0x200) != 0) {
     modelNode->runtimeFlags = modelNode->runtimeFlags | 0x1000;
   }
   return;

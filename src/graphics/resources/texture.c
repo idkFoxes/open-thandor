@@ -3578,13 +3578,11 @@ GraphicsTextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphi
 
 
 /* Address: 0x0057AAD0.
-   Ownership: graphics/resources/texture.
-   Purpose: Creates the device-memory surface and IDirect3DTexture2 view, loads stagingTexture2, obtains a
-   D3DTEXTUREHANDLE, and stores the device-side triplet. When CreateSurface reports 0x8876017C, the function evicts
-   the least-recently-used device texture and retries while eviction succeeds. The routine preserves incoming EAX.
-   Existing call sites mirror texture in EAX and use that preserved pointer.
-   Local calls: GraphicsTexture_EvictOldestDeviceTexture.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   Makes a texture usable by the Direct3D device: creates the square device surface (video memory for a
+   hardware device, system memory for an emulated one), loads the staging texture into it and stores the
+   surface, texture interface and D3D texture handle in texture. On DDERR_OUTOFVIDEOMEMORY the least recently
+   used device texture is evicted and the creation retried; any other failure leaves the device fields NULL.
+   Preserves EAX; callers keep texture in it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
@@ -3605,24 +3603,25 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   IDirectDrawSurface3 *deviceSurface3;
   IDirectDrawSurface *deviceSurfaceBase;
   
-  deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-  deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-  deviceTexture2 = (IDirect3DTexture2 *)0x0;
-  Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-  g_SurfaceDesc.dwSize = 0x6c;
+  deviceSurfaceBase = NULL;
+  deviceSurface3 = NULL;
+  deviceTexture2 = NULL;
+  Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+  g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
   deviceDesc = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].hardwareDesc;
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 0) {
-    g_SurfaceDesc.dwSize = 0x6c;
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_SOFTWARE) {
+    g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
     return;
   }
-  g_SurfaceDesc.dwFlags = 0x1007;
-  g_SurfaceDesc.ddsCaps.dwCaps = 0x4001000;
+  g_SurfaceDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+  g_SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_ALLOCONLOAD;
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
+  /* a hardware device description without a colour model means the device is emulated in software */
   if (deviceDesc->dcmColorModel == 0) {
-    g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | 0x800;
+    g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | DDSCAPS_SYSTEMMEMORY;
   }
   else {
-    g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | 0x4000;
+    g_SurfaceDesc.ddsCaps.dwCaps = g_SurfaceDesc.ddsCaps.dwCaps | DDSCAPS_VIDEOMEMORY;
   }
   largerExtent = logicalSize.logicalWidthPixels;
   if (logicalSize.logicalWidthPixels < logicalSize.logicalHeightPixels) {
@@ -3630,6 +3629,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   }
   g_SurfaceDesc.dwHeight = largerExtent >> ((uint8_t)g_TextureDownsampleShift & 0x1f);
   effectiveShift = g_TextureDownsampleShift;
+  /* textures are at least 16x16: lower the downsample shift until the edge reaches 16 */
   do {
     if (0xf < (int)g_SurfaceDesc.dwHeight) break;
     g_SurfaceDesc.dwHeight = g_SurfaceDesc.dwHeight * 2;
@@ -3639,14 +3639,15 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   sourceFormatCursor = texture->pixelFormat;
   destinationFormatCursor = &g_SurfaceDesc.ddpfPixelFormat;
   g_SurfaceDesc.dwWidth = g_SurfaceDesc.dwHeight;
-  for (dwordsRemaining = 8; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+  /* copy the 32-byte DDPIXELFORMAT dword by dword */
+  for (dwordsRemaining = 8; dwordsRemaining != 0; dwordsRemaining--) {
     destinationFormatCursor->dwSize = sourceFormatCursor->dwSize;
     sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
     destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
   }
   for (;;) {
     hresult = g_DirectDraw2->lpVtbl->CreateSurface
-                      (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,(TH_LEGACY_LPVOID)0x0);
+                      (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,NULL);
     if (hresult == 0) {
       hresult = deviceSurfaceBase->lpVtbl->QueryInterface
                         (deviceSurfaceBase,&IID_IDirectDrawSurface3_Local,&deviceSurface3);
@@ -3672,44 +3673,44 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
     }
     /* A creation step or Load failed: release this attempt; on DDERR_OUTOFVIDEOMEMORY evict the oldest device
        texture and retry while eviction succeeds. */
-    if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+    if (deviceTexture2 != NULL) {
       deviceTexture2->lpVtbl->Release(deviceTexture2);
-      deviceTexture2 = (IDirect3DTexture2 *)0x0;
+      deviceTexture2 = NULL;
     }
-    if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
+    if (deviceSurface3 != NULL) {
       deviceSurface3->lpVtbl->Release(deviceSurface3);
-      deviceSurface3 = (IDirectDrawSurface3 *)0x0;
+      deviceSurface3 = NULL;
     }
-    if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
+    if (deviceSurfaceBase != NULL) {
       deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
-      deviceSurfaceBase = (IDirectDrawSurface *)0x0;
+      deviceSurfaceBase = NULL;
     }
-    if ((hresult != -0x7789fe84) || (evictFailed = GraphicsTexture_EvictOldestDeviceTexture(texture), evictFailed)
-       ) break;
+    if ((hresult != DDERR_OUTOFVIDEOMEMORY) ||
+        (evictFailed = GraphicsTexture_EvictOldestDeviceTexture(texture), evictFailed)) break;
   }
-  if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+  if (deviceTexture2 != NULL) {
     deviceTexture2->lpVtbl->Release(deviceTexture2);
   }
-  if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (deviceSurface3 != NULL) {
     deviceSurface3->lpVtbl->Release(deviceSurface3);
   }
-  if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (deviceSurfaceBase != NULL) {
     deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
   }
-  texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-  texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-  texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+  texture->deviceSurfaceBase = NULL;
+  texture->deviceSurface3 = NULL;
+  texture->deviceTexture2 = NULL;
   texture->textureHandle = 0;
   return;
 }
 
 
 /* Address: 0x00485EA0.
-   Ownership: graphics/resources/texture.
-   Purpose: Converts the source asset's palette entries for the active framebuffer, allocates 8 +
-   subresourceCount*0x20 bytes, and fills one GraphicsTextureSetEntry per source entry. Each pixelWidth and
-   pixelHeight must be an exact power of two. widthLog2 and heightLog2 are generated with BSR. ABI: CF clear means
-   success. CF set means palette conversion, allocation, or power-of-two validation failed.
+   Builds a texture set for a 'gfx' asset: converts its palettes to the display format, then allocates the
+   set (an 8-byte header with the source asset and image count, then one 0x20-byte GraphicsTextureSetEntry
+   per image) and fills each entry with the image index, source entry and log2 of its width and height.
+   CF set with the conversion/arena error, or FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO (the set is then not
+   freed, as in the original).
 */
 TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
@@ -3734,6 +3735,8 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
   if (!convertResult.failed) {
     entriesRemaining = convertedSource->subresourceCount;
     metadataAllocation = g_MemoryApi.alloc(entriesRemaining * 0x20 + 8);
+    /* the set is typed as a palette asset here: magic = sourceAsset, allocationSizeBytes = image count, and
+       from formatVersion on eight dwords per entry */
     metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocation.payloadOrError;
     if (!metadataAllocation.failed) {
       entryFieldCursor = &metadataOrError->formatVersion;
@@ -3742,9 +3745,10 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
       sourceEntry = convertedSource->reserved10_AF + (convertedSource->subresourceTableOffset - 0x10);
       entryIndex = 0;
       while( true ) {
+        /* BSR of pixelWidth (source entry +0x18); the original leaves the register undefined for 0 */
         widthLog2 = 0x1f;
         if (*(uint32_t *)(sourceEntry + 0x18) != 0) {
-          for (; *(uint32_t *)(sourceEntry + 0x18) >> widthLog2 == 0; widthLog2 = widthLog2 - 1) {
+          for (; *(uint32_t *)(sourceEntry + 0x18) >> widthLog2 == 0; widthLog2--) {
           }
         }
         *entryFieldCursor = 0;
@@ -3752,9 +3756,10 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
         entryFieldCursor[1] = widthLog2;
         if (1 << ((uint8_t)widthLog2 & 0x1f) != *(int *)(sourceEntry + 0x18)) break;
         entryFieldCursor[3] = (GraphicsPaletteTextureFormatVersion)convertedSource;
+        /* BSR of pixelHeight (source entry +0x1C) */
         heightLog2 = 0x1f;
         if (*(uint32_t *)(sourceEntry + 0x1c) != 0) {
-          for (; *(uint32_t *)(sourceEntry + 0x1c) >> heightLog2 == 0; heightLog2 = heightLog2 + -1) {
+          for (; *(uint32_t *)(sourceEntry + 0x1c) >> heightLog2 == 0; heightLog2--) {
           }
         }
         entryFieldCursor[4] = (GraphicsPaletteTextureFormatVersion)sourceEntry;
@@ -3762,13 +3767,13 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
         if (1 << ((uint8_t)heightLog2 & 0x1f) != *(int *)(sourceEntry + 0x1c)) break;
         entryFieldCursor = entryFieldCursor + 8;
         sourceEntry = sourceEntry + 0x20;
-        entryIndex = entryIndex + 1;
-        entriesRemaining = entriesRemaining - 1;
+        entryIndex++;
+        entriesRemaining--;
         if (entriesRemaining == 0) {
           return THANDOR_BITCAST(uint64_t, TextureSetResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, metadataAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       }
-      metadataOrError = (GraphicsPaletteTextureSourceAsset *)&k_LowAddressLiteral0000002F;
+      metadataOrError = (GraphicsPaletteTextureSourceAsset *)FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO;
     }
   }
   failureResult.failed = true;
@@ -3778,21 +3783,21 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
 
 
 /* Address: 0x00485F90.
-   Ownership: graphics/resources/texture.
-   Purpose: Frees the texture-set metadata allocation and returns set->sourceAsset. Null input returns null.
+   Counterpart of GraphicsTextureSet_AllocateMetadata: frees the set and returns its source asset so the
+   caller can release that too. NULL for a NULL set.
 */
 GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
 GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
 
 {
-  GraphicsTextureSourceAsset *releasedTextureSet;
-  
-  releasedTextureSet = (GraphicsTextureSourceAsset *)0x0;
-  if (set != (GraphicsTextureSet *)0x0) {
-    releasedTextureSet = set->sourceAsset;
+  GraphicsTextureSourceAsset *sourceAsset;
+
+  sourceAsset = NULL;
+  if (set != NULL) {
+    sourceAsset = set->sourceAsset;
     g_MemoryApi.free(set);
   }
-  return releasedTextureSet;
+  return sourceAsset;
 }
 
 
@@ -3859,9 +3864,9 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
 
 
 /* Address: 0x0057E870.
-   Ownership: graphics/resources/texture.
-   Purpose: Stores the texture pointer in the first free entry of the 4096-entry texture-slot array. ABI: CF clear
-   means success. CF set means failure; EAX may contain an engine error code.
+   Enters a texture into the first free slot of g_GraphicsTextureSlots, the registry used to evict device
+   textures and to rebuild all staging textures. CF set when all GRAPHICS_TEXTURE_SLOT_CAPACITY slots are
+   taken.
 */
 bool __thandor_void_preserve_eax_ecx GraphicsTexture_RegisterSlot(GraphicsTextureResource *texture)
 
@@ -3869,24 +3874,24 @@ bool __thandor_void_preserve_eax_ecx GraphicsTexture_RegisterSlot(GraphicsTextur
   int slotsRemaining;
   GraphicsTextureResource **slotCursor;
   
-  slotsRemaining = 0x1000;
+  slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   slotCursor = g_GraphicsTextureSlots;
   do {
-    if (*slotCursor == (GraphicsTextureResource *)0x0) {
+    if (*slotCursor == NULL) {
       *slotCursor = texture;
       return false;
     }
     slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
   return true;
 }
 
 
 /* Address: 0x0057E8C0.
-   Ownership: graphics/resources/texture.
-   Purpose: Selects an opaque or alpha-capable DirectDraw pixel format by scanning either direct pixels or a
-   256-entry palette bank.
+   Picks the texture pixel format for one image: the alpha format if any pixel (direct ARGB image) or any of
+   the 256 palette colours (palette image) is not fully opaque, else the opaque format. Palette images use
+   the "selected" pair of formats.
 */
 DDPIXELFORMAT *
 GraphicsTexture_SelectPixelFormat
@@ -3899,11 +3904,14 @@ GraphicsTexture_SelectPixelFormat
   uint8_t *pixelCursor;
   int paletteIndexOrCount;
   
+  /* byte offset of the image's GraphicsTextureSourceEntry; the anchor below lies at byte 0x28, hence the
+     corrections: -0x20 = paletteIndex (+8), -0x1C = dataOffset (+0xC), -0x10/-0xC = pixelWidth/pixelHeight */
   entryOffset = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-  paletteIndexOrCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0x20)
+  paletteIndexOrCount =*(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0x20)
   ;
   if (paletteIndexOrCount < 0) {
-    pixelCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+    /* no palette: scan the ARGB pixels */
+    pixelCursor= (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
              *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                      entryOffset + -0x1c) + -0x28;
     paletteIndexOrCount = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
@@ -3911,23 +3919,25 @@ GraphicsTexture_SelectPixelFormat
             *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0xc
                     );
     do {
-      if (*(uint32_t *)pixelCursor < 0xff000000) {
+      if (*(uint32_t *)pixelCursor < 0xff000000) { /* alpha below 0xFF */
         return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       }
       pixelCursor = pixelCursor + 4;
-      paletteIndexOrCount = paletteIndexOrCount + -1;
+      paletteIndexOrCount--;
     } while (paletteIndexOrCount != 0);
     selectedFormat = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
   }
   else {
+    /* palette bank paletteIndex: 0x400 bytes (256 ARGB colours) each, starting right after the 0x100-byte
+       asset header (sourceAsset + 1) */
     paletteEntryCursor = sourceAsset + paletteIndexOrCount * 4 + 1;
-    paletteIndexOrCount = 0x100;
+    paletteIndexOrCount = 256;
     do {
-      if ((paletteEntryCursor->common).magic < 0xff000000) {
+      if ((paletteEntryCursor->common).magic < 0xff000000) { /* alpha below 0xFF */
         return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
       }
       paletteEntryCursor = (GraphicsTextureSourceAsset *)&(paletteEntryCursor->common).formatVersion;
-      paletteIndexOrCount = paletteIndexOrCount + -1;
+      paletteIndexOrCount--;
     } while (paletteIndexOrCount != 0);
     selectedFormat = (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
   }
@@ -3935,12 +3945,12 @@ GraphicsTexture_SelectPixelFormat
 }
 
 /* Address: 0x0057A740.
-   Ownership: graphics/resources/texture.
-   Purpose: Creates the system-memory staging surface, obtains IDirectDrawSurface3 and IDirect3DTexture2 views,
-   clears the device-side triplet and texture handle, and invokes the color-upload converter selected by
-   downsampleShift. The routine preserves incoming EAX. Callers that mirror texture in EAX use the preserved
-   register as a pointer result; the stack argument remains the actual formal parameter.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   Creates the system-memory staging copy of a texture (square, at least 16x16, the downsample shift adjusted
+   to match) with its IDirectDrawSurface3 and IDirect3DTexture2 interfaces, clears the device-side fields
+   (GraphicsTexture_CreateDeviceTexture fills them on first use) and converts the image into it with the
+   colour upload for that shift. Only Direct3D devices get staging surfaces; for the software and Glide
+   adapters the fields are just cleared before the upload. When the creation fails all staging fields are
+   NULL and nothing is uploaded. Returns texture (EAX preserved).
 */
 GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
 GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
@@ -3957,14 +3967,14 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
   IDirectDrawSurface3 *surface3;
   IDirectDrawSurface *surfaceBase;
   
-  surfaceBase = (IDirectDrawSurface *)0x0;
-  surface3 = (IDirectDrawSurface3 *)0x0;
-  texture2 = (IDirect3DTexture2 *)0x0;
-  Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-  g_SurfaceDesc.dwSize = 0x6c;
+  surfaceBase = NULL;
+  surface3 = NULL;
+  texture2 = NULL;
+  Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+  g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
   if (1 < g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1) {
-    g_SurfaceDesc.dwFlags = 0x1007;
-    g_SurfaceDesc.ddsCaps.dwCaps = 0x1800;
+    g_SurfaceDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+    g_SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_SYSTEMMEMORY;
     logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset)
     ;
     largerExtent = logicalSize.logicalWidthPixels;
@@ -3973,6 +3983,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
     }
     g_SurfaceDesc.dwHeight = largerExtent >> ((uint8_t)g_TextureDownsampleShift & 0x1f);
     effectiveShift = g_TextureDownsampleShift;
+    /* textures are at least 16x16: lower the downsample shift until the edge reaches 16 */
     do {
       if (0xf < (int)g_SurfaceDesc.dwHeight) break;
       g_SurfaceDesc.dwHeight = g_SurfaceDesc.dwHeight * 2;
@@ -3982,13 +3993,14 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
     sourceFormatCursor = texture->pixelFormat;
     destinationFormatCursor = &g_SurfaceDesc.ddpfPixelFormat;
     g_SurfaceDesc.dwWidth = g_SurfaceDesc.dwHeight;
-    for (dwordsRemaining = 8; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+    /* copy the 32-byte DDPIXELFORMAT dword by dword */
+    for (dwordsRemaining = 8; dwordsRemaining != 0; dwordsRemaining--) {
       destinationFormatCursor->dwSize = sourceFormatCursor->dwSize;
       sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
       destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
     }
     hresult = g_DirectDraw2->lpVtbl->CreateSurface
-                      (g_DirectDraw2,&g_SurfaceDesc,&surfaceBase,(TH_LEGACY_LPVOID)0x0);
+                      (g_DirectDraw2,&g_SurfaceDesc,&surfaceBase,NULL);
     if (hresult == 0) {
       hresult = surfaceBase->lpVtbl->QueryInterface
                         (surfaceBase,&IID_IDirectDrawSurface3_Local,&surface3);
@@ -3998,27 +4010,27 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
       }
     }
     if (hresult != 0) {
-      if (texture2 != (IDirect3DTexture2 *)0x0) {
+      if (texture2 != NULL) {
         texture2->lpVtbl->Release(texture2);
       }
-      if (surface3 != (IDirectDrawSurface3 *)0x0) {
+      if (surface3 != NULL) {
         surface3->lpVtbl->Release(surface3);
       }
-      if (surfaceBase != (IDirectDrawSurface *)0x0) {
+      if (surfaceBase != NULL) {
         surfaceBase->lpVtbl->Release(surfaceBase);
       }
-      texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
-      texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
-      texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
+      texture->stagingSurfaceBase = NULL;
+      texture->stagingSurface3 = NULL;
+      texture->stagingTexture2 = NULL;
       return texture; /* preserved EAX: callers mirror texture in EAX */
     }
   }
   texture->stagingSurfaceBase = surfaceBase;
   texture->stagingSurface3 = surface3;
   texture->stagingTexture2 = texture2;
-  texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-  texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-  texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+  texture->deviceSurfaceBase = NULL;
+  texture->deviceSurface3 = NULL;
+  texture->deviceTexture2 = NULL;
   texture->textureHandle = 0;
   g_GraphicsDispatchTable.colorUpload[texture->downsampleShift](texture);
   return texture; /* preserved EAX: callers mirror texture in EAX */
@@ -4026,54 +4038,53 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
 
 
 /* Address: 0x0057A900.
-   Ownership: graphics/resources/texture.
-   Purpose: Releases the device and staging COM triplets, clears all six pointers and textureHandle, and
-   invalidates g_BoundTextureHandle with 0xFFFFFFFF when it referred to the released handle. The routine preserves
-   incoming EAX. Several callers mirror texture in EAX and chain the preserved value into another helper.
+   Releases every DirectDraw/Direct3D object of a texture (device and staging) and clears the fields. When the
+   texture was the one bound to the device, g_BoundTextureHandle becomes 0xFFFFFFFF, which matches no handle,
+   so the next bind sets the render state again. Preserves EAX; callers keep texture in it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
 
 {
-  IDirect3DTexture2 *currentTexture2;
+  IDirect3DTexture2 *deviceTexture2;
   IDirect3DTexture2 *stagingTexture2;
-  IDirectDrawSurface3 *currentSurface3;
+  IDirectDrawSurface3 *deviceSurface3;
   IDirectDrawSurface3 *stagingSurface3;
-  IDirectDrawSurface *currentBaseSurface;
+  IDirectDrawSurface *deviceSurfaceBase;
   IDirectDrawSurface *stagingSurfaceBase;
   uint32_t releasedTextureHandle;
   
-  currentTexture2 = texture->deviceTexture2;
-  if (currentTexture2 != (IDirect3DTexture2 *)0x0) {
-    currentTexture2->lpVtbl->Release(currentTexture2);
+  deviceTexture2 = texture->deviceTexture2;
+  if (deviceTexture2 != NULL) {
+    deviceTexture2->lpVtbl->Release(deviceTexture2);
   }
-  currentSurface3 = texture->deviceSurface3;
-  if (currentSurface3 != (IDirectDrawSurface3 *)0x0) {
-    currentSurface3->lpVtbl->Release(currentSurface3);
+  deviceSurface3 = texture->deviceSurface3;
+  if (deviceSurface3 != NULL) {
+    deviceSurface3->lpVtbl->Release(deviceSurface3);
   }
-  currentBaseSurface = texture->deviceSurfaceBase;
-  if (currentBaseSurface != (IDirectDrawSurface *)0x0) {
-    currentBaseSurface->lpVtbl->Release(currentBaseSurface);
+  deviceSurfaceBase = texture->deviceSurfaceBase;
+  if (deviceSurfaceBase != NULL) {
+    deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
   }
   stagingTexture2 = texture->stagingTexture2;
-  if (stagingTexture2 != (IDirect3DTexture2 *)0x0) {
+  if (stagingTexture2 != NULL) {
     stagingTexture2->lpVtbl->Release(stagingTexture2);
   }
   stagingSurface3 = texture->stagingSurface3;
-  if (stagingSurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (stagingSurface3 != NULL) {
     stagingSurface3->lpVtbl->Release(stagingSurface3);
   }
   stagingSurfaceBase = texture->stagingSurfaceBase;
-  if (stagingSurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (stagingSurfaceBase != NULL) {
     stagingSurfaceBase->lpVtbl->Release(stagingSurfaceBase);
   }
   releasedTextureHandle = texture->textureHandle;
-  texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
-  texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
-  texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
-  texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-  texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-  texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+  texture->stagingSurfaceBase = NULL;
+  texture->stagingSurface3 = NULL;
+  texture->stagingTexture2 = NULL;
+  texture->deviceSurfaceBase = NULL;
+  texture->deviceSurface3 = NULL;
+  texture->deviceTexture2 = NULL;
   texture->textureHandle = 0;
   if (releasedTextureHandle == g_BoundTextureHandle) {
     g_BoundTextureHandle = 0xffffffff;

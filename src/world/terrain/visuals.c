@@ -11,20 +11,22 @@
 
 /* Implementation ownership: world/terrain/visuals. */
 
-/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift.
+   Spreads an ARGB colour into four 16-bit channels for the PMULHW shading in the composite texture fill. */
 static __inline uint64_t TerrainColor_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
-/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes, i.e. four shaded 16-bit
+   channels packed back into one ARGB pixel. */
 static __inline uint32_t TerrainColor_PackWordsUnsignedSaturate(uint64_t words)
 
 {
@@ -34,14 +36,15 @@ static __inline uint32_t TerrainColor_PackWordsUnsignedSaturate(uint64_t words)
 
   lanes.q = words;
   packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     packed = packed |
              (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
 
-/* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1. */
+/* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1: per channel the average of the
+   new colour and the pixel already in the plane (used to blend water over the ground colour). */
 static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,uint32_t pixel)
 
 {
@@ -49,7 +52,7 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
   int lane;
 
   lanes.q = words;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     lanes.uw[lane] = (uint16_t)(lanes.uw[lane] + (pixel >> (lane * 8) & 0xff)) >> 1;
   }
   return lanes.q;
@@ -136,9 +139,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(vo
 
 
 /* Address: 0x00503B10.
-   Ownership: world/terrain/visuals.
-   Purpose: Allocates and 64-KiB-aligns the shared terrain byte lookup and fills its clamp/offset tables using
-   delta 0x15 with verified caps 0x87 and 0xFF.
+   Builds g_TerrainByteClampLookup, the 64-KiB table FieldGrid_ApplyByteClampLookupToCells uses every few ticks to
+   fade each cell's runtime byte (+0x68) one step (TERRAIN_RUNTIME_BYTE_FADE_STEP) towards the level its occupancy
+   byte asks for (row targets: see TERRAIN_BYTE_CLAMP_LOOKUP_BYTES). The table is 64-KiB aligned so the original
+   can index it by loading the two bytes into AH/AL. CF set with the allocator error on failure.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void)
 
@@ -151,8 +155,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize
   uint32_t lookupInputValue;
   uint8_t *lookupWriteCursor;
   ArenaAllocResult allocResult;
-  
-  allocResult = g_MemoryApi.alloc(0x20000);
+
+  /* twice the size, so a 64-KiB aligned table fits inside */
+  allocResult = g_MemoryApi.alloc(TERRAIN_BYTE_CLAMP_LOOKUP_BYTES * 2);
   lookupAllocationBase = (void *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return StatusValue_Fail(allocResult.payloadOrError);
@@ -161,125 +166,131 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize
   lookupWriteCursor = (uint8_t *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
   lookupRowsRemaining = 0x40;
   g_TerrainByteClampLookup = lookupWriteCursor;
+  /* rows 0x00..0x7F in pairs: even rows fade to NONE, odd rows to FULL */
   do {
     do {
       if (clampInputValue == 0) {
-        *lookupWriteCursor = 0;
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_NONE;
       }
-      else if ((int)(clampInputValue - 0x15) < 1) {
-        *lookupWriteCursor = 0;
+      else if ((int)(clampInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 1) {
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_NONE;
       }
       else {
-        *lookupWriteCursor = (uint8_t)(clampInputValue - 0x15);
+        *lookupWriteCursor = (uint8_t)(clampInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
-      lookupWriteCursor = lookupWriteCursor + 1;
+      lookupWriteCursor++;
       nextInputByte = (char)clampInputValue + 1;
       clampInputValue = (uint32_t)nextInputByte;
     } while (nextInputByte != 0);
     lookupInputValue = 0;
     do {
+      /* a byte is never above 0xFF: only the rising branch is reached */
       if (lookupInputValue < 0x100) {
-        if (lookupInputValue + 0x15 < 0xff) {
-          *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
+        if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
+          *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
         }
         else {
-          *lookupWriteCursor = 0xff;
+          *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
         }
       }
-      else if ((int)(lookupInputValue - 0x15) < 0x100) {
-        *lookupWriteCursor = 0xff;
+      else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
       else {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
-      lookupWriteCursor = lookupWriteCursor + 1;
+      lookupWriteCursor++;
       nextInputByte = (char)lookupInputValue + 1;
       lookupInputValue = (uint32_t)nextInputByte;
     } while (nextInputByte != 0);
-    lookupRowsRemaining = lookupRowsRemaining + -1;
+    lookupRowsRemaining--;
     clampInputValue = 0;
   } while (lookupRowsRemaining != 0);
+  /* row 0x80: fade to PERSISTENT from either side */
   lookupInputValue = 0;
   do {
-    if (lookupInputValue < 0x88) {
-      if (lookupInputValue + 0x15 < 0x87) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
+    if (lookupInputValue < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
+      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT) {
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
       else {
-        *lookupWriteCursor = 0x87;
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
       }
     }
-    else if ((int)(lookupInputValue - 0x15) < 0x88) {
-      *lookupWriteCursor = 0x87;
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
+      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
     }
     else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
     }
-    lookupWriteCursor = lookupWriteCursor + 1;
+    lookupWriteCursor++;
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
+  /* row 0x81: FULL */
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 0x100) {
-      if (lookupInputValue + 0x15 < 0xff) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
+      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
       else {
-        *lookupWriteCursor = 0xff;
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
     }
-    else if ((int)(lookupInputValue - 0x15) < 0x100) {
-      *lookupWriteCursor = 0xff;
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
     }
     else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
     }
-    lookupWriteCursor = lookupWriteCursor + 1;
+    lookupWriteCursor++;
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
+  /* row 0x82: PERSISTENT */
   lookupInputValue = 0;
   do {
-    if (lookupInputValue < 0x88) {
-      if (lookupInputValue + 0x15 < 0x87) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
+    if (lookupInputValue < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
+      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT) {
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
       else {
-        *lookupWriteCursor = 0x87;
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
       }
     }
-    else if ((int)(lookupInputValue - 0x15) < 0x88) {
-      *lookupWriteCursor = 0x87;
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT + 1) {
+      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT;
     }
     else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
     }
-    lookupWriteCursor = lookupWriteCursor + 1;
+    lookupWriteCursor++;
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
+  /* rows 0x83..0xFF (125): FULL */
   finalRowsRemaining = 0x7d;
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 0x100) {
-      if (lookupInputValue + 0x15 < 0xff) {
-        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
+      if (lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP < TERRAIN_RUNTIME_BYTE_LEVEL_FULL) {
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + TERRAIN_RUNTIME_BYTE_FADE_STEP);
       }
       else {
-        *lookupWriteCursor = 0xff;
+        *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
       }
     }
-    else if ((int)(lookupInputValue - 0x15) < 0x100) {
-      *lookupWriteCursor = 0xff;
+    else if ((int)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP) < 0x100) {
+      *lookupWriteCursor = TERRAIN_RUNTIME_BYTE_LEVEL_FULL;
     }
     else {
-      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - TERRAIN_RUNTIME_BYTE_FADE_STEP);
     }
-    lookupWriteCursor = lookupWriteCursor + 1;
+    lookupWriteCursor++;
     nextInputByte = (char)lookupInputValue + 1;
     lookupInputValue = (uint32_t)nextInputByte;
-  } while ((nextInputByte != 0) || (finalRowsRemaining = finalRowsRemaining + -1, finalRowsRemaining != 0));
+  } while ((nextInputByte != 0) || (finalRowsRemaining--, finalRowsRemaining != 0));
   return StatusValue_Ok(0);
 }
 

@@ -12,6 +12,14 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/render/shading. */
+
+/* Number of runtime light records in g_GraphicsShadingRuntimeRecords (0x40 bytes each) */
+#define GRAPHICS_SHADING_RUNTIME_RECORD_COUNT 256
+/* Intensity clamp table (GraphicsIntensityClampTable_Initialize): entry (previous << 8) | target is target
+   limited to previous +/- this step, so model tints fade by at most 21 per update */
+#define GRAPHICS_INTENSITY_CLAMP_MAX_STEP 21
+/* 64 KiB table plus 64 KiB slack so it can be aligned to a 64 KiB boundary */
+#define GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES 0x20000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004CDD40 */

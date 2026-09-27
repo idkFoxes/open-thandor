@@ -313,20 +313,18 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
 
 
 /* Address: 0x004AF890.
-   Ownership: ui/controls/layout.
-   Purpose: Processes keyboard and pointer events, updates, dispatches actions, draws, and presents one UI frame
-   while preserving the caller's lock-transition state through try-acquire/release/reacquire operations.
-   Local calls: UiFrame_Update, UiFrame_Draw.
-   Cross-module calls: UiKeyboard_DispatchPendingEvents [ui/controls/input], UiPointer_DispatchPendingEvents
-   [ui/controls/input], UiActionQueue_DispatchPending [ui/core/runtime].
+   Runs one complete UI frame (events, frame ticks, queued actions, draw, present) from code that may or may
+   not hold the UI frame lock, e.g. modal loops and the fatal-error box: the lock is released for the frame
+   and taken again afterwards only when it was held on entry.
 */
 void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void)
 
 {
-  bool tryAcquireResult;
+  bool lockWasHeld;
   
-  tryAcquireResult = g_SpinLockTryAcquire(g_UiRuntimeFrameLock);
-  if (!tryAcquireResult) {
+  /* the try-acquire takes a free lock, so both paths release it before the frame */
+  lockWasHeld = g_SpinLockTryAcquire(g_UiRuntimeFrameLock);
+  if (!lockWasHeld) {
     g_SpinLockRelease(g_UiRuntimeFrameLock);
     UiKeyboard_DispatchPendingEvents();
     UiPointer_DispatchPendingEvents();
@@ -1197,10 +1195,9 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_RunUntilRootClosedAndPresentFin
 }
 
 /* Address: 0x004AF9D0.
-   Ownership: ui/controls/layout.
-   Purpose: Unlinks a root from its current position, inserts it above the active root, refreshes focus and
-   active/suppressed flags, and invalidates the previous and promoted roots.
-   Cross-module calls: UiKeyboardFocus_SelectInitial [ui/controls/input], UiNode_InvalidateRoot [ui/core/runtime].
+   Moves an open root (window) to the top of the root stack: unlinks it from its position, links it above
+   the current front root, gives it the initial keyboard focus, moves the in-front flag from the old front
+   root to it and invalidates both. Always returns false (CF clear).
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root)
 
@@ -1208,26 +1205,25 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
   UiRootNode *belowRoot;
   UiRootNode *oldFrontRoot;
   UiRootNode *nextRootLink;
-  UiRootNode *detachedPreviousRoot;
   UiNodeBase *nextFrontRootLink;
 
   oldFrontRoot = g_UiRootNode;
-  nextRootLink = (UiRootNode *)(root->base).nextSibling;
+  nextRootLink = (UiRootNode *)root->base.nextSibling;
   belowRoot = root->previousRoot;
-  if (nextRootLink != (UiRootNode *)0xffffffff) {
+  if (nextRootLink != UI_ROOT_STACK_END) {
     nextRootLink->previousRoot = belowRoot;
   }
-  if (belowRoot != (UiRootNode *)0xffffffff) {
-    (belowRoot->base).nextSibling = &nextRootLink->base;
+  if (belowRoot != UI_ROOT_STACK_END) {
+    belowRoot->base.nextSibling = &nextRootLink->base;
   }
-  nextFrontRootLink = (g_UiRootNode->base).nextSibling;
+  nextFrontRootLink = g_UiRootNode->base.nextSibling;
   root->previousRoot = g_UiRootNode;
-  (root->base).nextSibling = nextFrontRootLink;
-  (g_UiRootNode->base).nextSibling = &root->base;
+  root->base.nextSibling = nextFrontRootLink;
+  g_UiRootNode->base.nextSibling = &root->base;
   g_UiRootNode = root;
   UiKeyboardFocus_SelectInitial(&root->base);
-  (*((oldFrontRoot->base).vtable)->applyFlags)(0,0xfffffffe,&oldFrontRoot->base);
-  (*((root->base).vtable)->applyFlags)(1,0xffffffff,&root->base);
+  (*oldFrontRoot->base.vtable->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
+  (*root->base.vtable->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
   UiNode_InvalidateRoot(&oldFrontRoot->base);
   UiNode_InvalidateRoot(&root->base);
   return false;

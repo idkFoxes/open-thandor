@@ -176,7 +176,7 @@ SelectionPlayerPairList_ContainsPair
 /* 0x005302B0 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyPositionCommandVariantB
-          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection);
+          (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
 /* 0x00530420 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -190,7 +190,7 @@ SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
 /* 0x005303A0 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyPositionCommand
-          (Q12 coordinateA,Q12 coordinateB,SelectionPointerArray32 *selection);
+          (Q12 targetWorldY,Q12 targetWorldX,SelectionPointerArray32 *selection);
 
 /* 0x0052D600 */
 SelectionPanelAdvanceEaxEdx8 __thandor_eax_edx_cf_preserve_ecx

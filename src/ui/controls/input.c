@@ -250,14 +250,13 @@ void __thandor_void_preserve_ecx_edx UiKeyboardFocus_SelectInitial(UiNodeBase *r
 
 
 /* Address: 0x004B0120.
-   Ownership: ui/controls/input.
-   Purpose: Handles ui keyboard focus acquire if none.
-   Local calls: UiKeyboardFocus_Set.
+   Called when a control is unsuppressed or its page becomes active: gives it the keyboard focus if no node
+   holds the focus yet and the control is a focus target.
 */
 void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBase *node)
 
 {
-  if ((g_UiKeyboardFocusNode == (UiNodeBase *)0xffffffff) &&
+  if ((g_UiKeyboardFocusNode == UI_NODE_NONE) &&
      ((node->nodeFlags & (UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET)) != 0)) {
     UiKeyboardFocus_Set(node);
   }
@@ -1475,10 +1474,9 @@ UiPointer_DispatchRightPress
 
 
 /* Address: 0x004AFFA0.
-   Ownership: ui/controls/input.
-   Purpose: Traverses the UI tree in depth-first order to the next non-suppressed node whose flags include 0x02 or
-   0x20, then assigns keyboard focus.
-   Local calls: UiKeyboardFocus_Set.
+   Moves the keyboard focus to the next focus target after the current one in depth-first tree order,
+   wrapping around through the topmost ancestor and skipping suppressed nodes. Nothing changes when there is
+   no focus or no other focus target.
 */
 void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
 
@@ -1487,18 +1485,18 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_MoveNext(void)
   UiNodeBase *nextNode;
 
   node = g_UiKeyboardFocusNode;
-  if (g_UiKeyboardFocusNode == (UiNodeBase *)0xffffffff) {
+  if (g_UiKeyboardFocusNode == UI_NODE_NONE) {
     return;
   }
   /* Pre-order walk from the focus node, wrapping around through the topmost ancestor. */
   while( true ) {
     nextNode = node->firstChild;
-    if (nextNode == (UiNodeBase *)0xffffffff) {
-      while ((nextNode = node->nextSibling, nextNode == (UiNodeBase *)0xffffffff) &&
-             (node->parent != (UiNodeBase *)0xffffffff)) {
+    if (nextNode == UI_NODE_NONE) {
+      while ((nextNode = node->nextSibling, nextNode == UI_NODE_NONE) &&
+             (node->parent != UI_NODE_NONE)) {
         node = node->parent;
       }
-      if (nextNode == (UiNodeBase *)0xffffffff) {
+      if (nextNode == UI_NODE_NONE) {
         nextNode = node;
       }
     }

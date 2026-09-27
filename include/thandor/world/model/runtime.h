@@ -52,7 +52,7 @@ ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtim
 
 /* 0x0051C280 */
 int __thandor_eax_preserve_ecx_edx
-ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *modelRuntimeHolder);
+ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C2A0 */
 ModelRuntimeActiveTotalMetricRegisterPair

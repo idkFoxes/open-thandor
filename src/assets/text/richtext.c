@@ -268,8 +268,8 @@ RichTextCommandStream_PatchPayloadBySelector
 
 
 /* Address: 0x0041B200.
-   Ownership: assets/text/richtext.
-   Purpose: Handles rich text command stream bind texture source.
+   Walks one command stream (without following nested streams) and sets the texture source of every inline
+   image command to textureSource, so a text's icons can be bound to the texture they are drawn from.
 */
 void __thandor_void_preserve_eax_ecx
 RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream)
@@ -278,30 +278,31 @@ RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSourc
   uint16_t *commandCursor;
   uint16_t *streamCursor;
   uint16_t commandCodeUnit;
-  
+
   streamCursor = stream;
   while( true ) {
     commandCursor = streamCursor;
     commandCodeUnit = *commandCursor;
     streamCursor = commandCursor + 1;
     if (commandCodeUnit == 0) break;
-    if ((short)commandCodeUnit < 0) {
-      switch(commandCodeUnit & 0x1f) {
-      case 6:
-        streamCursor = commandCursor + 9;
+    if ((short)commandCodeUnit < 0) { /* RICHTEXT_COMMAND_FLAG set */
+      switch(commandCodeUnit & RICHTEXT_OPCODE_MASK) {
+      case RICHTEXT_OP_LITERAL_COLOR:
+        streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
         break;
-      case 0x14:
-      case 0x15:
-      case 0x16:
-        streamCursor = commandCursor + 3;
+      case RICHTEXT_OP_INLINE_VALUE_0:
+      case RICHTEXT_OP_INLINE_VALUE_1:
+      case RICHTEXT_OP_INLINE_VALUE_2:
+        streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_VALUE;
         break;
-      case 0x18:
-      case 0x19:
-        streamCursor = commandCursor + 5;
+      case RICHTEXT_OP_CALL_NESTED:
+      case RICHTEXT_OP_JUMP_NESTED:
+        streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_NESTED;
         break;
-      case 0x1a:
+      case RICHTEXT_OP_INLINE_IMAGE:
+        /* the texture source pointer is the first payload dword, right after the command */
         *(GraphicsTextureSourceAsset **)streamCursor = textureSource;
-        streamCursor = commandCursor + 5;
+        streamCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       }
     }
   }
@@ -1309,12 +1310,10 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
 
 
 /* Address: 0x0041D0F0.
-   Ownership: assets/text/richtext.
-   Purpose: Measures the next line in the flattened rich-text runtime buffer, wraps at spaces or soft hyphens,
-   publishes the next word index, returns line height in EAX, and sets CF only when the stream has ended. Typed
-   parameters: p0 maximumWidth→UiPixelExtent_V301. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
-   Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
+   Measures the next line of the flattened rich-text runtime buffer that fits into maximumWidth, wrapping after
+   the last space or soft hyphen that still fits (or at a line break), and advances
+   g_RichTextRuntimeBufferUsedWords past it. Font commands are applied on the way. Returns the tallest glyph or
+   image height of the line in EAX; CF is set when the line ends the text.
 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
@@ -1332,29 +1331,29 @@ RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
 
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
   lineWidth = 0;
-  wrapPoint = (uint8_t *)0x0;
+  wrapPoint = NULL;
   maxLineHeight = glyphSize.lineHeight;
-  readCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
+  readCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * sizeof(uint16_t);
   for (;;) {
     commandCursor = readCursor;
     glyphSubresource = (GraphicsSubresourceIndex)*(short *)commandCursor;
     readCursor = commandCursor + 2;
-    if (glyphSubresource == 0x20) {
-      /* A space is a wrap opportunity once it still fits. */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    if (glyphSubresource == ' ') {
+      /* A space is a wrap opportunity while the line up to it still fits. */
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
       if (maximumWidth < lineWidth) break;
       lineWidth = lineWidth + glyphSize.width;
       wrapPoint = readCursor;
       continue;
     }
     if (glyphSubresource == 0) {
-      /* End of stream: handled like the newline command 0x12. */
+      /* End of stream: handled like RICHTEXT_OP_LINE_BREAK. */
       if (lineWidth <= maximumWidth) {
         wrapPoint = readCursor;
       }
       break;
     }
-    if (-1 < (int)glyphSubresource) {
+    if (-1 < (int)glyphSubresource) { /* no RICHTEXT_COMMAND_FLAG: a glyph */
       glyphSize = FontGlyph_GetLogicalSizeActiveRegs(glyphSubresource);
       lineWidth = lineWidth + glyphSize.width;
       if (maxLineHeight < glyphSize.lineHeight) {
@@ -1362,11 +1361,12 @@ RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
       }
       continue;
     }
-    switch(glyphSubresource & 0x1f) {
-    case 6:
-      readCursor = commandCursor + 0x12;
+    /* the cursors are byte pointers: record lengths are code units * 2 */
+    switch(glyphSubresource & RICHTEXT_OPCODE_MASK) {
+    case RICHTEXT_OP_LITERAL_COLOR:
+      readCursor = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR * sizeof(uint16_t);
       break;
-    case 8:
+    case RICHTEXT_OP_SELECT_FONT_FIRST:
     case 9:
     case 10:
     case 0xb:
@@ -1376,41 +1376,42 @@ RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
     case 0xf:
       g_ActiveFontIndex = glyphSubresource & 0xf;
       break;
-    case 0x10:
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x20);
+    case RICHTEXT_OP_FIXED_SPACE:
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(' ');
       lineWidth = lineWidth + glyphSize.width;
       if (maxLineHeight < glyphSize.lineHeight) {
         maxLineHeight = glyphSize.lineHeight;
       }
       break;
-    case 0x11:
+    case RICHTEXT_OP_SOFT_HYPHEN:
       /* Soft hyphen: a wrap opportunity when the hyphen still fits. */
-      glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0x2d);
+      glyphSize = FontGlyph_GetLogicalSizeActiveRegs('-');
       if (maximumWidth < glyphSize.width + lineWidth)
       goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
       wrapPoint = readCursor;
       break;
-    case 0x12:
+    case RICHTEXT_OP_LINE_BREAK:
       if (lineWidth <= maximumWidth) {
         wrapPoint = readCursor;
       }
       goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
-    case 0x1a:
+    case RICHTEXT_OP_INLINE_IMAGE:
+      /* payload: texture source pointer (code units 1-2), subresource (code units 3-4) */
       imageSize = g_GraphicsTextureSourceGetLogicalSize
                         (*(uint32_t *)(commandCursor + 6),*(GraphicsTextureSourceAsset **)readCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
-      readCursor = commandCursor + 10;
+      readCursor = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE * sizeof(uint16_t);
       if (maxLineHeight < imageSize.logicalHeightPixels) {
         maxLineHeight = imageSize.logicalHeightPixels;
       }
     }
   }
 RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
-  if (wrapPoint == (uint8_t *)0x0) {
+  if (wrapPoint == NULL) {
     wrapPoint = readCursor;
   }
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
-  lineResult.endOfText = *(short *)(wrapPoint + -2) == 0;
+  lineResult.endOfText = *(short *)(wrapPoint - 2) == 0; /* the line ended at the stream terminator */
   lineResult.lineAdvancePixels = maxLineHeight;
   return lineResult;
 }
@@ -1633,9 +1634,11 @@ RichTextCommandStream_DrawNextWrappedLine_EndLine:
 
 
 /* Address: 0x0041D840.
-   Ownership: assets/text/richtext.
-   Purpose: Flattens nested rich-text command streams into the exact 0x2000-word runtime buffer, copies fixed color
-   and image commands, follows nested stream pointers, writes a terminator, and resets the shared word index.
+   Copies commandStream into g_FontRuntimeBuffer with every nested stream inlined, so the line measuring and
+   drawing code can walk one flat stream: glyphs and most commands are copied, literal colours and inline images
+   with their payload, nested-stream commands are followed instead of copied and the reserved and inline-value
+   commands are dropped. Output beyond RICHTEXT_RUNTIME_BUFFER_UNITS is discarded; the read position
+   g_RichTextRuntimeBufferUsedWords is reset to the start.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
@@ -1648,7 +1651,7 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
   uint16_t *commandCursor;
   uint16_t *outputCursor;
   
-  remainingWords = 0x2000;
+  remainingWords = RICHTEXT_RUNTIME_BUFFER_UNITS;
   nestedDepth = 0;
   outputCursor = (uint16_t *)g_FontRuntimeBuffer;
   for (;;) {
@@ -1661,12 +1664,13 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
         g_RichTextRuntimeBufferUsedWords = 0;
         return;
       }
-      nestedDepth = nestedDepth + -1;
-      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[nestedDepth] + 8);
+      nestedDepth--;
+      /* resume behind the nested-stream command's payload */
+      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[nestedDepth] + RICHTEXT_NESTED_PAYLOAD_BYTES);
       continue;
     }
     /* Plain code units take the same path as command 0 (copy one word). */
-    switch(((short)commandCodeUnit < 0) ? (commandCodeUnit & 0x1f) : 0) {
+    switch(((short)commandCodeUnit < 0) ? (commandCodeUnit & RICHTEXT_OPCODE_MASK) : 0) {
     default:
       if (remainingWords != 0) {
         *outputCursor = commandCodeUnit;
@@ -1674,23 +1678,26 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
         outputCursor = outputCursor + 1;
       }
       break;
-    case 6:
-      if (9 < remainingWords) {
+    case RICHTEXT_OP_LITERAL_COLOR:
+      /* without room for the whole record only the command code unit is skipped */
+      if (RICHTEXT_RECORD_UNITS_LITERAL_COLOR < remainingWords) {
         *outputCursor = commandCodeUnit;
-        remainingWords = remainingWords - 9;
+        remainingWords = remainingWords - RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
         *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
         *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
         *(uint32_t *)(outputCursor + 5) = *(uint32_t *)(commandCursor + 5);
         *(uint32_t *)(outputCursor + 7) = *(uint32_t *)(commandCursor + 7);
-        outputCursor = outputCursor + 9;
-        commandStream = commandCursor + 9;
+        outputCursor = outputCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
+        commandStream = commandCursor + RICHTEXT_RECORD_UNITS_LITERAL_COLOR;
       }
       break;
+    /* dropped; only the command code unit is skipped, so an inline value's payload units follow as code
+       units of their own */
     case 7:
     case 0x13:
-    case 0x14:
-    case 0x15:
-    case 0x16:
+    case RICHTEXT_OP_INLINE_VALUE_0:
+    case RICHTEXT_OP_INLINE_VALUE_1:
+    case RICHTEXT_OP_INLINE_VALUE_2:
     case 0x17:
     case 0x1b:
     case 0x1c:
@@ -1698,24 +1705,24 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
     case 0x1e:
     case 0x1f:
       break;
-    case 0x18:
+    case RICHTEXT_OP_CALL_NESTED:
       if (nestedDepth == RICHTEXT_NESTING_LIMIT) {
         break;
       }
       nestedReturnStack[nestedDepth] = commandStream;
-      nestedDepth = nestedDepth + 1;
+      nestedDepth++;
       /* fall through: enter the nested stream */
-    case 0x19:
+    case RICHTEXT_OP_JUMP_NESTED:
       commandStream = *(uint16_t **)commandStream;
       break;
-    case 0x1a:
-      if (5 < remainingWords) {
+    case RICHTEXT_OP_INLINE_IMAGE:
+      if (RICHTEXT_RECORD_UNITS_INLINE_IMAGE < remainingWords) {
         *outputCursor = commandCodeUnit;
-        remainingWords = remainingWords - 5;
+        remainingWords = remainingWords - RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
         *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
         *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
-        outputCursor = outputCursor + 5;
-        commandStream = commandCursor + 5;
+        outputCursor = outputCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
+        commandStream = commandCursor + RICHTEXT_RECORD_UNITS_INLINE_IMAGE;
       }
     }
   }

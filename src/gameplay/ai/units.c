@@ -71,17 +71,11 @@ AiUnitBehavior_UpdateWorkspace01Entities
 
 
 /* Address: 0x0053B4C0.
-   Ownership: gameplay/ai/units.
-   Purpose: Compares three anchor-distance score families, selects the strongest action source, and either assigns
-   a workspace point, assigns a faction anchor, or queues the entity for later group assignment. Best-anchor action
-   select for military classes 1/2/3/0x11/0x13 (three distance scores above compete). It is distinct from
-   FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains. Typed parameters: p2 currentBestScore→AiCandidateScore32_V342.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: AiUnitBehavior_ComputeWorkspace05DistanceScore, AiUnitBehavior_ComputeFactionAnchorDistanceScore,
-   AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore, AiUnitCommand_AssignWorkspacePoint,
-   AiUnitCommand_AssignFactionAnchorPoint, AiUnitBehavior_CollectUnassignedEntity.
+   Decides what an idle military unit (ground, tracked, walker, glider or water class) does next. Three scorers run in turn, each
+   given the best score so far and returning it unchanged unless it found better: a general site (workspace 05)
+   -> move there (kind 1), the faction anchor -> move there (kind 2), a secondary-workspace target (kind 3).
+   With kind 3 or no winner the unit is collected for the group assignment of
+   AiUnitGroup_AssignCollectedEntitiesToBestTarget.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiUnitBehavior_SelectBestAnchorAction
@@ -92,7 +86,6 @@ AiUnitBehavior_SelectBestAnchorAction
   int workspaceScore;
   AiCandidateScore32 factionAnchorScore;
   uint32_t selectedAnchorActionKind;
-  int bestAnchorActionScore;
   int currentBestScore;
   AiScoredSiteWorkspaceEntry *selectedWorkspaceEntry;
   AiWorkspace05DistanceSelectionRegs8 workspaceSelection;
@@ -391,15 +384,15 @@ AiUnitBehavior_CollectUnassignedEntity
 
 
 /* Address: 0x0053B620.
-   Ownership: gameplay/ai/units.
-   Purpose: Updates a class-0x12 entity by reusing its current target when valid, otherwise scoring separated
-   workspace08 sites with workspace-distance penalties, assigned-count pressure, and the special 0x14A multiplier
-   before assigning movement. Class 0x12 special handler reached from the (single-deref) military dispatch.
-   Cross-module calls: ArmyRuntime_UpdateMovementAndWaypoints [gameplay/army/movement], FixedMath_SinCosScaled
-   [core/math/fixed], ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement],
-   AiWorkspace03_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiPlacement_QueryReachableSiteBucketCount [gameplay/ai/placement].
+   AI behaviour of a runtime-class-18 unit, called from AiUnitBehavior_UpdateWorkspace01Entities and, while
+   movement flag 0x100 is set, from its movement update. Once it has arrived (flag clear): with as many
+   workspace-00 as workspace-04 entries it moves on 0x2D05 along its heading; otherwise it drives to the best
+   resource site of workspace 08 that is far enough from workspaces 03/02, scored by priority, distances to
+   workspaces 02/01 and to the unit, x2 for ARM_0330, then x3 / (assigned structures of that asset + 3). A site
+   whose bucket query (AiPlacement_QueryReachableSiteBucketCount) fails is skipped; one with 0 buckets, or 1..4
+   buckets and a CF-clear AiPlacement_ReserveSeparatedSpecialSiteChain, ends the update without a move.
+   Not arrived or flag set: sets the flag and resets the movement once within 0x1B03 of its fallback position
+   on both axes.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiUnitBehavior_UpdateSpecialClass12Entity
@@ -416,7 +409,7 @@ AiUnitBehavior_UpdateSpecialClass12Entity
   int deltaY;
   FieldGridCell *workspaceRecord;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
-  bool chainReserved;
+  bool chainFailed;
   FixedSinCosEdxEax8 headingOffset;
   StatusResult bucketCount;
   MovementStepResult movementUpdate;
@@ -459,9 +452,9 @@ AiUnitBehavior_UpdateSpecialClass12Entity
               return;
             }
             if ((bucketCount.valueOrError < 5) &&
-               (chainReserved = AiPlacement_ReserveSeparatedSpecialSiteChain
+               (chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
                                   (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,
-                                   worldRuntime), !chainReserved)) {
+                                   worldRuntime), !chainFailed)) {
               return;
             }
             siteScoreOrY = terrainFeatureEntry->priority *
@@ -485,6 +478,7 @@ AiUnitBehavior_UpdateSpecialClass12Entity
               }
             }
             if ((knowledgeData->parameters).specialClass12EntityDistanceCoefficient != 0) {
+              /* bias - Manhattan distance to the unit: only sites closer than the bias add to the score */
               workspaceRecord = terrainFeatureEntry->cell;
               distanceTerm = (armyRuntime->modelNodeRuntime->worldTransform).translation.x -
                       workspaceRecord->worldX;
@@ -513,8 +507,8 @@ AiUnitBehavior_UpdateSpecialClass12Entity
             }
           }
         }
-        terrainFeatureEntry = terrainFeatureEntry + 1;
-        sitesRemainingOrX = sitesRemainingOrX + -1;
+        terrainFeatureEntry++;
+        sitesRemainingOrX--;
       } while (sitesRemainingOrX != 0);
       if (bestScore != 0) {
         armyRuntime->runtimeState8C = 8;

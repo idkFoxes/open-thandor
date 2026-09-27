@@ -325,22 +325,19 @@ ModelRuntime_QueryHierarchyScaleRatioQ12Regs(RuntimeModelFactionPrefix10 *runtim
 
 
 /* Address: 0x0051C280.
-   Ownership: world/model/runtime.
-   Purpose: Queries the root model runtime hierarchy and returns the low active-metric result from the shared
-   active-and-total hierarchy metric routine. Returns only the active hierarchy metric in EAX. EDX is explicitly
-   saved and restored by the wrapper, so the previous fastcall register parameters and undefined8 return were
-   synthetic.
-   Cross-module calls: ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs [world/model/hierarchy].
+   Returns the active metric of an army's model hierarchy (the EAX half of
+   ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs); the in-game selection detail shows it divided by 16
+   as the energy value. EDX is preserved.
 */
 int __thandor_eax_preserve_ecx_edx
-ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *modelRuntimeHolder)
+ModelRuntime_QueryActiveHierarchyMetric(ArmyRuntimeSlot *armyRuntime)
 
 {
   ModelRuntimeActiveTotalMetricRegisterPair activeHierarchyMetricPair;
-  
+
   activeHierarchyMetricPair =
        ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs
-                 ((modelRuntimeHolder->modelRuntimeOrSavedOffset).modelRuntime);
+                 (armyRuntime->modelRuntimeOrSavedOffset.modelRuntime);
   return (int)activeHierarchyMetricPair;
 }
 
@@ -396,23 +393,24 @@ StatusResult __cdecl ModelRuntimePool_Init(void)
 }
 
 
-/* Releases the resource of one definition node and then, depth first in index order, of all its
-   children (child count at +0x14, child pointers from +0x18). The original walks the tree with an
-   explicit {count, index, node} frame stack on the machine stack; the decompile only followed the
-   first child. */
+/* Part of ModelRuntimePool_ShutdownAndReleaseDefinitions (0x00528A70): releases the resource of one serialized
+   MDL definition node and then, depth first in index order, of all its children (child count at +0x14, child
+   pointers from +0x18). Only plain nodes (nodeFlags +4, low nibble 0) whose flag at +0x34 is set own a
+   resource (the sprite asset at +0x30). The original walks the tree with an explicit {count, index, node}
+   frame stack on the machine stack; the decompile only followed the first child. */
 static void ModelRuntimePool_ReleaseDefinitionNodeResources(uint32_t resourceRecord)
 
 {
   uint32_t childrenRemaining;
   int childIndex;
-  
+
   childrenRemaining = *(uint32_t *)(resourceRecord + 0x14);
   if (((*(uint32_t *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
     Resource_Release(*(void **)(resourceRecord + 0x30));
   }
-  for (childIndex = 0; childrenRemaining != 0; childIndex = childIndex + 1) {
+  for (childIndex = 0; childrenRemaining != 0; childIndex++) {
     ModelRuntimePool_ReleaseDefinitionNodeResources(*(uint32_t *)(resourceRecord + 0x18 + childIndex * 4));
-    childrenRemaining = childrenRemaining - 1;
+    childrenRemaining--;
   }
   return;
 }
@@ -639,15 +637,11 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
 
 
 /* Address: 0x00529560.
-   Ownership: world/model/runtime.
-   Purpose: Recursively destroys child model runtimes, releases owned world nodes, detaches the hierarchy from its
-   parent or owner runtime, and refreshes derived army metrics. Model release partition slots 0-23 receive
-   (modelDefinition, modelRuntime).
-   Cross-module calls: FrontendPlayerRuntime_ClearAssignmentTokenFromAll [ui/frontend/player],
-   WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], ModelRuntimeNode_ReleaseRecursiveAndDetachParent
-   [world/model/hierarchy], ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
-   ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime], ArmyRuntime_RebuildDerivedSelectionMetrics
-   [gameplay/army/runtime].
+   Destroys a model runtime: drops player references to it, runs its class release handler, destroys the
+   attached model runtimes, clears world nodes that still point to it and releases its node tree.
+   An attached part is then removed from its parent's attachment list and the army's derived metrics are
+   rebuilt; a root model destroys its army instead, first spawning the army asset its definition names at
+   +0x74 at the same place, unless that id is -1 or flag 0x20 is set at +0xEC of the owner record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimePool_DestroyHierarchyAndDetach
@@ -659,58 +653,61 @@ ModelRuntimePool_DestroyHierarchyAndDetach
   ModelRuntimeSlot *childRuntime;
   ModelRuntimeNode *rootModelNode;
   GameEntityRuntime *entityRuntime;
-  Q12 worldYQ12;
-  Q12 worldXQ12;
+  Q12 translationX;
+  Q12 translationY;
   AngleTurn32 orientationAngle;
   int ownerDefinition;
   uint32_t classIndexOrCount;
   ModelRuntimeSlot *attachmentCursor;
   ModelRuntimeNode *parentModelNode;
-  
+
   modelDefinition =
-       (ModelDefinitionRecordPrefix *)(modelRuntime->definitionOrSavedId).savedIdOrOffset;
-  classIndexOrCount = modelDefinition[6].flags;
+       (ModelDefinitionRecordPrefix *)modelRuntime->definitionOrSavedId.savedIdOrOffset;
+  classIndexOrCount = modelDefinition[6].flags; /* the definition's class index (+0x4C) */
   FrontendPlayerRuntime_ClearAssignmentTokenFromAll((RuntimeToken)modelRuntime);
   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelReleaseOrCommit[classIndexOrCount]
             (modelDefinition,modelRuntime);
   attachmentCursor = modelRuntime;
-  for (classIndexOrCount = modelRuntime->attachmentCount0C; classIndexOrCount != 0; classIndexOrCount = classIndexOrCount - 1) {
+  for (classIndexOrCount = modelRuntime->attachmentCount0C; classIndexOrCount != 0; classIndexOrCount--) {
     childRuntime = attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00;
-    if (childRuntime != (ModelRuntimeSlot *)0x0) {
+    if (childRuntime != NULL) {
       ModelRuntimePool_DestroyHierarchyAndDetach(worldRuntime,childRuntime);
     }
+    /* steps the cursor by one 0x20-byte attachments140[] entry */
     attachmentCursor = (ModelRuntimeSlot *)(attachmentCursor->reserved10_37 + 0x10);
   }
-  rootModelNode = (modelRuntime->rootModelNodeOrSavedOffset).modelNode;
-  entityRuntime = (GameEntityRuntime *)(modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
-  worldYQ12 = (rootModelNode->worldTransform).translation.x;
-  worldXQ12 = (rootModelNode->worldTransform).translation.y;
-  orientationAngle = (rootModelNode->modelPayload).worldRotationAngle2;
+  rootModelNode = modelRuntime->rootModelNodeOrSavedOffset.modelNode;
+  entityRuntime = (GameEntityRuntime *)modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime;
+  /* position and heading for the replacement army, read before the node tree is released */
+  translationX = rootModelNode->worldTransform.translation.x;
+  translationY = rootModelNode->worldTransform.translation.y;
+  orientationAngle = rootModelNode->modelPayload.worldRotationAngle2;
   parentModelNode = rootModelNode->parentNode;
   WorldRuntime_ForEachNodeInOwnerListD8
             (modelRuntime,WorldRuntimeNode_ClearDetachedEntityReferencesCallback,worldRuntime);
   ModelRuntimeNode_ReleaseRecursiveAndDetachParent(rootModelNode);
-  (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
-  if (parentModelNode == (ModelRuntimeNode *)0x0) {
-    if ((entityRuntime->common).ownership.definitionOrClassRecord != (void *)0x0) {
-      LOCK();
-      ownerRecord = (entityRuntime->common).ownership.definitionOrClassRecord;
-      (entityRuntime->common).ownership.definitionOrClassRecord = (void *)0x0;
+  modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+  if (parentModelNode == NULL) {
+    if (entityRuntime->common.ownership.definitionOrClassRecord != NULL) {
+      LOCK(); /* XCHG in the original */
+      ownerRecord = entityRuntime->common.ownership.definitionOrClassRecord;
+      entityRuntime->common.ownership.definitionOrClassRecord = NULL;
       UNLOCK();
       ownerDefinition = *ownerRecord;
       if (((ownerRecord[0x3b] & 0x20U) == 0) && (*(int *)(ownerDefinition + 0x74) != -1)) {
+        /* the third parameter of ArmyRuntime_CreateInstanceFromAsset takes y, as at its other callers */
         ArmyRuntime_CreateInstanceFromAsset
-                  (0,orientationAngle,worldXQ12,worldYQ12,0,*(PckArmyAssetIdCatalog *)(ownerDefinition + 0x74)
+                  (0,orientationAngle,translationY,translationX,0,*(PckArmyAssetIdCatalog *)(ownerDefinition + 0x74)
                    ,worldRuntime);
       }
       ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,entityRuntime);
     }
   }
   else {
-    attachmentCursor = (parentModelNode->runtimePayload).modelRuntime;
-    for (classIndexOrCount = attachmentCursor->attachmentCount0C; classIndexOrCount != 0; classIndexOrCount = classIndexOrCount - 1) {
+    attachmentCursor = parentModelNode->runtimePayload.modelRuntime;
+    for (classIndexOrCount = attachmentCursor->attachmentCount0C; classIndexOrCount != 0; classIndexOrCount--) {
       if (attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00 == modelRuntime) {
-        attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00 = (ModelRuntimeSlot *)0x0;
+        attachmentCursor->attachments140[0].childModelRuntimeOrSavedOffset00 = NULL;
       }
       attachmentCursor = (ModelRuntimeSlot *)(attachmentCursor->reserved10_37 + 0x10);
     }
@@ -769,16 +766,11 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
 
 
 /* Address: 0x00529140.
-   Ownership: world/model/runtime.
-   Purpose: Allocates a model runtime slot, resolves its definition by identifier, initializes the exact runtime
-   image, creates the root hierarchy, and runs the class-specific initialization handler. Role: Allocates a
-   ModelRuntimeSlot, creates its node hierarchy and initializes transforms/radius. Inputs: Model definition ID,
-   world context and initial orientation/position. Outputs: ModelRuntimeSlot with root ModelRuntimeNode and class-
-   selected initialization. Edges: ModelNodeRuntime_CreateHierarchyRecursive -> radius recompute -> transform
-   rebuild.
-   Cross-module calls: ModelNodeRuntime_CreateHierarchyRecursive [world/model/hierarchy],
-   ModelNodeRuntime_RecomputeSubtreeBoundingRadius [world/model/hierarchy],
-   ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
+   Creates a model runtime for an army from a model definition id: takes the first free pool slot, copies the
+   definition's starting values (armour points at +0x3C and the values at +0x40..+0x5C), raises two of the
+   army's values to the definition's, builds the model node tree, its bounding radius and transforms, and runs
+   the definition class's initialize handler. Returns the slot, or with CF set FATAL_ERROR_GENERAL_FAILURE
+   (no pool or no free slot), the node tree's error, or FATAL_ERROR_MODEL_DEFINITION_MISSING.
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_CreateInstanceByDefinitionId
@@ -801,32 +793,31 @@ ModelRuntimePool_CreateInstanceByDefinitionId
   ModelNodeCreateResult createResult;
   ModelDefinitionRuntimeSemanticView280 *definitionView;
 
-  /* first free slot (no root node); error 0x14 when the pool is missing or full */
+  /* first free slot (no root node) */
   failureResult.failed = true;
-  failureResult.modelNode = (ModelRuntimeNode *)0x14;
+  failureResult.modelNode = (ModelRuntimeNode *)FATAL_ERROR_GENERAL_FAILURE;
   modelRuntime = g_ModelRuntimeSlots;
-  if (modelRuntime == (ModelRuntimeSlot *)0x0) {
+  if (modelRuntime == NULL) {
     return failureResult;
   }
-  slotsRemaining = 0x2000;
-  while ((modelRuntime->rootModelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
-    modelRuntime = modelRuntime + 1;
-    slotsRemaining = slotsRemaining + -1;
+  slotsRemaining = MODEL_RUNTIME_SLOT_COUNT;
+  while (modelRuntime->rootModelNodeOrSavedOffset.modelNode != NULL) {
+    modelRuntime++;
+    slotsRemaining--;
     if (slotsRemaining == 0) {
       return failureResult;
     }
   }
-  for (registryEntry = g_ModelDefinitionRegistry, registryRemaining = 0x300; registryRemaining != 0;
-      registryEntry = registryEntry + 1, registryRemaining = registryRemaining + -1) {
+  for (registryEntry = g_ModelDefinitionRegistry, registryRemaining = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
+      registryRemaining != 0; registryEntry++, registryRemaining--) {
     definitionView = (ModelDefinitionRuntimeSemanticView280 *)*registryEntry;
-    if ((definitionView != (ModelDefinitionRuntimeSemanticView280 *)0x0) &&
-       (definitionView->definitionId == modelDefinitionId)) {
-      (modelRuntime->definitionOrSavedId).definition = (ModelDefinitionRecordPrefix *)definitionView;
+    if ((definitionView != NULL) && (definitionView->definitionId == modelDefinitionId)) {
+      modelRuntime->definitionOrSavedId.definition = (ModelDefinitionRecordPrefix *)definitionView;
       copiedValueA = definitionView->runtimeValue60;
       state44CandidateOrFlags = definitionView->runtimeValue48;
       state90Candidate = definitionView->runtimeValue27C;
-      (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
-      (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime = armyRuntime;
+      modelRuntime->rootModelNodeOrSavedOffset.modelNode = NULL;
+      modelRuntime->ownerArmyRuntimeOrSavedOffset.armyRuntime = armyRuntime;
       modelRuntime->attachmentCount0C = 0;
       modelRuntime->definitionValue60_3C = copiedValueA;
       if (armyRuntime->runtimeState44 < state44CandidateOrFlags) {
@@ -867,7 +858,7 @@ ModelRuntimePool_CreateInstanceByDefinitionId
       modelRuntime->reserved10_37[0x1d] = 0;
       modelRuntime->reserved10_37[0x1e] = 0;
       modelRuntime->reserved10_37[0x1f] = 0;
-      (modelRuntime->linkedModelRuntimeOrSavedOffset).modelRuntime = (ModelRuntimeSlot *)0x0;
+      modelRuntime->linkedModelRuntimeOrSavedOffset.modelRuntime = NULL;
       copiedValueA = definitionView->runtimeValue8C;
       copiedValueB = definitionView->runtimeValue94;
       copiedValueC = definitionView->runtimeValue9C;
@@ -883,18 +874,16 @@ ModelRuntimePool_CreateInstanceByDefinitionId
       modelRuntime->definitionValueB4_58 = copiedValueB;
       modelRuntime->definitionValueBC_5C = copiedValueC;
       copiedValueA = definitionView->runtimeValue18C;
-      (modelRuntime->classState).enabledStateE4 = 1;
-      (modelRuntime->classState).enabledStateE8 = 1;
-      (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0
-      ;
-      (modelRuntime->classState).definitionDerivedValueF4 = copiedValueA;
-      (modelRuntime->classState).classStateEC = 0;
-      (modelRuntime->classState).classStateF8 = 0;
-      (modelRuntime->classState).classStateFC = 0;
+      modelRuntime->classState.enabledStateE4 = 1;
+      modelRuntime->classState.enabledStateE8 = 1;
+      modelRuntime->classState.linkedArmyRuntimeOrSavedOffset.armyRuntime = NULL;
+      modelRuntime->classState.definitionDerivedValueF4 = copiedValueA;
+      modelRuntime->classState.classStateEC = 0;
+      modelRuntime->classState.classStateF8 = 0;
+      modelRuntime->classState.classStateFC = 0;
       modelRuntime->classState118 = 0;
       state44CandidateOrFlags = definitionView->runtimeValue68;
-      if ((MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64 !=
-          (MdlSerializedNodeHeader38 *)0x0) {
+      if ((MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64 != NULL) {
         createResult = ModelNodeRuntime_CreateHierarchyRecursive
                           (paletteAsset,textureSet,modelRuntime,
                            (MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64,
@@ -904,16 +893,17 @@ ModelRuntimePool_CreateInstanceByDefinitionId
           failureResult.modelNode = modelNodeRuntime; /* the hierarchy's error code */
           return failureResult;
         }
-        (modelRuntime->rootModelNodeOrSavedOffset).modelNode = modelNodeRuntime;
+        modelRuntime->rootModelNodeOrSavedOffset.modelNode = modelNodeRuntime;
         ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
         ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
         if ((state44CandidateOrFlags & 0x100) != 0) {
           modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 0x2000;
         }
       }
+      /* definition[6].flags: the class index at definition +0x4C */
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
-        [(modelRuntime->definitionOrSavedId).definition[6].flags])
-                ((modelRuntime->definitionOrSavedId).definition,modelRuntime);
+        [modelRuntime->definitionOrSavedId.definition[6].flags])
+                (modelRuntime->definitionOrSavedId.definition,modelRuntime);
       createResult.failed = false;
       createResult.modelNode = (ModelRuntimeNode *)modelRuntime;
       return createResult;
@@ -921,7 +911,7 @@ ModelRuntimePool_CreateInstanceByDefinitionId
   }
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
-  failureResult.modelNode = (ModelRuntimeNode *)0x3e; /* definition not registered */
+  failureResult.modelNode = (ModelRuntimeNode *)FATAL_ERROR_MODEL_DEFINITION_MISSING;
   return failureResult;
 }
 

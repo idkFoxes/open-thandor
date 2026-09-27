@@ -18,7 +18,7 @@
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
-          Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid);
+          Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x005099D0 */
 bool __thandor_cf_preserve_eax_ecx_edx

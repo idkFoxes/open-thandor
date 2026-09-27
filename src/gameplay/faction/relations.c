@@ -13,7 +13,7 @@
 /* Address: 0x0053C010.
    Random drift of the diplomatic relations between sourceFactionIndex and every other active faction 7..1
    (faction 0 is never visited). When the pair may change state and sits in state 3, 6 or 10, the relation may
-   be reset (GameFactionRelations_IsResetEligibleState returns false for exactly those states); otherwise it may
+   be reset (GameFactionRelations_IsNotResetEligibleState returns false for exactly those states); otherwise it may
    advance: rarely from the other states, more often from 3, 6 and 10.
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -31,14 +31,14 @@ GameFactionRelations_UpdateAllPairsForFaction
       pairTestResult = GameFactionRelations_TestPairTransitionAllowed
                         (opposingFactionIndex,sourceFactionIndex);
       if (pairTestResult) {
-        pairTestResult = GameFactionRelations_IsResetEligibleState
+        pairTestResult = GameFactionRelations_IsNotResetEligibleState
                           (opposingFactionIndex,sourceFactionIndex);
         if (!pairTestResult) {
           GameFactionRelations_MaybeResetPairState(opposingFactionIndex,sourceFactionIndex);
         }
       }
       else {
-        pairTestResult = GameFactionRelations_IsResetEligibleState
+        pairTestResult = GameFactionRelations_IsNotResetEligibleState
                           (opposingFactionIndex,sourceFactionIndex);
         if (pairTestResult) {
           GameFactionRelations_MaybeAdvancePairStateRare(opposingFactionIndex,sourceFactionIndex);
@@ -98,11 +98,9 @@ PlayerPairList_RemoveRange
 
 
 /* Address: 0x0053C3D0.
-   Ownership: gameplay/faction/relations.
-   Purpose: Rejects terminal or globally disabled relation states, combines each faction eligibility mask for low
-   states, and evaluates transition rules for both directions, returning permission through carry.
-   Local calls: GameFactionRelations_BuildEligibleFactionMask, GameFactionRelations_EvaluateTransitionRules.
-   Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
+   Decides which random drift GameFactionRelations_UpdateAllPairsForFaction applies to a pair. CF set (true)
+   selects the reset path: the pending states 2, 5 and 9, relations frozen by relationUiFlags, or a state
+   below 4 for which GameFactionRelations_EvaluateTransitionRules holds for either faction. CF clear lets the pair advance.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRelations_TestPairTransitionAllowed
@@ -113,8 +111,9 @@ GameFactionRelations_TestPairTransitionAllowed
   FactionActiveMask targetEligibleMask;
   FactionActiveMask sourceEligibleMask;
   bool rulesSatisfied;
-  
+
   relationState = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
+  /* relationUiFlags: bit 4 freezes every relation, bit 2 states 4 and up, bit 1 states 8 and up */
   if (((((relationState != 2) && (relationState != 5)) && (relationState != 9)) &&
       ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) == 0)) &&
      ((relationState < 4 ||
@@ -315,18 +314,16 @@ GameFactionRelations_EvaluateTransitionRules
 
 
 /* Address: 0x0053C490.
-   Ownership: gameplay/faction/relations.
-   Purpose: Tests whether a faction pair is in one of the verified relation states 3, 6, or 10 and returns the
-   result through carry.
-   Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
+   Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the only states
+   GameFactionRuntime_ResetPairwiseRelationState is applied to by the random drift.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsResetEligibleState
+GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   uint32_t relationStateNibble;
-  
+
   relationStateNibble =
        GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
   if (((relationStateNibble != 3) && (relationStateNibble != 6)) && (relationStateNibble != 10)) {
@@ -337,11 +334,9 @@ GameFactionRelations_IsResetEligibleState
 
 
 /* Address: 0x0053C4D0.
-   Ownership: gameplay/faction/relations.
-   Purpose: Uses the current pair pressure and a random threshold to invoke pairwise relation advancement through
-   the lower-probability 0x180/0x400 path. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-
-   faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: GameFactionRuntime_AdvancePairwiseRelationState [gameplay/faction/runtime].
+   Random drift for a pair outside the states 3, 6 and 10: advances the relation with a chance of 1 in 256
+   while the pair pressure is 0, otherwise 1 in 1024 and only while the pressure (below 32) is smaller than
+   the random value's top four bits.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_MaybeAdvancePairStateRare
@@ -351,7 +346,7 @@ GameFactionRelations_MaybeAdvancePairStateRare
   uint32_t pairPressure;
   uint32_t randomValue;
   uint32_t maskedRandom;
-  
+
   randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
@@ -362,7 +357,7 @@ GameFactionRelations_MaybeAdvancePairStateRare
       return;
     }
     maskedRandom = randomValue & 0x3ff;
-    if (randomValue >> 0x1c <= pairPressure) {
+    if (randomValue >> 28 <= pairPressure) {
       return;
     }
   }
@@ -375,11 +370,9 @@ GameFactionRelations_MaybeAdvancePairStateRare
 
 
 /* Address: 0x0053C540.
-   Ownership: gameplay/faction/relations.
-   Purpose: Uses the current pair pressure and a random threshold to invoke pairwise relation advancement through
-   the higher-probability 0x80/0x200 path. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-
-   faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: GameFactionRuntime_AdvancePairwiseRelationState [gameplay/faction/runtime].
+   Random drift for a pair in state 3, 6 or 10: advances the relation to the next tier with a chance of 1 in
+   128 while the pair pressure is 0, otherwise 1 in 512 and only while the pressure (below 32) is smaller than
+   the random value's top four bits.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_MaybeAdvancePairStateCommon
@@ -389,7 +382,7 @@ GameFactionRelations_MaybeAdvancePairStateCommon
   uint32_t pairPressure;
   uint32_t randomValue;
   uint32_t maskedRandom;
-  
+
   randomValue = g_RandomGeneratorState.next();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
   if (pairPressure == 0) {
@@ -400,7 +393,7 @@ GameFactionRelations_MaybeAdvancePairStateCommon
       return;
     }
     maskedRandom = randomValue & 0x1ff;
-    if (randomValue >> 0x1c <= pairPressure) {
+    if (randomValue >> 28 <= pairPressure) {
       return;
     }
   }
@@ -413,11 +406,7 @@ GameFactionRelations_MaybeAdvancePairStateCommon
 
 
 /* Address: 0x0053C5B0.
-   Ownership: gameplay/faction/relations.
-   Purpose: Randomly invokes the shared pairwise relation reset helper when the verified random mask equals 0x80.
-   It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: GameFactionRuntime_ResetPairwiseRelationState [gameplay/faction/runtime].
+   Random drift for a pair whose change is blocked: resets the relation state with a chance of 1 in 4.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRelations_MaybeResetPairState
@@ -425,7 +414,7 @@ GameFactionRelations_MaybeResetPairState
 
 {
   uint32_t randomValue;
-  
+
   randomValue = g_RandomGeneratorState.next();
   if ((randomValue & 0x180) == 0x80) {
     GameFactionRuntime_ResetPairwiseRelationState

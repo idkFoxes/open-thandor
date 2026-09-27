@@ -42,20 +42,16 @@ static __inline uint32_t TerrainProjection_PackWordsUnsignedSaturate(uint64_t wo
 }
 
 /* Address: 0x00506CD0.
-   Ownership: world/terrain/projection.
-   Purpose: Converts one world point to the hexagonal field grid, derives the bounded scan radius and row stride,
-   seeds the center occupancy mask, and dispatches all six projected-occlusion wedge traces. Storage remains one
-   signed 32-bit word. Typed parameters: p3 referenceHeightQ12→Q12. Calling convention, storage, body bytes,
-   control flow, and executable data remain unchanged. Typed parameters: p4 worldXQ12→Q12, p5 worldYQ12→Q12.
-   Local calls: TerrainProjectedOcclusion_TraceWedge0, TerrainProjectedOcclusion_TraceWedge1,
-   TerrainProjectedOcclusion_TraceWedge2, TerrainProjectedOcclusion_TraceWedge3,
-   TerrainProjectedOcclusion_TraceWedge4, TerrainProjectedOcclusion_TraceWedge5.
-   Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
+   Line-of-sight marking for one army (occupancy rebuild): from the grid vertex nearest to the world point, ORs
+   occupancyMaskBits (the bits of the factions that share the army's sight) into every cell the terrain does not
+   hide from an eye at referenceHeightQ12 within the radius. The centre cell is marked here, the rest by the six
+   sector traces, each seeded with the height of the next sector's first cell. Nothing happens outside the grid or
+   on a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
           (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
-          Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
+          Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
   uint32_t baseColumn;
@@ -70,73 +66,76 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   uint32_t gridRow;
   uint32_t gridColumn;
-  
-  if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
+
+  if (fieldGrid != NULL) {
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / TERRAIN_SCAN_RADIUS_PER_STEP;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
-    else if (0xff < g_TerrainScanStepLimit) {
-      g_TerrainScanStepLimit = 0xff;
+    else if (TERRAIN_SCAN_STEP_LIMIT_MAX < g_TerrainScanStepLimit) {
+      g_TerrainScanStepLimit = TERRAIN_SCAN_STEP_LIMIT_MAX;
     }
     g_TerrainScanReferenceHeight = referenceHeightQ12;
-    gridCoordinates = FieldGrid_WorldToGridQ12(worldXQ12,worldYQ12);
+    gridCoordinates = FieldGrid_WorldToGridQ12(worldYQ12,worldXQ12);
     referenceHeight = g_TerrainScanReferenceHeight;
-    baseColumn = gridCoordinates.columnQ12 >> 0xc;
-    gridRow = gridCoordinates.rowQ12 >> 0xc;
+    baseColumn = gridCoordinates.columnQ12 >> 12;
+    gridRow = gridCoordinates.rowQ12 >> 12;
     columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 32);
+    /* pick the nearest vertex of the triangulated cell from the Q12 fractions (0x1000 = one cell) */
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
       if (0xfff < columnFraction + rowFraction * 2) {
-        gridRow = gridRow + 1;
+        gridRow++;
       }
     }
     else if (fractionSumOrGridWidth < 0x2001) {
       gridColumn = baseColumn + 1;
       if (columnFraction < rowFraction) {
-        gridRow = gridRow + 1;
+        gridRow++;
         gridColumn = baseColumn;
       }
     }
     else {
       gridColumn = baseColumn + 1;
       if (0x1fff < columnFraction + rowFraction * 2) {
-        gridRow = gridRow + 1;
+        gridRow++;
       }
     }
-    g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7;
+    g_TerrainScanRowStrideBytes = fieldGrid->gridWidth << 7; /* 0x80-byte cells */
     if ((((-1 < (int)gridColumn) && (fractionSumOrGridWidth = fieldGrid->gridWidth & 0x1ffffff, -1 < (int)gridRow)) &&
         (gridRow < fieldGrid->gridHeight)) && (gridColumn < fractionSumOrGridWidth)) {
       centerCellIndex = gridRow * fractionSumOrGridWidth + gridColumn;
-      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & 0x88006000) == 0) {
+      if ((fieldGrid->cells[centerCellIndex].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
         fieldGrid->cells[centerCellIndex].occupancyMask =
              fieldGrid->cells[centerCellIndex].occupancyMask | occupancyMaskBits;
         rowStrideBytes = g_TerrainScanRowStrideBytes;
+        /* the six neighbours of centre cell C, one per sector: C+1, C+1-W, C-W, C-1, C-1+W, C+W (W = grid width;
+           the first address is cells[centerCellIndex + 1], and runtime0C_3F - 0xC is a cell's own address) */
         wedgeCellA = (FieldGridCell *)
                  (fieldGrid[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                 centerCellIndex * 0x80 + -0x28);
+                 centerCellIndex * 0x80 - 0x28);
         wedgeCellB = (FieldGridCell *)((int)wedgeCellA - g_TerrainScanRowStrideBytes);
         TerrainProjectedOcclusion_TraceWedge0
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,0,wedgeCellA);
         TerrainProjectedOcclusion_TraceWedge1
                   (occupancyMaskBits,wedgeCellB[-1].terrainHeight - referenceHeight,0,wedgeCellB);
-        wedgeCellA = (FieldGridCell *)((wedgeCellB + -1)[-1].runtime0C_3F + rowStrideBytes + -0xc);
+        wedgeCellA = (FieldGridCell *)((wedgeCellB - 1)[-1].runtime0C_3F + rowStrideBytes - 0xc);
         TerrainProjectedOcclusion_TraceWedge2
-                  (occupancyMaskBits,wedgeCellA->terrainHeight - referenceHeight,0,wedgeCellB + -1);
-        wedgeCellB = (FieldGridCell *)(wedgeCellA->runtime0C_3F + rowStrideBytes + -0xc);
+                  (occupancyMaskBits,wedgeCellA->terrainHeight - referenceHeight,0,wedgeCellB - 1);
+        wedgeCellB = (FieldGridCell *)(wedgeCellA->runtime0C_3F + rowStrideBytes - 0xc);
         TerrainProjectedOcclusion_TraceWedge3
                   (occupancyMaskBits,wedgeCellB->terrainHeight - referenceHeight,0,wedgeCellA);
         TerrainProjectedOcclusion_TraceWedge4
                   (occupancyMaskBits,wedgeCellB[1].terrainHeight - referenceHeight,0,wedgeCellB);
+        /* (C+W) + 0x80 - stride + 0x48: terrainHeight of C+1, the first cell of sector 0 */
         TerrainProjectedOcclusion_TraceWedge5
-                  (occupancyMaskBits,*(int *)((int)(wedgeCellB + 1) + (200 - rowStrideBytes)) - referenceHeight,0,
+                  (occupancyMaskBits,*(int *)((int)(wedgeCellB + 1) + (0xc8 - rowStrideBytes)) - referenceHeight,0,
                    wedgeCellB + 1);
       }
     }
   }
-  return;
 }
 
 

@@ -28,6 +28,13 @@
 #define MOVIE_REFILL_LIMIT_BYTES 0x3A2200 /* refills only while header + loaded video stay below this */
 #define MOVIE_REFILL_CHUNK_BYTES 0x1E000 /* bytes per refill; also the minimum buffered ahead of a decode */
 #define MOVIE_COMPACT_SHIFT_BYTES 0x1E0000 /* played bytes dropped from the buffer front at once */
+#define MOVIE_MAX_AUDIO_TRACKS 14 /* MovieFileHeader.audioTrackBytes; Movie_Open plays no audio for larger counts */
+/* FLM frame tokens (low 5 bits of the next stream dword, Movie_DecodeFrame4x4Delta / Movie_EncodeFrame4x4*):
+   0..24 start an 8-byte colour block with that base luma; the skip tokens keep blocks of the previous frame,
+   the count (minus its bias) sits in the bits above the token */
+#define MOVIE_TOKEN_SKIP_SHORT 0x19 /* 1 byte: skip 1..8 blocks */
+#define MOVIE_TOKEN_SKIP_MEDIUM 0x1A /* 2 bytes: skip 9..0x808 blocks */
+#define MOVIE_TOKEN_SKIP_LONG 0x1B /* 4 bytes: skip 0x809 or more blocks */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */

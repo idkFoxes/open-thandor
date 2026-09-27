@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/math/interpolation. */
+
+/* Order of the cubic-spline equation matrix (32x32 floats, row-major): 4 coefficients per segment, so at most
+   8 segments / 9 keyframes (CubicSpline_BuildNaturalCoefficientSystem, CubicSpline_SolveCoefficientSystem). */
+#define CUBIC_SPLINE_MATRIX_ORDER 32
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053CA30 */
@@ -48,7 +52,7 @@ CubicSpline_SolveCoefficientSystem
 /* 0x0053CF10 */
 void __thandor_void_preserve_eax_ecx_edx
 CubicSpline_BuildNaturalCoefficientSystem
-          (float endpointDerivative,CubicSplineEquationCount *outEquationCount,
+          (float startDerivative,CubicSplineEquationCount *outEquationCount,
           float *outCoefficients,float *matrix32x32,WorldMotionSplineKeyframeCount keyframeCount,
           WorldMotionSplineChannelByteOffset channelByteOffset,WorldMotionSplineKeyframe *keyframes);
 

@@ -7,14 +7,14 @@ digraph thandor {
   "GameFactionRelations_TestPairTransitionAllowed" [label="0x0053C3D0\nGameFactionRelations_TestPairTransitionAllowedCf"];
   "GameFactionRelations_BuildEligibleFactionMask" [label="0x0053C090\nGameFactionRelations_BuildEligibleFactionMask"];
   "GameFactionRelations_EvaluateTransitionRules" [label="0x0053C0F0\nGameFactionRelations_EvaluateTransitionRulesCf"];
-  "GameFactionRelations_IsResetEligibleState" [label="0x0053C490\nGameFactionRelations_IsResetEligibleStateCf"];
+  "GameFactionRelations_IsNotResetEligibleState" [label="0x0053C490\nGameFactionRelations_IsResetEligibleStateCf"];
   "GameFactionRelations_MaybeAdvancePairStateRare" [label="0x0053C4D0\nGameFactionRelations_MaybeAdvancePairStateRare"];
   "GameFactionRelations_MaybeAdvancePairStateCommon" [label="0x0053C540\nGameFactionRelations_MaybeAdvancePairStateCommon"];
   "GameFactionRelations_MaybeResetPairState" [label="0x0053C5B0\nGameFactionRelations_MaybeResetPairState"];
   "PlayerPairList_InsertUnique" [label="0x00560EB0\nPlayerPairList_InsertUnique"];
   "PlayerPairList_RemoveFirstMatch" [label="0x00560F50\nPlayerPairList_RemoveFirstMatch"];
   "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_TestPairTransitionAllowed";
-  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_IsResetEligibleState";
+  "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_IsNotResetEligibleState";
   "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeResetPairState";
   "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeAdvancePairStateRare";
   "GameFactionRelations_UpdateAllPairsForFaction" -> "GameFactionRelations_MaybeAdvancePairStateCommon";

@@ -875,11 +875,10 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
 
 /* Address: 0x00533BA0.
-   Ownership: world/pathing/grid.
-   Purpose: Projects a world point into the grid-scratch coordinate system and rejects cells whose signed state or
-   selected low and high classification bands are set. Carry preserves the rejection result. Typed parameters: p2
-   worldXQ12→Q12, p3 worldYQ12→Q12. Nearby but non-identical semantic domains were explicitly deferred. Calling
-   convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Tests whether a world point may be used for pathing: projects it onto the grid-scratch cells (the same
+   skewed field projection as the placement tests, with 10 instead of 12 fraction bits) and rejects it (CF set)
+   when it lies outside the scratch grid, the cell is GRID_SCRATCH_BLOCKED, or the cell has distance band bit
+   8 + lowBandIndex or bit 24 + highBandIndex set.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestProjectedCellMaskBands
@@ -890,7 +889,9 @@ GridScratch_TestProjectedCellMaskBands
   int cellColumn;
   uint32_t scaledRowTerm;
   int cellRow;
-  
+
+  /* 64-bit products shifted back (SHLD EDX,EAX,11 / 12); column = x term - row term, row = 2 * row term,
+     both rounded (+0x800) */
   scaledRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
           (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
   cellColumn = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
@@ -898,6 +899,7 @@ GridScratch_TestProjectedCellMaskBands
   if ((((-1 < cellColumn) && (cellRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < cellRow)) &&
       (cellColumn < (int)g_GridScratchWidth)) && (cellRow < (int)g_GridScratchHeight)) {
     cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
+    /* sign bit: GRID_SCRATCH_BLOCKED */
     if (((-1 < (int)cellStateMask) && ((0x100 << (lowBandIndex & 0x1f) & cellStateMask) == 0)) &&
        ((0x1000000 << (highBandIndex & 0x1f) & cellStateMask) == 0)) {
       return false;

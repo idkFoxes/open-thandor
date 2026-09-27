@@ -35,11 +35,11 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccessStub(void)
 
 
 /* Address: 0x005796E0.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Presents the shared display framebuffer through DirectDraw or the active 3D backend. The function
-   serializes access through g_GraphicsBackendAccessState and only accepts g_DisplayFramebufferAccess.
-   Cross-module calls: Glide3_Framebuffer_Present [graphics/backend/glide], GraphicsCursor_ComposeBeforePresent
-   [graphics/core/runtime], GraphicsCursor_RestoreAfterPresent [graphics/core/runtime].
+   Shows the finished frame of g_DisplayFramebufferAccess (other framebuffers are ignored): the Glide adapter
+   presents through Glide, the software renderer blits the back surface to the primary surface, a Direct3D
+   device flips. The mouse cursor is drawn into the frame just before and, for the flip chain, its saved
+   state is swapped with the one of the other buffer. Skipped while another thread holds
+   g_GraphicsBackendAccessState.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
@@ -54,22 +54,24 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   TH_LEGACY_HRESULT surfaceResult;
   int restoreResult;
 
-  g_ThandorFrameHeartbeat = g_ThandorFrameHeartbeat + 1;
+  g_ThandorFrameHeartbeat++;
   previousAccessState = g_GraphicsBackendAccessState;
   savedCursorDrawY = g_CursorCurrentDrawY;
   savedCursorDrawX = g_CursorCurrentDrawX;
   savedVisibilityToken = g_CursorCurrentVisibilityToken;
   savedCursorBackground = g_CursorSavedBackground;
+  /* XCHG in the original: take the backend lock and learn whether it was already held */
   LOCK();
   g_GraphicsBackendAccessState = 1;
   UNLOCK();
   if (previousAccessState == 0) {
     if (framebuffer == &g_DisplayFramebufferAccess) {
       adapterDeviceKind = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
-      if (adapterDeviceKind == 1) {
+      if (adapterDeviceKind == GRAPHICS_DEVICE_GUID_GLIDE) {
         Glide3_Framebuffer_Present(&g_DisplayFramebufferAccess);
       }
       else if (adapterDeviceKind < 2) {
+        /* GRAPHICS_DEVICE_GUID_SOFTWARE: copy the whole back surface to the primary surface */
         GraphicsCursor_ComposeBeforePresent(g_BackSurface3);
         g_CurrentClearRect.x1 = 0;
         g_CurrentClearRect.y1 = 0;
@@ -82,12 +84,13 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
         }
         if (restoreResult == 0) {
           g_PrimarySurface3->lpVtbl->BltFast
-                    (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,0x10
-                    );
+                    (g_PrimarySurface3,0,0,g_BackSurface3,(TH_LEGACY_RECT *)&g_CurrentClearRect,DDBLTFAST_WAIT);
         }
         GraphicsCursor_RestoreAfterPresent(g_BackSurface3);
       }
       else {
+        /* Direct3D flip chain: the back buffer becomes visible, so swap in the cursor state saved for it
+           (XCHG in the original) */
         LOCK();
         g_CursorSavedBackground = g_CursorAlternateSavedBackground;
         UNLOCK();
@@ -111,13 +114,13 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
           restoreResult = g_PrimarySurface3->lpVtbl->Restore(g_PrimarySurface3);
         }
         if (restoreResult == 0) {
-          surfaceResult = g_PrimarySurface3->lpVtbl->Flip(g_PrimarySurface3,(IDirectDrawSurface3 *)0x0,1)
-          ;
+          surfaceResult = g_PrimarySurface3->lpVtbl->Flip(g_PrimarySurface3,NULL,DDFLIP_WAIT);
           savedCursorDrawY = g_CursorCurrentDrawY;
           savedCursorDrawX = g_CursorCurrentDrawX;
           savedVisibilityToken = g_CursorCurrentVisibilityToken;
           savedCursorBackground = g_CursorSavedBackground;
           if (surfaceResult != 0) {
+            /* the flip failed: swap the cursor state back */
             LOCK();
             g_CursorSavedBackground = g_CursorAlternateSavedBackground;
             UNLOCK();
@@ -138,20 +141,18 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
         }
       }
     }
-    g_GraphicsBackendAccessState = g_GraphicsBackendAccessState + -1;
+    g_GraphicsBackendAccessState--;
   }
   return;
 }
 
 
 /* Address: 0x005798A0.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Captures a two-byte framebuffer rectangle and expands it to opaque ARGB8888. Returns
-   GraphicsCapturedTextureSourceAsset with a fixed 0x200-byte header, sourceEntry at 0x200, and argb8888Pixels at
-   0x220. sourceEntry uses paletteIndex=-1, dataOffset=0x220, originX=originY=0, and logical/pixel dimensions equal
-   to the capture dimensions. ABI: CF clear means success. CF set means failure.
-   Cross-module calls: Glide3_Framebuffer_CaptureRegion [graphics/backend/glide], Memory_ZeroDwords
-   [core/memory/allocator].
+   g_GraphicsFramebufferCaptureRegion in 16-bit modes (callers grab the whole screen): copies a rectangle of
+   the back surface into a newly allocated one-image 'gfx' asset in opaque ARGB8888, expanding each channel
+   with the masks and shifts of g_SoftwarePixelFormatConfig. The Glide adapter has its own capture. CF set
+   with the arena error, or with FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES when the back surface cannot be
+   restored or locked.
 */
 FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion16Bit
@@ -174,16 +175,17 @@ GraphicsFramebuffer_CaptureRegion16Bit
   FramebufferCaptureResult captureResult;
   uint16_t *sourceRowStart;
   
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == GRAPHICS_DEVICE_GUID_GLIDE) {
     captureResult = Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
     return captureResult;
   }
-  allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
+  allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
   allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
   capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
+    /* dword clear of the whole asset (REP STOSD in the original) */
     clearCursor = capturedAsset;
-    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
+    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
       (clearCursor->common).magic = 0;
       clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
     }
@@ -204,7 +206,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
-    (capturedAsset->tableDescriptor).subresourceTableOffset = 0x200;
+    (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
     (capturedAsset->sourceEntry).logicalWidth = captureWidth;
     (capturedAsset->sourceEntry).logicalHeight = captureHeight;
     (capturedAsset->sourceEntry).pixelWidth = captureWidth;
@@ -212,18 +214,17 @@ GraphicsFramebuffer_CaptureRegion16Bit
     (capturedAsset->sourceEntry).originX = 0;
     (capturedAsset->sourceEntry).originY = 0;
     (capturedAsset->sourceEntry).paletteIndex = -1;
-    (capturedAsset->sourceEntry).dataOffset = 0x220;
+    (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
     surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     restoreResultOrPixelOffset = 0;
     if (surfaceResult != 0) {
       restoreResultOrPixelOffset = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if (restoreResultOrPixelOffset == 0) {
-      Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = 0x6c;
+      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
       surfaceResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,0x11,
-                         (TH_LEGACY_HANDLE)0x0);
+                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
       if (surfaceResult == 0) {
         destinationPixel = capturedAsset->argb8888Pixels;
@@ -251,10 +252,10 @@ GraphicsFramebuffer_CaptureRegion16Bit
             *(char *)destinationPixel = (char)restoreResultOrPixelOffset;
             sourcePixel = sourcePixel + 1;
             destinationPixel = destinationPixel + 1;
-            remainingColumns = remainingColumns - 1;
+            remainingColumns--;
           } while (remainingColumns != 0);
           sourcePixel = (uint16_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
-          captureHeight = captureHeight - 1;
+          captureHeight--;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
@@ -263,8 +264,9 @@ GraphicsFramebuffer_CaptureRegion16Bit
       }
     }
     g_MemoryApi.free(capturedAsset);
-    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_16BIT,
+                            g_PackageLastErrorPath);
+    capturedAsset = (GraphicsCapturedTextureSourceAsset *)FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
   }
   captureResult.failed = true;
   captureResult.capture = capturedAsset;
@@ -273,12 +275,10 @@ GraphicsFramebuffer_CaptureRegion16Bit
 
 
 /* Address: 0x00579B50.
-   Ownership: graphics/resources/framebuffer.
-   Purpose: Captures a four-byte framebuffer rectangle, preserves RGB, and forces alpha to 0xFF. Returns
-   GraphicsCapturedTextureSourceAsset with a fixed 0x200-byte header, sourceEntry at 0x200, and argb8888Pixels at
-   0x220. sourceEntry uses paletteIndex=-1, dataOffset=0x220, originX=originY=0, and logical/pixel dimensions equal
-   to the capture dimensions. ABI: CF clear means success. CF set means failure.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   32-bit counterpart of GraphicsFramebuffer_CaptureRegion16Bit: copies a rectangle of the back surface into a
+   newly allocated one-image 'gfx' asset, keeping RGB and forcing alpha to 0xFF, two pixels per step. There is
+   no Glide branch here. Callers pass the full (even) screen width. CF set with the arena error or
+   FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES.
 */
 FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion32Bit
@@ -302,12 +302,13 @@ GraphicsFramebuffer_CaptureRegion32Bit
   FramebufferCaptureResult captureResult;
   uint32_t *sourceRowStart;
   
-  allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
+  allocationSizeOrPixel = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
   allocResult = g_MemoryApi.alloc(allocationSizeOrPixel);
   capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
   if (!allocResult.failed) {
+    /* dword clear of the whole asset (REP STOSD in the original) */
     clearCursor = capturedAsset;
-    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
+    for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords--) {
       (clearCursor->common).magic = 0;
       clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
     }
@@ -328,7 +329,7 @@ GraphicsFramebuffer_CaptureRegion32Bit
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
-    (capturedAsset->tableDescriptor).subresourceTableOffset = 0x200;
+    (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
     (capturedAsset->sourceEntry).logicalWidth = captureWidth;
     (capturedAsset->sourceEntry).logicalHeight = captureHeight;
     (capturedAsset->sourceEntry).pixelWidth = captureWidth;
@@ -336,18 +337,17 @@ GraphicsFramebuffer_CaptureRegion32Bit
     (capturedAsset->sourceEntry).originX = 0;
     (capturedAsset->sourceEntry).originY = 0;
     (capturedAsset->sourceEntry).paletteIndex = -1;
-    (capturedAsset->sourceEntry).dataOffset = 0x220;
+    (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
     surfaceResult = g_BackSurface3->lpVtbl->IsLost(g_BackSurface3);
     restoreResult = 0;
     if (surfaceResult != 0) {
       restoreResult = g_BackSurface3->lpVtbl->Restore(g_BackSurface3);
     }
     if (restoreResult == 0) {
-      Memory_ZeroDwords(0x6c,&g_SurfaceDesc);
-      g_SurfaceDesc.dwSize = 0x6c;
+      Memory_ZeroDwords(sizeof g_SurfaceDesc,&g_SurfaceDesc);
+      g_SurfaceDesc.dwSize = sizeof g_SurfaceDesc;
       surfaceResult = g_BackSurface3->lpVtbl->Lock
-                        (g_BackSurface3,(TH_LEGACY_RECT *)0x0,&g_SurfaceDesc,0x11,
-                         (TH_LEGACY_HANDLE)0x0);
+                        (g_BackSurface3,NULL,&g_SurfaceDesc,DDLOCK_WAIT | DDLOCK_READONLY,NULL);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
       if (surfaceResult == 0) {
         sourcePixel = (uint32_t *)((int)g_SurfaceDesc.lpSurface +
@@ -365,12 +365,14 @@ GraphicsFramebuffer_CaptureRegion32Bit
             sourcePixel = sourcePixel + 2;
             destinationPixel = destinationPair + 2;
           } while (1 < remainingColumns);
+          /* odd width: one pixel left. A width of 1 would not stop: the unsigned count wraps below 0 and the
+             pair loop runs on (as in the original, SUB EBX,2; CMP EBX,1; JA) */
           if (remainingColumns == 1) {
             *destinationPixel = *sourcePixel | 0xff000000;
             destinationPixel = destinationPair + 3;
           }
           sourcePixel = (uint32_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
-          captureHeight = captureHeight - 1;
+          captureHeight--;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
@@ -379,8 +381,9 @@ GraphicsFramebuffer_CaptureRegion32Bit
       }
     }
     g_MemoryApi.free(capturedAsset);
-    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x65,g_PackageLastErrorPath);
-    capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,GRAPHICS_CAPTURE_FAILED_STAGE_32BIT,
+                            g_PackageLastErrorPath);
+    capturedAsset = (GraphicsCapturedTextureSourceAsset *)FATAL_ERROR_DIRECTDRAW_CREATE_SURFACES;
   }
   captureResult.failed = true;
   captureResult.capture = capturedAsset;

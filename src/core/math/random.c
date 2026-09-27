@@ -43,22 +43,21 @@ uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
 
 
 /* Address: 0x00403110.
-   Ownership: core/math/random.
-   Purpose: It does not change the active RandomGeneratorState.next selector.
+   Sets the primary and the secondary seed to the same value without changing the active stream. A new
+   session seeds both from one value, which network clients receive from the host, so that every machine
+   draws the same numbers.
 */
 void __thandor_void_preserve_eax_ecx_edx Random_SetBothSeeds(RandomSeed seed)
 
 {
   g_RandomGeneratorState.primarySeed = seed;
   g_RandomGeneratorState.secondarySeed = seed;
-  return;
 }
 
 
 /* Address: 0x00403130.
-   Ownership: core/math/random.
-   Purpose: Returns RandomGeneratorState.secondarySeed. It does not return primarySeed or invoke the active
-   generator.
+   Returns the current secondary seed (without stepping it); the host sends it in the player snapshot
+   packet so that joining machines can continue the same stream.
 */
 uint32_t __cdecl Random_GetSecondarySeed(void)
 
@@ -67,14 +66,13 @@ uint32_t __cdecl Random_GetSecondarySeed(void)
 }
 
 /* Address: 0x00403140.
-   Ownership: core/math/random.
-   Purpose: Sets RandomGeneratorState.next to Random_NextSecondary without changing either seed.
+   Makes Random_NextSecondary the active generator (g_RandomGeneratorState.next) without touching either seed;
+   used together with Random_SetBothSeeds when a session starts.
 */
 void __thandor_void_preserve_eax_ecx_edx Random_SelectSecondaryStream(void)
 
 {
   g_RandomGeneratorState.next = Random_NextSecondary;
-  return;
 }
 
 

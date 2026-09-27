@@ -96,7 +96,7 @@ UiImageControl_NonRightRelease
           UiImageControl *control);
 
 /* 0x004BD2A0 */
-void __thandor_preserve_eax UiModelControl_RefreshStateTint(ModelRuntimeNode *control);
+void __thandor_preserve_eax ModelNodeRuntime_RefreshStateTint(ModelRuntimeNode *modelNode);
 
 /* 0x00517E30 */
 void __thandor_void_preserve_eax_ecx_edx

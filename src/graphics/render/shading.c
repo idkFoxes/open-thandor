@@ -2476,49 +2476,52 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
 
 
 /* Address: 0x004BCF70.
-   Ownership: graphics/render/shading.
-   Purpose: Allocates and aligns a 256 by 256 byte lookup table and fills each entry with the first input clamped
-   to within plus or minus 0x15 of the second input. Carry reports allocation failure.
+   Builds the 64 KiB intensity clamp table used by the model tint fade
+   (ModelNodeRuntime_UpdateStateTintRecursive): entry (previous << 8) | target holds target limited to previous
+   +/- GRAPHICS_INTENSITY_CLAMP_MAX_STEP. The table is aligned to 64 KiB so the original can index it with a
+   16-bit register pair. CF set with the arena error when the allocation fails.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initialize(void)
 
 {
   int rowsRemaining;
-  char inputByte;
-  uint32_t inputValue;
-  int referenceValue;
+  char targetByte;
+  uint32_t targetIntensity;
+  int previousIntensity;
   char *tableCursor;
   ArenaAllocResult allocResult;
   
-  allocResult = g_MemoryApi.alloc(0x20000);
+  allocResult = g_MemoryApi.alloc(GRAPHICS_INTENSITY_CLAMP_ALLOCATION_BYTES);
   if (!allocResult.failed) {
-    inputValue = 0;
+    targetIntensity = 0;
+    /* round up to the next 64 KiB boundary */
     tableCursor = (char *)(allocResult.payloadOrError + 0xffff & 0xffff0000);
-    rowsRemaining = 0x100;
-    referenceValue = 0;
+    rowsRemaining = 256;
+    previousIntensity = 0;
     g_GraphicsIntensityClampTableBase = (uint32_t)tableCursor;
     do {
       do {
-        inputByte = (char)inputValue;
-        if (referenceValue < (int)inputValue) {
-          if (referenceValue + 0x15 < (int)inputValue) {
-            *tableCursor = (char)(referenceValue + 0x15);
+        targetByte = (char)targetIntensity;
+        if (previousIntensity < (int)targetIntensity) {
+          if (previousIntensity + GRAPHICS_INTENSITY_CLAMP_MAX_STEP < (int)targetIntensity) {
+            *tableCursor = (char)(previousIntensity + GRAPHICS_INTENSITY_CLAMP_MAX_STEP);
           }
           else {
-            *tableCursor = inputByte;
+            *tableCursor = targetByte;
           }
         }
-        else if ((int)inputValue < referenceValue + -0x15) {
-          *tableCursor = (char)(referenceValue + -0x15);
+        else if ((int)targetIntensity < previousIntensity - GRAPHICS_INTENSITY_CLAMP_MAX_STEP) {
+          *tableCursor = (char)(previousIntensity - GRAPHICS_INTENSITY_CLAMP_MAX_STEP);
         }
         else {
-          *tableCursor = inputByte;
+          *tableCursor = targetByte;
         }
         tableCursor = tableCursor + 1;
-        inputValue = (uint32_t)(uint8_t)(inputByte + 1U);
-      } while ((uint8_t)(inputByte + 1U) != 0);
-      referenceValue = referenceValue + 1;
-      rowsRemaining = rowsRemaining + -1;
+        /* 8-bit wrap ends the row after target 255 (INC DL; JNZ in the original) */
+        targetIntensity = (uint32_t)(uint8_t)(targetByte + 1U);
+      } while ((uint8_t)(targetByte + 1U) != 0);
+      previousIntensity++;
+      rowsRemaining--;
     } while (rowsRemaining != 0);
     return StatusValue_Ok(0);
   }
@@ -2587,9 +2590,10 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
 
 
 /* Address: 0x004CCB40.
-   Ownership: graphics/render/shading.
-   Purpose: Allocates one free GraphicsShadingRuntimeRecord. transitionDurationTicks controls radius interpolation;
-   EAX and CF remain the nonstandard pointer/status result channels.
+   Claims the first free runtime light record (colour 0) for a point light at the given world position and
+   returns it. With transitionDurationTicks 0 the light starts at full radius, otherwise its squared radius
+   starts at 0 and grows over that many ticks. CF set with NULL when packedColorRgb is 0 or all
+   GRAPHICS_SHADING_RUNTIME_RECORD_COUNT records are taken.
 */
 ShadingRecordResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_AllocateRecordRegs
@@ -2605,7 +2609,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
   
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
-    recordsRemaining = 0x100;
+    recordsRemaining = GRAPHICS_SHADING_RUNTIME_RECORD_COUNT;
     do {
       if (recordCursor->packedColorRgbActive == 0) {
         recordCursor->targetRadiusQ12 = radiusQ12;
@@ -2628,10 +2632,10 @@ GraphicsShadingRuntime_AllocateRecordRegs
         return successResult;
       }
       recordCursor = recordCursor + 1;
-      recordsRemaining = recordsRemaining + -1;
+      recordsRemaining--;
     } while (recordsRemaining != 0);
   }
-  failureResult.record = (GraphicsShadingRuntimeRecord *)0x0;
+  failureResult.record = NULL;
   failureResult.failed = true;
   return failureResult;
 }

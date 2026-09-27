@@ -45,6 +45,22 @@
 #define FIELD_CELL_RUNTIME60_INDEX_RUNTIME_BYTE68 8      /* +0x68: runtime class byte */
 #define FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK 0x10   /* +0x70: occupancyMask byte 0 */
 
+/* FieldGridAsset.runtimeStateFlags bit 0: set by every height/cell edit, cleared by the projection pass
+   (projection.c) after it rebuilt the terrain surface. */
+#define FIELD_GRID_RUNTIME_SURFACE_DIRTY 0x01
+/* FieldGrid_RaycastTerrainSurfaceDistance / ..SecondarySurfaceDistance: at most this many cell steps per ray
+   (the counter is decremented before the first step, so 1023 cells are visited), and the miss distance. */
+#define FIELD_GRID_RAYCAST_MAX_STEPS 1024
+#define FIELD_GRID_RAYCAST_MISS_DISTANCE 0x7fffffff
+/* One grid cell in Q12 grid coordinates; masking with ~(FIELD_GRID_CELL_Q12 - 1) keeps the cell origin. */
+#define FIELD_GRID_CELL_Q12 0x1000
+/* occupancy bits 0 and 1 of a faction byte: positioned sounds only play in cells where one of them is set
+   (TerrainGrid_TestProjectedCellMaskBits01) */
+#define FIELD_CELL_OCCUPANCY_BITS01 0x03
+/* occupancy bit 1, set within an army's radius by TerrainOccupancyBit2_MarkAroundWorldPoint (the "Bit2" in the
+   TerrainOccupancyBit2_* names is the mask value 2) */
+#define FIELD_CELL_OCCUPANCY_BIT1 0x02
+
 /* 0x00505930 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
@@ -198,13 +214,13 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504CA0 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504E60 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx

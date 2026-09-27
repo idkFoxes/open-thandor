@@ -188,7 +188,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
 {
   uint32_t audioTrackCount;
   uint32_t selectedTrack;
-  uint32_t track;
+  uint32_t trackIndex;
   uint32_t trackOffset;
   uint32_t trackBytes;
   void *audioSample;
@@ -201,7 +201,7 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
   result.failed = false;
   result.valueOrError = 0;
   audioTrackCount = header->audioTrackCount;
-  if ((audioTrackCount == 0) || (0xe < audioTrackCount)) {
+  if ((audioTrackCount == 0) || (MOVIE_MAX_AUDIO_TRACKS < audioTrackCount)) {
     return result;
   }
   selectedTrack = 0;
@@ -209,8 +209,9 @@ Movie_OpenLoadRandomAudioTrack(MovieFileHeader *header,MovieStreamByteCount rema
     selectedTrack = (Random_NextPrimary() & 0xffff) % audioTrackCount; /* DIV: unsigned */
   }
   trackOffset = 0;
-  for (track = 0; track < selectedTrack; track = track + 1) {
-    trackOffset = trackOffset + header->audioTrackBytes[track];
+  /* the tracks are stored back to back, so skip the sizes of all tracks before the selected one */
+  for (trackIndex = 0; trackIndex < selectedTrack; trackIndex++) {
+    trackOffset = trackOffset + header->audioTrackBytes[trackIndex];
   }
   trackBytes = header->audioTrackBytes[selectedTrack];
   if (trackBytes == 0) {
@@ -444,19 +445,18 @@ MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
 
 
 /* Address: 0x004A8A20.
-   Ownership: movie/runtime/playback.
-   Purpose: Returns the active movie source entry's logical width in EAX and logical height in EDX. Both are zero
-   when no movie is open.
+   Returns the frame size of the active movie (width in EAX, height in EDX), so callers can place and scale
+   the movie texture. Both are zero when no movie is open.
 */
 MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDimensions(void)
 
 {
   AssetDimension frameWidth;
   AssetDimension frameHeight;
-  
+
   frameWidth = 0;
   frameHeight = 0;
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  if (g_ActiveMovie != NULL) {
     frameWidth = (g_ActiveMovie->sourceEntry).pixelWidth;
     frameHeight = (g_ActiveMovie->sourceEntry).pixelHeight;
   }
@@ -479,10 +479,10 @@ void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
 
 
 /* Address: 0x004A8C00.
-   Ownership: movie/runtime/playback.
-   Purpose: Semaphore-driven refill worker. It appends at most 0x1E000 video bytes while the bounded buffer is
-   below 0x3A2200, advances streamFileOffset/loadedVideoEnd, records read failure as state 2, and clears
-   workerActive before returning zero.
+   Background thread of a streamed movie: whenever Movie_AdvanceFrame signals the refill semaphore (or every
+   256 ms), appends the next MOVIE_REFILL_CHUNK_BYTES of video to the buffer while it stays below
+   MOVIE_REFILL_LIMIT_BYTES, so playback does not stall on disk reads. Ends when the movie is closed, fully
+   loaded or a read fails (MOVIE_STREAM_READ_FAILED), and clears workerActive on the way out.
 */
 uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
@@ -491,22 +491,22 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
   MovieRuntime *movie;
   uint32_t byteCount;
   FileSystemReadResult readResult;
-  
+
   /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
      and at the exit. */
   for (;;) {
     movie = g_ActiveMovie;
-    if (movie == (MovieRuntime *)0x0) break;
-    MsgWaitForMultipleObjects(1,&movie->refillSemaphore,0,0x100,0);
+    if (movie == NULL) break;
+    MsgWaitForMultipleObjects(1,&movie->refillSemaphore,FALSE,256,0);
     movie = g_ActiveMovie;
-    if ((movie == (MovieRuntime *)0x0) || (movie->streamState == MOVIE_STREAM_SHUTDOWN) ||
+    if ((movie == NULL) || (movie->streamState == MOVIE_STREAM_SHUTDOWN) ||
         (movie->workerActive == 0) || (movie->remainingVideoBytes == 0)) break;
     if (movie->streamState == MOVIE_STREAM_IDLE) continue;
     byteCount = movie->remainingVideoBytes;
-    if ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < 0x3a2200) {
+    if ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < MOVIE_REFILL_LIMIT_BYTES) {
       handle = movie->streamHandle;
-      if (0x1e000 < byteCount) {
-        byteCount = 0x1e000;
+      if (MOVIE_REFILL_CHUNK_BYTES < byteCount) {
+        byteCount = MOVIE_REFILL_CHUNK_BYTES;
       }
       g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
       readResult = g_FileSystemReadExact(byteCount,movie->loadedVideoEnd,handle);
@@ -519,6 +519,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
       movie->remainingVideoBytes = movie->remainingVideoBytes - byteCount;
       movie->streamFileOffset = movie->streamFileOffset + byteCount;
       movie->loadedVideoEnd = movie->loadedVideoEnd + byteCount;
+      /* a loose file is closed once fully read; a package handle stays open for other entries */
       if ((movie->remainingVideoBytes == 0) && (movie->streamHandleIsSharedPackage == 0)) {
         g_FileSystemClose(handle);
       }
@@ -526,7 +527,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
     if ((movie->streamState == MOVIE_STREAM_SHUTDOWN) || (movie->remainingVideoBytes == 0)) break;
     movie->streamState = MOVIE_STREAM_IDLE;
   }
-  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+  if (g_ActiveMovie != NULL) {
     g_ActiveMovie->workerActive = 0;
   }
   return 0;
@@ -719,14 +720,14 @@ EndMovieUiRuntime_DispatchCommandByFlags
 
 
 /* Address: 0x005739C0.
-   Ownership: movie/runtime/playback.
-   Purpose: Periodic timer callback that increments g_IntroMoviePendingTicks. The intro loop decodes at most three
-   pending frames per iteration.
+   Periodic timer callback registered at the movie's playback rate: counts one more frame that is due in
+   g_IntroMoviePendingTicks. The intro loop consumes the count and decodes at most three pending frames per
+   iteration, which keeps the movie in time on slow machines.
 */
 void IntroMovie_TimerTick(void)
 
 {
-  g_IntroMoviePendingTicks = g_IntroMoviePendingTicks + 1;
+  g_IntroMoviePendingTicks++;
   return;
 }
 
@@ -1705,6 +1706,7 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   if (!enabled) {
     return;
   }
+  /* cheap checksum over every seventh pixel, enough to spot diverging frames in the log */
   for (i = 0; i < width * height; i += 7) {
     sum = sum * 31 + movie->argbPixels[i];
   }
@@ -1755,6 +1757,7 @@ static void Movie_DebugCompareBefore(MovieRuntime *movie, uint32_t height, uint3
     const char *value = getenv("OPEN_THANDOR_MOVIECMP");
     enabled = (value != NULL) && (value[0] == '1');
     if (enabled) {
+      /* the decoder's code runs from 0x004A81C0 up to and including its RET 0x10 at 0x004A8586 */
       original = (OriginalMovieDecodeProc)Thandor_LoadOriginalCodeCopy(0x4a81c0, 0x4a8589 - 0x4a81c0);
       if (original == NULL) {
         Thandor_Log("moviecmp: could not load the original decoder");
@@ -1933,10 +1936,10 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 
 /* Address: 0x004A81C0.
-   Ownership: movie/runtime/playback.
-   Purpose: Decodes one FLM frame into an existing ARGB image in 4x4 blocks. Tokens 0-24 encode one block through
-   g_MovieChromaLumaToArgb, while tokens 25-31 skip runs and preserve pixels from the previous frame. Returns
-   encoded bytes consumed rounded up to eight.
+   Decodes one FLM frame over the previous one in the ARGB image, 4x4 blocks in row order. A colour block
+   (token 0..24 = base luma) holds a 10-bit chroma code and sixteen 3-bit luma steps that index
+   g_MovieChromaLumaToArgb; the skip tokens leave runs of blocks unchanged. Returns the encoded bytes consumed,
+   rounded up to eight, so the caller can advance the stream.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 Movie_DecodeFrame4x4Delta
@@ -1949,13 +1952,13 @@ Movie_DecodeFrame4x4Delta
   uint32_t pixel1;
   uint32_t pixel2;
   uint32_t pixel3;
-  uint32_t tokenOrColorBase;
+  uint32_t tokenOrTableIndex;
   uint32_t *streamCursor;
   uint32_t *destinationRow;
   uint32_t blocksLeftInRow;
   uint32_t blockRowsLeft;
   uint32_t skipRemaining;
-  
+
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;
   streamCursor = (uint32_t *)encodedFrame;
@@ -1964,92 +1967,96 @@ Movie_DecodeFrame4x4Delta
     do {
       blockWord0 = *streamCursor;
       if (skipRemaining == 0) {
-        tokenOrColorBase = blockWord0 & 0x1f;
+        tokenOrTableIndex = blockWord0 & 0x1f;
         blockWord1 = streamCursor[1];
-        if (tokenOrColorBase < 0x19) {
+        if (tokenOrTableIndex < MOVIE_TOKEN_SKIP_SHORT) {
+          /* colour block: table row = chroma code (second dword bits 21-30) * 32 + base luma; the luma steps
+             sit at bits 5-31 of the first and bits 0-20 of the second dword. With bit 31 of the second dword
+             set every step counts twice (luma range 0..14 instead of 0..7). */
           if ((int)blockWord1 < 0) {
-            tokenOrColorBase = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            tokenOrTableIndex = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
             blockWord0 = *streamCursor;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 8 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xb & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xe & 7) * 2];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 5 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xb & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xe & 7) * 2];
+            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7) * 2];
             destinationArgb[1] = pixel1;
             destinationArgb[2] = pixel2;
             destinationArgb[3] = pixel3;
             destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x14 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x17 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1a & 7) * 2];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x11 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x14 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x17 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1a & 7) * 2];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x11 & 7) * 2];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
             blockWord1 = streamCursor[1];
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 3 & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 6 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 3 & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7) * 2];
             *destinationRow = *(uint32_t *)((int)g_MovieChromaLumaToArgb[0] +
-                                (blockWord0 >> 0x1a & 0xfffffff8) + tokenOrColorBase * 4);
+                                (blockWord0 >> 0x1a & 0xfffffff8) + tokenOrTableIndex * 4);
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xc & 7) * 2];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xf & 7) * 2];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0x12 & 7) * 2];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xc & 7) * 2];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xf & 7) * 2];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0x12 & 7) * 2];
             streamCursor = streamCursor + 2;
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 9 & 7) * 2];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7) * 2];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationArgb = destinationRow + widthPixels * -3;
           }
           else {
-            tokenOrColorBase = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
+            tokenOrTableIndex = (blockWord1 & 0x7fe00000) >> 0x10 | *streamCursor & 0x1f;
             blockWord0 = *streamCursor;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 8 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xb & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0xe & 7)];
-            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 5 & 7)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 8 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xb & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0xe & 7)];
+            *destinationArgb = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 5 & 7)];
             destinationArgb[1] = pixel1;
             destinationArgb[2] = pixel2;
             destinationArgb[3] = pixel3;
             destinationRow = destinationArgb + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x14 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x17 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1a & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x11 & 7)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x14 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x17 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1a & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x11 & 7)];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
             blockWord1 = streamCursor[1];
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 3 & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 6 & 7)];
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord0 >> 0x1d)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 3 & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 6 & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord0 >> 0x1d)];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationRow = destinationRow + widthPixels;
-            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xc & 7)];
-            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0xf & 7)];
-            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 0x12 & 7)];
+            pixel1 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xc & 7)];
+            pixel2 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0xf & 7)];
+            pixel3 = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 0x12 & 7)];
             streamCursor = streamCursor + 2;
-            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 9 & 7)];
+            *destinationRow = g_MovieChromaLumaToArgb[0][tokenOrTableIndex + (blockWord1 >> 9 & 7)];
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
             destinationRow[3] = pixel3;
             destinationArgb = destinationRow + widthPixels * -3;
           }
         }
-        else if (tokenOrColorBase == 0x19) {
+        /* skip tokens: this block plus skipRemaining further blocks keep the previous frame */
+        else if (tokenOrTableIndex == MOVIE_TOKEN_SKIP_SHORT) {
           streamCursor = (uint32_t *)((int)streamCursor + 1);
           skipRemaining = (blockWord0 & 0xff) >> 5;
         }
-        else if (tokenOrColorBase < 0x1b) {
+        else if (tokenOrTableIndex < MOVIE_TOKEN_SKIP_LONG) {
           streamCursor = (uint32_t *)((int)streamCursor + 2);
           skipRemaining = ((blockWord0 & 0xffff) >> 5) + 8;
         }
@@ -2059,13 +2066,14 @@ Movie_DecodeFrame4x4Delta
         }
       }
       else {
-        skipRemaining = skipRemaining - 1;
+        skipRemaining--;
       }
       destinationArgb = destinationArgb + 4;
-      blocksLeftInRow = blocksLeftInRow - 1;
+      blocksLeftInRow--;
     } while (blocksLeftInRow != 0);
+    /* the block loop left destinationArgb on the first row of the block row; move to the next block row */
     destinationArgb = destinationArgb + widthPixels * 3;
-    blockRowsLeft = blockRowsLeft - 1;
+    blockRowsLeft--;
     blocksLeftInRow = widthPixels >> 2;
   } while (blockRowsLeft != 0);
   return (int)streamCursor + (7 - (int)encodedFrame) & 0xfffffff8;

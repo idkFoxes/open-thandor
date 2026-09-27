@@ -280,28 +280,20 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
 
 
 /* Address: 0x004849D0.
-   Ownership: core/math/fixed.
-   Purpose: Returns floor(sqrt(x*x + y*y + z*z)). Typed parameters: p0 x→FixedMathVectorComponent32_V342, p1
-   y→FixedMathVectorComponent32_V342, p2 z→FixedMathVectorComponent32_V342. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: FixedMath_UInt64Sqrt.
+   Returns the length floor(sqrt(x*x + y*y + z*z)) of a 3D vector; the squares are summed in 64 bits so Q12
+   world coordinates cannot overflow, and the result has the same fixed-point scale as the components.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z)
 
 {
-  uint32_t vectorLengthQ12;
-  int64_t squaredLengthAccumulatorQ24;
-  
-  squaredLengthAccumulatorQ24 =
+  int64_t squaredLengthQ24;
+
+  squaredLengthQ24 =
        (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z + (int64_t)x * (int64_t)x;
-  vectorLengthQ12 =
-       FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
-                  (UInt64Half32)squaredLengthAccumulatorQ24);
-  return vectorLengthQ12;
+  return FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)squaredLengthQ24 >> 32),
+                              (UInt64Half32)squaredLengthQ24);
 }
 
 
@@ -460,11 +452,9 @@ void __cdecl CosineDerivedLookupTables_Init(void)
 
 
 /* Address: 0x004848C0.
-   Ownership: core/math/fixed.
-   Purpose: Writes a Q28 unit direction vector from two wrapping 16-bit angles. Kept distinct from Q12 coordinates,
-   Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed parameters: p1
-   elevationAngle→AngleTurn32, p2 azimuthAngle→AngleTurn32. Calling convention, storage, body bytes, control flow,
-   and executable data remain unchanged.
+   Writes the Q28 unit direction for an elevation and an azimuth angle (16-bit turns, 65536 = full circle):
+   x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el). The products are formed with the sum-to-product
+   identities, e.g. cos(az)cos(el) = (cos(az+el) + cos(az-el)) / 2, so only table lookups are needed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedMath_WriteDirectionQ28
@@ -472,32 +462,28 @@ FixedMath_WriteDirectionQ28
 
 {
   uint32_t azimuthPlusElevationAngle16;
+  uint32_t elevationAngle16;
   uint32_t azimuthMinusElevationAngle16;
-  uint32_t azimuthMinusElevationIndex16;
-  int32_t verticalSinQ28;
+  int32_t elevationSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
-  
-  azimuthMinusElevationAngle16 = elevationAngle & 0xffff;
-  verticalSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
-  azimuthPlusElevationAngle16 = azimuthMinusElevationAngle16 + azimuthAngle & 0xffff;
-  azimuthMinusElevationIndex16 = azimuthAngle - azimuthMinusElevationAngle16 & 0xffff;
+
+  elevationAngle16 = elevationAngle & 0xffff;
+  elevationSinQ28 = g_FixedSinQ28[elevationAngle16];
+  azimuthPlusElevationAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
+  azimuthMinusElevationAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
   azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
-  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationIndex16];
-  output->x = g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationIndex16] >> 1;
+  azimuthMinusElevationSinQ28 = g_FixedSinQ28[azimuthMinusElevationAngle16];
+  output->x = g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16] >> 1;
   output->y = azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28 >> 1;
-  output->z = verticalSinQ28;
-  return;
+  output->z = elevationSinQ28;
 }
 
 
 /* Address: 0x00484B00.
-   Ownership: core/math/fixed.
-   Purpose: Returns EAX=cos(angle)*scale and EDX=sin(angle)*scale, both using Q28 table multiplication. angle16 ->
-   (sin,cos) scaled pair, reg-pair return; feeds TerrainDirectionRecord vectors and the rotation basis builder.
-   Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Typed
-   parameters: p0 angle→AngleTurn32. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged.
+   Returns cos(angle) * scale in EAX and sin(angle) * scale in EDX for a 16-bit angle (65536 = full turn),
+   using the Q28 tables, so the results keep the scale's fixed-point format. Used for terrain direction
+   records and by the rotation basis builder.
 */
 FixedSinCosEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
@@ -506,10 +492,10 @@ FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
   uint32_t sinScaled;
   uint32_t cosScaled;
 
-  /* SHRD by 28 of the 64-bit products: bits 28..59 */
-  sinScaled = (uint32_t)((int64_t)g_FixedSinQ28[angle & 0xffff] * (int64_t)scale >> 0x1c);
-  cosScaled = (uint32_t)((int64_t)g_FixedCosQ28[angle & 0xffff] * (int64_t)scale >> 0x1c);
-  return (uint64_t)sinScaled << 0x20 | (uint64_t)cosScaled; /* EDX = sin, EAX = cos */
+  /* SHLD by 4 of the 64-bit products: bits 28..59, i.e. the Q28 factor is divided out */
+  sinScaled = (uint32_t)((int64_t)g_FixedSinQ28[angle & 0xffff] * (int64_t)scale >> 28);
+  cosScaled = (uint32_t)((int64_t)g_FixedCosQ28[angle & 0xffff] * (int64_t)scale >> 28);
+  return (uint64_t)sinScaled << 32 | (uint64_t)cosScaled; /* EDX = sin, EAX = cos */
 }
 
 
@@ -932,61 +918,60 @@ FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
 
 
 /* Address: 0x00484770.
-   Ownership: core/math/fixed.
-   Purpose: Builds a scaled direction vector. Register outputs are EAX=x, ECX=y, EDX=z. The declared 64-bit C
-   return models only EDX:EAX; ECX remains an extra output. Scaled direction vector from angle pair; projectile
-   velocity seeding in the shot creator. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment
-   ordinals, and raw renderer flags.
+   Returns the direction of an elevation and an azimuth angle (16-bit turns) multiplied by scale, in EAX (x),
+   ECX (y) and EDX (z): x = cos(az)cos(el) * scale, y = sin(az)cos(el) * scale, z = sin(el) * scale. The shot
+   creator uses it to seed projectile velocities. As in FixedMath_WriteDirectionQ28 the products come from
+   sum-to-product identities; the halving is folded into the shift (29 instead of 28).
 */
 FixedDirection
 FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
 
 {
-  int64_t scaledYComponentProduct;
-  uint32_t sumAngle16;
+  int64_t scaledYProduct;
+  uint32_t azimuthPlusElevationAngle16;
   uint32_t elevationAngle16;
-  uint32_t differenceAngle16;
+  uint32_t azimuthMinusElevationAngle16;
   FixedDirection scaledDirection;
-  int64_t scaledHorizontalComponentProduct;
-  
+  int64_t scaledXProduct;
+
   elevationAngle16 = elevationAngle & 0xffff;
-  sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
-  differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
-  scaledHorizontalComponentProduct =
-       (int64_t)(g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16]) * (int64_t)scale;
-  scaledYComponentProduct = (int64_t)(g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16]) * (int64_t)scale;
-  scaledDirection.z = (int)((uint64_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x20
+  azimuthPlusElevationAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
+  azimuthMinusElevationAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
+  scaledXProduct =
+       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16]) *
+       (int64_t)scale;
+  scaledYProduct =
+       (int64_t)(g_FixedSinQ28[azimuthPlusElevationAngle16] + g_FixedSinQ28[azimuthMinusElevationAngle16]) *
+       (int64_t)scale;
+  scaledDirection.z = (int)((uint64_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 32
                    ) << 4 |
-              (uint32_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x1c;
-  scaledDirection.y = (int)((uint64_t)scaledYComponentProduct >> 0x20) << 3 | (uint32_t)scaledYComponentProduct >> 0x1d;
-  scaledDirection.x = (int)((uint64_t)scaledHorizontalComponentProduct >> 0x20) << 3 |
-              (uint32_t)scaledHorizontalComponentProduct >> 0x1d;
+              (uint32_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 28;
+  scaledDirection.y = (int)((uint64_t)scaledYProduct >> 32) << 3 | (uint32_t)scaledYProduct >> 29;
+  scaledDirection.x = (int)((uint64_t)scaledXProduct >> 32) << 3 | (uint32_t)scaledXProduct >> 29;
   return scaledDirection;
 }
 
 
 /* Address: 0x004847E0.
-   Ownership: core/math/fixed.
-   Purpose: Builds a Q28 direction vector. Register outputs are EAX=x, ECX=y, EDX=z. The declared 64-bit C return
-   models only EDX:EAX; ECX remains an extra output. (heading, pitch) angle16 pair -> Q28 direction vector;
-   rotation-basis row builder. Kept distinct from Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and
-   raw renderer flags.
+   Returns the Q28 unit direction of an elevation and an azimuth angle (16-bit turns) in EAX (x), ECX (y) and
+   EDX (z): x = cos(az)cos(el), y = sin(az)cos(el), z = sin(el), formed like FixedMath_WriteDirectionQ28.
+   The rotation-basis builder uses it for its rows.
 */
 FixedDirection
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  uint32_t sumAngle16;
+  uint32_t azimuthPlusElevationAngle16;
   uint32_t elevationAngle16;
-  uint32_t differenceAngle16;
+  uint32_t azimuthMinusElevationAngle16;
   FixedDirection directionQ28;
-  
+
   elevationAngle16 = elevationAngle & 0xffff;
-  sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
-  differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
-  directionQ28.x = g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16] >> 1;
-  directionQ28.y = g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16] >> 1;
+  azimuthPlusElevationAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
+  azimuthMinusElevationAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
+  directionQ28.x = g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[azimuthMinusElevationAngle16] >> 1;
+  directionQ28.y = g_FixedSinQ28[azimuthPlusElevationAngle16] + g_FixedSinQ28[azimuthMinusElevationAngle16] >> 1;
   directionQ28.z = g_FixedSinQ28[elevationAngle16];
   return directionQ28;
 }
@@ -1120,17 +1105,13 @@ FixedTransform_Compose
 
 
 /* Address: 0x00484990.
-   Ownership: core/math/fixed.
-   Purpose: Calculates two wrapping 16-bit vector angles. EDX=elevation angle and ECX=azimuth angle; EAX is
-   preserved rather than used as a C return. Vector -> (heading, pitch) angle16 pair, reg-pair return. Typed
-   parameters: p0 x→FixedMathVectorComponent32_V342, p1 y→FixedMathVectorComponent32_V342, p2
-   z→FixedMathVectorComponent32_V342. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
+   Converts a vector, passed in the order z, y, x, into its direction angles (16-bit turns): EDX = elevation
+   atan2(z, sqrt(x*x + y*y)) and ECX = azimuth atan2(y, x); EAX is preserved. It is the inverse of
+   FixedMath_WriteDirectionQ28 and is used for aiming and view angles.
 */
 FixedVectorAngles __thandor_preserve_eax
 FixedMath_VectorToAngles3Regs
-          (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
+          (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
   uint32_t horizontalMagnitudeQ12;
@@ -1138,14 +1119,14 @@ FixedMath_VectorToAngles3Regs
   uint32_t azimuthAngle16;
   int64_t horizontalMagnitudeSquaredQ24;
   FixedVectorAngles vectorAngles;
-  
-  horizontalMagnitudeSquaredQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
+
+  horizontalMagnitudeSquaredQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
   horizontalMagnitudeQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)horizontalMagnitudeSquaredQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)horizontalMagnitudeSquaredQ24 >> 32),
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
-  elevationAngle16 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
-  azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
+  elevationAngle16 = FixedMath_Atan2Angle16(z,horizontalMagnitudeQ12);
+  azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
   vectorAngles.azimuthAngle = azimuthAngle16 & 0xffff;
   vectorAngles.elevationAngle = elevationAngle16;
   return vectorAngles;
@@ -1153,39 +1134,38 @@ FixedMath_VectorToAngles3Regs
 
 
 /* Address: 0x00484E70.
-   Ownership: core/math/fixed.
-   Purpose: Applies the 3x3 Q28 basis and then adds transform->translation. Point through 3x4 fixed transform
-   (rotate + translate).
+   Moves a point through a rigid transform: output = basis * point + translation, where each row is a Q28
+   dot product summed in 64 bits and shifted back by 28 (SHLD 4), so the point keeps its own scale.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_ApplyPoint
           (GraphicsFixedVec3 *output,GraphicsFixedVec3 *point,GraphicsFixedMatrix3x4 *transform)
 
 {
-  int basisRow2Component0Q28;
-  int64_t basisDotProductQ40;
-  int currentBasisRowComponent0Q28;
-  int64_t currentBasisDotProductQ40;
-  
-  currentBasisDotProductQ40 =
+  int row2FirstCoefficientQ28;
+  int64_t rowDotProduct;
+  int row1FirstCoefficientQ28;
+  int64_t firstRowDotProduct;
+
+  /* each row's first coefficient is loaded one output ahead, as in the original */
+  firstRowDotProduct =
        (int64_t)transform->basisRow0[1] * (int64_t)point->y +
        (int64_t)transform->basisRow0[0] * (int64_t)point->x +
        (int64_t)transform->basisRow0[2] * (int64_t)point->z;
-  currentBasisRowComponent0Q28 = transform->basisRow1[0];
-  output->x = ((int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint32_t)currentBasisDotProductQ40 >> 0x1c) + (transform->translation).x;
-  basisDotProductQ40 = (int64_t)transform->basisRow1[1] * (int64_t)point->y +
-          (int64_t)currentBasisRowComponent0Q28 * (int64_t)point->x +
+  row1FirstCoefficientQ28 = transform->basisRow1[0];
+  output->x = ((int)((uint64_t)firstRowDotProduct >> 32) << 4 |
+              (uint32_t)firstRowDotProduct >> 28) + (transform->translation).x;
+  rowDotProduct = (int64_t)transform->basisRow1[1] * (int64_t)point->y +
+          (int64_t)row1FirstCoefficientQ28 * (int64_t)point->x +
           (int64_t)transform->basisRow1[2] * (int64_t)point->z;
-  basisRow2Component0Q28 = transform->basisRow2[0];
-  output->y = ((int)((uint64_t)basisDotProductQ40 >> 0x20) << 4 | (uint32_t)basisDotProductQ40 >> 0x1c) +
+  row2FirstCoefficientQ28 = transform->basisRow2[0];
+  output->y = ((int)((uint64_t)rowDotProduct >> 32) << 4 | (uint32_t)rowDotProduct >> 28) +
               (transform->translation).y;
-  basisDotProductQ40 = (int64_t)transform->basisRow2[1] * (int64_t)point->y +
-          (int64_t)basisRow2Component0Q28 * (int64_t)point->x +
+  rowDotProduct = (int64_t)transform->basisRow2[1] * (int64_t)point->y +
+          (int64_t)row2FirstCoefficientQ28 * (int64_t)point->x +
           (int64_t)transform->basisRow2[2] * (int64_t)point->z;
-  output->z = ((int)((uint64_t)basisDotProductQ40 >> 0x20) << 4 | (uint32_t)basisDotProductQ40 >> 0x1c) +
+  output->z = ((int)((uint64_t)rowDotProduct >> 32) << 4 | (uint32_t)rowDotProduct >> 28) +
               (transform->translation).z;
-  return;
 }
 
 

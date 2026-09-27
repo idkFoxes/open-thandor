@@ -28,7 +28,8 @@
 #define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
 /* DLL binding (DynAPI_Bootstrap, DynAPI_Resolve, DynDLL_Load); the DLL/procedure name is left in
    g_PackageLastErrorPath */
-#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
+#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped; also
+   DynDLL_Unload: the module is not in the table or FreeLibrary failed */
 #define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
 #define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
 /* Subsystem startup (Graphics_Init, DirectSound_Init); names follow the failing step */
@@ -78,6 +79,12 @@
                                                 0x8000A */
 #define FATAL_ERROR_MODEL_DEFINITION_MISSING 0x3E /* ModelDefinitionRegistry_FindByIdWithError: the id is not in the
                                                      768-slot registry */
+#define FATAL_ERROR_MODEL_REGISTRY_FULL 0x3F /* ModelDefinition_RegisterAndResolveReferences: all 768 slots are
+                                                taken (768 is left in g_PackageLastErrorPath) */
+#define FATAL_ERROR_MODEL_ID_DUPLICATE 0x4B /* ModelDefinition_RegisterAndResolveReferences: the id is already
+                                               registered (the id is left in g_PackageLastErrorPath) */
+#define FATAL_ERROR_SPRITE_ASSET_INVALID 0x36 /* SpriteAsset_RegisterAndRelocatePointers: not an 'spr' asset of
+                                                 converter version 0x20007 */
 /* ROM registry (assets/rom/runtime) */
 #define FATAL_ERROR_ROM_REGISTRY_FULL 0x3B /* RomAssetRecord_RegisterAndRelocate: all 256 slots are taken; the
                                               path "engine\zentrale.rom" is left in g_PackageLastErrorPath */
@@ -103,6 +110,8 @@
 #define FATAL_ERROR_ARMY_ID_NOT_FOUND 0x41 /* ArmyAssetRegistry_FindById: id not registered (the id is left in
                                               g_PackageLastErrorPath) */
 #define FATAL_ERROR_ARMY_REGISTRY_FULL 0x42 /* all 768 army registry slots are taken */
+#define FATAL_ERROR_ARMY_ID_DUPLICATE 0x4C /* ArmyAssetRecord_RegisterAndRelocate: an army id is registered twice
+                                              (the id is left in g_PackageLastErrorPath) */
 /* Display mode switch (GraphicsDirectDraw_ApplyDisplayModeAndCreateResources); the number of completed setup
    steps is left in g_PackageLastErrorPath. Named after the failing step. */
 #define FATAL_ERROR_DIRECTDRAW_CREATE 0x19 /* DirectDrawCreate, SetCooperativeLevel or the IDirectDraw2 query */
@@ -114,6 +123,13 @@
 #define FATAL_ERROR_DIRECT3D_CREATE_DEVICE 0x1F /* IDirect3D2::CreateDevice */
 #define FATAL_ERROR_DIRECT3D_VIEWPORT 0x20 /* viewport creation, AddViewport or SetCurrentViewport */
 #define FATAL_ERROR_DIRECT3D_TEXTURE_FORMAT 0x21 /* EnumTextureFormats failed or found no opaque/alpha format */
+/* Loadable 'fnc' code modules (assets/fnc/runtime.c) */
+#define FATAL_ERROR_FNC_MODULE_INVALID 0x62 /* the image does not start with the 'fnc' signature */
+#define FATAL_ERROR_FNC_MODULE_BINDING 0x63 /* FncModule_LoadAndRelocate: bindingMode is not 0 (the linear
+                                               reservation's own error replaces it when that fails);
+                                               FncModule_GetExportByIndex: the export index is out of range */
+/* GraphicsTextureSet_AllocateMetadata: an image of a texture set is not a power of two wide and high */
+#define FATAL_ERROR_TEXTURE_SIZE_NOT_POWER_OF_TWO 0x2F
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

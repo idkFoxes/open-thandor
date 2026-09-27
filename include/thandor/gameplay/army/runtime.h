@@ -106,7 +106,7 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 /* 0x0051D310 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *runtimeState);
+ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051D330 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -115,7 +115,7 @@ ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime);
 /* 0x0051D350 */
 bool __thandor_cf_preserve_eax_edx
 ArmyRuntimeNode_DispatchTypedCallback
-          (ArmyRuntimeSlot **modelRuntimeHolder,WorldRuntimeContext *worldRuntime);
+          (ArmyRuntimeSlot **armyRuntimeHolder,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051D4D0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -239,8 +239,8 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
 /* 0x005273D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestPositionDistanceWithinCombinedRadius
-          (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidatePositionRuntime,
-          void *sourcePositionRuntime);
+          (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidateModelNode,
+          void *sourceModelNode);
 
 /* 0x005297D0 */
 void __thandor_void_preserve_eax_ecx_edx

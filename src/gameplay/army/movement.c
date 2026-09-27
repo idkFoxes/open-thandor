@@ -328,12 +328,9 @@ ArmyArticulatedMovement_CommitPositionSuspensionAndTransforms:
 
 
 /* Address: 0x0051C5A0.
-   Ownership: gameplay/army/movement.
-   Purpose: Resolves the current command target, stores the target state, and starts a route toward the resolved
-   target model position when a valid target exists. Two stack arguments are authoritative from RET 0x08; prior
-   synthetic fastcall parameters are removed.
-   Local calls: ArmyRuntime_ResetMovementStatePreserveQueuedTarget,
-   ArmyRuntime_ResetMovementStateFromCurrentPosition, ArmyRuntime_StartMoveCommandWithFallbackWaypoints.
+   Makes targetRuntime the army's command target: a running movement (movement flag 0x20) is reset first, then
+   the army starts a route to the target's current world position under the standard command generation.
+   A null target clears the command instead.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResolveCommandTargetAndRoute
@@ -341,10 +338,11 @@ ArmyRuntime_ResolveCommandTargetAndRoute
 
 {
   ArmyCommandGeneration standardGeneration;
-  ModelRuntimeNode *modelNode1;
-  
+  ModelRuntimeNode *targetModelNode;
+
   standardGeneration = g_ArmyCommandGenerationStandard;
   if ((armyRuntime->movementStateFlags & 0x20) != 0) {
+    /* command mode 8 is set by the AI combat target selection */
     if ((armyRuntime->commandModeFlags & 8) == 0) {
       ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
     }
@@ -352,16 +350,16 @@ ArmyRuntime_ResolveCommandTargetAndRoute
       ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
     }
   }
-  if (targetRuntime == (GameEntityRuntime *)0x0) {
+  if (targetRuntime == NULL) {
     armyRuntime->commandModeFlags = 0;
     armyRuntime->commandGeneration = 0;
   }
   else {
     armyRuntime->commandGeneration = standardGeneration;
     armyRuntime->commandModeFlags = 1;
-    modelNode1 = (targetRuntime->common).ownership.modelNode;
+    targetModelNode = (targetRuntime->common).ownership.modelNode;
     ArmyRuntime_StartMoveCommandWithFallbackWaypoints
-              ((modelNode1->worldTransform).translation.y,(modelNode1->worldTransform).translation.x
+              ((targetModelNode->worldTransform).translation.y,(targetModelNode->worldTransform).translation.x
                ,(ArmyMovementRuntime *)armyRuntime);
   }
   armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)targetRuntime;

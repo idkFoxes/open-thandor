@@ -161,8 +161,10 @@ CursorEventResult __thandor_input_event_regs_cf GraphicsCursor_ConsumeNextInputE
 
 
 /* Address: 0x00486430.
-   Ownership: graphics/core/runtime.
-   Purpose: Projects one view-space fixed-point point.
+   Perspective-projects one view-space Q12 point to screen coordinates (EAX = x, EDX = y): the perspective scale
+   is the 64-bit projection numerator divided by z, x and y are scaled by it and offset by the projection
+   centre. Points with z not above the numerator's high dword (behind or too close to the eye, where the
+   32-bit IDIV would overflow) project to (0,0).
 */
 GraphicsProjectedPointPair __thandor_eax_edx_cf_preserve_ecx
 Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
@@ -178,6 +180,7 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
     perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, int64_t, g_ProjectionNumerator) / (int64_t)viewPoint->z);
     projectedXProduct = (int64_t)viewPoint->x * (int64_t)perspectiveScaleQ12;
     projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
+    /* SHLD EDX,EAX,20: bits 12..43 of the 64-bit product, i.e. the Q12 product shifted back by 12 */
     projectedPoint.projectedY =
          ((int)((uint64_t)projectedYProduct >> 0x20) << 0x14 | (uint32_t)projectedYProduct >> 0xc) +
          g_ProjectionCenterFixed.component1;
@@ -982,10 +985,10 @@ Graphics_DrawPrimitiveQueue
 
 
 /* Address: 0x0057A330.
-   Ownership: graphics/core/runtime.
-   Purpose: Glide delegates to direct framebuffer composition.
-   Local calls: GraphicsCursor_SaveSurfaceBackground, GraphicsCursor_RestoreSurfaceBackground.
-   Cross-module calls: Glide3_Cursor_ComposeBeforePresent [graphics/backend/glide].
+   Draws the software mouse cursor into backSurface before it is presented (the animation timer also redraws it
+   on the primary surface when it moved): the background under the cursor is saved twice (once to draw on, once for GraphicsCursor_RestoreAfterPresent), the cursor frame is
+   blended onto the first copy (the pressed image while a mouse button is down) and that copy is written back.
+   The visibility token is latched so the restore matches what was drawn. Glide draws its cursor itself.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
@@ -996,10 +999,10 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
   GraphicsCursorFrameRecord *cursorFrame;
   UiPixelCoordinate cursorY;
   int drawY;
-  
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 != 1) {
+
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
     g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
-    if (-1 < g_CursorVisibilityToken) {
+    if (-1 < g_CursorVisibilityToken) { /* a negative token hides the cursor */
       cursorX = g_MouseX;
       cursorY = g_MouseY;
       if (g_CursorUseOverridePosition != 0) {
@@ -1014,9 +1017,10 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
       GraphicsCursor_SaveSurfaceBackground(g_CursorCompositeBuffer,drawY,cursorX,backSurface);
       GraphicsCursor_SaveSurfaceBackground(g_CursorSavedBackground,drawY,cursorX,backSurface);
       cursorSubresourceIndex = cursorFrame->activeSubresourceIndex;
-      if ((g_CursorButtonState & 7) == 0) {
+      if ((g_CursorButtonState & 7) == 0) { /* none of the three mouse buttons is down */
         cursorSubresourceIndex = cursorFrame->idleSubresourceIndex;
       }
+      /* the composite buffer holds the saved rectangle at its origin, so the cursor is drawn at (0,0) */
       g_GraphicsTextureSourceBlitSourceAlpha
                 (g_FramebufferHeight,g_FramebufferWidth,0,0,0,0,cursorSubresourceIndex,g_CursorSourceAsset,
                  g_CursorCompositeBuffer);
@@ -1030,18 +1034,17 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
 
 
 /* Address: 0x0057A2C0.
-   Ownership: graphics/core/runtime.
-   Purpose: Restores the saved DirectDraw background after the cursor-containing back surface has been presented.
-   Hidden cursors skip restoration. Glide delegates to a one-argument no-op because its cursor is drawn directly
-   into the locked framebuffer.
-   Local calls: GraphicsCursor_RestoreSurfaceBackground.
-   Cross-module calls: Glide3_Cursor_RestoreAfterPresentNoOp [graphics/backend/glide].
+   Removes the software cursor from backSurface again by writing back the background that
+   GraphicsCursor_ComposeBeforePresent saved, so the surface is clean again (for the next frame or for drawing
+   the cursor at its new position). Skipped when the
+   cursor was hidden at compose time; Glide calls a no-op because it draws the cursor directly into the
+   locked framebuffer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
 
 {
-  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == 1) {
+  if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == GRAPHICS_ADAPTER_GUID_GLIDE) {
     Glide3_Cursor_RestoreAfterPresentNoOp(backSurface);
     return;
   }

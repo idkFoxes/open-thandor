@@ -268,19 +268,19 @@ GraphicsPrimitiveQueue_RadixSortForRendering
 
 
 /* Address: 0x004D0A10.
-   Ownership: graphics/render/primitives.
-   Purpose: Allocates 0x20 + capacity * 0xA0 bytes for the global primitive queue pool. ABI: CF clear means
-   success. CF set means failure or end of iteration.
+   Allocates the global primitive queue pool for packetCapacity packets (header, two nodes and one packet
+   each) and remembers the capacity for GraphicsPrimitiveQueue_ResetGlobal. CF set with the arena error
+   when the allocation fails; g_PrimitiveQueueStorage is then left unchanged.
 */
 StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
-  bool allocationSizeOverflow;
   ArenaAllocResult allocResult;
   
   g_PrimitiveQueuePoolCapacity = packetCapacity;
-  allocResult = g_MemoryApi.alloc(packetCapacity * 0xa0 + 0x20);
+  allocResult = g_MemoryApi.alloc(packetCapacity * GRAPHICS_PRIMITIVE_QUEUE_BYTES_PER_PACKET +
+                                  GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES);
   allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return StatusValue_Fail(allocResult.payloadOrError);
@@ -341,9 +341,9 @@ uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(Graphics
 
 
 /* Address: 0x004D0AA0.
-   Ownership: graphics/render/primitives.
-   Purpose: Returns traversalCursor->packet and advances traversalCursor to node->next. ABI: CF clear means
-   success. CF set means failure or end of iteration.
+   Starts walking a sorted primitive queue: returns the packet of the node at traversalCursor (set by
+   GraphicsPrimitiveQueue_RadixSortForRendering) and advances the cursor to the next node. CF set when the
+   queue is empty; GraphicsPrimitiveQueue_Next continues the walk.
 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
@@ -362,15 +362,14 @@ GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
   }
   failureResult.noPacket = true;
   /* Empty queue: the original leaves EAX untouched; every caller stops on CF without reading it. */
-  failureResult.packet = (GraphicsPrimitivePacket *)0;
+  failureResult.packet = NULL;
   return failureResult;
 }
 
 
 /* Address: 0x004D0AE0.
-   Ownership: graphics/render/primitives.
-   Purpose: Returns traversalCursor->packet and advances until the 0xFFFFFFFF sentinel. ABI: CF clear means
-   success. CF set means failure or end of iteration.
+   Continues a walk begun by GraphicsPrimitiveQueue_Begin: returns the packet of the node at traversalCursor
+   and advances the cursor. CF set once the cursor reaches GRAPHICS_PRIMITIVE_QUEUE_END_NODE.
 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
@@ -382,7 +381,7 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
   GraphicsPrimitivePacket *currentTraversalPacket;
   
   currentTraversalNode = queue->traversalCursor;
-  if (currentTraversalNode != (GraphicsPrimitiveQueueNode *)0xffffffff) {
+  if (currentTraversalNode != GRAPHICS_PRIMITIVE_QUEUE_END_NODE) {
     currentTraversalPacket = currentTraversalNode->packet;
     queue->traversalCursor = currentTraversalNode->next;
     successResult.noPacket = false;
@@ -390,6 +389,7 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
     return successResult;
   }
   failureResult.noPacket = true;
+  /* EAX still holds the end-node marker */
   failureResult.packet = (GraphicsPrimitivePacket *)0xffffffff;
   return failureResult;
 }

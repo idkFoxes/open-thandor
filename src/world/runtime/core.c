@@ -495,8 +495,8 @@ WorldRuntimeNode_IsPositionInsideBounds
 
 
 /* Address: 0x0050D260.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime capture motion state to snapshot.
+   Saves the camera (position, magnitude, heading, pitch and committed distance) into worldRuntime->snapshot,
+   to be restored later by WorldRuntime_RestoreMotionStateFromSnapshot.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
@@ -634,17 +634,14 @@ WorldRuntime_ToggleFlags(WorldRuntimeFlags flags,WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D610.
-   Ownership: world/runtime/core.
-   Purpose: Returns the three dwords at context offsets 0x60, 0x64, and 0x68 through EAX, ECX, and EDX
-   respectively. The three-register return cannot be represented by an ordinary C prototype.
+   Returns the camera position (motion.positionX/Y/ZQ12, context +0x60..+0x68) in EAX, ECX and EDX.
 */
 WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 
 {
   WorldVector0EaxEcxEdx12 positionVector;
-  
-  /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
-  positionVector.xQ12 = (world->motion).positionXQ12;
+
+  positionVector.xQ12= (world->motion).positionXQ12;
   positionVector.yQ12 = (world->motion).positionYQ12;
   positionVector.zQ12 = (world->motion).positionZQ12;
   return positionVector;
@@ -652,17 +649,15 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world)
 
 
 /* Address: 0x0050D630.
-   Ownership: world/runtime/core.
-   Purpose: Returns the three dwords at context offsets 0x6C, 0x70, and 0x74 through EAX, ECX, and EDX
-   respectively. The three-register return cannot be represented by an ordinary C prototype.
+   Returns the camera orientation (motion.positionMagnitudeQ12, headingAngle, pitchAngle, context
+   +0x6C..+0x74) in EAX, ECX and EDX.
 */
 WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
 
 {
   WorldVector1EaxEcxEdx12 motionVector;
-  
-  /* Ghidra split the ECX/EDX halves of the return into uVar2._4_4_ and register0x00000008. */
-  motionVector.magnitudeQ12 = (world->motion).positionMagnitudeQ12;
+
+  motionVector.magnitudeQ12= (world->motion).positionMagnitudeQ12;
   motionVector.headingAngle = (world->motion).headingAngle;
   motionVector.pitchAngle = (world->motion).pitchAngle;
   return motionVector;
@@ -913,10 +908,10 @@ void RuntimeHexSegment_AfterFieldImageNoOp(InGameFieldImageSaveContext58 *fieldI
 }
 
 /* Address: 0x0051BFA0.
-   Ownership: world/runtime/core.
-   Purpose: Owner-list callback that clears runtime-node fields which still reference a model or object being
-   released. The node representation is selected by its verified kind field at +0xA4.
-   Cross-module calls: ModelRuntimeHierarchy_ClearMatchingTargetRecursive [world/model/hierarchy].
+   Callback of WorldRuntime_ForEachNodeInOwnerListD8 from ArmyRuntime_DestroyInstanceAndRefreshUi: removes
+   every reference to the destroyed object from one world node, so nothing keeps targeting it. For a model
+   node: its hierarchy's targets and two fields of the entity linked at payload dword 2; for an effect node:
+   its target at +0x1C.
 */
 void __thandor_preserve_eax_edx
 WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwnerListNode100 *node)
@@ -928,10 +923,12 @@ WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwn
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
     modelRuntime = node->runtimePayload;
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,modelRuntime);
+    /* the entity that owns the model (payload dword 2) */
     linkedRuntimeStateAddress = modelRuntime[2];
-    if (releasedObject == *(void **)(linkedRuntimeStateAddress + 0x98)) {
+    if (releasedObject== *(void **)(linkedRuntimeStateAddress + 0x98)) {
       *(uint32_t *)(linkedRuntimeStateAddress + 0x98) = 0;
     }
+    /* +0x1C is only a live reference while bit 0 of +0x2C is set; bits 0, 2 and 3 are cleared with it */
     if (((*(uint32_t *)(linkedRuntimeStateAddress + 0x2c) & 1) != 0) &&
        (releasedObject == *(void **)(linkedRuntimeStateAddress + 0x1c))) {
       *(uint32_t *)(linkedRuntimeStateAddress + 0x1c) = 0;

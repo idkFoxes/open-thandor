@@ -328,10 +328,8 @@ StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetH
 
 
 /* Address: 0x0051B740.
-   Ownership: assets/army/catalog.
-   Purpose: Resolves an army asset by registry identifier and returns success only when the asset is present and
-   its verified enabled flag is set.
-   Local calls: ArmyAssetRegistry_FindById.
+   Checks whether an army asset id is registered and enabled: returns false (CF clear) only when the record
+   exists and bit 0 of its flags dword (+0x14) is set, true when it is missing or disabled.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
@@ -339,10 +337,11 @@ ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 {
   bool missingOrDisabled;
   ArmyAssetLookupResult registryLookup;
-  
+
   registryLookup = ArmyAssetRegistry_FindById(recordId);
   missingOrDisabled = registryLookup.notFound;
   if (!missingOrDisabled) {
+    /* [1].selectionDetailTemplateVariantIndex is the flags dword +0x14; bit 0 = enabled */
     missingOrDisabled = (registryLookup.recordOrError[1].selectionDetailTemplateVariantIndex & 1) == 0;
   }
   return missingOrDisabled;
@@ -427,32 +426,29 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedAr
 }
 
 
+/* Armour of one model-tree node (dword +0x60 of the definition the faction has unlocked for it) plus that of
+   all its children (count at +0x08, pointers from +0x0C). */
 static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
   ModelDefinitionResult selected;
-  uint32_t sum;
-  uint32_t i;
+  uint32_t armourSum;
+  uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  sum = *(uint32_t *)((uint8_t *)selected.modelDefinition + 0x60);
-  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
-    uint8_t *child = *(uint8_t **)(node + 0xc + i * 4);
-    if (child != (uint8_t *)0x0) {
-      sum = sum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
+  armourSum = *(uint32_t *)((uint8_t *)selected.modelDefinition + 0x60);
+  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
+    uint8_t *child = *(uint8_t **)(node + 0xc + childIndex * 4);
+    if (child != NULL) {
+      armourSum = armourSum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
     }
   }
-  return sum;
+  return armourSum;
 }
 
 /* Address: 0x0051C170.
-   Ownership: assets/army/catalog.
-   Purpose: Traverses the linked model-definition hierarchy, resolves the faction-unlocked definition at each node,
-   and sums the dword at definition offset 0x60. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId,
-   active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains. Typed
-   parameters: p3 definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
+   Sums the armour (model-definition dword +0x60) over an army record's whole model tree, taking at each node
+   the linked definition the faction has unlocked, so the in-game detail display shows the armour of the
+   current upgrades.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedArmour
@@ -465,35 +461,31 @@ ArmyAssetHierarchy_SumFactionUnlockedArmour
 }
 
 
+/* Displayed energy (Q4 dword +0x18C) of the definition the faction has unlocked for one model-tree node, plus
+   that of its children when the definition's flags (+0x68) have bit 0x80 set. */
 static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
   ModelDefinitionResult selected;
-  EnergyDemandQ4 sum;
+  EnergyDemandQ4 energySum;
   uint32_t childCount;
-  uint32_t i;
+  uint32_t childIndex;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  sum = *(EnergyDemandQ4 *)((uint8_t *)selected.modelDefinition + 0x18c);
+  energySum = *(EnergyDemandQ4 *)((uint8_t *)selected.modelDefinition + 0x18c);
   childCount = *(uint32_t *)(node + 8);
   if ((*(uint32_t *)((uint8_t *)selected.modelDefinition + 0x68) & 0x80) == 0) {
     childCount = 0; /* only definitions with flag 0x80 contribute their children */
   }
-  for (i = 0; i < childCount; i++) {
-    sum = sum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(node + 0xc + i * 4));
+  for (childIndex = 0; childIndex < childCount; childIndex++) {
+    energySum = energySum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(node + 0xc + childIndex * 4));
   }
-  return sum;
+  return energySum;
 }
 
 /* Address: 0x0051C2C0.
-   Ownership: assets/army/catalog.
-   Purpose: Traverses the linked model-definition hierarchy, resolves the faction-unlocked definition at each node,
-   and sums the dword at definition offset 0x18C. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId,
-   active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains. Typed
-   parameters: p3 definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Sums faction-unlocked MDL +0x18C values across the
-   model hierarchy.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
+   Sums the displayed energy value (model-definition Q4 dword +0x18C) over an army record's model tree, taking
+   at each node the linked definition the faction has unlocked; children only count below definitions with
+   flag 0x80. Used by the in-game detail display.
 */
 EnergyDemandQ4 __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
@@ -572,16 +564,6 @@ ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
 }
 
 
-/* Address: 0x0051B4A0.
-   Ownership: assets/army/catalog.
-   Purpose: Rejects duplicate registryId values, inserts the record into the first free entry of the fixed
-   768-pointer registry, converts rootNodeOffsetOrPointer to an absolute pointer using the asset base, and
-   recursively prepares nested model references and child offsets. CF status and EAX errors are preserved. Role:
-   Registers an army/placeable record and resolves its root model definition. Inputs: Serialized army asset record
-   with model-definition ID/offset. Outputs: Army/placeable definition linked to a ModelDefinition.
-   Local calls: ArmyAssetRegistry_FindById.
-   Cross-module calls: ModelDefinitionRegistry_FindBuildMetricTupleById [assets/model/definitions].
-*/
 /* Relocates one node of an army record's model tree and all of its children (offsets 0x0C + 4*i,
    count at +0x08) against assetBase, adding each node's model-definition build metrics (looked up by
    the id at +0x20) to the record. Returns the last lookup error, or 0. */
@@ -615,6 +597,12 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   return error;
 }
 
+/* Address: 0x0051B4A0.
+   Registers a loaded army record: rejects an id that is already registered (FATAL_ERROR_ARMY_ID_DUPLICATE), puts
+   the record into the first free slot of the 768-slot army registry (FATAL_ERROR_ARMY_REGISTRY_FULL when none is
+   left), turns its model-tree offsets into pointers against assetBase and adds the build metrics of every node's
+   model definition to the record. CF set on failure with the error code in EAX.
+*/
 StatusResult __thandor_void_preserve_ecx_edx
 ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
@@ -632,12 +620,12 @@ ArmyAssetRecord_RegisterAndRelocate
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
     status.failed = true;
-    status.valueOrError = 0x4c;
+    status.valueOrError = FATAL_ERROR_ARMY_ID_DUPLICATE;
     return status;
   }
   slot = g_ArmyAssetRecordRegistry;
-  for (slotsRemaining = 0x300; slotsRemaining != 0; slotsRemaining = slotsRemaining + -1) {
-    if (*slot == (ArmyAssetRecordPrefix *)0x0) {
+  for (slotsRemaining = ARMY_ASSET_REGISTRY_SLOT_COUNT; slotsRemaining != 0; slotsRemaining--) {
+    if (*slot == NULL) {
       uint32_t error = 0;
       *slot = (ArmyAssetRecordPrefix *)record;
       if (record->rootNodeOffsetOrPointer != 0) {
@@ -651,9 +639,9 @@ ArmyAssetRecord_RegisterAndRelocate
     }
     slot = slot + 1;
   }
-  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
+  g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,ARMY_ASSET_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
   status.failed = true;
-  status.valueOrError = 0x42;
+  status.valueOrError = FATAL_ERROR_ARMY_REGISTRY_FULL;
   return status;
 }
 

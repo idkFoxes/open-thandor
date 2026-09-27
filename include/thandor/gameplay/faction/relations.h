@@ -47,7 +47,7 @@ GameFactionRelations_EvaluateTransitionRules
 
 /* 0x0053C490 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsResetEligibleState
+GameFactionRelations_IsNotResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C4D0 */

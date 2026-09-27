@@ -122,7 +122,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 /* 0x0053A980 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiFactionRuntime_TestPlanningCapacityExceeded
-          (uint32_t additionalPlanningCapacity,FactionRuntimeIndex factionIndex);
+          (uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex);
 
 /* 0x0053A2A0 */
 AiCandidateScore32 __thandor_eax_preserve_ecx_edx

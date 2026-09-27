@@ -104,7 +104,7 @@ FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void);
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetReadyFlagById
           (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,
-          FrontendReadyFlagMask readyFlagMask);
+          FrontendReadyFlagMask slowRenderingFlag);
 
 /* 0x0055F5A0 */
 void __thandor_void_preserve_eax_ecx_edx

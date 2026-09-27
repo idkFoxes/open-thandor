@@ -38,9 +38,9 @@ FrontendCommandQueue_EnqueueLocalPlayerCommand
 
 
 /* Address: 0x00543FB0.
-   Ownership: network/protocol/commands.
-   Purpose: Writes one UiCommandQueueRecord into FrontendCommandPacketRecord.command at +0x10, or clears the packed
-   command dword when the queue is empty. Lobby stack dequeue into a FrontendCommandPacketRecord (0x20 batch unit).
+   Takes the oldest queued lobby command for the outgoing network batch: copies the first 16-byte queue
+   record into outputRecord->command and shifts the remaining records down by one. An empty queue only
+   writes a zero packed command dword.
 */
 void __thandor_void_preserve_ecx_edx
 FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
@@ -55,13 +55,13 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
   
   queueEndSnapshot = g_FrontendCommandQueueEnd;
   if (g_FrontendCommandQueueEnd == g_FrontendCommandQueueRecords) {
-    (outputRecord->command).packedCommandAndPlayerId = 0;
+    outputRecord->command.packedCommandAndPlayerId = 0;
     return;
   }
   copySourceCursor = g_FrontendCommandQueueRecords;
   outputRecordWriteCursor = &outputRecord->command;
-  for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0;
-      firstRecordDwordsRemaining = firstRecordDwordsRemaining + -1) {
+  /* dword-wise copies (REP MOVSD in the original) */
+  for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     outputRecordWriteCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
     copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
@@ -69,13 +69,13 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
   copyDestinationCursor = g_FrontendCommandQueueRecords;
   trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_FrontendCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
-    for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
+    for (; trailingDwordCount != 0; trailingDwordCount--) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
       copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
       copyDestinationCursor = (UiCommandQueueRecord *)&copyDestinationCursor->payloadDword04;
     }
   }
-  g_FrontendCommandQueueEnd = g_FrontendCommandQueueEnd + -1;
+  g_FrontendCommandQueueEnd--;
   return;
 }
 

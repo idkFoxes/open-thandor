@@ -78,13 +78,9 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
 
 
 /* Address: 0x00538000.
-   Ownership: gameplay/ai/technology.
-   Purpose: Rejects a technology already represented by an active workspace entity or already unlocked for the
-   faction, then verifies all eight prerequisite masks. CF is clear only when the technology is currently available
-   for planning. Stock tech.tec has 512 records over canonical ids 0..255; localized titles do not prove source-
-   building, tier, direction, or effect mappings. Typed parameters: p3
-   factionRecordOffset→FactionRuntimeRecordByteOffset_V344. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
+   Returns false (CF clear) when the AI may plan this technology: no workspace-00 structure is already working
+   on it (runtimeFlags & 0xC0 with the technology id at +0x100), the faction (factionRecordOffset = faction *
+   0x740) has not unlocked it yet, and all eight prerequisite mask words are covered by its unlocked technologies.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiTechnologyCandidate_IsCurrentlyAvailable
@@ -95,16 +91,17 @@ AiTechnologyCandidate_IsCurrentlyAvailable
   AiWorkspaceRuntimeSlotAddress32 runtimeSlotAddress;
   int remainingCount;
   AiWorkspace00EntryView8 *workspaceEntry;
-  
+
   workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
-  for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount--) {
     runtimeSlotAddress = workspaceEntry->runtimeSlotAddressOrZero;
     if (((runtimeSlotAddress != 0) && ((*(uint32_t *)(runtimeSlotAddress + 0xec) & 0xc0) != 0)) &&
        (technologyIndex == *(PckTechnologyIdCatalog *)(runtimeSlotAddress + 0x100))) {
       return true;
     }
-    workspaceEntry = workspaceEntry + 1;
+    workspaceEntry++;
   }
+  /* the first test reads the unlock bit in technologyMasks256Bits (faction record +0x6E0) */
   if ((((((*(uint32_t *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
           1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
         ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
@@ -146,10 +143,10 @@ AiTechnologyCandidate_IsCurrentlyAvailable
 
 
 /* Address: 0x00538140.
-   Ownership: gameplay/ai/technology.
-   Purpose: Appends one technology candidate and source entity to the 32-entry planning workspace and derives its
-   category count from verified technology IDs and source entity classes. Stock tech.tec has 512 records over
-   canonical ids 0..255; localized titles do not prove source-building, tier, direction, or effect mappings.
+   Appends a technology that the source structure can research to the technology candidate list (workspace 12,
+   at most 32; the pioneer vehicle is never added) and picks its score function: walls 0, mine and pump
+   improvements 1, source of runtime class 11 2, of class 13 or 22 3, radar and AR-M silo technologies 4,
+   everything else 5. The register values of the caller's loop pass through unchanged.
 */
 AiTechnologyPlanningLoopRegisterContinuityResult
 AiTechnologyPlanning_AddCandidateRecord
@@ -164,11 +161,12 @@ AiTechnologyPlanning_AddCandidateRecord
   
   candidateIndex = g_AiWorkspace12Count;
   candidateBuffer = g_AiWorkspaceBuffer12_Size0200;
-  if ((g_AiWorkspace12Count < 0x20) && (technologyId != TEC_011_PIONEER_VEHICLE)) {
+  if ((g_AiWorkspace12Count < AI_WORKSPACE12_CAPACITY) && (technologyId != TEC_011_PIONEER_VEHICLE)) {
     g_AiWorkspaceBuffer12_Size0200[g_AiWorkspace12Count].technologyId00 = technologyId;
     candidateBuffer[candidateIndex].sourceArmyRuntime04 = sourceArmyRuntime;
     candidateBuffer[candidateIndex].scoreKind08 = AI_TECHNOLOGY_SCORE_DEFAULT_ZERO;
-    g_AiWorkspace12Count = g_AiWorkspace12Count + 1;
+    g_AiWorkspace12Count++;
+    /* each test passed raises the score kind by one; the first match stops the chain */
     sourceArmyModelDefinition =
          (MdlDefinitionSemanticPrefix80 *)
          (sourceArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime;

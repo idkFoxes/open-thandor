@@ -11,15 +11,9 @@
 /* Implementation ownership: gameplay/ai/placement. */
 
 /* Address: 0x0053A110.
-   Ownership: gameplay/ai/placement.
-   Purpose: Queries the mode-seven placement count for one workspace record and, when the count falls within the
-   supported range, requests an additional separated special-site record using the remainder position. Stock ARM
-   contains 675 records and 326 unique ids; placement workspace, producer, tier, class, and faction-role semantics
-   are not inferred from numeric adjacency. Typed parameters: p3
-   workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: AiPlacement_ReserveSeparatedSpecialSiteChain.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Tests whether one more special site of this asset fits at a workspace-08 cell: the mode-7 placement query must
+   report a nonzero count, the mode-4 query must fail, and the count rounded up to whole separation quanta must be
+   at most 4; the result is then that of AiPlacement_ReserveSeparatedSpecialSiteChain. CF (true) means rejected.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_ReserveAdditionalSpecialSite
@@ -29,24 +23,25 @@ AiPlacement_ReserveAdditionalSpecialSite
 {
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
-  uint32_t normalAnglesOrQuantum;
+  uint32_t headingOrQuantum;
   bool chainFailed;
   PlacementDispatchResult dispatchResult;
-  
+
   knowledgeData = g_AiKnowledgeData;
-  normalAnglesOrQuantum = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
+  headingOrQuantum = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                    (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,normalAnglesOrQuantum,
+                    (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrQuantum,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
                      (UiRootNode *)worldRuntime);
   placementCount = dispatchResult.value;
   if ((!dispatchResult.failed) && (placementCount != 0)) {
     dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                      (4,0,normalAnglesOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                      (4,0,headingOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                        factionIndex,(UiRootNode *)worldRuntime);
+    /* ceil(placementCount / quantum) < 5 */
     if ((dispatchResult.failed) &&
-       (normalAnglesOrQuantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-       ((placementCount - 1) + normalAnglesOrQuantum) / normalAnglesOrQuantum < 5)) {
+       (headingOrQuantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
+       ((placementCount - 1) + headingOrQuantum) / headingOrQuantum < 5)) {
       chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
                         (armyAssetId,workspaceRecord,factionIndex,worldRuntime);
       return chainFailed;
@@ -104,21 +99,17 @@ AiCandidatePlanning_AddSpecialSiteCandidate
 
 
 /* Address: 0x00537B20.
-   Ownership: gameplay/ai/placement.
-   Purpose: Adds the current field cell to the 32-entry general site workspace when it is sufficiently separated
-   from existing entries. The stored score combines minimum Manhattan distances to three AI workspaces with
-   configured knowledge weights. Score-A site filler (buffer 05, 32 entries): reads the KI Score-A block
-   (+0x80..+0xA0) CORRECTLY — the contrast case for the Score-B wrong-base bug below.
-   Cross-module calls: AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces].
+   Adds a field cell to the general site list (workspace 05, at most 32 entries) unless an entry already lies
+   closer than generalSiteMinimumAxisSeparationQ12 on both axes. The entry's score rewards closeness to the
+   primary workspace and distance (capped) from workspaces 02 and 01, weighted by the ki.dat parameters at
+   +0x84..+0xA0; unlike the flagged-site list below, these parameters are read from the right base.
 */
 void __thandor_void_preserve_ecx_edx
 AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
 
 {
-  Q12 worldY;
-  Q12 worldX;
+  Q12 cellWorldX;
+  Q12 cellWorldY;
   uint32_t primaryCapOrWeight;
   uint32_t workspace02CapOrWeight;
   uint32_t secondaryDistanceCap;
@@ -134,32 +125,32 @@ AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
   siteEntry = g_AiWorkspaceBuffer05_Size0200;
   while( true ) {
     if (remainingCount == 0) {
-      worldY = currentCell->worldX;
-      worldX = currentCell->worldY;
-      if (g_AiWorkspace05Count < 0x20) {
-        siteEntry->cellWorldXQ12 = worldY;
-        siteEntry->cellWorldYQ12 = worldX;
+      cellWorldX = currentCell->worldX;
+      cellWorldY = currentCell->worldY;
+      if (g_AiWorkspace05Count < AI_WORKSPACE05_CAPACITY) {
+        siteEntry->cellWorldXQ12 = cellWorldX;
+        siteEntry->cellWorldYQ12 = cellWorldY;
         siteEntry->cell = currentCell;
         knowledgeData = g_AiKnowledgeData;
         primaryCapOrWeight = (g_AiKnowledgeData->parameters).unknownParameterDword33;
-        deltaXOrPrimaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        deltaXOrPrimaryTerm = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         deltaXOrPrimaryTerm = primaryCapOrWeight - deltaXOrPrimaryTerm;
         if (deltaXOrPrimaryTerm < 0) {
           deltaXOrPrimaryTerm = 0;
         }
         primaryCapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[1];
         workspace02CapOrWeight = (knowledgeData->parameters).unknownParameterDwords36_37[0];
-        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if ((int)workspace02CapOrWeight < (int)workspace02Distance) {
           workspace02Distance = workspace02CapOrWeight;
         }
         workspace02CapOrWeight = (knowledgeData->parameters).unknownParameterDwords40_47[0];
         secondaryDistanceCap = (knowledgeData->parameters).generalSiteSecondaryDistanceCapQ12;
-        secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        secondaryDistance = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if ((int)secondaryDistanceCap < (int)secondaryDistance) {
           secondaryDistance = secondaryDistanceCap;
         }
-        g_AiWorkspace05Count = g_AiWorkspace05Count + 1;
+        g_AiWorkspace05Count++;
         siteEntry->score =
              deltaXOrPrimaryTerm * primaryCapOrWeight + workspace02Distance * workspace02CapOrWeight +
              secondaryDistance * (knowledgeData->parameters).generalSiteSecondaryDistanceCoefficient;
@@ -176,66 +167,64 @@ AiSiteCandidate_AddGeneralCellIfSeparated(FieldGridCell *currentCell)
     }
     if ((deltaXOrPrimaryTerm < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12) &&
        (deltaY < (int)(g_AiKnowledgeData->parameters).generalSiteMinimumAxisSeparationQ12)) break;
-    siteEntry = siteEntry + 1;
-    remainingCount = remainingCount - 1;
+    siteEntry++;
+    remainingCount--;
   }
   return;
 }
 
 
 /* Address: 0x00537C10.
-   Ownership: gameplay/ai/placement.
-   Purpose: Adds the current field cell to the 64-entry flagged-site workspace when it is sufficiently separated
-   from existing entries. Its score begins with the three-workspace distance result and applies the verified
-   flagged-cell adjustment. THE SCORE-B WRONG-BASE BUG: score cap/weight are read from the WORKSPACE BUFFER base
-   +0xC8/+0xD8 instead of the KI image (register- clobber), and buffer 06 (64 entries) has ZERO readers — the list
-   is filled but never consumed.
-   Cross-module calls: AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces].
+   Adds a field cell to the flagged site list (workspace 06, at most 64 entries) unless an entry already lies
+   closer than flaggedSiteMinimumAxisSeparationQ12 on both axes; the score is built like the general site score.
+   Original bug: the caps and weights are read at +0xC4..+0xE0 from the new entry's address in the workspace
+   buffer (EDI still holds it) instead of from g_AiKnowledgeData, so they are whatever lies further on in the
+   buffer. Nothing reads workspace 06, so the list is filled but never used.
 */
 void __thandor_void_preserve_ecx_edx
 AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
 
 {
-  Q12 worldY;
-  Q12 worldX;
+  Q12 cellWorldX;
+  Q12 cellWorldY;
   int deltaXOrCapTerm;
   int workspace02Distance;
   uint32_t remainingCount;
   int workspace02CapOrScore;
   int deltaYOrDistanceOrWeight;
   uint8_t *siteEntryBytes;
-  
+
   remainingCount = g_AiWorkspace06Count;
   siteEntryBytes = g_AiWorkspaceBuffer06_Size0400;
   while( true ) {
     if (remainingCount == 0) {
-      worldY = currentCell->worldX;
-      worldX = currentCell->worldY;
-      if (g_AiWorkspace06Count < 0x40) {
-        *(Q12 *)siteEntryBytes = worldY;
-        *(Q12 *)(siteEntryBytes + 4) = worldX;
+      cellWorldX = currentCell->worldX;
+      cellWorldY = currentCell->worldY;
+      if (g_AiWorkspace06Count < AI_WORKSPACE06_CAPACITY) {
+        /* same layout as AiScoredSiteWorkspaceEntry: x, y, score, cell */
+        *(Q12 *)siteEntryBytes = cellWorldX;
+        *(Q12 *)(siteEntryBytes + 4) = cellWorldY;
         *(FieldGridCell **)(siteEntryBytes + 0xc) = currentCell;
+        /* the wrong-base reads (see above): intended were the ki.dat parameters at these offsets */
         deltaXOrCapTerm = *(int *)(siteEntryBytes + 0xc4);
-        deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        deltaYOrDistanceOrWeight = AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         deltaXOrCapTerm = deltaXOrCapTerm - deltaYOrDistanceOrWeight;
         if (deltaXOrCapTerm < 0) {
           deltaXOrCapTerm = 0;
         }
         deltaYOrDistanceOrWeight = *(int *)(siteEntryBytes + 0xd4);
         workspace02CapOrScore = *(int *)(siteEntryBytes + 0xd0);
-        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        workspace02Distance = AiWorkspace02_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (workspace02CapOrScore < workspace02Distance) {
           workspace02Distance = workspace02CapOrScore;
         }
         workspace02CapOrScore = deltaXOrCapTerm * deltaYOrDistanceOrWeight + workspace02Distance * *(int *)(siteEntryBytes + 0xe0);
-        deltaXOrCapTerm = *(int *)(siteEntryBytes + 200);
-        deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(worldX,worldY);
+        deltaXOrCapTerm = *(int *)(siteEntryBytes + 0xc8);
+        deltaYOrDistanceOrWeight = AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(cellWorldY,cellWorldX);
         if (-1 < deltaXOrCapTerm - deltaYOrDistanceOrWeight) {
           workspace02CapOrScore = workspace02CapOrScore + (deltaXOrCapTerm - deltaYOrDistanceOrWeight) * *(int *)(siteEntryBytes + 0xd8);
         }
-        g_AiWorkspace06Count = g_AiWorkspace06Count + 1;
+        g_AiWorkspace06Count++;
         *(int *)(siteEntryBytes + 8) = workspace02CapOrScore;
       }
       return;
@@ -251,21 +240,19 @@ AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
     if ((deltaXOrCapTerm < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12) &&
        (deltaYOrDistanceOrWeight < (int)(g_AiKnowledgeData->parameters).flaggedSiteMinimumAxisSeparationQ12)) break;
     siteEntryBytes = siteEntryBytes + 0x10;
-    remainingCount = remainingCount - 1;
+    remainingCount--;
   }
   return;
 }
 
 
 /* Address: 0x00537CF0.
-   Ownership: gameplay/ai/placement.
-   Purpose: Adds a terrain-feature site candidate for class 0x14A or 0x14C after rejecting nearby model marker key
-   1:5 and duplicate neighborhood entries. The stored priority is derived from the nearest compatible AI runtime
-   entity. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Terrain-feature site split reads FLD +0x50 0x0800. This is FLD
-   support state, not a render-color classification. [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum
-   dictionary AiKnowledgePackedParameterIndex after transferring its complete value vocabulary to code annotation.
-   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
-   ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], FixedMath_Length2 [core/math/fixed].
+   Adds a resource site to the terrain-feature list (workspace 08, at most 32 entries): ARM_0330 on a cell with
+   xenite support, ARM_0332 otherwise. The cell is dropped when it lies within 2.0 of the 1:5 marker of any class-13
+   structure in workspace 00, or when a structure of the same asset stands closer than
+   terrainFeatureMinimumAxisSeparationQ12 on both axes. The priority is placementClearancePaddingQ12 minus the
+   Manhattan distance to the nearest workspace-00 structure (at least 0). A same-asset entry within a third of the
+   separation is replaced instead when the new cell has the higher priority. gridScratchRowStrideBytes is unused.
 */
 void __thandor_void_preserve_ecx_edx
 AiSiteCandidate_AddTerrainFeatureCellIfSeparated
@@ -289,38 +276,41 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   
   remainingFeatureCount = g_AiWorkspace08Count;
   featureAssetId = ARM_0330_BUILDING_MDL0303;
-  duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 0x55 >> 8;
+  duplicateSeparation = (g_AiKnowledgeData->parameters).terrainFeatureMinimumAxisSeparationQ12 * 0x55 >> 8; /* ~1/3 */
   countOrDeltaX = g_AiWorkspace00Count;
   workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
   if ((terrainFeatureCell->flagsAndMaterial & FIELD_CELL_XENITE_SUPPORT) == 0) {
     featureAssetId = ARM_0332_BUILDING_MDL0302;
   }
-  for (; terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX + -1) {
+  for (; terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200, countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
     runtimeSlot = (int *)workspace00Entry->runtimeSlotAddressOrZero;
-    if ((runtimeSlot != (int *)0x0) &&
-       (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1], *(int *)(*runtimeSlot + 0x4c) == 0xd)) {
+    /* runtimeSlot[0] is the model definition (runtime class at +0x4C), runtimeSlot[1] the model node */
+    if ((runtimeSlot != NULL) &&
+       (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1],
+       *(int *)(*runtimeSlot + 0x4c) == MODEL_RUNTIME_CLASS_13)) {
       markerLookup = ModelLookupTable_ContainsPackedKey
                          (1,5,(modelNodeRuntime->modelPayload).modelResource);
       if (!markerLookup.notFound) {
         markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerLookup.entry,modelNodeRuntime);
         markerDistance = FixedMath_Length2(markerPoint.yQ12 - terrainFeatureCell->worldY,
                                   markerPoint.xQ12 - terrainFeatureCell->worldX);
-        if ((int)markerDistance < 0x2001) {
+        if ((int)markerDistance < 0x2001) { /* within 2.0 (Q12) */
           return;
         }
       }
     }
-    workspace00Entry = workspace00Entry + 1;
+    workspace00Entry++;
   }
   do {
     if (remainingFeatureCount == 0) {
-      if (g_AiWorkspace08Count < 0x20) {
+      if (g_AiWorkspace08Count < AI_WORKSPACE08_CAPACITY) {
         terrainFeatureEntry->cell = terrainFeatureCell;
         terrainFeatureEntry->armyAssetId = featureAssetId;
         nearestDistanceOrPriority = 0x7fffffff;
         workspace00Entry = g_AiWorkspaceBuffer00_Size0400;
-        for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX + -1) {
+        for (countOrDeltaX = g_AiWorkspace00Count; countOrDeltaX != 0; countOrDeltaX = countOrDeltaX - 1) {
           if (workspace00Entry->runtimeSlotAddressOrZero != 0) {
+            /* entity + 0x94/0x98: the model node's world x/y */
             entityOrDeltaY = *(int *)(workspace00Entry->runtimeSlotAddressOrZero + 4);
             entityDeltaX = *(int *)(entityOrDeltaY + 0x94) - terrainFeatureCell->worldX;
             if (entityDeltaX < 0) {
@@ -340,13 +330,13 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
               nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
             }
           }
-          workspace00Entry = workspace00Entry + 1;
+          workspace00Entry++;
         }
         nearestDistanceOrPriority = (g_AiKnowledgeData->parameters).placementClearancePaddingQ12 - nearestDistanceOrPriority;
         if (nearestDistanceOrPriority < 0) {
           nearestDistanceOrPriority = 0;
         }
-        g_AiWorkspace08Count = g_AiWorkspace08Count + 1;
+        g_AiWorkspace08Count++;
         terrainFeatureEntry->priority = nearestDistanceOrPriority;
       }
       return;
@@ -397,13 +387,13 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
               nearestDistanceOrPriority = entityDeltaX + entityOrDeltaY;
             }
           }
-          workspace00Entry = workspace00Entry + 1;
-          countOrDeltaX = countOrDeltaX + -1;
+          workspace00Entry++;
+          countOrDeltaX--;
         } while( true );
       }
     }
-    remainingFeatureCount = remainingFeatureCount - 1;
-    terrainFeatureEntry = terrainFeatureEntry + 1;
+    remainingFeatureCount--;
+    terrainFeatureEntry++;
   } while( true );
 }
 
@@ -435,12 +425,8 @@ AiPlacement_TestWorkspaceRecordAtPoint
 
 
 /* Address: 0x0053A1B0.
-   Ownership: gameplay/ai/placement.
-   Purpose: Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier, class, and
-   faction-role semantics are not inferred from numeric adjacency. Typed parameters: p3
-   workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Runs the mode-4 placement query for the asset at a workspace cell (its position and heading) and returns
+   the query's CF: true when the asset cannot be placed there in that mode.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_TestMode4AtWorkspaceRecord
@@ -558,14 +544,11 @@ AiPlacement_ReserveMode3SiteCluster
 
 
 /* Address: 0x0053AD50.
-   Ownership: gameplay/ai/placement.
-   Purpose: Scans workspace08 records, reserves eligible mode-three site clusters, enforces minimum distance from
-   workspace02 and workspace03, and returns an assigned-count and faction-resource-scaled weight for the first
-   acceptable special-site asset.
-   Local calls: AiPlacement_ReserveMode3SiteCluster.
-   Cross-module calls: AiWorkspace03_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiPrimaryWorkspace_CountAssignedEntriesById [gameplay/ai/workspaces].
+   Finds the first workspace-08 resource site that passes AiPlacement_ReserveMode3SiteCluster and lies at least
+   specialSiteMinimumWorkspaceDistanceQ12 from workspaces 03 and 02, and weighs it: the site's base weight
+   (ARM_0330 or other) x3 / (2 * assigned structures of that asset + 6); for a non-ARM_0330 site it is further
+   scaled by (2 * unpowered + supplied energy demand) / (tritiumCurrentQ4 << 8) when the faction has tritium.
+   CF (noSite) is set when no site qualifies.
 */
 SiteWeightResult __thandor_eax_cf_preserve_ecx_edx
 AiCandidatePlanning_ComputeSpecialSiteWeight
@@ -602,8 +585,8 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
             (int)AiWorkspace02_GetMinimumManhattanDistanceToPoint
                    (workspaceRecord->worldY,workspaceRecord->worldX)))
     break;
-    featureEntry = featureEntry + 1;
-    countOrTritium = countOrTritium + -1;
+    featureEntry++;
+    countOrTritium--;
   }
   countOrTritium = AiPrimaryWorkspace_CountAssignedEntriesById(featureEntry->armyAssetId);
   baseWeight = (knowledgeData->parameters).specialSite14aBaseWeight;

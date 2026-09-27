@@ -11,26 +11,26 @@
 /* Implementation ownership: audio/spatial/runtime. */
 
 /* Address: 0x0050B5D0.
-   Ownership: audio/spatial/runtime.
-   Purpose: Allocates and zeroes 0x1000 bytes, exactly 256 SpatialSoundSlot records. CF reports allocation failure.
+   Allocates the pool of SPATIAL_SOUND_SLOT_COUNT 0x10-byte spatial sound slots (0x1000 bytes) and zeroes it,
+   so every slot starts without a voice set. CF set with the allocator's error when the arena is exhausted.
 */
 StatusResult SpatialSoundPool_Init(void)
 
 {
-  SpatialSoundSlot *spatialSoundStorageCursor;
-  int allocationDwordsRemaining;
+  SpatialSoundSlot *clearCursor;
+  int dwordsRemaining;
   bool allocationFailed;
   ArenaAllocResult allocResult;
-  
+
   allocResult = g_MemoryApi.alloc(0x1000);
   allocationFailed = allocResult.failed;
-  spatialSoundStorageCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
+  clearCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
   if (!allocationFailed) {
-    g_SpatialSoundSlots = spatialSoundStorageCursor;
-    for (allocationDwordsRemaining = 0x400; allocationDwordsRemaining != 0;
-        allocationDwordsRemaining = allocationDwordsRemaining + -1) {
-      spatialSoundStorageCursor->voiceSet = (DirectSoundVoiceSet *)0x0;
-      spatialSoundStorageCursor = (SpatialSoundSlot *)&spatialSoundStorageCursor->activeVoice;
+    g_SpatialSoundSlots = clearCursor;
+    /* REP STOSD over 0x400 dwords: the cursor advances one dword (to the next field) per step */
+    for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining--) {
+      clearCursor->voiceSet = NULL;
+      clearCursor = (SpatialSoundSlot *)&clearCursor->activeVoice;
     }
     allocationFailed = false;
   }
@@ -75,11 +75,10 @@ SpatialSound_RebuildListenerTransformFromPose
 
 
 /* Address: 0x0050B6E0.
-   Ownership: audio/spatial/runtime.
-   Purpose: Transforms a world position into listener space, applies distance attenuation and stereo panning,
-   respects reverse-stereo state, clamps Q15 gains, and starts a one-shot voice.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed], FixedMath_VectorToAnglesAndLength3Regs
-   [core/math/fixed].
+   Plays a sound effect once at a world position: the gain (scaled by the effects volume) fades out with
+   the listener distance along a quarter cosine up to maximumDistanceQ12 and is panned by the azimuth
+   around the listener (sides swapped with reverse stereo). Nothing plays when the voice set is missing,
+   the position is out of range or the attenuated gain is not above SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SpatialSound_PlayPositionedOneShot
@@ -88,51 +87,57 @@ SpatialSound_PlayPositionedOneShot
 
 {
   int64_t scaledProduct;
-  uint32_t distanceOrPannedGain;
-  uint32_t azimuthOrLeftGainQ15;
-  uint32_t volumeOrRightGainQ15;
+  uint32_t distanceOrPannedGainQ15;
+  uint32_t azimuthOrRightGainQ15;
+  uint32_t volumeOrLeftGainQ15;
   FixedLengthAnglesEaxEcxEdx12 lengthAngles;
-  
-  volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
-  if ((voiceSetRef != (DirectSoundVoiceSet **)0x0) && (volumeOrRightGainQ15 != 0)) {
+
+  volumeOrLeftGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 15;
+  if ((voiceSetRef != NULL) && (volumeOrLeftGainQ15 != 0)) {
     FixedTransform_ApplyPoint
               ((GraphicsFixedVec3 *)&g_SpatialSoundRelativeX,worldPosition,
                (GraphicsFixedMatrix3x4 *)&g_SpatialSoundListenerTransform);
     lengthAngles = FixedMath_VectorToAnglesAndLength3Regs
                       (g_SpatialSoundRelativeY,g_SpatialSoundRelativeX,g_SpatialSoundRelativeZ);
-    azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
-    distanceOrPannedGain = lengthAngles.lengthQ12;
-    if ((distanceOrPannedGain < maximumDistanceQ12) &&
+    azimuthOrRightGainQ15 = lengthAngles.azimuthAngle;
+    distanceOrPannedGainQ15 = lengthAngles.lengthQ12;
+    /* attenuation: volume * cos(distance / maximum * quarter turn), the << 14 maps the ratio to
+       0..FIXED_ANGLE16_QUARTER_TURN */
+    if ((distanceOrPannedGainQ15 < maximumDistanceQ12) &&
        (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((uint64_t)distanceOrPannedGain << 0xe) / (uint64_t)maximumDistanceQ12)] *
-                (int64_t)(int)volumeOrRightGainQ15,
-       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
-      if (azimuthOrLeftGainQ15 < 0x8000) {
-        distanceOrPannedGain = (uint32_t)((uint64_t)
-                       ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
-                       (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
-        azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
+                [(int)(((uint64_t)distanceOrPannedGainQ15 << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                (int64_t)(int)volumeOrLeftGainQ15,
+       volumeOrLeftGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c,
+       SPATIAL_SOUND_MIN_AUDIBLE_GAIN_Q15 < (int)volumeOrLeftGainQ15)) {
+      /* pan: one channel keeps the full gain, the other gets gain * (1 + cos(2 * azimuth)) / 2 */
+      if (azimuthOrRightGainQ15 < FIXED_ANGLE16_HALF_TURN) {
+        distanceOrPannedGainQ15 = (uint32_t)((uint64_t)
+                       ((int64_t)(g_FixedCosQ28[azimuthOrRightGainQ15 * 2] + Q28_ONE) *
+                       (int64_t)(int)(volumeOrLeftGainQ15 << 3)) >> 0x20);
+        azimuthOrRightGainQ15 = volumeOrLeftGainQ15;
       }
       else {
+        /* k_SpatialSoundStereoCosineSecondHalfBaseBias lies 0x8000 * 8 bytes before g_FixedCosQ28, so this
+           reads g_FixedCosQ28[(azimuth - FIXED_ANGLE16_HALF_TURN) * 2] */
         scaledProduct = (int64_t)
-                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
-                (int64_t)(int)volumeOrRightGainQ15;
-        azimuthOrLeftGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
-        distanceOrPannedGain = volumeOrRightGainQ15;
+                (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrRightGainQ15 * 8) + Q28_ONE) *
+                (int64_t)(int)volumeOrLeftGainQ15;
+        azimuthOrRightGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
+        distanceOrPannedGainQ15 = volumeOrLeftGainQ15;
       }
-      volumeOrRightGainQ15 = distanceOrPannedGain;
+      volumeOrLeftGainQ15 = distanceOrPannedGainQ15;
       if (g_ReverseStereoMask != 0) {
-        volumeOrRightGainQ15 = azimuthOrLeftGainQ15;
-        azimuthOrLeftGainQ15 = distanceOrPannedGain;
+        volumeOrLeftGainQ15 = azimuthOrRightGainQ15;
+        azimuthOrRightGainQ15 = distanceOrPannedGainQ15;
       }
-      if (0x8000 < (int)azimuthOrLeftGainQ15) {
-        azimuthOrLeftGainQ15 = 0x8000;
+      if (SPATIAL_SOUND_GAIN_Q15_FULL < (int)azimuthOrRightGainQ15) {
+        azimuthOrRightGainQ15 = SPATIAL_SOUND_GAIN_Q15_FULL;
       }
-      if (0x8000 < (int)volumeOrRightGainQ15) {
-        volumeOrRightGainQ15 = 0x8000;
+      if (SPATIAL_SOUND_GAIN_Q15_FULL < (int)volumeOrLeftGainQ15) {
+        volumeOrLeftGainQ15 = SPATIAL_SOUND_GAIN_Q15_FULL;
       }
-      g_SoundPlayOneShot(volumeOrRightGainQ15,azimuthOrLeftGainQ15,*voiceSetRef);
+      g_SoundPlayOneShot(volumeOrLeftGainQ15,azimuthOrRightGainQ15,*voiceSetRef);
     }
   }
   return;

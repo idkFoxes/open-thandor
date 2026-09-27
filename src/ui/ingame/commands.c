@@ -1789,11 +1789,9 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
 
 
 /* Address: 0x0055F440.
-   Ownership: ui/ingame/commands.
-   Purpose: Applies three masks to g_UiCommandRuntimeFlags in order: clear, set, then toggle. Typed parameters: p3
-   toggleMask→UiCommandRuntimeFlagMask_V342, p4 setMask→UiCommandRuntimeFlagMask_V342, p5
-   clearMask→UiCommandRuntimeFlagMask_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Changes the global g_UiCommandRuntimeFlags: first clears clearMask, then sets setMask, then toggles toggleMask
+   (the masks come in the reverse order as arguments). Local games call it directly, network games send the
+   same masks as player command 0x310. playerRuntimeId is not used: the flags are not per player.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiCommandRuntimeFlags_ApplyClearSetToggleMasks
@@ -1804,7 +1802,6 @@ UiCommandRuntimeFlags_ApplyClearSetToggleMasks
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~clearMask;
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | setMask;
   g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ toggleMask;
-  return;
 }
 
 

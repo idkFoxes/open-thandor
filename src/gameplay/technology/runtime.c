@@ -72,10 +72,9 @@ Technology_UnlockForFaction
 
 
 /* Address: 0x00513AE0.
-   Ownership: gameplay/technology/runtime.
-   Purpose: Tests one bit in the selected faction's 256-bit technology unlock mask. The original function reports
-   the result through CF while preserving EAX. Bit test against the faction's eight 32-bit unlock words; CF-style
-   result.
+   Tests the technology's bit in the faction's 256-bit unlock mask (records[factionIndex].technologyMasks256Bits
+   at +0x6E0). Note the inverted CF result: false (CF clear) when the technology is unlocked, true (CF set)
+   when it is still locked.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Technology_IsUnlockedForFaction
@@ -91,13 +90,9 @@ Technology_IsUnlockedForFaction
 
 
 /* Address: 0x00513B20.
-   Ownership: gameplay/technology/runtime.
-   Purpose: Tests that the technology is still locked, all eight prerequisite masks are satisfied by the selected
-   faction, and no active entity of that faction is already executing the same technology. CF set means available;
-   CF clear means unavailable. EAX is preserved by the original ABI. prerequisiteMasks[8] AND-test against the
-   faction unlock words (usually one set bit; value 1 reused for roots/gates — tech-tree.md). Stock tech.tec has
-   512 records over canonical ids 0..255; localized titles do not prove source-building, tier, direction, or effect
-   mappings.
+   Decides whether the faction may start researching a technology: it must still be locked, every bit of
+   its eight prerequisite mask words must be unlocked for the faction, and no army
+   of that faction may already be researching it. True (CF set) means available.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Technology_IsAvailableForFaction
@@ -106,7 +101,8 @@ Technology_IsAvailableForFaction
 {
   WorldRuntimeNode *worldNodeCursor;
   ArmyRuntimeSlot *activeResearchArmyRuntime;
-  
+
+  /* the first test reads the faction's unlock bit, as Technology_IsUnlockedForFaction does */
   if (((((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
          1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
@@ -133,12 +129,15 @@ Technology_IsAvailableForFaction
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
        g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[7]) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7])))) {
+    /* scan the world's owner list for an army with runtime flag 0x40 whose owner is the faction and whose
+       state (+0x100) is this technology */
     worldNodeCursor = (WorldRuntimeNode *)(g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
     do {
-      if (worldNodeCursor == (WorldRuntimeNode *)0x0) {
+      if (worldNodeCursor == NULL) {
         return true;
       }
-      if (worldNodeCursor[2].common.nextNode == (WorldRuntimeNode *)0x0) {
+      /* only nodes whose dword at +0xA4 is zero are considered */
+      if (worldNodeCursor[2].common.nextNode == NULL) {
         activeResearchArmyRuntime = worldNodeCursor->runtimePayload;
         if ((((activeResearchArmyRuntime->runtimeFlags & 0x40) != 0) &&
             (factionIndex ==

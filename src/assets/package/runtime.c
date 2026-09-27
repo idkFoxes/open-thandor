@@ -11,49 +11,52 @@
 
 /* Implementation ownership: assets/package/runtime. */
 
+/* One-entry output buffer (PCK_ENTRY_HEADER_BYTES) for Package_FindEntry, placed behind the string at
+   0x00545E91; the found entry's path is its first field and is passed on as a UTF-16 path. */
+#define LEVEL_PACKAGE_FOUND_ENTRY (s_NAME__CLIENT__KARTE___00545e91 + 0x15)
+
 /* Address: 0x005460E0.
-   Ownership: assets/package/runtime.
-   Purpose: Handles level package validate and mount.
-   Local calls: Package_Mount, Package_FindEntry, Package_LoadEntry, Package_Unmount.
-   Cross-module calls: Resource_Release [assets/resource/runtime], TextResourcePage_LoadCompatibilityAliases
-   [assets/text/resources].
+   Mounts the level package levelPathUtf16 and checks that it holds a valid level: its level\*.lev must be a
+   'lev' asset of converter version 0x70001, and the level\*.str text page must load as the level's text
+   aliases (keyed by the level's title text id). CF clear means the package stays mounted; on any failure it is
+   unmounted again and CF is set (a failed mount returns without unmounting).
 */
 bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16)
 
 {
-  uint32_t aliasAddressBase;
+  uint32_t levelTitleTextId;
   EngineFileHandle fileHandle;
-  int *allocation;
+  int *levelAsset;
   bool failed;
   StatusResult mountResult;
   PackageLoadResult loadResult;
   PackageFindResult findResult;
-  
+
   mountResult = Package_Mount(levelPathUtf16);
   failed = mountResult.failed;
   fileHandle = mountResult.valueOrError;
   if (!failed) {
-    findResult = Package_FindEntry(0x200,(PckEntryHeader *)(s_NAME__CLIENT__KARTE___00545e91 + 0x15),
+    findResult = Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
                               (uint16_t *)u_level___lev_005460a6,fileHandle);
     if ((!findResult.failed) && (findResult.matchCount != 0)) {
-      loadResult = Package_LoadEntry((uint16_t *)(s_NAME__CLIENT__KARTE___00545e91 + 0x15));
-      allocation = loadResult.bufferOrError;
+      loadResult = Package_LoadEntry((uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY);
+      levelAsset = loadResult.bufferOrError;
       if (!loadResult.failed) {
-        if ((*allocation == 0x76656c) && (allocation[3] == 0x70001)) {
-          aliasAddressBase = allocation[0x5c];
-          Resource_Release(allocation);
-          findResult = Package_FindEntry(0x200,(PckEntryHeader *)
-                                          (s_NAME__CLIENT__KARTE___00545e91 + 0x15),
+        /* dword 0: asset magic, dword 3: converter version */
+        if ((*levelAsset == ASSET_MAGIC_LEV) && (levelAsset[3] == PCK_CONVERTER_LEV_00070001)) {
+          levelTitleTextId = levelAsset[0x5c]; /* LEV +0x170 */
+          Resource_Release(levelAsset);
+          findResult = Package_FindEntry(PCK_ENTRY_HEADER_BYTES,(PckEntryHeader *)LEVEL_PACKAGE_FOUND_ENTRY,
                                     (uint16_t *)u_level___str_005460be,fileHandle);
           if (((!findResult.failed) && (findResult.matchCount != 0)) &&
              (failed = TextResourcePage_LoadCompatibilityAliases
-                                (aliasAddressBase,(uint16_t *)(s_NAME__CLIENT__KARTE___00545e91 + 0x15))
+                                (levelTitleTextId,(uint16_t *)LEVEL_PACKAGE_FOUND_ENTRY)
              , !failed)) {
             return failed;
           }
         }
         else {
-          Resource_Release(allocation);
+          Resource_Release(levelAsset);
         }
       }
     }
@@ -753,25 +756,25 @@ void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle)
 
 
 /* Address: 0x0040ECA0.
-   Ownership: assets/package/runtime.
-   Purpose: Compares a UTF-16 archive path against a pattern. '?' matches one word. '*' advances the candidate to
-   the next dot or terminator rather than implementing unrestricted globbing. CF clear means match.
+   Compares a UTF-16 archive path against a pattern for the package entry search. '?' matches any one code
+   unit; '*' only skips the candidate to its next dot or terminator (no full globbing), which is enough for
+   patterns like "level\*.lev". The comparison is case-sensitive. CF clear means match.
 */
 bool __thandor_cf_preserve_eax_ecx_edx Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate)
 
 {
   uint16_t patternCodeUnit;
-  
+
   while( true ) {
     while( true ) {
       patternCodeUnit = *pattern;
-      pattern = pattern + 1;
-      if (patternCodeUnit != 0x2a) break;
-      for (; (*candidate != 0x2e && (*candidate != 0)); candidate = candidate + 1) {
+      pattern++;
+      if (patternCodeUnit != '*') break;
+      for (; (*candidate != '.' && (*candidate != 0)); candidate++) {
       }
     }
-    if ((patternCodeUnit != 0x3f) && (patternCodeUnit != *candidate)) break;
-    candidate = candidate + 1;
+    if ((patternCodeUnit != '?') && (patternCodeUnit != *candidate)) break;
+    candidate++;
     if (patternCodeUnit == 0) {
       return false;
     }
@@ -1023,9 +1026,10 @@ Package_FindEntryAcrossMounts_NotFound:
 
 
 /* Address: 0x0040E570.
-   Ownership: assets/package/runtime.
-   Purpose: Reads the 0x200-byte archive header, caches entryCount, reads every 0x200-byte entry header, and fills
-   runtimePayloadOffset while skipping each packed payload.
+   Loads the directory of the mounted package fileHandle into its mount slot: reads the archive header for the
+   entry count, then every entry header, recording the file offset of the entry (its header; the packed
+   payload follows it) and seeking past the payload to the next header. CF set with the file-system error, or FATAL_ERROR_GENERAL_FAILURE when fileHandle is
+   not mounted.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_ReadDirectory(EngineFileHandle fileHandle)
@@ -1036,38 +1040,39 @@ Package_ReadDirectory(EngineFileHandle fileHandle)
   uint32_t statusCode;
   PckEntryCount entriesRemaining;
   int slotsRemaining;
-  FileSystemFilePosition distance;
+  FileSystemFilePosition entryHeaderOffset;
   PckMountSlot *mountSlot;
-  PckEntryHeader *destination;
+  PckEntryHeader *entryHeader;
   StatusResult failureResult;
   FileSystemSeekResult seekResult;
   FileSystemReadResult readResult;
   StatusResult successResult;
-  
+
   mountSlot = g_PackageMountSlots;
-  slotsRemaining = 0x400;
+  slotsRemaining = PACKAGE_MOUNT_SLOT_COUNT;
   do {
     if (fileHandle == mountSlot->fileHandle) {
-      destination = mountSlot->entryHeaders;
+      entryHeader = mountSlot->entryHeaders;
       seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       archiveHeader = g_PackageScratchBuffer;
       statusCode = seekResult.positionOrError;
       if (seekResult.failed) goto Package_ReadDirectory_Fail;
-      readResult = g_FileSystemReadExact(0x200,g_PackageScratchBuffer,(void *)fileHandle);
+      readResult = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,g_PackageScratchBuffer,(void *)fileHandle);
       statusCode = readResult.valueOrError;
       if (readResult.failed) goto Package_ReadDirectory_Fail;
-      entriesRemaining = *(PckEntryCount *)(archiveHeader + 0xb0);
+      entriesRemaining = *(PckEntryCount *)(archiveHeader + 0xb0); /* PckArchiveHeader.entryCount */
       mountSlot->entryCount = entriesRemaining;
-      distance = 0x200;
+      /* each entry is its header followed directly by its packed payload */
+      entryHeaderOffset = PCK_ENTRY_HEADER_BYTES;
       for (; entriesRemaining != 0; entriesRemaining = entriesRemaining - 1) {
-        readResult = g_FileSystemReadExact(0x200,destination,(void *)fileHandle);
+        readResult = g_FileSystemReadExact(PCK_ENTRY_HEADER_BYTES,entryHeader,(void *)fileHandle);
         statusCode = readResult.valueOrError;
         if (readResult.failed) goto Package_ReadDirectory_Fail;
-        packedSizeField = &destination->packedSize;
-        destination->runtimePayloadOffset = distance;
-        destination = destination + 1;
-        distance = distance + *packedSizeField + 0x200;
-        seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
+        packedSizeField = &entryHeader->packedSize;
+        entryHeader->runtimePayloadOffset = entryHeaderOffset;
+        entryHeader++;
+        entryHeaderOffset = entryHeaderOffset + *packedSizeField + PCK_ENTRY_HEADER_BYTES;
+        seekResult = g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,entryHeaderOffset,(void *)fileHandle);
         statusCode = seekResult.positionOrError;
         if (seekResult.failed) goto Package_ReadDirectory_Fail;
       }
@@ -1075,10 +1080,10 @@ Package_ReadDirectory(EngineFileHandle fileHandle)
       successResult.valueOrError = statusCode;
       return successResult;
     }
-    mountSlot = mountSlot + 1;
-    slotsRemaining = slotsRemaining + -1;
+    mountSlot++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  statusCode = 0x14;
+  statusCode = FATAL_ERROR_GENERAL_FAILURE;
 Package_ReadDirectory_Fail:
   failureResult.failed = true;
   failureResult.valueOrError = statusCode;

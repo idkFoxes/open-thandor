@@ -94,13 +94,8 @@ SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRunt
 
 
 /* Address: 0x00485FD0.
-   Ownership: graphics/backend/software.
-   Purpose: Clears the software viewport and advances the depth epoch. Typed parameters: p0
-   clipMaxY→GraphicsScreenCoordinate_V307, p1 clipMaxX→GraphicsScreenCoordinate_V307, p2
-   clipMinY→GraphicsScreenCoordinate_V307, p3 clipMinX→GraphicsScreenCoordinate_V307. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: SoftwareRenderer_AdvanceDepthEpoch.
+   Software backend of Graphics_SetViewportAndClearDepth: fills the rectangle with opaque black and starts a
+   new depth epoch instead of clearing a depth buffer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_ClearViewport
@@ -113,7 +108,7 @@ SoftwareRenderer_ClearViewport
   accessFailed = g_GraphicsFramebufferBeginAccess();
   if (!accessFailed) {
     g_GraphicsFramebufferFillRectArgb
-              (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,0xff000000,
+              (clipMaxY,clipMaxX,clipMinY,clipMinX,clipMaxY,clipMaxX,clipMinY,clipMinX,0xff000000 /* opaque black */,
                g_FramebufferAccess);
     g_GraphicsFramebufferEndAccess();
   }
@@ -229,12 +224,8 @@ SoftwareRenderer_DrawQueueAuxiliary
 
 
 /* Address: 0x00486020.
-   Ownership: graphics/backend/software.
-   Purpose: Begins software-surface access, invokes the selected queue renderer, and ends access. Typed parameters:
-   p0 clipMaxY→GraphicsScreenCoordinate_V307, p1 clipMaxX→GraphicsScreenCoordinate_V307, p2
-   clipMinY→GraphicsScreenCoordinate_V307, p3 clipMinX→GraphicsScreenCoordinate_V307. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Software backend of Graphics_DrawPrimitiveQueue: locks the framebuffer and hands the queue to the queue
+   renderer chosen for the current pixel depth (g_SoftwareDrawQueue); draws nothing when the lock fails.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_DrawPrimitiveQueueBridge
@@ -441,8 +432,7 @@ SoftwarePixelFormat_BuildChannelPackTables
 
 
 /* Address: 0x004A93C0.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a two-byte framebuffer (source-alpha blit, see
+   Clips and draws one source subresource into a two-byte framebuffer (source-alpha blit, see
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is copied, anything else is blended. A
    paletted texel tests the alpha of the entry's converted pixel (+4) and writes its low word, but blends the
    entry's ARGB colour (+0) with the alpha of that colour. ABI: all registers are preserved and CF is cleared.
@@ -490,8 +480,7 @@ SoftwareTextureSource_BlitSourceAlpha16
 
 
 /* Address: 0x004A9710.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see
+   Clips and draws one source subresource into a four-byte framebuffer (source-alpha blit, see
    docs/software_raster.md "Blits"). Alpha 0 is skipped, alpha 0xFF is converted through
    g_SoftwarePixelPackTables and written, anything else is blended in 8-bit lanes. Unlike the 16-bit version, a
    paletted texel uses the entry's second dword (+4) for everything: the alpha test, the blend colour, and the
@@ -531,8 +520,7 @@ SoftwareTextureSource_BlitSourceAlpha32
 
 
 /* Address: 0x004A9B20.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a two-byte framebuffer, with the source RGB at half
+   Clips and draws one source subresource into a two-byte framebuffer, with the source RGB at half
    strength (see docs/software_raster.md "Blits"). Alpha 0 is skipped; every other alpha, 0xFF included, blends
    (source lanes (c * 0x101) >> 3 instead of >> 2), so there is no opaque copy. Unlike BlitSourceAlpha16, a
    paletted texel uses the entry's ARGB colour (+0) for both the alpha test and the blend. ABI: all registers are
@@ -571,8 +559,7 @@ SoftwareTextureSource_BlitHalfSourceRgb16
 
 
 /* Address: 0x004A9E10.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a four-byte framebuffer, with the source RGB at half
+   Clips and draws one source subresource into a four-byte framebuffer, with the source RGB at half
    strength (see docs/software_raster.md "Blits"). Alpha 0 is skipped; every other alpha, 0xFF included, blends,
    so there is no opaque copy. Quirks kept from the original: a paletted texel uses the entry's second dword (+4)
    as its colour, like the other 32-bit blits, and only the paletted path halves the source ((c * 0x101) >> 3);
@@ -615,12 +602,12 @@ SoftwareTextureSource_BlitHalfSourceRgb32
 
 
 /* Address: 0x004AA170.
-   Ownership: graphics/backend/software.
-   Purpose: Stretches one direct-color source subresource into a two-byte framebuffer using two-dimensional linear
+   Stretches one direct-color source subresource into a two-byte framebuffer using two-dimensional linear
    interpolation. The source entry must be direct color: paletteIndex == -1. The function computes 8-bit fractional
    source steps from (pixelWidth-1)/(destinationWidth-1) and (pixelHeight-1)/(destinationHeight-1). Four
    neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
-   g_SoftwareBilinearInverseFactors. The routine performs no clipping.
+   g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
+   pixel pairs (an odd last column is left out).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareTextureSource_StretchDirectColorBilinear16
@@ -653,21 +640,24 @@ SoftwareTextureSource_StretchDirectColorBilinear16
   uint32_t row;
   uint32_t pair;
 
+  /* only a "gfx" texture source; +0xb0 subresource count, +0xb8 offset of the 0x20-byte entry table */
   if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
     return;
   }
   entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
+  /* framebuffer->bytesPerPixel, entry->paletteIndex (-1: ARGB8888 texels) */
   if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 2) || (*(int32_t *)(entry + 8) != -1)) {
     return;
   }
   pitchPixels = *(uint32_t *)framebuffer;
   destinationRow = (uint16_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(uint32_t *)(entry + 0x18);
-  sourceHeight = *(uint32_t *)(entry + 0x1c);
+  sourceWidth = *(uint32_t *)(entry + 0x18); /* entry->pixelWidth */
+  sourceHeight = *(uint32_t *)(entry + 0x1c); /* entry->pixelHeight */
+  /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(uint32_t *)(entry + 0xc);
+  sourceBase = asset + *(uint32_t *)(entry + 0xc); /* entry->dataOffset */
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
@@ -707,7 +697,7 @@ SoftwareTextureSource_StretchDirectColorBilinear16
         fx = fx + stepX;
       }
       *out = (uint32_t)packed[0] | ((uint32_t)packed[1] << 16);
-      out = out + 1;
+      out++;
     }
     destinationRow = destinationRow + pitchPixels;
     fy = fy + stepY;
@@ -717,12 +707,12 @@ SoftwareTextureSource_StretchDirectColorBilinear16
 
 
 /* Address: 0x004AA3F0.
-   Ownership: graphics/backend/software.
-   Purpose: Stretches one direct-color source subresource into a four-byte framebuffer using two-dimensional linear
+   Stretches one direct-color source subresource into a four-byte framebuffer using two-dimensional linear
    interpolation. The source entry must be direct color: paletteIndex == -1. The function computes 8-bit fractional
    source steps from (pixelWidth-1)/(destinationWidth-1) and (pixelHeight-1)/(destinationHeight-1). Four
    neighboring ARGB8888 pixels are blended horizontally and vertically through g_SoftwareBilinearForwardFactors and
-   g_SoftwareBilinearInverseFactors. The routine performs no clipping.
+   g_SoftwareBilinearInverseFactors. The routine performs no clipping and draws the destination width in
+   pixel pairs (an odd last column is left out).
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareTextureSource_StretchDirectColorBilinear32
@@ -753,21 +743,24 @@ SoftwareTextureSource_StretchDirectColorBilinear32
   uint32_t row;
   uint32_t pair;
 
+  /* only a "gfx" texture source; +0xb0 subresource count, +0xb8 offset of the 0x20-byte entry table */
   if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
     return;
   }
   entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
+  /* framebuffer->bytesPerPixel, entry->paletteIndex (-1: ARGB8888 texels) */
   if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 4) || (*(int32_t *)(entry + 8) != -1)) {
     return;
   }
   pitchPixels = *(uint32_t *)framebuffer;
   destinationRow = (uint32_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(uint32_t *)(entry + 0x18);
-  sourceHeight = *(uint32_t *)(entry + 0x1c);
+  sourceWidth = *(uint32_t *)(entry + 0x18); /* entry->pixelWidth */
+  sourceHeight = *(uint32_t *)(entry + 0x1c); /* entry->pixelHeight */
+  /* 8.8 fixed-point source steps */
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(uint32_t *)(entry + 0xc);
+  sourceBase = asset + *(uint32_t *)(entry + 0xc); /* entry->dataOffset */
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
@@ -805,7 +798,7 @@ SoftwareTextureSource_StretchDirectColorBilinear32
       *(unsigned long long *)out =
            ((((unsigned long long)pixels[0] << 32) | pixels[0]) & clampMask) |
            ((unsigned long long)pixels[1] << 32);
-      out = out + 2;
+      out += 2;
     }
     destinationRow = destinationRow + pitchPixels;
     fy = fy + stepY;
@@ -815,8 +808,7 @@ SoftwareTextureSource_StretchDirectColorBilinear32
 
 
 /* Address: 0x004AA630.
-   Ownership: graphics/backend/software.
-   Purpose: Draws one source subresource into a two-byte framebuffer at an integer scale (see
+   Draws one source subresource into a two-byte framebuffer at an integer scale (see
    docs/software_raster.md "Blits"). Every texel becomes an integerScale x integerScale block, and the entry's
    origin is scaled too. Nothing is clipped at the source: the whole scaled image is walked and each pixel is
    tested against the clip rectangle, which is clamped to the framebuffer. Alpha 0 is skipped, alpha 0xFF is
@@ -885,8 +877,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
 
 
 /* Address: 0x004AAA40.
-   Ownership: graphics/backend/software.
-   Purpose: Four-byte framebuffer version of SoftwareTextureSource_BlitIntegerScaledSourceAlpha16 (integer-scaled,
+   Four-byte framebuffer version of SoftwareTextureSource_BlitIntegerScaledSourceAlpha16 (integer-scaled,
    per-pixel clip test, alpha 0 skipped, 0xFF written, anything else blended in 8-bit lanes). Unlike
    BlitSourceAlpha32, a paletted texel here uses the 16-bit layout: it tests the alpha of the converted pixel
    (+4), blends the ARGB colour (+0), and writes +4 as it is (not converted again) when opaque. A direct texel is
@@ -953,8 +944,7 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
 
 
 /* Address: 0x004AADE0.
-   Ownership: graphics/backend/software.
-   Purpose: BlitSourceAlpha16 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
+   BlitSourceAlpha16 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
    subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
    be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha16, including the palette
@@ -981,6 +971,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
+    /* the palette banks follow the 0x200-byte asset header, 256 entries of 8 bytes each */
     region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
   }
   for (y = 0; y < region.height; y++) {
@@ -1008,8 +999,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
 
 
 /* Address: 0x004AB150.
-   Ownership: graphics/backend/software.
-   Purpose: BlitSourceAlpha32 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
+   BlitSourceAlpha32 with an explicit palette bank (see docs/software_raster.md "Blits"). A paletted
    subresource is drawn with paletteBankIndex instead of its own paletteIndex; the entry's paletteIndex must still
    be valid, and paletteBankIndex is only checked (unsigned, < paletteBankCount) after clipping. A direct-colour
    subresource ignores paletteBankIndex. The pixel operation is that of BlitSourceAlpha32 (the palette entry's +4
@@ -1036,6 +1026,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank32
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
+    /* the palette banks follow the 0x200-byte asset header, 256 entries of 8 bytes each */
     region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
   }
   for (y = 0; y < region.height; y++) {
@@ -1053,8 +1044,7 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank32
 
 
 /* Address: 0x004AB4A0.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and adds one source subresource onto a two-byte framebuffer (saturated add, see
+   Clips and adds one source subresource onto a two-byte framebuffer (saturated add, see
    docs/software_raster.md "Blits"). A texel whose RGB is 0 is skipped whatever its alpha; every other one is
    added lane by lane with unsigned 16-bit saturation (Blit_AddArgb16) and the sum is packed back. Source alpha
    is not a blend factor. A paletted texel uses the entry's ARGB colour (+0), unlike the 32-bit version. ABI: all
@@ -1092,8 +1082,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
 
 
 /* Address: 0x004AB750.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and adds one source subresource onto a four-byte framebuffer (saturated add). A texel whose RGB
+   Clips and adds one source subresource onto a four-byte framebuffer (saturated add). A texel whose RGB
    is 0 is skipped whatever its alpha; every other one is added byte by byte, clamped at 0xFF (Blit_AddArgb32).
    The alpha byte is summed and written as well. Quirk kept from the original: a paletted texel uses the entry's
    second dword (+4, the converted pixel), not its ARGB colour, both for the RGB-zero test and for the add. ABI:
@@ -1131,8 +1120,7 @@ SoftwareTextureSource_BlitSaturatedAddRgb32
 
 
 /* Address: 0x004ABA70.
-   Ownership: graphics/backend/software.
-   Purpose: Same as SoftwareTextureSource_BlitSaturatedAddRgb16, but the source lanes are halved (PSRLW 1 of
+   Same as SoftwareTextureSource_BlitSaturatedAddRgb16, but the source lanes are halved (PSRLW 1 of
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour. A paletted texel uses the
    entry's ARGB colour (+0). ABI: all registers are preserved and CF is cleared.
 */
@@ -1168,8 +1156,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
 
 
 /* Address: 0x004ABD20.
-   Ownership: graphics/backend/software.
-   Purpose: Same as SoftwareTextureSource_BlitSaturatedAddRgb32, but the source lanes are halved (PSRLW 1 of
+   Same as SoftwareTextureSource_BlitSaturatedAddRgb32, but the source lanes are halved (PSRLW 1 of
    c * 0x101) before the saturated add. The RGB-zero test uses the unhalved colour, and a paletted texel again
    uses the entry's second dword (+4). ABI: all registers are preserved and CF is cleared.
 */
@@ -1205,8 +1192,7 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
 
 
 /* Address: 0x004AC040.
-   Ownership: graphics/backend/software.
-   Purpose: Clips and draws one source subresource into a two-byte framebuffer, each source channel multiplied by
+   Clips and draws one source subresource into a two-byte framebuffer, each source channel multiplied by
    the matching channel of modulationArgb8888 first (Blit_Modulate, see docs/software_raster.md "Blits"). The
    modulated colour then goes through the source-alpha rules: alpha 0 skipped, alpha 0xFF converted and written,
    anything else blended. Unlike BlitSourceAlpha16, a paletted texel uses the entry's ARGB colour (+0) for
@@ -1247,8 +1233,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
 
 
 /* Address: 0x004AC4C0.
-   Ownership: graphics/backend/software.
-   Purpose: Four-byte framebuffer version of BlitModulatedSourceAlpha16: each source channel is multiplied by the
+   Four-byte framebuffer version of BlitModulatedSourceAlpha16: each source channel is multiplied by the
    matching channel of modulationArgb8888 (Blit_Modulate), then drawn with the source-alpha rules. Unlike
    BlitSourceAlpha32, a paletted texel uses the entry's ARGB colour (+0). Quirk: the modulated alpha is at most
    0xFE, so the opaque branch is never taken. ABI: all registers are preserved and CF is cleared.
@@ -1287,8 +1272,7 @@ SoftwareTextureSource_BlitModulatedSourceAlpha32
 
 
 /* Address: 0x004AD110.
-   Ownership: graphics/backend/software.
-   Purpose: Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip
+   Fills the intersection of [rectMinX, rectMaxX) x [rectMinY, rectMaxY), the framebuffer and the clip
    rectangle of a two-byte framebuffer with argb8888: alpha 0 draws nothing, alpha 0xFF writes the colour
    converted through g_SoftwarePixelPackTables, anything else blends it over every pixel (see
    docs/software_raster.md "Blits"). ABI: all registers are preserved and CF is cleared.
@@ -1323,8 +1307,7 @@ SoftwareFramebuffer_FillRectArgb16
 
 
 /* Address: 0x004AD2A0.
-   Ownership: graphics/backend/software.
-   Purpose: Four-byte framebuffer version of SoftwareFramebuffer_FillRectArgb16: alpha 0 draws nothing, alpha
+   Four-byte framebuffer version of SoftwareFramebuffer_FillRectArgb16: alpha 0 draws nothing, alpha
    0xFF writes the converted colour, anything else is blended in 8-bit lanes (alpha lane included). ABI: all
    registers are preserved and CF is cleared.
 */
@@ -3035,17 +3018,16 @@ SoftwareRenderer_SetDisplayMode
 
 
 /* Address: 0x004FE7D0.
-   Ownership: graphics/backend/software.
-   Purpose: Installs SoftwareRenderer_SetDisplayMode after SoftwarePixelFormat_BaseDisplayModeHook and allocates
-   the initial software depth buffer. ABI: CF clear means success. CF set means failure.
+   Hooks the software renderer into the display-mode switch: chains SoftwareRenderer_SetDisplayMode in front of
+   the current g_GraphicsSetDisplayMode, picks the queue renderer for the current pixel depth and allocates the
+   depth buffer (one int32 per pixel) for the current framebuffer size. CF set when the allocation fails.
 */
 StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
   int32_t *allocatedDepthBuffer;
-  bool framebufferPixelFormatTooNarrow;
   ArenaAllocResult depthAllocation;
-  
+
   g_SoftwareChainedSetDisplayMode = g_GraphicsSetDisplayMode;
   g_SoftwareDepthRowStrideBytes = g_FramebufferWidth * 4;
   LOCK();

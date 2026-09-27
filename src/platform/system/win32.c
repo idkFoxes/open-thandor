@@ -86,11 +86,15 @@ static void Win32_AutoShotTick(void)
    <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
 volatile unsigned g_TestAidInGameFrames;
 
+/* Port-only test aid (no original address). Moves the pointer to framebuffer pixel x,y with button mask buttons
+   (LEFT/RIGHT of GraphicsCursorButtonState) and appends a pointer event of that type to the 256-entry ring
+   g_CursorInputEvents, as DirectInputMouse_PollBufferedEvents does for real mouse input, so scripted clicks
+   reach the UI through the normal event path. */
 static void Win32_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y)
 {
   uint32_t index = g_CursorInputWriteIndex;
   uint32_t next = index + 1;
-  if (0xff < next) {
+  if (255 < next) { /* wrap around the ring */
     next = 0;
   }
   g_MouseX = x;

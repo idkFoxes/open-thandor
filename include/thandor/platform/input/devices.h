@@ -24,6 +24,12 @@
 #define KEYBOARD_STATE_CTRL 0x0C
 #define KEYBOARD_STATE_ALT 0x30
 #define KEYBOARD_STATE_ANY_MODIFIER 0x3F
+#define KEYBOARD_STATE_LEFT_SHIFT 0x01
+#define KEYBOARD_STATE_RIGHT_SHIFT 0x02
+#define KEYBOARD_STATE_LEFT_CTRL 0x04
+#define KEYBOARD_STATE_RIGHT_CTRL 0x08
+#define KEYBOARD_STATE_LEFT_ALT 0x10
+#define KEYBOARD_STATE_RIGHT_ALT 0x20
 /* Key codes of the events Keyboard_OnKeyDown queues (the commandCode of the keyboard dispatchers): digits and
    letters are 0x30000 + their ASCII code (letters lowercase), special keys use the 0x10000 family. */
 #define KEYBOARD_KEY_CODE_CHAR(asciiCode) (0x30000 + (asciiCode))
@@ -31,6 +37,14 @@
 #define KEYBOARD_KEY_CODE_BACKSPACE 0x10003
 #define KEYBOARD_KEY_CODE_ESCAPE 0x10000 /* VK_ESCAPE (Keyboard_OnKeyDown); Game_PlayIntroMovies skips all intros */
 #define KEYBOARD_KEY_CODE_NUMPAD_5 0x10015 /* also VK_SELECT */
+#define KEYBOARD_KEY_CODE_ENTER 0x10001 /* VK_RETURN and VK_SEPARATOR */
+#define KEYBOARD_KEY_CODE_TAB 0x10002
+#define KEYBOARD_KEY_CODE_PRINT 0x10004 /* VK_PRINT and VK_SNAPSHOT */
+#define KEYBOARD_KEY_CODE_PAUSE 0x10005 /* VK_PAUSE and VK_EXECUTE */
+#define KEYBOARD_KEY_CODE_SPECIAL(index) (0x10000 + (index)) /* index: KEYBOARD_SPECIAL_KEY_* */
+#define KEYBOARD_KEY_CODE_FUNCTION(number) (0x20000 + (number)) /* F1..F12 */
+/* Keyboard_OnKeyUp: any code outside the 0x10000 family, i.e. no g_KeyboardSpecialKeyDown entry to clear */
+#define KEYBOARD_KEY_CODE_NOT_SPECIAL 0x20000
 /* Indices into g_KeyboardSpecialKeyDown: the low word of a 0x10000-family key code, 1 while the key is held
    (Keyboard_OnKeyDown); the numpad keys map to the same codes. Used by the in-game camera keys. */
 #define KEYBOARD_SPECIAL_KEY_DELETE 0x06 /* also numpad decimal point */

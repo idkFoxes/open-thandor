@@ -34,7 +34,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResources
 /* 0x0057F7B0 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_DrawPrimitiveQueue
-          (int32_t coordinate0,int32_t coordinate1,int32_t coordinate2,int32_t coordinate3,
+          (int32_t clipMaxY,int32_t clipMaxX,int32_t clipMinY,int32_t clipMinX,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x005802F0 */
@@ -57,8 +57,8 @@ void __thandor_void_preserve_eax_ecx_edx GlideBackend_EndSceneNoOp(void);
 /* 0x0057F740 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_ClearViewport
-          (GraphicsScreenCoordinate coordinate0,GraphicsScreenCoordinate coordinate1,
-          GraphicsScreenCoordinate coordinate2,GraphicsScreenCoordinate coordinate3);
+          (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX,
+          GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX);
 
 /* 0x00580370 */
 void __thandor_void_preserve_eax_ecx_edx

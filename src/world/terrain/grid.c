@@ -1935,105 +1935,97 @@ FieldGrid_TestWorldPointBlocked
 
 
 /* Address: 0x00503C90.
-   Ownership: world/terrain/grid.
-   Purpose: Marks the field dirty, initializes every 0x80-byte cell runtime seed, state bits, lookup pointer, and
-   sentinel fields, then marks the verified outer boundaries with their directional flags. EAX, ECX, and EDX are
-   preserved or incidental caller state and are not synthetic parameters or normal returns. Load-time cell init:
-   phase seed = rand & ((1 << waterDatBitWidth) - 1); +0x54 bound to g_TerrainDirectionVectorTable256[(worldY & 15)
-   + (worldX & 15) * 16]; boundary flag writers: 0x2000 first column, 0x4000 first row, 0x8000000 last column,
-   0x80000000 last row; material variant bits 8-10 |= random. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] FLD +0x50
-   owner: clears/rebuilds 0x700 variant bits, rebuilds hard-edge bits 0x2000/0x4000/0x08000000/0x80000000, clears
-   unresolved 0x8000. This does not build GridScratch terrain-class bands.
-   Cross-module calls: Random_NextPrimary [core/math/random].
+   Load-time cell setup: marks the field surface dirty and gives every cell a random animation phase (masked to
+   the bit width stored just before the terrain surface packet table), a terrain direction record chosen by the
+   low nibbles of its world X/Y, a white overlay colour and random material variant bits 8-10. Then it rebuilds
+   the four map-edge flags on the outermost ring of cells, which neighbour loops test before stepping outside.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
 
 {
-  FieldGridDimension initGridWidth;
-  uint32_t randomValue;
+  FieldGridDimension cellsPerRow;
+  uint32_t phaseRandomValue;
   uint32_t materialVariantRandomBits;
-  FieldGridDimension initColumnsRemaining;
-  FieldGridDimension gridWidth;
-  FieldGridDimension initRowsRemaining;
+  FieldGridDimension columnsRemaining;
+  FieldGridDimension bottomRowCellsRemaining;
   FieldGridDimension rowsRemaining;
+  FieldGridDimension edgeRowsRemaining;
   FieldGridDimension topRowCellsRemaining;
-  FieldGridCell *initializationCellCursor;
+  FieldGridCell *cell;
   int rowBytesOrBottomCellAddress;
-  FieldGridCell *cellCursor;
+  FieldGridCell *nextRowFirstCell;
   FieldGridCell *currentRowFirstCell;
-  Q12 currentCellWorldXQ12;
-  Q12 currentCellWorldYQ12;
+  Q12 cellWorldXQ12;
+  Q12 cellWorldYQ12;
   uint32_t phaseSeedBitWidth;
 
-  phaseSeedBitWidth = *(uint32_t *)((int)g_TerrainSurfacePacketTablePayload + -0x20);
-  initRowsRemaining = fieldGrid->gridHeight;
-  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
-  initGridWidth = fieldGrid->gridWidth;
-  initializationCellCursor = fieldGrid->cells;
-  initColumnsRemaining = initGridWidth;
+  phaseSeedBitWidth = *(uint32_t *)((int)g_TerrainSurfacePacketTablePayload - 0x20);
+  rowsRemaining = fieldGrid->gridHeight;
+  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
+  cellsPerRow = fieldGrid->gridWidth;
+  cell = fieldGrid->cells;
+  columnsRemaining = cellsPerRow;
   do {
     do {
-      currentCellWorldXQ12 = initializationCellCursor->worldX;
-      currentCellWorldYQ12 = initializationCellCursor->worldY;
-      initializationCellCursor->flagsAndMaterial =
-           initializationCellCursor->flagsAndMaterial & 0x77ff1fff;
-      randomValue = Random_NextPrimary();
-      initializationCellCursor->flagsAndMaterial =
-           initializationCellCursor->flagsAndMaterial & ~FIELD_CELL_RANDOM_VARIANT_MASK;
-      initializationCellCursor->runtimeState00 =
-           randomValue & (1 << ((uint8_t)phaseSeedBitWidth & 0x1f)) - 1U;
-      initializationCellCursor->persistedAux54 =
+      cellWorldXQ12 = cell->worldX;
+      cellWorldYQ12 = cell->worldY;
+      /* 0x77ff1fff: the edge flags and the unresolved bit are rebuilt from scratch */
+      cell->flagsAndMaterial =
+           cell->flagsAndMaterial & ~(FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_INIT_CLEARED_UNRESOLVED_BIT15);
+      phaseRandomValue = Random_NextPrimary();
+      cell->flagsAndMaterial = cell->flagsAndMaterial & ~FIELD_CELL_RANDOM_VARIANT_MASK;
+      cell->runtimeState00 = phaseRandomValue & (1 << ((uint8_t)phaseSeedBitWidth & 0x1f)) - 1U;
+      /* 16x16 tiling of the 256 direction records over the world */
+      cell->persistedAux54 =
            (FieldCellPersistedAux)
-           (g_TerrainDirectionRecordTable256 +
-           (currentCellWorldYQ12 & 0xfU) + (currentCellWorldXQ12 & 0xfU) * 0x10);
-      initializationCellCursor->armyRuntimeSavedOffset6C = 0;
+           (g_TerrainDirectionRecordTable256 + (cellWorldYQ12 & 0xfU) + (cellWorldXQ12 & 0xfU) * 16);
+      cell->armyRuntimeSavedOffset6C = 0;
       materialVariantRandomBits = Random_NextPrimary();
-      initializationCellCursor->runtimeOverlayOrHeightValue04 = 0xffffffff;
-      initializationCellCursor->flagsAndMaterial =
-           initializationCellCursor->flagsAndMaterial |
-           materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
-      initializationCellCursor = initializationCellCursor + 1;
-      initColumnsRemaining = initColumnsRemaining - 1;
-    } while (initColumnsRemaining != 0);
-    initRowsRemaining = initRowsRemaining - 1;
-    initColumnsRemaining = initGridWidth;
-  } while (initRowsRemaining != 0);
-  gridWidth = fieldGrid->gridWidth;
-  rowsRemaining = fieldGrid->gridHeight;
+      cell->runtimeOverlayOrHeightValue04 = 0xffffffff; /* ARGB opaque white */
+      cell->flagsAndMaterial =
+           cell->flagsAndMaterial | materialVariantRandomBits & FIELD_CELL_RANDOM_VARIANT_MASK;
+      cell++;
+      columnsRemaining--;
+    } while (columnsRemaining != 0);
+    rowsRemaining--;
+    columnsRemaining = cellsPerRow;
+  } while (rowsRemaining != 0);
+  bottomRowCellsRemaining = fieldGrid->gridWidth;
+  edgeRowsRemaining = fieldGrid->gridHeight;
   currentRowFirstCell = fieldGrid->cells;
-  topRowCellsRemaining = gridWidth;
-  cellCursor = currentRowFirstCell;
+  topRowCellsRemaining = bottomRowCellsRemaining;
+  nextRowFirstCell = currentRowFirstCell;
   do {
-    cellCursor->flagsAndMaterial = cellCursor->flagsAndMaterial | FIELD_CELL_FIRST_ROW_BOUNDARY;
-    cellCursor = cellCursor + 1;
-    topRowCellsRemaining = topRowCellsRemaining - 1;
+    nextRowFirstCell->flagsAndMaterial = nextRowFirstCell->flagsAndMaterial | FIELD_CELL_FIRST_ROW_BOUNDARY;
+    nextRowFirstCell++;
+    topRowCellsRemaining--;
   } while (topRowCellsRemaining != 0);
   do {
     currentRowFirstCell->flagsAndMaterial =
          currentRowFirstCell->flagsAndMaterial | FIELD_CELL_FIRST_COLUMN_BOUNDARY;
-    cellCursor[-1].flagsAndMaterial =
-         cellCursor[-1].flagsAndMaterial | FIELD_CELL_LAST_COLUMN_BOUNDARY;
-    rowBytesOrBottomCellAddress = (int)cellCursor - (int)currentRowFirstCell;
+    nextRowFirstCell[-1].flagsAndMaterial =
+         nextRowFirstCell[-1].flagsAndMaterial | FIELD_CELL_LAST_COLUMN_BOUNDARY;
+    rowBytesOrBottomCellAddress = (int)nextRowFirstCell - (int)currentRowFirstCell;
     currentRowFirstCell = (FieldGridCell *)((int)currentRowFirstCell + rowBytesOrBottomCellAddress);
-    cellCursor = (FieldGridCell *)(rowBytesOrBottomCellAddress + (int)currentRowFirstCell);
-    rowsRemaining = rowsRemaining - 1;
-  } while (rowsRemaining != 0);
-  rowBytesOrBottomCellAddress = (int)currentRowFirstCell * 2 - (int)cellCursor;
+    nextRowFirstCell = (FieldGridCell *)(rowBytesOrBottomCellAddress + (int)currentRowFirstCell);
+    edgeRowsRemaining--;
+  } while (edgeRowsRemaining != 0);
+  /* both cursors ran one row past the grid: step back to the first cell of the last row */
+  rowBytesOrBottomCellAddress = (int)currentRowFirstCell * 2 - (int)nextRowFirstCell;
   do {
-    *(uint32_t *)(rowBytesOrBottomCellAddress + 0x50) = *(uint32_t *)(rowBytesOrBottomCellAddress + 0x50) | 0x80000000;
-    rowBytesOrBottomCellAddress = rowBytesOrBottomCellAddress + 0x80;
-    gridWidth = gridWidth - 1;
-  } while (gridWidth != 0);
-  return;
+    ((FieldGridCell *)rowBytesOrBottomCellAddress)->flagsAndMaterial =
+         ((FieldGridCell *)rowBytesOrBottomCellAddress)->flagsAndMaterial | FIELD_CELL_LAST_ROW_BOUNDARY;
+    rowBytesOrBottomCellAddress = rowBytesOrBottomCellAddress + 0x80; /* sizeof(FieldGridCell) */
+    bottomRowCellsRemaining--;
+  } while (bottomRowCellsRemaining != 0);
 }
 
 
 /* Address: 0x00503DB0.
-   Ownership: world/terrain/grid.
-   Purpose: Marks the field dirty and rebuilds each cell +0x54 lookup pointer from the low nibbles of the persisted
-   cell fields at +0x40 and +0x44. EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic
-   parameters or normal returns.
+   Marks the field surface dirty and re-binds every cell's terrain direction record (+0x54) from the low nibbles
+   of its world X/Y, the same 16x16 tiling FieldGrid_InitializeRuntimeCellsAndBoundaryFlags uses. The secondary
+   terrain resource load calls this instead of the full initialization, so the other cell state is kept.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
@@ -2043,9 +2035,9 @@ FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
   FieldGridDimension rowsRemaining;
   FieldGridCell *currentCell;
   FieldGridDimension gridWidth;
-  
+
   rowsRemaining = fieldGrid->gridHeight;
-  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
+  fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | FIELD_GRID_RUNTIME_SURFACE_DIRTY;
   gridWidth = fieldGrid->gridWidth;
   currentCell = fieldGrid->cells;
   columnsRemaining = gridWidth;
@@ -2054,14 +2046,13 @@ FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
       currentCell->persistedAux54 =
            (FieldCellPersistedAux)
            (g_TerrainDirectionRecordTable256 +
-           (currentCell->worldY & 0xfU) + (currentCell->worldX & 0xfU) * 0x10);
-      currentCell = currentCell + 1;
-      columnsRemaining = columnsRemaining - 1;
+           (currentCell->worldY & 0xfU) + (currentCell->worldX & 0xfU) * 16);
+      currentCell++;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = gridWidth;
   } while (rowsRemaining != 0);
-  return;
 }
 
 
@@ -2174,193 +2165,200 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
 
 
 /* Address: 0x00504B10.
-   Ownership: world/terrain/grid.
-   Purpose: Walks the field grid for at most 0x400 boundary steps and tests the ray against the primary terrain
-   triangles built from cell terrainHeight values. On hit it returns the nearest distance in EAX, the cell material
-   byte in EDX, and CF set; no hit returns 0x7FFFFFFF with CF clear. Kept distinct from Q12 coordinates, Q4/Q5
-   resource scales, attachment ordinals, and raw renderer flags. Explicit Q12 fixed-point value proved by the
-   accepted parameter name and fixed-math/geometry consumer. Storage remains one signed 32-bit word.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   TerrainTriangle_IntersectRayDistance [world/terrain/height], TerrainRay_AdvanceGridTraversal
-   [world/terrain/height].
+   Casts a ray from a world point along (elevation, azimuth) scaled to rayScaleQ12 and walks the field grid cell by
+   cell towards its end point, testing the two terrain triangles of each in-bounds cell. On a hit it returns the
+   distance and the cell's material byte with CF set; a miss (or more than FIELD_GRID_RAYCAST_MAX_STEPS cells)
+   returns FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear. Used for line-of-fire tests and terrain picking.
 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
 
 {
   FieldGridCell *currentCell;
-  FieldGridDimension boundsGridWidth;
-  FieldGridDimension boundsGridHeight;
+  FieldGridDimension gridWidth;
+  FieldGridDimension gridHeight;
   FieldGridDimension rowLength;
-  int64_t rayEndYProduct;
-  int64_t rayEndXProduct;
-  uint32_t rayStartCoord0Q12;
-  int rayEndCoord0Q12;
-  uint32_t rayStartCoord1Q12;
-  int rayEndCoord1Q12;
-  uint32_t rayStartHalfCoord0Q12;
-  uint32_t endHalfCoordOrCurrentCoord1Q12;
-  uint32_t currentGridCoord0Q12;
-  int cellLocalCoord1Q12;
+  int64_t rayEndColumnProduct;
+  int64_t rayEndRowProduct;
+  uint32_t rayStartRowQ12;
+  int rayEndRowQ12;
+  uint32_t rayStartColumnQ12;
+  int rayEndColumnQ12;
+  uint32_t rayStartHalfRowQ12;
+  uint32_t rayEndHalfRowOrCurrentColumnQ12;
+  uint32_t currentRowQ12;
+  int currentRowFromStartQ12;
   int stepsRemaining;
   bool traversalDone;
   TerrainRayTriangleResult triangleHit;
   TerrainRaycastResult missResult;
   TerrainRaycastResult hitResult;
   FixedDirection rayDirection;
-  
-  boundsGridWidth = fieldGrid->gridWidth;
-  boundsGridHeight = fieldGrid->gridHeight;
-  rayStartHalfCoord0Q12 = (int)((uint64_t)((int64_t)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint32_t)((int64_t)rayOriginXQ12 * -0x20c8cc) >> 0x15;
-  rayStartCoord1Q12 =
-       ((int)((uint64_t)((int64_t)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint32_t)((int64_t)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - rayStartHalfCoord0Q12;
-  rayStartCoord0Q12 = rayStartHalfCoord0Q12 * 2;
+
+  gridWidth = fieldGrid->gridWidth;
+  gridHeight = fieldGrid->gridHeight;
+  /* FieldGrid_WorldToGridQ12 inlined for the ray start */
+  rayStartHalfRowQ12 = (int)((uint64_t)((int64_t)rayOriginYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
+          (uint32_t)((int64_t)rayOriginYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
+  rayStartColumnQ12 =
+       ((int)((uint64_t)((int64_t)rayOriginXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
+       (uint32_t)((int64_t)rayOriginXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - rayStartHalfRowQ12;
+  rayStartRowQ12 = rayStartHalfRowQ12 * 2;
   rowLength = fieldGrid->gridWidth;
+  /* &cells[row * rowLength + column], written as the original's byte arithmetic */
   currentCell = (FieldGridCell *)
-                (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
-                ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
+                (fieldGrid->cells[(int)rayStartColumnQ12 >> 12].runtime0C_3F +
+                ((int)rayStartRowQ12 >> 12) * rowLength * 0x80 - 0xc);
   rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  rayEndYProduct = (int64_t)(int)(rayDirection.x + rayOriginYQ12) * 0x1c6e9c;
-  rayEndXProduct = (int64_t)(int)(rayDirection.y + rayOriginXQ12) * -0x20c8cc;
-  endHalfCoordOrCurrentCoord1Q12 = (int)((uint64_t)rayEndXProduct >> 0x20) << 0xb | (uint32_t)rayEndXProduct >> 0x15;
-  rayEndCoord1Q12 = ((int)((uint64_t)rayEndYProduct >> 0x20) << 0xc | (uint32_t)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
-  rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
-  stepsRemaining = 0x400;
-  endHalfCoordOrCurrentCoord1Q12 = rayStartCoord1Q12 & 0xfffff000;
-  currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
+  /* ...and for the ray end */
+  rayEndColumnProduct = (int64_t)(int)(rayDirection.x + rayOriginXQ12) * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rayEndRowProduct = (int64_t)(int)(rayDirection.y + rayOriginYQ12) * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  rayEndHalfRowOrCurrentColumnQ12 =
+       (int)((uint64_t)rayEndRowProduct >> 32) << 11 | (uint32_t)rayEndRowProduct >> 21;
+  rayEndColumnQ12 = ((int)((uint64_t)rayEndColumnProduct >> 32) << 12 | (uint32_t)rayEndColumnProduct >> 20) -
+                    rayEndHalfRowOrCurrentColumnQ12;
+  rayEndRowQ12 = rayEndHalfRowOrCurrentColumnQ12 * 2;
+  stepsRemaining = FIELD_GRID_RAYCAST_MAX_STEPS;
+  /* from here on the variable holds the current cell's column */
+  rayEndHalfRowOrCurrentColumnQ12 = rayStartColumnQ12 & ~(FIELD_GRID_CELL_Q12 - 1);
+  currentRowQ12 = rayStartRowQ12 & ~(FIELD_GRID_CELL_Q12 - 1);
   do {
-    stepsRemaining = stepsRemaining + -1;
+    stepsRemaining--;
     if (stepsRemaining == 0) break;
-    if ((((-1 < (int)endHalfCoordOrCurrentCoord1Q12) && (-1 < (int)currentGridCoord0Q12)) &&
-        ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
-       ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
-      cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
+    /* the cell and its right/lower neighbours must lie inside the grid */
+    if ((((-1 < (int)rayEndHalfRowOrCurrentColumnQ12) && (-1 < (int)currentRowQ12)) &&
+        ((int)rayEndHalfRowOrCurrentColumnQ12 < (int)((gridWidth - 1) * FIELD_GRID_CELL_Q12))) &&
+       ((int)currentRowQ12 < (int)((gridHeight - 1) * FIELD_GRID_CELL_Q12))) {
+      currentRowFromStartQ12 = currentRowQ12 + rayStartHalfRowQ12 * -2;
       triangleHit = TerrainTriangle_IntersectRayDistance
-                         (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
-                          rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
+                         (rayDirection.z,rayEndRowQ12 + rayStartHalfRowQ12 * -2,
+                          rayEndColumnQ12 - rayStartColumnQ12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
-                          currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
-                          ,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
+                          currentCell[1].terrainHeight,currentCell->terrainHeight,currentRowFromStartQ12,
+                          rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12);
       if (!triangleHit.missed) {
         hitResult.hit = true;
         hitResult.distanceQ12 = triangleHit.distanceQ12;
-        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
+        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
         return hitResult;
       }
-      endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
-      currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
+      /* the original subtracted the start in the argument registers and adds it back here */
+      rayEndHalfRowOrCurrentColumnQ12 =
+           (rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12) + rayStartColumnQ12;
+      currentRowQ12 = currentRowFromStartQ12 + rayStartRowQ12;
     }
     traversalDone = TerrainRay_AdvanceGridTraversal
-                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
+                       (rayEndRowQ12,rayEndColumnQ12,rayStartRowQ12,rayStartColumnQ12,
+                        rowLength * 0x80,currentCell,currentRowQ12,rayEndHalfRowOrCurrentColumnQ12);
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
-    endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
-    currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
+    rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
+    currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentGridCoord0Q12;
-  missResult.distanceQ12 = 0x7fffffff;
+  missResult.materialOrCellIndex = currentRowQ12; /* a miss leaves the traversal's row in EDX */
+  missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
   missResult.hit = false;
   return missResult;
 }
 
 
 /* Address: 0x00504CA0.
-   Ownership: world/terrain/grid.
-   Purpose: Mirrors the primary field raycast but tests the secondary surface formed by terrainHeight plus
-   waterSurfaceDelta at each triangle corner. The result contract matches the primary raycast. Kept distinct from
-   Q12 coordinates, Q4/Q5 resource scales, attachment ordinals, and raw renderer flags. Explicit Q12 fixed-point
-   value proved by the accepted parameter name and fixed-math/geometry consumer. Storage remains one signed 32-bit
-   word.
-   Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   TerrainTriangle_IntersectRayDistance [world/terrain/height], TerrainRay_AdvanceGridTraversal
-   [world/terrain/height].
+   Same walk as FieldGrid_RaycastTerrainSurfaceDistance, but against the secondary (water) surface: each triangle
+   corner is terrainHeight + waterSurfaceDelta. Same result contract: distance and material byte with CF set on
+   a hit, FIELD_GRID_RAYCAST_MISS_DISTANCE with CF clear on a miss.
 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
-          Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
+          Q12 rayOriginYQ12,Q12 rayOriginXQ12,FieldGridAsset *fieldGrid)
 
 {
   FieldGridCell *currentCell;
-  FieldGridDimension boundsGridWidth;
-  FieldGridDimension boundsGridHeight;
+  FieldGridDimension gridWidth;
+  FieldGridDimension gridHeight;
   FieldGridDimension rowLength;
-  int64_t rayEndYProduct;
-  int64_t rayEndXProduct;
-  uint32_t rayStartCoord0Q12;
-  int rayEndCoord0Q12;
-  uint32_t rayStartCoord1Q12;
-  int rayEndCoord1Q12;
-  uint32_t rayStartHalfCoord0Q12;
-  uint32_t endHalfCoordOrCurrentCoord1Q12;
-  uint32_t currentGridCoord0Q12;
-  int cellLocalCoord1Q12;
+  int64_t rayEndColumnProduct;
+  int64_t rayEndRowProduct;
+  uint32_t rayStartRowQ12;
+  int rayEndRowQ12;
+  uint32_t rayStartColumnQ12;
+  int rayEndColumnQ12;
+  uint32_t rayStartHalfRowQ12;
+  uint32_t rayEndHalfRowOrCurrentColumnQ12;
+  uint32_t currentRowQ12;
+  int currentRowFromStartQ12;
   int stepsRemaining;
   bool traversalDone;
   TerrainRayTriangleResult triangleHit;
   TerrainRaycastResult missResult;
   TerrainRaycastResult hitResult;
   FixedDirection rayDirection;
-  
-  boundsGridWidth = fieldGrid->gridWidth;
-  boundsGridHeight = fieldGrid->gridHeight;
-  rayStartHalfCoord0Q12 = (int)((uint64_t)((int64_t)rayOriginXQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint32_t)((int64_t)rayOriginXQ12 * -0x20c8cc) >> 0x15;
-  rayStartCoord1Q12 =
-       ((int)((uint64_t)((int64_t)rayOriginYQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-       (uint32_t)((int64_t)rayOriginYQ12 * 0x1c6e9c) >> 0x14) - rayStartHalfCoord0Q12;
-  rayStartCoord0Q12 = rayStartHalfCoord0Q12 * 2;
+
+  gridWidth = fieldGrid->gridWidth;
+  gridHeight = fieldGrid->gridHeight;
+  /* FieldGrid_WorldToGridQ12 inlined for the ray start */
+  rayStartHalfRowQ12 = (int)((uint64_t)((int64_t)rayOriginYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
+          (uint32_t)((int64_t)rayOriginYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
+  rayStartColumnQ12 =
+       ((int)((uint64_t)((int64_t)rayOriginXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
+       (uint32_t)((int64_t)rayOriginXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - rayStartHalfRowQ12;
+  rayStartRowQ12 = rayStartHalfRowQ12 * 2;
   rowLength = fieldGrid->gridWidth;
+  /* &cells[row * rowLength + column], written as the original's byte arithmetic */
   currentCell = (FieldGridCell *)
-                (fieldGrid->cells[(int)rayStartCoord1Q12 >> 0xc].runtime0C_3F +
-                ((int)rayStartCoord0Q12 >> 0xc) * rowLength * 0x80 + -0xc);
+                (fieldGrid->cells[(int)rayStartColumnQ12 >> 12].runtime0C_3F +
+                ((int)rayStartRowQ12 >> 12) * rowLength * 0x80 - 0xc);
   rayDirection = FixedMath_DirectionFromAnglesScaledRegs(elevationAngle,azimuthAngle,rayScaleQ12);
-  rayEndYProduct = (int64_t)(int)(rayDirection.x + rayOriginYQ12) * 0x1c6e9c;
-  rayEndXProduct = (int64_t)(int)(rayDirection.y + rayOriginXQ12) * -0x20c8cc;
-  endHalfCoordOrCurrentCoord1Q12 = (int)((uint64_t)rayEndXProduct >> 0x20) << 0xb | (uint32_t)rayEndXProduct >> 0x15;
-  rayEndCoord1Q12 = ((int)((uint64_t)rayEndYProduct >> 0x20) << 0xc | (uint32_t)rayEndYProduct >> 0x14) - endHalfCoordOrCurrentCoord1Q12;
-  rayEndCoord0Q12 = endHalfCoordOrCurrentCoord1Q12 * 2;
-  stepsRemaining = 0x400;
-  endHalfCoordOrCurrentCoord1Q12 = rayStartCoord1Q12 & 0xfffff000;
-  currentGridCoord0Q12 = rayStartCoord0Q12 & 0xfffff000;
+  /* ...and for the ray end */
+  rayEndColumnProduct = (int64_t)(int)(rayDirection.x + rayOriginXQ12) * FIELD_GRID_WORLD_X_TO_COLUMN_Q20;
+  rayEndRowProduct = (int64_t)(int)(rayDirection.y + rayOriginYQ12) * FIELD_GRID_WORLD_Y_TO_ROW_Q20;
+  rayEndHalfRowOrCurrentColumnQ12 =
+       (int)((uint64_t)rayEndRowProduct >> 32) << 11 | (uint32_t)rayEndRowProduct >> 21;
+  rayEndColumnQ12 = ((int)((uint64_t)rayEndColumnProduct >> 32) << 12 | (uint32_t)rayEndColumnProduct >> 20) -
+                    rayEndHalfRowOrCurrentColumnQ12;
+  rayEndRowQ12 = rayEndHalfRowOrCurrentColumnQ12 * 2;
+  stepsRemaining = FIELD_GRID_RAYCAST_MAX_STEPS;
+  /* from here on the variable holds the current cell's column */
+  rayEndHalfRowOrCurrentColumnQ12 = rayStartColumnQ12 & ~(FIELD_GRID_CELL_Q12 - 1);
+  currentRowQ12 = rayStartRowQ12 & ~(FIELD_GRID_CELL_Q12 - 1);
   do {
-    stepsRemaining = stepsRemaining + -1;
+    stepsRemaining--;
     if (stepsRemaining == 0) break;
-    if ((((-1 < (int)endHalfCoordOrCurrentCoord1Q12) && (-1 < (int)currentGridCoord0Q12)) &&
-        ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
-       ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
-      cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
+    /* the cell and its right/lower neighbours must lie inside the grid */
+    if ((((-1 < (int)rayEndHalfRowOrCurrentColumnQ12) && (-1 < (int)currentRowQ12)) &&
+        ((int)rayEndHalfRowOrCurrentColumnQ12 < (int)((gridWidth - 1) * FIELD_GRID_CELL_Q12))) &&
+       ((int)currentRowQ12 < (int)((gridHeight - 1) * FIELD_GRID_CELL_Q12))) {
+      currentRowFromStartQ12 = currentRowQ12 + rayStartHalfRowQ12 * -2;
       triangleHit = TerrainTriangle_IntersectRayDistance
-                         (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
-                          rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
+                         (rayDirection.z,rayEndRowQ12 + rayStartHalfRowQ12 * -2,
+                          rayEndColumnQ12 - rayStartColumnQ12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight +
                           currentCell[rowLength + 1].waterSurfaceDelta,
                           currentCell[rowLength].terrainHeight + currentCell[rowLength].waterSurfaceDelta,
                           currentCell[1].terrainHeight + currentCell[1].waterSurfaceDelta,
                           currentCell->waterSurfaceDelta + currentCell->terrainHeight,
-                          cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
+                          currentRowFromStartQ12,rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12);
       if (!triangleHit.missed) {
         hitResult.hit = true;
         hitResult.distanceQ12 = triangleHit.distanceQ12;
-        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
+        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK;
         return hitResult;
       }
-      endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
-      currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
+      /* the original subtracted the start in the argument registers and adds it back here */
+      rayEndHalfRowOrCurrentColumnQ12 =
+           (rayEndHalfRowOrCurrentColumnQ12 - rayStartColumnQ12) + rayStartColumnQ12;
+      currentRowQ12 = currentRowFromStartQ12 + rayStartRowQ12;
     }
     traversalDone = TerrainRay_AdvanceGridTraversal
-                       (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
-                        rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
+                       (rayEndRowQ12,rayEndColumnQ12,rayStartRowQ12,rayStartColumnQ12,
+                        rowLength * 0x80,currentCell,currentRowQ12,rayEndHalfRowOrCurrentColumnQ12);
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
-    endHalfCoordOrCurrentCoord1Q12 = g_TerrainRayNextCoord1Q12;
-    currentGridCoord0Q12 = g_TerrainRayNextCoord0Q12;
+    rayEndHalfRowOrCurrentColumnQ12 = g_TerrainRayNextCoord1Q12;
+    currentRowQ12 = g_TerrainRayNextCoord0Q12;
   } while (!traversalDone);
-  missResult.materialOrCellIndex = currentGridCoord0Q12;
-  missResult.distanceQ12 = 0x7fffffff;
+  missResult.materialOrCellIndex = currentRowQ12; /* a miss leaves the traversal's row in EDX */
+  missResult.distanceQ12 = FIELD_GRID_RAYCAST_MISS_DISTANCE;
   missResult.hit = false;
   return missResult;
 }
@@ -2643,10 +2641,9 @@ FieldGrid_ClearOccupancyMaskByteBit0AllCells
 
 
 /* Address: 0x00507580.
-   Ownership: world/terrain/grid.
-   Purpose: Typed parameters: p2 worldXQ12→Q12, p3 worldYQ12→Q12. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Rounds a world point to the nearest field-grid cell and tests occupancy bits 0/1 of the active faction there.
+   Returns false (CF clear) when one of them is set, true when the point is outside the grid or neither bit is
+   set. Unit, shot and effect code play positioned sounds only when this returns false.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 TerrainGrid_TestProjectedCellMaskBits01
@@ -2657,17 +2654,20 @@ TerrainGrid_TestProjectedCellMaskBits01
   int gridColumnIndex;
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  
+
   activeFieldGrid = worldRuntime->fieldGrid;
-  gridHalfRowCoordinateQ12 = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
-  gridColumnIndex = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - gridHalfRowCoordinateQ12) + 0x800) >> 0xc;
-  if ((((-1 < gridColumnIndex) && (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 0xc, -1 < gridRowIndex)) &&
+  /* FieldGrid_WorldToGridQ12 inlined, then rounded (+0x800 = half a cell) to whole cells */
+  gridHalfRowCoordinateQ12 = (int)((uint64_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 32) << 11 |
+          (uint32_t)((int64_t)worldYQ12 * FIELD_GRID_WORLD_Y_TO_ROW_Q20) >> 21;
+  gridColumnIndex = (int)((((int)((uint64_t)((int64_t)worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 32) << 12 |
+                 (uint32_t)((int64_t)worldXQ12 * FIELD_GRID_WORLD_X_TO_COLUMN_Q20) >> 20) - gridHalfRowCoordinateQ12) +
+                 0x800) >> 12;
+  if ((((-1 < gridColumnIndex) && (gridRowIndex = (int)(gridHalfRowCoordinateQ12 * 2 + 0x800) >> 12, -1 < gridRowIndex)) &&
       (gridColumnIndex < (int)activeFieldGrid->gridWidth)) &&
      ((gridRowIndex < (int)activeFieldGrid->gridHeight &&
       ((activeFieldGrid->cells[activeFieldGrid->gridWidth * gridRowIndex + gridColumnIndex].runtime60_6B
-        [worldRuntime->activeFactionRuntimeIndex + 0x10] & 3) != 0)))) {
+        [worldRuntime->activeFactionRuntimeIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] &
+        FIELD_CELL_OCCUPANCY_BITS01) != 0)))) {
     return false;
   }
   return true;
@@ -3616,11 +3616,10 @@ FieldGrid_ApplyMaskedRegionCore
 
 
 /* Address: 0x005052E0.
-   Ownership: world/terrain/grid.
-   Purpose: Uses the six neighboring cell positions and heights to derive fixed-point normal directions for both
-   terrain triangles and stores their packed angle pairs at cell offsets +0x08 and +0x78. EAX, ECX, and EDX are
-   preserved or incidental caller state and are not synthetic parameters or normal returns.
-   Cross-module calls: FixedMath_VectorToAngles3Regs [core/math/fixed].
+   Recomputes a cell's two vertex normals from its six lattice neighbours and stores them as packed
+   (azimuth | elevation << 16) angle pairs: triangle0NormalAngles (+0x08) for the terrain surface and
+   triangle1NormalAngles (+0x78) for the secondary surface (terrainHeight + waterSurfaceDelta). The lighting in
+   FieldGridCell_ComputeDirectionalLightColor reads the first one.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGridCell_RecomputeTriangleNormalAngles
@@ -3635,7 +3634,14 @@ FieldGridCell_RecomputeTriangleNormalAngles
   int neighborDeltaE;
   int neighborDeltaF;
   FixedVectorAngles normalAngles;
-  
+
+  /* The six neighbours of the triangular lattice, addressed as raw byte offsets from the cell (0x80 bytes per
+     cell, rowStrideBytes per row; worldX +0x40, worldY +0x44, terrainHeight +0x48, waterSurfaceDelta +0x4C):
+       cell[1] right, cell[-1] left, +rowStrideBytes below, -rowStrideBytes above,
+       +rowStrideBytes - 0x80 below-left, -rowStrideBytes + 0x80 above-right.
+     Each normal is (-sum(dX * dH), -sum(dY * dH), 0xC00000) over the neighbours. First pass (terrain):
+     rightDelta.. = right, A = below, B = above, C = left, D = below-left, E = above-right. Second pass (surface):
+     rightDelta.. = -rowStrideBytes, A = right, B = below, C = above, D = left, E = below-left, F = above-right. */
   rightDeltaOrNegativeStride = cell[1].terrainHeight - cell->terrainHeight;
   neighborDeltaA = *(int *)(cell->runtime60_6B + rowStrideBytes + -0x18) - cell->terrainHeight;
   neighborDeltaB = *(int *)((int)cell + (0x48 - rowStrideBytes)) - cell->terrainHeight;
@@ -3656,7 +3662,7 @@ FieldGridCell_RecomputeTriangleNormalAngles
                        (cell[-1].worldX - cell->worldX) * neighborDeltaC) -
                       (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaD
                       ) - (*(int *)((int)cell + (0xc0 - rowStrideBytes)) - cell->worldX) * neighborDeltaE);
-  cell->triangle0NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 0x10;
+  cell->triangle0NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
   rightDeltaOrNegativeStride = -rowStrideBytes;
   neighborDeltaA = ((cell[1].terrainHeight + cell[1].waterSurfaceDelta) - cell->terrainHeight) -
           cell->waterSurfaceDelta;
@@ -3685,29 +3691,25 @@ FieldGridCell_RecomputeTriangleNormalAngles
                        (cell[-1].worldX - cell->worldX) * neighborDeltaD) -
                       (*(int *)(cell->runtime0C_3F + rowStrideBytes + -0x4c) - cell->worldX) * neighborDeltaE
                       ) - (*(int *)((int)cell + rightDeltaOrNegativeStride + 0xc0) - cell->worldX) * neighborDeltaF);
-  cell->triangle1NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 0x10;
-  return;
+  cell->triangle1NormalAngles = normalAngles.azimuthAngle | normalAngles.elevationAngle << 16;
 }
 
 
 /* Address: 0x00505690.
-   Ownership: world/terrain/grid.
-   Purpose: Converts the first triangle normal angles at +0x08 to a Q28 direction, evaluates it against the shared
-   light direction, selects the corresponding color-table entry, and stores the color and companion value at
-   +0x58/+0x5C. EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or
-   normal returns.
-   Cross-module calls: FixedMath_DirectionFromAnglesQ28Regs [core/math/fixed].
+   Diffuse terrain lighting for one cell: turns the terrain normal (triangle0NormalAngles) back into a Q28
+   direction, dots it with the global light direction and looks the result up in the directional light colour
+   table (+0x58). The secondary surface always gets the one fixed secondary colour (+0x5C).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
 
 {
-  FixedDirectionXZEdxEax8 triangleNormalDirectionXZQ28;
   FixedDirection normalDirection;
   PackedArgb32 directionalLightColor;
-  
+
+  /* packed as azimuth (low word) | elevation (high word) */
   normalDirection = FixedMath_DirectionFromAnglesQ28Regs
-                    ((int)cell->triangle0NormalAngles >> 0x10,cell->triangle0NormalAngles & 0xffff);
+                    ((int)cell->triangle0NormalAngles >> 16,cell->triangle0NormalAngles & 0xffff);
   /* the signed Q8 dot product indexes -256..256: g_TerrainLightingColorRampArgb256 lies directly
      before this table and holds the shaded half */
   directionalLightColor =
@@ -3715,9 +3717,8 @@ FieldGridCell_ComputeDirectionalLightColor(FieldGridCell *cell)
        [(int)((uint64_t)((int64_t)(int)normalDirection.x * (int64_t)(int)g_TerrainLightDirectionX) >> 0x20) +
         (int)((uint64_t)((int64_t)(int)normalDirection.y * (int64_t)(int)g_TerrainLightDirectionY) >> 0x20) +
         (int)((uint64_t)((int64_t)(int)normalDirection.z * (int64_t)(int)g_TerrainLightDirectionZ) >> 0x20) >>
-        0x10];
+        16];
   cell->secondarySurfaceDirectionalLightColor5C = g_TerrainDirectionalLightSecondaryColor;
   cell->groundDirectionalLightColor58 = directionalLightColor;
-  return;
 }
 

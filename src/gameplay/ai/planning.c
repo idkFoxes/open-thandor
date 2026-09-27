@@ -232,10 +232,11 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
 
 
 /* Address: 0x005379E0.
-   Ownership: gameplay/ai/planning.
-   Purpose: Scans the secondary AI entity workspace and collects up to four unique combined grid-mask classes
-   derived from each active entity definition. When no class is found it installs the verified default mask
-   0x90000100.
+   Collects up to four distinct movement masks of the faction's own units (workspace 01) into
+   g_AiActiveGridMaskClass0..3 (0xFFFFFFFF = unused): GRID_SCRATCH_BLOCKED | distance-band bit (8 + low class)
+   | terrain bit (24 + high class), with both classes taken from the unit's model runtime. The site scan accepts
+   a general site when its scratch neighbourhood avoids every bit of one of these masks. Without any unit
+   class 0 falls back to 0x90000100 (band bit 8, terrain bit 28).
 */
 void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses(void)
 
@@ -258,11 +259,13 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
   maskClass1 = g_AiActiveGridMaskClass1;
   maskClass2 = g_AiActiveGridMaskClass2;
   runtimeWorkspaceEntry = g_AiWorkspaceBuffer01_Size0200;
+  /* The condition chain below inserts combinedMask into the first free slot unless one of the slots already
+     holds it; the slots are written back through the locals as in the original. */
   for (remainingEntries = g_AiWorkspace01Count; g_AiActiveGridMaskClass0 = maskClass0, remainingEntries != 0;
-      remainingEntries = remainingEntries + -1) {
+      remainingEntries = remainingEntries - 1) {
     g_AiActiveGridMaskClass1 = maskClass1;
     g_AiActiveGridMaskClass2 = maskClass2;
-    if (runtimeWorkspaceEntry->armyRuntime != (ArmyRuntimeSlot *)0x0) {
+    if (runtimeWorkspaceEntry->armyRuntime != NULL) {
       entityModelRuntime = (runtimeWorkspaceEntry->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
       lowClassShift = entityModelRuntime[1].classLinkState.modelLinkOrState60.signedScalarState;
       if ((*(int *)(entityModelRuntime->reserved10_37 + 8) != 0) && (-1 < lowClassShift)) {
@@ -281,7 +284,7 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
         }
       }
     }
-    runtimeWorkspaceEntry = runtimeWorkspaceEntry + 1;
+    runtimeWorkspaceEntry++;
     maskClass0 = g_AiActiveGridMaskClass0;
     maskClass1 = g_AiActiveGridMaskClass1;
     maskClass2 = g_AiActiveGridMaskClass2;
@@ -478,7 +481,7 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
     AiCandidateWorkspace_SortDescending();
     remainingXenite = g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4;
     do {
-      candidateCost = AiCandidateWorkspace_GetEntryEntityValue(entry);
+      candidateCost = AiCandidateWorkspace_GetEntryXeniteCost(entry);
       insufficientOrNoProducer = remainingXenite < candidateCost;
       remainingXenite = remainingXenite - candidateCost;
       if (insufficientOrNoProducer) {
@@ -498,18 +501,11 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
 
 
 /* Address: 0x005393F0.
-   Ownership: gameplay/ai/planning.
-   Purpose: Attempts to derive and place asset ID 0x14D from existing 0x14A or 0x14C workspace records. It searches
-   a valid anchor, creates the runtime object, initializes model and auxiliary state, and falls back to generic
-   army placement when neither source class succeeds. Stock ARM contains 675 records and 326 unique ids; placement
-   workspace, producer, tier, class, and faction-role semantics are not inferred from numeric adjacency.
-   Local calls: AiConstructionPlanner_ConsumeFactionPendingArmyAsset,
-   AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate.
-   Cross-module calls: AiPlacement_ReserveAdditionalSpecialSite [gameplay/ai/placement],
-   AiPlacement_FindNearestValidWorkspace09Anchor [gameplay/ai/placement], ArmyRuntime_CreateInstanceFromAsset
-   [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
-   ArmyRuntime_DispatchClassCommand [gameplay/army/runtime], EffectRuntimePool_CreateInstanceFromDefinition
-   [world/effects/runtime].
+   Builds a pending ARM_0333 (the caller's only asset here, 0x14D) next to a resource site: first for each
+   ARM_0330 site of workspace 08, then for each ARM_0332 site, where AiPlacement_ReserveAdditionalSpecialSite
+   accepts the site it creates the structure at the nearest valid workspace-09 cell, initialises it like the other
+   planners, starts its effect and removes it from the pending list (a failed creation ends the attempt). Without
+   such a site it falls back to AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiConstructionPlanner_PlaceDerivedAsset14D
@@ -522,28 +518,29 @@ AiConstructionPlanner_PlaceDerivedAsset14D
   ArmyRuntimeSlot *createdArmySlot;
   ModelRuntimeSlot *createdModelRuntime;
   ArmyRuntimeSlot **armyRuntime;
-  AiTerrainFeatureWorkspaceEntry *site14AEntry;
-  AiTerrainFeatureWorkspaceEntry *site14CEntry;
-  int remaining14AEntries;
-  int remaining14CEntries;
+  AiTerrainFeatureWorkspaceEntry *arm0330SiteEntry;
+  AiTerrainFeatureWorkspaceEntry *arm0332SiteEntry;
+  int remainingArm0330Entries;
+  int remainingArm0332Entries;
   bool siteRejected;
   ArmyRuntimeCreateResult createdInstance;
   AiAnchorResult anchorResult;
   
-  site14AEntry = g_AiWorkspaceBuffer08_Size0200;
-  remaining14AEntries = g_AiWorkspace08Count;
+  arm0330SiteEntry = g_AiWorkspaceBuffer08_Size0200;
+  remainingArm0330Entries = g_AiWorkspace08Count;
   if (g_AiWorkspace08Count != 0) {
     do {
-      if (site14AEntry->armyAssetId == ARM_0330_BUILDING_MDL0303) {
-        sourceCell = site14AEntry->cell;
+      if (arm0330SiteEntry->armyAssetId == ARM_0330_BUILDING_MDL0303) {
+        sourceCell = arm0330SiteEntry->cell;
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
-                          (site14AEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
+                          (arm0330SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                              (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
+                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorResult.worldYQ12,anchorResult.worldXQ12,
+                               factionIndex,armyAssetId,
                                worldRuntime);
             armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
             if (createdInstance.failed) {
@@ -569,22 +566,23 @@ AiConstructionPlanner_PlaceDerivedAsset14D
           }
         }
       }
-      site14AEntry = site14AEntry + 1;
-      remaining14AEntries = remaining14AEntries + -1;
-      site14CEntry = g_AiWorkspaceBuffer08_Size0200;
-      remaining14CEntries = g_AiWorkspace08Count;
-    } while (remaining14AEntries != 0);
+      arm0330SiteEntry++;
+      remainingArm0330Entries--;
+      arm0332SiteEntry = g_AiWorkspaceBuffer08_Size0200;
+      remainingArm0332Entries = g_AiWorkspace08Count;
+    } while (remainingArm0330Entries != 0);
     do {
-      if (site14CEntry->armyAssetId == ARM_0332_BUILDING_MDL0302) {
-        sourceCell = site14CEntry->cell;
+      if (arm0332SiteEntry->armyAssetId == ARM_0332_BUILDING_MDL0302) {
+        sourceCell = arm0332SiteEntry->cell;
         siteRejected = AiPlacement_ReserveAdditionalSpecialSite
-                          (site14CEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
+                          (arm0332SiteEntry->armyAssetId,sourceCell,factionIndex,worldRuntime);
         if (!siteRejected) {
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                              (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
+                              (ARMY_CREATE_UNLOCK_TECHNOLOGY,0,anchorResult.worldYQ12,anchorResult.worldXQ12,
+                               factionIndex,armyAssetId,
                                worldRuntime);
             armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
             if (createdInstance.failed) {
@@ -610,9 +608,9 @@ AiConstructionPlanner_PlaceDerivedAsset14D
           }
         }
       }
-      remaining14CEntries = remaining14CEntries + -1;
-      site14CEntry = site14CEntry + 1;
-    } while (remaining14CEntries != 0);
+      remainingArm0332Entries--;
+      arm0332SiteEntry++;
+    } while (remainingArm0332Entries != 0);
   }
   AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate(armyAssetId,factionIndex,worldRuntime);
   return;
@@ -776,17 +774,12 @@ AiStrategicClass_AddWeightedClassCandidate
 
 
 /* Address: 0x005397C0.
-   Ownership: gameplay/ai/planning.
-   Purpose: Places an extended asset at a workspace09 point selected by distance from the faction anchor and
-   separation from primary and secondary AI workspaces. The chosen runtime object is created, initialized, and
-   committed to the faction. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer,
-   tier, class, and faction-role semantics are not inferred from numeric adjacency.
-   Local calls: AiConstructionPlanner_ConsumeFactionPendingArmyAsset.
-   Cross-module calls: AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint [gameplay/ai/workspaces],
-   AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
-   ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement],
-   AiWorkspace03_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces], ArmyRuntime_CreateInstanceFromAsset
-   [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
+   Default placement of a pending building (every asset the request dispatcher does not handle specially), only
+   while the faction's primary anchor cooldown is nonzero: among the workspace-09 cells at least 0x2000 from every
+   active primary-workspace structure it takes the one with the lowest Manhattan distance to the primary anchor
+   plus 4x the distance to the nearest workspace-02 site (at most 0x5000) or, without such a site, 2x the
+   distance to the nearest workspace-03 site (at most 0x8000), where the mode-1 placement test passes. The
+   building is created there, initialised like the other planners and removed from the pending list.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
@@ -858,12 +851,12 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
           }
         }
       }
-      gridCellCursor = gridCellCursor + 1;
-      remainingCells = remainingCells + -1;
+      gridCellCursor++;
+      remainingCells--;
     } while (remainingCells != 0);
     if (bestScore < 0x7fffffff) {
       createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                        (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
+                        (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                          bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
       createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
       if (!createdInstance.failed) {
@@ -992,13 +985,12 @@ AiArmyCandidate_AddBestScoredVariantC
 
 
 /* Address: 0x00537630.
-   Ownership: gameplay/ai/planning.
-   Purpose: Checks whether a technology or army candidate has a currently eligible producer or supporting runtime
-   entity. The scan covers technology lists, army class masks, production state, and relevant entity categories; CF
-   is clear when support is found and set otherwise. Stock tech.tec has 512 records over canonical ids 0..255;
-   localized titles do not prove source-building, tier, direction, or effect mappings.
-   Cross-module calls: Technology_IsAvailableForFaction [gameplay/technology/runtime],
-   ArmyAssetRegistry_FindById [assets/army/catalog].
+   Returns false (CF clear) when an idle structure of workspace 00 can carry out a purchase candidate. A
+   technology must be available to the faction and listed in the 28 research slots (+0x1C8..+0x234) of the
+   definition of a structure whose runtimeFlags have none of 0x89. An army asset's producer class mask (asset +0x14) must not
+   overlap g_AiPurchaseAppliedArmyClassMask (one purchase per producer class and round); bit 0x10 needs a
+   class-11 structure with +0xB8 clear, bit 0x08 a class-22 structure with +0xAC clear, the bits 0xEE a class-13
+   structure whose definition mask at +0xC4 shares them and with +0xB8 clear (runtimeFlags without 0xC9 each).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPurchaseCandidate_HasEligibleProducer
@@ -1015,28 +1007,30 @@ AiPurchaseCandidate_HasEligibleProducer
   bool technologyAvailable;
   ArmyAssetLookupResult armyAssetLookup;
   
-  technologyIndex = candidateEntry->entityIdAndMultiplicity & 0xffff;
-  if ((candidateEntry->weightedScoreAndKind & 0xf) == 2) {
+  technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
+  if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
     technologyAvailable = Technology_IsAvailableForFaction(technologyIndex,factionIndex);
     workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
     countOrClassMask = g_AiWorkspace00Count;
     if (technologyAvailable) {
       for (; countOrClassMask != 0; countOrClassMask = countOrClassMask - 1) {
+        /* entitySlot[0] = definition, [0x3B] = runtimeFlags (+0xEC) */
         entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-        if ((entitySlot != (int *)0x0) && ((entitySlot[0x3b] & 0x89U) == 0)) {
+        if ((entitySlot != NULL) && ((entitySlot[0x3b] & 0x89U) == 0)) {
           technologySlotIndex = 0x1c;
           do {
             if (technologyIndex == *(RuntimeToken *)(*entitySlot + 0x1c4 + technologySlotIndex * 4)) {
               return false;
             }
-            technologySlotIndex = technologySlotIndex + -1;
+            technologySlotIndex--;
           } while (technologySlotIndex != 0);
         }
-        workspaceEntry = workspaceEntry + 1;
+        workspaceEntry++;
       }
     }
   }
   else {
+    /* the original ignores the lookup's CF and reads the class mask at +0x14 of whatever EAX holds */
     armyAssetLookup = ArmyAssetRegistry_FindById(technologyIndex);
     countOrClassMask = armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
     if ((g_AiWorkspace00Count != 0) && ((g_AiPurchaseAppliedArmyClassMask & countOrClassMask) == 0)) {
@@ -1047,12 +1041,12 @@ AiPurchaseCandidate_HasEligibleProducer
           remainingGuard = countOrClassMask & 0xee;
           while (remainingGuard != 0) {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != (int *)0x0) && (*(int *)(*entitySlot + 0x4c) == 0xd)) &&
+            if (((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_13)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 &&
                 (((*(uint32_t *)(*entitySlot + 0xc4) & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
               return false;
             }
-            workspaceEntry = workspaceEntry + 1;
+            workspaceEntry++;
             remainingEntries = remainingEntries - 1;
             remainingGuard = remainingEntries;
           }
@@ -1060,24 +1054,24 @@ AiPurchaseCandidate_HasEligibleProducer
         else {
           do {
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-            if (((entitySlot != (int *)0x0) && (*(int *)(*entitySlot + 0x4c) == 0x16)) &&
+            if (((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_22)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 && (entitySlot[0x2b] == 0)))) {
               return false;
             }
-            workspaceEntry = workspaceEntry + 1;
-            remainingEntries = remainingEntries - 1;
+            workspaceEntry++;
+            remainingEntries--;
           } while (remainingEntries != 0);
         }
       }
       else {
         do {
           entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
-          if ((((entitySlot != (int *)0x0) && (*(int *)(*entitySlot + 0x4c) == 0xb)) &&
+          if ((((entitySlot != NULL) && (*(int *)(*entitySlot + 0x4c) == MODEL_RUNTIME_CLASS_11)) &&
               ((entitySlot[0x3b] & 0xc9U) == 0)) && (entitySlot[0x2e] == 0)) {
             return false;
           }
-          workspaceEntry = workspaceEntry + 1;
-          remainingEntries = remainingEntries - 1;
+          workspaceEntry++;
+          remainingEntries--;
         } while (remainingEntries != 0);
       }
     }
@@ -1087,13 +1081,10 @@ AiPurchaseCandidate_HasEligibleProducer
 
 
 /* Address: 0x00537800.
-   Ownership: gameplay/ai/planning.
-   Purpose: Applies one accepted purchase candidate. Technology candidates are applied to the first matching
-   eligible entity and removed from its workspace slot; army candidates are registered for the faction and their
-   class mask is accumulated.
-   Cross-module calls: Technology_ApplyRecordToEntity [gameplay/technology/runtime],
-   GameFactionRuntime_RegisterArmyAssetPointers [gameplay/faction/runtime], ArmyAssetRegistry_FindById
-   [assets/army/catalog].
+   Carries out an affordable purchase candidate. A technology starts researching at the first idle workspace-00
+   structure that lists it (the checks of AiPurchaseCandidate_HasEligibleProducer), whose workspace slot is then
+   cleared so it takes no second job this round. An army asset is appended once to the faction's pending asset
+   list, and its producer class mask is added to g_AiPurchaseAppliedArmyClassMask.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiPurchaseCandidate_ApplyToFaction
@@ -1107,13 +1098,13 @@ AiPurchaseCandidate_ApplyToFaction
   RuntimeToken technologyIndex;
   ArmyAssetLookupResult armyAssetLookup;
   
-  technologyIndex = candidateEntry->entityIdAndMultiplicity & 0xffff;
+  technologyIndex = candidateEntry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
   remainingEntries = g_AiWorkspace00Count;
   workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
-  if ((candidateEntry->weightedScoreAndKind & 0xf) == 2) {
-    for (; remainingEntries != 0; remainingEntries = remainingEntries + -1) {
+  if ((candidateEntry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
+    for (; remainingEntries != 0; remainingEntries--) {
       entity = (GameEntityRuntime *)workspaceEntry->runtimeSlotAddressOrZero;
-      if ((entity != (GameEntityRuntime *)0x0) && (((entity->common).runtimeFlags & 0x89) == 0)) {
+      if ((entity != NULL) && (((entity->common).runtimeFlags & 0x89) == 0)) {
         technologySlotIndex = 0x1c;
         do {
           if (technologyIndex ==
@@ -1123,10 +1114,10 @@ AiPurchaseCandidate_ApplyToFaction
             workspaceEntry->runtimeSlotAddressOrZero = 0;
             return;
           }
-          technologySlotIndex = technologySlotIndex + -1;
+          technologySlotIndex--;
         } while (technologySlotIndex != 0);
       }
-      workspaceEntry = workspaceEntry + 1;
+      workspaceEntry++;
     }
   }
   else {
@@ -1332,12 +1323,11 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
 
 
 /* Address: 0x0053A9D0.
-   Ownership: gameplay/ai/planning.
-   Purpose: Evaluates strategic class IDs 0x12E through 0x132 using faction category totals, class-specific
-   coefficient tables, current workspace presence, and randomized tie variation. The best available class and
-   comparison state are returned through the engine register convention.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
-   ArmyAssetRegistry_FindEnabledById [assets/army/catalog].
+   Picks which of the buildings ARM_0302..ARM_0306 (0x12E..0x132) to propose next. It measures the share (%) of
+   scratch-grid cells free of terrain bit 24, of bits 25-27 and of bits 28-30; every building the faction lacks
+   (not in workspace 00) but may build (enabled) is scored with its row of g_AiStrategicClassTerrainWeights plus
+   14 random bits (0..0x3FFF), and the best one is returned in EBX (0 = none), with the number of these five
+   buildings already present in ECX.
 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
 AiStrategicClass_SelectBestCandidate12ETo132
@@ -1372,18 +1362,18 @@ AiStrategicClass_SelectBestCandidate12ETo132
   do {
     cellStateMask = scratchCell->stateMask;
     if ((cellStateMask & GRID_SCRATCH_TERRAIN_CLASS_BIT24) == 0) {
-      freeBit24Cells = freeBit24Cells + 1;
+      freeBit24Cells++;
     }
     if ((cellStateMask & (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
                  GRID_SCRATCH_TERRAIN_CLASS_BIT25)) == 0) {
-      freeBits25To27Cells = freeBits25To27Cells + 1;
+      freeBits25To27Cells++;
     }
     if ((cellStateMask & (GRID_SCRATCH_TERRAIN_CLASS_BIT30|GRID_SCRATCH_TERRAIN_CLASS_BIT29|
                  GRID_SCRATCH_TERRAIN_CLASS_BIT28)) == 0) {
-      freeBits28To30Cells = freeBits28To30Cells + 1;
+      freeBits28To30Cells++;
     }
-    scratchCell = scratchCell + 1;
-    remainingCellsOrTieBits = remainingCellsOrTieBits - 1;
+    scratchCell++;
+    remainingCellsOrTieBits--;
   } while (remainingCellsOrTieBits != 0);
   freeBits25To27PercentOrScore = (int)(((uint64_t)freeBits25To27Cells * 100) / (uint64_t)cellCount);
   freeBit24Percent = (int)(((uint64_t)freeBit24Cells * 100) / (uint64_t)cellCount);
@@ -1399,7 +1389,8 @@ AiStrategicClass_SelectBestCandidate12ETo132
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0302_BUILDING_MDL0300);
     pendingExistingCount = 4;
     if (!conditionMet) {
-      selectedToken = 0x12e;
+      selectedToken = ARM_0302_BUILDING_MDL0300;
+      /* the original rotates (ROR 5); a shift gives the same low 14 bits for the at most three steps used */
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
       bestCandidateScore =
@@ -1412,7 +1403,7 @@ AiStrategicClass_SelectBestCandidate12ETo132
   existingClassCount = pendingExistingCount;
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316);
   if (!conditionMet) {
-    existingClassCount = existingClassCount - 1;
+    existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0303_BUILDING_MDL0316);
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
@@ -1421,14 +1412,14 @@ AiStrategicClass_SelectBestCandidate12ETo132
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[1][1] +
               freeBit24Percent * g_AiStrategicClassTerrainWeights[1][2] + remainingCellsOrTieBits;
       if (bestCandidateScore < candidateScore) {
-        selectedToken = 0x12f;
+        selectedToken = ARM_0303_BUILDING_MDL0316;
         bestCandidateScore = candidateScore;
       }
     }
   }
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324);
   if (!conditionMet) {
-    existingClassCount = existingClassCount - 1;
+    existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0304_BUILDING_MDL0324);
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
@@ -1437,34 +1428,34 @@ AiStrategicClass_SelectBestCandidate12ETo132
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[2][1] +
               freeBit24Percent * g_AiStrategicClassTerrainWeights[2][2] + remainingCellsOrTieBits;
       if (bestCandidateScore < candidateScore) {
-        selectedToken = 0x130;
+        selectedToken = ARM_0304_BUILDING_MDL0324;
         bestCandidateScore = candidateScore;
       }
     }
   }
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0305_BUILDING_MDL0317);
   if (!conditionMet) {
-    existingClassCount = existingClassCount - 1;
+    existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0305_BUILDING_MDL0317);
     if (!conditionMet) {
       freeBits25To27PercentOrScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[3][0] +
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[3][1] +
               freeBit24Percent * g_AiStrategicClassTerrainWeights[3][2] + (randomizedTieBits & 0x3fff);
       if (bestCandidateScore < freeBits25To27PercentOrScore) {
-        selectedToken = 0x131;
+        selectedToken = ARM_0305_BUILDING_MDL0317;
         bestCandidateScore = freeBits25To27PercentOrScore;
       }
     }
   }
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0306_BUILDING_MDL0310);
   if (!conditionMet) {
-    existingClassCount = existingClassCount - 1;
+    existingClassCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0306_BUILDING_MDL0310);
     if (!conditionMet) {
-      /* the original also scores class 0x132 with g_AiStrategicClassTerrainWeights[4] but
-         discards the result (XOR EDX,EDX): 0x132 wins only over a negative best score */
+      /* the original also scores ARM_0306 with g_AiStrategicClassTerrainWeights[4] but
+         discards the result (XOR EDX,EDX): ARM_0306 wins only over a negative best score */
       if (bestCandidateScore < 0) {
-        selectedToken = 0x132;
+        selectedToken = ARM_0306_BUILDING_MDL0310;
       }
     }
   }
@@ -1475,14 +1466,11 @@ AiStrategicClass_SelectBestCandidate12ETo132
 
 
 /* Address: 0x0053AF00.
-   Ownership: gameplay/ai/planning.
-   Purpose: Selects among strategic class IDs 0x141 through 0x143 using faction category totals, knowledge
-   coefficients, current workspace entries, and randomized variation. The selected class and existing-count state
-   are returned through the original register convention. It is distinct from FrontendPlayerIndex_V306,
-   PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId
-   domains.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
-   ArmyAssetRegistry_FindEnabledById [assets/army/catalog].
+   Picks which of the buildings ARM_0321..ARM_0323 (0x141..0x143) to propose next. Each is scored from the
+   faction's AI pressure values 2..4 as sum((pressure + 1) * coefficient) / (pressure2 + pressure3 + pressure4 + 1)
+   with its own three ki.dat coefficients, plus 7 random bits; only buildings the faction lacks (not in workspace
+   00) but may build (enabled) compete. Returns the winner in EBX (0 = none) and the number of these three
+   buildings already present in ECX.
 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
 AiStrategicClass_SelectWeightedClass141To143
@@ -1550,27 +1538,27 @@ AiStrategicClass_SelectWeightedClass141To143
     class141Coefficient0OrExistingCount = 2;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0321_BUILDING_MDL0326);
     if ((!conditionMet) && (class141Score != 0)) {
-      selectedToken = 0x141;
+      selectedToken = ARM_0321_BUILDING_MDL0326;
       bestScore = class141Score;
     }
   }
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0322_BUILDING_MDL0327);
   if (!conditionMet) {
-    class141Coefficient0OrExistingCount = class141Coefficient0OrExistingCount - 1;
+    class141Coefficient0OrExistingCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0322_BUILDING_MDL0327);
     if ((!conditionMet) && (bestScore < class142Score)) {
-      selectedToken = 0x142;
+      selectedToken = ARM_0322_BUILDING_MDL0327;
       bestScore = class142Score;
     }
   }
   conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0323_BUILDING_MDL0328);
   if (!conditionMet) {
-    class141Coefficient0OrExistingCount = class141Coefficient0OrExistingCount - 1;
+    class141Coefficient0OrExistingCount--;
     conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0323_BUILDING_MDL0328);
     if ((!conditionMet) &&
        (bestScore < ((pressure2For143 + 1) * class143Coefficient0 + (pressure3For143 + 1) * class143Coefficient1 + (pressure4For143 + 1) * class143Coefficient2) / pressureSumPlusOne +
                  (randomBits >> 7 & 0x7f))) {
-      selectedToken = 0x143;
+      selectedToken = ARM_0323_BUILDING_MDL0328;
     }
   }
   selection.selectedRuntimeToken = selectedToken;
@@ -1580,17 +1568,12 @@ AiStrategicClass_SelectWeightedClass141To143
 
 
 /* Address: 0x00539600.
-   Ownership: gameplay/ai/planning.
-   Purpose: Places an army asset by scoring workspace10 points with randomized tie variation and a connected-region
-   reachability test. The chosen point is instantiated and initialized before the pending faction asset is
-   consumed. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier, class, and
-   faction-role semantics are not inferred from numeric adjacency.
-   Local calls: AiConstructionPlanner_ConsumeFactionPendingArmyAsset.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog],
-   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions], ArmyPlacement_DispatchAssetAtFieldPoint
-   [gameplay/army/placement], GridReachability_RebuildConnectedRegionAroundWorldPoint [world/pathing/grid],
-   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
-   [world/model/hierarchy].
+   Places a pending asset at a workspace-10 cell, only while the faction's primary anchor cooldown is 0. Each cell
+   is scored by its Manhattan distance to the faction's ARM_0300 structure (g_AiWorkspaceOwnedAsset300Runtime;
+   the raw cell coordinates without one) plus 16 random bits; the lowest-scoring cell where the mode-1
+   placement test passes and GridReachability_RebuildConnectedRegionAroundWorldPoint (with the radius of the
+   asset's model definition) finds a connected region wins. The asset is created there, initialised like the
+   other planners and removed from the pending list.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
@@ -1633,7 +1616,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           candidateCell = *gridCellCursor;
           distanceXOrScore = candidateCell->worldX;
           distanceY = candidateCell->worldY;
-          if (g_AiWorkspaceOwnedAsset300Runtime != (ArmyRuntimeSlot *)0x0) {
+          if (g_AiWorkspaceOwnedAsset300Runtime != NULL) {
             distanceXOrScore = distanceXOrScore - (g_AiWorkspaceOwnedAsset300Runtime->modelNodeRuntime->worldTransform).
                             translation.x;
             if (distanceXOrScore < 0) {
@@ -1660,12 +1643,12 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
               }
             }
           }
-          gridCellCursor = gridCellCursor + 1;
-          remainingCells = remainingCells + -1;
+          gridCellCursor++;
+          remainingCells--;
         } while (remainingCells != 0);
         if (bestScore < 0x7fffffff) {
           createdInstance = ArmyRuntime_CreateInstanceFromAsset
-                             (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
+                             (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                               bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
           createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
           if (!createdInstance.failed) {
@@ -1740,17 +1723,18 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 
 
 /* Address: 0x0053A980.
-   Ownership: gameplay/ai/planning.
-   Purpose: Handles ai faction runtime test planning capacity exceeded carry-flag result.
+   Returns true (CF set) when the faction's energy would not cover its demand plus additionalEnergyDemand
+   (whole units): the usable supply is the smaller of the generation capacity and baseline supply + tritium
+   extraction rate, the demand is supplied + unpowered demand (Q4 values shifted down by 4).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiFactionRuntime_TestPlanningCapacityExceeded
-          (uint32_t additionalPlanningCapacity,FactionRuntimeIndex factionIndex)
+          (uint32_t additionalEnergyDemand,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;
   int effectiveCapacity;
-  
+
   supplyCapacity = ((int)g_GameFactionRuntimeImage.records[factionIndex].baselineEnergySupplyQ4 >> 4) +
           g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick;
   effectiveCapacity = (int)g_GameFactionRuntimeImage.records[factionIndex].energyGenerationCapacityQ4 >> 4;
@@ -1759,17 +1743,18 @@ AiFactionRuntime_TestPlanningCapacityExceeded
   }
   return effectiveCapacity < (int)(((int)(g_GameFactionRuntimeImage.records[factionIndex].suppliedEnergyDemandQ4
                              + g_GameFactionRuntimeImage.records[factionIndex].
-                               unpoweredEnergyDemandQ4) >> 4) + additionalPlanningCapacity);
+                               unpoweredEnergyDemandQ4) >> 4) + additionalEnergyDemand);
 }
 
 
 /* Address: 0x0053A2A0.
-   Ownership: gameplay/ai/planning.
-   Purpose: Computes a composite AI score for one army candidate. Stock tech.tec has 512 records over canonical ids
-   0..255; localized titles do not prove source-building, tier, direction, or effect mappings. Typed parameters: p4
-   armyAssetRecord→AiArmyAssetRecordAddress32_V345. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
+   Scores an army asset for the purchase planner with one weight profile (scoreWeights). The faction's unlocked
+   variant of the asset's model definition gives baseScore (+ a bonus when +0x18 is nonzero) plus its +0x0C and
+   +0x60 values scaled to their maxima, x8; for each of up to two linked child definitions (the weapons) with a
+   nonzero divisor at +0x30 (and while the faction has AI pressure), the shot's impact damage against each of the 8 target classes is weighted
+   by the profile, divided by that divisor, scaled by the faction's AI pressure on that class / maximum pressure
+   and added as << 10 / the class maximum. Result: 12 * that + the weighted asset values at +0x70/+0x74/+0x78;
+   0 when a definition is not available to the faction.
 */
 AiCandidateScore32 __thandor_eax_preserve_ecx_edx
 AiArmyCandidate_ComputeFactionWeightedScore
@@ -1916,6 +1901,8 @@ AiArmyCandidate_ComputeFactionWeightedScore
         secondChildShotDefinition = selectedChildModelDefinition1->shotDefinitionReference2C;
         secondChildScaleDivisor30 = selectedChildModelDefinition1->runtimeValue30;
         if (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0) {
+          /* the locals are reused shifted by one class: childCountOrWeightedDamage holds class 0,
+             pressureWeightedDamage0..6 hold classes 1..7 */
           childCountOrWeightedDamage = (uint32_t)(((int64_t)
                           (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[0]
                                 * (int64_t)scoreWeights->pressureCategoryWeights[0]) /

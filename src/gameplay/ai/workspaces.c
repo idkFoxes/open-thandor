@@ -363,7 +363,7 @@ AiPlanning_RebuildFactionWorkspaces
                FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)) &&
              ((fieldCell[widthOrCount * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) ==
               0)) {
-            AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(fieldCell + widthOrCount);
+            AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(fieldCell + widthOrCount);
             fieldCell = fieldCell + widthOrCount + -widthOrCount;
           }
           cellByteCursor = fieldCell->runtime0C_3F + factionIndex + -0xc;
@@ -390,7 +390,7 @@ AiPlanning_RebuildFactionWorkspaces
                 (((fieldCell[widthOrCount * 2].flagsAndMaterial & FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK)
                   == 0 && ((fieldCell[widthOrCount].flagsAndMaterial &
                            FIELD_CELL_XENITE_OR_TRITIUM_SUPPORT_MASK) == 0)))))) {
-              AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(fieldCell + widthOrCount);
+              AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(fieldCell + widthOrCount);
               fieldCell = fieldCell + widthOrCount + -widthOrCount;
             }
             cellByteCursor = fieldCell->runtime0C_3F + factionIndex + -0xc;
@@ -635,9 +635,9 @@ AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByt
 
 
 /* Address: 0x00537570.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Sorts the global two-dword candidate entries in descending order by the packed first dword while moving
-   the paired second dword with each entry.
+   Sorts the AI candidate workspace (workspace 13) by descending weightedScoreAndKind (signed compare), so the
+   purchase planner tries the best candidates first. Selection sort: each pass swaps every higher entry into the
+   pass's first slot, carrying the id/multiplicity dword along.
 */
 void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(void)
 
@@ -661,6 +661,7 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
     do {
       do {
         if (currentRecordScore < (int)scanRecordCursor->weightedScoreAndKind) {
+          /* the original swaps with XCHG, whose implicit bus lock Ghidra shows as LOCK/UNLOCK */
           LOCK();
           promotedScore = scanRecordCursor->weightedScoreAndKind;
           scanRecordCursor->weightedScoreAndKind = currentRecordScore;
@@ -674,15 +675,15 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
           currentRecordScore = promotedScore;
           currentRecordPayload = promotedPayload;
         }
-        scanRecordCursor = scanRecordCursor + 1;
-        comparisonsRemaining = comparisonsRemaining + -1;
+        scanRecordCursor++;
+        comparisonsRemaining--;
       } while (comparisonsRemaining != 0);
       currentRecordScore = currentRecordCursor[1].weightedScoreAndKind;
       currentRecordPayload = currentRecordCursor[1].entityIdAndMultiplicity;
       comparisonsRemaining = recordsInCurrentPass - 2;
       scanRecordCursor = currentRecordCursor + 2;
-      recordsInCurrentPass = recordsInCurrentPass - 1;
-      currentRecordCursor = currentRecordCursor + 1;
+      recordsInCurrentPass--;
+      currentRecordCursor++;
     } while (comparisonsRemaining != 0);
   }
   return;
@@ -690,31 +691,31 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
 
 
 /* Address: 0x005375D0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Decodes the low-nibble entry kind and low-word ID. Kind 2 reads TechnologyRecord.entityValue20; other
-   nontrivial kinds resolve an ArmyAsset record and read +0x28, with 0x7FFFFFFF fallback.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   Returns the xenite cost (Q4) of a candidate, which the purchase planner checks against the faction's xenite:
+   the technology's xeniteCostQ4 for a technology candidate, else the army asset's cost dword at +0x28, or
+   0x7FFFFFFF (never affordable) when the asset is unknown.
 */
 int __thandor_eax_preserve_ecx_edx
-AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
+AiCandidateWorkspace_GetEntryXeniteCost(AiCandidateWorkspaceEntry *entry)
 
 {
-  uint32_t resolvedEntityValue;
+  uint32_t xeniteCostQ4;
   RuntimeToken registryId;
   ArmyAssetLookupResult registryLookup;
-  
-  registryId = entry->entityIdAndMultiplicity & 0xffff;
-  if ((entry->weightedScoreAndKind & 0xf) == 2) {
-    resolvedEntityValue = g_TechnologyAsset->records[registryId].xeniteCostQ4;
+
+  registryId = entry->entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK;
+  if ((entry->weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) == AI_CANDIDATE_KIND_TECHNOLOGY) {
+    xeniteCostQ4 = g_TechnologyAsset->records[registryId].xeniteCostQ4;
   }
   else {
     registryLookup = ArmyAssetRegistry_FindById(registryId);
-    resolvedEntityValue = 0x7fffffff;
+    xeniteCostQ4 = 0x7fffffff;
     if (!registryLookup.notFound) {
-      resolvedEntityValue = registryLookup.recordOrError[2].registryId;
+      /* +0x28 of the army asset record, reached through the 16-byte prefix type */
+      xeniteCostQ4 = registryLookup.recordOrError[2].registryId;
     }
   }
-  return resolvedEntityValue;
+  return xeniteCostQ4;
 }
 
 
@@ -748,11 +749,8 @@ AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 
 /* Address: 0x00538CF0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Scans the secondary eight-byte AI workspace entries and returns CF set on any matching ID at +0x04,
-   clear on absence, while preserving EAX. Typed parameters: p0 entryId→RuntimeToken. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
+   Returns true (CF set) when the secondary workspace (workspace 01) holds an entry of this army asset, assigned
+   or not.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -760,7 +758,7 @@ AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 {
   int workspaceEntriesRemaining;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  
+
   workspaceEntriesRemaining = g_AiWorkspace01Count;
   workspaceEntryCursor = g_AiWorkspaceBuffer01_Size0200;
   while( true ) {
@@ -768,8 +766,8 @@ AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
       return false;
     }
     if (entryId == workspaceEntryCursor->armyAssetId) break;
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
+    workspaceEntryCursor++;
+    workspaceEntriesRemaining--;
   }
   return true;
 }
@@ -1013,16 +1011,10 @@ AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
 
 
 /* Address: 0x00539240.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Finds a workspace08 record with the requested special asset ID, validates the point, creates and
-   initializes the runtime entity, rebuilds its model transforms and auxiliary state, then consumes the faction
-   pending asset. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier, class,
-   and faction-role semantics are not inferred from numeric adjacency.
-   Cross-module calls: AiPlacement_TestWorkspaceRecordAtPoint [gameplay/ai/placement],
-   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
-   [world/model/hierarchy], ArmyRuntime_DispatchClassCommand [gameplay/army/runtime],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime],
-   AiConstructionPlanner_ConsumeFactionPendingArmyAsset [gameplay/ai/planning].
+   Builds a pending resource structure (ARM_0330/ARM_0332) of the AI faction: at the first workspace-08 site of
+   this asset where the mode-0 placement test passes it creates the structure with the site's heading, rebuilds
+   its model transforms, dispatches its class command, starts the effect referenced by its model runtime and
+   removes the asset from the faction's pending list. Nothing happens when no site passes.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
@@ -1052,13 +1044,15 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                         (armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime);
       if (!placementRejected) {
         createResult = ArmyRuntime_CreateInstanceFromAsset
-                          (4,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
+                          (ARMY_CREATE_UNLOCK_TECHNOLOGY,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                            workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                            worldRuntime);
         createdSlotPair = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
         if (createResult.failed) {
           return;
         }
+        /* the create result points at the pair {army slot, model node}; the node is typed as a slot here, so
+           the effect arguments below are its fields under ArmyRuntimeSlot names */
         modelNodeRuntime = createdSlotPair[1];
         primarySlot = *createdSlotPair;
         modelNodeRuntime->movementPosition0Q12 = 0;
@@ -1079,8 +1073,8 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         return;
       }
     }
-    terrainFeatureEntry = terrainFeatureEntry + 1;
-    recordsRemaining = recordsRemaining + -1;
+    terrainFeatureEntry++;
+    recordsRemaining--;
   } while( true );
 }
 
@@ -1101,13 +1095,9 @@ AiWorkspace12Score_DefaultZero
 
 
 /* Address: 0x0053C6C0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Allocates fifteen fixed-size opaque AI workspace buffers and loads the exact 0x200-byte engine\ki.dat
-   image. Allocation or package-load failure exits through CF without inventing field semantics for the workspaces.
-   Allocates the 15 AI workspace buffers (0x400,0x200,0x400,0x1000,0x40,0x200,0x400,0x400,
-   0x200,0x1000,0x400,0x1000,0x200,0x400,0x100) then loads engine\ki.dat (0x200 bytes) -> g_AiKnowledgeData. CF
-   exit on any failure.
-   Cross-module calls: Package_LoadEntry [assets/package/runtime].
+   Allocates the fifteen AI workspace buffers 00-14 from the arena (sizes in their names) and loads the AI
+   parameters from engine\ki.dat into g_AiKnowledgeData. Stops at the first failure with CF set and that
+   failure's error code; buffers allocated before it are not freed.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
 
@@ -1168,6 +1158,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
                                 loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
                                 knowledgeDataImage = loadResult.bufferOrError;
                                 if (!loadResult.failed) {
+                                  /* success: EAX (the image pointer) stays the result value, CF clear */
                                   loadResult = THANDOR_BITCAST(uint64_t, PackageLoadResult, ((THANDOR_BITCAST(PackageLoadResult, uint64_t, loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
                                   g_AiKnowledgeData = knowledgeDataImage;
                                 }
@@ -1193,27 +1184,26 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
 
 
 /* Address: 0x00537F80.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Adds the current entity pointer to the 0x400-entry workspace09 list when capacity remains and the
-   entity position lies outside every primary-workspace entry extent.
-   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtents.
+   Adds a field cell to workspace 09 (at most 1024 cells) when it lies inside the extent (+0x19C of the
+   definition) of some primary-workspace structure, i.e. when AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
+   returns false. These cells are the build sites near the AI's own base.
 */
 void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell)
+AiEntityCandidateWorkspace09_AddInsidePrimaryExtents(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
   bool isOutsideExtents;
-  
+
   entryIndex = g_AiWorkspace09Count;
   cellBuffer = g_AiWorkspaceBuffer09_Size1000;
-  if (g_AiWorkspace09Count < 0x400) {
+  if (g_AiWorkspace09Count < AI_WORKSPACE09_CAPACITY) {
     isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
                       (currentCell->worldY,currentCell->worldX);
     if (!isOutsideExtents) {
       cellBuffer[entryIndex] = currentCell;
-      g_AiWorkspace09Count = g_AiWorkspace09Count + 1;
+      g_AiWorkspace09Count++;
     }
   }
   return;
@@ -1221,27 +1211,24 @@ AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell
 
 
 /* Address: 0x00537FC0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Adds the current entity pointer to the 0x100-entry workspace10 list under the same outside-primary-
-   extents test.
-   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtents.
+   Same as the workspace-09 variant for workspace 10 (at most 256 cells).
 */
 void __thandor_void_preserve_ecx_edx
-AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell)
+AiEntityCandidateWorkspace10_AddInsidePrimaryExtents(FieldGridCell *currentCell)
 
 {
   FieldGridCell **cellBuffer;
   uint32_t entryIndex;
   bool isOutsideExtents;
-  
+
   entryIndex = g_AiWorkspace10Count;
   cellBuffer = g_AiWorkspaceBuffer10_Size0400;
-  if (g_AiWorkspace10Count < 0x100) {
+  if (g_AiWorkspace10Count < AI_WORKSPACE10_CAPACITY) {
     isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
                       (currentCell->worldY,currentCell->worldX);
     if (!isOutsideExtents) {
       cellBuffer[entryIndex] = currentCell;
-      g_AiWorkspace10Count = g_AiWorkspace10Count + 1;
+      g_AiWorkspace10Count++;
     }
   }
   return;
@@ -1249,10 +1236,8 @@ AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell
 
 
 /* Address: 0x00538B90.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Scans the primary eight-byte AI workspace entries. CF is set when an entry has the requested ID at
-   +0x04 and zero assignment at +0x00; CF is clear otherwise. EAX is preserved. Typed parameters: p0
-   entryId→RuntimeToken. Nearby but non-identical semantic domains were explicitly deferred.
+   Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset whose
+   runtime pointer is NULL.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
@@ -1268,20 +1253,17 @@ AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
       return false;
     }
     if ((entryId == workspaceEntryCursor->armyAssetId) &&
-       (workspaceEntryCursor->armyRuntime == (ArmyRuntimeSlot *)0x0)) break;
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
+       (workspaceEntryCursor->armyRuntime == NULL)) break;
+    workspaceEntryCursor++;
+    workspaceEntriesRemaining--;
   }
   return true;
 }
 
 
 /* Address: 0x00538BF0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Scans the primary eight-byte AI workspace entries and returns CF set on any matching ID at +0x04, clear
-   on absence, while preserving EAX. Typed parameters: p0 entryId→RuntimeToken. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Returns true (CF set) when the primary workspace (workspace 00) holds an entry of this army asset, with or
+   without a runtime object.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
@@ -1289,7 +1271,7 @@ AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 {
   int workspaceEntriesRemaining;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  
+
   workspaceEntriesRemaining = g_AiWorkspace00Count;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspaceBuffer00_Size0400;
   while( true ) {
@@ -1297,19 +1279,15 @@ AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
       return false;
     }
     if (entryId == workspaceEntryCursor->armyAssetId) break;
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
+    workspaceEntryCursor++;
+    workspaceEntriesRemaining--;
   }
   return true;
 }
 
 
 /* Address: 0x00538C40.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Counts primary workspace entries whose assignment dword at +0x00 is nonzero and whose ID at +0x04
-   matches the requested value. The count is returned in EAX. Typed parameters: p0 entryId→RuntimeToken. Nearby but
-   non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Counts the primary-workspace (workspace 00) entries of this army asset that have a runtime object.
 */
 int __thandor_eax_preserve_ecx_edx
 AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
@@ -1318,27 +1296,25 @@ AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
   int matchingAssignedEntryCount;
   int workspaceEntriesRemaining;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
-  
+
   matchingAssignedEntryCount = 0;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspaceBuffer00_Size0400;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if ((workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) &&
+      workspaceEntriesRemaining--) {
+    if ((workspaceEntryCursor->armyRuntime != NULL) &&
        (entryId == workspaceEntryCursor->armyAssetId)) {
-      matchingAssignedEntryCount = matchingAssignedEntryCount + 1;
+      matchingAssignedEntryCount++;
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return matchingAssignedEntryCount;
 }
 
 
 /* Address: 0x005374B0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Matching kind and ID entries accumulate count and weight; new entries are capped at 128. Typed
-   parameters: p0 entityId→RuntimeToken. Nearby but non-identical semantic domains were explicitly deferred.
-   Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p2 entryKind→AiCandidateEntryKind_V344.
+   Proposes a purchase candidate (id + kind) with the randomised score 5 * weightRange + random % weightRange.
+   An existing entry of the same kind and id gets the score added and its multiplicity raised by one; otherwise
+   a new entry is appended while the workspace has fewer than 128. A weightRange of 0 or 1 proposes nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiCandidateWorkspace_AddOrAccumulateWeightedEntry
@@ -1356,21 +1332,26 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
   candidateEntry = g_AiWorkspaceBuffer13_Size0400;
   if (1 < weightRange) {
     weightedScore = weightRange * 5 + randomValue % weightRange;
-    for (entriesRemaining = g_AiCandidateWorkspaceEntryCount; entriesRemaining != 0; entriesRemaining = entriesRemaining - 1) {
-      if (((g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].weightedScoreAndKind & 0xf) == entryKind) &&
-         ((g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].entityIdAndMultiplicity & 0xffff) == entityId))
+    /* searched from the last entry down */
+    for (entriesRemaining = g_AiCandidateWorkspaceEntryCount; entriesRemaining != 0; entriesRemaining--) {
+      if (((g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].weightedScoreAndKind & AI_CANDIDATE_KIND_MASK) ==
+           entryKind) &&
+         ((g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].entityIdAndMultiplicity & AI_CANDIDATE_ID_MASK) ==
+          entityId))
       {
         g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].entityIdAndMultiplicity =
-             g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].entityIdAndMultiplicity + 0x10000;
+             g_AiWorkspaceBuffer13_Size0400[entriesRemaining - 1].entityIdAndMultiplicity +
+             AI_CANDIDATE_MULTIPLICITY_ONE;
         candidateEntry = candidateEntry + (entriesRemaining - 1);
+        /* * 0x10: the score sits above the 4 kind bits */
         candidateEntry->weightedScoreAndKind = candidateEntry->weightedScoreAndKind + weightedScore * 0x10;
         return;
       }
     }
-    if (g_AiCandidateWorkspaceEntryCount < 0x80) {
+    if (g_AiCandidateWorkspaceEntryCount < AI_CANDIDATE_WORKSPACE_CAPACITY) {
       g_AiWorkspaceBuffer13_Size0400[g_AiCandidateWorkspaceEntryCount].entityIdAndMultiplicity =
-           entityId + 0x10000;
-      g_AiCandidateWorkspaceEntryCount = g_AiCandidateWorkspaceEntryCount + 1;
+           entityId + AI_CANDIDATE_MULTIPLICITY_ONE;
+      g_AiCandidateWorkspaceEntryCount++;
       candidateEntry[newEntryIndex].weightedScoreAndKind = weightedScore * 0x10 | entryKind;
     }
   }

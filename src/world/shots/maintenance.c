@@ -48,7 +48,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
    convention, and RET 0x08 contract remain unchanged.
    Cross-module calls: TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy],
    FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], TerrainOccupancyMask_ResolveRuntimeClassFlags
-   [world/terrain/occupancy], UiModelControl_RefreshStateTint [ui/controls/misc].
+   [world/terrain/occupancy], ModelNodeRuntime_RefreshStateTint [ui/controls/misc].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
@@ -97,7 +97,7 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
                       (char)worldRuntime->activeFactionRuntimeIndex);
   modelNode->runtimeFlags = modelNode->runtimeFlags | resolvedMasks.runtimeFlags;
   shotRuntime->terrainRuntimeClassState = resolvedMasks.primaryOccupancyMask;
-  UiModelControl_RefreshStateTint((ModelRuntimeNode *)modelNode);
+  ModelNodeRuntime_RefreshStateTint((ModelRuntimeNode *)modelNode);
   nodeTintArgb = modelNode->tintArgb;
   definitionTintArgb = ((shotRuntime->definitionOrSavedId).definition)->stateTintArgb;
   /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */

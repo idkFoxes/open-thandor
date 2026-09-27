@@ -218,11 +218,10 @@ TerrainAuxHeightThreshold_TestAroundWorldPoint
 
 
 /* Address: 0x00508D20.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection0, TerrainHeightDelta_ApplyDirection1.
+   Flatten brush, sector 0 of the hexagon around the brush vertex
+   (FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors): walks the sector's diagonal, levels each cell and the one between it and the next diagonal cell to
+   g_TerrainScanReferenceHeight (the removed height goes into waterSurfaceDelta, so the water surface stays), and
+   starts the straight scans of directions 0 and 1 that fill the sector. Stops at a map-edge cell or the radius.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -233,19 +232,21 @@ TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell
   int adjacentHeightAdjustmentQ12;
   FieldGridCell *directionStartCell;
   int *adjacentHeightField;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
       heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
       directionStartCell = cell + 1;
-      TerrainHeightDelta_ApplyDirection0(scanStep + 4,directionStartCell);
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      TerrainHeightDelta_ApplyDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)((int)directionStartCell + (0x50 - heightAdjustmentOrRowStride)) & 0x88006000) != 0) {
+      /* the in-between cell is one row up from directionStartCell (fields +0x50 flags, +0x48 height,
+         +0x4C water delta) */
+      if ((*(uint32_t *)((int)directionStartCell + (0x50 - heightAdjustmentOrRowStride)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
@@ -255,7 +256,7 @@ TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell
       adjacentWaterDeltaField = (int *)((int)directionStartCell + (0x4c - heightAdjustmentOrRowStride));
       *adjacentWaterDeltaField = *adjacentWaterDeltaField - adjacentHeightAdjustmentQ12;
       cell = (FieldGridCell *)((int)directionStartCell + (0x80 - heightAdjustmentOrRowStride));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainHeightDelta_ApplyDirection1
                 (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
@@ -263,16 +264,12 @@ TerrainHeightDelta_ApplyWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00508DC0.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection1, TerrainHeightDelta_ApplyDirection2.
+   Flatten brush, sector 1: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 1 and 2.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -283,19 +280,21 @@ TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell
   int adjacentHeightAdjustmentQ12;
   FieldGridCell *directionStartCell;
   int *adjacentHeightField;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
       heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
       TerrainHeightDelta_ApplyDirection1
-                (scanStep + 4,(FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)((int)cell + (0x50 - heightAdjustmentOrRowStride)) & 0x88006000) != 0) {
+      /* the in-between cell is the one above (flags +0x50, height +0x48, water delta +0x4C) */
+      if ((*(uint32_t *)((int)cell + (0x50 - heightAdjustmentOrRowStride)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
@@ -305,7 +304,7 @@ TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell
       adjacentWaterDeltaField = (int *)((int)cell + (0x4c - heightAdjustmentOrRowStride));
       *adjacentWaterDeltaField = *adjacentWaterDeltaField - adjacentHeightAdjustmentQ12;
       directionStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - heightAdjustmentOrRowStride));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = directionStartCell + 1;
       TerrainHeightDelta_ApplyDirection2(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
@@ -313,16 +312,12 @@ TerrainHeightDelta_ApplyWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00508E60.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection2, TerrainHeightDelta_ApplyDirection3.
+   Flatten brush, sector 2: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 2 and 3.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -331,42 +326,38 @@ TerrainHeightDelta_ApplyWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell
   FieldGridCell *directionStartCell;
   int heightAdjustmentQ12;
   int adjacentHeightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
       TerrainHeightDelta_ApplyDirection2
-                (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[-1].terrainHeight;
       cell[-1].terrainHeight = cell[-1].terrainHeight + adjacentHeightAdjustmentQ12;
       cell[-1].waterSurfaceDelta = cell[-1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
-      directionStartCell = cell + -2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
+      directionStartCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes)); /* up and left */
       TerrainHeightDelta_ApplyDirection3(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00508F00.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection3, TerrainHeightDelta_ApplyDirection4.
+   Flatten brush, sector 3: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 3 and 4.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -375,47 +366,46 @@ TerrainHeightDelta_ApplyWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell
   int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
   FieldGridCell *directionStartCell;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
       heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
-      directionStartCell = cell + -1;
-      TerrainHeightDelta_ApplyDirection3(scanStep + 4,directionStartCell);
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      directionStartCell = cell - 1;
+      TerrainHeightDelta_ApplyDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,directionStartCell);
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below directionStartCell: runtime60_6B (+0x60) + stride - 0x10/-0x18/-0x14
+         reaches its flags (+0x50), height (+0x48) and water delta (+0x4C) */
+      if ((*(uint32_t *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x10) &
+           FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18);
-      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) =
-           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) + adjacentHeightAdjustmentQ12;
-      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) =
-           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) - adjacentHeightAdjustmentQ12;
-      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + heightAdjustmentOrRowStride + -0xc);
-      scanStep = scanStep + 7;
+           g_TerrainScanReferenceHeight - *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x18);
+      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x18) =
+           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x18) + adjacentHeightAdjustmentQ12;
+      *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x14) =
+           *(int *)(directionStartCell->runtime60_6B + heightAdjustmentOrRowStride - 0x14) - adjacentHeightAdjustmentQ12;
+      /* runtime0C_3F - 0xC is a cell's own address: directionStartCell[-1] one row down */
+      cell = (FieldGridCell *)(directionStartCell[-1].runtime0C_3F + heightAdjustmentOrRowStride - 0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainHeightDelta_ApplyDirection4
-                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
-                );
+                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00508FA0.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection4, TerrainHeightDelta_ApplyDirection5.
+   Flatten brush, sector 4: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 4 and 5.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -424,50 +414,49 @@ TerrainHeightDelta_ApplyWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell
   int heightAdjustmentOrRowStride;
   int adjacentHeightAdjustmentQ12;
   uint8_t *currentCellRuntimeBase;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentOrRowStride = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentOrRowStride;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentOrRowStride;
       heightAdjustmentOrRowStride = g_TerrainScanRowStrideBytes;
+      /* runtime0C_3F - 0xC is a cell's own address: the scan starts one row down and one cell left */
       TerrainHeightDelta_ApplyDirection4
-                (scanStep + 4,
-                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x10) & 0x88006000) != 0) {
+      /* the in-between cell is the one below: flags +0x50, height +0x48, water delta +0x4C */
+      if ((*(uint32_t *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 =
-           g_TerrainScanReferenceHeight - *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18);
-      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) =
-           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x18) + adjacentHeightAdjustmentQ12;
-      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) =
-           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride + -0x14) - adjacentHeightAdjustmentQ12;
+           g_TerrainScanReferenceHeight - *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x18);
+      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x18) =
+           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x18) + adjacentHeightAdjustmentQ12;
+      *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x14) =
+           *(int *)(cell->runtime60_6B + heightAdjustmentOrRowStride - 0x14) - adjacentHeightAdjustmentQ12;
       currentCellRuntimeBase = cell->runtime0C_3F;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride + -0xc)
-             + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      /* two rows down: the next diagonal cell one left of the direction 5 start */
+      cell = (FieldGridCell *)(currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride - 0xc)
+             - 1;
       TerrainHeightDelta_ApplyDirection5
                 (scanStep,(FieldGridCell *)
-                          (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride + -0xc));
+                          (currentCellRuntimeBase + g_TerrainScanRowStrideBytes + heightAdjustmentOrRowStride - 0xc));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
-  return;
 }
 
 
 /* Address: 0x00509040.
-   Ownership: world/terrain/height.
-   Purpose: Applies one terrain-height propagation wedge and invokes the two adjacent directional mutators. Typed
-   parameters: p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainHeightDelta_ApplyDirection5, TerrainHeightDelta_ApplyDirection0.
+   Flatten brush, sector 5: like TerrainHeightDelta_ApplyWedge0, levelling the sector's diagonal and starting the
+   straight scans of directions 5 and 0.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -476,34 +465,34 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
   FieldGridCell *directionStartCell;
   int heightAdjustmentQ12;
   int adjacentHeightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
+      /* runtime0C_3F - 0xC is a cell's own address: the scan starts one row down */
       TerrainHeightDelta_ApplyDirection5
-                (scanStep + 4,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       adjacentHeightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell[1].terrainHeight;
       cell[1].terrainHeight = cell[1].terrainHeight + adjacentHeightAdjustmentQ12;
       cell[1].waterSurfaceDelta = cell[1].waterSurfaceDelta - adjacentHeightAdjustmentQ12;
       directionStartCell = cell + 2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc); /* below the right cell */
       TerrainHeightDelta_ApplyDirection0(scanStep,directionStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
     }
   }
-  return;
 }
 
 

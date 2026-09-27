@@ -14,10 +14,10 @@ digraph thandor {
   "ModelRuntimeNode_HitTestProjectedBoundsAndChildren" [label="0x0050A7A0\nModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf"];
   "ModelNodeRuntime_RaycastHierarchyNearest" [label="0x0050B1D0\nModelNodeRuntime_RaycastHierarchyNearestCf"];
   "ModelNodeRuntime_InstantiateLinkedChildrenRecursive" [label="0x0051B650\nModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf"];
-  "ModelRuntimeHierarchy_SetCommandTargetRecursive" [label="0x0051BEC0\nModelRuntimeHierarchy_SetCommandTargetRecursive"];
+  "ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB" [label="0x0051BEC0\nModelRuntimeHierarchy_SetCommandTargetRecursive"];
   "ModelRuntimeHierarchy_ClearMatchingTargetRecursive" [label="0x0051BF30\nModelRuntimeHierarchy_ClearMatchingTargetRecursive"];
   "ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive" [label="0x0051C100\nModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive"];
-  "ModelRuntimeHierarchy_SumMetric3C" [label="0x0051C1F0\nModelRuntimeHierarchy_SumMetric3C"];
+  "ModelRuntimeHierarchy_SumArmour" [label="0x0051C1F0\nModelRuntimeHierarchy_SumMetric3C"];
   "ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive" [label="0x00528C20\nModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive"];
   "ModelNodeRuntime_CreateHierarchyRecursive" [label="0x00528E90\nModelNodeRuntime_CreateHierarchyRecursiveCf"];
   "ModelRuntimeNode_ReleaseRecursiveAndDetachParent" [label="0x005294E0\nModelRuntimeNode_ReleaseRecursiveAndDetachParent"];

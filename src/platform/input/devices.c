@@ -566,11 +566,10 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_FlushBufferedEvents(vo
 
 
 /* Address: 0x005774A0.
-   Ownership: platform/input/devices.
-   Purpose: Handles WM_KEYDOWN and WM_SYSKEYDOWN virtual keys. Left/right Shift, Ctrl, and Alt update low state
-   bits without queueing. Num Lock, Scroll Lock, and Caps Lock toggle high state bits once per physical press
-   through g_KeyboardToggleLatchMask. Mapped non-modifier keys append an encoded KeyboardInputEvent. CF clear means
-   an event was queued; CF set means no event was queued.
+   WM_KEYDOWN/WM_SYSKEYDOWN handler: Shift, Ctrl and Alt set their KEYBOARD_STATE_* bits, the lock keys toggle
+   theirs once per press (g_KeyboardToggleLatchMask stops auto-repeat from toggling again), and every other
+   mapped key is queued as a KEYBOARD_KEY_CODE_* event with the modifier state of the moment in the 64-entry
+   keyboard ring (0x10000-family keys also mark g_KeyboardSpecialKeyDown). CF clear when an event was queued.
 */
 void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCode virtualKey)
 
@@ -580,71 +579,72 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
   uint32_t queuedStateMask;
   uint32_t mappedCodeOrMask;
   uint32_t nextWriteIndex;
-  
+
   queuedStateMask = g_KeyboardStateMask;
   writeIndex = g_KeyboardWriteIndex;
-  mappedCodeOrMask = 1;
-  if (((((virtualKey == 0xa0) || (mappedCodeOrMask = 3, virtualKey == 0x10)) || (mappedCodeOrMask = 2, virtualKey == 0xa1)
-       ) || (((mappedCodeOrMask = 0x10, virtualKey == 0xa4 || (mappedCodeOrMask = 0x30, virtualKey == 0x12)) ||
-             ((mappedCodeOrMask = 0x20, virtualKey == 0xa5 ||
-              ((mappedCodeOrMask = 4, virtualKey == 0xa2 || (mappedCodeOrMask = 0xc, virtualKey == 0x11)))))))) ||
-     (mappedCodeOrMask = 8, virtualKey == 0xa3)) {
+  mappedCodeOrMask = KEYBOARD_STATE_LEFT_SHIFT;
+  if (((((virtualKey == VK_LSHIFT) || (mappedCodeOrMask = KEYBOARD_STATE_SHIFT, virtualKey == VK_SHIFT)) || (mappedCodeOrMask = KEYBOARD_STATE_RIGHT_SHIFT, virtualKey == VK_RSHIFT)
+       ) || (((mappedCodeOrMask = KEYBOARD_STATE_LEFT_ALT, virtualKey == VK_LMENU || (mappedCodeOrMask = KEYBOARD_STATE_ALT, virtualKey == VK_MENU)) ||
+             ((mappedCodeOrMask = KEYBOARD_STATE_RIGHT_ALT, virtualKey == VK_RMENU ||
+              ((mappedCodeOrMask = KEYBOARD_STATE_LEFT_CTRL, virtualKey == VK_LCONTROL || (mappedCodeOrMask = KEYBOARD_STATE_CTRL, virtualKey == VK_CONTROL)))))))) ||
+     (mappedCodeOrMask = KEYBOARD_STATE_RIGHT_CTRL, virtualKey == VK_RCONTROL)) {
     g_KeyboardStateMask = g_KeyboardStateMask | mappedCodeOrMask;
   }
   else {
-    mappedCodeOrMask = 0x40000;
-    if (((virtualKey != 0x14) && (mappedCodeOrMask = 0x10000, virtualKey != 0x90)) &&
-       (mappedCodeOrMask = 0x20000, virtualKey != 0x91)) {
-      mappedCodeOrMask = 0x20;
-      if ((((virtualKey != 0x20) && (mappedCodeOrMask = 0x10000, virtualKey != 0x1b)) &&
-          ((((mappedCodeOrMask = 0x10001, virtualKey != 0xd &&
-             ((virtualKey != 0x6c && (mappedCodeOrMask = 0x10002, virtualKey != 9)))) &&
-            (mappedCodeOrMask = 0x10003, virtualKey != 8)) &&
-           (((((mappedCodeOrMask = 0x10004, virtualKey != 0x2a && (virtualKey != 0x2c)) &&
-              (mappedCodeOrMask = 0x10005, virtualKey != 0x2b)) &&
-             ((virtualKey != 0x13 && (mappedCodeOrMask = 0x10006, virtualKey != 0x2e)))) &&
-            ((mappedCodeOrMask = 0x10007, virtualKey != 0x2d &&
-             ((mappedCodeOrMask = 0x20001, virtualKey != 0x70 && (mappedCodeOrMask = 0x20002, virtualKey != 0x71))))))))))
-         && (((((mappedCodeOrMask = 0x20003, virtualKey != 0x72 &&
-                ((((mappedCodeOrMask = 0x20004, virtualKey != 0x73 && (mappedCodeOrMask = 0x20005, virtualKey != 0x74)) &&
-                  (mappedCodeOrMask = 0x20006, virtualKey != 0x75)) &&
-                 (((mappedCodeOrMask = 0x20007, virtualKey != 0x76 && (mappedCodeOrMask = 0x20008, virtualKey != 0x77)) &&
-                  ((mappedCodeOrMask = 0x20009, virtualKey != 0x78 &&
-                   ((mappedCodeOrMask = 0x2000a, virtualKey != 0x79 && (mappedCodeOrMask = 0x2000b, virtualKey != 0x7a))))
-                  )))))) && (mappedCodeOrMask = 0x2000c, virtualKey != 0x7b)) &&
-              ((((mappedCodeOrMask = 0x10010, virtualKey != 0x24 && (mappedCodeOrMask = 0x10018, virtualKey != 0x23)) &&
-                (mappedCodeOrMask = 0x10012, virtualKey != 0x21)) &&
-               ((mappedCodeOrMask = 0x1001a, virtualKey != 0x22 && (mappedCodeOrMask = 0x10014, virtualKey != 0x25))))))
-             && (((mappedCodeOrMask = 0x10016, virtualKey != 0x27 &&
-                  ((mappedCodeOrMask = 0x10011, virtualKey != 0x26 && (mappedCodeOrMask = 0x10019, virtualKey != 0x28))))
-                 && (mappedCodeOrMask = 0x10015, virtualKey != 0x29)))))) {
+    mappedCodeOrMask = KEYBOARD_STATE_CAPS_LOCK;
+    if (((virtualKey != VK_CAPITAL) && (mappedCodeOrMask = KEYBOARD_STATE_NUM_LOCK, virtualKey != VK_NUMLOCK)) &&
+       (mappedCodeOrMask = KEYBOARD_STATE_SCROLL_LOCK, virtualKey != VK_SCROLL)) {
+      mappedCodeOrMask = KEYBOARD_KEY_CODE_SPACE;
+      if ((((virtualKey != VK_SPACE) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_ESCAPE, virtualKey != VK_ESCAPE)) &&
+          ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_ENTER, virtualKey != VK_RETURN &&
+             ((virtualKey != VK_SEPARATOR && (mappedCodeOrMask = KEYBOARD_KEY_CODE_TAB, virtualKey != VK_TAB)))) &&
+            (mappedCodeOrMask = KEYBOARD_KEY_CODE_BACKSPACE, virtualKey != VK_BACK)) &&
+           (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_PRINT, virtualKey != VK_PRINT && (virtualKey != VK_SNAPSHOT)) &&
+              (mappedCodeOrMask = KEYBOARD_KEY_CODE_PAUSE, virtualKey != VK_EXECUTE)) &&
+             ((virtualKey != VK_PAUSE && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DELETE)))) &&
+            ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT), virtualKey != VK_INSERT &&
+             ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(1), virtualKey != VK_F1 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(2), virtualKey != VK_F2))))))))))
+         && (((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(3), virtualKey != VK_F3 &&
+                ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(4), virtualKey != VK_F4 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(5), virtualKey != VK_F5)) &&
+                  (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(6), virtualKey != VK_F6)) &&
+                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(7), virtualKey != VK_F7 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(8), virtualKey != VK_F8)) &&
+                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(9), virtualKey != VK_F9 &&
+                   ((mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(10), virtualKey != VK_F10 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(11), virtualKey != VK_F11))))
+                  )))))) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_FUNCTION(12), virtualKey != VK_F12)) &&
+              ((((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_HOME && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_END)) &&
+                (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_PRIOR)) &&
+               ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NEXT && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_LEFT))))))
+             && (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_RIGHT &&
+                  ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_UP && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_DOWN))))
+                 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))) {
+        /* digits and letters: KEYBOARD_KEY_CODE_CHAR of the ASCII code, letters in lowercase (+ 0x20) */
         mappedCodeOrMask = virtualKey + 0x30000;
-        if (virtualKey < 0x30) {
+        if (virtualKey < '0') {
           return;
         }
-        if (0x39 < virtualKey) {
-          if (virtualKey < 0x41) {
+        if ('9' < virtualKey) {
+          if (virtualKey < 'A') {
             return;
           }
           mappedCodeOrMask = virtualKey + 0x30020;
-          if ((((0x5a < virtualKey) && (mappedCodeOrMask = 0x2a, virtualKey != 0x6a)) &&
-              (mappedCodeOrMask = 0x2f, virtualKey != 0x6f)) &&
-             ((mappedCodeOrMask = 0x2b, virtualKey != 0x6b && (mappedCodeOrMask = 0x2d, virtualKey != 0x6d)))) {
-            if (virtualKey < 0x60) {
+          if (((('Z' < virtualKey) && (mappedCodeOrMask = '*', virtualKey != VK_MULTIPLY)) &&
+              (mappedCodeOrMask = '/', virtualKey != VK_DIVIDE)) &&
+             ((mappedCodeOrMask = '+', virtualKey != VK_ADD && (mappedCodeOrMask = '-', virtualKey != VK_SUBTRACT)))) {
+            if (virtualKey < VK_NUMPAD0) {
               return;
             }
-            if (0x6e < virtualKey) {
+            if (VK_DECIMAL < virtualKey) {
               return;
             }
-            mappedCodeOrMask = 0x10007;
-            if ((((virtualKey != 0x60) && (mappedCodeOrMask = 0x10018, virtualKey != 0x61)) &&
-                ((mappedCodeOrMask = 0x10019, virtualKey != 0x62 &&
-                 (((mappedCodeOrMask = 0x1001a, virtualKey != 99 && (mappedCodeOrMask = 0x10014, virtualKey != 100)) &&
-                  (mappedCodeOrMask = 0x10015, virtualKey != 0x65)))))) &&
-               (((mappedCodeOrMask = 0x10016, virtualKey != 0x66 && (mappedCodeOrMask = 0x10010, virtualKey != 0x67)) &&
-                ((mappedCodeOrMask = 0x10011, virtualKey != 0x68 && (mappedCodeOrMask = 0x10012, virtualKey != 0x69))))))
+            mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT);
+            if ((((virtualKey != VK_NUMPAD0) && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_NUMPAD1)) &&
+                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_NUMPAD2 &&
+                 (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NUMPAD3 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_NUMPAD4)) &&
+                  (mappedCodeOrMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5)))))) &&
+               (((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_NUMPAD6 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_NUMPAD7)) &&
+                ((mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_NUMPAD8 && (mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_NUMPAD9))))))
             {
-              mappedCodeOrMask = 0x10006;
+              mappedCodeOrMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE);
             }
           }
         }
@@ -654,9 +654,11 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
       g_KeyboardWriteIndex = g_KeyboardWriteIndex + 1;
       eventRecord->keyCode00 = mappedCodeOrMask;
       g_KeyboardEvents[writeIndex].stateMask04 = queuedStateMask;
+      /* KEYBOARD_KEY_CODE_SPECIAL family: remember the key as held */
       if ((mappedCodeOrMask & 0xffff0000) == 0x10000) {
         g_KeyboardSpecialKeyDown[mappedCodeOrMask & 0xffff] = 1;
       }
+      /* wrap the 64-entry ring */
       if (0x3f < nextWriteIndex) {
         g_KeyboardWriteIndex = 0;
       }
@@ -672,69 +674,70 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
 
 
 /* Address: 0x00577880.
-   Ownership: platform/input/devices.
-   Purpose: Handles WM_KEYUP and WM_SYSKEYUP. Modifier bits and toggle latches are cleared directly. Engine
-   special-key codes in family 0x0001 clear g_KeyboardSpecialKeyDown[lowWord]. No keyboard event is appended. CF
-   clear means a recognized non-modifier key was processed; CF set covers modifier/toggle or unmapped keys.
+   WM_KEYUP/WM_SYSKEYUP handler: clears the modifier bits of Shift, Ctrl and Alt, re-arms the Num/Scroll Lock
+   toggle, and releases the g_KeyboardSpecialKeyDown entry of a 0x10000-family key (the held state the in-game
+   camera keys poll). Queues no event. CF clear when a non-modifier key was processed.
 */
 void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
   uint32_t mappedKeyStateCode;
   uint32_t mappedCodeOrToggleMask;
-  
-  mappedKeyStateCode = 0x40001;
-  if ((((((virtualKey == 0xa0) || (mappedKeyStateCode = 0x40003, virtualKey == 0x10)) ||
-        (mappedKeyStateCode = 0x40002, virtualKey == 0xa1)) ||
-       ((mappedKeyStateCode = 0x10, virtualKey == 0xa4 ||
-        (mappedKeyStateCode = 0x30, virtualKey == 0x12)))) ||
-      ((mappedKeyStateCode = 0x20, virtualKey == 0xa5 ||
-       ((mappedKeyStateCode = 4, virtualKey == 0xa2 ||
-        (mappedKeyStateCode = 0xc, virtualKey == 0x11)))))) ||
-     (mappedKeyStateCode = 8, virtualKey == 0xa3)) {
+
+  /* releasing Shift also clears Caps Lock; VK_CAPITAL itself is not handled here, so its toggle latch is
+     never re-armed by a key-up */
+  mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_LEFT_SHIFT;
+  if ((((((virtualKey == VK_LSHIFT) || (mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_SHIFT, virtualKey == VK_SHIFT)) ||
+        (mappedKeyStateCode = KEYBOARD_STATE_CAPS_LOCK | KEYBOARD_STATE_RIGHT_SHIFT, virtualKey == VK_RSHIFT)) ||
+       ((mappedKeyStateCode = KEYBOARD_STATE_LEFT_ALT, virtualKey == VK_LMENU ||
+        (mappedKeyStateCode = KEYBOARD_STATE_ALT, virtualKey == VK_MENU)))) ||
+      ((mappedKeyStateCode = KEYBOARD_STATE_RIGHT_ALT, virtualKey == VK_RMENU ||
+       ((mappedKeyStateCode = KEYBOARD_STATE_LEFT_CTRL, virtualKey == VK_LCONTROL ||
+        (mappedKeyStateCode = KEYBOARD_STATE_CTRL, virtualKey == VK_CONTROL)))))) ||
+     (mappedKeyStateCode = KEYBOARD_STATE_RIGHT_CTRL, virtualKey == VK_RCONTROL)) {
     g_KeyboardStateMask = g_KeyboardStateMask & ~mappedKeyStateCode;
   }
   else {
-    mappedCodeOrToggleMask = 0x10000;
-    if ((virtualKey != 0x90) && (mappedCodeOrToggleMask = 0x20000, virtualKey != 0x91)) {
-      mappedCodeOrToggleMask = 0x20000;
-      if (((((virtualKey != 0x20) &&
-            (((virtualKey != 0x1b && (virtualKey != 0xd)) && (virtualKey != 0x6c)))) &&
-           (((virtualKey != 9 && (virtualKey != 8)) && (virtualKey != 0x2a)))) &&
-          ((virtualKey != 0x2c && (virtualKey != 0x2b)))) &&
-         (((virtualKey != 0x13 &&
-           (((mappedCodeOrToggleMask = 0x10006, virtualKey != 0x2e && (mappedCodeOrToggleMask = 0x10007, virtualKey != 0x2d)) &&
-            (mappedCodeOrToggleMask = 0x10010, virtualKey != 0x24)))) &&
-          (((mappedCodeOrToggleMask = 0x10018, virtualKey != 0x23 && (mappedCodeOrToggleMask = 0x10012, virtualKey != 0x21)) &&
-           ((mappedCodeOrToggleMask = 0x1001a, virtualKey != 0x22 &&
-            (((mappedCodeOrToggleMask = 0x10014, virtualKey != 0x25 && (mappedCodeOrToggleMask = 0x10016, virtualKey != 0x27)) &&
-             ((mappedCodeOrToggleMask = 0x10011, virtualKey != 0x26 &&
-              ((mappedCodeOrToggleMask = 0x10019, virtualKey != 0x28 && (mappedCodeOrToggleMask = 0x10015, virtualKey != 0x29)))))))))
+    mappedCodeOrToggleMask = KEYBOARD_STATE_NUM_LOCK;
+    if ((virtualKey != VK_NUMLOCK) && (mappedCodeOrToggleMask = KEYBOARD_STATE_SCROLL_LOCK, virtualKey != VK_SCROLL)) {
+      mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
+      if (((((virtualKey != VK_SPACE) &&
+            (((virtualKey != VK_ESCAPE && (virtualKey != VK_RETURN)) && (virtualKey != VK_SEPARATOR)))) &&
+           (((virtualKey != VK_TAB && (virtualKey != VK_BACK)) && (virtualKey != VK_PRINT)))) &&
+          ((virtualKey != VK_SNAPSHOT && (virtualKey != VK_EXECUTE)))) &&
+         (((virtualKey != VK_PAUSE &&
+           (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DELETE && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT), virtualKey != VK_INSERT)) &&
+            (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_HOME)))) &&
+          (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_END && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_PRIOR)) &&
+           ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NEXT &&
+            (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_LEFT && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_RIGHT)) &&
+             ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_UP &&
+              ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_DOWN && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_SELECT)))))))))
            ))))) {
-        mappedCodeOrToggleMask = 0x20000;
-        if (virtualKey < 0x30) {
+        mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
+        if (virtualKey < '0') {
           return;
         }
-        if (0x39 < virtualKey) {
-          if (virtualKey < 0x41) {
+        if ('9' < virtualKey) {
+          if (virtualKey < 'A') {
             return;
           }
-          if (0x5a < virtualKey) {
-            if (virtualKey < 0x60) {
+          if ('Z' < virtualKey) {
+            if (virtualKey < VK_NUMPAD0) {
               return;
             }
-            if (0x7b < virtualKey) {
+            if (VK_F12 < virtualKey) {
               return;
             }
-            mappedCodeOrToggleMask = 0x10007;
-            if ((((((virtualKey != 0x60) && (mappedCodeOrToggleMask = 0x10018, virtualKey != 0x61)) &&
-                  (mappedCodeOrToggleMask = 0x10019, virtualKey != 0x62)) &&
-                 ((mappedCodeOrToggleMask = 0x1001a, virtualKey != 99 && (mappedCodeOrToggleMask = 0x10014, virtualKey != 100)))) &&
-                (((mappedCodeOrToggleMask = 0x10015, virtualKey != 0x65 &&
-                  ((mappedCodeOrToggleMask = 0x10016, virtualKey != 0x66 && (mappedCodeOrToggleMask = 0x10010, virtualKey != 0x67))))
-                 && (mappedCodeOrToggleMask = 0x10011, virtualKey != 0x68)))) &&
-               ((mappedCodeOrToggleMask = 0x10012, virtualKey != 0x69 && (mappedCodeOrToggleMask = 0x10006, virtualKey != 0x6e)))) {
-              mappedCodeOrToggleMask = 0x20000;
+            mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_INSERT);
+            if ((((((virtualKey != VK_NUMPAD0) && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_END), virtualKey != VK_NUMPAD1)) &&
+                  (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DOWN), virtualKey != VK_NUMPAD2)) &&
+                 ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_DOWN), virtualKey != VK_NUMPAD3 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_LEFT), virtualKey != VK_NUMPAD4)))) &&
+                (((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NUMPAD_5, virtualKey != VK_NUMPAD5 &&
+                  ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_RIGHT), virtualKey != VK_NUMPAD6 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_HOME), virtualKey != VK_NUMPAD7))))
+                 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_UP), virtualKey != VK_NUMPAD8)))) &&
+               ((mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_PAGE_UP), virtualKey != VK_NUMPAD9 && (mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_SPECIAL(KEYBOARD_SPECIAL_KEY_DELETE), virtualKey != VK_DECIMAL)))) {
+              mappedCodeOrToggleMask = KEYBOARD_KEY_CODE_NOT_SPECIAL;
             }
           }
         }

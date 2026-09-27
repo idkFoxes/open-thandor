@@ -234,10 +234,9 @@ ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Address: 0x004BE9D0.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively recomputes the node bounding radius at +0x54. The result is the maximum of the base model
-   radius at model +0xD8 and each child translation-vector length plus that child radius.
-   Cross-module calls: FixedMath_LengthVec3 [core/math/fixed].
+   Recomputes the bounding radius of a model node's subtree, children first: the largest of the node's own
+   model radius and, per child, the child's distance from the node plus the child's subtree radius. Read by
+   rendering, the selection overlay and ModelNodeRuntime_UpdateDepthBinMasks.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRuntime)
@@ -249,22 +248,23 @@ ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRunti
   uint32_t childrenRemaining;
   uint32_t maximumRadius;
   ModelRuntimeNode *childSlotCursor;
-  
-  maximumRadius = ((modelNodeRuntime->modelPayload).modelResource)->boundingRadiusQ12;
+
+  maximumRadius = modelNodeRuntime->modelPayload.modelResource->boundingRadiusQ12;
   childSlotCursor = modelNodeRuntime;
-  for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
+  for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining--) {
     childNode = childSlotCursor->childNodes[0];
-    if (childNode != (ModelRuntimeNode *)0x0) {
+    if (childNode != NULL) {
       ModelNodeRuntime_RecomputeSubtreeBoundingRadius(childNode);
       childDistance = FixedMath_LengthVec3
                         ((GraphicsFixedVec3 *)
-                         &(childNode->modelPayload).localTranslationXQ12);
+                         &childNode->modelPayload.localTranslationXQ12);
       childExtent = childDistance + childNode->subtreeBoundingRadiusQ12;
       if (maximumRadius < childExtent) {
         maximumRadius = childExtent;
       }
     }
-    childSlotCursor = (ModelRuntimeNode *)&(childSlotCursor->common).nextNode;
+    /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
+    childSlotCursor = (ModelRuntimeNode *)&childSlotCursor->common.nextNode;
   }
   modelNodeRuntime->subtreeBoundingRadiusQ12 = maximumRadius;
   return;
@@ -272,41 +272,36 @@ ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRunti
 
 
 /* Address: 0x004BEA30.
-   Ownership: world/model/hierarchy.
-   Purpose: Typed parameters: p2 intervalRadiusQ14→DepthIntervalRadius32_V343. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives].
+   Updates the coarse position bins of a model node after it moved: one bit mask along world x and one along
+   world y, each covering the node's position +- the larger of minimumRadius (the army's placement radius)
+   and the subtree bounding radius. Placement and combat test these masks before exact distance checks.
 */
 void __thandor_preserve_eax
 ModelNodeRuntime_UpdateDepthBinMasks
-          (DepthIntervalRadius32 intervalRadiusQ14,ModelRuntimeNode *modelNodeRuntime)
+          (DepthIntervalRadius32 minimumRadius,ModelRuntimeNode *modelNodeRuntime)
 
 {
   DepthBinMask32 binMask;
-  GraphicsWorldCoordinateQ12 centerDepth;
-  
-  if (intervalRadiusQ14 < modelNodeRuntime->subtreeBoundingRadiusQ12) {
-    intervalRadiusQ14 = modelNodeRuntime->subtreeBoundingRadiusQ12;
+  GraphicsWorldCoordinateQ12 centerY;
+
+  if (minimumRadius < modelNodeRuntime->subtreeBoundingRadiusQ12) {
+    minimumRadius = modelNodeRuntime->subtreeBoundingRadiusQ12;
   }
-  centerDepth = (modelNodeRuntime->worldTransform).translation.y;
+  /* y is read first: the original pushes the arguments of both calls before the first one */
+  centerY = modelNodeRuntime->worldTransform.translation.y;
   binMask = DepthInterval_BuildBinMask
-                    (intervalRadiusQ14,(modelNodeRuntime->worldTransform).translation.x);
+                    (minimumRadius,modelNodeRuntime->worldTransform.translation.x);
   modelNodeRuntime->depthBinMaskNear = binMask;
-  binMask = DepthInterval_BuildBinMask(intervalRadiusQ14,centerDepth);
+  binMask = DepthInterval_BuildBinMask(minimumRadius,centerY);
   modelNodeRuntime->depthBinMaskFar = binMask;
   return;
 }
 
 
 /* Address: 0x004BEB80.
-   Ownership: world/model/hierarchy.
-   Purpose: Transforms the local point at source +0x04 through the model-node fixed transform at +0x70 and returns
-   the transformed vector through the engine register convention. Local Q12 point -> world via the node's fixed
-   transform; the fire chain uses it on kind-2 launch records. Typed parameters: p1
-   localPointRecord→ModelLocalPointRecordAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed].
+   Transforms a model-local point record (anchor, launch or marker point) into world coordinates through the
+   node's world transform. The original returns the point in EAX/ECX/EDX (x/y/z) after writing it to
+   g_ModelTransformOutputX..Z.
 */
 ModelWorldPoint
 ModelNodeRuntime_TransformLocalPointRegs
@@ -314,7 +309,7 @@ ModelNodeRuntime_TransformLocalPointRegs
 
 {
   ModelWorldPoint transformedPoint;
-  
+
   FixedTransform_ApplyPoint
             ((GraphicsFixedVec3 *)&g_ModelTransformOutputX,&localPointRecord->localPosition,
              &modelNodeRuntime->worldTransform);
@@ -737,15 +732,9 @@ ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Address: 0x0051B650.
-   Ownership: world/model/hierarchy.
-   Purpose: Walks the child-definition list, resolves each faction-unlocked linked model identifier, instantiates
-   the matching runtime child, and recursively builds its descendants, aborting through carry on failure. Role:
-   Recursively instantiates MDL-linked child model definitions. Inputs: Parent ModelRuntimeNode, linked-model
-   descriptors and runtime selection context. Outputs: Attached child ModelRuntimeNode trees; deferred links may be
-   repaired later. Edges: Calls model selection/creation, ModelRuntimePool_RepairDeferredChild and itself
-   recursively.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedId [assets/model/definitions],
-   ModelRuntimePool_RepairDeferredChild [world/model/runtime].
+   Builds the child models of a new model hierarchy from its MDL definition node: every linked definition list
+   yields the variant the faction's technology selects, which is created in the matching child slot and then
+   built the same way. CF set (true) when a child cannot be created.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelNodeRuntime_InstantiateLinkedChildrenRecursive
@@ -758,10 +747,10 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursive
   PckModelDefinitionIdCatalog childDefinitionId;
   int linksRemaining;
   ModelRuntimeAttachmentIndex childSlotIndex;
-  ModelRuntimeAttachmentIndex attachmentIndex;
   bool childFailed;
-  ModelNodeCreateResult repairResult;
-  
+  ModelNodeCreateResult childCreateResult;
+
+  /* definition node: +8 link count, +0xC the linked definition lists */
   linksRemaining = *(int *)(definitionNode + 8);
   if (linksRemaining != 0) {
     childSlotIndex = 0;
@@ -770,20 +759,20 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursive
            *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc + childSlotIndex * 4);
       childDefinitionId =
            ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList);
-      repairResult = ModelRuntimePool_RepairDeferredChild
+      childCreateResult = ModelRuntimePool_RepairDeferredChild
                         (paletteAsset,textureSet,childSlotIndex,childDefinitionId,
                          modelRuntimeSlot,worldRuntime);
-      if (repairResult.failed) {
+      if (childCreateResult.failed) {
         return true;
       }
       childFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
-                        (factionIndex,paletteAsset,textureSet,(ModelRuntimeSlot *)repairResult.modelNode,
+                        (factionIndex,paletteAsset,textureSet,(ModelRuntimeSlot *)childCreateResult.modelNode,
                          linkedDefinitionList,worldRuntime);
       if (childFailed) {
         return true;
       }
-      childSlotIndex = childSlotIndex + 1;
-      linksRemaining = linksRemaining + -1;
+      childSlotIndex++;
+      linksRemaining--;
     } while (linksRemaining != 0);
   }
   return false;
@@ -791,31 +780,29 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursive
 
 
 /* Address: 0x0051BEC0.
-   Ownership: world/model/hierarchy.
-   Purpose: Stores the two command-target values in one model runtime node and recursively propagates them through
-   every child hierarchy entry. Typed parameters: p4 modelNode→ModelRuntimeNode *. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p2 commandTarget0→ModelCommandTarget0_V344, p3
-   commandTarget1→ModelCommandTarget1_V344. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Gives a model node and all its descendants a new palette and texture set; used when two factions merge
+   and the absorbed faction's models take the survivor's colours. Unlike
+   ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive it expects a non-NULL node and skips empty child
+   slots itself.
 */
 void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_SetCommandTargetRecursive
+ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode)
 
 {
   uint32_t childrenRemaining;
-  
+
   childrenRemaining = modelNode->childCount;
-  (modelNode->modelPayload).textureSet = textureSet;
-  (modelNode->modelPayload).paletteAsset = paletteAsset;
-  for (; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
-    if (modelNode->childNodes[0] != (ModelRuntimeNode *)0x0) {
-      ModelRuntimeHierarchy_SetCommandTargetRecursive
+  modelNode->modelPayload.textureSet = textureSet;
+  modelNode->modelPayload.paletteAsset = paletteAsset;
+  for (; childrenRemaining != 0; childrenRemaining--) {
+    if (modelNode->childNodes[0] != NULL) {
+      ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
                 (paletteAsset,textureSet,modelNode->childNodes[0]);
     }
-    modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
+    /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
+    modelNode = (ModelRuntimeNode *)&modelNode->common.nextNode;
   }
   return;
 }
@@ -863,12 +850,12 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
 
 
 /* Address: 0x0051C1F0.
-   Ownership: world/model/hierarchy.
-   Purpose: Traverses the model runtime hierarchy and sums the signed dword stored at runtime-node offset 0x3C.
+   Returns the armour of a model hierarchy (shown in the in-game selection detail): the sum of the current
+   armour points (runtime +0x3C) of every node, walked depth-first.
 */
 /* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
    slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
-static int ModelRuntimeHierarchy_SumMetric3CFrom(uint8_t *node)
+static int ModelRuntimeHierarchy_SumArmourFrom(uint8_t *node)
 {
   int sum = *(int *)(node + 0x3c);
   int childCount = *(int *)(node + 0xc);
@@ -876,7 +863,7 @@ static int ModelRuntimeHierarchy_SumMetric3CFrom(uint8_t *node)
   for (i = 0; i < childCount; i++) {
     uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
     if (child != (uint8_t *)0x0) {
-      sum = sum + ModelRuntimeHierarchy_SumMetric3CFrom(child);
+      sum = sum + ModelRuntimeHierarchy_SumArmourFrom(child);
     }
   }
   return sum;
@@ -900,23 +887,20 @@ static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
   }
 }
 
-int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumMetric3C(int *modelRuntimeRoot)
+int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot)
 
 {
   /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
-  return ModelRuntimeHierarchy_SumMetric3CFrom((uint8_t *)(uintptr_t)*modelRuntimeRoot);
+  return ModelRuntimeHierarchy_SumArmourFrom((uint8_t *)(uintptr_t)*modelRuntimeRoot);
 }
 
 
 /* Address: 0x00528C20.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively walks model-definition children whose low-nibble mode is zero, matches type-zero and type-
-   one attachment descriptors by child channel index, and stores up to six descriptor pointers in the verified
-   runtime attachment list. Two stack arguments are authoritative from RET 0x08. The EDX:EAX result remains a
-   nominal register-pair domain rather than a hidden structure return. Walks the hierarchy collecting NULL-child
-   (empty-stem) attach records into the 6-slot attachments140[] with rotation angles from the CHILD DEFINITION
-   record +8/+0xC/+0x10 — not from the transform record (W2 closure). Role: Traverses the runtime model hierarchy
-   and collects serialized SPR attachment descriptors.
+   Collects the attachment points of a runtime model from its serialized MDL definition node (nodes whose
+   nodeFlags low nibble is not 0 return NULL and are not walked). Per child slot the first transform record of
+   kind 0 or 1 naming that slot is searched in the definition's sprite asset; after recursing into the child
+   definition, a NULL result from there stores the record in the next of the six attachments140[] entries.
+   Returns the caller's EDI (modelRuntimeContinuityEdi) otherwise.
 */
 ModelRuntimeSlot * __thandor_eax_preserve_ecx_edx
 ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
@@ -932,18 +916,21 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   ModelAttachmentTransformRecord *attachmentTransformCursor;
   ModelRuntimeAttachmentCollectionRegisterPair recursiveCollectionResult;
   AssetRecordByteCount definitionAssetBase;
-  
+
   if ((definitionNode->nodeFlags & 0xf) != 0) {
-    return (ModelRuntimeSlot *)0x0;
+    return NULL;
   }
   childCountRemaining = definitionNode->childCount;
-  definitionAssetBase = (definitionNode->spriteAssetReference).savedId;
+  definitionAssetBase = definitionNode->spriteAssetReference.savedId;
   childIndex = 0;
-  for (; childCountRemaining != 0; childCountRemaining = childCountRemaining - 1) {
+  for (; childCountRemaining != 0; childCountRemaining--) {
+    /* sprite asset +0xE4: offset of the attachment transform records, +0xE8: their count */
     attachmentTransformCursor =
          (ModelAttachmentTransformRecord *)
          (definitionAssetBase + *(int *)(definitionAssetBase + 0xe4));
-    for (transformRecordsRemaining = *(int *)(definitionAssetBase + 0xe8); transformRecordsRemaining != 0; transformRecordsRemaining = transformRecordsRemaining + -1) {
+    for (transformRecordsRemaining = *(int *)(definitionAssetBase + 0xe8); transformRecordsRemaining != 0;
+        transformRecordsRemaining--) {
+      /* packedKindAndSelector: kind in bits 0..3, child slot index above */
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
       if (((attachmentKind == 0) || (attachmentKind == 1)) &&
          (childIndex == attachmentTransformCursor->packedKindAndSelector >> 4)) {
@@ -952,19 +939,19 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntimeContinuityEdi,modelRuntime,
                         (MdlSerializedNodeHeader38 *)
                         definitionNode->childSerializedOffsets[childIndex]);
-        if (((ModelRuntimeSlot *)recursiveCollectionResult == (ModelRuntimeSlot *)0x0) &&
+        if (((ModelRuntimeSlot *)recursiveCollectionResult == NULL) &&
            (attachmentSlot = modelRuntime->attachmentCount0C, attachmentSlot < 6)) {
-          modelRuntime->attachmentCount0C = modelRuntime->attachmentCount0C + 1;
+          modelRuntime->attachmentCount0C++;
           modelRuntime->attachments140[attachmentSlot].sourceTransform04 = attachmentTransformCursor;
         }
         break;
       }
-      attachmentTransformCursor = attachmentTransformCursor + 1;
+      attachmentTransformCursor++;
     }
     /* The original advances the child index only when an attachment transform matched
        (DEC EDX before the shared INC EDX when none did). */
     if (transformRecordsRemaining != 0) {
-      childIndex = childIndex + 1;
+      childIndex++;
     }
   }
   return modelRuntimeContinuityEdi;
@@ -1223,11 +1210,10 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
 
 
 /* Address: 0x0052A690.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively computes the Q12 hierarchy scale ratio consumed by the existing model-runtime metric query
-   wrappers. Recursively computes the hierarchy scale ratio. EAX carries the computed Q12 ratio and EDX carries Q12
-   unity 0x1000; the nominal 8-byte return type preserves the verified EDX:EAX register pair without introducing a
-   structure-return pointer. Unrelated to draw scale (that is node+0xC0 in ModelRender_PrepareProjectedVertex).
+   Condition of a model hierarchy as a Q12 ratio: the node's armour points (+0x3C) relative to its
+   definition's maximum (+0x60), multiplied by the average of 1.0 and the ratios of all attached child
+   hierarchies. EAX carries the ratio and EDX the Q12 unity 0x1000 (the 8-byte return type models that
+   register pair). Unrelated to the draw scale at node +0xC0.
 */
 ModelRuntimeScaleRatioRegisterPairQ12 __thandor_eax_edx_cf_preserve_ecx
 ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
@@ -1239,29 +1225,29 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
   ModelRuntimeSlot *attachmentDescriptorCursor;
   int scaleSampleCount;
   ModelRuntimeScaleRatioRegisterPairQ12 childScaleRatioPairQ12;
-  
+
   accumulatedHierarchyScaleQ12 = 0x1000;
   scaleSampleCount = 1;
   attachmentDescriptorCursor = modelRuntime;
   for (attachmentsRemaining = modelRuntime->attachmentCount0C; attachmentsRemaining != 0;
-      attachmentsRemaining = attachmentsRemaining - 1) {
-    childModelRuntime = attachmentDescriptorCursor->attachments140[0].childModelRuntimeOrSavedOffset00
-    ;
-    if (childModelRuntime != (ModelRuntimeSlot *)0x0) {
+      attachmentsRemaining--) {
+    childModelRuntime = attachmentDescriptorCursor->attachments140[0].childModelRuntimeOrSavedOffset00;
+    if (childModelRuntime != NULL) {
       childScaleRatioPairQ12 = ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(childModelRuntime);
       accumulatedHierarchyScaleQ12 = accumulatedHierarchyScaleQ12 + (int)childScaleRatioPairQ12;
-      scaleSampleCount = scaleSampleCount + 1;
+      scaleSampleCount++;
     }
+    /* steps the cursor by one 0x20-byte attachments140[] entry */
     attachmentDescriptorCursor =
          (ModelRuntimeSlot *)(attachmentDescriptorCursor->reserved10_37 + 0x10);
   }
   /* EAX = the scale ratio, EDX = 0x1000 */
-  return (uint64_t)0x1000 << 0x20 |
+  return (uint64_t)0x1000 << 32 |
          (uint64_t)(uint32_t)(int)(((int64_t)(int)modelRuntime->definitionValue60_3C *
                              (int64_t)accumulatedHierarchyScaleQ12) /
                             (int64_t)
                             (scaleSampleCount *
-                            *(int *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x60)));
+                            *(int *)(modelRuntime->definitionOrSavedId.savedIdOrOffset + 0x60)));
 }
 
 
@@ -1564,14 +1550,9 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
 
 
 /* Address: 0x0052AEA0.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively selects the first faction-unlocked variant among six definition identifiers, swaps the
-   model definition while preserving the scaled current metric, and rebuilds derived hierarchy metrics. It is
-   distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ModelDefinition_IsFactionTechnologyUnlocked [assets/model/definitions],
-   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions],
-   ArmyRuntime_RebuildDerivedSelectionMetrics [gameplay/army/runtime].
+   Switches every node of a model hierarchy to the first of the (up to six) variant definitions listed in its
+   definition (+0x238) that the faction's technology unlocks. The armour points (+0x3C) are rescaled to the new
+   definition's maximum (+0x60) so the condition stays the same, and the army's derived metrics are rebuilt.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
@@ -1581,18 +1562,21 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
   PckModelDefinitionIdCatalog modelDefinitionId;
   int variantsRemaining;
   int variantCursorOrRemaining;
-  bool isUnlocked;
+  bool variantLocked;
   ModelDefinitionResult lookupResult;
-  
+
+  /* modelRuntime: [0] definition, [2] army runtime, [3] child count, [0xF] armour points,
+     [0x50 + 8 * i] child i */
   variantCursorOrRemaining = *modelRuntime;
   variantsRemaining = 6;
   do {
     modelDefinitionId = *(PckModelDefinitionIdCatalog *)(variantCursorOrRemaining + 0x238);
+    /* ModelDefinition_IsFactionTechnologyUnlocked returns true (CF set) when the variant is NOT unlocked */
     if ((modelDefinitionId != 0) &&
-       (isUnlocked = ModelDefinition_IsFactionTechnologyUnlocked
+       (variantLocked = ModelDefinition_IsFactionTechnologyUnlocked
                           (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                           modelDefinitionId), !isUnlocked)) {
-      /* swap to this variant, keeping the scaled metric */
+                           modelDefinitionId), !variantLocked)) {
+      /* swap to this variant; armour points scale with the new maximum */
       lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
       variantCursorOrRemaining = *modelRuntime;
       *modelRuntime = (int)lookupResult.modelDefinition;
@@ -1603,10 +1587,10 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
       break;
     }
     variantCursorOrRemaining = variantCursorOrRemaining + 4;
-    variantsRemaining = variantsRemaining + -1;
+    variantsRemaining--;
   } while (variantsRemaining != 0);
-  for (variantCursorOrRemaining = modelRuntime[3]; variantCursorOrRemaining != 0; variantCursorOrRemaining = variantCursorOrRemaining + -1) {
-    if ((int *)modelRuntime[0x50] != (int *)0x0) {
+  for (variantCursorOrRemaining = modelRuntime[3]; variantCursorOrRemaining != 0; variantCursorOrRemaining--) {
+    if ((int *)modelRuntime[0x50] != NULL) {
       ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
                 (factionIndex,(int *)modelRuntime[0x50]);
     }

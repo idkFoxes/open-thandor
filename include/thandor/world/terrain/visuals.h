@@ -20,6 +20,15 @@
    (TerrainLighting_BuildColorRampAndSetBaseColor). */
 #define TERRAIN_LIGHTING_RAMP_ENTRY_COUNT 256
 #define TERRAIN_DIRECTIONAL_LIGHT_LUT_ENTRY_COUNT 257
+/* g_TerrainByteClampLookup (TerrainByteClampLookup_Initialize): 256 rows of 256 bytes, row = a cell's
+   occupancy byte, column = its runtime byte +0x68. Each row moves the runtime byte by one fade step towards the
+   row's target level (the levels FieldGrid_ClassifyCellFlagsToRuntimeByte writes directly): rows 0x00..0x7F
+   by bit 0 (clear -> NONE, set -> FULL), 0x80 and 0x82 -> PERSISTENT, 0x81 and 0x83..0xFF -> FULL. */
+#define TERRAIN_BYTE_CLAMP_LOOKUP_BYTES 0x10000
+#define TERRAIN_RUNTIME_BYTE_FADE_STEP 0x15
+#define TERRAIN_RUNTIME_BYTE_LEVEL_NONE 0x00
+#define TERRAIN_RUNTIME_BYTE_LEVEL_PERSISTENT 0x87 /* only the persistent occupancy bit 7 */
+#define TERRAIN_RUNTIME_BYTE_LEVEL_FULL 0xff
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

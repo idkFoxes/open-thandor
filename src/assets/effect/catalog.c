@@ -105,23 +105,15 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
 
 
 /* Address: 0x0051DFD0.
-   Ownership: assets/effect/catalog.
-   Purpose: Registers one fixed 0xC0-byte effect definition in the 256-slot registry, rejects duplicate
-   identifiers, changes its stored resource path to .spr, loads or reuses the sprite asset, and records ownership
-   for later release. CF/EAX reports duplicate, capacity, path, package, or sprite registration failure. Role:
-   Registers an EFF record, loads its referenced SPR resource and resolves effect/shot links. Inputs: Serialized
-   EFF record and UTF-16 resource path; extension is normalized to .spr. Outputs: EffectDefinition with SpriteAsset
-   and linked effect/shot pointers.
-   Cross-module calls: EffectRuntime_FindDefinitionById [world/effects/runtime], WidePath_SetExtensionCode
-   [core/text/path], Package_LoadEntry [assets/package/runtime], SpriteAssetRegistry_FindById
-   [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers [assets/sprite/catalog], Resource_Release
-   [assets/resource/runtime].
+   Registers one 0xC0-byte effect definition in the first free registry slot, switches its resource path to
+   .spr and loads the sprite asset, reusing an already registered sprite with the same id (the fresh load is
+   then released). CF/EAX report a duplicate id, a full registry or the path/package/sprite failure.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition)
 
 {
-  SpriteAssetHeader *asset;
+  SpriteAssetHeader *assetOrError;
   SpriteAssetHeader *existingSpriteAsset;
   int registrySlotsRemaining;
   EffectDefinition **registrySlotCursor;
@@ -133,51 +125,53 @@ EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition)
   StatusResult successResult;
   
   registrySlotCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
+  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
   duplicateLookup = EffectRuntime_FindDefinitionById(definition->definitionId);
-  asset = (SpriteAssetHeader *)duplicateLookup.definitionOrError;
+  assetOrError = (SpriteAssetHeader *)duplicateLookup.definitionOrError;
   if (duplicateLookup.notFound) {
     do {
-      if (*registrySlotCursor == (EffectDefinition *)0x0) {
+      if (*registrySlotCursor == NULL) {
         *registrySlotCursor = definition;
-        extensionFailed = WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
+        extensionFailed = WidePath_SetExtensionCode(ASSET_MAGIC_SPR,definition->resourcePathUtf16);
         if (extensionFailed) goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
         packageLoad = Package_LoadEntry(definition->resourcePathUtf16);
-        asset = packageLoad.bufferOrError;
+        assetOrError = packageLoad.bufferOrError;
         if (packageLoad.failed)
         goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
-        existingSpriteAsset = SpriteAssetRegistry_FindById((asset->registryHeader).registryId);
-        if (existingSpriteAsset == (SpriteAssetHeader *)0x0) {
-          definition->ownedNestedResourcePresent = definition->ownedNestedResourcePresent + 1;
-          definition->ownedNestedResource = asset;
-          spriteRegistration = SpriteAsset_RegisterAndRelocatePointers(asset);
-          asset = spriteRegistration.assetOrError;
+        existingSpriteAsset = SpriteAssetRegistry_FindById(assetOrError->registryHeader.registryId);
+        if (existingSpriteAsset == NULL) {
+          definition->ownedNestedResourcePresent++;
+          definition->ownedNestedResource = assetOrError;
+          spriteRegistration = SpriteAsset_RegisterAndRelocatePointers(assetOrError);
+          assetOrError = spriteRegistration.assetOrError;
           if (spriteRegistration.failed)
           goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
         }
         else {
           definition->ownedNestedResource = existingSpriteAsset;
-          Resource_Release(asset);
-          asset = existingSpriteAsset;
+          Resource_Release(assetOrError);
+          assetOrError = existingSpriteAsset;
         }
         successResult.failed = false;
-        successResult.valueOrError = (uint32_t)asset;
+        successResult.valueOrError = (uint32_t)assetOrError;
         return successResult;
       }
-      registrySlotCursor = registrySlotCursor + 1;
-      registrySlotsRemaining = registrySlotsRemaining + -1;
+      registrySlotCursor++;
+      registrySlotsRemaining--;
     } while (registrySlotsRemaining != 0);
-    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100,g_PackageLastErrorPath);
-    asset = (SpriteAssetHeader *)0x49;
+    /* the registry capacity goes to the error text */
+    g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,EFFECT_DEFINITION_REGISTRY_SLOT_COUNT,
+                            g_PackageLastErrorPath);
+    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_REGISTRY_FULL;
   }
   else {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    asset = (SpriteAssetHeader *)0x4e;
+    assetOrError = (SpriteAssetHeader *)FATAL_ERROR_EFFECT_ID_DUPLICATE;
   }
 EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError:
   failureResult.failed = true;
-  failureResult.valueOrError = (uint32_t)asset;
+  failureResult.valueOrError = (uint32_t)assetOrError;
   return failureResult;
 }
 

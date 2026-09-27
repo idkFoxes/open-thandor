@@ -350,11 +350,9 @@ InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
 
 
 /* Address: 0x0053D230.
-   Ownership: core/math/interpolation.
-   Purpose: Solves the cubic coefficient system. RET 0x0C proves three stack arguments and removes the false
-   fastcall stack-spacebase model. Role: Runs forward elimination and back substitution for one channel. Inputs:
-   Natural-cubic coefficient system and output coefficient table. Outputs: Solved segment coefficients.
-   Local calls: CubicSpline_ForwardEliminateColumn, CubicSpline_BackSubstituteRow.
+   Solves the spline equation system built by CubicSpline_BuildNaturalCoefficientSystem in place: an LU
+   (Doolittle) decomposition of the matrix without pivoting, whose unit-L forward substitution runs along row
+   by row, followed by back substitution with U. rhsVector then holds the four coefficients of every segment.
 */
 void __thandor_void_preserve_eax_ecx_edx
 CubicSpline_SolveCoefficientSystem
@@ -366,10 +364,11 @@ CubicSpline_SolveCoefficientSystem
   CubicSplineMatrixIndex columnOrRowIndex;
   uint32_t followingIndex;
   uint32_t nextRowIndex;
-  
+
   rowIndex = 0;
   columnOrRowIndex = 0;
   do {
+    /* row rowIndex of U (columns rowIndex..n-1), then the forward-substituted right-hand side */
     do {
       followingIndex = columnOrRowIndex + 1;
       CubicSpline_ForwardEliminateColumn(1.0,rowIndex - 1,columnOrRowIndex,rowIndex,matrix32x32);
@@ -377,7 +376,8 @@ CubicSpline_SolveCoefficientSystem
     } while (followingIndex < equationCount);
     CubicSpline_BackSubstituteRow(1.0,rowIndex - 1,0,rowIndex,rhsVector,matrix32x32);
     if (rowIndex + 1 < equationCount) {
-      pivot = matrix32x32[rowIndex * 0x21];
+      /* column rowIndex of L below the diagonal, divided by the pivot U[rowIndex][rowIndex] */
+      pivot = matrix32x32[rowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1)];
       followingIndex = rowIndex + 1;
       do {
         nextRowIndex = followingIndex + 1;
@@ -385,28 +385,30 @@ CubicSpline_SolveCoefficientSystem
         followingIndex = nextRowIndex;
       } while (nextRowIndex < equationCount);
     }
-    rowIndex = rowIndex + 1;
+    rowIndex++;
     columnOrRowIndex = rowIndex;
   } while (rowIndex < equationCount);
+  /* back substitution from the last row up */
   columnOrRowIndex = equationCount - 1;
   do {
     CubicSpline_BackSubstituteRow
-              (matrix32x32[columnOrRowIndex * 0x21],equationCount - 1,columnOrRowIndex + 1,columnOrRowIndex,rhsVector,matrix32x32);
-    columnOrRowIndex = columnOrRowIndex - 1;
+              (matrix32x32[columnOrRowIndex * (CUBIC_SPLINE_MATRIX_ORDER + 1)],equationCount - 1,
+               columnOrRowIndex + 1,columnOrRowIndex,rhsVector,matrix32x32);
+    columnOrRowIndex--;
   } while (-1 < (int)columnOrRowIndex);
-  return;
 }
 
 
 /* Address: 0x0053CF10.
-   Ownership: core/math/interpolation.
-   Purpose: Builds one natural cubic-spline coefficient system. RET 0x1C proves seven stack arguments. Role: Builds
-   the tridiagonal coefficient system for one Q12 keyframe channel. Inputs: Keyframe times, selected channel offset
-   and output work arrays. Outputs: Natural cubic spline matrix/right-hand-side data.
+   Builds the equation system of a piecewise cubic spline through one channel of the keyframes (times and values
+   Q12, converted to float seconds/units): segment s has the unknowns a + b*t + c*t^2 + d*t^3 in columns 4s..4s+3.
+   Per segment, row 4s and 4s+3 fix the values at both keyframes, row 4s+2 makes the slope continuous and row
+   4s+5 the curvature; row 1 sets the start slope to startDerivative and the last segment's row 4s+2 the end slope
+   to 0 (so the spline is clamped, not natural). The right-hand side goes to outCoefficients.
 */
 void __thandor_void_preserve_eax_ecx_edx
 CubicSpline_BuildNaturalCoefficientSystem
-          (float endpointDerivative,CubicSplineEquationCount *outEquationCount,
+          (float startDerivative,CubicSplineEquationCount *outEquationCount,
           float *outCoefficients,float *matrix32x32,WorldMotionSplineKeyframeCount keyframeCount,
           WorldMotionSplineChannelByteOffset channelByteOffset,WorldMotionSplineKeyframe *keyframes)
 
@@ -417,15 +419,19 @@ CubicSpline_BuildNaturalCoefficientSystem
   int *startValueCursor;
   WorldMotionSplineKeyframe *keyframeCursor;
   float *floatCursor;
-  
+
+  /* In the matrix loops floatCursor points at the top-left of segment s's 4x4 diagonal block and steps one
+     block (4 rows and 4 columns) per segment; indices below are written as row * order + column. */
   endValueCursor = (int *)((int)&keyframes->channel0Q12 + channelByteOffset);
   *outEquationCount = keyframeCount * 4 - 4;
   floatCursor = matrix32x32;
-  for (remainingCount = 0x400; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = CUBIC_SPLINE_MATRIX_ORDER * CUBIC_SPLINE_MATRIX_ORDER; remainingCount != 0;
+      remainingCount--) {
     *floatCursor = 0.0;
     floatCursor = floatCursor + 1;
   }
-  remainingCount = keyframeCount + -1;
+  /* row 4s: the segment's value at its start keyframe */
+  remainingCount = keyframeCount - 1;
   keyframeCursor = keyframes;
   floatCursor = matrix32x32;
   do {
@@ -435,60 +441,68 @@ CubicSpline_BuildNaturalCoefficientSystem
     floatCursor[2] = knotTimeOrTerm * knotTimeOrTerm;
     floatCursor[3] = knotTimeOrTerm * knotTimeOrTerm * knotTimeOrTerm;
     keyframeCursor = keyframeCursor + 1;
-    floatCursor = floatCursor + 0x84;
-    remainingCount = remainingCount + -1;
+    floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
+    remainingCount--;
   } while (remainingCount != 0);
-  remainingCount = keyframeCount + -1;
+  /* row 4s+3: the segment's value at its end keyframe */
+  remainingCount = keyframeCount - 1;
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
   do {
     knotTimeOrTerm = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
-    floatCursor[0x60] = 1.0;
-    floatCursor[0x61] = knotTimeOrTerm;
-    floatCursor[0x62] = knotTimeOrTerm * knotTimeOrTerm;
-    floatCursor[99] = knotTimeOrTerm * knotTimeOrTerm * knotTimeOrTerm;
-    floatCursor = floatCursor + 0x84;
-    remainingCount = remainingCount + -1;
+    floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 0] = 1.0;
+    floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 1] = knotTimeOrTerm;
+    floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTimeOrTerm * knotTimeOrTerm;
+    floatCursor[3 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTimeOrTerm * knotTimeOrTerm * knotTimeOrTerm;
+    floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
+    remainingCount--;
     keyframeCursor = keyframeCursor + 1;
   } while (remainingCount != 0);
+  /* row 4s+2 (all but the last segment): slope of segment s minus slope of segment s+1 at their shared knot */
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
-  for (remainingCount = keyframeCount + -2; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = keyframeCount - 2; remainingCount != 0; remainingCount--) {
     knotTimeOrTerm = (float)keyframeCursor[1].timeQ12 / g_Q12FloatScale4096;
-    floatCursor[0x41] = 1.0;
-    floatCursor[0x45] = -1.0;
-    floatCursor[0x42] = knotTimeOrTerm + knotTimeOrTerm;
-    floatCursor[0x46] = -(knotTimeOrTerm + knotTimeOrTerm);
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 1] = 1.0;
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 5] = -1.0;
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTimeOrTerm + knotTimeOrTerm;
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 6] = -(knotTimeOrTerm + knotTimeOrTerm);
     knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
     knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
-    floatCursor[0x43] = knotTimeOrTerm;
-    floatCursor[0x47] = -knotTimeOrTerm;
-    floatCursor = floatCursor + 0x84;
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTimeOrTerm;
+    floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 7] = -knotTimeOrTerm;
+    floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
     keyframeCursor = keyframeCursor + 1;
   }
+  /* row 4s+5: curvature of segment s+1 minus curvature of segment s at their shared knot; the loop leaves
+     keyframeCursor on the last keyframe and floatCursor on the last segment's block */
   floatCursor = matrix32x32;
   keyframeCursor = keyframes;
-  for (remainingCount = keyframeCount + -2; keyframeCursor = keyframeCursor + 1, remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = keyframeCount - 2; keyframeCursor = keyframeCursor + 1, remainingCount != 0;
+      remainingCount--) {
     knotTimeOrTerm = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
-    floatCursor[0xa6] = 2.0;
-    floatCursor[0xa2] = -2.0;
+    floatCursor[5 * CUBIC_SPLINE_MATRIX_ORDER + 6] = 2.0;
+    floatCursor[5 * CUBIC_SPLINE_MATRIX_ORDER + 2] = -2.0;
     knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
     knotTimeOrTerm = knotTimeOrTerm + knotTimeOrTerm;
-    floatCursor[0xa7] = knotTimeOrTerm;
-    floatCursor[0xa3] = -knotTimeOrTerm;
-    floatCursor = floatCursor + 0x84;
+    floatCursor[5 * CUBIC_SPLINE_MATRIX_ORDER + 7] = knotTimeOrTerm;
+    floatCursor[5 * CUBIC_SPLINE_MATRIX_ORDER + 3] = -knotTimeOrTerm;
+    floatCursor = floatCursor + 4 * CUBIC_SPLINE_MATRIX_ORDER + 4;
   }
+  /* last segment, row 4s+2: slope at the last keyframe (right-hand side 0) */
   knotTimeOrTerm = (float)keyframeCursor->timeQ12 / g_Q12FloatScale4096;
-  floatCursor[0x41] = 1.0;
-  floatCursor[0x42] = knotTimeOrTerm + knotTimeOrTerm;
+  floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 1] = 1.0;
+  floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTimeOrTerm + knotTimeOrTerm;
   knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
-  floatCursor[0x43] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+  floatCursor[2 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+  /* row 1: slope at the first keyframe (right-hand side startDerivative) */
   knotTimeOrTerm = (float)keyframes->timeQ12 / g_Q12FloatScale4096;
-  matrix32x32[0x21] = 1.0;
-  matrix32x32[0x22] = knotTimeOrTerm + knotTimeOrTerm;
+  matrix32x32[1 * CUBIC_SPLINE_MATRIX_ORDER + 1] = 1.0;
+  matrix32x32[1 * CUBIC_SPLINE_MATRIX_ORDER + 2] = knotTimeOrTerm + knotTimeOrTerm;
   knotTimeOrTerm = knotTimeOrTerm * knotTimeOrTerm;
-  matrix32x32[0x23] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
-  remainingCount = keyframeCount + -1;
+  matrix32x32[1 * CUBIC_SPLINE_MATRIX_ORDER + 3] = knotTimeOrTerm + knotTimeOrTerm + knotTimeOrTerm;
+  /* right-hand side per segment: start value, 0, 0, end value (keyframes are 8 dwords apart) */
+  remainingCount = keyframeCount - 1;
   startValueCursor = endValueCursor;
   floatCursor = outCoefficients;
   do {
@@ -497,18 +511,17 @@ CubicSpline_BuildNaturalCoefficientSystem
     floatCursor[2] = 0.0;
     startValueCursor = startValueCursor + 8;
     floatCursor = floatCursor + 4;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  remainingCount = keyframeCount + -1;
+  remainingCount = keyframeCount - 1;
   floatCursor = outCoefficients;
   do {
     endValueCursor = endValueCursor + 8;
     floatCursor[3] = (float)*endValueCursor / g_Q12FloatScale4096;
     floatCursor = floatCursor + 4;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  outCoefficients[1] = endpointDerivative;
-  return;
+  outCoefficients[1] = startDerivative;
 }
 
 

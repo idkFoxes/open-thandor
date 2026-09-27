@@ -11,42 +11,38 @@
 /* Implementation ownership: assets/model/definitions. */
 
 /* Address: 0x0051B3C0.
-   Ownership: assets/model/definitions.
-   Purpose: Scans the eight linked model-definition identifiers, retains the faction-unlocked selection, and
-   resolves the selected identifier through the model-definition registry, preserving carry status. It is distinct
-   from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
-   linkedDefinitionList→ModelLinkedDefinitionListAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlocked, ModelDefinitionRegistry_FindByIdWithError.
+   Picks the upgrade stage a faction can build: of the eight linked model-definition ids at +0x20 the last
+   non-zero one whose technology the faction has unlocked wins (the first id is the fallback), and it is
+   looked up in the registry. CF is always clear, even when the lookup fails.
 */
 ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
-  PckModelDefinitionIdCatalog modelDefinitionId;
+  PckModelDefinitionIdCatalog linkedDefinitionId;
   int linkedSlotsRemaining;
-  PckModelDefinitionIdCatalog definitionId;
+  PckModelDefinitionIdCatalog selectedDefinitionId;
   bool technologyLocked;
   ModelDefinitionResult lookupResult;
-  
+
   linkedSlotsRemaining = 8;
-  definitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+  selectedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
   do {
-    modelDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
-    if (modelDefinitionId != 0) {
+    linkedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+    if (linkedDefinitionId != 0) {
+      /* despite its name the check returns true (CF set) when the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                         modelDefinitionId);
+                         linkedDefinitionId);
       if (!technologyLocked) {
-        definitionId = modelDefinitionId;
+        selectedDefinitionId = linkedDefinitionId;
       }
     }
     linkedDefinitionList = linkedDefinitionList + 4;
-    linkedSlotsRemaining = linkedSlotsRemaining + -1;
+    linkedSlotsRemaining--;
   } while (linkedSlotsRemaining != 0);
-  lookupResult = ModelDefinitionRegistry_FindByIdWithError(definitionId);
+  lookupResult = ModelDefinitionRegistry_FindByIdWithError(selectedDefinitionId);
   lookupResult.notFound = false; /* the original ends with CLC after the lookup */
   return lookupResult;
 }
@@ -64,15 +60,10 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
 }
 
 /* Address: 0x0051DB00.
-   Ownership: assets/model/definitions.
-   Purpose: Traverses the linked model-definition hierarchy, selects each faction-unlocked linked identifier, and
-   applies its linked technology unlock to the faction. It is distinct from FrontendPlayerIndex_V306,
-   PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId
-   domains. Typed parameters: p3 definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention,
-   complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Local calls: ModelDefinition_SelectFactionUnlockedLinkedId,
-   ModelDefinition_UnlockLinkedTechnologyForFaction.
+   Walks the model-definition tree below definitionNode depth-first and, for every node, unlocks for the
+   faction the technology granted by the linked definition the faction can currently select
+   (ModelDefinition_SelectFactionUnlockedLinkedId). Used when an army is created with
+   ARMY_CREATE_UNLOCK_TECHNOLOGY.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
@@ -85,16 +76,20 @@ ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 }
 
 
-/* True (CF set) as soon as one node's technology reports CF from ModelDefinition_IsFactionTechnologyUnlocked. */
+/* Recursive part of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction: true (CF set) as soon as
+   this node's definition id (+0x20) or one in its subtree (child count +0x08, children +0x0C + 4*i) names a
+   technology the faction has not unlocked yet. */
 static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,uint8_t *node)
 {
-  uint32_t i;
+  uint32_t childIndex;
+  /* true from this check means the technology is still locked */
   if (ModelDefinition_IsFactionTechnologyUnlocked
                 (technologyMasks,*(PckModelDefinitionIdCatalog *)(node + 0x20))) {
     return true;
   }
-  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
-    if (ModelDefinitionHierarchy_AnyTechnologyFrom(technologyMasks,*(uint8_t **)(node + 0xc + i * 4))) {
+  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
+    if (ModelDefinitionHierarchy_AnyTechnologyFrom
+                  (technologyMasks,*(uint8_t **)(node + 0xc + childIndex * 4))) {
       return true;
     }
   }
@@ -204,11 +199,9 @@ ModelLookupTable_FindPackedKeyEntryRegs
 
 
 /* Address: 0x004BE6F0.
-   Ownership: assets/model/definitions.
-   Purpose: Scans the same 0x10-byte model lookup table for packed key (groupIndex << 4) | itemIndex. CF is clear
-   when a matching entry exists and set when the table is empty or no key matches. Saved ids, relocated pointers,
-   attachment selectors, and runtime class ids remain separate. Key index and key class remain separate 32-bit
-   domains. Typed parameters: p0 keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
+   Looks up the model's packed point table (entry count +0xE8, offset +0xE4, 0x10-byte entries) for the key
+   (keyIndex << 4) | keyClass and returns the matching entry with CF clear. When no entry matches, CF is set
+   and EAX points just past the table.
 */
 ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
 ModelLookupTable_ContainsPackedKey
@@ -216,27 +209,27 @@ ModelLookupTable_ContainsPackedKey
           ModelResourceHitTestAndRenderView210 *modelDefinition)
 
 {
-  ModelPackedPointRecord *packedKeyEntryCursor;
+  ModelPackedPointRecord *entryCursor;
   int entriesRemaining;
   ModelLookupEntryResult foundResult;
   ModelLookupEntryResult notFoundResult;
-  
+
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
-  packedKeyEntryCursor =
+  entryCursor =
        (ModelPackedPointRecord *)
        (modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
   while( true ) {
     if (entriesRemaining == 0) {
       notFoundResult.notFound = true;
-      notFoundResult.entry = packedKeyEntryCursor;
+      notFoundResult.entry = entryCursor;
       return notFoundResult;
     }
-    if ((keyClass | keyIndex << 4) == packedKeyEntryCursor->packedLookupKey) break;
-    packedKeyEntryCursor = packedKeyEntryCursor + 1;
-    entriesRemaining = entriesRemaining - 1;
+    if ((keyClass | keyIndex << 4) == entryCursor->packedLookupKey) break;
+    entryCursor++;
+    entriesRemaining--;
   }
   foundResult.notFound = false;
-  foundResult.entry = packedKeyEntryCursor;
+  foundResult.entry = entryCursor;
   return foundResult;
 }
 
@@ -452,39 +445,35 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
 }
 
 /* Address: 0x0051B430.
-   Ownership: assets/model/definitions.
-   Purpose: Scans the eight linked model-definition identifiers and returns the faction-unlocked selected
-   identifier while preserving the verified carry-status convention. It is distinct from FrontendPlayerIndex_V306,
-   PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId
-   domains. Typed parameters: p3 linkedDefinitionList→ModelLinkedDefinitionListAddress32_V345. Calling convention,
-   complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlocked.
+   Same selection as ModelDefinition_SelectFactionUnlockedLinkedDefinition, but returns the chosen id
+   itself: the last non-zero of the eight linked ids at +0x20 whose technology the faction has unlocked,
+   or the first id when none is. CF is always clear.
 */
 PckModelDefinitionIdCatalog __thandor_eax_preserve_ecx_edx
 ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
-  PckModelDefinitionIdCatalog modelDefinitionId;
+  PckModelDefinitionIdCatalog linkedDefinitionId;
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog selectedDefinitionId;
   bool technologyLocked;
-  
+
   linkedSlotsRemaining = 8;
   selectedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
   do {
-    modelDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
-    if (modelDefinitionId != 0) {
+    linkedDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
+    if (linkedDefinitionId != 0) {
+      /* true (CF set) means the technology is still locked */
       technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                         modelDefinitionId);
+                         linkedDefinitionId);
       if (!technologyLocked) {
-        selectedDefinitionId = modelDefinitionId;
+        selectedDefinitionId = linkedDefinitionId;
       }
     }
     linkedDefinitionList = linkedDefinitionList + 4;
-    linkedSlotsRemaining = linkedSlotsRemaining + -1;
+    linkedSlotsRemaining--;
   } while (linkedSlotsRemaining != 0);
   return selectedDefinitionId;
 }
@@ -534,66 +523,51 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
 }
 
 /* Address: 0x00528600.
-   Ownership: assets/model/definitions.
-   Purpose: Registers one variable-size model definition in the fixed 768-slot registry, relocates its embedded
-   record chain by the asset base, loads or reuses referenced sprite assets, resolves verified shot/effect
-   identifiers, and derives verified mode-dependent fields. Duplicate, capacity, load, or reference failures return
-   through CF/EAX. Role: Registers one MDL definition and resolves its SPR, linked MDL, SHT and EFF references.
-   Inputs: Variable-size MDL record beginning after the 0x200-byte image header. Outputs: ModelDefinition whose
-   serialized IDs/offsets are replaced by runtime pointers.
-   Local calls: ModelDefinitionRegistry_FindByIdWithError.
-   Cross-module calls: WidePath_SetExtensionCode [core/text/path], Package_LoadEntry [assets/package/runtime],
-   SpriteAssetRegistry_FindById [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers
-   [assets/sprite/catalog], Resource_Release [assets/resource/runtime], ShotDefinitionRegistry_FindByIdWithError
-   [assets/shot/catalog].
+   Registers one MDL model definition in the first free slot of the 768-slot registry and turns its
+   serialized references into runtime pointers: the node tree is relocated by the asset base and its
+   sprites are loaded or reused, the shot and effect ids are resolved through their registries, and the
+   terrain-class dependent placement values are copied from the grid tables. A duplicate id, a full
+   registry or any failed load/lookup returns its error code with CF set.
 */
-
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
 
 {
   uint32_t nodeOffsetOrGridClass;
-  MdlChildCount nodeChildCount;
   uint32_t secondaryThreshold;
   uint32_t resolverStatusOrSentinel;
-  SpriteAssetHeader *loadedSpriteAsset;
-  SpriteAssetHeader *registeredSpriteAsset;
-  ShotDefinition *resolvedShotDefinition;
   ShotDefinition *resolvedShotDefinition2C;
   EffectDefinition *resolvedEffectDefinition80ToB8;
   ShotDefinition *resolvedShotDefinition168;
   EffectDefinition *resolvedEffectDefinitionTail;
-  uint32_t gridDerivedScalarCarrier;
   int slotsRemainingOrClassIndex;
   ModelDefinitionRecordPrefix **registrySlotCursor;
   MdlSerializedNodeHeader38 *serializedNodeCursor;
-  bool resolveFailed;
   ModelDefinitionResult existingLookup;
   StatusResult failureResult;
-  PackageLoadResult spriteLoadResult;
-  SpriteRegisterResult spriteRelocateResult;
   ShotDefinitionResult shotLookup;
   EffectDefinitionResult effectLookup;
   StatusResult successResult;
-  
+
   registrySlotCursor = g_ModelDefinitionRegistry;
-  slotsRemainingOrClassIndex = 0x300;
+  slotsRemainingOrClassIndex = MODEL_DEFINITION_REGISTRY_SLOT_COUNT;
   existingLookup = ModelDefinitionRegistry_FindByIdWithError(definition->definitionId);
   if (!existingLookup.notFound) {
-    /* Duplicate identifier. */
+    /* duplicate id: the id is left in g_PackageLastErrorPath */
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
-    resolverStatusOrSentinel = MODEL_DEFINITION_REFERENCE_FAILURE_SENTINEL_0x4B;
+    resolverStatusOrSentinel = FATAL_ERROR_MODEL_ID_DUPLICATE;
     goto ModelDefinition_ReturnReferenceResolutionResult;
   }
-  while (*registrySlotCursor != (ModelDefinitionRecordPrefix *)0x0) {
-    registrySlotCursor = registrySlotCursor + 1;
-    slotsRemainingOrClassIndex = slotsRemainingOrClassIndex + -1;
+  while (*registrySlotCursor != NULL) {
+    registrySlotCursor++;
+    slotsRemainingOrClassIndex--;
     if (slotsRemainingOrClassIndex == 0) {
-      /* Registry full. */
-      g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
-      resolverStatusOrSentinel = 0x3f;
+      /* registry full: the slot count is left in g_PackageLastErrorPath */
+      g_WideNumberFormatUtf16
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,MODEL_DEFINITION_REGISTRY_SLOT_COUNT,g_PackageLastErrorPath);
+      resolverStatusOrSentinel = FATAL_ERROR_MODEL_REGISTRY_FULL;
       goto ModelDefinition_ReturnReferenceResolutionResult;
     }
   }
@@ -669,6 +643,7 @@ ModelDefinition_RegisterAndResolveReferences
                   if (!effectLookup.notFound) {
                     definition->effectDefinitionReferenceB8 =
                          (EffectDefinition *)resolverStatusOrSentinel;
+                    /* -1: the definition has no shot at +0x168 */
                     if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
                       shotLookup = ShotDefinitionRegistry_FindByIdWithError
                                          ((PckShotDefinitionIdCatalog)
@@ -706,6 +681,9 @@ ModelDefinition_RegisterAndResolveReferences
                           if (!effectLookup.notFound) {
                             definition->effectDefinitionReference254 =
                                  (EffectDefinition *)resolverStatusOrSentinel;
+                            /* negative grid classes keep the serialized values; the contact kind at +0x278
+                               selects which grid tables the class at +0x264 indexes (kind 4 from class 1,
+                               the fallback tables from class 4) */
                             nodeOffsetOrGridClass = definition->gridClassification264;
                             if (-1 < (int)definition->gridClassification260) {
                               resolverStatusOrSentinel =

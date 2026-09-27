@@ -5614,7 +5614,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         armyAssetResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         UiPageStack_SetActiveIndex(1,stack);
         detailValue = *(uint32_t *)(armyAssetResult.valueOrError + 0x1c);
-        workValue = ModelRuntimeHierarchy_SumMetric3C((int *)lastSelectedEntity);
+        workValue = ModelRuntimeHierarchy_SumArmour((int *)lastSelectedEntity);
         rootCursor->selectionDetailArmyAssetValueA060 = detailValue;
         rootCursor->selectionDetailEntityA068 = lastSelectedEntity;
         g_WideNumberFormatUtf16

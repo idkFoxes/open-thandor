@@ -16,6 +16,9 @@
 #ifndef Q12_ONE
 #define Q12_ONE 0x1000 /* 1.0 in Q12 fixed point (scales, world coordinates) */
 #endif
+#ifndef Q28_ONE
+#define Q28_ONE 0x10000000 /* 1.0 in Q28 fixed point (g_FixedSinQ28/g_FixedCosQ28 values) */
+#endif
 
 /* Engine angles are 16-bit fractions of a full turn (0x10000 = 360 degrees), as used by the
    g_FixedSinQ28/g_FixedCosQ28 lookups and returned by FixedMath_Atan2Angle16. */
@@ -168,7 +171,7 @@ FixedTransform_Compose
 /* 0x00484990 */
 FixedVectorAngles __thandor_preserve_eax
 FixedMath_VectorToAngles3Regs
-          (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z);
+          (FixedMathVectorComponent32 z,FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
 /* 0x00484E70 */
 void __thandor_void_preserve_eax_ecx_edx

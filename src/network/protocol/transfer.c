@@ -1600,11 +1600,9 @@ UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *a
 
 
 /* Address: 0x0054F9A0.
-   Ownership: network/protocol/transfer.
-   Purpose: Dequeues and sends a packet 0x00010011 record, then conditionally sends packet 0x00010004 for the next
-   active player index.
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
+   Client answer to the host while the session starts and after each lobby command batch: sends the oldest
+   queued lobby command in packet 0x10011 (a new sender sequence number each time) and, while player snapshots
+   are still missing, requests the next one with packet 0x10004.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOptional10004(void)
 
@@ -1612,8 +1610,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
   FrontendPlayerRuntimeBlockCount nextPlayerIndex;
   
   g_FrontendPacket10011Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10011;
-  g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
+  g_UiTransferSenderContext++;
   FrontendCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10011Buffer);
+  /* the snapshots received so far, read before sending like the original */
   nextPlayerIndex = g_FrontendPlayerRuntimeBlockCount;
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10011Buffer.header);

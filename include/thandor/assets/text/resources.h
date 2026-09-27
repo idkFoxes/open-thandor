@@ -18,6 +18,10 @@
    fills the whole override table with it. */
 #define TEXT_RESOURCE_ID_NONE 0xFFFFFFFF
 #define TEXT_RESOURCE_OVERRIDE_CAPACITY 0x1000 /* entries of TextResourceOverrideTable */
+/* Colour of the drop shadow drawn under glyphs and UI icons: black at half alpha (ARGB). */
+#ifndef TEXT_SHADOW_COLOR_ARGB
+#define TEXT_SHADOW_COLOR_ARGB 0x7F000000
+#endif
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041CD30 */

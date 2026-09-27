@@ -320,12 +320,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
 
 
 /* Address: 0x0056C2F0.
-   Ownership: gameplay/session/savegame.
-   Purpose: Walks to the page root, validates the current UTF-16 save name, and enables action 0x1210 only for
-   nonempty names that contain none of the forbidden path characters. Queued UI action handler for
-   INGAME_PAGE12[17] (0x1211). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiNodeList_UnsuppressActionId [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists].
+   Handler of the save-name edit (action 0x1211): enables the Save button (INGAME_ACTION_SAVE_GAME_SAVE) only
+   while the typed name is valid (edit flag 0x1 set, terminated within the capacity) and contains none of the
+   characters * . \ ? < > : " | / that would break the file name built from it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
@@ -339,7 +336,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   int32_t *scanEnd;
   int32_t *charCursor;
   bool matched;
-  
+
+  /* up to the root node (its parent is -1) */
   parentWalk = nameControl->parent;
   firstNode = nameControl;
   while (parentWalk != (UiNodeBase *)0xffffffff) {
@@ -347,13 +345,15 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
     parentWalk = firstNode->parent;
   }
   if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
+    /* REPNE SCASW for the NUL; nameLength then counts the characters including the NUL. Each forbidden
+       character is searched by its own REPNE SCASW pass below. */
     remainingLength = ((UiTextEditControl *)nameControl)->valueOrCapacity58;
     matched = true;
     charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
     do {
       scanEnd = charCursor;
       if (remainingLength == 0) break;
-      remainingLength = remainingLength - 1;
+      remainingLength--;
       scanEnd = (int32_t *)((int)charCursor + 2);
       matched = (short)*charCursor == 0;
       charCursor = scanEnd;
@@ -365,8 +365,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
       do {
         if (scanRemaining == 0) break;
-        scanRemaining = scanRemaining - 1;
-        matched = (short)*charCursor == 0x2a;
+        scanRemaining--;
+        matched = (short)*charCursor == '*';
         charCursor = (int32_t *)((int)charCursor + 2);
       } while (!matched);
       if (!matched) {
@@ -374,8 +374,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
         charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
         do {
           if (scanRemaining == 0) break;
-          scanRemaining = scanRemaining - 1;
-          matched = (short)*charCursor == 0x2e;
+          scanRemaining--;
+          matched = (short)*charCursor == '.';
           charCursor = (int32_t *)((int)charCursor + 2);
         } while (!matched);
         if (!matched) {
@@ -383,8 +383,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
           charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
           do {
             if (scanRemaining == 0) break;
-            scanRemaining = scanRemaining - 1;
-            matched = (short)*charCursor == 0x5c;
+            scanRemaining--;
+            matched = (short)*charCursor == '\\';
             charCursor = (int32_t *)((int)charCursor + 2);
           } while (!matched);
           if (!matched) {
@@ -392,8 +392,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
             charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
             do {
               if (scanRemaining == 0) break;
-              scanRemaining = scanRemaining - 1;
-              matched = (short)*charCursor == 0x3f;
+              scanRemaining--;
+              matched = (short)*charCursor == '?';
               charCursor = (int32_t *)((int)charCursor + 2);
             } while (!matched);
             if (!matched) {
@@ -401,8 +401,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
               charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
               do {
                 if (scanRemaining == 0) break;
-                scanRemaining = scanRemaining - 1;
-                matched = (short)*charCursor == 0x3c;
+                scanRemaining--;
+                matched = (short)*charCursor == '<';
                 charCursor = (int32_t *)((int)charCursor + 2);
               } while (!matched);
               if (!matched) {
@@ -410,8 +410,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                 charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                 do {
                   if (scanRemaining == 0) break;
-                  scanRemaining = scanRemaining - 1;
-                  matched = (short)*charCursor == 0x3e;
+                  scanRemaining--;
+                  matched = (short)*charCursor == '>';
                   charCursor = (int32_t *)((int)charCursor + 2);
                 } while (!matched);
                 if (!matched) {
@@ -419,8 +419,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                   charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                   do {
                     if (scanRemaining == 0) break;
-                    scanRemaining = scanRemaining - 1;
-                    matched = (short)*charCursor == 0x3a;
+                    scanRemaining--;
+                    matched = (short)*charCursor == ':';
                     charCursor = (int32_t *)((int)charCursor + 2);
                   } while (!matched);
                   if (!matched) {
@@ -428,8 +428,8 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                     charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                     do {
                       if (scanRemaining == 0) break;
-                      scanRemaining = scanRemaining - 1;
-                      matched = (short)*charCursor == 0x22;
+                      scanRemaining--;
+                      matched = (short)*charCursor == '"';
                       charCursor = (int32_t *)((int)charCursor + 2);
                     } while (!matched);
                     if (!matched) {
@@ -437,20 +437,20 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                       charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                       do {
                         if (scanRemaining == 0) break;
-                        scanRemaining = scanRemaining - 1;
-                        matched = (short)*charCursor == 0x7c;
+                        scanRemaining--;
+                        matched = (short)*charCursor == '|';
                         charCursor = (int32_t *)((int)charCursor + 2);
                       } while (!matched);
                       if (!matched) {
                         charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                         do {
                           if (nameLength == 0) break;
-                          nameLength = nameLength - 1;
-                          matched = (short)*charCursor == 0x2f;
+                          nameLength--;
+                          matched = (short)*charCursor == '/';
                           charCursor = (int32_t *)((int)charCursor + 2);
                         } while (!matched);
                         if (!matched) {
-                          UiNodeList_UnsuppressActionId(0x1210,firstNode);
+                          UiNodeList_UnsuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
                           return;
                         }
                       }
@@ -464,7 +464,6 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       }
     }
   }
-  UiNodeList_SuppressActionId(0x1210,firstNode);
-  return;
+  UiNodeList_SuppressActionId(INGAME_ACTION_SAVE_GAME_SAVE,firstNode);
 }
 

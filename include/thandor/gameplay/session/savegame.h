@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/savegame. */
+
+/* In-game save page action (ui_templates.h: saveGameSaveButton); InGameSaveName_UpdateSaveActionValidity
+   enables it only for a valid typed save name. */
+#define INGAME_ACTION_SAVE_GAME_SAVE 0x1210
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056C030 */

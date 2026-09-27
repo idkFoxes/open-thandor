@@ -287,11 +287,9 @@ UiListControl_HandleKeyboardNavigation
 
 
 /* Address: 0x004BB480.
-   Ownership: ui/controls/lists.
-   Purpose: Recomputes content height from count and row height, invokes the child layout callback, reselects the
-   current pointer-derived index, then queues the action ID at +0x5C.
-   Local calls: UiPointerList_GetSelectedIndexVariantB, UiPointerList_SelectIndexVariantB.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
+   After the rows of a pointer list changed: sets the content height to rowCount rows (+1 pixel), lets the
+   parent re-layout (scroll range), re-applies the current selection so it stays visible and queues the
+   list's action so its owner refreshes.
 */
 void __thandor_preserve_eax_edx
 UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
@@ -301,9 +299,9 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   ListSelectionResult selectedIndex;
   UiNodeVtable *parentVtable;
   
-  parentNode = (control->base).parent;
+  parentNode = control->base.parent;
   parentVtable = parentNode->vtable;
-  (control->base).bottomOffset = control->rowHeight * control->rowCount + 1;
+  control->base.bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
   selectedIndex = UiPointerList_GetSelectedIndexVariantB(control);
   UiPointerList_SelectIndexVariantB(selectedIndex.rowIndex,control);
@@ -844,12 +842,9 @@ UiListControl_SelectRowFromPointer
 
 
 /* Address: 0x004BB7A0.
-   Ownership: ui/controls/lists.
-   Purpose: Bubble-sorts in descending unsigned lexicographic order by two consecutive dwords at fieldOffset, then
-   restores selection and invalidates its row. Typed parameters: p0 fieldOffset→UiPointerListFieldByteOffset_V342.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: UiScrollableControl_ClampOffsetsToViewport.
+   Sorts the rows of a pointer list by a 64-bit key at fieldOffset in each row entry (high dword first, then
+   low dword; unsigned, descending) with an exchange sort, then selects the previously selected entry again
+   and scrolls it into view. Equal keys are swapped too, so the sort is not stable.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SortByDwordPairFieldDescending
@@ -867,31 +862,32 @@ UiPointerList_SortByDwordPairFieldDescending
   void **scanSlot;
   
   scanSlot = control->rowSlots;
-  if (scanSlot != (void **)0x0) {
+  if (scanSlot != NULL) {
     innerCountOrRowTop = control->rowCount - 1;
     if ((innerCountOrRowTop != 0) && (-1 < innerCountOrRowTop)) {
       selectedEntry = *control->selectedRowSlot;
       pivotSlot = scanSlot;
       outerCount = innerCountOrRowTop;
+      /* each pass moves the largest remaining key to pivotSlot */
       do {
         do {
-          scanSlot = scanSlot + 1;
+          scanSlot++;
           leftKey = *(uint32_t *)((int)*pivotSlot + fieldOffset);
           rightKey = *(uint32_t *)((int)*scanSlot + fieldOffset);
           if ((leftKey <= rightKey) &&
              ((leftKey < rightKey ||
               (((uint32_t *)((int)*pivotSlot + fieldOffset))[1] <=
                ((uint32_t *)((int)*scanSlot + fieldOffset))[1])))) {
-            LOCK();
+            LOCK(); /* the original swaps with XCHG */
             swapEntry = *scanSlot;
             *scanSlot = *pivotSlot;
             UNLOCK();
             *pivotSlot = swapEntry;
           }
-          innerCountOrRowTop = innerCountOrRowTop + -1;
+          innerCountOrRowTop--;
         } while (innerCountOrRowTop != 0);
         scanSlot = pivotSlot + 1;
-        innerCountOrRowTop = outerCount + -1;
+        innerCountOrRowTop = outerCount - 1;
         pivotSlot = scanSlot;
         outerCount = innerCountOrRowTop;
       } while (innerCountOrRowTop != 0);
@@ -901,8 +897,8 @@ UiPointerList_SortByDwordPairFieldDescending
       do {
         if (selectedEntry == *scanSlot) break;
         innerCountOrRowTop = innerCountOrRowTop + control->rowHeight;
-        scanSlot = scanSlot + 1;
-        rowsRemaining = rowsRemaining - 1;
+        scanSlot++;
+        rowsRemaining--;
       } while (rowsRemaining != 0);
       if (rowsRemaining == 0) {
         /* Not found: select the first row (the row top stays past the last row, as in the original). */
@@ -910,8 +906,8 @@ UiPointerList_SortByDwordPairFieldDescending
       }
       control->selectedRowSlot = scanSlot;
       UiScrollableControl_ClampOffsetsToViewport
-                (innerCountOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,innerCountOrRowTop,0,
-                 (UiScrollableControl *)(control->base).parent);
+                (innerCountOrRowTop + 1 + control->rowHeight,control->base.rightOffset,innerCountOrRowTop,0,
+                 (UiScrollableControl *)control->base.parent);
     }
   }
   return;
@@ -3503,31 +3499,30 @@ UiTimedListControl_SelectRecordAndScrollIntoView
 
 
 /* Address: 0x004BB4E0.
-   Ownership: ui/controls/lists.
-   Purpose: Selects an in-range pointer-list entry by storing base + index*4 at +0x60 and invalidates the
-   corresponding row using the variant-B geometry calculation.
-   Local calls: UiScrollableControl_ClampOffsetsToViewport.
+   Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
+   parent so the row is visible; the same as UiPointerList_SelectIndexVariantA. Out-of-range indices are
+   ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control)
 
 {
-  int clipBottom;
+  int rowTop;
   
   if (index < control->rowCount) {
     control->selectedRowSlot = control->rowSlots + index;
-    clipBottom = control->rowHeight * index;
+    rowTop = control->rowHeight * index;
     UiScrollableControl_ClampOffsetsToViewport
-              (clipBottom + 1 + control->rowHeight,(control->base).rightOffset,clipBottom,0,
-               (UiScrollableControl *)(control->base).parent);
+              (rowTop + 1 + control->rowHeight,control->base.rightOffset,rowTop,0,
+               (UiScrollableControl *)control->base.parent);
   }
   return;
 }
 
 
 /* Address: 0x004BB540.
-   Ownership: ui/controls/lists.
-   Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04 exactly.
+   Returns the index of the selected row of a pointer list; CF (confirmed) is set when the selection was
+   confirmed (UI_LIST_SELECTION_CONFIRMED, set by a double click on the row).
 */
 ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
 UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
@@ -3537,7 +3532,7 @@ UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
   ListSelectionResult unconfirmedResult;
   ListSelectionResult confirmedResult;
   
-  selectedRowIndex = (int)control->selectedRowSlot - (int)control->rowSlots >> 2;
+  selectedRowIndex = ((int)control->selectedRowSlot - (int)control->rowSlots) >> 2;
   if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
     unconfirmedResult.confirmed = false;
     unconfirmedResult.rowIndex = selectedRowIndex;

@@ -46,7 +46,7 @@ ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRunti
 /* 0x004BEA30 */
 void __thandor_preserve_eax
 ModelNodeRuntime_UpdateDepthBinMasks
-          (DepthIntervalRadius32 intervalRadiusQ14,ModelRuntimeNode *modelNodeRuntime);
+          (DepthIntervalRadius32 minimumRadius,ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x004BEB80 */
 ModelWorldPoint
@@ -75,7 +75,7 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursive
 
 /* 0x0051BEC0 */
 void __thandor_void_preserve_eax_ecx_edx
-ModelRuntimeHierarchy_SetCommandTargetRecursive
+ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeNode *modelNode);
 
@@ -89,7 +89,7 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
           (WorldRuntimeContext *contextArg,int *modelRuntime);
 
 /* 0x0051C1F0 */
-int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumMetric3C(int *modelRuntimeRoot);
+int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumArmour(int *modelRuntimeRoot);
 
 /* 0x00528C20 */
 ModelRuntimeSlot * __thandor_eax_preserve_ecx_edx

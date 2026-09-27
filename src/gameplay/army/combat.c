@@ -599,9 +599,10 @@ ArmyWeaponRuntime_TestTargetLineOfFire
 
 
 /* Address: 0x0052A200.
-   Ownership: gameplay/army/combat.
-   Purpose: Typed parameters: p2 damageAmount→DamageAmount32_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Subtracts damageAmount from the health of a living army. When the health drops to zero or below the army is
+   flagged destroyed and the excess damage is passed on to the army it is attached to (the parent model node),
+   so destroying a mounted part also damages its carrier; a negative damage (repair) is capped at the maximum
+   health.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyDamageAndPropagateToParent
@@ -612,7 +613,8 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
   int healthValue;
   int maxHealth;
   ModelRuntimeNode *parentModelNode;
-  
+
+  /* one dword 0x200 at +0xF8 (MOV [ESI+0xF8],0x200) */
   armyRuntime->reservedF8_FF[0] = 0;
   armyRuntime->reservedF8_FF[1] = 2;
   armyRuntime->reservedF8_FF[2] = 0;
@@ -623,18 +625,22 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
     healthField = &armyRuntime->actionVector2Q12;
     healthValue = *healthField;
     *healthField = *healthField - damageAmount;
+    /* SUB / JLE: the new health is <= 0 */
     if (*healthField == 0 || SBORROW4(healthValue,damageAmount) != *healthField < 0) {
-      healthValue = armyRuntime->actionVector2Q12;
-      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | 8;
+      healthValue = armyRuntime->actionVector2Q12; /* <= 0; its negation is the excess damage */
+      armyRuntime->runtimeFlags = armyRuntime->runtimeFlags | ARMY_RUNTIME_FLAG_DESTROYED;
       armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
       parentModelNode = armyRuntime->modelNodeRuntime->parentNode;
       armyRuntime->actionVector2Q12 = 0;
-      if (parentModelNode != (ModelRuntimeNode *)0x0) {
+      if (parentModelNode != NULL) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(-healthValue,(parentModelNode->runtimePayload).armyRuntime)
         ;
       }
+      /* NOTE: without a parent the original goes on at 0x0052A290 and updates the owner faction's
+         relationCounterC/D like ArmyRuntime_ApplyImpactDamageAndFinalizeState; this C omits that path. */
     }
     else if (maxHealth < armyRuntime->actionVector2Q12) {
+      /* a negative damage (repair) never raises the health above maxHealth */
       armyRuntime->actionVector2Q12 =
            armyRuntime->actionVector2Q12 + (maxHealth - armyRuntime->actionVector2Q12);
     }

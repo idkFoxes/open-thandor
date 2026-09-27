@@ -11,14 +11,11 @@
 /* Implementation ownership: core/text/string. */
 
 /* Address: 0x00402D50.
-   Ownership: core/text/string.
-   Purpose: Formats one 32-bit value into UTF-16. Decimal mode divides the unsigned magnitude by denominator,
-   limits the integer part to integerDigitLimit most-significant digits, supports sign prefixes, left space/zero
-   padding, one separator before the final three integer digits, and optional fixed-width fractional digits. Hex
-   mode emits the 0x prefix, two/four/six/eight uppercase digits after leading zero-byte suppression, and the
-   configured suffix. WIDE_FORMAT_WRITE_TERMINATOR writes a UTF-16 NUL but the returned byte count excludes it.
-   denominator must be nonzero.
-   Local calls: WideText_CopyCodeUnits.
+   Formats a 32-bit number as UTF-16 text with the locale strings of g_WideNumberFormatState and returns the
+   length written in bytes (without the NUL that WIDE_FORMAT_WRITE_TERMINATOR adds). Decimal mode prints
+   value / denominator with optional sign, padding to integerDigitLimit, one group separator before the last
+   three digits and up to fractionalDigits fraction digits (denominator must not be 0); hexadecimal mode prints
+   prefix, 2/4/6/8 digits without leading zero bytes, and suffix.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 WideNumber_FormatUtf16
@@ -37,9 +34,10 @@ WideNumber_FormatUtf16
   uint16_t *signText;
   uint16_t *paddingText;
   uint16_t *destinationCursor;
-  
+
   segmentLength = g_WideNumberFormatState.hexPrefixLength;
   if ((flags & WIDE_FORMAT_HEXADECIMAL) == 0) {
+    /* without a sign signText stays unset, but then zero code units are copied from it */
     segmentLength = 0;
     if (((flags & WIDE_FORMAT_SIGNED_VALUE) != 0) &&
        (((flags & WIDE_FORMAT_SHOW_PLUS_SIGN) != 0 || (value < 0)))) {
@@ -57,15 +55,17 @@ WideNumber_FormatUtf16
     destinationCursor = destination + segmentLength;
     integerPartOrHexDigit = (uint32_t)value / denominator;
     fractionRemainder = (uint32_t)value % denominator;
+    /* the integer digits are built backwards in the scratch array just before digitAlphabet */
     source = g_WideNumberFormatState.digitAlphabet;
     digitCount = 0;
     do {
       previousValue = (uint64_t)integerPartOrHexDigit;
       integerPartOrHexDigit = integerPartOrHexDigit / 10;
-      source = source + -1;
-      digitCount = digitCount + 1;
-      *source = (short)(previousValue % 10) + 0x30;
+      source--;
+      digitCount++;
+      *source = (short)(previousValue % 10) + '0';
     } while (integerPartOrHexDigit != 0);
+    /* only the integerDigitLimit most significant digits are printed */
     paddingText = g_WideNumberFormatState.spacePadding;
     if (integerDigitLimit < digitCount) {
       digitCount = integerDigitLimit;
@@ -100,9 +100,9 @@ WideNumber_FormatUtf16
         do {
           previousValue = (uint64_t)fractionRemainder;
           fractionRemainder = (uint32_t)((previousValue * 10) % (uint64_t)denominator);
-          *destinationCursor = (short)((previousValue * 10) / (uint64_t)denominator) + 0x30;
-          destinationCursor = destinationCursor + 1;
-          fractionalDigits = fractionalDigits - 1;
+          *destinationCursor = (short)((previousValue * 10) / (uint64_t)denominator) + '0';
+          destinationCursor++;
+          fractionalDigits--;
         } while ((fractionalDigits != 0) && (fractionRemainder != 0));
         /* exact fraction before the digit limit: zero-pad to the fixed width */
         if ((fractionalDigits != 0) && ((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0)) {
@@ -117,19 +117,19 @@ WideNumber_FormatUtf16
   }
   else {
     WideText_CopyCodeUnits
-              (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination
-              );
+              (g_WideNumberFormatState.hexPrefixLength,g_WideNumberFormatState.hexPrefix,destination);
     destinationCursor = destination + segmentLength;
+    /* drop leading zero bytes, keeping at least one byte (two digits) */
     for (digitCount = 8; ((value & 0xff000000U) == 0 && (2 < digitCount)); digitCount = digitCount - 2) {
       value = value << 8;
     }
     do {
-      integerPartOrHexDigit = (uint32_t)value >> 0x1c;
+      integerPartOrHexDigit = (uint32_t)value >> 28;
       value = value << 4;
       *destinationCursor = g_WideNumberFormatState.digitAlphabet[integerPartOrHexDigit];
       segmentLength = g_WideNumberFormatState.hexSuffixLength;
-      destinationCursor = destinationCursor + 1;
-      digitCount = digitCount - 1;
+      destinationCursor++;
+      digitCount--;
     } while (digitCount != 0);
     WideText_CopyCodeUnits
               (g_WideNumberFormatState.hexSuffixLength,g_WideNumberFormatState.hexSuffix,destinationCursor);
