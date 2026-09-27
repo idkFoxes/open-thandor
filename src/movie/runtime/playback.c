@@ -1744,6 +1744,62 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   }
 }
 
+/* Debug tool: OPEN_THANDOR_MOVIECMP=1 decodes every frame a second time with the original machine code
+   of Movie_DecodeFrame4x4Delta (0x004A81C0, copied from thandor_original.exe; it uses no absolute data)
+   into a shadow buffer and logs where the two results differ. Call before the C decoder runs. */
+typedef uint32_t (__stdcall *OriginalMovieDecodeProc)(uint32_t heightPixels, uint32_t widthPixels,
+                                                      uint32_t *destinationArgb, uint8_t *encodedFrame);
+static uint32_t *s_MovieCompareShadow;
+static uint32_t s_MovieCompareConsumed;
+
+static void Movie_DebugCompareBefore(MovieRuntime *movie, uint32_t height, uint32_t width, uint8_t *encoded)
+{
+  static int enabled = -1;
+  static OriginalMovieDecodeProc original;
+  if (enabled < 0) {
+    const char *value = getenv("OPEN_THANDOR_MOVIECMP");
+    enabled = (value != NULL) && (value[0] == '1');
+    if (enabled) {
+      original = (OriginalMovieDecodeProc)Thandor_LoadOriginalCodeCopy(0x4a81c0, 0x4a8589 - 0x4a81c0);
+      if (original == NULL) {
+        Thandor_Log("moviecmp: could not load the original decoder");
+        enabled = 0;
+      }
+    }
+  }
+  if (!enabled) {
+    return;
+  }
+  if (s_MovieCompareShadow == NULL || movie->currentFrameIndex == 0) {
+    free(s_MovieCompareShadow);
+    s_MovieCompareShadow = (uint32_t *)malloc(width * height * 4);
+    memcpy(s_MovieCompareShadow, movie->argbPixels, width * height * 4);
+  }
+  s_MovieCompareConsumed = original(height, width, s_MovieCompareShadow, encoded);
+  __asm emms
+}
+
+static void Movie_DebugCompareAfter(MovieRuntime *movie, uint32_t height, uint32_t width, uint32_t consumed)
+{
+  uint32_t i;
+  uint32_t differing = 0;
+  uint32_t first = 0;
+  if (s_MovieCompareShadow == NULL) {
+    return;
+  }
+  for (i = 0; i < width * height; i++) {
+    if (s_MovieCompareShadow[i] != movie->argbPixels[i]) {
+      if (differing++ == 0) first = i;
+    }
+  }
+  if (differing != 0 || consumed != s_MovieCompareConsumed) {
+    Thandor_Log("moviecmp frame %u: %u pixels differ (first at %u,%u: C %08x original %08x), consumed C %u original %u",
+                movie->currentFrameIndex, differing, first % width, first / width, movie->argbPixels[first],
+                s_MovieCompareShadow[first], consumed, s_MovieCompareConsumed);
+    memcpy(s_MovieCompareShadow, movie->argbPixels, width * height * 4); /* resync */
+  }
+}
+
 MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
@@ -1804,8 +1860,10 @@ MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
           bufferingResult.movieOrError = (uint32_t)((uint8_t *)movie - 0x220);
           return bufferingResult;
         }
+        Movie_DebugCompareBefore(movie,flmHeader->heightPixels,flmHeader->widthPixels,streamCursor);
         consumedBytes = Movie_DecodeFrame4x4Delta
                           (flmHeader->heightPixels,flmHeader->widthPixels,movie->argbPixels,streamCursor);
+        Movie_DebugCompareAfter(movie,flmHeader->heightPixels,flmHeader->widthPixels,consumedBytes);
         movie->currentFrameIndex = nextFrameOrLoadedSize;
         movie->videoStreamOffset = movie->videoStreamOffset + consumedBytes;
         Movie_DebugDumpFrame(movie, consumedBytes);
