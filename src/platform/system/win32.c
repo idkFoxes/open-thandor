@@ -196,6 +196,12 @@ static void Win32_ScriptTick(void)
       Keyboard_OnKeyDown(x);
       Keyboard_OnKeyUp(x);
     }
+    else if (strcmp(command, "keydown") == 0) {
+      Keyboard_OnKeyDown(x);
+    }
+    else if (strcmp(command, "keyup") == 0) {
+      Keyboard_OnKeyUp(x);
+    }
     else if (strcmp(command, "quit") == 0) {
       ExitProcess(0);
     }

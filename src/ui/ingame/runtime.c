@@ -8,6 +8,7 @@
 #include <thandor/ui/ingame/runtime.h>
 #include <thandor/thandor.h>
 #include <thandor/platform/bootstrap/image.h>
+#include <stdlib.h>
 
 /* Implementation ownership: ui/ingame/runtime. */
 
@@ -3037,6 +3038,32 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlags
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL;
   bool commandsBlocked =
        (g_UiCommandRuntimeFlags & (UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED)) != 0;
+
+  /* Open Thandor addition, not in the original: Ctrl+Alt+K opens the hidden map editor (single player only).
+     The original only ever calls InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState with bit 2 set
+     (close); with bit 2 clear it pauses the game, shows the editor tabs and hands the keyboard to
+     InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags, whose own keys close it again. */
+  if ((commandCode == KEYBOARD_KEY_CODE_CHAR('k')) && localSession &&
+      ((modifierFlags & KEYBOARD_STATE_CTRL) != 0) && ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) {
+    /* The terrain tools accumulate height deltas in a per-player dword plane of gridWidth * gridHeight cells
+       (terrainHeightScratchPlane8088). No code in the shipped game allocates it, so do it here, once per grid
+       size; it is never freed (the process keeps at most one plane per size change). */
+    static int *editorScratchPlane;
+    static uint32_t editorScratchPlaneCells;
+    FieldGridAsset *fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
+    uint32_t cells = fieldGrid->gridWidth * fieldGrid->gridHeight;
+    if ((editorScratchPlane == NULL) || (editorScratchPlaneCells != cells)) {
+      editorScratchPlane = (int *)calloc(cells,sizeof(int));
+      editorScratchPlaneCells = cells;
+    }
+    if (editorScratchPlane == NULL) {
+      return;
+    }
+    g_SelectionPlayerRuntimeBlockPointers[g_LocalPlayerRuntimeId]->terrainHeightScratchPlane8088 = editorScratchPlane;
+    Thandor_Log("editor: open (%u cells)",cells);
+    InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState(g_LocalPlayerRuntimeId,0,0,0);
+    return;
+  }
 
   for (;; record++) {
     uint32_t flags = record->modifierClassFlags;

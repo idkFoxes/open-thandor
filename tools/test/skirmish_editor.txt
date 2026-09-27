@@ -1,0 +1,16 @@
+0 layout 1280 720
+9000 move 840 500
+9500 click 840 500
+17000 move 840 500
+17500 click 840 500
+18000 ingame
+3000 keydown 17
+3100 keydown 18
+3200 key 75
+3300 keyup 18
+3400 keyup 17
+
+
+
+
+
