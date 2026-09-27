@@ -48,7 +48,7 @@ def split(exe, mapfile):
 mode, build, baseline = sys.argv[1], sys.argv[2], sys.argv[3]
 if mode == 'save':
     os.makedirs(baseline, exist_ok=True)
-    for name in ('thandor.exe', 'thandor.map'):
+    for name in ('thandor.exe', 'thandor.map', 'thandor.pdb'):
         shutil.copy(os.path.join(build, name), os.path.join(baseline, name))
     print('baseline saved')
     sys.exit(0)
