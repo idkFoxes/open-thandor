@@ -16,8 +16,9 @@ Set `LINK=/MAP` before building to get `thandor.map` for `tools/data/symbolize.p
 
 Next to `thandor.exe` the game currently needs:
 
-- `thandor_original.exe` — a copy of the original executable. Its data (globals, tables, UI
-  templates) is still mapped at 0x400000; no original machine code runs (see `OPEN_THANDOR_POISON`).
+- nothing from the original executable: its data (globals, tables, UI templates) is compiled in from
+  `src/generated/image_data.c`. Only the `mapped` build and the differential self-tests
+  (`rastercmp`, `blitcmp`, `blendscalecmp`, `relaxcmp`, `imagecmp`) read `thandor_original.exe`.
 - the game's `*.PCK` files and `thandor.dat` from the installation,
 - optionally `flm\` with the full-length movies from the CD (`Ende*.flm`, `Intro2.flm`); the
   packages hold only still-image stand-ins for them.

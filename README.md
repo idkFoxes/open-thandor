@@ -4,7 +4,22 @@ Got this game back then and cant forget it, so I am also working on a decompilat
 
 Here I post and update my Ghidra project. I hope some of you want to join this effort too.
 
-## Current reverse-engineering checkpoint
+## Current state
+
+**All of `thandor.exe` is reimplemented in C.** The build runs on its own: no original machine code is executed and the original executable is not needed; its data (tables, UI templates, strings) is compiled in from [`src/generated/image_data.c`](src/generated/image_data.c). Only the game's data files (`*.PCK`, `thandor.dat`, movies) come from an installation.
+
+| Area | Status |
+|---|---|
+| Single player (menus, campaign, skirmish, AI, save/load, movies, sound) | playable; the automated test plays a skirmish |
+| Software renderer, DirectDraw/Direct3D | working; the software rasterizer and blitters are verified bit-exact against the original code ([details](docs/software_raster.md)) |
+| Glide (3dfx) | builds, but vertex output is known wrong |
+| Multiplayer | known broken (command dispatch), not worked on yet |
+
+**Readability.** The code is being made readable top-down from `WinMain`, in two stages: stage 1 only renames, adds named constants and comments, and must leave the generated machine code byte-identical (checked per function against the previous build); stage 2 (restructuring) comes later. Stage 1 is done for about **810 of ~2,200 functions**, covering startup, the main menu, the game loop and everything reachable from them in the first few call levels. The rest is still close to the raw Ghidra output: correct, but hard to read.
+
+**How correctness is checked.** Differential self-tests run parts of the C code and the original machine code on the same random inputs (rasterizer, blitters, water simulation, movie decoder); `imagecmp` checks the compiled-in data against the original image; a scripted skirmish runs after every change. Places where the decompiled C turned out to differ from the original were fixed from the disassembly; quirks and bugs of the original game are kept and only commented.
+
+### Ghidra checkpoint
 
 The public source tree is currently based on **V537**.
 
@@ -24,7 +39,7 @@ cmake --build --preset release
 
 The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug`, and `mapped` (maps the original image; only needed for the differential self-tests, which also want `thandor_original.exe` next to the exe). CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
 
-To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`.
+To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`. Test switches, self-tests and the data tools are described in [docs/BUILDING.md](docs/BUILDING.md).
 
 ## Source tree
 
