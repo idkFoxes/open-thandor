@@ -135,6 +135,7 @@ add_executable(thandor WIN32
     src/platform/bootstrap/image.c
     src/platform/bootstrap/selftest_raster.c
     src/platform/bootstrap/selftest_blendscale.c
+    src/platform/bootstrap/selftest_blit.c
     src/generated/function_map.c
     src/generated/image_data.c
 )

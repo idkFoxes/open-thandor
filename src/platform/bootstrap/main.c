@@ -137,6 +137,7 @@ static void Thandor_SelfTestStretch(void)
    routines only use absolute data addresses and internal relative jumps. */
 void Thandor_SelfTestRasterCompare(void);
 void Thandor_SelfTestBlendScaleCompare(void);
+void Thandor_SelfTestBlitCompare(void);
 
 typedef void (__stdcall *OriginalStretchProc)(dword, dword, dword, dword, dword, void *, void *);
 
@@ -485,6 +486,10 @@ int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *comm
         }
         if (value != NULL && strcmp(value, "blendscalecmp") == 0) {
             Thandor_SelfTestBlendScaleCompare(); /* selftest_blendscale.c */
+            return 0;
+        }
+        if (value != NULL && strcmp(value, "blitcmp") == 0) {
+            Thandor_SelfTestBlitCompare(); /* selftest_blit.c */
             return 0;
         }
         if (value != NULL && strcmp(value, "crash") == 0) {
