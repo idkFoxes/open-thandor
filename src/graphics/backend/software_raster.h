@@ -20,6 +20,10 @@ Fixed-point formats:
   screen X/Y        Q12 pixels, snapped to whole pixels by SoftwareRenderer_PrepareTrianglePacket
   depth             32-bit unsigned, smaller is nearer; a pixel is drawn when depth <= buffer
   colour lanes      blue, green, red, alpha; channel * 64 (Q6) in 16 bits (RasterColor)
+  texture U/V       Q12 texels (the packet coordinates are rescaled to the texture size by
+                    SoftwareRenderer_PrepareTrianglePacket); wrapped by the texture size
+Attributes a mode does not use (colour of flat modes, U/V of untextured modes) are zero and
+stepping them changes nothing.
 */
 
 enum {
@@ -52,7 +56,24 @@ typedef struct RasterTarget {
 typedef struct RasterGradients {
     int depthStepX;
     RasterColor colorStepX;
+    int uStepX;
+    int vStepX;
 } RasterGradients;
+
+/* How Raster_SetupTriangle derives the colour. */
+typedef enum RasterShading {
+    RASTER_SHADE_GOURAUD, /* interpolated vertex colours (modes 0..6, 16..22) */
+    RASTER_SHADE_FLAT     /* colour of v0 for the whole triangle (modes 8..14, 24..30) */
+} RasterShading;
+
+/* A texture as the textured modes (16..30) sample it: nearest texel, wrapped. */
+typedef struct RasterTexture {
+    const byte *texels;    /* one byte per texel (paletted) or one dword (direct colour) */
+    const byte *palette;   /* 256 entries of 8 bytes (only the first dword is used), NULL for direct colour */
+    dword uMask;           /* (width - 1) << 12 */
+    dword vMask;           /* (height - 1) << 12 */
+    int widthLog2;
+} RasterTexture;
 
 /* Edge walker. The long edge runs from v0 to v2 (vertices sorted by Y) and carries the attribute
    values; the short edge is v0 -> v1 for the upper part and v1 -> v2 for the lower part. */
@@ -65,6 +86,10 @@ typedef struct RasterEdges {
     int longDepthStep;
     RasterColor longColor;
     RasterColor longColorStep;
+    int longU;
+    int longUStep;
+    int longV;
+    int longVStep;
     int scanlineY;
 } RasterEdges;
 
@@ -80,6 +105,11 @@ typedef struct RasterSpan {
     dword depthDelta;      /* per pixel, in span direction */
     RasterColor color;     /* interpolated colour of the current pixel */
     RasterColor colorDelta;
+    int u;                 /* interpolated texture coordinates of the current pixel */
+    int v;
+    int uDelta;
+    int vDelta;
+    const RasterTexture *texture; /* textured modes, else NULL */
 } RasterSpan;
 
 typedef void (*RasterSpanProc)(RasterSpan *span);
@@ -247,10 +277,12 @@ static __inline int Raster_GradientX(const GraphicsPrimitivePacket *packet, int 
     return Raster_MulShift((int)(plane >> 12), invArea, shift);
 }
 
-/* Sets up the long edge (position, depth, Gouraud colour) and the X gradients of depth and colour.
-   Returns 0 when the triangle has no height or no area (nothing is drawn). */
-static __inline int Raster_SetupGouraud(const GraphicsPrimitivePacket *packet, RasterEdges *edges,
-                                        RasterGradients *gradients)
+/* Sets up the long edge (position, depth, colour, texture coordinates) and the X gradients of a
+   triangle. Flat shading takes v0's colour, widened like PUNPCKLBW + PSRLW 2 ((c * 0x101) >> 2),
+   and never steps it; Gouraud shading starts at c << 6 and interpolates. Returns 0 when the
+   triangle has no height or no area (nothing is drawn). */
+static __inline int Raster_SetupTriangle(const GraphicsPrimitivePacket *packet, RasterShading shading, int textured,
+                                         RasterEdges *edges, RasterGradients *gradients)
 {
     const GraphicsPrimitiveVertexRaw *v0 = &packet->vertices[0];
     const GraphicsPrimitiveVertexRaw *v1 = &packet->vertices[1];
@@ -265,17 +297,30 @@ static __inline int Raster_SetupGouraud(const GraphicsPrimitivePacket *packet, R
     if (height <= 0) {
         return 0;
     }
+    memset(edges, 0, sizeof *edges);
+    memset(gradients, 0, sizeof *gradients);
     invHeight = 0x1000000 / height; /* 1 / height in pixels, Q12 */
     edges->longX = v0->screenX;
     edges->shortX = v0->screenX;
     edges->longXStep = Raster_MulShift(v2->screenX - v0->screenX, invHeight, 12);
     edges->longDepth = (dword)v0->depth;
     edges->longDepthStep = Raster_MulShift(Raster_Diff(v2->depth, v0->depth), invHeight, 12);
+    if (textured) {
+        edges->longU = v0->textureU;
+        edges->longUStep = Raster_MulShift(Raster_Diff(v2->textureU, v0->textureU), invHeight, 12);
+        edges->longV = v0->textureV;
+        edges->longVStep = Raster_MulShift(Raster_Diff(v2->textureV, v0->textureV), invHeight, 12);
+    }
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         int c0 = Raster_Channel(v0->diffuseColor, i);
         int c2 = Raster_Channel(v2->diffuseColor, i);
-        edges->longColor.lane[i] = (short)(c0 << 6);
-        edges->longColorStep.lane[i] = (short)Raster_MulShift(c2 - c0, invHeight, 6);
+        if (shading == RASTER_SHADE_FLAT) {
+            edges->longColor.lane[i] = (short)((c0 * 0x101) >> 2);
+        }
+        else {
+            edges->longColor.lane[i] = (short)(c0 << 6);
+            edges->longColorStep.lane[i] = (short)Raster_MulShift(c2 - c0, invHeight, 6);
+        }
     }
 
     cross = (long long)(v2->screenX - v0->screenX) * (v1->screenY - v0->screenY) -
@@ -286,10 +331,16 @@ static __inline int Raster_SetupGouraud(const GraphicsPrimitivePacket *packet, R
     }
     invArea = (int)(0x1000000000LL / doubleArea);
     gradients->depthStepX = Raster_GradientX(packet, v0->depth, v1->depth, v2->depth, invArea, 24);
-    for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        gradients->colorStepX.lane[i] = (short)Raster_GradientX(
-            packet, Raster_Channel(v0->diffuseColor, i) << 12, Raster_Channel(v1->diffuseColor, i) << 12,
-            Raster_Channel(v2->diffuseColor, i) << 12, invArea, 30);
+    if (textured) {
+        gradients->uStepX = Raster_GradientX(packet, v0->textureU, v1->textureU, v2->textureU, invArea, 24);
+        gradients->vStepX = Raster_GradientX(packet, v0->textureV, v1->textureV, v2->textureV, invArea, 24);
+    }
+    if (shading == RASTER_SHADE_GOURAUD) {
+        for (i = 0; i < RASTER_LANE_COUNT; i++) {
+            gradients->colorStepX.lane[i] = (short)Raster_GradientX(
+                packet, Raster_Channel(v0->diffuseColor, i) << 12, Raster_Channel(v1->diffuseColor, i) << 12,
+                Raster_Channel(v2->diffuseColor, i) << 12, invArea, 30);
+        }
     }
     edges->scanlineY = v0->screenY >> 12;
     return 1;
@@ -298,7 +349,8 @@ static __inline int Raster_SetupGouraud(const GraphicsPrimitivePacket *packet, R
 /* Clips the current scanline between the two edges and hands it to `drawSpan`. The span starts
    at the long edge; depth and colour are prestepped from the long edge X to the first pixel. */
 static __forceinline void Raster_DrawScanline(const RasterTarget *target, const RasterEdges *edges,
-                                              const RasterGradients *gradients, RasterSpanProc drawSpan)
+                                              const RasterGradients *gradients, const RasterTexture *texture,
+                                              RasterSpanProc drawSpan)
 {
     int longX = edges->longX >> 12;
     int shortX = edges->shortX >> 12;
@@ -324,6 +376,8 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         span.depthPointerStep = 1;
         span.depthDelta = (dword)gradients->depthStepX;
         span.colorDelta = gradients->colorStepX;
+        span.uDelta = gradients->uStepX;
+        span.vDelta = gradients->vStepX;
         prestep = ((first + 1) << 12) - edges->longX;
     }
     else {
@@ -338,12 +392,17 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         span.depthPointerStep = -1;
         span.depthDelta = (dword)-gradients->depthStepX;
         span.colorDelta = RasterColor_Negate(gradients->colorStepX);
+        span.uDelta = -gradients->uStepX;
+        span.vDelta = -gradients->vStepX;
         prestep = (first << 12) - edges->longX;
         first--;
     }
     span.pixel = target->pixels + edges->scanlineY * target->pixelStride + first * target->pixelBytes;
     span.depth = (dword *)(target->depth + edges->scanlineY * target->depthStride) + first;
     span.depthValue = edges->longDepth + (dword)Raster_MulShift(prestep, gradients->depthStepX, 12);
+    span.u = edges->longU + Raster_MulShift(prestep, gradients->uStepX, 12);
+    span.v = edges->longV + Raster_MulShift(prestep, gradients->vStepX, 12);
+    span.texture = texture;
     prestepLane = (short)(prestep >> 8);
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         span.color.lane[i] = (short)(edges->longColor.lane[i] +
@@ -354,24 +413,28 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
 
 /* Walks `rows` scanlines down both edges. */
 static __forceinline void Raster_WalkRows(const RasterTarget *target, RasterEdges *edges,
-                                          const RasterGradients *gradients, int rows, RasterSpanProc drawSpan)
+                                          const RasterGradients *gradients, const RasterTexture *texture, int rows,
+                                          RasterSpanProc drawSpan)
 {
     for (; rows > 0; rows--) {
         if (edges->scanlineY >= target->clipMinY && edges->scanlineY < target->clipMaxY) {
-            Raster_DrawScanline(target, edges, gradients, drawSpan);
+            Raster_DrawScanline(target, edges, gradients, texture, drawSpan);
         }
         edges->longDepth += (dword)edges->longDepthStep;
         edges->longColor = RasterColor_Add(edges->longColor, edges->longColorStep);
+        edges->longU += edges->longUStep;
+        edges->longV += edges->longVStep;
         edges->longX += edges->longXStep;
         edges->shortX += edges->shortXStep;
         edges->scanlineY++;
     }
 }
 
-/* Upper part (v0 -> v1 as short edge), then lower part (v1 -> v2). */
+/* Upper part (v0 -> v1 as short edge), then lower part (v1 -> v2). `texture` is handed to the
+   span function (NULL for untextured modes). */
 static __forceinline void Raster_WalkTriangle(const RasterTarget *target, const GraphicsPrimitivePacket *packet,
                                               RasterEdges *edges, const RasterGradients *gradients,
-                                              RasterSpanProc drawSpan)
+                                              const RasterTexture *texture, RasterSpanProc drawSpan)
 {
     const GraphicsPrimitiveVertexRaw *v0 = &packet->vertices[0];
     const GraphicsPrimitiveVertexRaw *v1 = &packet->vertices[1];
@@ -380,12 +443,12 @@ static __forceinline void Raster_WalkTriangle(const RasterTarget *target, const 
     int lower = v2->screenY - v1->screenY;
     if (upper > 0) {
         edges->shortXStep = Raster_MulShift(0x1000000 / upper, v1->screenX - v0->screenX, 12);
-        Raster_WalkRows(target, edges, gradients, upper >> 12, drawSpan);
+        Raster_WalkRows(target, edges, gradients, texture, upper >> 12, drawSpan);
     }
     edges->shortX = v1->screenX;
     if (lower > 0) {
         edges->shortXStep = Raster_MulShift(0x1000000 / lower, v2->screenX - v1->screenX, 12);
-        Raster_WalkRows(target, edges, gradients, lower >> 12, drawSpan);
+        Raster_WalkRows(target, edges, gradients, texture, lower >> 12, drawSpan);
     }
 }
 
@@ -430,6 +493,58 @@ static __inline void RasterSpan_Next(RasterSpan *span)
     span->depth += span->depthPointerStep;
     span->depthValue += span->depthDelta;
     span->color = RasterColor_Add(span->color, span->colorDelta);
+    span->u += span->uDelta;
+    span->v += span->vDelta;
+}
+
+/* ---- textures ---------------------------------------------------------------------------- */
+
+/* Texture of a textured packet: the source entry's texels inside the source asset, and for
+   paletted textures (paletteIndex >= 0) palette bank paletteIndex (0x800 bytes each, after a
+   0x200-byte header). */
+static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, RasterTexture *texture)
+{
+    const GraphicsTextureSetEntry *entry = packet->textureEntry;
+    const byte *asset = (const byte *)entry->sourceAsset;
+    const GraphicsTextureSourceEntry *source = entry->sourceEntry;
+    int paletteIndex = (int)source->paletteIndex;
+    texture->widthLog2 = (int)entry->widthLog2;
+    texture->uMask = ((1u << (entry->widthLog2 & 31)) - 1) << 12;
+    texture->vMask = ((1u << (entry->heightLog2 & 31)) - 1) << 12;
+    texture->texels = asset + source->dataOffset;
+    texture->palette = paletteIndex < 0 ? NULL : asset + 0x200 + (dword)paletteIndex * 0x800;
+}
+
+/* The ARGB texel at (u, v), both wrapped to the texture (nearest texel, no filtering). */
+static __inline dword Raster_FetchTexel(const RasterTexture *texture, int u, int v)
+{
+    dword index = (((dword)u & texture->uMask) >> 12) +
+                  (dword)(((unsigned long long)((dword)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
+    if (texture->palette != NULL) {
+        return *(const dword *)(texture->palette + texture->texels[index] * 8u);
+    }
+    return ((const dword *)texture->texels)[index];
+}
+
+/* An ARGB texel as lanes of (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), ready for Raster_Modulate. */
+static __inline RasterColor Raster_TexelLanes(dword argb)
+{
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        result.lane[i] = (short)((Raster_Channel(argb, i) * 0x101) >> 2);
+    }
+    return result;
+}
+
+/* Shaded colour (Q6) times texel lanes (PMULHW); the result is Q4 (channel * 16). */
+static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel)
+{
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        color.lane[i] = Raster_MulHigh(color.lane[i], texel.lane[i]);
+    }
+    return color;
 }
 
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
