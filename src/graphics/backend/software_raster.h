@@ -559,4 +559,14 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
     return color;
 }
 
+/* ---- WP2: 16-bit textured blend modes ---------------------------------------------------- */
+
+/* Alpha-tested depth write of the blended modes 20/22 and 28/30: the depth is stored when the
+   source alpha lane (Q4) is >= 0x800, i.e. alpha >= 128. The lane is compared as an unsigned
+   word (MOVD + CMP 0x800 / JC), so a negative lane passes as well. */
+static __inline int Raster_WP2_AlphaWritesDepth(RasterColor sourceQ4)
+{
+    return (word)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
