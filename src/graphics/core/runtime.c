@@ -1184,10 +1184,10 @@ GraphicsCursor_RestoreSurfaceBackground
     /* 0x6C = sizeof(DDSURFACEDESC): cleared, then dwSize set */
     Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
     g_GraphicsCursorSurfaceDescScratch = 0x6c;
-    /* differs from the original: 0x0057A176/0x0057A266 push 0x21 (DDLOCK_WAIT | DDLOCK_WRITEONLY) here */
+    /* write lock, as the original (PUSH 0x21 at 0x0057A176 / 0x0057A266) */
     result = destinationSurface->lpVtbl->Lock
                        (destinationSurface,NULL,
-                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_READONLY,
+                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_WRITEONLY,
                         NULL);
   }
   if (result != 0) {
