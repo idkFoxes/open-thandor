@@ -51,42 +51,38 @@ FixedTransform_ComposeEulerAnglesRegs
 
 
 /* Address: 0x00484930.
-   Ownership: core/math/fixed.
-   Purpose: Calculates a 3D vector length and two wrapping 16-bit angles. EAX=length, EDX=elevation angle,
-   ECX=azimuth angle. The declared 64-bit return models EDX:EAX; ECX remains an extra output. Typed parameters: p0
-   x→FixedMathVectorComponent32_V342, p1 y→FixedMathVectorComponent32_V342, p2 z→FixedMathVectorComponent32_V342.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: FixedMath_UInt64Sqrt, FixedMath_Atan2Angle16.
+   Converts the vector (x, y, z) into its length and two 16-bit angles: the elevation of x over the (y, z) plane
+   and the azimuth within that plane. Returned in registers: EAX = length, EDX = elevation, ECX = azimuth (low
+   16 bits); squares are summed in 64 bits so Q12 components cannot overflow.
 */
 FixedLengthAnglesEaxEcxEdx12
 FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
-  uint32_t elevationAngle16;
-  uint32_t elevationAngleResult;
-  uint32_t azimuthAngle16;
+  uint32_t planeLength;
+  uint32_t elevationAngle;
+  uint32_t azimuthAngle;
   uint32_t vectorLengthQ12;
   FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
-  int64_t squaredLengthAccumulatorQ24;
+  int64_t planeSquaredLengthQ24;
   int64_t totalSquaredLengthQ24;
-  
-  squaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
-  elevationAngle16 =
+
+  planeSquaredLengthQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
+  planeLength =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
-                  (UInt64Half32)squaredLengthAccumulatorQ24);
-  elevationAngleResult = FixedMath_Atan2Angle16(x,elevationAngle16);
-  azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
-  totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (int64_t)x * (int64_t)x;
+                 ((UInt64Half32)((uint64_t)planeSquaredLengthQ24 >> 32),
+                  (UInt64Half32)planeSquaredLengthQ24);
+  elevationAngle = FixedMath_Atan2Angle16(x,planeLength);
+  azimuthAngle = FixedMath_Atan2Angle16(y,z);
+  totalSquaredLengthQ24 = planeSquaredLengthQ24 + (int64_t)x * (int64_t)x;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 32),
                   (UInt64Half32)totalSquaredLengthQ24);
-  lengthAnglesResult.elevationAngle = elevationAngleResult;
+  lengthAnglesResult.elevationAngle = elevationAngle;
   lengthAnglesResult.lengthQ12 = vectorLengthQ12;
-  lengthAnglesResult.azimuthAngle = azimuthAngle16 & 0xffff;
+  lengthAnglesResult.azimuthAngle = azimuthAngle & 0xffff;
   return lengthAnglesResult;
 }
 
@@ -876,23 +872,21 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
 
 
 /* Address: 0x00484AC0.
-   Ownership: core/math/fixed.
-   Purpose: Returns floor(sqrt(vector->x^2 + vector->y^2 + vector->z^2)).
-   Local calls: FixedMath_UInt64Sqrt.
+   Length of a 3D vector: floor(sqrt(x*x + y*y + z*z)), with the squares summed in 64 bits so Q12 components
+   cannot overflow. The result has the components' fixed-point scale.
 */
 uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
 
 {
   uint32_t vectorLengthQ12;
-  int64_t squaredLengthAccumulatorQ24;
-  
-  squaredLengthAccumulatorQ24 =
+  int64_t squaredLengthQ24;
+
+  squaredLengthQ24 =
        (int64_t)vector->y * (int64_t)vector->y + (int64_t)vector->x * (int64_t)vector->x +
        (int64_t)vector->z * (int64_t)vector->z;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
-                  (UInt64Half32)squaredLengthAccumulatorQ24);
+                 ((UInt64Half32)((uint64_t)squaredLengthQ24 >> 32),(UInt64Half32)squaredLengthQ24);
   return vectorLengthQ12;
 }
 

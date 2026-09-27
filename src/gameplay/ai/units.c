@@ -128,12 +128,10 @@ AiUnitBehavior_SelectBestAnchorAction
 
 
 /* Address: 0x0053B1D0.
-   Ownership: gameplay/ai/units.
-   Purpose: Distance score vs the Score-A site list (workspace 05). Typed parameters: p2
-   currentBestScore→AiCandidateScore32_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p4
-   armyRuntimeSlot→ArmyRuntimeSlot *. Calling convention, complete VariableStorage serialization, function bytes,
-   control flow, globals, locals, and executable data remain unchanged.
+   Scores the general sites (workspace 05) for a unit and returns the best one if it beats currentBestScore:
+   score = ((max(0, bias - Manhattan distance) * scale + site score) >> 12) * the unit's definitionClassValue80,
+   so nearer and richer sites score higher. Returns currentBestScore and a NULL entry when none beats it.
+   modelDefinition is not used.
 */
 AiWorkspace05DistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
 AiUnitBehavior_ComputeWorkspace05DistanceScore
@@ -141,38 +139,37 @@ AiUnitBehavior_ComputeWorkspace05DistanceScore
           ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
-  int deltaXOrScore;
+  int negDeltaXOrScore;
   int recordsRemaining;
-  Q12 deltaYAbsQ12;
+  Q12 negAbsDeltaYQ12;
   AiScoredSiteWorkspaceEntry *bestEntry;
   AiScoredSiteWorkspaceEntry *workspaceRecordCursor;
   AiWorkspace05DistanceSelectionRegs8 selection;
   
-  bestEntry = (AiScoredSiteWorkspaceEntry *)0x0;
+  bestEntry = NULL;
   workspaceRecordCursor = g_AiWorkspaceBuffer05_Size0200;
-  for (recordsRemaining = g_AiWorkspace05Count; recordsRemaining != 0;
-      recordsRemaining = recordsRemaining + -1) {
-    deltaXOrScore = (armyRuntimeSlot->articulatedContact).fallbackPosition0Q12 -
+  for (recordsRemaining = g_AiWorkspace05Count; recordsRemaining != 0; recordsRemaining--) {
+    negDeltaXOrScore = (armyRuntimeSlot->articulatedContact).fallbackPosition0Q12 -
             workspaceRecordCursor->cellWorldXQ12;
-    if (-1 < deltaXOrScore) {
-      deltaXOrScore = -deltaXOrScore;
+    if (-1 < negDeltaXOrScore) {
+      negDeltaXOrScore = -negDeltaXOrScore;
     }
-    deltaYAbsQ12 = (armyRuntimeSlot->articulatedContact).fallbackPosition1Q12 -
+    negAbsDeltaYQ12 = (armyRuntimeSlot->articulatedContact).fallbackPosition1Q12 -
                    workspaceRecordCursor->cellWorldYQ12;
-    if (-1 < deltaYAbsQ12) {
-      deltaYAbsQ12 = -deltaYAbsQ12;
+    if (-1 < negAbsDeltaYQ12) {
+      negAbsDeltaYQ12 = -negAbsDeltaYQ12;
     }
-    deltaXOrScore = deltaXOrScore + deltaYAbsQ12 + (g_AiKnowledgeData->parameters).workspace05DistanceBiasQ12;
-    if (deltaXOrScore < 0) {
-      deltaXOrScore = 0;
+    negDeltaXOrScore = negDeltaXOrScore + negAbsDeltaYQ12 + (g_AiKnowledgeData->parameters).workspace05DistanceBiasQ12;
+    if (negDeltaXOrScore < 0) {
+      negDeltaXOrScore = 0;
     }
-    deltaXOrScore = (deltaXOrScore * (g_AiKnowledgeData->parameters).workspace05DistanceScaleQ12 +
+    negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).workspace05DistanceScaleQ12 +
              workspaceRecordCursor->score >> 0xc) * armyRuntimeSlot->definitionClassValue80;
-    if (deltaXOrScore - currentBestScore != 0 && currentBestScore <= deltaXOrScore) {
+    if (negDeltaXOrScore - currentBestScore != 0 && currentBestScore <= negDeltaXOrScore) {
       bestEntry = workspaceRecordCursor;
-      currentBestScore = deltaXOrScore;
+      currentBestScore = negDeltaXOrScore;
     }
-    workspaceRecordCursor = workspaceRecordCursor + 1;
+    workspaceRecordCursor++;
   }
   selection.selectedEntry = bestEntry;
   selection.score = currentBestScore;
@@ -181,13 +178,9 @@ AiUnitBehavior_ComputeWorkspace05DistanceScore
 
 
 /* Address: 0x0053B260.
-   Ownership: gameplay/ai/units.
-   Purpose: Computes the strongest knowledge-scaled distance score from the entity runtime anchor to either
-   configured faction anchor pair and returns the maximum against the incoming score. Distance score vs the faction
-   anchor point. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and
-   PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
-   currentBestScore→AiCandidateScore32_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Scores the faction's primary and secondary anchor points (each only while its cooldown runs) for a unit like
+   the general sites: ((max(0, bias - distance) * scale) >> 12) * definitionClassValue84, and returns the
+   highest of these and currentBestScore. modelDefinition is not used.
 */
 AiCandidateScore32 __thandor_eax_preserve_ecx_edx
 AiUnitBehavior_ComputeFactionAnchorDistanceScore
@@ -195,54 +188,56 @@ AiUnitBehavior_ComputeFactionAnchorDistanceScore
           MdlDefinitionSemanticPrefix80 *modelDefinition,ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
-  int deltaOrScore;
-  Q12 primaryAnchorDeltaXAbsQ12;
-  int secondaryAnchorDeltaXAbsQ12;
+  int negDeltaOrScore;
+  Q12 primaryAnchorNegAbsDeltaQ12;
+  int secondaryAnchorNegAbsDeltaQ12;
   ModelRuntimeNode *modelNode;
   
   modelNode = armyRuntimeSlot->modelNodeRuntime;
+  /* Both anchor coordinates are compared with translation.x: the original reads [modelNode + 0x94] twice
+     (0x0053B281/0x0053B287 and 0x0053B2D5/0x0053B2DB), so this "distance" ignores the unit's Y. */
   if (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown != 0) {
-    deltaOrScore = (modelNode->worldTransform).translation.x -
+    negDeltaOrScore = (modelNode->worldTransform).translation.x -
             g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorYQ12;
-    if (-1 < deltaOrScore) {
-      deltaOrScore = -deltaOrScore;
+    if (-1 < negDeltaOrScore) {
+      negDeltaOrScore = -negDeltaOrScore;
     }
-    primaryAnchorDeltaXAbsQ12 =
+    primaryAnchorNegAbsDeltaQ12 =
          (modelNode->worldTransform).translation.x -
          g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorXQ12;
-    if (-1 < primaryAnchorDeltaXAbsQ12) {
-      primaryAnchorDeltaXAbsQ12 = -primaryAnchorDeltaXAbsQ12;
+    if (-1 < primaryAnchorNegAbsDeltaQ12) {
+      primaryAnchorNegAbsDeltaQ12 = -primaryAnchorNegAbsDeltaQ12;
     }
-    deltaOrScore = deltaOrScore + primaryAnchorDeltaXAbsQ12 +
+    negDeltaOrScore = negDeltaOrScore + primaryAnchorNegAbsDeltaQ12 +
             (g_AiKnowledgeData->parameters).factionAnchorDistanceBiasQ12;
-    if (deltaOrScore < 0) {
-      deltaOrScore = 0;
+    if (negDeltaOrScore < 0) {
+      negDeltaOrScore = 0;
     }
-    deltaOrScore = (deltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
+    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
             armyRuntimeSlot->definitionClassValue84;
-    if (deltaOrScore - currentBestScore != 0 && currentBestScore <= deltaOrScore) {
-      currentBestScore = deltaOrScore;
+    if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
+      currentBestScore = negDeltaOrScore;
     }
   }
   if (g_GameFactionRuntimeImage.records[factionIndex].anchorCooldown0 != 0) {
-    deltaOrScore = (modelNode->worldTransform).translation.x -
+    negDeltaOrScore = (modelNode->worldTransform).translation.x -
             g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorYQ12;
-    if (-1 < deltaOrScore) {
-      deltaOrScore = -deltaOrScore;
+    if (-1 < negDeltaOrScore) {
+      negDeltaOrScore = -negDeltaOrScore;
     }
-    secondaryAnchorDeltaXAbsQ12 = (modelNode->worldTransform).translation.x -
+    secondaryAnchorNegAbsDeltaQ12 = (modelNode->worldTransform).translation.x -
             g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorXQ12;
-    if (-1 < secondaryAnchorDeltaXAbsQ12) {
-      secondaryAnchorDeltaXAbsQ12 = -secondaryAnchorDeltaXAbsQ12;
+    if (-1 < secondaryAnchorNegAbsDeltaQ12) {
+      secondaryAnchorNegAbsDeltaQ12 = -secondaryAnchorNegAbsDeltaQ12;
     }
-    deltaOrScore = deltaOrScore + secondaryAnchorDeltaXAbsQ12 + (g_AiKnowledgeData->parameters).factionAnchorDistanceBiasQ12;
-    if (deltaOrScore < 0) {
-      deltaOrScore = 0;
+    negDeltaOrScore = negDeltaOrScore + secondaryAnchorNegAbsDeltaQ12 + (g_AiKnowledgeData->parameters).factionAnchorDistanceBiasQ12;
+    if (negDeltaOrScore < 0) {
+      negDeltaOrScore = 0;
     }
-    deltaOrScore = (deltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
+    negDeltaOrScore = (negDeltaOrScore * (g_AiKnowledgeData->parameters).factionAnchorDistanceScaleQ12 >> 0xc) *
             armyRuntimeSlot->definitionClassValue84;
-    if (deltaOrScore - currentBestScore != 0 && currentBestScore <= deltaOrScore) {
-      currentBestScore = deltaOrScore;
+    if (negDeltaOrScore - currentBestScore != 0 && currentBestScore <= negDeltaOrScore) {
+      currentBestScore = negDeltaOrScore;
     }
   }
   return currentBestScore;
@@ -250,12 +245,10 @@ AiUnitBehavior_ComputeFactionAnchorDistanceScore
 
 
 /* Address: 0x0053B330.
-   Ownership: gameplay/ai/units.
-   Purpose: Scores distance from the entity to workspace07, or workspace03 when workspace07 is empty, with the
-   alternate workspace path receiving the verified three-quarter scaling. Distance score vs the secondary workspace
-   list. Typed parameters: p2 currentBestScore→AiCandidateScore32_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged. Typed
-   parameters: p4 armyRuntimeSlot→ArmyRuntimeSlot *.
+   Scores the target entries of workspace 07 for a unit, or those of workspace 03 at three quarters of the score
+   when workspace 07 is empty: ((max(0, bias - Manhattan distance) * scale) >> 12) * definitionClassValue88.
+   Returns the best entry if it beats currentBestScore, else currentBestScore and NULL. modelDefinition is not
+   used.
 */
 AiSecondaryWorkspaceDistanceSelectionRegs8 __thandor_eax_ebx_cf_preserve_ecx_edx
 AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
@@ -263,46 +256,46 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
           ArmyRuntimeSlot *armyRuntimeSlot)
 
 {
-  int deltaXOrScore;
+  int negDeltaXOrScore;
   int recordsRemaining;
-  Q12 deltaYAbsQ12;
+  Q12 negAbsDeltaYQ12;
   AiTargetWorkspaceEntry *bestEntry;
   AiTargetWorkspaceEntry *workspaceRecordCursor;
   AiSecondaryWorkspaceDistanceSelectionRegs8 selection;
   
-  bestEntry = (AiTargetWorkspaceEntry *)0x0;
+  bestEntry = NULL;
   recordsRemaining = g_AiWorkspace07Count;
   workspaceRecordCursor = g_AiWorkspaceBuffer07_Size0400;
   if (g_AiWorkspace07Count == 0) {
     recordsRemaining = g_AiWorkspace03Count;
     workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspaceBuffer03_Size1000;
   }
-  for (; recordsRemaining != 0; recordsRemaining = recordsRemaining + -1) {
-    deltaXOrScore = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.x -
+  for (; recordsRemaining != 0; recordsRemaining--) {
+    negDeltaXOrScore = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.x -
             (int)workspaceRecordCursor->worldXQ12;
-    if (-1 < deltaXOrScore) {
-      deltaXOrScore = -deltaXOrScore;
+    if (-1 < negDeltaXOrScore) {
+      negDeltaXOrScore = -negDeltaXOrScore;
     }
-    deltaYAbsQ12 = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.y -
+    negAbsDeltaYQ12 = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.y -
                    workspaceRecordCursor->worldYQ12;
-    if (-1 < deltaYAbsQ12) {
-      deltaYAbsQ12 = -deltaYAbsQ12;
+    if (-1 < negAbsDeltaYQ12) {
+      negAbsDeltaYQ12 = -negAbsDeltaYQ12;
     }
-    deltaXOrScore = deltaXOrScore + deltaYAbsQ12 + (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceBiasQ12
+    negDeltaXOrScore = negDeltaXOrScore + negAbsDeltaYQ12 + (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceBiasQ12
     ;
-    if (deltaXOrScore < 0) {
-      deltaXOrScore = 0;
+    if (negDeltaXOrScore < 0) {
+      negDeltaXOrScore = 0;
     }
-    deltaXOrScore = (deltaXOrScore * (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceScaleQ12 >> 0xc) *
+    negDeltaXOrScore = (negDeltaXOrScore * (g_AiKnowledgeData->parameters).secondaryWorkspaceDistanceScaleQ12 >> 0xc) *
             armyRuntimeSlot->definitionClassValue88;
     if (g_AiWorkspace07Count == 0) {
-      deltaXOrScore = deltaXOrScore * 3 >> 2;
+      negDeltaXOrScore = negDeltaXOrScore * 3 >> 2;
     }
-    if (currentBestScore < deltaXOrScore) {
+    if (currentBestScore < negDeltaXOrScore) {
       bestEntry = workspaceRecordCursor;
-      currentBestScore = deltaXOrScore;
+      currentBestScore = negDeltaXOrScore;
     }
-    workspaceRecordCursor = workspaceRecordCursor + 1;
+    workspaceRecordCursor++;
   }
   selection.selectedEntry = bestEntry;
   selection.score = currentBestScore;
@@ -311,10 +304,10 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
 
 
 /* Address: 0x0053B3E0.
-   Ownership: gameplay/ai/units.
-   Purpose: Sets behavior mode eight, clears the direct-state bit, resets the source record state, and submits the
-   workspace record coordinates to the shared movement assignment helper.
-   Cross-module calls: ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement].
+   Sends the unit to a general site (a workspace-05 AiScoredSiteWorkspaceEntry: X, Y, score): marks it as
+   AI-commanded and no longer group-assigned, zeroes the site's score (the bonus
+   AiUnitBehavior_ComputeWorkspace05DistanceScore adds for it, so the next unit is less drawn there) and queues
+   the move. worldRuntimeContext is not used.
 */
 void __thandor_preserve_eax
 AiUnitCommand_AssignWorkspacePoint
@@ -322,9 +315,9 @@ AiUnitCommand_AssignWorkspacePoint
           WorldRuntimeContext *worldRuntimeContext)
 
 {
-  armyRuntime->runtimeState8C = 8;
-  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & 0xfffffffe;
-  workspacePoint[2] = 0;
+  armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
+  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
+  workspacePoint[2] = 0; /* AiScoredSiteWorkspaceEntry.score */
   ArmyRuntime_QueueOrStartMoveCommandVariantA
             (workspacePoint[1],*workspacePoint,(ArmyMovementRuntime *)armyRuntime);
   return;
@@ -332,12 +325,9 @@ AiUnitCommand_AssignWorkspacePoint
 
 
 /* Address: 0x0053B420.
-   Ownership: gameplay/ai/units.
-   Purpose: Chooses the active faction anchor pair, sets behavior mode eight, clears the direct-state bit, and
-   submits that anchor to the shared movement assignment helper. It is distinct from FrontendPlayerIndex_V306,
-   PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId
-   domains.
-   Cross-module calls: ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement].
+   Sends the unit to the faction's anchor point: the primary anchor while its cooldown runs, otherwise the
+   secondary one. Marks the unit as AI-commanded and no longer group-assigned, then queues the move.
+   worldRuntimeContext is not used.
 */
 void __thandor_preserve_eax_edx
 AiUnitCommand_AssignFactionAnchorPoint
@@ -348,14 +338,16 @@ AiUnitCommand_AssignFactionAnchorPoint
   GraphicsWorldCoordinateQ12 targetWorldX;
   GraphicsWorldCoordinateQ12 targetWorldY;
   
+  /* The field at +0x390 (named ...AnchorYQ12) goes to the targetWorldX parameter and +0x394 to targetWorldY,
+     so the faction record's anchor X/Y field names are probably swapped. */
   targetWorldX = g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorYQ12;
   targetWorldY = g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorXQ12;
   if (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0) {
     targetWorldX = g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorYQ12;
     targetWorldY = g_GameFactionRuntimeImage.records[factionIndex].secondaryAnchorXQ12;
   }
-  armyRuntime->runtimeState8C = 8;
-  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & 0xfffffffe;
+  armyRuntime->runtimeState8C = AI_UNIT_COMMANDED_STATE;
+  armyRuntime->runtimeState94 = armyRuntime->runtimeState94 & ~AI_UNIT_STATE94_GROUP_ASSIGNED;
   ArmyRuntime_QueueOrStartMoveCommandVariantA
             (targetWorldY,targetWorldX,(ArmyMovementRuntime *)armyRuntime);
   return;
@@ -363,21 +355,19 @@ AiUnitCommand_AssignFactionAnchorPoint
 
 
 /* Address: 0x0053B480.
-   Ownership: gameplay/ai/units.
-   Purpose: Appends an entity pointer to the bounded 64-entry group-assignment workspace when the entity is not
-   already marked assigned. Collects idle military entities for group assignment (feeds
-   AiUnitGroup_AssignCollectedEntitiesToBestTarget). Typed parameters: p3 entityRuntime→GameEntityRuntime *.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Collects an idle unit that is not yet group-assigned into workspace 14 (at most 64 units), from which
+   AiUnitGroup_AssignCollectedEntitiesToBestTarget later sends them together to one target.
+   worldRuntimeContext is not used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiUnitBehavior_CollectUnassignedEntity
           (ArmyRuntimeSlot *armyRuntimeSlot,WorldRuntimeContext *worldRuntimeContext)
 
 {
-  if ((g_AiCollectedEntityCount < 0x40) && ((armyRuntimeSlot->runtimeState94 & 1) == 0)) {
+  if ((g_AiCollectedEntityCount < AI_WORKSPACE14_CAPACITY) &&
+      ((armyRuntimeSlot->runtimeState94 & AI_UNIT_STATE94_GROUP_ASSIGNED) == 0)) {
     g_AiWorkspaceBuffer14_Size0100[g_AiCollectedEntityCount] = armyRuntimeSlot;
-    g_AiCollectedEntityCount = g_AiCollectedEntityCount + 1;
+    g_AiCollectedEntityCount++;
   }
   return;
 }

@@ -75,21 +75,21 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
 }
 
 
-/* PCMPEQB: 0xFF in every byte lane where a and b are equal, 0 elsewhere. */
+/* C model of the MMX PCMPEQB instruction: 0xFF in every byte lane where a and b are equal, 0 elsewhere. */
 static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
 
 {
-  ThandorMmx x;
-  ThandorMmx y;
-  ThandorMmx r;
+  ThandorMmx aLanes;
+  ThandorMmx bLanes;
+  ThandorMmx result;
   int lane;
 
-  x.q = a;
-  y.q = b;
-  for (lane = 0; lane < 8; lane = lane + 1) {
-    r.ub[lane] = (x.ub[lane] == y.ub[lane]) ? 0xff : 0;
+  aLanes.q = a;
+  bLanes.q = b;
+  for (lane = 0; lane < 8; lane++) {
+    result.ub[lane] = (aLanes.ub[lane] == bLanes.ub[lane]) ? 0xff : 0;
   }
-  return r.q;
+  return result.q;
 }
 
 
@@ -257,12 +257,10 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
 
 
 /* Address: 0x005070A0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 0, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection0, TerrainOccupancyBit2_MarkDirection1.
+   Sets occupancy bit 1 in the scan's faction byte for every cell of the 60-degree sector between directions 0
+   (C+1) and 1 (C+1-W) of TerrainOccupancyBit2_MarkAroundWorldPoint. The sector's spine steps by C+2-W (scan step
+   +7); from every spine cell a straight leg runs along each bounding direction, and the sector ends at the step
+   limit or at a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -272,27 +270,29 @@ TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCel
   FieldGridCell *legStartCell;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       legStartCell = cell + 1;
-      TerrainOccupancyBit2_MarkDirection0(scanStep + 4,legStartCell);
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+      TerrainOccupancyBit2_MarkDirection0(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,legStartCell);
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)((int)legStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the direction-1 neighbour C+1-W: +0x50 flags, +0x70 occupancy mask, 0x80 = one cell */
+      if ((*(uint32_t *)((int)legStartCell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       diagonalMaskByte = (uint8_t *)((int)legStartCell +
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
-      *diagonalMaskByte = *diagonalMaskByte | 2;
+      *diagonalMaskByte = *diagonalMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
       cell = (FieldGridCell *)((int)legStartCell + (0x80 - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainOccupancyBit2_MarkDirection1
                 (scanStep,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= scanStep) {
@@ -305,12 +305,9 @@ TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x00507140.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 1, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection1, TerrainOccupancyBit2_MarkDirection2.
+   Sets occupancy bit 1 for the sector between directions 1 (C+1-W) and 2 (C-W), built like
+   TerrainOccupancyBit2_MarkWedge0: spine step C+1-2W (scan step +7), a straight leg along each bounding direction
+   from every spine cell, ending at the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -320,27 +317,30 @@ TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCel
   FieldGridCell *legStartCell;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
       TerrainOccupancyBit2_MarkDirection1
-                (scanStep + 4,(FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      /* the direction-2 neighbour C-W: +0x50 flags, +0x70 occupancy mask */
+      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       diagonalMaskByte = (uint8_t *)((int)cell +
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
-      *diagonalMaskByte = *diagonalMaskByte | 2;
+      *diagonalMaskByte = *diagonalMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
       legStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = legStartCell + 1;
       TerrainOccupancyBit2_MarkDirection2(scanStep,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
@@ -353,12 +353,9 @@ TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x005071E0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 2, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection2, TerrainOccupancyBit2_MarkDirection3.
+   Sets occupancy bit 1 for the sector between directions 2 (C-W) and 3 (C-1), built like
+   TerrainOccupancyBit2_MarkWedge0: spine step C-1-W (scan step +7), a straight leg along each bounding direction
+   from every spine cell, ending at the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -366,25 +363,28 @@ TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCel
 {
   FieldGridCell *legStartCell;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       TerrainOccupancyBit2_MarkDirection2
-                (scanStep + 4,(FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x1c] =
-           cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex + -0x1c] | 2;
-      legStartCell = cell + -2;
-      scanStep = scanStep + 7;
+      /* runtime0C_3F (+0x0C) - 0x1C = +0x70 of cell[-1]: the direction-3 neighbour's occupancy byte */
+      cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex - 0x1c] =
+           cell->runtime0C_3F[occupancyMarkByteIndex.occupancyMaskByteIndex - 0x1c] | FIELD_CELL_OCCUPANCY_BIT1;
+      legStartCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
       TerrainOccupancyBit2_MarkDirection3(scanStep,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
@@ -397,46 +397,46 @@ TerrainOccupancyBit2_MarkWedge2(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x00507280.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 3, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection3, TerrainOccupancyBit2_MarkDirection4.
+   Sets occupancy bit 1 for the sector between directions 3 (C-1) and 4 (C-1+W), built like
+   TerrainOccupancyBit2_MarkWedge0: spine step C-2+W (scan step +7), a straight leg along each bounding direction
+   from every spine cell, ending at the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   uint8_t *centerMaskByte;
-  int currentRowStrideBytes;
+  int rowStrideBytes;
   FieldGridCell *legStartCell;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  int rowStrideBytes;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       centerMaskByte = (uint8_t *)((int)cell->runtime60_6B +
-                       occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10);
-      *centerMaskByte = *centerMaskByte | 2;
-      currentRowStrideBytes = g_TerrainScanRowStrideBytes;
-      legStartCell = cell + -1;
-      TerrainOccupancyBit2_MarkDirection3(scanStep + 4,legStartCell);
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                       occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK);
+      *centerMaskByte = *centerMaskByte | FIELD_CELL_OCCUPANCY_BIT1;
+      rowStrideBytes = g_TerrainScanRowStrideBytes;
+      legStartCell = cell - 1;
+      TerrainOccupancyBit2_MarkDirection3(scanStep + TERRAIN_SCAN_STEP_STRAIGHT,legStartCell);
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)(legStartCell->runtime60_6B + currentRowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the direction-4 neighbour C-1+W: runtime60_6B (+0x60) - 0x10 = its flags (+0x50) */
+      if ((*(uint32_t *)(legStartCell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      legStartCell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + currentRowStrideBytes + 0x10] =
-           legStartCell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + currentRowStrideBytes + 0x10] | 2;
-      cell = (FieldGridCell *)(legStartCell[-1].runtime0C_3F + currentRowStrideBytes + -0xc);
-      scanStep = scanStep + 7;
+      legStartCell->runtime60_6B
+      [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           legStartCell->runtime60_6B
+           [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address: C-2+W */
+      cell = (FieldGridCell *)(legStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainOccupancyBit2_MarkDirection4
-                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc)
-                );
+                (scanStep,(FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -447,12 +447,9 @@ TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x00507320.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 4, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection4, TerrainOccupancyBit2_MarkDirection5.
+   Sets occupancy bit 1 for the sector between directions 4 (C-1+W) and 5 (C+W), built like
+   TerrainOccupancyBit2_MarkWedge0: spine step C-1+2W (scan step +7), a straight leg along each bounding direction
+   from every spine cell, ending at the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -461,32 +458,37 @@ TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCel
   uint8_t *cellRuntimeBytes;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       rowStrideBytes = g_TerrainScanRowStrideBytes;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainOccupancyBit2_MarkDirection4
-                (scanStep + 4,
-                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the direction-5 neighbour C+W: runtime60_6B (+0x60) - 0x10 = its flags (+0x50) */
+      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x10]
-           | 2;
+      cell->runtime60_6B
+      [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B
+           [occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       cellRuntimeBytes = cell->runtime0C_3F;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc) + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc) - 1;
       TerrainOccupancyBit2_MarkDirection5
                 (scanStep,(FieldGridCell *)
-                          (cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes + -0xc));
+                          (cellRuntimeBytes + g_TerrainScanRowStrideBytes + rowStrideBytes - 0xc));
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
       }
@@ -497,12 +499,9 @@ TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x005073C0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Marks the two adjacent directional legs of terrain wedge 5, stopping at excluded cells and forwarding
-   the shared occupancy-byte selector across both legs. Typed parameters: p2
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainOccupancyBit2_MarkDirection5, TerrainOccupancyBit2_MarkDirection0.
+   Sets occupancy bit 1 for the sector between directions 5 (C+W) and 0 (C+1), built like
+   TerrainOccupancyBit2_MarkWedge0: spine step C+1+W (scan step +7), a straight leg along each bounding direction
+   from every spine cell, ending at the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
@@ -510,27 +509,30 @@ TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCel
 {
   FieldGridCell *legStartCell;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainOccupancyBit2_MarkDirection5
-                (scanStep + 4,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
-      if (g_TerrainScanStepLimit <= scanStep + 4) {
+                (scanStep + TERRAIN_SCAN_STEP_STRAIGHT,
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
+      if (g_TerrainScanStepLimit <= scanStep + TERRAIN_SCAN_STEP_STRAIGHT) {
         return;
       }
-      if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
+      cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell[1].runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
       legStartCell = cell + 2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
       TerrainOccupancyBit2_MarkDirection0(scanStep,legStartCell);
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -542,29 +544,27 @@ TerrainOccupancyBit2_MarkWedge5(TerrainDirectionalScanStep scanStep,FieldGridCel
 
 
 /* Address: 0x00506EA0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 0 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 0 (C+1, right): sets occupancy bit 1 in the scan's faction
+   byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
-      cell = cell + 1;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell++;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -572,29 +572,27 @@ TerrainOccupancyBit2_MarkDirection0(TerrainDirectionalScanStep scanStep,FieldGri
 
 
 /* Address: 0x00506EF0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 1 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 1 (C+1-W, up and right): sets occupancy bit 1 in the scan's
+   faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)); /* 0x80 = one cell */
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -602,28 +600,26 @@ TerrainOccupancyBit2_MarkDirection1(TerrainDirectionalScanStep scanStep,FieldGri
 
 
 /* Address: 0x00506F50.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 2 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 2 (C-W, up): sets occupancy bit 1 in the scan's faction
+   byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
@@ -632,29 +628,27 @@ TerrainOccupancyBit2_MarkDirection2(TerrainDirectionalScanStep scanStep,FieldGri
 
 
 /* Address: 0x00506FA0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 3 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 3 (C-1, left): sets occupancy bit 1 in the scan's faction
+   byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
-      cell = cell + -1;
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell--;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -662,29 +656,28 @@ TerrainOccupancyBit2_MarkDirection3(TerrainDirectionalScanStep scanStep,FieldGri
 
 
 /* Address: 0x00506FF0.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 4 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 4 (C-1+W, down and left): sets occupancy bit 1 in the
+   scan's faction byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -692,29 +685,28 @@ TerrainOccupancyBit2_MarkDirection4(TerrainDirectionalScanStep scanStep,FieldGri
 
 
 /* Address: 0x00507050.
-   Ownership: world/terrain/occupancy.
-   Purpose: Walks directional terrain run 5 until the radius or an excluded cell is reached and sets bit 1 in the
-   selected byte of the cell occupancy mask. Typed parameters: p2 scanStep→TerrainDirectionalScanStep_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Straight leg of the occupancy scan along direction 5 (C+W, down): sets occupancy bit 1 in the scan's faction
+   byte of each cell, 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   TerrainScanSelectorUnion occupancyMarkByteIndex;
-  
+
   occupancyMarkByteIndex.occupancyMaskByteIndex =
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] =
-           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10] | 2;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+           | FIELD_CELL_OCCUPANCY_BIT1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;

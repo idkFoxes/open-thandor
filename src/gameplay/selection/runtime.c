@@ -2904,55 +2904,56 @@ SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32
 
 
 /* Address: 0x005301F0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Scans the fixed 32-entry selection pointer array and computes bounds from entity coordinates +0x60 and
-   +0x64. CF is set when either span exceeds 0x5000 or their sum exceeds 0x7000; CF is clear for an empty or
-   compact selection. EAX is preserved.
+   Tells the move commands whether a selection is too scattered to keep its formation: true (CF) when the
+   bounding box of the entities' selection offsets (common.selectionOffsetXQ12/YQ12, +0x60/+0x64) is wider
+   than 5.0 (Q12 0x5000) on either axis or the two extents add up to more than 7.0 (0x7000). An empty
+   selection returns false.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   int entryAddress;
-  int minOffset60;
-  int maxOffset60;
-  int maxOffset64;
-  int firstEntryOrMinOffset64;
+  int minOffsetX;
+  int maxOffsetX;
+  int maxOffsetY;
+  int firstEntryOrMinOffsetY;
   int entriesRemaining;
-  
-  entriesRemaining = 0x20;
-  while (firstEntryOrMinOffset64 = *(int *)selection, firstEntryOrMinOffset64 == 0) {
+
+  entriesRemaining = SELECTION_ENTRY_CAPACITY;
+  /* the first non-empty entry seeds the bounds */
+  while (firstEntryOrMinOffsetY = *(int *)selection, firstEntryOrMinOffsetY == 0) {
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
     if (entriesRemaining == 0) {
       return false;
     }
   }
-  minOffset60 = *(int *)(firstEntryOrMinOffset64 + 0x60);
-  maxOffset64 = *(int *)(firstEntryOrMinOffset64 + 100);
-  maxOffset60 = minOffset60;
-  firstEntryOrMinOffset64 = maxOffset64;
+  minOffsetX = *(int *)(firstEntryOrMinOffsetY + 0x60);
+  maxOffsetY = *(int *)(firstEntryOrMinOffsetY + 0x64);
+  maxOffsetX = minOffsetX;
+  firstEntryOrMinOffsetY = maxOffsetY;
   do {
     entryAddress = *(int *)selection;
     if (entryAddress != 0) {
-      if (*(int *)(entryAddress + 0x60) < minOffset60) {
-        minOffset60 = *(int *)(entryAddress + 0x60);
+      if (*(int *)(entryAddress + 0x60) < minOffsetX) {
+        minOffsetX = *(int *)(entryAddress + 0x60);
       }
-      if (*(int *)(entryAddress + 100) < firstEntryOrMinOffset64) {
-        firstEntryOrMinOffset64 = *(int *)(entryAddress + 100);
+      if (*(int *)(entryAddress + 0x64) < firstEntryOrMinOffsetY) {
+        firstEntryOrMinOffsetY = *(int *)(entryAddress + 0x64);
       }
-      if (maxOffset60 < *(int *)(entryAddress + 0x60)) {
-        maxOffset60 = *(int *)(entryAddress + 0x60);
+      if (maxOffsetX < *(int *)(entryAddress + 0x60)) {
+        maxOffsetX = *(int *)(entryAddress + 0x60);
       }
-      if (maxOffset64 < *(int *)(entryAddress + 100)) {
-        maxOffset64 = *(int *)(entryAddress + 100);
+      if (maxOffsetY < *(int *)(entryAddress + 0x64)) {
+        maxOffsetY = *(int *)(entryAddress + 0x64);
       }
     }
     selection = (SelectionPointerArray32 *)((int)selection + 4);
-    entriesRemaining = entriesRemaining + -1;
+    entriesRemaining--;
   } while (entriesRemaining != 0);
-  if (((maxOffset60 - minOffset60 < 0x5001) && (maxOffset64 - firstEntryOrMinOffset64 < 0x5001)) &&
-     ((maxOffset60 - minOffset60) + (maxOffset64 - firstEntryOrMinOffset64) < 0x7001)) {
+  if (((maxOffsetX - minOffsetX < 0x5000 + 1) && (maxOffsetY - firstEntryOrMinOffsetY < 0x5000 + 1)) &&
+     ((maxOffsetX - minOffsetX) + (maxOffsetY - firstEntryOrMinOffsetY) < 0x7000 + 1)) {
     return false;
   }
   return true;

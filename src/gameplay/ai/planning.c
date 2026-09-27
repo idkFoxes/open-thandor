@@ -1679,13 +1679,10 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
 
 
 /* Address: 0x00539190.
-   Ownership: gameplay/ai/planning.
-   Purpose: Marks one AI construction request as committed, increments the faction completion counter, removes the
-   matching army asset pointer from the faction pending list, and decrements that list count. ArmyAssetId is
-   preserved through candidate, queue, refund, transfer, and sale paths; cost and eligibility semantics remain
-   those proved by the live consumers and PCK records. Stock ARM contains 675 records and 326 unique ids; placement
-   workspace, producer, tier, class, and faction-role semantics are not inferred from numeric adjacency.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   Called after the AI has placed an army asset: counts the placement (global counter and the faction's
+   relationCounterB) and removes the first entry for that asset's registry record from the faction's pending
+   primary army asset list, shifting the rest down. The registry lookup's CF is not checked; an unknown id simply
+   matches no entry.
 */
 void __thandor_void_preserve_eax_ecx
 AiConstructionPlanner_ConsumeFactionPendingArmyAsset
@@ -1698,25 +1695,25 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   uint32_t *assetPointerCursor;
   ArmyAssetLookupResult armyAssetLookup;
   
-  g_AiConstructionPendingAssetConsumedCount = g_AiConstructionPendingAssetConsumedCount + 1;
+  g_AiConstructionPendingAssetConsumedCount++;
   remainingAssets = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
   armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
   assetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
-  *relationCounter = *relationCounter + 1;
+  (*relationCounter)++;
   while( true ) {
     if (remainingAssets == 0) {
       return;
     }
     if (armyAssetLookup.recordOrError == (ArmyAssetRecordPrefix *)*assetPointerCursor) break;
-    assetPointerCursor = assetPointerCursor + 1;
-    remainingAssets = remainingAssets - 1;
+    assetPointerCursor++;
+    remainingAssets--;
   }
   pendingAssetCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-  *pendingAssetCount = *pendingAssetCount - 1;
+  (*pendingAssetCount)--;
   while (remainingAssets = remainingAssets - 1, remainingAssets != 0) {
     *assetPointerCursor = assetPointerCursor[1];
-    assetPointerCursor = assetPointerCursor + 1;
+    assetPointerCursor++;
   }
   return;
 }

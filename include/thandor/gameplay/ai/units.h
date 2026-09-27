@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/ai/units. */
+
+/* ArmyRuntimeSlot.runtimeState8C value the AI stores whenever it gives a unit a command (units.c, combat.c) */
+#define AI_UNIT_COMMANDED_STATE 8
+/* ArmyRuntimeSlot.runtimeState94 bit 0: set when AiUnitGroup_AssignCollectedEntitiesToBestTarget sends the unit
+   to a group target, cleared by the direct AI move commands; AiUnitBehavior_CollectUnassignedEntity skips it */
+#define AI_UNIT_STATE94_GROUP_ASSIGNED 0x1
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053B0E0 */

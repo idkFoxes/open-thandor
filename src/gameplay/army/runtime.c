@@ -1702,22 +1702,17 @@ ArmyRuntime_SetNonzeroActionVector
 
 
 /* Address: 0x0051C540.
-   Ownership: gameplay/army/runtime.
-   Purpose: Resolves the current command target according to the movement-mode flags, stores the target pointer and
-   state code, and clears the target fields when resolution fails. Two stack arguments are authoritative from RET
-   0x08; EAX/ECX are internal or preserved state, not a semantic return.
-   Cross-module calls: ArmyRuntime_ResetMovementStatePreserveQueuedTarget [gameplay/army/movement],
-   ArmyRuntime_ResetMovementStateFromCurrentPosition [gameplay/army/movement].
+   Gives the army a new target army (NULL clears the command). A move started by target following is
+   ended first; the command is stamped with the standard generation, or generation 0 when cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration standardGeneration;
-  ArmyCommandGeneration resolvedCommandGeneration;
-  
+
   standardGeneration = g_ArmyCommandGenerationStandard;
-  if ((armyRuntime->movementStateFlags & 0x20) != 0) {
+  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if ((armyRuntime->commandModeFlags & 8) == 0) {
       ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
     }
@@ -1725,12 +1720,12 @@ ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeS
       ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
     }
   }
-  if (targetArmyRuntime == (ArmyRuntimeSlot *)0x0) {
+  if (targetArmyRuntime == NULL) {
     armyRuntime->commandModeFlags = 0;
     armyRuntime->commandGeneration = 0;
   }
   else {
-    armyRuntime->commandModeFlags = 1;
+    armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_ARMY;
     armyRuntime->commandGeneration = standardGeneration;
   }
   armyRuntime->commandTargetArmyRuntime = targetArmyRuntime;
@@ -1739,20 +1734,17 @@ ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeS
 
 
 /* Address: 0x0051C620.
-   Ownership: gameplay/army/runtime.
-   Purpose: The three Q12 command coordinates and command-generation state map to
-   GameEntityRuntimeCommon.commandTarget.
-   Cross-module calls: ArmyRuntime_ResetMovementStatePreserveQueuedTarget [gameplay/army/movement],
-   ArmyRuntime_ResetMovementStateFromCurrentPosition [gameplay/army/movement].
+   Gives the army a target position command (commandCoordinate0-2Q12): ends a move started by target
+   following, drops any target army and stamps the standard command generation.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyTargetPositionCommand
-          (Q12 coordinateA,Q12 coordinateB,Q12 coordinateC,ArmyRuntimeSlot *armyRuntime)
+          (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration commandGeneration;
-  
-  if ((armyRuntime->movementStateFlags & 0x20) != 0) {
+
+  if ((armyRuntime->movementStateFlags & ARMY_MOVEMENT_TARGET_FOLLOWING) != 0) {
     if ((armyRuntime->commandModeFlags & 8) == 0) {
       ArmyRuntime_ResetMovementStatePreserveQueuedTarget((ArmyMovementRuntime *)armyRuntime);
     }
@@ -1760,13 +1752,13 @@ ArmyRuntime_ApplyTargetPositionCommand
       ArmyRuntime_ResetMovementStateFromCurrentPosition((ArmyMovementRuntime *)armyRuntime);
     }
   }
-  armyRuntime->commandModeFlags = 2;
-  armyRuntime->commandCoordinate0Q12 = coordinateC;
-  armyRuntime->commandCoordinate1Q12 = coordinateB;
-  armyRuntime->commandCoordinate2Q12 = coordinateA;
+  armyRuntime->commandModeFlags = ARMY_COMMAND_MODE_TARGET_POSITION;
+  armyRuntime->commandCoordinate0Q12 = coordinate0Q12;
+  armyRuntime->commandCoordinate1Q12 = coordinate1Q12;
+  armyRuntime->commandCoordinate2Q12 = coordinate2Q12;
   commandGeneration = g_ArmyCommandGenerationStandard;
-  armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)0x0;
-  armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & 0xffffffdf;
+  armyRuntime->commandTargetArmyRuntime = NULL;
+  armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & ~ARMY_MOVEMENT_TARGET_FOLLOWING;
   armyRuntime->commandGeneration = commandGeneration;
   return;
 }

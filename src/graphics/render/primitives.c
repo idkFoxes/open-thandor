@@ -754,47 +754,42 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
 
 
 /* Address: 0x004FFC10.
-   Ownership: graphics/render/primitives.
-   Purpose: Builds a contiguous 32-bit mask covering every signed Q14 bin between center-minus-radius and center-
-   plus-radius. Typed parameters: p2 intervalRadius→DepthIntervalRadius32_V343, p3
-   centerDepth→DepthIntervalCenter32_V343. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Broad-phase helper: returns a 32-bit mask with one bit per 1 << SPATIAL_BIN_SHIFT wide bin touched by
+   the interval [center - radius, center + radius] on one world axis (Q12). Bin indices wrap modulo 32, so
+   the mask is a coarse spatial hash used by the collision and target searches.
 */
 DepthBinMask32 __thandor_eax_preserve_ecx_edx
-DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCenter32 centerDepth)
+DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12)
 
 {
   uint32_t binMask;
   int binIndex;
   uint32_t currentBinBit;
-  
+
   binMask = 0;
-  binIndex = centerDepth - intervalRadius >> 0xe;
+  binIndex = (centerQ12 - radiusQ12) >> SPATIAL_BIN_SHIFT;
   currentBinBit = 1 << ((uint8_t)binIndex & 0x1f);
   do {
     binMask = binMask | currentBinBit;
     binIndex = binIndex + 1;
+    /* ADD EBX,EBX / ADC EBX,0: rotate left by one, so bin 31 wraps to bit 0 */
     currentBinBit = currentBinBit * 2 + (uint32_t)CARRY4(currentBinBit,currentBinBit);
-  } while (binIndex <= (centerDepth - intervalRadius) + intervalRadius * 2 >> 0xe);
+  } while (binIndex <= ((centerQ12 - radiusQ12) + radiusQ12 * 2) >> SPATIAL_BIN_SHIFT);
   return binMask;
 }
 
 
 /* Address: 0x004FFC50.
-   Ownership: graphics/render/primitives.
-   Purpose: Tests two paired depth-bin masks. CF is set only when both corresponding mask pairs have at least one
-   common bit; otherwise CF is clear. Low/high lanes remain distinct from counts and render flags. Typed
-   parameters: p2 firstMaskLow→DepthBinMask32_V338, p3 firstMaskHigh→DepthBinMask32_V338, p4
-   secondMaskLow→DepthBinMask32_V338, p5 secondMaskHigh→DepthBinMask32_V338. Calling convention, storage, body
-   bytes, control flow, and executable data remain unchanged.
+   Broad-phase test for two objects' per-axis spatial bin masks (DepthInterval_BuildBinMask): CF set when
+   axis 0 masks and axis 1 masks both share a bin, i.e. the objects may overlap.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DepthBinMasks_Overlap
-          (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,DepthBinMask32 secondMaskLow,
-          DepthBinMask32 secondMaskHigh)
+          (DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+          DepthBinMask32 secondMaskAxis1)
 
 {
-  if (((firstMaskHigh & secondMaskHigh) != 0) && ((firstMaskLow & secondMaskLow) != 0)) {
+  if (((firstMaskAxis1 & secondMaskAxis1) != 0) && ((firstMaskAxis0 & secondMaskAxis0) != 0)) {
     return true;
   }
   return false;

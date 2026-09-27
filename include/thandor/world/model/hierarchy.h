@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/model/hierarchy. */
+
+/* ModelRuntimeSlot.attachments140[]: the attachment points one model runtime can record
+   (ModelNodeRuntime_CreateHierarchyRecursive drops further ones). */
+#define MODEL_RUNTIME_ATTACHMENT_CAPACITY 6
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004BD1F0 */

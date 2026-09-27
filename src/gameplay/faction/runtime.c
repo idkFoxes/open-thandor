@@ -11,12 +11,11 @@
 /* Implementation ownership: gameplay/faction/runtime. */
 
 /* Address: 0x0055F790.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Advances the selected faction pair through the verified relation-state transition table, using recent-
-   timed-state checks for transitional states. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId,
-   active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: GameFactionRuntime_IsRecentTimedRelationState,
-   GameFactionRuntime_ApplyPairwiseRelationTransition.
+   Moves the diplomatic relation of a faction pair one step closer, chosen by the state of targetFactionIndex
+   towards sourceFactionIndex: 0..2 -> 3/2, 3 -> 4, 4..5 -> 6/5, 6 -> 8, 8..9 -> 10/9, 10 -> 11 (merge),
+   first value for the source's state towards the target. State 2 does nothing while the last change is at
+   most 600 ticks old; the same check in states 4 and 8 never holds (it only accepts 2, 5 and 9). The first
+   two arguments are not used.
 */
 void __thandor_void_preserve_eax_ecx
 GameFactionRuntime_AdvancePairwiseRelationState
@@ -73,11 +72,9 @@ GameFactionRuntime_AdvancePairwiseRelationState
 
 
 /* Address: 0x0055F910.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Resets or normalizes the selected faction pair through the verified relation-state transition table. It
-   is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
-   ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: GameFactionRuntime_ApplyPairwiseRelationTransition.
+   Moves the diplomatic relation of a faction pair back, chosen by the state of targetFactionIndex towards
+   sourceFactionIndex: 1..3 -> 0, 4 and 6 -> 0, 5 -> 4, 8 and 10 -> 4, 9 -> 8 (both directions get the same
+   state), with the matching notification text. Other states stay. The first two arguments are not used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ResetPairwiseRelationState
@@ -350,9 +347,8 @@ GameFactionRuntime_TestCapabilityBitClear
 
 
 /* Address: 0x00513CD0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Returns one four-bit value from the packed dword at GameFactionRuntimeRecord+0x40. stateIndex selects
-   one of eight nibbles and factionIndex selects the 0x740-byte record.
+   Returns the diplomatic relation state (0..11) of factionIndex towards otherFactionIndex: nibble
+   otherFactionIndex of the faction record's packedRelationStates. States from 4 on count as friendly.
 */
 FactionRelationState __thandor_eax_preserve_ecx_edx
 GameFactionRuntime_GetPackedStateNibble
@@ -716,8 +712,9 @@ FactionRuntime_HasArmyAssetOrActiveStructure
 
 
 /* Address: 0x0051C4C0.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Handles game entity runtime reset movement flags and anchor coordinates from model.
+   Stops an entity where it stands (used by the stop command on the selection): clears the command flags
+   0x01, 0x08, 0x10 and 0x20 and sets the path target and both tracked coordinate pairs to the current
+   x/y position of its model.
 */
 void __thandor_void_preserve_eax_ecx
 GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime)
@@ -727,10 +724,10 @@ GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRunt
   ModelRuntimeNode *ownerModelNode;
   GraphicsWorldCoordinateQ12 modelX;
   GraphicsWorldCoordinateQ12 modelY;
-  
+
   ownerModelNode = (entityRuntime->common).ownership.modelNode;
   commandFlagsField = &(entityRuntime->common).commandFlags;
-  *commandFlagsField = *commandFlagsField & 0xffffffc6;
+  *commandFlagsField = *commandFlagsField & ~0x39u;
   modelX = (ownerModelNode->worldTransform).translation.x;
   modelY = (ownerModelNode->worldTransform).translation.y;
   (entityRuntime->common).pathCoordinate0Q12 = modelX;
@@ -905,25 +902,20 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
 
 
 /* Address: 0x00560110.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Resolves an army asset registry ID and appends the resulting pointer to the selected faction runtime
-   record for the requested repetition count, bounded by the verified 64-entry array. It is distinct from
-   FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains. Typed parameters: p3 repetitionCount→FactionArmyAssetCount_V304.
-   Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   Queues repetitionCount units of an army record for a faction (the build buttons of the in-game catalog and
+   the AI): appends the registry pointer of armyAssetId that many times to the faction's secondary army-asset
+   list, stopping when its 64 entries are full. An unknown id queues nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RegisterArmyAssetPointers
-          (uint32_t reservedDword0,FactionArmyAssetCount repetitionCount,
+          (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
   FactionArmyAssetCount *secondaryCount;
   FactionArmyAssetCount slotIndex;
   ArmyAssetLookupResult resolvedAsset;
-  
+
   resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   if (!resolvedAsset.notFound) {
     slotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
@@ -931,11 +923,12 @@ GameFactionRuntime_RegisterArmyAssetPointers
       if (0x3f < slotIndex) {
         return;
       }
+      /* records[factionIndex].secondaryArmyAssetPointersOrIds[slotIndex] (record +0xE0) */
       *(ArmyAssetRecordPrefix **)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + slotIndex * 4) = resolvedAsset.recordOrError;
       secondaryCount = &g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
       *secondaryCount = *secondaryCount + 1;
-      slotIndex = slotIndex + 1;
-      repetitionCount = repetitionCount - 1;
+      slotIndex++;
+      repetitionCount--;
     } while (repetitionCount != 0);
   }
   return;
@@ -1383,9 +1376,9 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
 
 
 /* Address: 0x00513D00.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Checks the packed relation nibble for factionIndex toward otherFactionIndex. CF is set only for states
-   2, 5, or 9 whose bidirectional timestamp age is at most 0x258 ticks; EAX is preserved.
+   Returns true (CF) when the relation of factionIndex towards otherFactionIndex is in one of the pending states
+   2, 5 or 9 and the pair's last relation change is at most 600 ticks old, so the relation does not advance
+   again too soon.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRuntime_IsRecentTimedRelationState
@@ -1393,13 +1386,14 @@ GameFactionRuntime_IsRecentTimedRelationState
 
 {
   uint32_t relationStateNibble;
-  
+
   relationStateNibble =
        g_GameFactionRuntimeImage.records[factionIndex].packedRelationStates >>
        ((char)otherFactionIndex * '\x04' & 0x1fU) & 0xf;
+  /* record +0x700 + 4 * other faction: tick of the pair's last relation change */
   if ((((relationStateNibble == 2) || (relationStateNibble == 5)) || (relationStateNibble == 9)) &&
      ((int)(g_GameFactionRuntimeImage.tail.simulationTick -
-           *(int *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + otherFactionIndex * 4)) < 0x259)) {
+           *(int *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x700) + otherFactionIndex * 4)) < 600 + 1)) {
     return true;
   }
   return false;

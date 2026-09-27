@@ -21,6 +21,7 @@
 #define AI_WORKSPACE10_CAPACITY 256 /* 0x400 bytes of FieldGridCell pointers */
 #define AI_WORKSPACE12_CAPACITY 32 /* technology candidates: 0x200 bytes of 16-byte AiTechnologyPlanningCandidate */
 #define AI_CANDIDATE_WORKSPACE_CAPACITY 128 /* workspace 13: 0x400 bytes of 8-byte AiCandidateWorkspaceEntry */
+#define AI_WORKSPACE14_CAPACITY 64 /* collected idle units: 0x100 bytes of ArmyRuntimeSlot pointers */
 /* AiCandidateWorkspaceEntry: weightedScoreAndKind = score << 4 | kind, entityIdAndMultiplicity = count << 16 | id */
 #define AI_CANDIDATE_KIND_MASK 0xF
 #define AI_CANDIDATE_KIND_TECHNOLOGY 2 /* the id is a technology id; the other kinds carry an army asset id */
@@ -77,23 +78,23 @@ AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entry
 
 /* 0x00538D90 */
 int __thandor_eax_preserve_ecx_edx
-AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY);
+AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538E00 */
 int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldX,Q12 worldY);
+AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538E80 */
 int __thandor_eax_preserve_ecx_edx
-AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY);
+AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538EF0 */
 int __thandor_eax_preserve_ecx_edx
-AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY);
+AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00538F60 */
 int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY);
+AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX);
 
 /* 0x00539240 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -137,6 +138,6 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 /* 0x00538FD0 */
 bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldX,Q12 worldY);
+AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX);
 
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */

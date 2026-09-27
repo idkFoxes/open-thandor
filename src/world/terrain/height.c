@@ -497,14 +497,11 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
 
 
 /* Address: 0x00504520.
-   Ownership: world/terrain/height.
-   Purpose: Tests a directed fixed-point ray against one terrain-cell triangle assembled from four corner heights.
-   On intersection it returns the ray distance in EAX with CF set; otherwise it returns zero or the carried
-   traversal value with CF clear. Storage remains one signed 32-bit word. Typed parameters: p3
-   gridRayDelta0Q12→Q12, p4 gridRayDelta1Q12→Q12, p6 cornerHeight0Q12→Q12, p7 cornerHeight1Q12→Q12, p8
-   cornerHeight2Q12→Q12, p9 cornerHeight3Q12→Q12, p10 cellLocalCoord1Q12→Q12, p11 cellLocalCoord0Q12→Q12. Calling
-   convention, storage, body bytes, control flow, and executable data remain unchanged.
-   Cross-module calls: FixedMath_Length3 [core/math/fixed].
+   Terrain raycast step: intersects the ray segment (grid-space delta, Z origin and Z delta, relative to the cell)
+   with the two triangles of one field-grid cell given its four corner heights, first the one based on corner 3,
+   then the one based on corner 0 (the far corner, local coordinates shifted by one cell). A hit returns the world
+   distance from the ray origin with CF clear; a miss (also the quick reject when all four corners lie below the
+   ray's lowest point) returns CF set with a meaningless EAX.
 */
 TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 TerrainTriangle_IntersectRayDistance
@@ -514,8 +511,8 @@ TerrainTriangle_IntersectRayDistance
 
 {
   int64_t planeTermOrProductA;
-  int64_t lengthZProduct;
-  int64_t lengthYProduct;
+  int64_t worldXOffsetProduct;
+  int64_t worldYOffsetProduct;
   int64_t planeTermOrProductB;
   uint64_t rayCrossLocal;
   uint32_t heightDeltaOrLowWord;
@@ -647,23 +644,26 @@ TerrainTriangle_IntersectRayDistance
                                    (int64_t)(int)heightDeltaOrLowWord);
           planeTermOrProductB = (int64_t)edgeHighOrCoord1 * (int64_t)(cornerHeight2Q12 - cornerHeight3Q12);
           planeTermOrProductA = (int64_t)edgeHighOrCoord0 * (int64_t)(cornerHeight1Q12 - cornerHeight3Q12);
-          lengthZProduct = (int64_t)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
-          lengthYProduct = (int64_t)combinedHigh * -1999;
+          /* grid offsets of the hit back to world units (inverse of FIELD_GRID_WORLD_*_Q20): X = (column + row / 2)
+             * 0x901 / 0x1000, Y = row * -1999 / 0x1000 */
+          worldXOffsetProduct = (int64_t)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
+          worldYOffsetProduct = (int64_t)combinedHigh * -1999;
           firstTriangleHit.distanceQ12 =
                FixedMath_Length3(((cornerHeight3Q12 +
                                   ((int)((uint64_t)planeTermOrProductB >> 0x20) << 0x14 | (uint32_t)planeTermOrProductB >> 0xc)
                                   ) - rayOriginZQ12) +
                                  ((int)((uint64_t)planeTermOrProductA >> 0x20) << 0x14 | (uint32_t)planeTermOrProductA >> 0xc),
-                                 (int)((uint64_t)lengthYProduct >> 0x20) << 0x14 | (uint32_t)lengthYProduct >> 0xc,
-                                 (int)((uint64_t)lengthZProduct >> 0x20) << 0x13 | (uint32_t)lengthZProduct >> 0xd);
+                                 (int)((uint64_t)worldYOffsetProduct >> 0x20) << 0x14 | (uint32_t)worldYOffsetProduct >> 0xc,
+                                 (int)((uint64_t)worldXOffsetProduct >> 0x20) << 0x13 | (uint32_t)worldXOffsetProduct >> 0xd);
           firstTriangleHit.missed = false;
           return firstTriangleHit;
         }
       }
     }
   }
-  edgeHighOrCoord0 = cellLocalCoord0Q12 + 0x1000;
-  edgeHighOrCoord1 = cellLocalCoord1Q12 + 0x1000;
+  /* second triangle: local coordinates relative to the far corner (corner 0) */
+  edgeHighOrCoord0 = cellLocalCoord0Q12 + FIELD_GRID_CELL_Q12;
+  edgeHighOrCoord1 = cellLocalCoord1Q12 + FIELD_GRID_CELL_Q12;
   planeTermOrProductB = (int64_t)(cornerHeight2Q12 - cornerHeight0Q12) * (int64_t)gridRayDelta0Q12 +
           (int64_t)(cornerHeight1Q12 - cornerHeight0Q12) * (int64_t)gridRayDelta1Q12 +
           ((int64_t)rayDeltaZQ12 << 0xc);
@@ -774,15 +774,16 @@ TerrainTriangle_IntersectRayDistance
                         (int64_t)(int)productLowOrDivisor);
       planeTermOrProductB = (int64_t)edgeHighC * (int64_t)(cornerHeight1Q12 - cornerHeight0Q12);
       planeTermOrProductA = (int64_t)combinedHigh * (int64_t)(cornerHeight2Q12 - cornerHeight0Q12);
-      lengthZProduct = (int64_t)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;
-      lengthYProduct = (int64_t)edgeHighOrCoord1 * -1999;
+      /* back to world units as for the first triangle */
+      worldXOffsetProduct = (int64_t)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;
+      worldYOffsetProduct = (int64_t)edgeHighOrCoord1 * -1999;
       secondTriangleHit.distanceQ12 =
            FixedMath_Length3(((cornerHeight0Q12 +
                               ((int)((uint64_t)planeTermOrProductB >> 0x20) << 0x14 | (uint32_t)planeTermOrProductB >> 0xc)) -
                              rayOriginZQ12) +
                              ((int)((uint64_t)planeTermOrProductA >> 0x20) << 0x14 | (uint32_t)planeTermOrProductA >> 0xc),
-                             (int)((uint64_t)lengthYProduct >> 0x20) << 0x14 | (uint32_t)lengthYProduct >> 0xc,
-                             (int)((uint64_t)lengthZProduct >> 0x20) << 0x13 | (uint32_t)lengthZProduct >> 0xd);
+                             (int)((uint64_t)worldYOffsetProduct >> 0x20) << 0x14 | (uint32_t)worldYOffsetProduct >> 0xc,
+                             (int)((uint64_t)worldXOffsetProduct >> 0x20) << 0x13 | (uint32_t)worldXOffsetProduct >> 0xd);
       secondTriangleHit.missed = false;
       return secondTriangleHit;
     }
@@ -799,13 +800,10 @@ Q12 g_TerrainRayNextCoord0Q12;
 Q12 g_TerrainRayNextCoord1Q12;
 
 /* Address: 0x005049E0.
-   Ownership: world/terrain/height.
-   Purpose: Advances the staggered-grid ray traversal to the next X or Y cell boundary. It updates the traversal
-   coordinates through the engine register convention, clears CF when another boundary step is available, and sets
-   CF when the current point is already within the destination cell. Storage remains one signed 32-bit word. Typed
-   parameters: p0 rayEndCoord0Q12→Q12, p1 rayEndCoord1Q12→Q12, p2 rayStartCoord0Q12→Q12, p3 rayStartCoord1Q12→Q12,
-   p6 currentGridCoord0Q12→Q12, p7 currentGridCoord1Q12→Q12. Calling convention, storage, body bytes, control flow,
-   and executable data remain unchanged.
+   One step of the terrain raycasts' cell walk (coord0 = grid row, coord1 = grid column, both Q12): moves to the
+   next row when the ray segment start..end leaves the current cell through a row boundary, otherwise to the next
+   column. Returns true (CF set) when the current cell already contains the ray end or no step is possible (no
+   row crossing and no column movement), false with the next cell and corner in g_TerrainRayNext* otherwise.
 */
 bool __thandor_cf_preserve_eax
 TerrainRay_AdvanceGridTraversal
@@ -826,20 +824,22 @@ TerrainRay_AdvanceGridTraversal
   g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12;
   delta1 = rayEndCoord1Q12 - currentGridCoord1Q12;
   delta0 = rayEndCoord0Q12 - currentGridCoord0Q12;
-  if (delta1 >= 0 && delta0 >= 0 && delta1 <= 0x1000 && delta0 <= 0x1000) {
+  if (delta1 >= 0 && delta0 >= 0 && delta1 <= FIELD_GRID_CELL_Q12 && delta0 <= FIELD_GRID_CELL_Q12) {
     return true; /* already in the destination cell */
   }
   delta0 = rayEndCoord0Q12 - rayStartCoord0Q12;
   if (delta0 != 0) {
-    int64_t limit = (int64_t)delta0 * 0x1000;
+    /* the column where the ray crosses the next row boundary, scaled by delta0, must lie within
+       [current column, current column + one cell] */
+    int64_t limit = (int64_t)delta0 * FIELD_GRID_CELL_Q12;
     int64_t side;
     if (delta0 > 0) {
       side = (int64_t)(rayEndCoord1Q12 - rayStartCoord1Q12) *
-             ((currentGridCoord0Q12 + 0x1000) - rayStartCoord0Q12) +
+             ((currentGridCoord0Q12 + FIELD_GRID_CELL_Q12) - rayStartCoord0Q12) +
              (int64_t)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
       if (side >= 0 && limit - side >= 0) {
         g_TerrainRayNextCell = (FieldGridCell *)(cell + rowStrideBytes);
-        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 + 0x1000;
+        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 + FIELD_GRID_CELL_Q12;
         return false;
       }
     }
@@ -849,7 +849,7 @@ TerrainRay_AdvanceGridTraversal
              (int64_t)(rayStartCoord1Q12 - currentGridCoord1Q12) * delta0;
       if (side < 0 && limit - side < 0) {
         g_TerrainRayNextCell = (FieldGridCell *)(cell - rowStrideBytes);
-        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 - 0x1000;
+        g_TerrainRayNextCoord0Q12 = currentGridCoord0Q12 - FIELD_GRID_CELL_Q12;
         return false;
       }
     }
@@ -858,13 +858,14 @@ TerrainRay_AdvanceGridTraversal
   if (delta1 == 0) {
     return true;
   }
+  /* next column: 0x80 bytes = one cell */
   if (delta1 < 0) {
     g_TerrainRayNextCell = (FieldGridCell *)(cell - 0x80);
-    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - 0x1000;
+    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 - FIELD_GRID_CELL_Q12;
   }
   else {
     g_TerrainRayNextCell = (FieldGridCell *)(cell + 0x80);
-    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 + 0x1000;
+    g_TerrainRayNextCoord1Q12 = currentGridCoord1Q12 + FIELD_GRID_CELL_Q12;
   }
   return false;
 }
@@ -1876,28 +1877,26 @@ TerrainAuxHeightThreshold_TestDirection5(TerrainDirectionalScanStep scanStep,Fie
 
 
 /* Address: 0x00508AE0.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 0 and transfers the current reference-height delta between terrainHeight and
-   waterSurfaceDelta while cells remain eligible. Typed parameters: p0 scanStep→TerrainDirectionalScanStep_V342.
-   Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Flatten brush, straight leg along direction 0 (C+1, right): levels each cell to g_TerrainScanReferenceHeight
+   and takes the change out of waterSurfaceDelta so the water surface stays where it was. 4 scan steps per cell,
+   until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
-      cell = cell + 1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell++;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -1905,27 +1904,25 @@ TerrainHeightDelta_ApplyDirection0(TerrainDirectionalScanStep scanStep,FieldGrid
 
 
 /* Address: 0x00508B40.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 1 and applies the reference-height delta to eligible cells. Typed parameters:
-   p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Flatten brush, straight leg along direction 1 (C+1-W, up and right): levels each cell to
+   g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)); /* 0x80 = one cell */
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -1933,26 +1930,24 @@ TerrainHeightDelta_ApplyDirection1(TerrainDirectionalScanStep scanStep,FieldGrid
 
 
 /* Address: 0x00508BA0.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 2 and applies the reference-height delta to eligible cells. Typed parameters:
-   p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Flatten brush, straight leg along direction 2 (C-W, up): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
@@ -1961,27 +1956,25 @@ TerrainHeightDelta_ApplyDirection2(TerrainDirectionalScanStep scanStep,FieldGrid
 
 
 /* Address: 0x00508C00.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 3 and applies the reference-height delta to eligible cells. Typed parameters:
-   p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Flatten brush, straight leg along direction 3 (C-1, left): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
-      cell = cell + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell--;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -1989,27 +1982,26 @@ TerrainHeightDelta_ApplyDirection3(TerrainDirectionalScanStep scanStep,FieldGrid
 
 
 /* Address: 0x00508C60.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 4 and applies the reference-height delta to eligible cells. Typed parameters:
-   p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Flatten brush, straight leg along direction 4 (C-1+W, down and left): levels each cell to
+   g_TerrainScanReferenceHeight, keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2017,27 +2009,26 @@ TerrainHeightDelta_ApplyDirection4(TerrainDirectionalScanStep scanStep,FieldGrid
 
 
 /* Address: 0x00508CC0.
-   Ownership: world/terrain/height.
-   Purpose: Walks terrain direction 5 and applies the reference-height delta to eligible cells. Typed parameters:
-   p0 scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Flatten brush, straight leg along direction 5 (C+W, down): levels each cell to g_TerrainScanReferenceHeight,
+   keeping the water surface (see TerrainHeightDelta_ApplyDirection0).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyDirection5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   int heightAdjustmentQ12;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       heightAdjustmentQ12 = g_TerrainScanReferenceHeight - cell->terrainHeight;
       cell->terrainHeight = cell->terrainHeight + heightAdjustmentQ12;
       cell->waterSurfaceDelta = cell->waterSurfaceDelta - heightAdjustmentQ12;
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;

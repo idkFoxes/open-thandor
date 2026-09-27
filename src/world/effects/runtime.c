@@ -11,11 +11,9 @@
 /* Implementation ownership: world/effects/runtime. */
 
 /* Address: 0x0051E120.
-   Ownership: world/effects/runtime.
-   Purpose: Scans the fixed 256-pointer effect-definition registry for definitionId. A match returns
-   EffectDefinition * with CF clear. Failure writes the requested identifier to the package error buffer and
-   returns error 0x48 with CF set. The stock corpus contains 140 unique EffectDefinition ids; serialized ids remain
-   distinct from relocated EffectDefinition pointers and consumer-specific union facets.
+   Looks up an effect definition by its id in the 256-slot effect-definition registry (used by the effect
+   catalog to reject duplicate ids). On a miss it writes a number into the package error text and returns
+   FATAL_ERROR_EFFECT_ID_NOT_FOUND with CF set.
 */
 EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
@@ -26,19 +24,19 @@ EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
   EffectDefinition **registryCursor;
   EffectDefinitionResult failureResult;
   EffectDefinitionResult foundResult;
-  EffectDefinition *candidateDefinition;
   
   registryCursor = g_EffectDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
-  while ((registryDefinition = *registryCursor, registryDefinition == (EffectDefinition *)0x0 ||
+  registrySlotsRemaining = EFFECT_DEFINITION_REGISTRY_SLOT_COUNT;
+  while ((registryDefinition = *registryCursor, registryDefinition == NULL ||
          (registryDefinition->definitionId != definitionId))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
+      /* the original formats EAX, i.e. the last slot's pointer, not the requested id */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.notFound = true;
-      failureResult.definitionOrError = (EffectDefinition *)0x48;
+      failureResult.definitionOrError = (EffectDefinition *)FATAL_ERROR_EFFECT_ID_NOT_FOUND;
       return failureResult;
     }
   }

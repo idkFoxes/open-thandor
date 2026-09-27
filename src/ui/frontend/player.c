@@ -330,9 +330,8 @@ FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
 
 
 /* Address: 0x00514F60.
-   Ownership: ui/frontend/player.
-   Purpose: EAX and EDX remain preserved. Typed parameters: p0 assignmentToken→RuntimeToken. Calling convention,
-   parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Releases an assignment token: every frontend player whose selection player block (+0x80A0) still holds
+   the token gets it cleared to 0. Assumes at least one frontend player block (do/while as in the original).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
@@ -340,7 +339,7 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 {
   uint32_t playerBlocksRemaining;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
-  
+
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerBlockCursor = g_FrontendPlayerRuntimeBlocks;
   do {
@@ -350,8 +349,8 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
       g_SelectionPlayerRuntimeBlockPointers[playerBlockCursor->playerRuntimeId]->assignmentToken80A0
            = 0;
     }
-    playerBlockCursor = playerBlockCursor + 1;
-    playerBlocksRemaining = playerBlocksRemaining - 1;
+    playerBlockCursor++;
+    playerBlocksRemaining--;
   } while (playerBlocksRemaining != 0);
   return;
 }

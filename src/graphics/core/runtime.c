@@ -1057,13 +1057,9 @@ GraphicsCursor_RestoreAfterPresent(IDirectDrawSurface3 *backSurface)
 
 
 /* Address: 0x00579EC0.
-   Ownership: graphics/core/runtime.
-   Purpose: Copies a clipped rectangle from a locked DirectDraw surface into the origin of a
-   SoftwareFramebufferAccess scratch buffer. Supports two-byte and four-byte pixels. Negative draw coordinates
-   advance the destination buffer and clip the copied dimensions. Typed parameters: p1
-   drawY→GraphicsScreenCoordinate_V307, p2 drawX→GraphicsScreenCoordinate_V307. Calling convention, parameter
-   storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   Saves the screen rectangle under the software cursor: copies the part of sourceSurface at (drawX, drawY)
+   that lies on screen into destinationBuffer (same layout, 16 or 32 bits per pixel), so the cursor can later
+   be removed again with GraphicsCursor_RestoreSurfaceBackground. The surface is restored first if it was lost.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsCursor_SaveSurfaceBackground
@@ -1111,19 +1107,21 @@ GraphicsCursor_SaveSurfaceBackground
     result = sourceSurface->lpVtbl->Restore(sourceSurface);
   }
   if (result == 0) {
+    /* 0x6C = sizeof(DDSURFACEDESC): cleared, then dwSize set */
     Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
     g_GraphicsCursorSurfaceDescScratch = 0x6c;
     result = sourceSurface->lpVtbl->Lock
-                       (sourceSurface,(TH_LEGACY_RECT *)0x0,
-                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
-                        (TH_LEGACY_HANDLE)0x0);
+                       (sourceSurface,NULL,
+                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_READONLY,
+                        NULL);
   }
   if (result != 0) {
     return;
   }
+  /* g_GraphicsCursorSurfacePixels/PitchBytes are the lpSurface/lPitch fields of the locked descriptor */
   surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
   source = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
-  for (; copyHeight != 0; copyHeight = copyHeight - 1) {
+  for (; copyHeight != 0; copyHeight--) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
     destination = destination + rowPixels * bytesPerPixel;
     source = source + (int)g_GraphicsCursorSurfacePitchBytes;
@@ -1133,12 +1131,9 @@ GraphicsCursor_SaveSurfaceBackground
 
 
 /* Address: 0x0057A0C0.
-   Ownership: graphics/core/runtime.
-   Purpose: Copies a clipped SoftwareFramebufferAccess scratch buffer back into a DirectDraw surface at
-   drawX/drawY. Supports two-byte and four-byte pixels and mirrors the save helper's clipping rules. Typed
-   parameters: p1 drawY→GraphicsScreenCoordinate_V307, p2 drawX→GraphicsScreenCoordinate_V307. Calling convention,
-   parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   Writes a buffer filled by GraphicsCursor_SaveSurfaceBackground (or the composed cursor image) back into
+   destinationSurface at (drawX, drawY), clipped to the screen exactly like the save. Used to draw the
+   composed cursor and to remove it again after the present.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsCursor_RestoreSurfaceBackground
@@ -1186,19 +1181,21 @@ GraphicsCursor_RestoreSurfaceBackground
     result = destinationSurface->lpVtbl->Restore(destinationSurface);
   }
   if (result == 0) {
+    /* 0x6C = sizeof(DDSURFACEDESC): cleared, then dwSize set */
     Memory_ZeroDwords(0x6c,&g_GraphicsCursorSurfaceDescScratch);
     g_GraphicsCursorSurfaceDescScratch = 0x6c;
+    /* differs from the original: 0x0057A176/0x0057A266 push 0x21 (DDLOCK_WAIT | DDLOCK_WRITEONLY) here */
     result = destinationSurface->lpVtbl->Lock
-                       (destinationSurface,(TH_LEGACY_RECT *)0x0,
-                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,0x11,
-                        (TH_LEGACY_HANDLE)0x0);
+                       (destinationSurface,NULL,
+                        (DDSURFACEDESC_DX6 *)&g_GraphicsCursorSurfaceDescScratch,DDLOCK_WAIT | DDLOCK_READONLY,
+                        NULL);
   }
   if (result != 0) {
     return;
   }
   surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
   destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
-  for (; copyHeight != 0; copyHeight = copyHeight - 1) {
+  for (; copyHeight != 0; copyHeight--) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
     destination = destination + (int)g_GraphicsCursorSurfacePitchBytes;
     source = source + rowPixels * bytesPerPixel;

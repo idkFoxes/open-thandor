@@ -12,42 +12,44 @@
 /* Implementation ownership: assets/text/resources. */
 
 /* Address: 0x0041CD30.
-   Ownership: assets/text/resources.
-   Purpose: The first argument supplies the runtime alias-address base used by those mappings. CF propagates load
-   or resolve failure.
-   Local calls: TextResourcePage_Load, TextResource_Resolve, TextResourceOverride_Register.
+   Loads the level's own text page (the .str entry of a level package) as page 0x30 and makes its title,
+   description and 14 further description lines reachable under the global ids the frontend uses for that
+   level: TEXT_ID_LEVEL_TITLE_BASE + title index and TEXT_ID_LEVEL_DESCRIPTION_BASE + 0x10 * title index (+1..14).
+   CF is set when the page cannot be loaded or one of the strings is missing.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(uint32_t aliasAddressBase,uint16_t *path)
+TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path)
 
 {
   uint16_t *resolvedText;
-  int aliasIndex;
+  int lineIndex;
   bool failed;
   TextPageLoadResult pageLoadResult;
   TextResolveResult resolveResult;
-  
-  pageLoadResult = TextResourcePage_Load(0x30,path);
+
+  pageLoadResult = TextResourcePage_Load(TEXT_RESOURCE_PAGE_LEVEL,path);
   failed = pageLoadResult.failed;
   if (!failed) {
-    resolveResult = TextResource_Resolve(0x3000);
+    resolveResult = TextResource_Resolve(TEXT_ID_LEVEL_PAGE_TITLE);
     failed = resolveResult.notFound;
     resolvedText = resolveResult.text;
     if (!failed) {
-      TextResourceOverride_Register(aliasAddressBase + 0x2230,resolvedText);
-      resolveResult = TextResource_Resolve(0x3001);
+      TextResourceOverride_Register(levelTitleIndex + TEXT_ID_LEVEL_TITLE_BASE,resolvedText);
+      resolveResult = TextResource_Resolve(TEXT_ID_LEVEL_PAGE_DESCRIPTION);
       failed = resolveResult.notFound;
       if (!failed) {
-        aliasIndex = 0xd;
-        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,resolveResult.text);
+        lineIndex = TEXT_LEVEL_EXTRA_LINE_COUNT - 1;
+        TextResourceOverride_Register(levelTitleIndex * 0x10 + TEXT_ID_LEVEL_DESCRIPTION_BASE,resolveResult.text);
+        /* the extra lines are registered from the last one down */
         do {
-          resolveResult = TextResource_Resolve(aliasIndex + 0x3002);
+          resolveResult = TextResource_Resolve(lineIndex + TEXT_ID_LEVEL_PAGE_EXTRA_LINES);
           if (resolveResult.notFound) {
             return true;
           }
-          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,resolveResult.text);
-          aliasIndex = aliasIndex + -1;
-        } while (-1 < aliasIndex);
+          TextResourceOverride_Register
+                    (levelTitleIndex * 0x10 + (TEXT_ID_LEVEL_DESCRIPTION_BASE + 1) + lineIndex,resolveResult.text);
+          lineIndex--;
+        } while (-1 < lineIndex);
         failed = false;
       }
     }

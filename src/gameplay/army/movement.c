@@ -1331,24 +1331,26 @@ ArmyMovementBanking_FinalizeBankingEffectsAndTransforms:
 }
 
 
-/* Model runtime tree: child count at +0x0C, children at +0x140 + 32*i (null slots skipped). */
+/* Helper for ArmyRuntime_ResetMovementStateFromModel (no original address: the original walks the tree
+   iteratively with an explicit stack). Clears state bits 0x218 of a model runtime and of all its children
+   (child count at +0x0C, child pointers at +0x140 + 32*i, null slots skipped). */
 static void ArmyRuntime_ClearModelTreeFlags218(uint8_t *node)
 {
-  int i;
+  int childIndex;
   *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) & 0xfffffde7;
-  for (i = 0; i < *(int *)(node + 0xc); i++) {
-    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
-    if (child != (uint8_t *)0x0) {
+  for (childIndex = 0; childIndex < *(int *)(node + 0xc); childIndex++) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + childIndex * 0x20);
+    if (child != NULL) {
       ArmyRuntime_ClearModelTreeFlags218(child);
     }
   }
 }
 
 /* Address: 0x0051C3E0.
-   Ownership: gameplay/army/movement.
-   Purpose: Resets movement flags and target state from the current model position, updates the verified command-
-   state word, and clears inherited movement flags through the attached model hierarchy.
-   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime].
+   Stops the army where its model currently stands: clears the move flags, cancels an active target
+   command (unless state field 0x100 is zero), and sets every move target to the current model position.
+   If the attached model has class-state bit 0x10 and a non-zero definition value +0x3C, state bits 0x218
+   are cleared on its whole model tree.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
@@ -1359,20 +1361,24 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   ArmyCommandGeneration standardGeneration;
   ModelRuntimeSlot *attachedModelRuntime;
   bool stateField100Zero;
-  ModelRuntimeNode *modelNode1;
-  
+  ModelRuntimeNode *modelNode;
+
   standardGeneration = g_ArmyCommandGenerationStandard;
-  modelNode1 = armyRuntime->modelNodeRuntime;
-  armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & 0xffffffc6;
+  modelNode = armyRuntime->modelNodeRuntime;
+  armyRuntime->movementStateFlags =
+       armyRuntime->movementStateFlags &
+       ~(ARMY_MOVEMENT_ACTIVE | ARMY_MOVEMENT_WAYPOINTS_QUEUED | 0x10 | ARMY_MOVEMENT_TARGET_FOLLOWING);
   stateField100Zero = ArmyRuntime_TestStateField100Zero(armyRuntime);
-  if ((!stateField100Zero) && ((armyRuntime->commandModeFlags & 3) != 0)) {
-    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags & 0xfffffffc;
-    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | 4;
+  if ((!stateField100Zero) &&
+      ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0)) {
+    armyRuntime->commandModeFlags =
+         armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
+    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     armyRuntime->commandGeneration = standardGeneration;
-    armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)0x0;
+    armyRuntime->commandTargetArmyRuntime = NULL;
   }
-  currentWorldX = (modelNode1->worldTransform).translation.x;
-  currentWorldY = (modelNode1->worldTransform).translation.y;
+  currentWorldX = (modelNode->worldTransform).translation.x;
+  currentWorldY = (modelNode->worldTransform).translation.y;
   (armyRuntime->articulatedContact).fallbackPosition0Q12 = currentWorldX;
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = currentWorldY;
   armyRuntime->movementTarget0Q12 = currentWorldX;
@@ -1390,23 +1396,22 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
 
 
 /* Address: 0x0051C500.
-   Ownership: gameplay/army/movement.
-   Purpose: If target-command mode bits 0 or 1 are active, clears them, sets transition bit 2, stamps the standard
-   command generation, and clears the current command target. The helper is also used by the 32-slot command reset
-   traversal.
+   Cancels an active target command (army or position): marks the command as interrupted, stamps the
+   standard command generation and drops the target army. Also used by the 32-slot command reset traversal.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration(ArmyRuntimeSlot *armyRuntime)
 
 {
   ArmyCommandGeneration commandGeneration;
-  
+
   commandGeneration = g_ArmyCommandGenerationStandard;
-  if ((armyRuntime->commandModeFlags & 3) != 0) {
-    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags & 0xfffffffc;
-    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | 4;
+  if ((armyRuntime->commandModeFlags & (ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION)) != 0) {
+    armyRuntime->commandModeFlags =
+         armyRuntime->commandModeFlags & ~(ARMY_COMMAND_MODE_TARGET_ARMY | ARMY_COMMAND_MODE_TARGET_POSITION);
+    armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | ARMY_COMMAND_MODE_INTERRUPTED;
     armyRuntime->commandGeneration = commandGeneration;
-    armyRuntime->commandTargetArmyRuntime = (ArmyRuntimeSlot *)0x0;
+    armyRuntime->commandTargetArmyRuntime = NULL;
   }
   return;
 }
@@ -1455,9 +1460,9 @@ ArmyRuntime_StartMoveCommandWithAuxiliaryValues
 
 
 /* Address: 0x0051CDB0.
-   Ownership: gameplay/army/movement.
-   Purpose: Stores a pending movement target, mirrors it into the verified queue and fallback fields according to
-   current flags, and records the current model position.
+   Sets a new immediate move position without path finding (ignored while the movement is locked). The
+   fallback position only follows when no move was active, the final target only when mirroring is enabled;
+   the current model position is recorded for the route-retry check.
 */
 void __thandor_preserve_eax_edx
 ArmyRuntime_SetPendingMoveTarget
@@ -1466,25 +1471,26 @@ ArmyRuntime_SetPendingMoveTarget
 {
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
-  ModelRuntimeNode *modelNode1;
-  
-  if ((movementRuntime->movementStateFlags & 2) == 0) {
-    modelNode1 = movementRuntime->modelNodeRuntime;
+  ModelRuntimeNode *modelNode;
+
+  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
+    modelNode = movementRuntime->modelNodeRuntime;
     movementRuntime->movementWorldXQ12 = targetWorldX;
     movementRuntime->movementWorldYQ12 = targetWorldY;
-    if ((movementRuntime->movementStateFlags & 1) == 0) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) == 0) {
       (movementRuntime->fallbackPosition).worldXQ12 = targetWorldX;
       (movementRuntime->fallbackPosition).worldYQ12 = targetWorldY;
     }
-    if ((movementRuntime->movementStateFlags & 0x400) != 0) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_MIRROR_TARGET) != 0) {
       movementRuntime->movementTargetWorldXQ12 = targetWorldX;
       movementRuntime->movementTargetWorldYQ12 = targetWorldY;
     }
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 1;
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffffcf;
-    currentWorldX = (modelNode1->worldTransform).translation.x;
-    currentWorldY = (modelNode1->worldTransform).translation.y;
-    movementRuntime->retryCountdown = 0x40;
+    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_ACTIVE;
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags & ~(0x10 | ARMY_MOVEMENT_TARGET_FOLLOWING);
+    currentWorldX = (modelNode->worldTransform).translation.x;
+    currentWorldY = (modelNode->worldTransform).translation.y;
+    movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
@@ -1572,10 +1578,9 @@ void ArmyRuntimeClassCommand_NoOp(WorldRuntimeContext *worldRuntime,ArmyRuntimeS
 }
 
 /* Address: 0x0051C8E0.
-   Ownership: gameplay/army/movement.
-   Purpose: Handles army runtime queue or start move command variant a.
-   Local calls: ArmyRuntime_QueueWaypointOrStartMoveVariantA.
-   Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
+   Starts a new routed move order to the target (path finding via EntityPathing), dropping any waypoint
+   queue and target mirroring. While the movement is locked the target replaces the waypoint queue instead.
+   Entities whose definition record has zero at +0x18 ignore the order.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_QueueOrStartMoveCommandVariantA
@@ -1586,13 +1591,17 @@ ArmyRuntime_QueueOrStartMoveCommandVariantA
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
   PathingDestinationResult resolvedDestination;
-  
+
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               0x18) != 0) {
-    if ((movementRuntime->movementStateFlags & 2) == 0) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x241;
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffb47;
+      movementRuntime->movementStateFlags =
+           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | 0x40 | ARMY_MOVEMENT_ACTIVE);
+      movementRuntime->movementStateFlags =
+           movementRuntime->movementStateFlags &
+           ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10 |
+             ARMY_MOVEMENT_WAYPOINTS_QUEUED);
       movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xffffffef;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
@@ -1604,12 +1613,12 @@ ArmyRuntime_QueueOrStartMoveCommandVariantA
       movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
       currentWorldX = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
       currentWorldY = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
-      movementRuntime->retryCountdown = 0x40;
+      movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
       movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
       movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
     }
     else {
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffff7;
+      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
       ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
     }
   }
@@ -1618,10 +1627,8 @@ ArmyRuntime_QueueOrStartMoveCommandVariantA
 
 
 /* Address: 0x0051C9A0.
-   Ownership: gameplay/army/movement.
-   Purpose: Handles army runtime queue or start move command variant b.
-   Local calls: ArmyRuntime_QueueWaypointOrStartMoveVariantA.
-   Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
+   Same as ArmyRuntime_QueueOrStartMoveCommandVariantA, but keeps the waypoint queue and target mirroring:
+   used by ArmyRuntime_UpdateMovementAndWaypoints to start the next queued waypoint.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_QueueOrStartMoveCommandVariantB
@@ -1632,13 +1639,15 @@ ArmyRuntime_QueueOrStartMoveCommandVariantB
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
   PathingDestinationResult resolvedDestination;
-  
+
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               0x18) != 0) {
-    if ((movementRuntime->movementStateFlags & 2) == 0) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
       worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x241;
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffff4f;
+      movementRuntime->movementStateFlags =
+           movementRuntime->movementStateFlags | (ARMY_MOVEMENT_ROUTED | 0x40 | ARMY_MOVEMENT_ACTIVE);
+      movementRuntime->movementStateFlags =
+           movementRuntime->movementStateFlags & ~(ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10);
       movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xffffffef;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                         (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
@@ -1650,12 +1659,12 @@ ArmyRuntime_QueueOrStartMoveCommandVariantB
       movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
       currentWorldX = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
       currentWorldY = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
-      movementRuntime->retryCountdown = 0x40;
+      movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
       movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
       movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
     }
     else {
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffff7;
+      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
       ArmyRuntime_QueueWaypointOrStartMoveVariantA(targetWorldY,targetWorldX,movementRuntime);
     }
   }
@@ -2428,9 +2437,9 @@ ArmyRuntime_StartClampedMoveCommand
 
 
 /* Address: 0x0051CD30.
-   Ownership: gameplay/army/movement.
-   Purpose: Handles army runtime start direct move command.
-   Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
+   Starts a direct move to the target (unless the movement is locked): drops the waypoint queue and
+   routes to the target, but leaves the final movement target unchanged. Used by
+   ArmyRuntime_UpdateMovementAndWaypoints to re-approach the final target.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_StartDirectMoveCommand
@@ -2441,11 +2450,14 @@ ArmyRuntime_StartDirectMoveCommand
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
   PathingDestinationResult resolvedDestination;
-  
-  if ((movementRuntime->movementStateFlags & 2) == 0) {
+
+  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_LOCKED) == 0) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x81;
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffff87;
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags | (ARMY_MOVEMENT_DIRECT | ARMY_MOVEMENT_ACTIVE);
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags &
+         ~(0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10 | ARMY_MOVEMENT_WAYPOINTS_QUEUED);
     resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                       (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
     (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -2454,7 +2466,7 @@ ArmyRuntime_StartDirectMoveCommand
     movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
     currentWorldX = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
     currentWorldY = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
-    movementRuntime->retryCountdown = 0x40;
+    movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
@@ -3211,33 +3223,32 @@ ArmyRuntimeCommand_UpdateTargetFollowingState
 
 
 /* Address: 0x0051CA60.
-   Ownership: gameplay/army/movement.
-   Purpose: Appends a waypoint to the bounded movement queue when the runtime is already moving, otherwise starts
-   the variant-A movement command immediately.
-   Local calls: ArmyRuntime_QueueOrStartMoveCommandVariantA.
+   While a non-direct move is active or the movement is locked, appends the target to the waypoint queue
+   (starting a new queue if none is in use; when full the last entry is overwritten); otherwise starts it
+   at once with ArmyRuntime_QueueOrStartMoveCommandVariantA.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_QueueWaypointOrStartMoveVariantA
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
-  uint32_t queuedWaypointIndex;
-  
-  if (((movementRuntime->movementStateFlags & 0x80) == 0) &&
-     ((movementRuntime->movementStateFlags & 3) != 0)) {
-    if ((movementRuntime->movementStateFlags & 8) == 0) {
+  uint32_t waypointCount;
+
+  if (((movementRuntime->movementStateFlags & ARMY_MOVEMENT_DIRECT) == 0) &&
+     ((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_LOCKED | ARMY_MOVEMENT_ACTIVE)) != 0)) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
       movementRuntime->queuedWaypointCount = 0;
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 8;
+      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_WAYPOINTS_QUEUED;
     }
-    queuedWaypointIndex = movementRuntime->queuedWaypointCount;
+    waypointCount = movementRuntime->queuedWaypointCount;
     movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x40;
-    if (queuedWaypointIndex < 8) {
-      queuedWaypointIndex = queuedWaypointIndex + 1;
+    if (waypointCount < ARMY_MOVEMENT_WAYPOINT_CAPACITY) {
+      waypointCount = waypointCount + 1;
     }
     movementRuntime->commandModeFlags = movementRuntime->commandModeFlags & 0xfffffbef;
-    movementRuntime->queuedWaypoints[queuedWaypointIndex - 1].worldXQ12 = targetWorldX;
-    movementRuntime->queuedWaypoints[queuedWaypointIndex - 1].worldYQ12 = targetWorldY;
-    movementRuntime->queuedWaypointCount = queuedWaypointIndex;
+    movementRuntime->queuedWaypoints[waypointCount - 1].worldXQ12 = targetWorldX;
+    movementRuntime->queuedWaypoints[waypointCount - 1].worldYQ12 = targetWorldY;
+    movementRuntime->queuedWaypointCount = waypointCount;
   }
   else {
     ArmyRuntime_QueueOrStartMoveCommandVariantA(targetWorldY,targetWorldX,movementRuntime);
@@ -3247,10 +3258,9 @@ ArmyRuntime_QueueWaypointOrStartMoveVariantA
 
 
 /* Address: 0x0051CB90.
-   Ownership: gameplay/army/movement.
-   Purpose: Starts a movement command while preserving or shifting the verified waypoint history when the runtime
-   was already following a queued route.
-   Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
+   Target-following move (ArmyRuntimeCommand_UpdateTargetFollowingState): unless the movement is locked,
+   routed or still waiting for its retry countdown, routes to the target. If a move was active, its
+   fallback position is first saved into the waypoint queue (apparently so the army resumes it afterwards).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_StartMoveCommandWithFallbackWaypoints
@@ -3264,26 +3274,32 @@ ArmyRuntime_StartMoveCommandWithFallbackWaypoints
   Q12 *fallbackCoordinateRead;
   Q12 *waypointCoordinateWrite;
   PathingDestinationResult resolvedDestination;
-  
-  if (((movementRuntime->movementStateFlags & 0x202) == 0) && (movementRuntime->retryCountdown == 0)
-     ) {
+
+  if (((movementRuntime->movementStateFlags & (ARMY_MOVEMENT_ROUTED | ARMY_MOVEMENT_LOCKED)) == 0) &&
+      (movementRuntime->retryCountdown == 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffb67;
-    if ((movementRuntime->movementStateFlags & 1) != 0) {
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags &
+         ~(ARMY_MOVEMENT_MIRROR_TARGET | ARMY_MOVEMENT_DIRECT | 0x10 | ARMY_MOVEMENT_WAYPOINTS_QUEUED);
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) != 0) {
+      /* Forward dword copy of 16 dwords from fallbackPosition (+0xB8) to queuedWaypoints (+0xC0), exactly
+         like the original REP MOVSD. The ranges overlap by 8 bytes, so this does not shift the queue: it
+         fills all 8 waypoints with fallbackPosition. */
       remainingCount = 0x10;
       fallbackCoordinateRead = &(movementRuntime->fallbackPosition).worldXQ12;
       waypointCoordinateWrite = &movementRuntime->queuedWaypoints[0].worldXQ12;
-      for (; remainingCount != 0; remainingCount = remainingCount + -1) {
+      for (; remainingCount != 0; remainingCount--) {
         *waypointCoordinateWrite = *fallbackCoordinateRead;
-        fallbackCoordinateRead = fallbackCoordinateRead + 1;
-        waypointCoordinateWrite = waypointCoordinateWrite + 1;
+        fallbackCoordinateRead++;
+        waypointCoordinateWrite++;
       }
-      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 8;
-      if (movementRuntime->queuedWaypointCount < 8) {
+      movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | ARMY_MOVEMENT_WAYPOINTS_QUEUED;
+      if (movementRuntime->queuedWaypointCount < ARMY_MOVEMENT_WAYPOINT_CAPACITY) {
         movementRuntime->queuedWaypointCount = movementRuntime->queuedWaypointCount + 1;
       }
     }
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x61;
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags | (0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | ARMY_MOVEMENT_ACTIVE);
     resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
                       (targetWorldY,targetWorldX,movementRuntime->entityRuntime,worldRuntime);
     (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
@@ -3294,7 +3310,7 @@ ArmyRuntime_StartMoveCommandWithFallbackWaypoints
     movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
     currentWorldX = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
     currentWorldY = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
-    movementRuntime->retryCountdown = 0x40;
+    movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
     movementRuntime->lastCheckedWorldXQ12 = currentWorldX;
     movementRuntime->lastCheckedWorldYQ12 = currentWorldY;
   }
@@ -3303,9 +3319,9 @@ ArmyRuntime_StartMoveCommandWithFallbackWaypoints
 
 
 /* Address: 0x0051CE30.
-   Ownership: gameplay/army/movement.
-   Purpose: Resets the movement-state flags and copies the current model position into all verified target fields
-   except when the preserved queued-target mode is active.
+   Ends a target-following move: the move stays active only if waypoints are queued, and unless a routed
+   move is in progress all targets are set to the current model position so the army stops where it is.
+   Bits 0x10-0x80 are cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movementRuntime)
@@ -3313,11 +3329,11 @@ ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movement
 {
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
   GraphicsWorldCoordinateQ12 currentWorldYQ12;
-  
-  if ((movementRuntime->movementStateFlags & 8) == 0) {
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffffe;
+
+  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
+    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_ACTIVE;
   }
-  if ((movementRuntime->movementStateFlags & 0x200) == 0) {
+  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ROUTED) == 0) {
     currentWorldXQ12 = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
     currentWorldYQ12 = (movementRuntime->modelNodeRuntime->worldTransform).translation.y;
     (movementRuntime->fallbackPosition).worldXQ12 = currentWorldXQ12;
@@ -3327,15 +3343,17 @@ ArmyRuntime_ResetMovementStatePreserveQueuedTarget(ArmyMovementRuntime *movement
     movementRuntime->movementWorldXQ12 = currentWorldXQ12;
     movementRuntime->movementWorldYQ12 = currentWorldYQ12;
   }
-  movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffff0f;
+  movementRuntime->movementStateFlags =
+       movementRuntime->movementStateFlags &
+       ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10);
   return;
 }
 
 
 /* Address: 0x0051CE90.
-   Ownership: gameplay/army/movement.
-   Purpose: Resets the movement-state flags and, for the verified queued state, copies the current model position
-   into the active and fallback target fields.
+   Ends a clamped target-following move: without queued waypoints the move just stops being active;
+   with queued waypoints the current and fallback positions are set to the model position (the final
+   target is kept). Bits 0x10-0x80 are cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime)
@@ -3343,9 +3361,9 @@ ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementR
 {
   GraphicsWorldCoordinateQ12 currentWorldXQ12;
   GraphicsWorldCoordinateQ12 currentWorldYQ12;
-  
-  if ((movementRuntime->movementStateFlags & 8) == 0) {
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffffe;
+
+  if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) == 0) {
+    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_ACTIVE;
   }
   else {
     currentWorldXQ12 = (movementRuntime->modelNodeRuntime->worldTransform).translation.x;
@@ -3355,19 +3373,19 @@ ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementR
     movementRuntime->movementWorldXQ12 = currentWorldXQ12;
     movementRuntime->movementWorldYQ12 = currentWorldYQ12;
   }
-  movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffff0f;
+  movementRuntime->movementStateFlags =
+       movementRuntime->movementStateFlags &
+       ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10);
   return;
 }
 
 
 /* Address: 0x0051CEE0.
-   Ownership: gameplay/army/movement.
-   Purpose: Advances active movement toward the current target, consumes queued waypoints at arrival, rebuilds
-   routes when the model diverges, and clears movement state near the final destination. Two stack arguments are
-   authoritative from RET 0x08. EDX:EAX carries the resolved world X/Y pair and CF reports movement resolution
-   status.
-   Local calls: ArmyRuntime_QueueOrStartMoveCommandVariantB, ArmyRuntime_StartDirectMoveCommand.
-   Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
+   Per-tick movement step; returns the position to steer to (EDX:EAX) and arrival in CF. While a move is
+   active the stored movement position is returned. When bit 0x10 is set, the route end is checked: once
+   reached, the next queued waypoint is started (and the step repeated); otherwise the route is rebuilt
+   when the model moved or the retry countdown ran out. Near the final target the move ends (arrived);
+   farther away a direct move to it is started.
 */
 MovementStepResult __thandor_eax_edx_cf_preserve_ecx
 ArmyRuntime_UpdateMovementAndWaypoints
@@ -3394,11 +3412,11 @@ ArmyRuntime_UpdateMovementAndWaypoints
   PathingDestinationResult resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;
-  ModelRuntimeNode *modelNode1;
-  
-  modelNode1 = movementRuntime->modelNodeRuntime;
+  ModelRuntimeNode *modelNode;
+
+  modelNode = movementRuntime->modelNodeRuntime;
   if ((movementRuntime->movementStateFlags & 0x10) == 0) {
-    if ((movementRuntime->movementStateFlags & 1) != 0) {
+    if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_ACTIVE) != 0) {
       movementWorldX = movementRuntime->movementWorldXQ12;
       movementWorldY = movementRuntime->movementWorldYQ12;
       storedPosition.worldYQ12 = movementWorldY;
@@ -3408,28 +3426,30 @@ ArmyRuntime_UpdateMovementAndWaypoints
     }
   }
   else {
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffffef;
+    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~0x10;
     offsetXOrCount = (movementRuntime->fallbackPosition).worldXQ12 -
-            (modelNode1->worldTransform).translation.x;
+            (modelNode->worldTransform).translation.x;
     offsetY = (movementRuntime->fallbackPosition).worldYQ12 -
-            (modelNode1->worldTransform).translation.y;
-    if ((((offsetXOrCount < 0x40) && (offsetY < 0x40)) && (-0x40 < offsetXOrCount)) && (-0x40 < offsetY)) {
-      if ((movementRuntime->movementStateFlags & 8) != 0) {
+            (modelNode->worldTransform).translation.y;
+    if ((((offsetXOrCount < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12) && (offsetY < ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12)) &&
+         (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetXOrCount)) && (-ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 < offsetY)) {
+      if ((movementRuntime->movementStateFlags & ARMY_MOVEMENT_WAYPOINTS_QUEUED) != 0) {
+        /* pop queuedWaypoints[0] and move the other seven entries down */
         queuedWorldXQ12 = movementRuntime->queuedWaypoints[0].worldXQ12;
         queuedWorldYQ12 = movementRuntime->queuedWaypoints[0].worldYQ12;
         waypointCount = &movementRuntime->queuedWaypointCount;
         *waypointCount = *waypointCount - 1;
         if (*waypointCount == 0) {
-          movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xfffffff7;
+          movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & ~ARMY_MOVEMENT_WAYPOINTS_QUEUED;
         }
         else {
           offsetXOrCount = 0xe;
           queuedCoordinateRead = &movementRuntime->queuedWaypoints[1].worldXQ12;
           queuedCoordinateWrite = &movementRuntime->queuedWaypoints[0].worldXQ12;
-          for (; offsetXOrCount != 0; offsetXOrCount = offsetXOrCount + -1) {
+          for (; offsetXOrCount != 0; offsetXOrCount--) {
             *queuedCoordinateWrite = *queuedCoordinateRead;
-            queuedCoordinateRead = queuedCoordinateRead + 1;
-            queuedCoordinateWrite = queuedCoordinateWrite + 1;
+            queuedCoordinateRead++;
+            queuedCoordinateWrite++;
           }
         }
         ArmyRuntime_QueueOrStartMoveCommandVariantB(queuedWorldYQ12,queuedWorldXQ12,movementRuntime)
@@ -3439,8 +3459,8 @@ ArmyRuntime_UpdateMovementAndWaypoints
       }
     }
     else {
-      offsetXOrCount = (modelNode1->worldTransform).translation.x;
-      offsetY = (modelNode1->worldTransform).translation.y;
+      offsetXOrCount = (modelNode->worldTransform).translation.x;
+      offsetY = (modelNode->worldTransform).translation.y;
       if (((movementRuntime->retryCountdown != 0) &&
           (offsetXOrCount == movementRuntime->lastCheckedWorldXQ12)) &&
          (offsetY == movementRuntime->lastCheckedWorldYQ12)) {
@@ -3450,7 +3470,7 @@ ArmyRuntime_UpdateMovementAndWaypoints
         storedPosition.arrived = false;
         return storedPosition;
       }
-      movementRuntime->retryCountdown = 0x40;
+      movementRuntime->retryCountdown = ARMY_MOVEMENT_RETRY_TICKS;
       movementRuntime->lastCheckedWorldXQ12 = offsetXOrCount;
       movementRuntime->lastCheckedWorldYQ12 = offsetY;
       resolvedDestination = EntityPathing_ResolveDestinationAndRebuildRoutes
@@ -3469,25 +3489,32 @@ ArmyRuntime_UpdateMovementAndWaypoints
       }
     }
   }
-  distanceX = (modelNode1->worldTransform).translation.x - movementRuntime->movementTargetWorldXQ12;
+  distanceX = (modelNode->worldTransform).translation.x - movementRuntime->movementTargetWorldXQ12;
   if ((int)distanceX < 0) {
     distanceX = -distanceX;
   }
-  distanceY = (modelNode1->worldTransform).translation.y - movementRuntime->movementTargetWorldYQ12;
+  distanceY = (modelNode->worldTransform).translation.y - movementRuntime->movementTargetWorldYQ12;
   if ((int)distanceY < 0) {
     distanceY = -distanceY;
   }
   exceededDistance = distanceX;
-  if ((distanceX < 0x1001) && (exceededDistance = distanceY, distanceY < 0x1001)) {
-    movementRuntime->movementStateFlags = movementRuntime->movementStateFlags & 0xffffff06;
-    currentWorldX = (modelNode1->worldTransform).translation.x;
-    currentWorldY = (modelNode1->worldTransform).translation.y;
+  if ((distanceX < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1) &&
+      (exceededDistance = distanceY, distanceY < ARMY_MOVEMENT_TARGET_RADIUS_Q12 + 1)) {
+    movementRuntime->movementStateFlags =
+         movementRuntime->movementStateFlags &
+         ~(ARMY_MOVEMENT_DIRECT | 0x40 | ARMY_MOVEMENT_TARGET_FOLLOWING | 0x10 | ARMY_MOVEMENT_WAYPOINTS_QUEUED |
+           ARMY_MOVEMENT_ACTIVE);
+    currentWorldX = (modelNode->worldTransform).translation.x;
+    currentWorldY = (modelNode->worldTransform).translation.y;
     arrivedPosition.worldYQ12 = currentWorldY;
     arrivedPosition.worldXQ12 = currentWorldX;
     arrivedPosition.arrived = true;
     return arrivedPosition;
   }
-  belowThreshold = exceededDistance < 0x1000;
+  /* The original returns the distances in EAX/EDX and whatever CF ArmyRuntime_StartDirectMoveCommand
+     leaves (clear when locked, else the pathing call's CF); belowThreshold is always false here since
+     exceededDistance > ARMY_MOVEMENT_TARGET_RADIUS_Q12. */
+  belowThreshold = exceededDistance < ARMY_MOVEMENT_TARGET_RADIUS_Q12;
   ArmyRuntime_StartDirectMoveCommand
             (movementRuntime->movementTargetWorldYQ12,movementRuntime->movementTargetWorldXQ12,
              movementRuntime);

@@ -48,14 +48,17 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinition
 }
 
 
+/* Recursive part of ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology: unlocks the technology of the
+   linked definition the faction can select at this node (linked ids at +0x20), then does the same for every
+   child (child count +0x08, children +0x0C + 4*i). */
 static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
-  uint32_t i;
+  uint32_t childIndex;
   ModelDefinition_UnlockLinkedTechnologyForFaction
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
                                     (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
-  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
-    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(node + 0xc + i * 4));
+  for (childIndex = 0; childIndex < *(uint32_t *)(node + 8); childIndex++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(node + 0xc + childIndex * 4));
   }
 }
 
@@ -378,9 +381,10 @@ ModelMesh_IntersectTriangleRayDistance_ReturnMiss:
 
 
 /* Address: 0x005289C0.
-   Ownership: assets/model/definitions.
-   Purpose: Finds a model definition by identifier in the 768-slot registry and returns its runtime descriptor at
-   record +0x188; error 0x3E reports a miss.
+   Looks a model definition up by id in the 768-slot registry and returns the three dwords at record
+   +0x188 (EAX), +0x180 (ECX) and +0x184 (EDX), which ArmyAssetRecord_RelocateModelTree adds to an army
+   record. On a miss the id is formatted into g_PackageLastErrorPath and FATAL_ERROR_MODEL_DEFINITION_MISSING
+   is returned with CF set.
 */
 BuildMetricResult
 ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog definitionId)
@@ -391,24 +395,24 @@ ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog def
   ModelDefinitionRecordPrefix **registryCursor;
   BuildMetricResult missResult;
   BuildMetricResult foundResult;
-  ModelDefinitionRuntimeSemanticView280 *candidateDefinition;
-  
+
   registryCursor = g_ModelDefinitionRegistry;
-  registrySlotsRemaining = 0x300;
-  while ((registeredDefinition = *registryCursor, registeredDefinition == (ModelDefinitionRecordPrefix *)0x0 ||
+  registrySlotsRemaining = 768;
+  while ((registeredDefinition = *registryCursor, registeredDefinition == NULL ||
          (definitionId != registeredDefinition->definitionId))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionId,g_PackageLastErrorPath);
       missResult.metric1 = definitionId;
-      missResult.metric0 = 0x3e;
+      missResult.metric0 = FATAL_ERROR_MODEL_DEFINITION_MISSING;
       missResult.metric2 = 0;
       missResult.notFound = true;
       return missResult;
     }
   }
+  /* [0x20] steps over 0x20 twelve-byte record prefixes: offsets +0x180, +0x188 and +0x184 */
   foundResult.metric1 = registeredDefinition[0x20].byteSize;
   foundResult.metric0 = registeredDefinition[0x20].definitionId;
   foundResult.metric2 = registeredDefinition[0x20].flags;
@@ -484,7 +488,7 @@ ModelDefinition_SelectFactionUnlockedLinkedId
    asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
 static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,uint8_t *asset,uint32_t *error)
 {
-  uint32_t i;
+  uint32_t childIndex;
   if ((node->nodeFlags & 0xf) == 0) {
     uint16_t *spritePath = (uint16_t *)(node + 1);
     PackageLoadResult loaded;
@@ -497,9 +501,10 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
     }
     registered = SpriteAssetRegistry_FindById
                            (((SpriteAssetHeader *)loaded.bufferOrError)->registryHeader.registryId);
-    if (registered == (SpriteAssetHeader *)0x0) {
+    if (registered == NULL) {
+      /* first use of this sprite: the node owns the loaded copy and registers it */
       SpriteRegisterResult relocated;
-      node->ownedNestedResourcePresent = node->ownedNestedResourcePresent + 1;
+      node->ownedNestedResourcePresent++;
       (node->spriteAssetReference).spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
       relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
       if (relocated.failed) {
@@ -508,14 +513,16 @@ static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,u
       }
     }
     else {
+      /* already registered by another model: share it and drop the fresh copy */
       (node->spriteAssetReference).spriteAsset = registered;
       Resource_Release(loaded.bufferOrError);
     }
   }
-  for (i = 0; i < (uint32_t)node->childCount; i++) {
-    node->childSerializedOffsets[i] = node->childSerializedOffsets[i] + (int)(uintptr_t)asset;
+  for (childIndex = 0; childIndex < (uint32_t)node->childCount; childIndex++) {
+    /* relocate the child offset to a pointer in place */
+    node->childSerializedOffsets[childIndex] = node->childSerializedOffsets[childIndex] + (int)(uintptr_t)asset;
     if (ModelDefinition_ResolveNodeSprites
-                  ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[i],asset,error)) {
+                  ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[childIndex],asset,error)) {
       return true;
     }
   }
@@ -748,10 +755,8 @@ ModelDefinition_ReturnReferenceResolutionResult:
 
 
 /* Address: 0x0052ADE0.
-   Ownership: assets/model/definitions.
-   Purpose: The original lookup/unlock CF contract is preserved.
-   Local calls: ModelDefinitionRegistry_FindByIdWithError.
-   Cross-module calls: Technology_UnlockForFaction [gameplay/technology/runtime].
+   Unlocks for the faction the technology that the model definition grants (record +0x1C4), so building
+   that model makes its successor technology available. An unknown id is silently ignored.
 */
 void __thandor_preserve_eax
 ModelDefinition_UnlockLinkedTechnologyForFaction
@@ -759,19 +764,19 @@ ModelDefinition_UnlockLinkedTechnologyForFaction
 
 {
   ModelDefinitionResult lookupResult;
-  
+
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if (!lookupResult.notFound) {
+    /* [0x25] steps over 0x25 twelve-byte record prefixes: .definitionId is record +0x1C4 */
     Technology_UnlockForFaction(0,0,lookupResult.modelDefinition[0x25].definitionId,factionIndex);
   }
-  return;
 }
 
 
 /* Address: 0x0052AD90.
-   Ownership: assets/model/definitions.
-   Purpose: CF clear means the bit is unlocked; lookup failure or a clear bit returns CF set while preserving EAX.
-   Local calls: ModelDefinitionRegistry_FindByIdWithError.
+   Tests whether the faction may use the model definition: the technology bit it requires (record +0x1C0)
+   must be set in the faction's 256-bit technology masks. Despite the name, true (CF set) means LOCKED
+   (bit clear or unknown id); false (CF clear) means unlocked.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelDefinition_IsFactionTechnologyUnlocked
@@ -780,7 +785,7 @@ ModelDefinition_IsFactionTechnologyUnlocked
 {
   uint32_t technologyBitIndex;
   ModelDefinitionResult lookupResult;
-  
+
   lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
      (technologyBitIndex = lookupResult.modelDefinition[0x25].flags,

@@ -586,7 +586,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
     record->relocationValue28 = record->relocationValue28 + metrics.metric2;
   }
   childCount = *(uint32_t *)(node + 8);
-  for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
+  for (childIndex = 0; childIndex < childCount; childIndex++) {
     uint8_t **child = (uint8_t **)(node + 0xc + childIndex * 4);
     *child = *child + (uintptr_t)assetBase;
     childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,*child);

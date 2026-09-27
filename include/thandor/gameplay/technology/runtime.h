@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/technology/runtime. */
+
+/* GameEntityRuntime.runtimeFlags (+0xEC) research bits. Technology_IsAvailableForFaction treats an army with
+   RESEARCH_RUNNING whose +0x100 holds the technology as already researching it; Technology_ApplyRecordToEntity
+   stores the technology in +0x100 and sets RESEARCH_ASSIGNED, and does nothing while either bit is set. */
+#define ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING 0x40
+#define ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED 0x80
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005139C0 */

@@ -800,211 +800,198 @@ AiPrimaryWorkspace_CountAssignedEntriesByIdDuplicate(PckArmyAssetIdCatalog entry
 
 
 /* Address: 0x00538D90.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Returns the signed minimum Manhattan distance in EAX for secondary-workspace entries; empty input
-   returns INT_MAX. Secondary-workspace variant. Typed parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
+   Returns the smallest Manhattan distance from the point to an assigned secondary-workspace (workspace 01)
+   entry, measured to the linked entity's path coordinates, or 0x7FFFFFFF when there is none.
+   Arguments are Y first, then X, as every caller passes them.
 */
 int __thandor_eax_preserve_ecx_edx
-AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
+AiSecondaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
   int workspaceEntriesRemaining;
-  int deltaXAbsQ12;
-  Q12 deltaYAbsQ12;
+  int deltaYAbsQ12;
+  Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   GameEntityRuntime *entityRuntime;
   
   minimumManhattanDistanceQ12 = 0x7fffffff;
   workspaceEntryCursor = g_AiWorkspaceBuffer01_Size0200;
   for (workspaceEntriesRemaining = g_AiWorkspace01Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if (workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) {
+      workspaceEntriesRemaining--) {
+    if (workspaceEntryCursor->armyRuntime != NULL) {
       entityRuntime = workspaceEntryCursor->armyRuntime->linkedEntityRuntime;
-      deltaYAbsQ12 = worldY - (entityRuntime->common).pathCoordinate0Q12;
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - (entityRuntime->common).pathCoordinate1Q12;
+      deltaXAbsQ12 = worldX - (entityRuntime->common).pathCoordinate0Q12;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if (deltaYAbsQ12 + deltaXAbsQ12 < minimumManhattanDistanceQ12) {
-        minimumManhattanDistanceQ12 = deltaYAbsQ12 + deltaXAbsQ12;
+      deltaYAbsQ12 = worldY - (entityRuntime->common).pathCoordinate1Q12;
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if (deltaXAbsQ12 + deltaYAbsQ12 < minimumManhattanDistanceQ12) {
+        minimumManhattanDistanceQ12 = deltaXAbsQ12 + deltaYAbsQ12;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return minimumManhattanDistanceQ12;
 }
 
 
 /* Address: 0x00538E00.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Returns the signed minimum Manhattan distance in EAX for active primary-workspace entries; empty input
-   returns INT_MAX. Typed parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Returns the smallest Manhattan distance from the point to an assigned primary-workspace (workspace 00) unit
+   whose linked entity has a nonzero commandState (i.e. is active), or 0x7FFFFFFF when there is none.
+   Arguments are Y first, then X, as every caller passes them.
 */
 int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
+AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumActiveManhattanDistanceQ12;
   int workspaceEntriesRemaining;
-  int deltaXAbsQ12;
-  Q12 deltaYAbsQ12;
+  int deltaYAbsQ12;
+  Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ArmyRuntimeSlot *armySlot;
   
   minimumActiveManhattanDistanceQ12 = 0x7fffffff;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspaceBuffer00_Size0400;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
+      workspaceEntriesRemaining--) {
     armySlot = workspaceEntryCursor->armyRuntime;
-    if ((armySlot != (ArmyRuntimeSlot *)0x0) &&
+    if ((armySlot != NULL) &&
        ((armySlot->linkedEntityRuntime->common).commandState != 0)) {
-      deltaYAbsQ12 = worldY - (armySlot->modelNodeRuntime->worldTransform).translation.x;
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - (armySlot->modelNodeRuntime->worldTransform).translation.y;
+      deltaXAbsQ12 = worldX - (armySlot->modelNodeRuntime->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if (deltaYAbsQ12 + deltaXAbsQ12 < minimumActiveManhattanDistanceQ12) {
-        minimumActiveManhattanDistanceQ12 = deltaYAbsQ12 + deltaXAbsQ12;
+      deltaYAbsQ12 = worldY - (armySlot->modelNodeRuntime->worldTransform).translation.y;
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if (deltaXAbsQ12 + deltaYAbsQ12 < minimumActiveManhattanDistanceQ12) {
+        minimumActiveManhattanDistanceQ12 = deltaXAbsQ12 + deltaYAbsQ12;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return minimumActiveManhattanDistanceQ12;
 }
 
 
 /* Address: 0x00538E80.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Returns the signed minimum Manhattan distance in EAX for workspace02 entries; empty input returns
-   INT_MAX. Workspace-02 variant. Typed parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Returns the smallest Manhattan distance from the point to an assigned workspace-02 unit, or 0x7FFFFFFF when
+   there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int __thandor_eax_preserve_ecx_edx
-AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
+AiWorkspace02_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
   int workspaceEntriesRemaining;
-  int deltaXAbsQ12;
-  Q12 deltaYAbsQ12;
+  int deltaYAbsQ12;
+  Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
   minimumManhattanDistanceQ12 = 0x7fffffff;
   workspaceEntryCursor = g_AiWorkspaceBuffer02_Size0400;
   for (workspaceEntriesRemaining = g_AiWorkspace02Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if (workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) {
+      workspaceEntriesRemaining--) {
+    if (workspaceEntryCursor->armyRuntime != NULL) {
       modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
-      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.x;
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.y;
+      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if (deltaYAbsQ12 + deltaXAbsQ12 < minimumManhattanDistanceQ12) {
-        minimumManhattanDistanceQ12 = deltaYAbsQ12 + deltaXAbsQ12;
+      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.y;
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if (deltaXAbsQ12 + deltaYAbsQ12 < minimumManhattanDistanceQ12) {
+        minimumManhattanDistanceQ12 = deltaXAbsQ12 + deltaYAbsQ12;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return minimumManhattanDistanceQ12;
 }
 
 
 /* Address: 0x00538EF0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Returns the signed minimum Manhattan distance in EAX for workspace03 entries; empty input returns
-   INT_MAX. Typed parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Returns the smallest Manhattan distance from the point to an assigned workspace-03 unit, or 0x7FFFFFFF when
+   there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int __thandor_eax_preserve_ecx_edx
-AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
+AiWorkspace03_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
   int workspaceEntriesRemaining;
-  int deltaXAbsQ12;
-  Q12 deltaYAbsQ12;
+  int deltaYAbsQ12;
+  Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
   minimumManhattanDistanceQ12 = 0x7fffffff;
   workspaceEntryCursor = g_AiWorkspaceBuffer03_Size1000;
   for (workspaceEntriesRemaining = g_AiWorkspace03Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if (workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) {
+      workspaceEntriesRemaining--) {
+    if (workspaceEntryCursor->armyRuntime != NULL) {
       modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
-      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.x;
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.y;
+      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if (deltaYAbsQ12 + deltaXAbsQ12 < minimumManhattanDistanceQ12) {
-        minimumManhattanDistanceQ12 = deltaYAbsQ12 + deltaXAbsQ12;
+      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.y;
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if (deltaXAbsQ12 + deltaYAbsQ12 < minimumManhattanDistanceQ12) {
+        minimumManhattanDistanceQ12 = deltaXAbsQ12 + deltaYAbsQ12;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return minimumManhattanDistanceQ12;
 }
 
 
 /* Address: 0x00538F60.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Returns the signed minimum Manhattan distance in EAX for all primary-workspace entries; empty input
-   returns INT_MAX. Typed parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Returns the smallest Manhattan distance from the point to any assigned primary-workspace (workspace 00) unit,
+   or 0x7FFFFFFF when there is none. Arguments are Y first, then X, as every caller passes them.
 */
 int __thandor_eax_preserve_ecx_edx
-AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
+AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldY,Q12 worldX)
 
 {
   Q12 minimumManhattanDistanceQ12;
   int workspaceEntriesRemaining;
-  int deltaXAbsQ12;
-  Q12 deltaYAbsQ12;
+  int deltaYAbsQ12;
+  Q12 deltaXAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   ModelRuntimeNode *modelNode;
   
   minimumManhattanDistanceQ12 = 0x7fffffff;
   workspaceEntryCursor = (AiRuntimeWorkspaceEntry *)g_AiWorkspaceBuffer00_Size0400;
   for (workspaceEntriesRemaining = g_AiWorkspace00Count; workspaceEntriesRemaining != 0;
-      workspaceEntriesRemaining = workspaceEntriesRemaining + -1) {
-    if (workspaceEntryCursor->armyRuntime != (ArmyRuntimeSlot *)0x0) {
+      workspaceEntriesRemaining--) {
+    if (workspaceEntryCursor->armyRuntime != NULL) {
       modelNode = workspaceEntryCursor->armyRuntime->modelNodeRuntime;
-      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.x;
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.y;
+      deltaXAbsQ12 = worldX - (modelNode->worldTransform).translation.x;
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if (deltaYAbsQ12 + deltaXAbsQ12 < minimumManhattanDistanceQ12) {
-        minimumManhattanDistanceQ12 = deltaYAbsQ12 + deltaXAbsQ12;
+      deltaYAbsQ12 = worldY - (modelNode->worldTransform).translation.y;
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if (deltaXAbsQ12 + deltaYAbsQ12 < minimumManhattanDistanceQ12) {
+        minimumManhattanDistanceQ12 = deltaXAbsQ12 + deltaYAbsQ12;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
+    workspaceEntryCursor++;
   }
   return minimumManhattanDistanceQ12;
 }
@@ -1360,20 +1347,18 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 
 /* Address: 0x00538FD0.
-   Ownership: gameplay/ai/workspaces.
-   Purpose: Scans populated primary-workspace entries and returns CF clear when the point lies strictly inside both
-   axis extents defined by record field +0x19C. CF is set when the point lies outside every entry extent. Typed
-   parameters: p0 worldX→Q12, p1 worldY→Q12. Nearby but non-identical semantic domains were explicitly deferred.
-   Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Returns false (CF clear) as soon as the point lies strictly inside the square extent of some assigned
+   primary-workspace (workspace 00) unit: both axis distances to the unit's position below the extent at +0x19C
+   of its definition. True (CF set) when it is outside all of them. Arguments are Y first, then X, as every
+   caller passes them.
 */
 bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldX,Q12 worldY)
+AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldY,Q12 worldX)
 
 {
-  Q12 deltaYAbsQ12;
-  int workspaceEntriesRemaining;
   Q12 deltaXAbsQ12;
+  int workspaceEntriesRemaining;
+  Q12 deltaYAbsQ12;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   int *workspaceEntryEntityRecord;
   
@@ -1383,23 +1368,25 @@ AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldX,Q12 worldY)
     if (workspaceEntriesRemaining == 0) {
       return true;
     }
+    /* raw view of the ArmyRuntimeSlot: [0] is its definition, [1] its model node (translation.x at +0x94,
+       translation.y at +0x98) */
     workspaceEntryEntityRecord = (int *)workspaceEntryCursor->armyRuntime;
-    if (workspaceEntryEntityRecord != (int *)0x0) {
-      deltaYAbsQ12 = worldY - *(int *)(workspaceEntryEntityRecord[1] + 0x94);
-      if (deltaYAbsQ12 < 0) {
-        deltaYAbsQ12 = -deltaYAbsQ12;
-      }
-      deltaXAbsQ12 = worldX - *(int *)(workspaceEntryEntityRecord[1] + 0x98);
+    if (workspaceEntryEntityRecord != NULL) {
+      deltaXAbsQ12 = worldX - *(int *)(workspaceEntryEntityRecord[1] + 0x94);
       if (deltaXAbsQ12 < 0) {
         deltaXAbsQ12 = -deltaXAbsQ12;
       }
-      if ((deltaYAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c)) &&
-         (deltaXAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c))) {
+      deltaYAbsQ12 = worldY - *(int *)(workspaceEntryEntityRecord[1] + 0x98);
+      if (deltaYAbsQ12 < 0) {
+        deltaYAbsQ12 = -deltaYAbsQ12;
+      }
+      if ((deltaXAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c)) &&
+         (deltaYAbsQ12 < *(int *)(*workspaceEntryEntityRecord + 0x19c))) {
         return false;
       }
     }
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
+    workspaceEntryCursor++;
+    workspaceEntriesRemaining--;
   } while( true );
 }
 

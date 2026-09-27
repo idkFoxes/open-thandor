@@ -63,15 +63,15 @@ GridInfluence_ClearHighDistanceBandsAroundWorldPoint
 /* 0x00535190 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalNegative
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x00535260 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalPositive
-          (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
-          FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,
           uint32_t *scratchCell);
 
 /* 0x005355E0 */

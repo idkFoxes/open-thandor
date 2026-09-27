@@ -3802,10 +3802,9 @@ GraphicsTextureSet_FreeMetadata(GraphicsTextureSet *set)
 
 
 /* Address: 0x0057A9D0.
-   Ownership: graphics/resources/texture.
-   Purpose: Only the selected device-side COM triplet is released; staging objects remain available for reloading.
-   If the evicted handle was bound, D3DRENDERSTATE_TEXTUREHANDLE is set to zero. ABI: CF clear means an object was
-   evicted. CF set means no eligible object existed.
+   Frees video memory: releases the device-side surfaces and texture of the least recently used registered
+   texture that has a device handle (other than exclude); its staging copy stays so it can be reloaded later.
+   Unbinds the handle if it was bound. CF set when there was nothing to evict.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
@@ -3821,39 +3820,39 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
   IDirectDrawSurface3 *deviceSurface3;
   IDirectDrawSurface *deviceSurfaceBase;
   
-  slotsRemaining = 0x1000;
+  slotsRemaining = GRAPHICS_TEXTURE_SLOT_CAPACITY;
   oldestUsage = 0xffffffff;
-  oldestTexture = (GraphicsTextureResource *)0x0;
+  oldestTexture = NULL;
   slotCursor = g_GraphicsTextureSlots;
   do {
     candidate = *slotCursor;
-    if ((((candidate != (GraphicsTextureResource *)0x0) && (candidate != exclude)) &&
+    if ((((candidate != NULL) && (candidate != exclude)) &&
         (candidate->textureHandle != 0)) && (candidate->lastUsedCounter <= oldestUsage)) {
       oldestUsage = candidate->lastUsedCounter;
       oldestTexture = candidate;
     }
-    slotCursor = slotCursor + 1;
-    slotsRemaining = slotsRemaining + -1;
+    slotCursor++;
+    slotsRemaining--;
   } while (slotsRemaining != 0);
-  if (oldestTexture == (GraphicsTextureResource *)0x0) {
+  if (oldestTexture == NULL) {
     return true;
   }
   deviceTexture2 = oldestTexture->deviceTexture2;
-  if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+  if (deviceTexture2 != NULL) {
     deviceTexture2->lpVtbl->Release(deviceTexture2);
   }
   deviceSurface3 = oldestTexture->deviceSurface3;
-  if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
+  if (deviceSurface3 != NULL) {
     deviceSurface3->lpVtbl->Release(deviceSurface3);
   }
   deviceSurfaceBase = oldestTexture->deviceSurfaceBase;
-  if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
+  if (deviceSurfaceBase != NULL) {
     deviceSurfaceBase->lpVtbl->Release(deviceSurfaceBase);
   }
   evictedHandle = oldestTexture->textureHandle;
-  oldestTexture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-  oldestTexture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-  oldestTexture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+  oldestTexture->deviceSurfaceBase = NULL;
+  oldestTexture->deviceSurface3 = NULL;
+  oldestTexture->deviceTexture2 = NULL;
   oldestTexture->textureHandle = 0;
   if (evictedHandle == g_BoundTextureHandle) {
     g_BoundTextureHandle = 0;

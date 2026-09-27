@@ -119,12 +119,8 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariants
 
 
 /* Address: 0x004BD310.
-   Ownership: world/model/hierarchy.
-   Purpose: Transforms every vertex in each model record, accumulates global minimum and maximum coordinates, then
-   recursively processes every child model node. Typed parameters: p2 modelNode→ModelRuntimeNode *. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: FixedTransform_ApplyPoint [core/math/fixed].
+   Grows the global model bounding box (g_ModelBoundsMinimum/Maximum X/Y/Z) by every mesh vertex of the node,
+   transformed by the node's world transform, and then by all its descendants. The caller seeds the box first.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNode)
@@ -140,9 +136,12 @@ ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNod
   resourceView = (modelNode->modelPayload).modelResource;
   if (resourceView->meshGroupCount != 0) {
     geometryRecord = resourceView[1].reserved00_AF + 0x10;
-    for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0; geometryRecordsRemaining = geometryRecordsRemaining - 1) {
+    /* geometry record: +0x00 byte size of the record, +0x08 vertex count, +0x20 vertices (0x40 bytes each) */
+    for (geometryRecordsRemaining = resourceView->packedGeometryRecordCount; geometryRecordsRemaining != 0;
+        geometryRecordsRemaining--) {
       point = (GraphicsFixedVec3 *)(geometryRecord + 0x20);
-      for (vertexCountOrChildIndex = *(int *)(geometryRecord + 8); vertexCountOrChildIndex != 0; vertexCountOrChildIndex = vertexCountOrChildIndex + -1) {
+      for (vertexCountOrChildIndex = *(int *)(geometryRecord + 8); vertexCountOrChildIndex != 0;
+          vertexCountOrChildIndex--) {
         FixedTransform_ApplyPoint
                   ((GraphicsFixedVec3 *)&g_ModelBoundsTransformedPointX,point,
                    &modelNode->worldTransform);
@@ -164,17 +163,17 @@ ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNod
         else if (g_ModelBoundsMaximumZ < g_ModelBoundsTransformedPointZ) {
           g_ModelBoundsMaximumZ = g_ModelBoundsTransformedPointZ;
         }
-        point = (GraphicsFixedVec3 *)&point[5].y;
+        point = (GraphicsFixedVec3 *)&point[5].y; /* + 0x40 bytes: the next vertex */
       }
       geometryRecord = geometryRecord + *(int *)geometryRecord;
     }
   }
   vertexCountOrChildIndex = 0;
-  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
-    if (modelNode->childNodes[vertexCountOrChildIndex] != (ModelRuntimeNode *)0x0) {
+  for (childrenRemaining = modelNode->childCount; childrenRemaining != 0; childrenRemaining--) {
+    if (modelNode->childNodes[vertexCountOrChildIndex] != NULL) {
       ModelNodeRuntime_AccumulateTransformedBoundsRecursive(modelNode->childNodes[vertexCountOrChildIndex]);
     }
-    vertexCountOrChildIndex = vertexCountOrChildIndex + 1;
+    vertexCountOrChildIndex++;
   }
   return;
 }
@@ -809,10 +808,9 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursiveVariantB
 
 
 /* Address: 0x0051BF30.
-   Ownership: world/model/hierarchy.
-   Purpose: Typed parameters: p2 targetRuntimeId→RuntimeToken. Nearby but non-identical semantic domains were
-   explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Walks a model runtime hierarchy and clears the target (+0x6C) of every model of class 13 (definition +0x4C)
+   that points at targetRuntimeId, so no model keeps aiming at a destroyed object. The dword view: [0] model
+   definition, [3] attachment count, [0x1B] target, [0x50 + 8*i] attached child model runtime.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,int *modelRuntime)
@@ -820,14 +818,14 @@ ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,
 {
   int childrenRemaining;
   
-  if (modelRuntime != (int *)0x0) {
+  if (modelRuntime != NULL) {
     childrenRemaining = modelRuntime[3];
     if ((*(int *)(*modelRuntime + 0x4c) == 0xd) && (targetRuntimeId == modelRuntime[0x1b])) {
       modelRuntime[0x1b] = 0;
     }
-    for (; childrenRemaining != 0; childrenRemaining = childrenRemaining + -1) {
+    for (; childrenRemaining != 0; childrenRemaining--) {
       ModelRuntimeHierarchy_ClearMatchingTargetRecursive(targetRuntimeId,(int *)modelRuntime[0x50]);
-      modelRuntime = modelRuntime + 8;
+      modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
     }
   }
   return;
@@ -862,7 +860,7 @@ static int ModelRuntimeHierarchy_SumArmourFrom(uint8_t *node)
   int i;
   for (i = 0; i < childCount; i++) {
     uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
-    if (child != (uint8_t *)0x0) {
+    if (child != NULL) {
       sum = sum + ModelRuntimeHierarchy_SumArmourFrom(child);
     }
   }
@@ -959,14 +957,11 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
 
 
 /* Address: 0x00528E90.
-   Ownership: world/model/hierarchy.
-   Purpose: Allocates and initializes a world-object model node, recursively creates child hierarchy nodes from
-   definition records, links their transforms, and records unresolved children for later repair. Role: Creates one
-   ModelRuntimeNode hierarchy from a model definition and its visual-node tree. Inputs: ModelDefinition visual
-   nodes, SpriteAsset references, local rotations/translations and child offsets. Outputs: Runtime nodes with
-   parent/child links and copied local model state. Edges: Called by
-   ModelRuntimePool_CreateInstanceByDefinitionId.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core].
+   Builds the runtime node tree of a model from its serialized MDL node tree: allocates a world node per
+   definition node, copies the local rotation and the mesh resource, and places each child at the translation
+   of the attachment transform record (kind 0 or 1) that names its slot. Definition nodes whose low nibble of
+   nodeFlags is set are not instantiated (NULL); for such a child an attachment point is recorded in the model
+   runtime so that another model can be attached there later. CF set when a world node could not be allocated.
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelNodeRuntime_CreateHierarchyRecursive
@@ -994,7 +989,7 @@ ModelNodeRuntime_CreateHierarchyRecursive
   ModelNodeCreateResult failureResult;
   
   if ((definitionNode->nodeFlags & 0xf) != 0) {
-    childResult.modelNode = (ModelRuntimeNode *)0x0;
+    childResult.modelNode = NULL;
     childResult.failed = false;
     return childResult;
   }
@@ -1019,6 +1014,7 @@ ModelNodeRuntime_CreateHierarchyRecursive
   ownerArmy = (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime;
   (newNode->runtimePayload).modelRuntime = modelRuntime;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
+  /* 0x20: the army belongs to a faction other than 0 */
   if (ownerArmy->factionIndex != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x20;
   }
@@ -1028,6 +1024,7 @@ ModelNodeRuntime_CreateHierarchyRecursive
   *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
   definitionOrChildrenRemaining = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
+  /* model definition flags (+0x68) 0x10, 0x20 and not 0x40 become node flags 0x10, 0x200 and 0x100 */
   if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x10) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
   }
@@ -1043,19 +1040,20 @@ ModelNodeRuntime_CreateHierarchyRecursive
   (newNode->modelPayload).textureSet = textureSet;
   newNode->subtreeBoundingRadiusQ12 = radiusOrTranslationY;
   (newNode->modelPayload).modelResource = resourceView;
-  newNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
-  newNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
+  newNode->shadingRecord = NULL;
+  newNode->modelRuntimeLinkOrSavedOffset = NULL;
   newNode->renderDepthBiasOrState = 0;
   definitionOrChildrenRemaining = definitionNode->childCount;
   resourceView = (definitionNode->spriteAssetReference).modelResource;
   childIndex = 0;
   newNode->childCount = definitionOrChildrenRemaining;
-  newNode->parentNode = (ModelRuntimeNode *)0x0;
-  for (; definitionOrChildrenRemaining != 0;
-      definitionOrChildrenRemaining = definitionOrChildrenRemaining - 1) {
+  newNode->parentNode = NULL;
+  for (; definitionOrChildrenRemaining != 0; definitionOrChildrenRemaining--) {
     attachmentTransform = (ModelAttachmentTransformRecord *)
               (resourceView->reserved00_AF + resourceView->packedLookupTableRelativeOffset);
-    for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0; transformRecordsRemaining = transformRecordsRemaining - 1) {
+    /* the first transform record of kind 0 or 1 whose selector (bits 4..31) is this child slot */
+    for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0;
+        transformRecordsRemaining--) {
       attachmentKindOrSlot = attachmentTransform->packedKindAndSelector & 0xf;
       if (((attachmentKindOrSlot == 0) || (attachmentKindOrSlot == 1)) && (childIndex == attachmentTransform->packedKindAndSelector >> 4)) {
         childResult = ModelNodeRuntime_CreateHierarchyRecursive
@@ -1069,16 +1067,16 @@ ModelNodeRuntime_CreateHierarchyRecursive
           return failureResult;
         }
         newNode->childNodes[childIndex] = childOrFailedNode;
-        if (childOrFailedNode == (ModelRuntimeNode *)0x0) {
+        if (childOrFailedNode == NULL) {
+          /* an attachment point: record where the child model will hang */
           attachmentKindOrSlot = modelRuntime->attachmentCount0C;
-          if (attachmentKindOrSlot < 6) {
-            modelRuntime->attachmentCount0C = modelRuntime->attachmentCount0C + 1;
+          if (attachmentKindOrSlot < MODEL_RUNTIME_ATTACHMENT_CAPACITY) {
+            modelRuntime->attachmentCount0C++;
             modelRuntime->attachments140[attachmentKindOrSlot].sourceTransform04 = attachmentTransform;
             modelRuntime->attachments140[attachmentKindOrSlot].childNodeIndex0C = childIndex;
             modelRuntime->attachments140[attachmentKindOrSlot].parentModelNodeOrSavedOffset08 = newNode;
             childDefinitionOffset = definitionNode->childSerializedOffsets[childIndex];
-            modelRuntime->attachments140[attachmentKindOrSlot].childModelRuntimeOrSavedOffset00 =
-                 (ModelRuntimeSlot *)0x0;
+            modelRuntime->attachments140[attachmentKindOrSlot].childModelRuntimeOrSavedOffset00 = NULL;
             rotationAngleA = *(AngleTurn32 *)(childDefinitionOffset + 8);
             rotationAngleB = *(AngleTurn32 *)(childDefinitionOffset + 0xc);
             modelRuntime->attachments140[attachmentKindOrSlot].childLocalRotationAngle2 =
@@ -1097,13 +1095,13 @@ ModelNodeRuntime_CreateHierarchyRecursive
         }
         break;
       }
-      attachmentTransform = attachmentTransform + 1;
+      attachmentTransform++;
     }
     if (transformRecordsRemaining == 0) {
       /* no attachment transform for this child */
-      newNode->childNodes[childIndex] = (ModelRuntimeNode *)0x0;
+      newNode->childNodes[childIndex] = NULL;
     }
-    childIndex = childIndex + 1;
+    childIndex++;
   }
   childResult.failed = false;
   childResult.modelNode = newNode;
@@ -1112,11 +1110,8 @@ ModelNodeRuntime_CreateHierarchyRecursive
 
 
 /* Address: 0x005294E0.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively releases child pointers at +0xCC for the exact count at +0xC8, scans the parent object at
-   +0xC4 for references back to the current node and clears each match, then calls the existing node-release
-   helper. EAX and companion register state are preserved.
-   Cross-module calls: WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core].
+   Frees a model node and its whole subtree: releases the children first, clears the parent's childNodes[]
+   entries that point at this node and finally unlinks the node from its world owner list.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
@@ -1127,18 +1122,18 @@ ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
   ModelRuntimeNode *childSlotCursor;
   
   childSlotCursor = node;
-  for (childrenRemaining = node->childCount; childrenRemaining != 0;
-      childrenRemaining = childrenRemaining - 1) {
-    if (childSlotCursor->childNodes[0] != (ModelRuntimeNode *)0x0) {
+  for (childrenRemaining = node->childCount; childrenRemaining != 0; childrenRemaining--) {
+    if (childSlotCursor->childNodes[0] != NULL) {
       ModelRuntimeNode_ReleaseRecursiveAndDetachParent(childSlotCursor->childNodes[0]);
     }
+    /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
     childSlotCursor = (ModelRuntimeNode *)&(childSlotCursor->common).nextNode;
   }
   childSlotCursor = node->parentNode;
-  if (childSlotCursor != (ModelRuntimeNode *)0x0) {
-    for (parentSlotsRemaining = childSlotCursor->childCount; parentSlotsRemaining != 0; parentSlotsRemaining = parentSlotsRemaining - 1) {
+  if (childSlotCursor != NULL) {
+    for (parentSlotsRemaining = childSlotCursor->childCount; parentSlotsRemaining != 0; parentSlotsRemaining--) {
       if (childSlotCursor->childNodes[0] == node) {
-        childSlotCursor->childNodes[0] = (ModelRuntimeNode *)0x0;
+        childSlotCursor->childNodes[0] = NULL;
       }
       childSlotCursor = (ModelRuntimeNode *)&(childSlotCursor->common).nextNode;
     }
@@ -1149,10 +1144,11 @@ ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 
 
 /* Address: 0x0052A100.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively accumulates maximum hierarchy metrics and shot-definition category masks into the owning
-   army runtime derived-selection fields.
-   Cross-module calls: ShotDefinition_ComputeSelectionRange [assets/shot/catalog].
+   Folds one model runtime and its attached children into the owning army's selection figures (cleared by
+   ArmyRuntime_RebuildDerivedSelectionMetrics): maxima at army +0x90, +0x44 and +0x48, the largest shot selection
+   range at +0x4C and, for armed models, the shot's impact damage per target class summed into army +0x100[8].
+   The dword view: [0] model definition, [1] linked runtime, [2] army, [3] attachment count, [0x3B] class
+   state flags (+0xEC), [0x50 + 8*i] attached child model runtime.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
@@ -1169,6 +1165,7 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   definitionArmyOrRemaining = *modelRuntime;
   armyOrCategoryIndex = modelRuntime[2];
   linkedRuntime = modelRuntime[1];
+  /* flag 1 at +0xEC selects the definition's alternative value at +0x1A4 */
   if ((modelRuntime[0x3b] & 1U) == 0) {
     metricValue = *(uint32_t *)(definitionArmyOrRemaining + 0x48);
   }
@@ -1185,6 +1182,7 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   if (*(uint32_t *)(armyOrCategoryIndex + 0x48) < metricValue) {
     *(uint32_t *)(armyOrCategoryIndex + 0x48) = metricValue;
   }
+  /* the model's shot definition (+0x2C), used when +0x30 is non-zero */
   definition = *(ShotDefinition **)(definitionArmyOrRemaining + 0x2c);
   if (*(int *)(definitionArmyOrRemaining + 0x30) != 0) {
     selectionRange = ShotDefinition_ComputeSelectionRange(definition);
@@ -1196,14 +1194,14 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
     do {
       categoryDamageSlot = (int *)(definitionArmyOrRemaining + 0x100 + armyOrCategoryIndex * 4);
       *categoryDamageSlot = *categoryDamageSlot + definition->targetClassImpactDamageQ12[armyOrCategoryIndex];
-      armyOrCategoryIndex = armyOrCategoryIndex + -1;
+      armyOrCategoryIndex--;
     } while (-1 < armyOrCategoryIndex);
   }
-  for (definitionArmyOrRemaining = modelRuntime[3]; definitionArmyOrRemaining != 0; definitionArmyOrRemaining = definitionArmyOrRemaining + -1) {
-    if ((int *)modelRuntime[0x50] != (int *)0x0) {
+  for (definitionArmyOrRemaining = modelRuntime[3]; definitionArmyOrRemaining != 0; definitionArmyOrRemaining--) {
+    if ((int *)modelRuntime[0x50] != NULL) {
       ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics((int *)modelRuntime[0x50]);
     }
-    modelRuntime = modelRuntime + 8;
+    modelRuntime = modelRuntime + 8; /* next 0x20-byte attachment entry */
   }
   return;
 }
@@ -1252,12 +1250,9 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
 
 
 /* Address: 0x0052A6F0.
-   Ownership: world/model/hierarchy.
-   Purpose: Recursively computes the active and total hierarchy metrics returned through the verified register-
-   result wrapper. Computes the active hierarchy metric in EAX and the total hierarchy metric in EDX. The nominal
-   8-byte return type records the verified register pair without changing the calling ABI.
-   [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Computes active and total model-hierarchy Energy demand from
-   ModelRuntimeSlot.energyDemandQ4. Active total excludes nodes marked unpowered via classStateEC bit 0x1.
+   Energy demand of a model and its directly attached models (value +0xF4): EDX returns the total, EAX only
+   the part of models not switched off (classStateEC bit 0). Attached models count only when the definition
+   has flag 0x80 at +0x68; the walk is one level deep, not recursive.
 */
 ModelRuntimeActiveTotalMetricRegisterPair
 ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime)
@@ -1276,15 +1271,16 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
     activeMetricTotal = totalMetric;
   }
   if ((*(uint32_t *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x68) & 0x80) != 0) {
-    for (; attachmentsRemaining != 0; attachmentsRemaining = attachmentsRemaining - 1) {
+    for (; attachmentsRemaining != 0; attachmentsRemaining--) {
       currentChildModelRuntime = modelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
-      if (currentChildModelRuntime != (ModelRuntimeSlot *)0x0) {
+      if (currentChildModelRuntime != NULL) {
         childMetric = (currentChildModelRuntime->classState).definitionDerivedValueF4;
         if (((currentChildModelRuntime->classState).classStateEC & 1) == 0) {
           activeMetricTotal = activeMetricTotal + childMetric;
         }
         totalMetric = totalMetric + childMetric;
       }
+      /* steps the cursor by one 0x20-byte attachments140[] entry */
       modelRuntime = (ModelRuntimeSlot *)(modelRuntime->reserved10_37 + 0x10);
     }
   }
@@ -1469,9 +1465,8 @@ ModelNodeRuntime_SmoothPitchTowardTarget
 
 
 /* Address: 0x004BD1A0.
-   Ownership: world/model/hierarchy.
-   Purpose: Stores one packed tint on the current model runtime node and recursively applies it to every non-null
-   child in the exact child pointer array.
+   Sets the packed ARGB tint of a model node and of all its descendants (the state tint of a whole model,
+   see ModelNodeRuntime_UpdateStateTintRecursive).
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode)
@@ -1481,10 +1476,11 @@ ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *mode
   
   childrenRemaining = modelNode->childCount;
   modelNode->tintArgb = tintArgb;
-  for (; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
-    if (modelNode->childNodes[0] != (ModelRuntimeNode *)0x0) {
+  for (; childrenRemaining != 0; childrenRemaining--) {
+    if (modelNode->childNodes[0] != NULL) {
       ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNode->childNodes[0]);
     }
+    /* steps the cursor by one dword, i.e. to the next childNodes[] entry */
     modelNode = (ModelRuntimeNode *)&(modelNode->common).nextNode;
   }
   return;

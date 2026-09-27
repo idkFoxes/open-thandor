@@ -11,11 +11,9 @@
 /* Implementation ownership: core/memory/allocator. */
 
 /* Address: 0x005368E0.
-   Ownership: core/memory/allocator.
-   Purpose: Sifts the final pointer-and-priority pair upward in a binary max-heap until the parent priority is not
-   smaller. Typed parameters: p2 heapSize→PriorityPairHeapCount_V343, p3 heapBase→EntityPathingPriorityPair *.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Heap-building step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): the newly
+   appended last entity/priority pair moves up the max-heap, swapping with its parent while its priority is
+   larger.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
@@ -24,12 +22,12 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
   EntityPathingPriorityPair *parentHeapPair;
   uint32_t parentSearchIndex;
   EntityPathingPriorityPair *currentHeapPair;
-  int32_t parentPriority;
   int childPriority;
   GameEntityRuntime *childEntity;
-  
+
+  /* parentSearchIndex is the current index - 1: its half is the parent index */
   parentSearchIndex = heapSize - 2;
-  currentHeapPair = heapBase + heapSize + -1;
+  currentHeapPair = heapBase + heapSize - 1;
   if (1 < heapSize) {
     do {
       parentHeapPair = heapBase + (parentSearchIndex >> 1);
@@ -46,16 +44,13 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
       currentHeapPair = parentHeapPair;
     } while (-1 < (int)parentSearchIndex);
   }
-  return;
 }
 
 
 /* Address: 0x00536930.
-   Ownership: core/memory/allocator.
-   Purpose: Sifts the root pointer-and-priority pair downward in a binary max-heap, selecting the larger-priority
-   child at each step. Typed parameters: p2 heapSize→PriorityPairHeapCount_V343. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Extraction step of the heapsort of g_EntityPathingPriorityPairs (world/pathing/grid): after the root was
+   swapped with the last entry, the new root entity/priority pair moves down the max-heap, swapping with its
+   larger-priority child while that child is larger.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPair *heapBase)
@@ -65,40 +60,37 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
   uint32_t selectedChildIndex;
   GameEntityRuntime *selectedChildEntity;
   EntityPathingPriorityPair *currentHeapPair;
-  int leftChildBaseIndex;
+  int doubledParentIndex;
   int32_t displacedParentPriority;
   GameEntityRuntime *displacedParentEntity;
-  
+
   selectedChildIndex = 0;
   currentHeapPair = heapBase;
   while( true ) {
-    leftChildBaseIndex = selectedChildIndex * 2;
-    selectedChildIndex = leftChildBaseIndex + 1;
+    /* children of index i are 2i + 1 and 2i + 2 */
+    doubledParentIndex = selectedChildIndex * 2;
+    selectedChildIndex = doubledParentIndex + 1;
     if (heapSize - 1U < selectedChildIndex) {
       return;
     }
     selectedChildPriority = heapBase[selectedChildIndex].priority;
     selectedChildEntity = heapBase[selectedChildIndex].entity;
     if ((selectedChildIndex < heapSize - 1U) &&
-       (selectedChildPriority < heapBase[leftChildBaseIndex + 2].priority)) {
-      selectedChildIndex = leftChildBaseIndex + 2;
+       (selectedChildPriority < heapBase[doubledParentIndex + 2].priority)) {
+      selectedChildIndex = doubledParentIndex + 2;
       selectedChildPriority = heapBase[selectedChildIndex].priority;
       selectedChildEntity = heapBase[selectedChildIndex].entity;
     }
     if (selectedChildPriority <= currentHeapPair->priority) break;
-    LOCK();
+    /* the original swaps parent and child with XCHG */
     displacedParentPriority = currentHeapPair->priority;
     currentHeapPair->priority = selectedChildPriority;
-    UNLOCK();
-    LOCK();
     displacedParentEntity = currentHeapPair->entity;
     currentHeapPair->entity = selectedChildEntity;
-    UNLOCK();
     heapBase[selectedChildIndex].priority = displacedParentPriority;
     heapBase[selectedChildIndex].entity = displacedParentEntity;
     currentHeapPair = heapBase + selectedChildIndex;
   }
-  return;
 }
 
 

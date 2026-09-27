@@ -592,16 +592,17 @@ void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId action
 
 
 /* Address: 0x004BD160.
-   Ownership: ui/core/runtime.
-   Purpose: Returns the ARGB state tint selected from ModelRuntimeNode.runtimeFlags bits 0x04, 0x08, and 0x10
-   (both callers pass a model runtime node).
+   Tint of a world model from its terrain-derived runtimeFlags (despite the name, both callers pass a
+   ModelRuntimeNode): 0x04 -> opaque white (unchanged colours), else without 0x08 -> 0 (black), with 0x08 and
+   0x10 -> 0x00FFFFFF, with 0x08 only -> opaque grey 0x878787.
 */
 PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node)
 
 {
   PackedArgb32 tintArgb;
   ModelRuntimeFlags stateFlags;
-  
+
+  /* each test leaves the tint of its branch in tintArgb, as the original loads EAX before every TEST */
   tintArgb = 0xffffffff;
   stateFlags = ((ModelRuntimeNode *)node)->runtimeFlags;
   if ((((stateFlags & 4) == 0) && (tintArgb = 0, (stateFlags & 8) != 0)) &&

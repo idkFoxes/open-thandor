@@ -871,4 +871,12 @@
 #define GR_LFBWRITEMODE_565 0x0
 #endif
 
+/* Glide 3 (glide.h) GrTextureFormat_t values of the texture uploads (Glide3_TextureResource_Initialize) */
+#ifndef GR_TEXFMT_RGB_565
+#define GR_TEXFMT_RGB_565 0xa
+#endif
+#ifndef GR_TEXFMT_ARGB_4444
+#define GR_TEXFMT_ARGB_4444 0xc
+#endif
+
 #endif /* THANDOR_PLATFORM_WIN32_CONSTANTS_H */

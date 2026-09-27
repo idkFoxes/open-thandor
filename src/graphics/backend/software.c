@@ -118,15 +118,8 @@ SoftwareRenderer_ClearViewport
 
 
 /* Address: 0x004D1560.
-   Ownership: graphics/backend/software.
-   Purpose: Prepares each packet and dispatches it through g_SoftwareRasterHandlers16Bit. Typed parameters: p0
-   clipMaxY→GraphicsScreenCoordinate_V307, p1 clipMaxX→GraphicsScreenCoordinate_V307, p2
-   clipMinY→GraphicsScreenCoordinate_V307, p3 clipMinX→GraphicsScreenCoordinate_V307. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: SoftwareRenderer_PrepareTrianglePacket.
-   Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
-   [graphics/render/primitives].
+   Queue renderer for 16-bit framebuffers (installed in g_SoftwareDrawQueue by SoftwareRenderer_SetDisplayMode):
+   prepares every packet of the queue and draws it with the 16-bit raster handler its render flags select.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_DrawQueue16Bit
@@ -136,15 +129,16 @@ SoftwareRenderer_DrawQueue16Bit
 
 {
   GraphicsPrimitivePacket *packet;
-  GraphicsPrimitivePacket *currentPacket;
   PrimitivePacketResult queueCursor;
-  
+
   queueCursor = GraphicsPrimitiveQueue_Begin(queue);
   while (packet = queueCursor.packet, !queueCursor.noPacket) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    (**(code **)((int)g_SoftwareRasterHandlers16Bit + ((packet->renderFlags & 0x3f000) >> 10)))
+    /* handler index * 4 = byte offset into the handler table */
+    (**(code **)((int)g_SoftwareRasterHandlers16Bit +
+                 ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
-    g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
+    g_PrimitiveDrawCallCount++;
     queueCursor = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
@@ -152,15 +146,8 @@ SoftwareRenderer_DrawQueue16Bit
 
 
 /* Address: 0x004D15D0.
-   Ownership: graphics/backend/software.
-   Purpose: Prepares each packet and dispatches it through g_SoftwareRasterHandlersNon16Bit. Typed parameters: p0
-   clipMaxY→GraphicsScreenCoordinate_V307, p1 clipMaxX→GraphicsScreenCoordinate_V307, p2
-   clipMinY→GraphicsScreenCoordinate_V307, p3 clipMinX→GraphicsScreenCoordinate_V307. Calling convention, exact
-   VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: SoftwareRenderer_PrepareTrianglePacket.
-   Cross-module calls: GraphicsPrimitiveQueue_Begin [graphics/render/primitives], GraphicsPrimitiveQueue_Next
-   [graphics/render/primitives].
+   Queue renderer for every framebuffer that is not 16-bit, i.e. 32-bit (installed in g_SoftwareDrawQueue by
+   SoftwareRenderer_SetDisplayMode): like SoftwareRenderer_DrawQueue16Bit, with g_SoftwareRasterHandlersNon16Bit.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_DrawQueueNon16Bit
@@ -170,15 +157,16 @@ SoftwareRenderer_DrawQueueNon16Bit
 
 {
   GraphicsPrimitivePacket *packet;
-  GraphicsPrimitivePacket *currentPacket;
   PrimitivePacketResult queueCursor;
-  
+
   queueCursor = GraphicsPrimitiveQueue_Begin(queue);
   while (packet = queueCursor.packet, !queueCursor.noPacket) {
     SoftwareRenderer_PrepareTrianglePacket(packet);
-    (**(code **)((int)g_SoftwareRasterHandlersNon16Bit + ((packet->renderFlags & 0x3f000) >> 10)))
+    /* handler index * 4 = byte offset into the handler table */
+    (**(code **)((int)g_SoftwareRasterHandlersNon16Bit +
+                 ((packet->renderFlags & GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK) >> 10)))
               (clipMaxY,clipMaxX,clipMinY,clipMinX,packet);
-    g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;
+    g_PrimitiveDrawCallCount++;
     queueCursor = GraphicsPrimitiveQueue_Next(queue);
   }
   return;
@@ -2940,29 +2928,27 @@ void SoftwareRasterAux_Mode12
 }
 
 /* Address: 0x004FE620.
-   Ownership: graphics/backend/software.
-   Purpose: Calls the previous display-mode hook, updates the software depth buffer, selects the raster backend
-   from g_FramebufferAccess->bytesPerPixel, and rebuilds the runtime MMX pixel constants. ABI: CF clear means
-   success. CF set means failure. Typed parameters: p0 modeArg0→DisplayModeHookArgument0_V345, p1
-   modeArg1→DisplayModeHookArgument1_V345. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Software hook in front of g_GraphicsSetDisplayMode (see SoftwareRenderer_InstallDisplayModeHook): after the
+   chained mode switch succeeds it picks the queue renderer for the new pixel depth, replaces the depth buffer
+   with one of the new size and rebuilds the MMX colour constants from the new pixel format. CF set when the
+   chained hook or the depth-buffer allocation fails.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 SoftwareRenderer_SetDisplayMode
-          (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
+          (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
-  int32_t *memory;
+  int32_t *previousDepthBuffer;
   uint32_t blueUnpackScale;
   uint8_t redBits;
   uint8_t greenBits;
   uint8_t blueBits;
   DisplayModeResult hookResult;
-  
-  hookResult = g_SoftwareChainedSetDisplayMode(modeArg0,modeArg1,height,width);
+
+  hookResult = g_SoftwareChainedSetDisplayMode(adapterIndex,bitsPerPixel,height,width);
   if (!hookResult.failed) {
-    g_SoftwareDepthRowStrideBytes = width * 4;
+    g_SoftwareDepthRowStrideBytes = width * 4; /* one int32 depth value per pixel */
     if (g_FramebufferAccess->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
       g_SoftwareDrawQueue = SoftwareRenderer_DrawQueue16Bit;
     }
@@ -2970,45 +2956,49 @@ SoftwareRenderer_SetDisplayMode
       g_SoftwareDrawQueue = SoftwareRenderer_DrawQueueNon16Bit;
     }
     hookResult = THANDOR_BITCAST(ArenaAllocResult, DisplayModeResult, g_MemoryApi.alloc(g_SoftwareDepthRowStrideBytes * height));
-    memory = g_SoftwareDepthBuffer;
+    previousDepthBuffer = g_SoftwareDepthBuffer;
     if (!hookResult.failed) {
       LOCK();
       UNLOCK();
       g_SoftwareDepthBuffer = (int32_t *)hookResult.valueOrError;
-      g_MemoryApi.free(memory);
+      g_MemoryApi.free(previousDepthBuffer);
       g_SoftwareDepthEpoch = 0;
+      /* quantize mask: the top <bits> bits of a Q12 colour channel */
       redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
-           (SoftwareColorLaneFixed16)((1 << (redBits & 0x1f)) + -1 << (0xc - redBits & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (redBits & 0x1f)) - 1) << ((12 - redBits) & 0x1f));
       greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
-           (SoftwareColorLaneFixed16)((1 << (greenBits & 0x1f)) + -1 << (0xc - greenBits & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (greenBits & 0x1f)) - 1) << ((12 - greenBits) & 0x1f));
       blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
-           (SoftwareColorLaneFixed16)((1 << (blueBits & 0x1f)) + -1 << (0xc - blueBits & 0x1f));
+           (SoftwareColorLaneFixed16)(((1 << (blueBits & 0x1f)) - 1) << ((12 - blueBits) & 0x1f));
+      /* pack weight: moves a quantized Q12 channel to its bit position in the native pixel */
       g_SoftwarePixelMmxConstants.packWeights.red =
            (SoftwareColorLaneFixed16)
-           (1 << ((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4 & 0x1f));
+           (1 << (((redBits + (char)g_SoftwarePixelFormatConfig.redShift) - 4) & 0x1f));
       g_SoftwarePixelMmxConstants.packWeights.green =
            (SoftwareColorLaneFixed16)
-           (1 << ((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4 & 0x1f));
+           (1 << (((greenBits + (char)g_SoftwarePixelFormatConfig.greenShift) - 4) & 0x1f));
       g_SoftwarePixelMmxConstants.packWeights.blue =
            (SoftwareColorLaneFixed16)
-           (1 << ((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4 & 0x1f));
+           (1 << (((blueBits + (char)g_SoftwarePixelFormatConfig.blueShift) - 4) & 0x1f));
       g_SoftwarePixelMmxConstants.packedPixelMasks.red =
            (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.redMask;
       g_SoftwarePixelMmxConstants.packedPixelMasks.green =
            (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.greenMask;
       g_SoftwarePixelMmxConstants.packedPixelMasks.blue =
            (SoftwareColorLaneFixed16)g_SoftwarePixelFormatConfig.blueMask;
+      /* unpack scale: moves a native channel to the top of a 16-bit word lane */
       g_SoftwarePixelMmxConstants.unpackScales.red =
            (SoftwareColorLaneFixed16)
-           (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.redShift) - redBits & 0x1f));
+           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.redShift) - redBits & 0x1f));
       g_SoftwarePixelMmxConstants.unpackScales.green =
            (SoftwareColorLaneFixed16)
-           (1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & 0x1f));
-      blueUnpackScale = 1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & 0x1f);
+           (1 << ((16 - (char)g_SoftwarePixelFormatConfig.greenShift) - greenBits & 0x1f));
+      blueUnpackScale = 1 << ((16 - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & 0x1f);
       g_SoftwarePixelMmxConstants.unpackScales.blue = (SoftwareColorLaneFixed16)blueUnpackScale;
+      /* success leaves the last computed value (the blue unpack scale) in EAX */
       hookResult.failed = false;
       hookResult.valueOrError = blueUnpackScale;
     }
@@ -3208,9 +3198,9 @@ SoftwareTexture_BilinearBlendScaleSubresources
 
 
 /* Address: 0x004D16D0.
-   Ownership: graphics/backend/software.
-   Purpose: Subtracts 0x01000000 from the depth epoch. On unsigned underflow or zero, fills the width*height depth
-   buffer with 0xFFFFFFFF and resets the epoch to 0xFF000000.
+   Starts a new depth epoch instead of clearing the depth buffer: the epoch in the top byte of every depth
+   value drops by one (0x01000000), so every new depth is nearer than any value left from earlier epochs. Only when the epoch underflows or
+   reaches zero is the width*height depth buffer really cleared (0xFFFFFFFF) and the epoch reset to 0xFF000000.
 */
 void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
 
@@ -3218,15 +3208,15 @@ void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
   int pixelsRemaining;
   int32_t *depthValueCursor;
   bool depthEpochWrapped;
-  
+
   depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < 0x1000000;
-  g_SoftwareDepthEpoch = g_SoftwareDepthEpoch + -0x1000000;
+  g_SoftwareDepthEpoch = g_SoftwareDepthEpoch - 0x1000000;
   if (depthEpochWrapped || g_SoftwareDepthEpoch == 0) {
     depthValueCursor = g_SoftwareDepthBuffer;
     for (pixelsRemaining = g_FramebufferWidth * g_FramebufferHeight; pixelsRemaining != 0;
-        pixelsRemaining = pixelsRemaining + -1) {
+        pixelsRemaining--) {
       *depthValueCursor = -1;
-      depthValueCursor = depthValueCursor + 1;
+      depthValueCursor++;
     }
     g_SoftwareDepthEpoch = -0x1000000;
   }
@@ -3518,10 +3508,11 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
 
 
 /* Address: 0x004FE840.
-   Ownership: graphics/backend/software.
-   Purpose: Reorders the three 0x20-byte vertices by screen Y, truncates screen X/Y to Q12 pixel boundaries, adds
-   the current depth epoch, updates flat-shading flags, and rescales texture coordinates from textureEntry
-   widthLog2/heightLog2.
+   Readies one packet for the software raster handlers: sorts the three 0x20-byte vertices by screen Y, snaps
+   screen X/Y to whole Q12 pixels, adds the current depth epoch to each depth, sets the flat-shaded flag when all
+   vertex colours are equal and, for textured packets, scales U/V from a 256-texel range down to the texture's
+   widthLog2/heightLog2 size. The vertex slots are addressed as packet pointers (slot->vertices[0]), as Ghidra
+   typed the swap registers.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
@@ -3662,6 +3653,7 @@ SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags:
   movedColorOrFirstColor = packet->vertices[0].diffuseColor;
   savedColorOrSecondColor = packet->vertices[1].diffuseColor;
   thirdColor = packet->vertices[2].diffuseColor;
+  /* 0xfffff000 drops the Q12 fraction: whole pixels */
   packet->vertices[0].screenX = packet->vertices[0].screenX & 0xfffff000;
   screenYField = &packet->vertices[0].screenY;
   *screenYField = *screenYField & 0xfffff000;
@@ -3677,11 +3669,11 @@ SoftwareRenderer_PrepareTrianglePacket_QuantizeOrderedVerticesAndPrepareFlags:
   *screenYField = *screenYField & 0xfffff000;
   depthField = &packet->vertices[2].depth;
   *depthField = *depthField + depthEpoch;
-  packet->renderFlags = packet->renderFlags & 0xffff7fff;
+  packet->renderFlags = packet->renderFlags & ~GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
   if ((movedColorOrFirstColor == savedColorOrSecondColor) && (movedColorOrFirstColor == thirdColor)) {
-    packet->renderFlags = packet->renderFlags | 0x8000;
+    packet->renderFlags = packet->renderFlags | GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED;
   }
-  if ((packet->renderFlags & 0x10000) != 0) {
+  if ((packet->renderFlags & GRAPHICS_PRIMITIVE_FLAG_TEXTURED) != 0) {
     textureEntryRef = packet->textureEntry;
     texelShift = 8 - (char)textureEntryRef->widthLog2;
     textureCoordField = &packet->vertices[0].textureU;

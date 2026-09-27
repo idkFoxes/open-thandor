@@ -24,6 +24,38 @@
 #define GRID_SCRATCH_BLOCKED 0x80000000u         /* bit 31: map-edge field cell; projected tests reject it */
 #define GRID_SCRATCH_REBUILD_KEEP_BITS 0x00ffff01 /* visited bit and the distance bands survive the terrain rebuild */
 
+/* Scratch-grid geometry and path costs (EntityPathing_* / GridPathCost_* / GridFootprint_* / GridInfluence_*).
+   World -> scratch cell: the field-grid Q12 coordinate (FIELD_GRID_WORLD_X_TO_COLUMN_Q20 /
+   FIELD_GRID_WORLD_Y_TO_ROW_Q20, column skewed by half the row) plus GRID_SCRATCH_INDEX_BIAS_Q12, shifted right
+   by GRID_SCRATCH_CELL_SHIFT. Scratch cell -> world: index * GRID_SCRATCH_CELL_Q12 - GRID_SCRATCH_CELL_CENTER_Q12
+   is the Q12 field-grid coordinate of the cell centre, scaled by FIELD_GRID_WORLD_COLUMN_STEP_X /
+   FIELD_GRID_WORLD_ROW_STEP_Y. */
+#define GRID_SCRATCH_CELL_Q12 0x400        /* one scratch cell (a quarter field cell) in Q12 field-grid units */
+#define GRID_SCRATCH_CELL_SHIFT 10
+#define GRID_SCRATCH_INDEX_BIAS_Q12 0x800  /* scratch index 0 lies two scratch cells before field-grid 0 */
+#define GRID_SCRATCH_CELL_CENTER_Q12 0x600 /* bias minus half a scratch cell */
+#define GRID_SCRATCH_COLUMN_WORLD_X 0x240  /* world X between neighbouring scratch columns (0x901 / 4) */
+#define GRID_SCRATCH_HALF_COLUMN_WORLD_X 0x120 /* world X skew of the next scratch row */
+#define GRID_SCRATCH_ROW_PAIR_WORLD_Y 999  /* world Y of two scratch rows: one step of the footprint/band walkers */
+#define GRID_SCRATCH_ROW_ABOVE_WORLD_Y 499 /* world Y from a scratch row to the row above (rounded down) */
+#define GRID_SCRATCH_ROW_BELOW_WORLD_Y 500 /* world Y from a scratch row to the row below */
+#define GRID_FOOTPRINT_RADIUS_MARGIN 499   /* added to every footprint/influence radius before squaring */
+#define GRID_SCRATCH_LOW_BAND0 0x100       /* lowest low-distance band bit; << grid class = that class's band */
+#define GRID_SCRATCH_HIGH_BAND0 0x10000    /* lowest high-distance band bit */
+/* GridScratchCell.pathCost: reset to GRID_PATH_COST_UNREACHED, 0 at the propagation origin; each hex step costs
+   GRID_PATH_STEP_COST, less on the moving faction's own cells and more on its high-cost cells. */
+#define GRID_PATH_COST_UNREACHED 0x7fffffff
+#define GRID_PATH_COST_MAX_REACHED 0x7ffffffe
+#define GRID_PATH_STEP_COST 4
+#define GRID_PATH_STEP_COST_OWN_FACTION 3
+#define GRID_PATH_STEP_COST_HIGH 12
+#define GRID_PATH_PROPAGATION_PASSES 6             /* passes of GridPathCost_PropagateWeightedHexNeighbors */
+#define GRID_PATH_COST_QUEUE_PASS_ENTRIES 0x10000  /* queue entries per propagation pass */
+#define GRID_PATH_NEAREST_SEARCH_RADIUS 16         /* GridPathCost_FindNearestUnblockedCell scans +-16 cells */
+/* GridReachability_MarkOpenRegionRecursive stops at blocked cells, terrain classes 28..30, low bands 0..6 and
+   visited cells */
+#define GRID_REACHABILITY_OPEN_STOP_MASK 0xf0007f01
+
 /* 0x005349D0 */
 PathingDestinationResult
 EntityPathing_ResolveDestinationAndRebuildRoutes
@@ -87,8 +119,8 @@ GridScratch_TestWorldPointReachability
 /* 0x00534660 */
 PathBacktrackResult __thandor_eax_cf_preserve_edx
 GridPathCost_BacktrackBestHexRoute
-          (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate targetRow,
-          FieldGridCellCoordinate targetColumn,GridScratchCell *startCell);
+          (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
+          FieldGridCellCoordinate startColumn,GridScratchCell *startCell);
 
 /* 0x00534960 */
 GridPathMarkedRegionCellRegisterResult GridPathRegion_MarkUnreachableFromCell (GridPathUnreachableReferenceRow32 referenceRow, GridPathUnreachableReferenceColumn32 referenceColumn,FieldGridCellCoordinate row, FieldGridCellCoordinate column);
@@ -127,14 +159,14 @@ GridPathRegion_MarkUnreachableRecursive
 /* 0x00534E70 */
 int __thandor_void_preserve_eax_ecx_edx
 GridFootprint_ClearTraversalFlagsDiagonalNegative
-          (FieldGridCellCoordinate centerX,FieldGridCellCoordinate centerY,
-          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint32_t *scratchRecord);
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
 /* 0x00534EE0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridFootprint_ClearTraversalFlagsDiagonalPositive
-          (FieldGridCellCoordinate centerX,FieldGridCellCoordinate centerY,
-          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint32_t *scratchRecord);
+          (FieldGridCellCoordinate centerWorldYQ12,FieldGridCellCoordinate centerWorldXQ12,
+          FieldGridCellCoordinate cellWorldYQ12,FieldGridCellCoordinate cellWorldXQ12,uint32_t *scratchRecord);
 
 /* 0x005363C0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -146,7 +178,7 @@ GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchC
 
 /* 0x005342F0 */
 NearestCellResult __thandor_eax_cf_preserve_ecx_edx
-GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX);
+GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate cellRow,FieldGridCellCoordinate cellColumn);
 
 /* 0x005344B0 */
 bool __thandor_cf_preserve_eax_ecx_edx

@@ -649,10 +649,10 @@ Glide3_TextureSet_DestroyBackend(GraphicsTextureSet *setRegisterMirror,GraphicsT
 
 
 /* Address: 0x00580470.
-   Ownership: graphics/backend/glide.
-   Purpose: Presents the current Glide framebuffer, swaps the tracked backend state around the buffer-swap calls,
-   and serializes access through g_GraphicsBackendAccessState.
-   Local calls: Glide3_Cursor_ComposeBeforePresent.
+   Glide backend of the frame present (framebuffer is unused): swaps the current and alternate cursor records,
+   draws the cursor into the back buffer and, unless the framebuffer is locked (g_GraphicsBackendAccessState),
+   waits for Glide and swaps buffers on the next vertical retrace. The cursor records are swapped back afterwards,
+   so the cursor drawn for this frame is tracked in the alternate record.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
@@ -683,15 +683,15 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
   g_CursorAlternateVisibilityToken = visibilityTokenOrAccessState;
   g_CursorAlternateDrawX = drawX;
   g_CursorAlternateDrawY = drawY;
-  Glide3_Cursor_ComposeBeforePresent((IDirectDrawSurface3 *)0x1);
+  Glide3_Cursor_ComposeBeforePresent(GLIDE_CURSOR_PRESENT_SENTINEL);
   visibilityTokenOrAccessState = g_GraphicsBackendAccessState;
   LOCK();
   g_GraphicsBackendAccessState = 1;
   UNLOCK();
   if (visibilityTokenOrAccessState == 0) {
     g_GrFinish();
-    g_GrBufferSwap(1);
-    g_GraphicsBackendAccessState = g_GraphicsBackendAccessState + -1;
+    g_GrBufferSwap(1); /* swap interval: one vertical retrace */
+    g_GraphicsBackendAccessState--;
   }
   drawY = g_CursorCurrentDrawY;
   drawX = g_CursorCurrentDrawX;
@@ -934,11 +934,10 @@ Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphic
 
 
 /* Address: 0x00580540.
-   Ownership: graphics/backend/glide.
-   Purpose: Captures Glide RGB565 data and converts it to opaque ARGB8888. Returns
-   GraphicsCapturedTextureSourceAsset with a fixed 0x200-byte header, sourceEntry at 0x200, and argb8888Pixels at
-   0x220. sourceEntry uses paletteIndex=-1, dataOffset=0x220, originX=originY=0, and logical/pixel dimensions equal
-   to the capture dimensions. ABI: CF clear means success. CF set means failure.
+   Glide backend of GraphicsFramebuffer_CaptureRegion (screenshots, captured textures): reads the region of the
+   RGB565 back buffer with grLfbReadRegion and returns it as a one-image 'gfx' asset of opaque ARGB8888 pixels
+   (same layout as the DirectDraw capture: source entry at GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET, pixels at
+   GRAPHICS_CAPTURE_PIXELS_OFFSET). CF set when the allocation fails.
 */
 FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 Glide3_Framebuffer_CaptureRegion
@@ -957,29 +956,31 @@ Glide3_Framebuffer_CaptureRegion
   uint32_t buffer;
   GraphicsPixelDimension width;
   GraphicsPixelDimension height;
-  uint16_t *destinationPixels;
-  
+  uint16_t *rgb565Staging;
+
   pixelCountOrRemaining = captureWidth * captureHeight;
-  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, g_MemoryApi.alloc(pixelCountOrRemaining * 4 + 0x220));
+  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, g_MemoryApi.alloc(pixelCountOrRemaining * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET));
   capturedAsset = captureResult.capture;
   if (!captureResult.failed) {
-    destinationPixels = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
+    /* the RGB565 read-back goes into the upper half of the pixel area and is widened in place, front to back */
+    rgb565Staging = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
     strideOrTimestamp = captureWidth * 2;
+    /* dword clear of the header (0x88 dwords = GRAPHICS_CAPTURE_PIXELS_OFFSET) and of the pixel dwords */
     clearCursor = capturedAsset;
-    for (pixelCountOrRemaining = pixelCountOrRemaining + 0x88; pixelCountOrRemaining != 0; pixelCountOrRemaining = pixelCountOrRemaining + -1) {
+    for (pixelCountOrRemaining = pixelCountOrRemaining + 0x88; pixelCountOrRemaining != 0; pixelCountOrRemaining--) {
       (clearCursor->common).magic = 0;
       clearCursor = (GraphicsCapturedTextureSourceAsset *)&(clearCursor->common).allocationSizeBytes;
     }
-    buffer = 1;
+    buffer = GR_BUFFER_BACKBUFFER;
     width = captureWidth;
     height = captureHeight;
-    sourcePixelCursor = destinationPixels;
+    sourcePixelCursor = rgb565Staging;
     g_GrFinish();
-    g_GrLfbReadRegion(buffer,sourceX,sourceY,width,height,strideOrTimestamp,destinationPixels);
+    g_GrLfbReadRegion(buffer,sourceX,sourceY,width,height,strideOrTimestamp,rgb565Staging);
     (capturedAsset->common).magic = ASSET_MAGIC_GFX;
     /* The original stores EDX after the Glide calls, i.e. whatever glide3x left there; this is the
        allocation size, as the DirectDraw capture stores (the screenshot writer uses it as file size). */
-    (capturedAsset->common).allocationSizeBytes = captureWidth * captureHeight * 4 + 0x220;
+    (capturedAsset->common).allocationSizeBytes = captureWidth * captureHeight * 4 + GRAPHICS_CAPTURE_PIXELS_OFFSET;
     (capturedAsset->common).formatVersion = 1;
     (capturedAsset->common).converterVersion = 0;
     strideOrTimestamp = g_LocaleGetPackedCurrentTime();
@@ -995,7 +996,7 @@ Glide3_Framebuffer_CaptureRegion
     capturedAsset->opaqueTablePayloadBC_1FF[0x44] = 0;
     (capturedAsset->tableDescriptor).subresourceCount = 1;
     (capturedAsset->tableDescriptor).paletteBankCount = 0;
-    (capturedAsset->tableDescriptor).subresourceTableOffset = 0x200;
+    (capturedAsset->tableDescriptor).subresourceTableOffset = GRAPHICS_CAPTURE_SOURCE_ENTRY_OFFSET;
     (capturedAsset->sourceEntry).logicalWidth = captureWidth;
     (capturedAsset->sourceEntry).logicalHeight = captureHeight;
     (capturedAsset->sourceEntry).pixelWidth = captureWidth;
@@ -1003,16 +1004,18 @@ Glide3_Framebuffer_CaptureRegion
     (capturedAsset->sourceEntry).originX = 0;
     (capturedAsset->sourceEntry).originY = 0;
     (capturedAsset->sourceEntry).paletteIndex = -1;
-    (capturedAsset->sourceEntry).dataOffset = 0x220;
+    (capturedAsset->sourceEntry).dataOffset = GRAPHICS_CAPTURE_PIXELS_OFFSET;
     argbCursor = capturedAsset->argb8888Pixels;
     pixelCountOrRemaining = captureWidth * captureHeight;
     do {
+      /* RGB565 -> ARGB8888 with alpha 0xff; each channel's top bits are repeated into its low bits (the
+         original's SHLD chain) */
       rgb565Pixel = *sourcePixelCursor;
       *argbCursor = (((((rgb565Pixel >> 0xb | 0x1fe0) << 3 | (uint32_t)(rgb565Pixel >> 0xd)) << 6 | (rgb565Pixel & 0x7ff) >> 5
                   ) << 2 | (rgb565Pixel & 0x7ff) >> 9) << 5 | rgb565Pixel & 0x1f) << 3 | (rgb565Pixel & 0x1f) >> 2;
-      sourcePixelCursor = sourcePixelCursor + 1;
-      argbCursor = argbCursor + 1;
-      pixelCountOrRemaining = pixelCountOrRemaining + -1;
+      sourcePixelCursor++;
+      argbCursor++;
+      pixelCountOrRemaining--;
     } while (pixelCountOrRemaining != 0);
     captureResult = THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(FramebufferCaptureResult, uint64_t, captureResult) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
@@ -1021,9 +1024,8 @@ Glide3_Framebuffer_CaptureRegion
 
 
 /* Address: 0x005806E0.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide cursor restoration no-op. The Glide pre-present path draws directly into the locked framebuffer
-   and does not use a saved DirectDraw surface background.
+   Glide version of GraphicsCursor_RestoreAfterPresent: does nothing, because Glide3_Cursor_ComposeBeforePresent
+   draws into the back buffer, which the next frame redraws anyway, and saves no background.
 */
 void Glide3_Cursor_RestoreAfterPresentNoOp(IDirectDrawSurface3 *backSurfaceSentinel)
 
@@ -1647,13 +1649,20 @@ GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureRes
   return;
 }
 
+/* Glide texture-source blits (0x00581150..0x00582D30): each one is the Glide version of the matching
+   SoftwareTextureSource_*16 blit (docs/software_raster.md, "Asset layout" and "Common structure"), which it calls
+   for any framebuffer other than the locked Glide back buffer g_DisplayFramebufferAccess. Blends read the
+   destination pixel at destination + g_GlideSecondBufferOffset (the LFB read lock) and write it at the
+   destination. The source entry fields are read relative to assetRelativeAddressAnchor28 (asset + 0x28) at
+   entry offset - 0x28: -0x20 paletteIndex, -0x1C dataOffset, -0x18/-0x14 originX/Y, -0x10/-0xC
+   pixelWidth/Height. Palette entry dwords are addressed as sourceAsset[bank * 4 + 1] (0x200-byte asset
+   structs, i.e. asset + 0x200 + bank * 0x800) + anchor offset + texel * 8 - 0x28 (+0 ARGB) or - 0x24 (+4 native
+   pixel with alpha). */
+
 /* Address: 0x00581150.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected source-alpha blitter. It falls back to SoftwareTextureSource_BlitSourceAlpha16 for
-   ordinary framebuffer objects and uses the Glide framebuffer-offset path for the special backend target. ABI: the
-   implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
-   not a semantic API result. CF is cleared before normal return.
-   Cross-module calls: SoftwareTextureSource_BlitSourceAlpha16 [graphics/backend/software].
+   Source-alpha blit of one subresource at (drawX, drawY) into the Glide back buffer: alpha 0 is skipped, alpha
+   255 writes the colour converted to the native pixel, anything between is blended. Paletted texels test and
+   write the palette entry's +4 dword and blend +0 (see docs/software_raster.md). Returns with CF clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitSourceAlpha
@@ -1678,12 +1687,12 @@ Glide3_TextureSource_BlitSourceAlpha
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm1PackedValue1;
+  uint64_t weightedDestinationPalette;
+  uint64_t packedPairPalette;
+  uint64_t weightedDestinationDirect;
+  uint64_t packedPairDirect;
+  uint64_t weightedSourcePalette;
+  uint64_t weightedSourceDirect;
 
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -1751,10 +1760,10 @@ Glide3_TextureSource_BlitSourceAlpha
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                  mm1PackedValue1 =
+                  weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue2 =
+                  weightedDestinationDirect =
                        pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                   (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -1764,16 +1773,16 @@ Glide3_TextureSource_BlitSourceAlpha
                                                   (uint16_t)((short)destinationLanes *
                                                           g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue3 =
-                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
-                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
-                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
-                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
+                  packedPairDirect =
+                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
+                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
+                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
+                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)(mm0PackedValue3 >> 8) +
-                       (short)(mm0PackedValue3 >> 0x28);
+                       (short)(packedPairDirect >> 8) +
+                       (short)(packedPairDirect >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -1784,13 +1793,13 @@ Glide3_TextureSource_BlitSourceAlpha
                                ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (widthOrPaletteIndex - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return false;
@@ -1859,10 +1868,10 @@ Glide3_TextureSource_BlitSourceAlpha
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                  mm1PackedValue0 =
+                  weightedSourcePalette =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue0 =
+                  weightedDestinationPalette =
                        pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                   (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -1872,28 +1881,28 @@ Glide3_TextureSource_BlitSourceAlpha
                                                   (uint16_t)((short)destinationLanes *
                                                           g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue1 =
-                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
-                                                   (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
-                                                   (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
-                                                   (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+                  packedPairPalette =
+                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
+                                                   (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
+                                                   (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
+                                                   (short)weightedDestinationPalette + (short)weightedSourcePalette) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)(mm0PackedValue1 >> 8) +
-                       (short)(mm0PackedValue1 >> 0x28);
+                       (short)(packedPairPalette >> 8) +
+                       (short)(packedPairPalette >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor = (short)sourceArgb;
                 }
               }
-              sourceIndexCursor = sourceIndexCursor + 1;
+              sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceIndexCursor = sourceIndexCursor + (indexedSourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
         }
@@ -1910,12 +1919,9 @@ Glide3_TextureSource_BlitSourceAlpha
 
 
 /* Address: 0x005814D0.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected half-source-RGB blitter with the same verified nine-argument ABI. ABI: the
-   implementation preserves the input drawX in EAX and drawY in EDX. That qword is register-preservation behavior,
-   not a semantic API result. CF is cleared before normal return. It selects an existing resource facet and does
-   not imply sprite, model, or effect identity.
-   Cross-module calls: SoftwareTextureSource_BlitHalfSourceRgb16 [graphics/backend/software].
+   Like Glide3_TextureSource_BlitSourceAlpha, but the source colour enters the blend at half strength (lanes
+   >> 3 instead of >> 2) and there is no opaque shortcut: every texel with alpha != 0 is blended, alpha 255
+   included. Returns with CF clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitHalfSourceRgb
@@ -1940,12 +1946,12 @@ Glide3_TextureSource_BlitHalfSourceRgb
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm1PackedValue1;
+  uint64_t weightedDestinationPalette;
+  uint64_t packedPairPalette;
+  uint64_t weightedDestinationDirect;
+  uint64_t packedPairDirect;
+  uint64_t weightedSourcePalette;
+  uint64_t weightedSourceDirect;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -2012,10 +2018,10 @@ Glide3_TextureSource_BlitHalfSourceRgb
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm1PackedValue1 =
+                weightedSourceDirect =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                mm0PackedValue2 =
+                weightedDestinationDirect =
                      pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                         g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                 (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2025,24 +2031,24 @@ Glide3_TextureSource_BlitHalfSourceRgb
                                                 (uint16_t)((short)destinationLanes *
                                                         g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                mm0PackedValue3 =
-                     pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
-                                                 (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
-                                                 (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
-                                                 (short)mm0PackedValue2 + (short)mm1PackedValue1) &
+                packedPairDirect =
+                     pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
+                                                 (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
+                                                 (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
+                                                 (short)weightedDestinationDirect + (short)weightedSourceDirect) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)(mm0PackedValue3 >> 8) +
-                     (short)(mm0PackedValue3 >> 0x28);
+                     (short)(packedPairDirect >> 8) +
+                     (short)(packedPairDirect >> 0x28);
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (widthOrPaletteIndex - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return false;
@@ -2108,10 +2114,10 @@ Glide3_TextureSource_BlitHalfSourceRgb
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm1PackedValue0 =
+                weightedSourcePalette =
                      pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                mm0PackedValue0 =
+                weightedDestinationPalette =
                      pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                         g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                 (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2121,24 +2127,24 @@ Glide3_TextureSource_BlitHalfSourceRgb
                                                 (uint16_t)((short)destinationLanes *
                                                         g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                mm0PackedValue1 =
-                     pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
-                                                 (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
-                                                 (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
-                                                 (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+                packedPairPalette =
+                     pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
+                                                 (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
+                                                 (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
+                                                 (short)weightedDestinationPalette + (short)weightedSourcePalette) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((uint64_t)mm0PackedValue1 >> 8) +
-                     (short)((uint64_t)mm0PackedValue1 >> 0x28);
+                     (short)((uint64_t)packedPairPalette >> 8) +
+                     (short)((uint64_t)packedPairPalette >> 0x28);
               }
-              sourceIndexCursor = sourceIndexCursor + 1;
+              sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceIndexCursor = sourceIndexCursor + (indexedSourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
         }
@@ -2155,13 +2161,12 @@ Glide3_TextureSource_BlitHalfSourceRgb
 
 
 /* Address: 0x005817F0.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected direct-color bilinear stretch. Ordinary framebuffer objects fall back to
-   SoftwareTextureSource_StretchDirectColorBilinear16. The source entry must be direct color: paletteIndex == -1.
-   The function computes 8-bit fractional source steps from (pixelWidth-1)/(destinationWidth-1) and
-   (pixelHeight-1)/(destinationHeight-1). Four neighboring ARGB8888 pixels are blended horizontally and vertically
-   through g_SoftwareBilinearForwardFactors and g_SoftwareBilinearInverseFactors.
-   Cross-module calls: SoftwareTextureSource_StretchDirectColorBilinear16 [graphics/backend/software].
+   Glide version of SoftwareTextureSource_StretchDirectColorBilinear16 (the fallback for any other framebuffer):
+   draws a direct-colour subresource (paletteIndex -1) scaled bilinearly to destinationWidth x destinationHeight
+   at (destinationX, destinationY) of the locked 16-bit Glide back buffer, two pixels per step. Source steps are
+   8.8 fixed point, (size - 1) * 256 / (destinationSize - 1); nothing is clipped. Original quirks kept: an odd
+   width drops the last column, a width below 2 or a height of 0 loops 2^32 times, and a destination size of 1
+   divides by zero.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureSource_StretchDirectColorBilinear
@@ -2199,26 +2204,26 @@ Glide3_TextureSource_StretchDirectColorBilinear
   uint16_t firstLane1;
   uint16_t firstLane2;
   uint16_t firstLane3;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
+  uint64_t firstUpperLeftWeighted;
+  uint64_t firstUpperRowWeighted;
   uint64_t firstShiftedLanes;
-  uint64_t mm0PackedValue2;
-  uint64_t mm1PackedValue0;
-  uint64_t mm2PackedValue0;
-  uint64_t mm2PackedValue1;
-  uint64_t mm3PackedValue0;
+  uint64_t firstPackedPair;
+  uint64_t firstUpperRightWeighted;
+  uint64_t firstLowerLeftWeighted;
+  uint64_t firstLowerRowWeighted;
+  uint64_t firstLowerRightWeighted;
   uint16_t secondLane0;
   uint16_t secondLane1;
   uint16_t secondLane2;
   uint16_t secondLane3;
-  uint64_t mm4PackedValue0;
-  uint64_t mm4PackedValue1;
+  uint64_t secondUpperLeftWeighted;
+  uint64_t secondUpperRowWeighted;
   uint64_t secondShiftedLanes;
-  uint64_t mm4PackedValue2;
-  uint64_t mm5PackedValue0;
-  uint64_t mm6PackedValue0;
-  uint64_t mm6PackedValue1;
-  uint64_t mm7PackedValue0;
+  uint64_t secondPackedPair;
+  uint64_t secondUpperRightWeighted;
+  uint64_t secondLowerLeftWeighted;
+  uint64_t secondLowerRowWeighted;
+  uint64_t secondLowerRightWeighted;
   uint8_t *destinationRowStart;
   uint8_t firstClampedLane1;
   uint8_t firstClampedLane2;
@@ -2244,6 +2249,7 @@ Glide3_TextureSource_StretchDirectColorBilinear
       sourceHeightMinusOne = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                        recordOffsetOrSourceStride + -0xc) - 1;
       destinationHeightMinusOne = destinationHeight - 1;
+      /* asset + dataOffset */
       sourcePixels = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                 *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                         recordOffsetOrSourceStride + -0x1c) + -0x28;
@@ -2270,63 +2276,63 @@ Glide3_TextureSource_StretchDirectColorBilinear
           secondLowerRight = *(uint32_t *)(sourceRowCursor + lowerRowOffset + 4);
           columnOrFractionX = sourceXFixed & 0xff;
           fractionY = sourceYFixed & 0xff;
-          mm0PackedValue0 =
+          firstUpperLeftWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(firstUpperLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
-          mm1PackedValue0 =
+          firstUpperRightWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(firstUpperRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
-          mm2PackedValue0 =
+          firstLowerLeftWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(firstLowerLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
-          mm3PackedValue0 =
+          firstLowerRightWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(firstLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
-          mm0PackedValue1 =
-               pmulhw(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
-                                          (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
-                                          (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
-                                          (short)mm0PackedValue0 + (short)mm1PackedValue0),
+          firstUpperRowWeighted =
+               pmulhw(Glide_PackWordLanes((short)(firstUpperLeftWeighted >> 0x30) + (short)(firstUpperRightWeighted >> 0x30),
+                                          (short)(firstUpperLeftWeighted >> 0x20) + (short)(firstUpperRightWeighted >> 0x20),
+                                          (short)(firstUpperLeftWeighted >> 0x10) + (short)(firstUpperRightWeighted >> 0x10),
+                                          (short)firstUpperLeftWeighted + (short)firstUpperRightWeighted),
                       g_SoftwareBilinearInverseFactors[fractionY]);
-          mm2PackedValue1 =
-               pmulhw(Glide_PackWordLanes((short)(mm2PackedValue0 >> 0x30) + (short)(mm3PackedValue0 >> 0x30),
-                                          (short)(mm2PackedValue0 >> 0x20) + (short)(mm3PackedValue0 >> 0x20),
-                                          (short)(mm2PackedValue0 >> 0x10) + (short)(mm3PackedValue0 >> 0x10),
-                                          (short)mm2PackedValue0 + (short)mm3PackedValue0),
+          firstLowerRowWeighted =
+               pmulhw(Glide_PackWordLanes((short)(firstLowerLeftWeighted >> 0x30) + (short)(firstLowerRightWeighted >> 0x30),
+                                          (short)(firstLowerLeftWeighted >> 0x20) + (short)(firstLowerRightWeighted >> 0x20),
+                                          (short)(firstLowerLeftWeighted >> 0x10) + (short)(firstLowerRightWeighted >> 0x10),
+                                          (short)firstLowerLeftWeighted + (short)firstLowerRightWeighted),
                       g_SoftwareBilinearForwardFactors[fractionY]);
           columnOrFractionX = sourceXFixed + sourceStepX & 0xff;
-          mm4PackedValue0 =
+          secondUpperLeftWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(secondUpperLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
-          mm5PackedValue0 =
+          secondUpperRightWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(secondUpperRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
-          mm6PackedValue0 =
+          secondLowerLeftWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(secondLowerLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
-          mm7PackedValue0 =
+          secondLowerRightWeighted =
                pmulhw(Glide_UnpackArgbToWordLanes(secondLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
-          mm4PackedValue1 =
-               pmulhw(Glide_PackWordLanes((short)(mm4PackedValue0 >> 0x30) + (short)(mm5PackedValue0 >> 0x30),
-                                          (short)(mm4PackedValue0 >> 0x20) + (short)(mm5PackedValue0 >> 0x20),
-                                          (short)(mm4PackedValue0 >> 0x10) + (short)(mm5PackedValue0 >> 0x10),
-                                          (short)mm4PackedValue0 + (short)mm5PackedValue0),
+          secondUpperRowWeighted =
+               pmulhw(Glide_PackWordLanes((short)(secondUpperLeftWeighted >> 0x30) + (short)(secondUpperRightWeighted >> 0x30),
+                                          (short)(secondUpperLeftWeighted >> 0x20) + (short)(secondUpperRightWeighted >> 0x20),
+                                          (short)(secondUpperLeftWeighted >> 0x10) + (short)(secondUpperRightWeighted >> 0x10),
+                                          (short)secondUpperLeftWeighted + (short)secondUpperRightWeighted),
                       g_SoftwareBilinearInverseFactors[fractionY]);
-          mm6PackedValue1 =
-               pmulhw(Glide_PackWordLanes((short)(mm6PackedValue0 >> 0x30) + (short)(mm7PackedValue0 >> 0x30),
-                                          (short)(mm6PackedValue0 >> 0x20) + (short)(mm7PackedValue0 >> 0x20),
-                                          (short)(mm6PackedValue0 >> 0x10) + (short)(mm7PackedValue0 >> 0x10),
-                                          (short)mm6PackedValue0 + (short)mm7PackedValue0),
+          secondLowerRowWeighted =
+               pmulhw(Glide_PackWordLanes((short)(secondLowerLeftWeighted >> 0x30) + (short)(secondLowerRightWeighted >> 0x30),
+                                          (short)(secondLowerLeftWeighted >> 0x20) + (short)(secondLowerRightWeighted >> 0x20),
+                                          (short)(secondLowerLeftWeighted >> 0x10) + (short)(secondLowerRightWeighted >> 0x10),
+                                          (short)secondLowerLeftWeighted + (short)secondLowerRightWeighted),
                       g_SoftwareBilinearForwardFactors[fractionY]);
-          firstLane0 = (uint16_t)((short)mm0PackedValue1 + (short)mm2PackedValue1) >> 2;
-          firstLane1 = (uint16_t)((short)(mm0PackedValue1 >> 0x10) + (short)(mm2PackedValue1 >> 0x10)) >> 2;
-          firstLane2 = (uint16_t)((short)(mm0PackedValue1 >> 0x20) + (short)(mm2PackedValue1 >> 0x20)) >> 2;
-          firstLane3 = (uint16_t)((short)(mm0PackedValue1 >> 0x30) + (short)(mm2PackedValue1 >> 0x30)) >> 2;
-          secondLane0 = (uint16_t)((short)mm4PackedValue1 + (short)mm6PackedValue1) >> 2;
-          secondLane1 = (uint16_t)((short)(mm4PackedValue1 >> 0x10) + (short)(mm6PackedValue1 >> 0x10)) >> 2;
-          secondLane2 = (uint16_t)((short)(mm4PackedValue1 >> 0x20) + (short)(mm6PackedValue1 >> 0x20)) >> 2;
-          secondLane3 = (uint16_t)((short)(mm4PackedValue1 >> 0x30) + (short)(mm6PackedValue1 >> 0x30)) >> 2;
+          firstLane0 = (uint16_t)((short)firstUpperRowWeighted + (short)firstLowerRowWeighted) >> 2;
+          firstLane1 = (uint16_t)((short)(firstUpperRowWeighted >> 0x10) + (short)(firstLowerRowWeighted >> 0x10)) >> 2;
+          firstLane2 = (uint16_t)((short)(firstUpperRowWeighted >> 0x20) + (short)(firstLowerRowWeighted >> 0x20)) >> 2;
+          firstLane3 = (uint16_t)((short)(firstUpperRowWeighted >> 0x30) + (short)(firstLowerRowWeighted >> 0x30)) >> 2;
+          secondLane0 = (uint16_t)((short)secondUpperRowWeighted + (short)secondLowerRowWeighted) >> 2;
+          secondLane1 = (uint16_t)((short)(secondUpperRowWeighted >> 0x10) + (short)(secondLowerRowWeighted >> 0x10)) >> 2;
+          secondLane2 = (uint16_t)((short)(secondUpperRowWeighted >> 0x20) + (short)(secondLowerRowWeighted >> 0x20)) >> 2;
+          secondLane3 = (uint16_t)((short)(secondUpperRowWeighted >> 0x30) + (short)(secondLowerRowWeighted >> 0x30)) >> 2;
           firstClampedLane0 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane0);
           firstClampedLane1 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane1);
           firstClampedLane2 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane2);
@@ -2343,26 +2349,26 @@ Glide3_TextureSource_StretchDirectColorBilinear
                                                          GLIDE_DUP_BYTE(secondClampedLane2),
                                                          GLIDE_DUP_BYTE(secondClampedLane1),
                                                          GLIDE_DUP_BYTE(secondClampedLane0)),4);
-          mm0PackedValue2 =
+          firstPackedPair =
                pmaddwd(firstShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
-          mm4PackedValue2 =
+          secondPackedPair =
                pmaddwd(secondShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
           /* Two RGB565 pixels at once: the second one in the high word. */
           *(uint32_t *)destinationCursor =
-               (uint32_t)(uint16_t)((short)(mm4PackedValue2 >> 8) + (short)(mm4PackedValue2 >> 0x28)) << 0x10 |
-               (uint32_t)(uint16_t)((short)(mm0PackedValue2 >> 8) + (short)(mm0PackedValue2 >> 0x28));
+               (uint32_t)(uint16_t)((short)(secondPackedPair >> 8) + (short)(secondPackedPair >> 0x28)) << 0x10 |
+               (uint32_t)(uint16_t)((short)(firstPackedPair >> 8) + (short)(firstPackedPair >> 0x28));
           sourceXFixed = sourceXFixed + sourceStepX * 2;
           destinationCursor = destinationCursor + 4;
-          widthMinusOneOrRemainingPairs = widthMinusOneOrRemainingPairs - 1;
+          widthMinusOneOrRemainingPairs--;
         } while (widthMinusOneOrRemainingPairs != 0);
         sourceYFixed = sourceYFixed + (int)((uint64_t)sourceHeightMinusOne * 0x100 /
                                             (uint64_t)destinationHeightMinusOne);
         destinationCursor = destinationRowStart + framebufferWidth * 2;
         sourceRowCursor = sourcePixels + (sourceYFixed >> 8) * recordOffsetOrSourceStride;
         sourceXFixed = 0;
-        destinationHeight = destinationHeight - 1;
+        destinationHeight--;
         widthMinusOneOrRemainingPairs = destinationWidth >> 1;
         destinationRowStart = destinationCursor;
       } while (destinationHeight != 0);
@@ -2378,13 +2384,10 @@ Glide3_TextureSource_StretchDirectColorBilinear
 
 
 /* Address: 0x00581A90.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3 display implementation of the integer-scaled source-alpha compositor. The display path reads
-   destination pixels through g_GlideSecondBufferOffset for partial-alpha blending. The source entry originX and
-   originY are multiplied by integerScale before being added to drawX and drawY. Both indexed palette entries and
-   direct ARGB8888 entries are supported. For indexed entries, the active palette bank comes from
-   sourceEntry.paletteIndex and framebufferPixel is read at palette-entry offset +4.
-   Cross-module calls: SoftwareTextureSource_BlitHalfSourceRgb16 [graphics/backend/software].
+   Source-alpha blit that draws every texel as an integerScale x integerScale block (origin scaled too). The
+   image is not clipped as a whole: the clip rectangle is clamped to the back buffer and every written pixel is
+   tested against it. Original bug: for any other framebuffer it calls SoftwareTextureSource_BlitHalfSourceRgb16
+   (not the integer-scaled software blit) with the argument list shifted by integerScale.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitIntegerScaledSourceAlpha
@@ -2411,12 +2414,12 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
   uint8_t *destinationCursor;
   uint8_t *destinationRow;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm1PackedValue1;
+  uint64_t weightedDestinationPalette;
+  uint64_t packedPairPalette;
+  uint64_t weightedDestinationDirect;
+  uint64_t packedPairDirect;
+  uint64_t weightedSourcePalette;
+  uint64_t weightedSourceDirect;
   int remainingSourceRows;
   GraphicsIntegerScale remainingRowRepeats;
   GraphicsIntegerScale remainingColumnRepeats;
@@ -2475,10 +2478,10 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                       destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                              framebufferPixel) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                      mm1PackedValue1 =
+                      weightedSourceDirect =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteIndexOrSourceArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
-                      mm0PackedValue2 =
+                      weightedDestinationDirect =
                            pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                       (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2488,21 +2491,21 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                                       (uint16_t)((short)destinationLanes *
                                                               g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                   g_SoftwareBlendInverseAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
-                      mm0PackedValue3 =
-                           pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) +
-                                                       (short)(mm1PackedValue1 >> 0x30),
-                                                       (short)(mm0PackedValue2 >> 0x20) +
-                                                       (short)(mm1PackedValue1 >> 0x20),
-                                                       (short)(mm0PackedValue2 >> 0x10) +
-                                                       (short)(mm1PackedValue1 >> 0x10),
-                                                       (short)mm0PackedValue2 + (short)mm1PackedValue1) &
+                      packedPairDirect =
+                           pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) +
+                                                       (short)(weightedSourceDirect >> 0x30),
+                                                       (short)(weightedDestinationDirect >> 0x20) +
+                                                       (short)(weightedSourceDirect >> 0x20),
+                                                       (short)(weightedDestinationDirect >> 0x10) +
+                                                       (short)(weightedSourceDirect >> 0x10),
+                                                       (short)weightedDestinationDirect + (short)weightedSourceDirect) &
                                    THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
-                           (short)(mm0PackedValue3 >> 8) +
-                           (short)(mm0PackedValue3 >> 0x28);
+                           (short)(packedPairDirect >> 8) +
+                           (short)(packedPairDirect >> 0x28);
                     }
-                    destinationX = destinationX + 1;
+                    destinationX++;
                     destinationCursor = destinationCursor + 2;
                     remainingColumnRepeats = remainingColumnRepeats - 1;
                   } while (remainingColumnRepeats != 0);
@@ -2517,22 +2520,22 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       *(short *)destinationCursor = (short)packedBlue + (short)packedGreen + (short)packedRed;
                     }
-                    destinationX = destinationX + 1;
+                    destinationX++;
                     destinationCursor = destinationCursor + 2;
                     remainingColumnRepeats = remainingColumnRepeats - 1;
                   } while (remainingColumnRepeats != 0);
                 }
-                recordOffsetOrRemainingColumns = recordOffsetOrRemainingColumns + -1;
+                recordOffsetOrRemainingColumns--;
                 sourceCursor = sourceCursor + 4;
               } while (recordOffsetOrRemainingColumns != 0);
             }
-            drawY = drawY + 1;
+            drawY++;
             destinationRow = destinationRow + framebufferPitch;
             remainingRowRepeats = remainingRowRepeats - 1;
           } while (remainingRowRepeats != 0);
           sourceRow = sourceRow + sourceWidth * 4;
           remainingRowRepeats = integerScale;
-          remainingSourceRows = remainingSourceRows + -1;
+          remainingSourceRows--;
         } while (remainingSourceRows != 0);
         return;
       }
@@ -2571,10 +2574,10 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                       destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                              framebufferPixel) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                      mm1PackedValue0 =
+                      weightedSourcePalette =
                            pmulhw(Glide_UnpackArgbToWordLanes(paletteArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteArgb >> 0x18]);
-                      mm0PackedValue0 =
+                      weightedDestinationPalette =
                            pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                       (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2584,21 +2587,21 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                                       (uint16_t)((short)destinationLanes *
                                                               g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                   g_SoftwareBlendInverseAlphaFactors[paletteArgb >> 0x18]);
-                      mm0PackedValue1 =
-                           pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) +
-                                                       (short)(mm1PackedValue0 >> 0x30),
-                                                       (short)(mm0PackedValue0 >> 0x20) +
-                                                       (short)(mm1PackedValue0 >> 0x20),
-                                                       (short)(mm0PackedValue0 >> 0x10) +
-                                                       (short)(mm1PackedValue0 >> 0x10),
-                                                       (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+                      packedPairPalette =
+                           pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) +
+                                                       (short)(weightedSourcePalette >> 0x30),
+                                                       (short)(weightedDestinationPalette >> 0x20) +
+                                                       (short)(weightedSourcePalette >> 0x20),
+                                                       (short)(weightedDestinationPalette >> 0x10) +
+                                                       (short)(weightedSourcePalette >> 0x10),
+                                                       (short)weightedDestinationPalette + (short)weightedSourcePalette) &
                                    THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
-                           (short)(mm0PackedValue1 >> 8) +
-                           (short)(mm0PackedValue1 >> 0x28);
+                           (short)(packedPairPalette >> 8) +
+                           (short)(packedPairPalette >> 0x28);
                     }
-                    destinationX = destinationX + 1;
+                    destinationX++;
                     destinationCursor = destinationCursor + 2;
                     remainingColumnRepeats = remainingColumnRepeats - 1;
                   } while (remainingColumnRepeats != 0);
@@ -2608,27 +2611,28 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
                       *(short *)destinationCursor = (short)paletteArgb;
                     }
-                    destinationX = destinationX + 1;
+                    destinationX++;
                     destinationCursor = destinationCursor + 2;
                     remainingColumnRepeats = remainingColumnRepeats - 1;
                   } while (remainingColumnRepeats != 0);
                 }
-                recordOffsetOrRemainingColumns = recordOffsetOrRemainingColumns + -1;
-                sourceCursor = sourceCursor + 1;
+                recordOffsetOrRemainingColumns--;
+                sourceCursor++;
               } while (recordOffsetOrRemainingColumns != 0);
             }
-            drawY = drawY + 1;
+            drawY++;
             destinationRow = destinationRow + framebufferPitch;
             remainingRowRepeats = remainingRowRepeats - 1;
           } while (remainingRowRepeats != 0);
           sourceRow = sourceRow + sourceWidth;
           remainingRowRepeats = integerScale;
-          remainingSourceRows = remainingSourceRows + -1;
+          remainingSourceRows--;
         } while (remainingSourceRows != 0);
       }
     }
   }
   else {
+    /* original bug (CALL 0x004A9B20 with ten pushes at 0x00581AAD): wrong target, arguments shifted */
     SoftwareTextureSource_BlitHalfSourceRgb16
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,integerScale,
                (GraphicsTextureSourceAsset *)subresourceIndex,
@@ -2639,13 +2643,9 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
 
 
 /* Address: 0x00581EF0.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected source-alpha blitter with explicit palette-bank selection. Ordinary framebuffer objects
-   fall back to the 16-bit software implementation. Direct-color entries behave like the ordinary source-alpha
-   blitter and ignore paletteBankIndex. Indexed entries read palette pixels from asset + 0x200 +
-   paletteBankIndex*0x800 instead of using sourceEntry.paletteIndex. Transparent pixels are skipped, opaque pixels
-   are copied, and partial alpha uses the verified source-alpha blend tables.
-   Cross-module calls: SoftwareTextureSource_BlitSourceAlphaPaletteBank16 [graphics/backend/software].
+   Glide3_TextureSource_BlitSourceAlpha with a caller-chosen palette: a paletted subresource is drawn with bank
+   paletteBankIndex (checked against paletteBankCount after clipping) instead of its own bank, which must still
+   be valid. Direct-colour subresources ignore paletteBankIndex.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitSourceAlphaPaletteBank
@@ -2669,12 +2669,12 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm1PackedValue1;
+  uint64_t weightedDestinationPalette;
+  uint64_t packedPairPalette;
+  uint64_t weightedDestinationDirect;
+  uint64_t packedPairDirect;
+  uint64_t weightedSourcePalette;
+  uint64_t weightedSourceDirect;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -2742,10 +2742,10 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                   destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                          framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                  mm1PackedValue1 =
+                  weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue2 =
+                  weightedDestinationDirect =
                        pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                   (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2755,16 +2755,16 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                                                   (uint16_t)((short)destinationLanes *
                                                           g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                  mm0PackedValue3 =
-                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
-                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
-                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
-                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
+                  packedPairDirect =
+                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
+                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
+                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
+                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)(mm0PackedValue3 >> 8) +
-                       (short)(mm0PackedValue3 >> 0x28);
+                       (short)(packedPairDirect >> 8) +
+                       (short)(packedPairDirect >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -2775,13 +2775,13 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                                ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (sourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return;
@@ -2849,10 +2849,10 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                     destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                            framebufferPixel) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                    mm1PackedValue0 =
+                    weightedSourcePalette =
                          pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                                 g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
-                    mm0PackedValue0 =
+                    weightedDestinationPalette =
                          pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                             g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                     (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -2862,31 +2862,31 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                                                     (uint16_t)((short)destinationLanes *
                                                             g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                 g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
-                    mm0PackedValue1 =
-                         pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) +
-                                                     (short)(mm1PackedValue0 >> 0x30),
-                                                     (short)(mm0PackedValue0 >> 0x20) +
-                                                     (short)(mm1PackedValue0 >> 0x20),
-                                                     (short)(mm0PackedValue0 >> 0x10) +
-                                                     (short)(mm1PackedValue0 >> 0x10),
-                                                     (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+                    packedPairPalette =
+                         pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) +
+                                                     (short)(weightedSourcePalette >> 0x30),
+                                                     (short)(weightedDestinationPalette >> 0x20) +
+                                                     (short)(weightedSourcePalette >> 0x20),
+                                                     (short)(weightedDestinationPalette >> 0x10) +
+                                                     (short)(weightedSourcePalette >> 0x10),
+                                                     (short)weightedDestinationPalette + (short)weightedSourcePalette) &
                                  THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)destinationCursor =
-                         (short)(mm0PackedValue1 >> 8) +
-                         (short)(mm0PackedValue1 >> 0x28);
+                         (short)(packedPairPalette >> 8) +
+                         (short)(packedPairPalette >> 0x28);
                   }
                   else {
                     *(short *)destinationCursor = (short)sourceArgb;
                   }
                 }
-                sourceIndexCursor = sourceIndexCursor + 1;
+                sourceIndexCursor++;
                 destinationCursor = destinationCursor + 2;
-                leftOrRemainingColumns = leftOrRemainingColumns + -1;
+                leftOrRemainingColumns--;
               } while (leftOrRemainingColumns != 0);
               sourceIndexCursor = sourceIndexCursor + (sourceWidth - clippedWidth);
               destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-              clipMinY = clipMinY + -1;
+              clipMinY--;
               leftOrRemainingColumns = clippedWidth;
             } while (clipMinY != 0);
           }
@@ -2904,13 +2904,8 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
 
 
 /* Address: 0x00582290.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected saturated-additive RGB compositor. Ordinary framebuffer objects fall back to
-   SoftwareTextureSource_BlitSaturatedAddRgb16; the shared display path reads destination pixels through the
-   optional second Glide buffer. Pixels whose source RGB value is exactly 0x000000 are skipped, regardless of
-   source alpha. For each drawn channel: destination = min(255, destination + sourceContribution). The source alpha
-   byte does not participate in the operation.
-   Cross-module calls: SoftwareTextureSource_BlitSaturatedAddRgb16 [graphics/backend/software].
+   Additive blit: adds the texel's RGB to the pixel with saturation (PADDUSW). Texels
+   with RGB 0 are skipped whatever their alpha; alpha is otherwise ignored. Returns with CF clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitSaturatedAddRgb
@@ -2935,10 +2930,10 @@ Glide3_TextureSource_BlitSaturatedAddRgb
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
+  uint64_t saturatedSumPalette;
+  uint64_t packedPairPalette;
+  uint64_t saturatedSumDirect;
+  uint64_t packedPairDirect;
 
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -3005,7 +3000,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm0PackedValue2 =
+                saturatedSumDirect =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
                                                  (short)(destinationLanes >> 0x20) *
@@ -3015,24 +3010,24 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,0));
-                mm0PackedValue3 =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(mm0PackedValue2 >> 0x34),
-                                                 (uint16_t)(mm0PackedValue2 >> 0x20) >> 4,
-                                                 (uint16_t)(mm0PackedValue2 >> 0x10) >> 4,
-                                                 (uint16_t)mm0PackedValue2 >> 4) &
+                packedPairDirect =
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 0x34),
+                                                 (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
+                                                 (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
+                                                 (uint16_t)saturatedSumDirect >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)(mm0PackedValue3 >> 8) +
-                     (short)(mm0PackedValue3 >> 0x28);
+                     (short)(packedPairDirect >> 8) +
+                     (short)(packedPairDirect >> 0x28);
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (widthOrPaletteIndex - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return false;
@@ -3098,7 +3093,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm0PackedValue0 =
+                saturatedSumPalette =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
                                                  (short)(destinationLanes >> 0x20) *
@@ -3108,24 +3103,24 @@ Glide3_TextureSource_BlitSaturatedAddRgb
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,0));
-                mm0PackedValue1 =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(mm0PackedValue0 >> 0x34),
-                                                 (uint16_t)(mm0PackedValue0 >> 0x20) >> 4,
-                                                 (uint16_t)(mm0PackedValue0 >> 0x10) >> 4,
-                                                 (uint16_t)mm0PackedValue0 >> 4) &
+                packedPairPalette =
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 0x34),
+                                                 (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
+                                                 (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
+                                                 (uint16_t)saturatedSumPalette >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)(mm0PackedValue1 >> 8) +
-                     (short)(mm0PackedValue1 >> 0x28);
+                     (short)(packedPairPalette >> 8) +
+                     (short)(packedPairPalette >> 0x28);
               }
-              sourceIndexCursor = sourceIndexCursor + 1;
+              sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceIndexCursor = sourceIndexCursor + (indexedSourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
         }
@@ -3142,12 +3137,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
 
 
 /* Address: 0x00582580.
-   Ownership: graphics/backend/glide.
-   Purpose: Glide3-selected half-source-RGB saturated-add compositor. Ordinary framebuffer objects fall back to
-   SoftwareTextureSource_BlitHalfRgbSaturatedAdd16. Pixels whose source RGB value is exactly 0x000000 are skipped,
-   regardless of source alpha. For each drawn channel: destination = min(255, destination + sourceContribution).
-   The source alpha byte does not participate in the operation.
-   Cross-module calls: SoftwareTextureSource_BlitHalfRgbSaturatedAdd16 [graphics/backend/software].
+   Glide3_TextureSource_BlitSaturatedAddRgb with the texel's RGB at half strength. Returns with CF clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitHalfRgbSaturatedAdd
@@ -3172,10 +3162,10 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
+  uint64_t saturatedSumPalette;
+  uint64_t packedPairPalette;
+  uint64_t saturatedSumDirect;
+  uint64_t packedPairDirect;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -3242,7 +3232,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm0PackedValue2 =
+                saturatedSumDirect =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
                                                  (short)(destinationLanes >> 0x20) *
@@ -3252,24 +3242,24 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,1));
-                mm0PackedValue3 =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(mm0PackedValue2 >> 0x34),
-                                                 (uint16_t)(mm0PackedValue2 >> 0x20) >> 4,
-                                                 (uint16_t)(mm0PackedValue2 >> 0x10) >> 4,
-                                                 (uint16_t)mm0PackedValue2 >> 4) &
+                packedPairDirect =
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumDirect >> 0x34),
+                                                 (uint16_t)(saturatedSumDirect >> 0x20) >> 4,
+                                                 (uint16_t)(saturatedSumDirect >> 0x10) >> 4,
+                                                 (uint16_t)saturatedSumDirect >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)(mm0PackedValue3 >> 8) +
-                     (short)(mm0PackedValue3 >> 0x28);
+                     (short)(packedPairDirect >> 8) +
+                     (short)(packedPairDirect >> 0x28);
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (widthOrPaletteIndex - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return false;
@@ -3335,7 +3325,7 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                 destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                        framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                mm0PackedValue0 =
+                saturatedSumPalette =
                      paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
                                                  g_SoftwarePixelMmxConstants.unpackScales.zero,
                                                  (short)(destinationLanes >> 0x20) *
@@ -3345,24 +3335,24 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
                                                  (short)destinationLanes *
                                                  g_SoftwarePixelMmxConstants.unpackScales.blue),
                              Glide_UnpackArgbToWordLanes(sourceArgb,1));
-                mm0PackedValue1 =
-                     pmaddwd(Glide_PackWordLanes((uint16_t)(mm0PackedValue0 >> 0x34),
-                                                 (uint16_t)(mm0PackedValue0 >> 0x20) >> 4,
-                                                 (uint16_t)(mm0PackedValue0 >> 0x10) >> 4,
-                                                 (uint16_t)mm0PackedValue0 >> 4) &
+                packedPairPalette =
+                     pmaddwd(Glide_PackWordLanes((uint16_t)(saturatedSumPalette >> 0x34),
+                                                 (uint16_t)(saturatedSumPalette >> 0x20) >> 4,
+                                                 (uint16_t)(saturatedSumPalette >> 0x10) >> 4,
+                                                 (uint16_t)saturatedSumPalette >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)(mm0PackedValue1 >> 8) +
-                     (short)(mm0PackedValue1 >> 0x28);
+                     (short)(packedPairPalette >> 8) +
+                     (short)(packedPairPalette >> 0x28);
               }
-              sourceIndexCursor = sourceIndexCursor + 1;
+              sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceIndexCursor = sourceIndexCursor + (indexedSourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
         }
@@ -3379,13 +3369,11 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
 
 
 /* Address: 0x00582870.
-   Ownership: graphics/backend/glide.
-   Purpose: Uses the color-modulated Glide display path when framebuffer is the shared display framebuffer. For
-   other framebuffer objects the executable deliberately forwards the nine non-modulation arguments to the existing
-   software source blitter at 004ABA70. For each source channel: outputChannel = (sourceChannel *
-   modulationChannel) >> 8. The modulated alpha then selects transparent, opaque, or partial source-alpha blending.
-   Both indexed palette pixels and direct ARGB8888 pixels are supported.
-   Cross-module calls: SoftwareTextureSource_BlitHalfRgbSaturatedAdd16 [graphics/backend/software].
+   Glide3_TextureSource_BlitSourceAlpha with a tint: every source channel, alpha included, is first multiplied
+   by the matching channel of modulationArgb8888 (/ 256), then the modulated alpha selects skip, write or blend.
+   Original bug: for any other framebuffer it calls SoftwareTextureSource_BlitHalfRgbSaturatedAdd16 (CALL
+   0x004ABA70 at 0x005828A1) without the modulation colour instead of the modulated software blit. Returns with
+   CF clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 Glide3_TextureSource_BlitModulatedSourceAlpha
@@ -3418,12 +3406,12 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
   uint32_t *sourceArgbCursor;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm0PackedValue2;
-  uint64_t mm0PackedValue3;
-  uint64_t mm1PackedValue0;
-  uint64_t mm1PackedValue1;
+  uint64_t weightedDestinationPalette;
+  uint64_t packedPairPalette;
+  uint64_t weightedDestinationDirect;
+  uint64_t packedPairDirect;
+  uint64_t weightedSourcePalette;
+  uint64_t weightedSourceDirect;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     modulationGreen = (modulationArgb8888 & 0xff00) >> 8;
@@ -3503,10 +3491,10 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
                   /* Lane bytes are the modulated channels alphaProductHigh >> 8, redProduct >> 8,
                      greenProduct >> 8 and blueProduct >> 8, i.e. bytes 3..0 of modulatedArgb. */
-                  mm1PackedValue1 =
+                  weightedSourceDirect =
                        pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
                               g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
-                  mm0PackedValue2 =
+                  weightedDestinationDirect =
                        pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                   (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -3516,16 +3504,16 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                                                   (uint16_t)((short)destinationLanes *
                                                           g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
-                  mm0PackedValue3 =
-                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
-                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
-                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
-                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
+                  packedPairDirect =
+                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationDirect >> 0x30) + (short)(weightedSourceDirect >> 0x30),
+                                                   (short)(weightedDestinationDirect >> 0x20) + (short)(weightedSourceDirect >> 0x20),
+                                                   (short)(weightedDestinationDirect >> 0x10) + (short)(weightedSourceDirect >> 0x10),
+                                                   (short)weightedDestinationDirect + (short)weightedSourceDirect) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)(mm0PackedValue3 >> 8) +
-                       (short)(mm0PackedValue3 >> 0x28);
+                       (short)(packedPairDirect >> 8) +
+                       (short)(packedPairDirect >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -3535,13 +3523,13 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                   ;
                 }
               }
-              sourceArgbCursor = sourceArgbCursor + 1;
+              sourceArgbCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceArgbCursor = sourceArgbCursor + (widthOrPaletteIndex - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return false;
@@ -3616,10 +3604,10 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                                                          framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
-                  mm1PackedValue0 =
+                  weightedSourcePalette =
                        pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
                               g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
-                  mm0PackedValue0 =
+                  weightedDestinationPalette =
                        pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                                   (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -3629,16 +3617,16 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                                                   (uint16_t)((short)destinationLanes *
                                                           g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
-                  mm0PackedValue1 =
-                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
-                                                   (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
-                                                   (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
-                                                   (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+                  packedPairPalette =
+                       pmaddwd(Glide_PackWordLanes((short)(weightedDestinationPalette >> 0x30) + (short)(weightedSourcePalette >> 0x30),
+                                                   (short)(weightedDestinationPalette >> 0x20) + (short)(weightedSourcePalette >> 0x20),
+                                                   (short)(weightedDestinationPalette >> 0x10) + (short)(weightedSourcePalette >> 0x10),
+                                                   (short)weightedDestinationPalette + (short)weightedSourcePalette) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)(mm0PackedValue1 >> 8) +
-                       (short)(mm0PackedValue1 >> 0x28);
+                       (short)(packedPairPalette >> 8) +
+                       (short)(packedPairPalette >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
@@ -3648,13 +3636,13 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
                   ;
                 }
               }
-              sourceIndexCursor = sourceIndexCursor + 1;
+              sourceIndexCursor++;
               destinationCursor = destinationCursor + 2;
-              leftOrRemainingColumns = leftOrRemainingColumns + -1;
+              leftOrRemainingColumns--;
             } while (leftOrRemainingColumns != 0);
             sourceIndexCursor = sourceIndexCursor + (indexedSourceWidth - clippedWidth);
             destinationCursor = destinationCursor + recordOffsetOrRowSkip * 2;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             leftOrRemainingColumns = clippedWidth;
           } while (clipMinY != 0);
         }
@@ -3662,6 +3650,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
     }
   }
   else {
+    /* original bug: wrong software blit, the modulation colour is dropped */
     SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
               (clipMaxY,clipMaxX,clipMinY,clipMinX,drawY,drawX,subresourceIndex,sourceAsset,
                framebuffer);
@@ -3671,13 +3660,11 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
 
 
 /* Address: 0x00582D30.
-   Ownership: graphics/backend/glide.
-   Purpose: Uses the Glide display framebuffer path when framebuffer == &g_DisplayFramebufferAccess. Other
-   framebuffer objects fall back to SoftwareFramebuffer_FillRectArgb16. Partial alpha also updates the optional
-   second Glide buffer through g_GlideSecondBufferOffset. The effective rectangle is the intersection of the draw
-   rectangle, clipping rectangle, and framebuffer bounds. argb8888 alpha below 1 is ignored; alpha 255 takes the
-   direct-fill path; values 1-254 take the source-alpha blend path.
-   Cross-module calls: SoftwareFramebuffer_FillRectArgb16 [graphics/backend/software].
+   Glide backend of the framebuffer rectangle fill: on the locked Glide back buffer (g_DisplayFramebufferAccess)
+   it fills the intersection of the rectangle, the clip rectangle and the buffer with argb8888, converted to the
+   native 16-bit pixel. Alpha 0 draws nothing, alpha 255 writes the pixel, anything between blends it over the
+   pixel read back through the LFB read lock (g_GlideSecondBufferOffset). Any other framebuffer goes to
+   SoftwareFramebuffer_FillRectArgb16.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_Framebuffer_FillRectArgb
@@ -3696,9 +3683,9 @@ Glide3_Framebuffer_FillRectArgb
   int clippedWidth;
   uint8_t *destinationCursor;
   uint64_t destinationLanes;
-  uint64_t mm0PackedValue0;
-  uint64_t mm0PackedValue1;
-  uint64_t mm1PackedValue0;
+  uint64_t weightedDestination;
+  uint64_t packedChannelPairs;
+  uint64_t weightedSource;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (rectMinX < 0) {
@@ -3726,17 +3713,20 @@ Glide3_Framebuffer_FillRectArgb
       rectMaxY = clipMaxY;
     }
     clippedWidth = rectMaxX - rectMinX;
+    /* clipMinY is reused as the row counter (the original reuses the argument slot) */
     if ((clippedWidth != 0 && rectMinX <= rectMaxX) &&
        (clipMinY = rectMaxY - rectMinY, clipMinY != 0 && rectMinY <= rectMaxY)) {
       rowSkipBytes = (g_DisplayFramebufferAccess.width - clippedWidth) * 2;
       destinationCursor = g_DisplayFramebufferAccess.pixels +
                (rectMinY * g_DisplayFramebufferAccess.width + rectMinX) * 2;
+      /* native 16-bit pixel in the low word, source alpha in the top byte; the green/red lookups are
+         byte offsets (channel * 4) into the pack tables */
       fillColor = g_SoftwarePixelPackTables->blue[argb8888 & 0xff] + (argb8888 & 0xff000000) +
               *(int *)((int)g_SoftwarePixelPackTables->green + ((argb8888 & 0xff00) >> 6)) +
               *(int *)((int)g_SoftwarePixelPackTables->red + ((argb8888 & 0xff0000) >> 0xe));
-      if (0xffffff < fillColor) {
+      if (0xffffff < fillColor) { /* alpha != 0 */
         remainingColumns = clippedWidth;
-        if (fillColor < 0xff000000) {
+        if (fillColor < 0xff000000) { /* alpha 1..254: blend */
           do {
             do {
               destinationCursor = destinationCursor + g_GlideSecondBufferOffset;
@@ -3745,10 +3735,12 @@ Glide3_Framebuffer_FillRectArgb
               destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
                                                      framebufferPixel) &
                       THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.packedPixelMasks);
-              mm1PackedValue0 =
+              /* original quirk (MOVD MM1,EAX at 0x00582E57): the source lanes are the bytes of the packed
+                 native pixel in fillColor, not the argb8888 channels */
+              weightedSource =
                    pmulhw(Glide_UnpackArgbToWordLanes(fillColor,2),
                           g_SoftwareBlendAlphaFactors[fillColor >> 0x18]);
-              mm0PackedValue0 =
+              weightedDestination =
                    pmulhw(Glide_PackWordLanes((uint16_t)((short)(destinationLanes >> 0x30) *
                                                       g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
                                               (uint16_t)((short)(destinationLanes >> 0x20) *
@@ -3758,32 +3750,33 @@ Glide3_Framebuffer_FillRectArgb
                                               (uint16_t)((short)destinationLanes *
                                                       g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                           g_SoftwareBlendInverseAlphaFactors[fillColor >> 0x18]);
-              mm0PackedValue1 =
-                   pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
-                                               (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
-                                               (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
-                                               (short)mm0PackedValue0 + (short)mm1PackedValue0) &
+              packedChannelPairs =
+                   pmaddwd(Glide_PackWordLanes((short)(weightedDestination >> 0x30) + (short)(weightedSource >> 0x30),
+                                               (short)(weightedDestination >> 0x20) + (short)(weightedSource >> 0x20),
+                                               (short)(weightedDestination >> 0x10) + (short)(weightedSource >> 0x10),
+                                               (short)weightedDestination + (short)weightedSource) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)(destinationCursor + secondBufferBackOffset) =
-                   (short)(mm0PackedValue1 >> 8) +
-                   (short)(mm0PackedValue1 >> 0x28);
+                   (short)(packedChannelPairs >> 8) +
+                   (short)(packedChannelPairs >> 0x28);
               destinationCursor = destinationCursor + secondBufferBackOffset + 2;
-              remainingColumns = remainingColumns + -1;
+              remainingColumns--;
             } while (remainingColumns != 0);
             destinationCursor = destinationCursor + rowSkipBytes;
-            clipMinY = clipMinY + -1;
+            clipMinY--;
             remainingColumns = clippedWidth;
           } while (clipMinY != 0);
           return;
         }
+        /* alpha 255: plain fill */
         do {
-          for (; remainingColumns != 0; remainingColumns = remainingColumns + -1) {
+          for (; remainingColumns != 0; remainingColumns--) {
             *(short *)destinationCursor = (short)fillColor;
             destinationCursor = destinationCursor + 2;
           }
           destinationCursor = destinationCursor + rowSkipBytes;
-          clipMinY = clipMinY + -1;
+          clipMinY--;
           remainingColumns = clippedWidth;
         } while (clipMinY != 0);
       }
@@ -3799,11 +3792,10 @@ Glide3_Framebuffer_FillRectArgb
 
 
 /* Address: 0x005806F0.
-   Ownership: graphics/backend/glide.
-   Purpose: Draws the selected cursor gfx subresource directly into the shared Glide framebuffer. The argument is
-   the backend's back-surface sentinel and must equal pointer value 1. The function acquires framebuffer access,
-   calls the source-alpha blitter, and releases access.
-   Local calls: Glide3_Framebuffer_BeginAccess, Glide3_Framebuffer_EndAccess.
+   Glide version of GraphicsCursor_ComposeBeforePresent: draws the current cursor frame (the pressed image while
+   a mouse button is down) straight into the locked Glide back buffer, so there is no background to save or
+   restore. Only Glide3_Framebuffer_Present's call (GLIDE_CURSOR_PRESENT_SENTINEL) draws, just before the
+   buffer swap; the visibility token is latched on every call.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
@@ -3816,9 +3808,10 @@ Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
   UiPixelCoordinate cursorY;
   bool accessFailed;
   UiPixelOffset cursorHotspotY;
-  
+
   g_CursorCurrentVisibilityToken = g_CursorVisibilityToken;
-  if ((-1 < g_CursorVisibilityToken) && (backSurfaceSentinel == (IDirectDrawSurface3 *)0x1)) {
+  /* a negative token hides the cursor */
+  if ((-1 < g_CursorVisibilityToken) && (backSurfaceSentinel == GLIDE_CURSOR_PRESENT_SENTINEL)) {
     cursorX = g_MouseX;
     cursorY = g_MouseY;
     if (g_CursorUseOverridePosition != 0) {
@@ -3829,7 +3822,7 @@ Glide3_Cursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurfaceSentinel)
     cursorHotspotX = frameRecord->hotspotX;
     cursorHotspotY = frameRecord->hotspotY;
     cursorSubresource = frameRecord->activeSubresourceIndex;
-    if ((g_CursorButtonState & 7) == 0) {
+    if ((g_CursorButtonState & 7) == 0) { /* none of the three mouse buttons is down */
       cursorSubresource = frameRecord->idleSubresourceIndex;
     }
     accessFailed = Glide3_Framebuffer_BeginAccess();
@@ -3938,11 +3931,13 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_Framebuffer_EndAccess(void)
 
 
 /* Address: 0x0057FF50.
-   Ownership: graphics/backend/glide.
-   Purpose: Places an unresident texture into available TMU address space, maintaining the address-ordered resident
-   list. It may invalidate an older resident record when no direct gap is available. After placement it downloads
-   the embedded GlideTextureInfo with the selected TMU index and residentAddress. Resources without a CPU upload
-   buffer remain unresident.
+   Makes a texture resident in TMU memory before it is drawn. The resident textures form a list ordered by TMU
+   and address that is searched like a ring, starting at the most recently placed texture
+   (g_GlideResidentTextureTail, not necessarily the list end). At the list end the texture is appended behind the
+   last texture when the rest of that TMU fits it, else at the start of the next TMU; elsewhere it replaces
+   (evicts) the following texture on the same TMU when it fits into the distance between the two addresses.
+   The upload buffer is then downloaded to the chosen address. Textures without an upload buffer, or with no
+   room after a full round, stay not resident.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
@@ -3960,17 +3955,19 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
   
   placementAddress = g_GlideTmuMinAddress[0];
   if (((int)texture->residentTmuIndex < 0) &&
-     (residentCursor = g_GlideResidentTextureTail, (texture->glideInfo).data != (void *)0x0)) {
+     (residentCursor = g_GlideResidentTextureTail, (texture->glideInfo).data != NULL)) {
     do {
-      if (residentCursor == (GraphicsTextureResource *)0x0) {
+      if (residentCursor == NULL) {
         texture->residentTmuIndex = GRAPHICS_TEXTURE_RESIDENT_TMU0;
-        texture->residentNext = (GraphicsTextureResource *)0x0;
+        texture->residentNext = NULL;
         texture->residentAddress = placementAddress;
         g_GlideResidentTextureTail = texture;
         g_GlideResidentTextureHead = texture;
         goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
       }
-      if (residentCursor->residentNext == (GraphicsTextureResource *)0x0) {
+      if (residentCursor->residentNext == NULL) {
+        /* TMU bytes of a texture: pixelWidth * pixelHeight (source entry +0x18/+0x1C, addressed from
+           assetRelativeAddressAnchor28 = asset + 0x28) * 2 bytes, divided by 4 per downsample step */
         asset = residentCursor->sourceAsset;
         subresourceRecordOffset = residentCursor->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
         tmuIndex = residentCursor->residentTmuIndex;
@@ -3979,30 +3976,30 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
                                  subresourceRecordOffset + -0x10) *
                          *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
                                  subresourceRecordOffset + -0xc) * 2) >>
-                 ((char)residentCursor->downsampleShift * '\x02' & 0x1fU)) + residentCursor->residentAddress);
+                 ((char)residentCursor->downsampleShift * 2 & 0x1fU)) + residentCursor->residentAddress);
         asset = texture->sourceAsset;
         subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
         if ((uint32_t)(*(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
                            subresourceRecordOffset + -0x10) *
                    *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * '\x02' & 0x1fU) <
+                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * 2 & 0x1fU) <
             tailFreeBytes) {
           residentCursor->residentNext = texture;
           placementAddress = g_GlideTmuMaxAddress[tmuIndex];
           texture->residentTmuIndex = tmuIndex;
           texture->residentAddress = placementAddress - tailFreeBytes;
-          texture->residentNext = (GraphicsTextureResource *)0x0;
+          texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
           goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
         }
-        tmuIndex = tmuIndex + 1;
-        nextResident = g_GlideResidentTextureHead;
+        tmuIndex++;
+        nextResident = g_GlideResidentTextureHead; /* no next TMU: continue the round at the list head */
         if (tmuIndex < g_GlideTmuCount) {
           placementAddress = g_GlideTmuMinAddress[tmuIndex];
           residentCursor->residentNext = texture;
           texture->residentTmuIndex = tmuIndex;
           texture->residentAddress = placementAddress;
-          texture->residentNext = (GraphicsTextureResource *)0x0;
+          texture->residentNext = NULL;
           g_GlideResidentTextureTail = texture;
           goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
         }
@@ -4012,11 +4009,13 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
         subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
         nextResident = residentCursor->residentNext;
         tmuIndex = residentCursor->residentTmuIndex;
+        /* original quirk: the fit is checked against the cursor's own slot (next address - cursor address),
+           but the texture is placed at the next texture's address */
         if ((tmuIndex == nextResident->residentTmuIndex) &&
            ((uint32_t)(*(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
                            subresourceRecordOffset + -0x10) *
                    *(int *)((asset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * '\x02' & 0x1fU)
+                           subresourceRecordOffset + -0xc) * 2) >> ((char)texture->downsampleShift * 2 & 0x1fU)
             <= nextResident->residentAddress - residentCursor->residentAddress)) {
           reclaimedAddress = nextResident->residentAddress;
           followingResident = nextResident->residentNext;
@@ -4025,7 +4024,7 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           texture->residentNext = followingResident;
           texture->residentTmuIndex = tmuIndex;
           g_GlideResidentTextureTail = texture;
-          nextResident->residentNext = (GraphicsTextureResource *)0x0;
+          nextResident->residentNext = NULL;
           nextResident->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
           nextResident->residentAddress = 0;
           goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
@@ -4036,18 +4035,18 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
   }
   return;
 Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
-  g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
-  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
+  g_GlideBoundTexture = NULL;
+  g_GrTexDownloadMipMap(texture->residentTmuIndex,texture->residentAddress,GR_MIPMAPLEVELMASK_BOTH,&texture->glideInfo);
   return;
 }
 
 
 /* Address: 0x0057FD40.
-   Ownership: graphics/backend/glide.
-   Purpose: Builds the embedded GlideTextureInfo, selects RGB565-style or ARGB4444-style output, allocates a two-
-   byte-per-texel CPU upload buffer, marks the resource unresident, and invokes the converter selected by
-   texture->downsampleShift. The function preserves EAX. Existing callers that pass the same pointer in EAX use
-   that preservation as a pointer result. Allocation failure is reported through CF.
+   Prepares a texture resource for Glide at the current global downsample shift: fills its GrTexInfo (aspect
+   ratio, one LOD level for the larger side, RGB565 for the opaque texture formats and ARGB4444 otherwise),
+   allocates the 16-bit CPU upload buffer, marks it not resident and converts the source image into the buffer
+   with the converter for that shift. A failed allocation leaves glideInfo.data NULL. EAX is preserved, which
+   callers use as the texture pointer result.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
@@ -4062,17 +4061,18 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   uint32_t heightValue;
   ArenaAllocResult uploadAlloc;
   TextureSizeResult logicalSize;
-  
+
   globalDownsampleShift = g_TextureDownsampleShift;
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
   heightValue = logicalSize.logicalHeightPixels;
   widthOrLodSize = logicalSize.logicalWidthPixels;
   texture->downsampleShift = globalDownsampleShift;
+  /* aspect ratio = log2(width / height): double the smaller side until both are equal */
   (texture->glideInfo).aspectRatioLog2 = 0;
   while (widthOrLodSize != heightValue) {
     if ((int)widthOrLodSize < (int)heightValue) {
       aspectRatioLog2Field = &(texture->glideInfo).aspectRatioLog2;
-      *aspectRatioLog2Field = *aspectRatioLog2Field + -1;
+      *aspectRatioLog2Field = *aspectRatioLog2Field - 1;
       widthOrLodSize = widthOrLodSize * 2;
     }
     else {
@@ -4081,6 +4081,7 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
       heightValue = heightValue * 2;
     }
   }
+  /* small and large LOD = log2 of the larger side (heightValue now holds it): a single mipmap level */
   (texture->glideInfo).smallLodLog2 = 0;
   (texture->glideInfo).largeLodLog2 = 0;
   texturePixelFormat = texture->pixelFormat;
@@ -4089,19 +4090,20 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
     largeLodLog2Field = &(texture->glideInfo).largeLodLog2;
     *largeLodLog2Field = *largeLodLog2Field + 1;
   }
-  (texture->glideInfo).format = 0xc;
+  (texture->glideInfo).format = GR_TEXFMT_ARGB_4444;
   shift = texture->downsampleShift;
   if ((texturePixelFormat == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0)) || (texturePixelFormat == (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0))) {
-    (texture->glideInfo).format = 10;
+    (texture->glideInfo).format = GR_TEXFMT_RGB_565;
   }
   (texture->glideInfo).smallLodLog2 = (texture->glideInfo).smallLodLog2 - shift;
   largeLodLog2Field = &(texture->glideInfo).largeLodLog2;
   *largeLodLog2Field = *largeLodLog2Field - shift;
   logicalSize = g_GraphicsTextureSourceGetLogicalSize(texture->subresourceIndex,texture->sourceAsset);
-  (texture->glideInfo).data = (void *)0x0;
-  texture->residentNext = (GraphicsTextureResource *)0x0;
+  (texture->glideInfo).data = NULL;
+  texture->residentNext = NULL;
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
   texture->residentAddress = 0;
+  /* two bytes per texel of the downsampled image */
   uploadAlloc = g_MemoryApi.alloc
                     ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & 0x1f)) *
                      (logicalSize.logicalWidthPixels >> ((uint8_t)shift & 0x1f)) * 2);
@@ -4114,9 +4116,10 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
 
 
 /* Address: 0x0057FE80.
-   Ownership: graphics/backend/glide.
-   Purpose: Removes a resident texture from the address-ordered linked list, updates the list head/tail and bound-
-   texture cache, resets TMU state, frees glideInfo.data, and returns the preserved input pointer in EAX.
+   Frees the Glide side of a texture resource: unlinks it from the resident list (moving the placement cursor
+   g_GlideResidentTextureTail to its predecessor, or successor for the head, and dropping it as the bound texture), marks it not resident and
+   frees its upload buffer. The TMU memory simply becomes free for Glide3_TextureResource_EnsureResident. EAX is
+   preserved (the texture pointer).
 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_TextureResource_Release(GraphicsTextureResource *texture)
@@ -4127,13 +4130,13 @@ Glide3_TextureResource_Release(GraphicsTextureResource *texture)
   GraphicsTextureResource *replacementListHead;
   
   if (-1 < (int)texture->residentTmuIndex) {
-    previousResidentTexture = (GraphicsTextureResource *)0x0;
-    for (residentCursorOrNewTail = g_GlideResidentTextureHead; residentCursorOrNewTail != (GraphicsTextureResource *)0x0;
+    previousResidentTexture = NULL;
+    for (residentCursorOrNewTail = g_GlideResidentTextureHead; residentCursorOrNewTail != NULL;
         residentCursorOrNewTail = residentCursorOrNewTail->residentNext) {
       if (residentCursorOrNewTail == texture) {
         residentCursorOrNewTail = texture->residentNext;
         replacementListHead = residentCursorOrNewTail;
-        if (previousResidentTexture != (GraphicsTextureResource *)0x0) {
+        if (previousResidentTexture != NULL) {
           previousResidentTexture->residentNext = residentCursorOrNewTail;
           residentCursorOrNewTail = previousResidentTexture;
           replacementListHead = g_GlideResidentTextureHead;
@@ -4143,7 +4146,7 @@ Glide3_TextureResource_Release(GraphicsTextureResource *texture)
           g_GlideResidentTextureTail = residentCursorOrNewTail;
         }
         if (texture == g_GlideBoundTexture) {
-          g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
+          g_GlideBoundTexture = NULL;
         }
         break;
       }
@@ -4151,10 +4154,10 @@ Glide3_TextureResource_Release(GraphicsTextureResource *texture)
     }
   }
   texture->residentTmuIndex = GRAPHICS_TEXTURE_NOT_RESIDENT;
-  texture->residentNext = (GraphicsTextureResource *)0x0;
+  texture->residentNext = NULL;
   texture->residentAddress = 0;
   g_MemoryApi.free((texture->glideInfo).data);
-  (texture->glideInfo).data = (void *)0x0;
+  (texture->glideInfo).data = NULL;
   return;
 }
 

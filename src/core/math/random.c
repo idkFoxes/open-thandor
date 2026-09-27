@@ -27,18 +27,18 @@ uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
 
 
 /* Address: 0x004030E0.
-   Ownership: core/math/random.
-   Purpose: Uses the same two-step state=state*33+101 recurrence and output mix as Random_NextPrimary, but reads
-   and writes only RandomGeneratorState.secondarySeed.
+   Secondary random stream (selected by Random_SelectSecondaryStream for sessions): the same two LCG steps
+   and output mix as Random_NextPrimary, but on the separate secondary seed, so the session stream can be
+   kept in step across machines independently of the primary one.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
 
 {
-  int firstGeneratorStepState;
-  
-  firstGeneratorStepState = g_RandomGeneratorState.secondarySeed * 0x21 + 0x65;
-  g_RandomGeneratorState.secondarySeed = firstGeneratorStepState * 0x21 + 0x65;
-  return firstGeneratorStepState * 0x4000 ^ g_RandomGeneratorState.secondarySeed >> 2;
+  int firstStepSeed;
+
+  firstStepSeed = g_RandomGeneratorState.secondarySeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
+  g_RandomGeneratorState.secondarySeed = firstStepSeed * RANDOM_LCG_MULTIPLIER + RANDOM_LCG_INCREMENT;
+  return firstStepSeed * 0x4000 ^ g_RandomGeneratorState.secondarySeed >> 2;
 }
 
 

@@ -1748,8 +1748,9 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
 
 
 /* Address: 0x004B0800.
-   Ownership: ui/controls/layout.
-   Purpose: Tests eligible children in reverse visual order and calls their hitTest method.
+   Finds the UI node under the pointer: every non-suppressed child that contains the pointer (or may be hit
+   outside its bounds) is asked via its hitTest method, the last sibling (drawn on top) first. Returns the
+   first hit, or the container itself when no child claims the pointer.
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiContainer_HitTestChildren
@@ -1757,26 +1758,27 @@ UiContainer_HitTestChildren
 
 {
   /* Rewritten from the assembly (0x004B0800): eligible children are pushed on the machine stack
-     in sibling order and hit-tested in reverse (topmost first); Ghidra lost the pushed nodes. */
+     in sibling order and hit-tested in reverse (topmost first); Ghidra lost the pushed nodes.
+     The original has no limit; 256 bounds the local array. */
   UiNodeBase *eligible[256];
   UiNodeBase *child;
   UiNodeBase *hit;
   int count;
 
   count = 0;
-  for (child = control->firstChild; child != (UiNodeBase *)0xffffffff; child = child->nextSibling) {
+  for (child = control->firstChild; child != UI_NODE_NONE; child = child->nextSibling) {
     if ((((child->nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0) ||
          ((child->left <= pointerX && child->top <= pointerY) &&
           (pointerX < child->right && pointerY < child->bottom))) &&
         ((child->nodeFlags & UI_NODE_SUPPRESSED) == 0) && count < 256) {
       eligible[count] = child;
-      count = count + 1;
+      count++;
     }
   }
   while (count != 0) {
-    count = count - 1;
+    count--;
     hit = eligible[count]->vtable->hitTest(pointerY,pointerX,eligible[count]);
-    if (hit != (UiNodeBase *)0xffffffff) {
+    if (hit != UI_NODE_NONE) {
       return hit;
     }
   }

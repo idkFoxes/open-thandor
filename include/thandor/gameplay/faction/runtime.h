@@ -86,7 +86,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
 /* 0x00560110 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RegisterArmyAssetPointers
-          (uint32_t reservedDword0,FactionArmyAssetCount repetitionCount,
+          (uint32_t unusedPlayerRuntimeId,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
 /* 0x00560160 */

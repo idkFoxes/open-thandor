@@ -136,10 +136,8 @@ GameFactionRelations_TestPairTransitionAllowed
 
 
 /* Address: 0x0053C090.
-   Ownership: gameplay/faction/relations.
-   Purpose: Builds an eight-bit mask containing active factions that are either the queried faction itself or have
-   a packed pairwise relation state below four.
-   Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
+   Returns the bloc of sourceFactionIndex as a faction bit mask (bit n = faction n, factions 1..7): every active
+   faction whose relation state towards it is 4 or higher (friendly), plus the faction itself when active.
 */
 FactionActiveMask __thandor_eax_preserve_ecx_edx
 GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
@@ -147,10 +145,10 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
 {
   uint32_t relationStateNibble;
   int factionIndex;
-  uint32_t eligibleFactionMask;
+  uint32_t blocFactionMask;
   uint32_t currentFactionBit;
-  
-  eligibleFactionMask = 0;
+
+  blocFactionMask = 0;
   currentFactionBit = 0x80;
   factionIndex = 7;
   do {
@@ -159,23 +157,26 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
       if ((factionIndex == sourceFactionIndex) ||
           (relationStateNibble = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex),
            3 < relationStateNibble)) {
-        eligibleFactionMask = eligibleFactionMask | currentFactionBit;
+        blocFactionMask = blocFactionMask | currentFactionBit;
       }
     }
     currentFactionBit = currentFactionBit >> 1;
-    factionIndex = factionIndex + -1;
+    factionIndex--;
     if (factionIndex == 0) {
-      return eligibleFactionMask;
+      return blocFactionMask;
     }
   } while( true );
 }
 
 
 /* Address: 0x0053C0F0.
-   Ownership: gameplay/faction/relations.
-   Purpose: Handles game faction relations evaluate transition rules carry-flag result.
+   Predicts the level's end conditions for the case that only the factions in activeFactionMask were left
+   (used to judge whether two blocs may draw closer): unless the mask equals the currently active factions, the
+   64 scheduled conditions are re-evaluated with faction presence taken from the mask, and the first active end
+   trigger that then fires for an active faction decides: its movie variant, flipped when that faction is
+   neither focalFactionIndex nor in the mask. Returns true (CF) when that variant is 0 or nothing fires.
+   Leaves the recomputed satisfied bits in the real condition records.
 */
-
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
@@ -183,7 +184,7 @@ GameFactionRelations_EvaluateTransitionRules
 {
   uint8_t tokenOrFactionIndex;
   InGameLevelConditionStorageView800 *levelConditionStorage;
-  uint32_t currentActiveMask;
+  uint32_t actualActiveMask;
   int remainingCount;
   uint32_t currentFactionBit;
   InGameScheduledConditionKind kindOrStackValue;
@@ -191,27 +192,27 @@ GameFactionRelations_EvaluateTransitionRules
   uint8_t movieVariant;
   InGameConditionScheduleImageView480 *conditionCursor;
   InGameEndConditionTriggerRecord8ReferenceView *triggerCursor;
-  
+
   levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-  currentActiveMask = 0;
+  actualActiveMask = 0;
   currentFactionBit = 0x80;
-  remainingCount = 7;
+  remainingCount = 7; /* doubles as the faction index 7..1 */
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[remainingCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      currentActiveMask = currentActiveMask | currentFactionBit;
+      actualActiveMask = actualActiveMask | currentFactionBit;
     }
     currentFactionBit = currentFactionBit >> 1;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
-  if (currentActiveMask != activeFactionMask) {
-    remainingCount = 0x40;
+  if (actualActiveMask != activeFactionMask) {
+    remainingCount = 64; /* scheduled conditions */
     conditionCursor = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
     do {
+      /* bit 0 of kind is the satisfied flag: clear it, set it again when the condition would hold */
       kindOrStackValue = conditionCursor->conditions[0].statusAndKind.kind;
       conditionCursor->conditions[0].statusAndKind.kind =
            conditionCursor->conditions[0].statusAndKind.kind & 0xfffffffe;
-                    // WARNING: Switch is manually overridden
       switch(kindOrStackValue & 0xfe) {
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
         if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
@@ -259,6 +260,8 @@ GameFactionRelations_EvaluateTransitionRules
         }
         break;
       case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
+        /* postfix bytes after the kind byte, a bit stack in kindOrStackValue: 0xFF OR, 0xFE AND, 0xFD NOT,
+           0xFC end, anything else pushes the satisfied bit of that condition index */
         expressionCursor = (uint8_t *)((int)&conditionCursor->conditions[0].statusAndKind.kind + 1);
         kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
         while( true ) {
@@ -283,10 +286,10 @@ GameFactionRelations_EvaluateTransitionRules
              conditionCursor->conditions[0].statusAndKind.kind | kindOrStackValue & 1;
       }
       conditionCursor = (InGameConditionScheduleImageView480 *)(conditionCursor->conditions + 1);
-      remainingCount = remainingCount + -1;
+      remainingCount--;
     } while (remainingCount != 0);
     triggerCursor = (levelConditionStorage->schedule).triggers;
-    remainingCount = 0x10;
+    remainingCount = 16; /* end triggers */
     do {
       if ((triggerCursor->stateFlags == INGAME_END_CONDITION_TRIGGER_ACTIVE) &&
          (((levelConditionStorage->schedule).conditions[triggerCursor->conditionIndex].statusAndKind.kind & 1) !=
@@ -305,8 +308,8 @@ GameFactionRelations_EvaluateTransitionRules
           return false;
         }
       }
-      triggerCursor = triggerCursor + 1;
-      remainingCount = remainingCount + -1;
+      triggerCursor++;
+      remainingCount--;
     } while (remainingCount != 0);
   }
   return true;
@@ -314,8 +317,9 @@ GameFactionRelations_EvaluateTransitionRules
 
 
 /* Address: 0x0053C490.
-   Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the only states
-   GameFactionRuntime_ResetPairwiseRelationState is applied to by the random drift.
+   Returns true (CF set) when the pair's relation state is none of 3, 6 and 10, the top state of each tier
+   below the merge; only from those states does the random drift reset the relation
+   (GameFactionRuntime_ResetPairwiseRelationState).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRelations_IsNotResetEligibleState

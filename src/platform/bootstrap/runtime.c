@@ -1209,6 +1209,7 @@ static void DebugMovie_DrawText(int x0, int y0, const char *text)
 #undef DEBUG_PUT
 }
 
+/* Fills the framebuffer with opaque black and presents it (called twice to clear both page buffers). */
 static void DebugMovie_ClearScreen(void)
 {
   if (!g_GraphicsFramebufferBeginAccess()) {
@@ -1225,15 +1226,18 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
 {
   uint16_t path[0x40];
   char label[0x80];
-  int n = 0;
-  int i;
+  int pathLength = 0;
+  int nameIndex;
   unsigned start;
   MovieOpenResult opened;
   MovieFrameResult frame;
-  path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm'; path[n++] = '\\';
-  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (uint16_t)name[i];
-  path[n++] = '.'; path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm';
-  path[n] = 0;
+  /* UTF-16 path "flm\<name>.flm"; the name is cut so ".flm" and the terminator still fit */
+  path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm'; path[pathLength++] = '\\';
+  for (nameIndex = 0; name[nameIndex] != 0 && pathLength < 0x38; nameIndex++) {
+    path[pathLength++] = (uint16_t)name[nameIndex];
+  }
+  path[pathLength++] = '.'; path[pathLength++] = 'f'; path[pathLength++] = 'l'; path[pathLength++] = 'm';
+  path[pathLength] = 0;
   DebugMovie_ClearScreen();
   DebugMovie_ClearScreen();
   opened = Movie_Open(1,path);
@@ -1276,7 +1280,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       do {
         next = Movie_AdvanceFrame();
         if (next.ended) { ended = 1; break; }
-        g_IntroMoviePendingTicks = g_IntroMoviePendingTicks - 1;
+        g_IntroMoviePendingTicks--;
       } while ((g_IntroMoviePendingTicks != 0) && (--burst != 0));
       if (ended) break;
       if (g_GraphicsFramebufferBeginAccess()) break;

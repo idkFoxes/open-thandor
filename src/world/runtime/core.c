@@ -1087,30 +1087,31 @@ UnifiedRuntimeDefault_TwoArgNoOpD(WorldRuntimeContext *worldRuntime,ArmyRuntimeS
 
 
 /* Address: 0x00529430.
-   Ownership: world/runtime/core.
-   Purpose: Owner-list callback that clears kind-specific entity/model references before the referenced runtime
-   hierarchy is detached and released.
+   WorldRuntime_ForEachNodeInOwnerListD8 callback run while a model runtime is destroyed
+   (detachedObject = that model runtime): every effect (+0x1C), shot (+0x14) or entity (+0xF0, and +0x60 for
+   definition class 0x15) that still points at it gets the pointer cleared, so nothing keeps a dangling reference.
 */
 void __thandor_preserve_eax_edx
 WorldRuntimeNode_ClearDetachedEntityReferencesCallback
           (void *detachedObject,WorldOwnerListNode100 *node)
 
 {
-  int *entityRuntimePayloadWords;
-  
+  int *entityRuntimeWords;
+
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     if (detachedObject == *(void **)((int)node->runtimePayload + 0x1c)) {
       *(uint32_t *)((int)node->runtimePayload + 0x1c) = 0;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-    entityRuntimePayloadWords = node->runtimePayload;
-    if (detachedObject == (void *)entityRuntimePayloadWords[0x3c]) {
-      entityRuntimePayloadWords[0x3c] = 0;
+    /* word 0 is the definition (class index at +0x4C), word 0x3C = +0xF0, word 0x18 = +0x60 */
+    entityRuntimeWords = node->runtimePayload;
+    if (detachedObject == (void *)entityRuntimeWords[0x3c]) {
+      entityRuntimeWords[0x3c] = 0;
     }
-    if ((*(int *)(*entityRuntimePayloadWords + 0x4c) == 0x15) &&
-       (detachedObject == (void *)entityRuntimePayloadWords[0x18])) {
-      entityRuntimePayloadWords[0x18] = 0;
+    if ((*(int *)(*entityRuntimeWords + 0x4c) == 0x15) &&
+       (detachedObject == (void *)entityRuntimeWords[0x18])) {
+      entityRuntimeWords[0x18] = 0;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&

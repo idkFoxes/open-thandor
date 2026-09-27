@@ -249,20 +249,18 @@ uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
 }
 
 /* Address: 0x00402D30.
-   Ownership: core/text/string.
-   Purpose: Copies exactly codeUnitCount UTF-16 code units from source to destination with rep movsw. Zero count
-   performs no copy. The function does not append a terminator and has no scalar return. Typed parameters: p0
-   codeUnitCount→UiTextCodeUnitCount_V300. Nearby but non-identical semantic domains were explicitly deferred.
+   Copies exactly codeUnitCount UTF-16 code units from source to destination (rep movsw in the original).
+   It appends no terminator, so the number formatter can splice digit runs into a larger buffer.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination)
 
 {
   if (codeUnitCount != 0) {
-    for (; codeUnitCount != 0; codeUnitCount = codeUnitCount - 1) {
+    for (; codeUnitCount != 0; codeUnitCount--) {
       *destination = *source;
-      source = source + 1;
-      destination = destination + 1;
+      source++;
+      destination++;
     }
   }
   return;

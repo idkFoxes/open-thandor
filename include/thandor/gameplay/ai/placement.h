@@ -70,7 +70,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
 /* 0x00539330 */
 AiAnchorResult __thandor_preserve_eax
 AiPlacement_FindNearestValidWorkspace09Anchor
-          (Q12 referenceWorldXQ12,Q12 referenceWorldYQ12,PckArmyAssetIdCatalog armyAssetId,
+          (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539EF0 */

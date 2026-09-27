@@ -14,13 +14,10 @@
 /* Implementation ownership: world/model/runtime. */
 
 /* Address: 0x00529360.
-   Ownership: world/model/runtime.
-   Purpose: Creates one deferred child model runtime, installs it into its saved parent slot, and restores the
-   serialized local transform and parent link. Role: Repairs a child model link that could not be instantiated
-   during the first recursive pass. Inputs: Deferred child descriptor and parent/runtime context. Outputs: Created
-   child ModelRuntimeSlot/Node linked into the parent graph. Edges: Re-enters
-   ModelRuntimePool_CreateInstanceByDefinitionId.
-   Local calls: ModelRuntimePool_CreateInstanceByDefinitionId.
+   Attaches a new model to one of the attachment points of modelRuntime (recorded by
+   ModelNodeRuntime_CreateHierarchyRecursive): creates the model childDefinitionId for the same army, stores it in
+   the attachment entry, hangs its root node into the parent node's child slot and gives it the saved local
+   rotation and the attachment translation. CF set when the model could not be created.
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_RepairDeferredChild
@@ -49,8 +46,9 @@ ModelRuntimePool_RepairDeferredChild
       createResult.failed = true;
       return createResult;
     }
-    modelRuntime->attachments140[attachmentIndex].childModelRuntimeOrSavedOffset00 = createResult.modelNode
-    ;
+    /* the created "node" is the child's ModelRuntimeSlot */
+    modelRuntime->attachments140[attachmentIndex].childModelRuntimeOrSavedOffset00 =
+         (ModelRuntimeSlot *)createResult.modelNode;
     parentModelNode = modelRuntime->attachments140[attachmentIndex].parentModelNodeOrSavedOffset08;
     sourceTransform = modelRuntime->attachments140[attachmentIndex].sourceTransform04;
     childRootNode = (((ModelRuntimeSlot *)createResult.modelNode)->rootModelNodeOrSavedOffset).modelNode;

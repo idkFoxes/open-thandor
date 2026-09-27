@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/backend/glide. */
+
+/* Glide has no DirectDraw surfaces: Glide3_Framebuffer_Present passes this value as the "back surface" to
+   Glide3_Cursor_ComposeBeforePresent, which draws the cursor only for it (the generic DirectDraw callers pass
+   real surface pointers and are ignored). */
+#define GLIDE_CURSOR_PRESENT_SENTINEL ((IDirectDrawSurface3 *)0x1)
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005801B0 */

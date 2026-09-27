@@ -24,6 +24,11 @@
 #define ARMY_CREATE_COUNT_FOR_ACTIVE_FACTION 0x2 /* owned by the active faction: +1 on the counter at +0x1B0 of
                                                      the faction's selected model definition */
 #define ARMY_CREATE_UNLOCK_TECHNOLOGY 0x4 /* ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology */
+/* ArmyRuntimeSlot.commandModeFlags: what the current command targets (ArmyRuntime_ResolveCommandTarget,
+   ArmyRuntime_ApplyTargetPositionCommand, ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration) */
+#define ARMY_COMMAND_MODE_TARGET_ARMY 0x1     /* commandTargetArmyRuntime */
+#define ARMY_COMMAND_MODE_TARGET_POSITION 0x2 /* commandCoordinate0-2Q12 */
+#define ARMY_COMMAND_MODE_INTERRUPTED 0x4     /* a target command was cancelled; commandGeneration re-stamped */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00525A60 */
@@ -91,7 +96,7 @@ ArmyRuntime_ResolveCommandTarget(ArmyRuntimeSlot *targetArmyRuntime,ArmyRuntimeS
 /* 0x0051C620 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ApplyTargetPositionCommand
-          (Q12 coordinateA,Q12 coordinateB,Q12 coordinateC,ArmyRuntimeSlot *armyRuntime);
+          (Q12 coordinate2Q12,Q12 coordinate1Q12,Q12 coordinate0Q12,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C720 */
 WorldPositionResult

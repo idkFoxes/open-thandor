@@ -18,6 +18,13 @@
    fills the whole override table with it. */
 #define TEXT_RESOURCE_ID_NONE 0xFFFFFFFF
 #define TEXT_RESOURCE_OVERRIDE_CAPACITY 0x1000 /* entries of TextResourceOverrideTable */
+/* Page 0x30 holds the text of the loaded level (its .str entry, see TextResourcePage_LoadCompatibilityAliases):
+   index 0 the title, 1 the description, 2..15 fourteen further description lines. */
+#define TEXT_RESOURCE_PAGE_LEVEL 0x30
+#define TEXT_ID_LEVEL_PAGE_TITLE 0x3000
+#define TEXT_ID_LEVEL_PAGE_DESCRIPTION 0x3001
+#define TEXT_ID_LEVEL_PAGE_EXTRA_LINES 0x3002
+#define TEXT_LEVEL_EXTRA_LINE_COUNT 14
 /* Colour of the drop shadow drawn under glyphs and UI icons: black at half alpha (ARGB). */
 #ifndef TEXT_SHADOW_COLOR_ARGB
 #define TEXT_SHADOW_COLOR_ARGB 0x7F000000
@@ -26,7 +33,7 @@
 
 /* 0x0041CD30 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(uint32_t aliasAddressBase,uint16_t *path);
+TextResourcePage_LoadCompatibilityAliases(uint32_t levelTitleIndex,uint16_t *path);
 
 /* 0x0041B080 */
 void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void);

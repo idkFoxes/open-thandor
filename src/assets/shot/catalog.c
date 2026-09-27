@@ -208,18 +208,15 @@ ShotDefinition_ComputeLaunchAnglesRegs
 
 
 /* Address: 0x0052BCE0.
-   Ownership: assets/shot/catalog.
-   Purpose: Returns the exact trajectory-mode-dependent range contribution used while accumulating selection
-   information. Mode 1 derives it from speed squared and the ballistic divisor, mode 2 returns the stored +0x27C
-   value, and other modes combine +0x270, +0xD0, and +0x0C. The stock corpus contains 170 records and 136 unique
-   ids across five shot banks; duplicate ids are aliases/variants, not permission to invent distinct gameplay
-   meanings.
+   Returns how far a shot of this definition reaches, used when a model's weapons are summed up for target
+   selection: ballistic shots 9/8 of speed^2 / divisor, fixed-range shots their stored range (+0x27C), all
+   others speed times the flight time, where the ramp-up ticks count only one third.
 */
 uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
 
 {
   uint32_t selectionRangeQ12;
-  
+
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
     selectionRangeQ12 =
          (uint32_t)((int)(((int64_t)definition->launchSpeedQ12 * (int64_t)definition->launchSpeedQ12)
@@ -229,6 +226,7 @@ uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
     selectionRangeQ12 = definition->mode2SelectionRangeQ12;
   }
   else {
+    /* -0xAAA / 0x1000 = -2/3 in Q12: lifetime - 2/3 of the ramp duration */
     selectionRangeQ12 =
          (((int)(definition->trajectoryRampDurationTicks * -0xaaa) >> 0xc) +
          definition->projectileLifetimeTicks) * definition->launchSpeedQ12;

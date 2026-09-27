@@ -491,13 +491,12 @@ TerrainProjectedGrid_TransformShadeAndQueue
 
 
 /* Address: 0x005066D0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 0, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection0, TerrainProjectedOcclusion_ScanDirection1.
+   Line-of-sight marking for the sector between directions 0 (C+1) and 1 (C+1-W) of
+   TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint. Walks the sector's spine (step C+2-W, scan step +7)
+   with a running horizon like TerrainProjectedOcclusion_ScanDirection0, tests the direction-1 neighbour between
+   two spine cells, and hands the current horizon to a straight leg along each bounding direction. The first spine
+   cell is tested against its own unscaled height above the eye; unless it is visible, the legs start from the
+   average of that height and the caller's projectedHeightThresholdQ20.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge0
@@ -516,7 +515,7 @@ TerrainProjectedOcclusion_TraceWedge0
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightOrRowStride = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
@@ -530,13 +529,15 @@ TerrainProjectedOcclusion_TraceWedge0
       }
       heightOrRowStride = g_TerrainScanRowStrideBytes;
       adjacentCell = cell + 1;
-      projectedHeightOrStep = scanStep + 4;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection0
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,adjacentCell);
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint32_t *)((int)adjacentCell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
+      /* the direction-1 neighbour C+1-W: +0x48 terrainHeight, +0x4C waterSurfaceDelta, +0x50 flags,
+         +0x70 occupancyMask, 0x80 = one cell */
+      if ((*(uint32_t *)((int)adjacentCell + (0x50 - heightOrRowStride)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       neighborHeight = *(int *)((int)adjacentCell + (0x48 - heightOrRowStride));
@@ -552,7 +553,7 @@ TerrainProjectedOcclusion_TraceWedge0
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       cell = (FieldGridCell *)((int)adjacentCell + (0x80 - heightOrRowStride));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainProjectedOcclusion_ScanDirection1
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
                  (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
@@ -567,13 +568,9 @@ TerrainProjectedOcclusion_TraceWedge0
 
 
 /* Address: 0x005067D0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 1, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection1, TerrainProjectedOcclusion_ScanDirection2.
+   Line-of-sight marking for the sector between directions 1 (C+1-W) and 2 (C-W), built like
+   TerrainProjectedOcclusion_TraceWedge0: spine step C+1-2W (scan step +7), the direction-2 neighbour between two
+   spine cells, a straight leg along each bounding direction.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge1
@@ -592,7 +589,7 @@ TerrainProjectedOcclusion_TraceWedge1
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightOrRowStride = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
@@ -605,14 +602,16 @@ TerrainProjectedOcclusion_TraceWedge1
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       heightOrRowStride = g_TerrainScanRowStrideBytes;
-      projectedHeightOrStep = scanStep + 4;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection1
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
                  (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint32_t *)((int)cell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
+      /* the direction-2 neighbour C-W: +0x48 terrainHeight, +0x4C waterSurfaceDelta, +0x50 flags,
+         +0x70 occupancyMask */
+      if ((*(uint32_t *)((int)cell + (0x50 - heightOrRowStride)) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       neighborHeight = *(int *)((int)cell + (0x48 - heightOrRowStride));
@@ -628,7 +627,7 @@ TerrainProjectedOcclusion_TraceWedge1
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       adjacentCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - heightOrRowStride));
-      scanStep = scanStep + 7;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = adjacentCell + 1;
       TerrainProjectedOcclusion_ScanDirection2
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,adjacentCell);
@@ -643,13 +642,9 @@ TerrainProjectedOcclusion_TraceWedge1
 
 
 /* Address: 0x005068D0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 2, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection2, TerrainProjectedOcclusion_ScanDirection3.
+   Line-of-sight marking for the sector between directions 2 (C-W) and 3 (C-1), built like
+   TerrainProjectedOcclusion_TraceWedge0: spine step C-1-W (scan step +7), the direction-3 neighbour between two
+   spine cells, a straight leg along each bounding direction.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge2
@@ -667,7 +662,7 @@ TerrainProjectedOcclusion_TraceWedge2
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       cellHeight = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
@@ -679,14 +674,14 @@ TerrainProjectedOcclusion_TraceWedge2
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      projectedHeightOrStep = scanStep + 4;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection2
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
                  (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((cell[-1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[-1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell[-1].terrainHeight;
@@ -700,8 +695,8 @@ TerrainProjectedOcclusion_TraceWedge2
         cell[-1].occupancyMask = cell[-1].occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      adjacentCell = cell + -2;
-      scanStep = scanStep + 7;
+      adjacentCell = cell - 2;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       cell = (FieldGridCell *)((int)cell + (-0x80 - g_TerrainScanRowStrideBytes));
       TerrainProjectedOcclusion_ScanDirection3
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,adjacentCell);
@@ -716,13 +711,9 @@ TerrainProjectedOcclusion_TraceWedge2
 
 
 /* Address: 0x005069D0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 3, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection3, TerrainProjectedOcclusion_ScanDirection4.
+   Line-of-sight marking for the sector between directions 3 (C-1) and 4 (C-1+W), built like
+   TerrainProjectedOcclusion_TraceWedge0: spine step C-2+W (scan step +7), the direction-4 neighbour between two
+   spine cells, a straight leg along each bounding direction.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge3
@@ -742,7 +733,7 @@ TerrainProjectedOcclusion_TraceWedge3
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       cellHeight = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
@@ -755,19 +746,21 @@ TerrainProjectedOcclusion_TraceWedge3
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       rowStrideBytes = g_TerrainScanRowStrideBytes;
-      adjacentCell = cell + -1;
-      projectedHeightOrStep = scanStep + 4;
+      adjacentCell = cell - 1;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       TerrainProjectedOcclusion_ScanDirection3
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,adjacentCell);
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint32_t *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      /* the direction-4 neighbour C-1+W, addressed from runtime60_6B (+0x60): -0x18 terrainHeight,
+         -0x14 waterSurfaceDelta, -0x10 flags, +0x10 occupancyMask */
+      if ((*(uint32_t *)(adjacentCell->runtime60_6B + rowStrideBytes - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      neighborHeight = *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x18);
-      if (0 < *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x14)) {
-        neighborHeight = neighborHeight + *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x14);
+      neighborHeight = *(int *)(adjacentCell->runtime60_6B + rowStrideBytes - 0x18);
+      if (0 < *(int *)(adjacentCell->runtime60_6B + rowStrideBytes - 0x14)) {
+        neighborHeight = neighborHeight + *(int *)(adjacentCell->runtime60_6B + rowStrideBytes - 0x14);
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
               (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
@@ -777,11 +770,12 @@ TerrainProjectedOcclusion_TraceWedge3
              *(uint64_t *)(adjacentCell->runtime60_6B + rowStrideBytes + 0x10) | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      cell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
-      scanStep = scanStep + 7;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address: C-2+W */
+      cell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
       TerrainProjectedOcclusion_ScanDirection4
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       cellThreshold = projectedHeightThresholdQ20;
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -793,13 +787,9 @@ TerrainProjectedOcclusion_TraceWedge3
 
 
 /* Address: 0x00506AD0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 4, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection4, TerrainProjectedOcclusion_ScanDirection5.
+   Line-of-sight marking for the sector between directions 4 (C-1+W) and 5 (C+W), built like
+   TerrainProjectedOcclusion_TraceWedge0: spine step C-1+2W (scan step +7), the direction-5 neighbour between two
+   spine cells, a straight leg along each bounding direction.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge4
@@ -818,7 +808,7 @@ TerrainProjectedOcclusion_TraceWedge4
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       heightOrRowStride = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
@@ -831,19 +821,22 @@ TerrainProjectedOcclusion_TraceWedge4
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       heightOrRowStride = g_TerrainScanRowStrideBytes;
-      projectedHeightOrStep = scanStep + 4;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainProjectedOcclusion_ScanDirection4
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                 (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint32_t *)(cell->runtime60_6B + heightOrRowStride + -0x10) & 0x88006000) != 0) {
+      /* the direction-5 neighbour C+W, addressed from runtime60_6B (+0x60): -0x18 terrainHeight,
+         -0x14 waterSurfaceDelta, -0x10 flags, +0x10 occupancyMask */
+      if ((*(uint32_t *)(cell->runtime60_6B + heightOrRowStride - 0x10) & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
-      neighborHeight = *(int *)(cell->runtime60_6B + heightOrRowStride + -0x18);
-      if (0 < *(int *)(cell->runtime60_6B + heightOrRowStride + -0x14)) {
-        neighborHeight = neighborHeight + *(int *)(cell->runtime60_6B + heightOrRowStride + -0x14);
+      neighborHeight = *(int *)(cell->runtime60_6B + heightOrRowStride - 0x18);
+      if (0 < *(int *)(cell->runtime60_6B + heightOrRowStride - 0x14)) {
+        neighborHeight = neighborHeight + *(int *)(cell->runtime60_6B + heightOrRowStride - 0x14);
       }
       scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
               (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
@@ -854,11 +847,11 @@ TerrainProjectedOcclusion_TraceWedge4
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       cellRuntimeBase = cell->runtime0C_3F;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride + -0xc) + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride - 0xc) - 1;
       TerrainProjectedOcclusion_ScanDirection5
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,
-                 (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride + -0xc));
+                 (FieldGridCell *)(cellRuntimeBase + g_TerrainScanRowStrideBytes + heightOrRowStride - 0xc));
       cellThreshold = projectedHeightThresholdQ20;
       if (g_TerrainScanStepLimit <= scanStep) {
         return;
@@ -870,13 +863,9 @@ TerrainProjectedOcclusion_TraceWedge4
 
 
 /* Address: 0x00506BD0.
-   Ownership: world/terrain/projection.
-   Purpose: Traces two adjacent directional terrain runs for wedge 5, carries the maximum projected height
-   threshold across both legs, stops at excluded cells, and propagates the incoming 64-bit mask. Typed parameters:
-   p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainProjectedOcclusion_ScanDirection5, TerrainProjectedOcclusion_ScanDirection0.
+   Line-of-sight marking for the sector between directions 5 (C+W) and 0 (C+1), built like
+   TerrainProjectedOcclusion_TraceWedge0: spine step C+1+W (scan step +7), the direction-0 neighbour between two
+   spine cells, a straight leg along each bounding direction.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge5
@@ -894,7 +883,7 @@ TerrainProjectedOcclusion_TraceWedge5
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
   if (scanStep < g_TerrainScanStepLimit) {
     projectedHeightThresholdQ20 = (int)(projectedHeightThresholdQ20 + cellThreshold) >> 1;
-    while ((cell->flagsAndMaterial & 0x88006000) == 0) {
+    while ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
       cellHeight = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
@@ -906,14 +895,15 @@ TerrainProjectedOcclusion_TraceWedge5
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
-      projectedHeightOrStep = scanStep + 4;
+      projectedHeightOrStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
       TerrainProjectedOcclusion_ScanDirection5
                 (occupancyMaskBits,projectedHeightThresholdQ20,projectedHeightOrStep,
-                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc));
+                 (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc));
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((cell[1].flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell[1].flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell[1].terrainHeight;
@@ -928,8 +918,8 @@ TerrainProjectedOcclusion_TraceWedge5
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       adjacentCell = cell + 2;
-      scanStep = scanStep + 7;
-      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_DIAGONAL;
+      cell = (FieldGridCell *)(cell[1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
       TerrainProjectedOcclusion_ScanDirection0
                 (occupancyMaskBits,projectedHeightThresholdQ20,scanStep,adjacentCell);
       cellThreshold = projectedHeightThresholdQ20;
@@ -2084,12 +2074,10 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
 
 
 /* Address: 0x005063B0.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 0, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 0 (C+1, right): each cell's surface height (terrain plus positive water)
+   above the eye (g_TerrainScanReferenceHeight) is scaled by the per-step table g_TerrainHeightDeltaScaleByStepQ12;
+   a cell whose value reaches the highest value seen so far on this line is visible and gets occupancyMaskBits,
+   and its value becomes the new horizon. 4 scan steps per cell, until the step limit or a map-edge cell.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection0
@@ -2104,13 +2092,14 @@ TerrainProjectedOcclusion_ScanDirection0
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
+      /* the table holds one int per scan step; the product keeps bits 12..43 (SHLD EDX,EAX,20) */
       scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
               (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
       projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
@@ -2118,8 +2107,8 @@ TerrainProjectedOcclusion_ScanDirection0
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
-      cell = cell + 1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell++;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2127,12 +2116,7 @@ TerrainProjectedOcclusion_ScanDirection0
 
 
 /* Address: 0x00506430.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 1, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 1 (C+1-W, up and right); works like TerrainProjectedOcclusion_ScanDirection0.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection1
@@ -2144,10 +2128,10 @@ TerrainProjectedOcclusion_ScanDirection1
   int64_t scaledHeightProduct;
   int cellHeight;
   uint32_t projectedHeightQ20;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
@@ -2161,8 +2145,8 @@ TerrainProjectedOcclusion_ScanDirection1
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes));
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell = (FieldGridCell *)((int)cell + (0x80 - g_TerrainScanRowStrideBytes)); /* 0x80 = one cell */
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2170,12 +2154,7 @@ TerrainProjectedOcclusion_ScanDirection1
 
 
 /* Address: 0x005064C0.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 2, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 2 (C-W, up); works like TerrainProjectedOcclusion_ScanDirection0.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection2
@@ -2187,10 +2166,10 @@ TerrainProjectedOcclusion_ScanDirection2
   int64_t scaledHeightProduct;
   int cellHeight;
   uint32_t projectedHeightQ20;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
@@ -2204,7 +2183,7 @@ TerrainProjectedOcclusion_ScanDirection2
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
       cell = (FieldGridCell *)((int)cell - g_TerrainScanRowStrideBytes);
     } while (scanStep < g_TerrainScanStepLimit);
   }
@@ -2213,12 +2192,7 @@ TerrainProjectedOcclusion_ScanDirection2
 
 
 /* Address: 0x00506540.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 3, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 3 (C-1, left); works like TerrainProjectedOcclusion_ScanDirection0.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection3
@@ -2230,10 +2204,10 @@ TerrainProjectedOcclusion_ScanDirection3
   int64_t scaledHeightProduct;
   int cellHeight;
   uint32_t projectedHeightQ20;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
@@ -2247,8 +2221,8 @@ TerrainProjectedOcclusion_ScanDirection3
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
-      cell = cell + -1;
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      cell--;
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2256,12 +2230,7 @@ TerrainProjectedOcclusion_ScanDirection3
 
 
 /* Address: 0x005065C0.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 4, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 4 (C-1+W, down and left); works like TerrainProjectedOcclusion_ScanDirection0.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection4
@@ -2273,10 +2242,10 @@ TerrainProjectedOcclusion_ScanDirection4
   int64_t scaledHeightProduct;
   int cellHeight;
   uint32_t projectedHeightQ20;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
@@ -2290,8 +2259,9 @@ TerrainProjectedOcclusion_ScanDirection4
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell[-1].runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;
@@ -2299,12 +2269,7 @@ TerrainProjectedOcclusion_ScanDirection4
 
 
 /* Address: 0x00506650.
-   Ownership: world/terrain/projection.
-   Purpose: Scans directional terrain run 5, stops at excluded cells, converts the current cell height relative to
-   the shared origin through the distance scale table, and ORs the incoming 64-bit mask when the projected
-   threshold is met. Typed parameters: p2 projectedHeightThresholdQ20→TerrainProjectedHeightThresholdQ20_V342, p3
-   scanStep→TerrainDirectionalScanStep_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Line-of-sight leg along direction 5 (C+W, down); works like TerrainProjectedOcclusion_ScanDirection0.
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection5
@@ -2316,10 +2281,10 @@ TerrainProjectedOcclusion_ScanDirection5
   int64_t scaledHeightProduct;
   int cellHeight;
   uint32_t projectedHeightQ20;
-  
+
   if (scanStep < g_TerrainScanStepLimit) {
     do {
-      if ((cell->flagsAndMaterial & 0x88006000) != 0) {
+      if ((cell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) != 0) {
         return;
       }
       cellHeight = cell->terrainHeight;
@@ -2333,8 +2298,9 @@ TerrainProjectedOcclusion_ScanDirection5
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
       }
-      scanStep = scanStep + 4;
-      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes + -0xc);
+      scanStep = scanStep + TERRAIN_SCAN_STEP_STRAIGHT;
+      /* runtime0C_3F (+0x0C) - 0xC is a cell's own address */
+      cell = (FieldGridCell *)(cell->runtime0C_3F + g_TerrainScanRowStrideBytes - 0xc);
     } while (scanStep < g_TerrainScanStepLimit);
   }
   return;

@@ -526,10 +526,9 @@ CubicSpline_BuildNaturalCoefficientSystem
 
 
 /* Address: 0x0053D160.
-   Ownership: core/math/interpolation.
-   Purpose: Performs one forward-elimination column step. RET 0x14 proves five stack arguments. Role: Performs one
-   forward-elimination step over the spline coefficient system. Inputs: Coefficient matrix/work column and row
-   bounds. Outputs: Partially reduced system.
+   One LU-decomposition step of CubicSpline_SolveCoefficientSystem, in place on the 32x32 matrix M:
+   M[row][column] = (M[row][column] - sum over k = 0..lastPriorIndex of M[row][k] * M[k][column]) / pivot.
+   With pivot 1 this yields an element of U, with the diagonal element of U as pivot an element of L.
 */
 void __thandor_void_preserve_ecx_edx
 CubicSpline_ForwardEliminateColumn
@@ -542,18 +541,18 @@ CubicSpline_ForwardEliminateColumn
   int priorIndex;
   float *columnCursor;
   float *rowCursor;
-  
-  rowCursor = matrix32x32 + rowIndex * 0x20;
+
+  rowCursor = matrix32x32 + rowIndex * CUBIC_SPLINE_MATRIX_ORDER;
   priorIndex = 0;
   targetElement = rowCursor + columnIndex;
   columnCursor = matrix32x32 + columnIndex;
   reducedValue = *targetElement;
-  if (lastPriorIndex < 0x80000000) {
+  if (lastPriorIndex < 0x80000000) { /* signed lastPriorIndex >= 0; -1 on the first row means no terms */
     do {
       reducedValue = reducedValue - *rowCursor * *columnCursor;
-      priorIndex = priorIndex + 1;
-      rowCursor = rowCursor + 1;
-      columnCursor = columnCursor + 0x20;
+      priorIndex++;
+      rowCursor++;
+      columnCursor = columnCursor + CUBIC_SPLINE_MATRIX_ORDER;
     } while (priorIndex <= (int)lastPriorIndex);
   }
   *targetElement = reducedValue / pivot;
@@ -562,10 +561,9 @@ CubicSpline_ForwardEliminateColumn
 
 
 /* Address: 0x0053D1C0.
-   Ownership: core/math/interpolation.
-   Purpose: Performs one back-substitution row step. RET 0x18 proves six stack arguments. Role: Performs one back-
-   substitution step over the spline coefficient system. Inputs: Reduced matrix/work row and solved tail values.
-   Outputs: Solved coefficient row.
+   One substitution step of CubicSpline_SolveCoefficientSystem on the right-hand side b with the 32x32 matrix M:
+   b[target] = (b[target] - sum over k = firstSolvedIndex..lastSolvedIndex of M[target][k] * b[k]) / pivot.
+   Used with pivot 1 for the forward (unit-L) pass and with the diagonal of U for the back substitution.
 */
 void __thandor_void_preserve_ecx_edx
 CubicSpline_BackSubstituteRow
@@ -577,14 +575,14 @@ CubicSpline_BackSubstituteRow
   float *solvedRhsCursor;
   float *matrixCoefficientCursor;
   float targetSolutionValue;
-  
+
   solvedRhsCursor = rhsVector + firstSolvedIndex;
-  matrixCoefficientCursor = matrix32x32 + firstSolvedIndex + targetIndex * 0x20;
+  matrixCoefficientCursor = matrix32x32 + firstSolvedIndex + targetIndex * CUBIC_SPLINE_MATRIX_ORDER;
   targetSolutionValue = rhsVector[targetIndex];
-  for (; (int)firstSolvedIndex <= (int)lastSolvedIndex; firstSolvedIndex = firstSolvedIndex + 1) {
+  for (; (int)firstSolvedIndex <= (int)lastSolvedIndex; firstSolvedIndex++) {
     targetSolutionValue = targetSolutionValue - *matrixCoefficientCursor * *solvedRhsCursor;
-    matrixCoefficientCursor = matrixCoefficientCursor + 1;
-    solvedRhsCursor = solvedRhsCursor + 1;
+    matrixCoefficientCursor++;
+    solvedRhsCursor++;
   }
   rhsVector[targetIndex] = targetSolutionValue / pivot;
   return;

@@ -399,14 +399,8 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
 
 
 /* Address: 0x00539200.
-   Ownership: gameplay/ai/placement.
-   Purpose: Invokes the shared AI placement query in mode zero using the workspace record identifier and world
-   coordinates together with the current asset, faction, and planning context. Stock ARM contains 675 records and
-   326 unique ids; placement workspace, producer, tier, class, and faction-role semantics are not inferred from
-   numeric adjacency. Typed parameters: p4 placementContext→ArmyPlacementContext_V344. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged. Typed parameters: p3 workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Runs the mode-0 placement query for the asset at a workspace cell (its position and heading) and returns the
+   query's CF: true when the asset cannot be placed there.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_TestWorkspaceRecordAtPoint
@@ -445,14 +439,10 @@ AiPlacement_TestMode4AtWorkspaceRecord
 
 
 /* Address: 0x0053B570.
-   Ownership: gameplay/ai/placement.
-   Purpose: Runs the shared placement query in the verified primary and fallback modes and converts a successful
-   returned count into knowledge-sized placement buckets. Stock ARM contains 675 records and 326 unique ids;
-   placement workspace, producer, tier, class, and faction-role semantics are not inferred from numeric adjacency.
-   Typed parameters: p3 workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Counts how many separation quanta of special sites the asset could use at a workspace cell: when the mode-3
+   query reports a nonzero count and the mode-0 query fails, the count is rounded up to whole
+   specialSiteSeparationQuantumQ12 units; otherwise the result is 0. CF is set only when both the mode-3 and the
+   mode-0 query fail (EAX then holds the mode-0 error).
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 AiPlacement_QueryReachableSiteBucketCount
@@ -462,56 +452,50 @@ AiPlacement_QueryReachableSiteBucketCount
 {
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
-  uint32_t normalAnglesOrBucketCount;
+  uint32_t headingOrBucketCount;
   PlacementDispatchResult dispatchResult;
   StatusResult countResult;
   StatusResult failureResult;
   
   knowledgeData = g_AiKnowledgeData;
-  normalAnglesOrBucketCount = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
+  headingOrBucketCount = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,normalAnglesOrBucketCount,
+                    (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,headingOrBucketCount,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
                      (UiRootNode *)worldRuntime);
   placementCount = dispatchResult.value;
   if (dispatchResult.failed) {
     dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                      (0,0,normalAnglesOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                      (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                        factionIndex,(UiRootNode *)worldRuntime);
     if (dispatchResult.failed) {
       failureResult.valueOrError = dispatchResult.value;
       failureResult.failed = dispatchResult.failed;
       return failureResult;
     }
-    normalAnglesOrBucketCount = 0;
+    headingOrBucketCount = 0;
   }
   else if ((placementCount != 0) &&
           (dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                             (0,0,normalAnglesOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
+                             (0,0,headingOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                               factionIndex,(UiRootNode *)worldRuntime), dispatchResult.failed)) {
     /* Round the placement count up to whole separation quanta. */
-    normalAnglesOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
-    normalAnglesOrBucketCount = ((placementCount - 1) + normalAnglesOrBucketCount) / normalAnglesOrBucketCount;
+    headingOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
+    headingOrBucketCount = ((placementCount - 1) + headingOrBucketCount) / headingOrBucketCount;
   }
   else {
-    normalAnglesOrBucketCount = 0;
+    headingOrBucketCount = 0;
   }
   countResult.failed = false;
-  countResult.valueOrError = normalAnglesOrBucketCount;
+  countResult.valueOrError = headingOrBucketCount;
   return countResult;
 }
 
 
 /* Address: 0x0053ACD0.
-   Ownership: gameplay/ai/placement.
-   Purpose: Runs the shared mode-three placement query for one workspace record and, for supported nonzero bucket
-   counts, expands the request into a separated site chain using the calculated remainder. Stock ARM contains 675
-   records and 326 unique ids; placement workspace, producer, tier, class, and faction-role semantics are not
-   inferred from numeric adjacency. Typed parameters: p3 workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: AiPlacement_ReserveSeparatedSpecialSiteChain.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Tests a workspace-08 site cell for the asset: the mode-3 placement query must succeed with a count of at least
+   one separation quantum (rounded up). More than 4 quanta accept the site outright; 1-4 quanta accept it only
+   when AiPlacement_ReserveSeparatedSpecialSiteChain reports CF set. CF (true) means rejected.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_ReserveMode3SiteCluster
@@ -523,12 +507,13 @@ AiPlacement_ReserveMode3SiteCluster
   uint32_t quantumOrBucketCount;
   bool chainFailed;
   PlacementDispatchResult dispatchResult;
-  
+
   knowledgeData = g_AiKnowledgeData;
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
                      (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
                      workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
+  /* ceil(placementCount / quantum) */
   if ((dispatchResult.failed) ||
      (quantumOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
      quantumOrBucketCount = ((dispatchResult.value - 1) + quantumOrBucketCount) / quantumOrBucketCount, quantumOrBucketCount == 0)) {
@@ -611,17 +596,13 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
 
 
 /* Address: 0x00539330.
-   Ownership: gameplay/ai/placement.
-   Purpose: It returns the selected anchor coordinates when a valid entry exists. Stock ARM contains 675 records
-   and 326 unique ids; placement workspace, producer, tier, class, and faction-role semantics are not inferred from
-   numeric adjacency. Typed parameters: p2 referenceWorldXQ12→Q12, p3 referenceWorldYQ12→Q12. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
+   Returns the position of the workspace-09 cell nearest (Manhattan distance) to the reference point at which
+   the mode-1 placement query accepts the asset. CF (notFound) is set when no such cell exists.
+   Note the argument order: Y first, then X, like ArmyPlacement_DispatchAssetAtFieldPoint.
 */
 AiAnchorResult __thandor_preserve_eax
 AiPlacement_FindNearestValidWorkspace09Anchor
-          (Q12 referenceWorldXQ12,Q12 referenceWorldYQ12,PckArmyAssetIdCatalog armyAssetId,
+          (Q12 referenceWorldYQ12,Q12 referenceWorldXQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
@@ -645,11 +626,11 @@ AiPlacement_FindNearestValidWorkspace09Anchor
     gridCellCursor = g_AiWorkspaceBuffer09_Size1000;
     do {
       candidateCell = *gridCellCursor;
-      deltaX = referenceWorldYQ12 - candidateCell->worldX;
+      deltaX = referenceWorldXQ12 - candidateCell->worldX;
       if (deltaX < 0) {
         deltaX = -deltaX;
       }
-      deltaY = referenceWorldXQ12 - candidateCell->worldY;
+      deltaY = referenceWorldYQ12 - candidateCell->worldY;
       if (deltaY < 0) {
         deltaY = -deltaY;
       }
@@ -663,8 +644,8 @@ AiPlacement_FindNearestValidWorkspace09Anchor
           bestCell = candidateCell;
         }
       }
-      gridCellCursor = gridCellCursor + 1;
-      remainingCount = remainingCount + -1;
+      gridCellCursor++;
+      remainingCount--;
     } while (remainingCount != 0);
     if ((int)bestDistance < 0x7fffffff) {
       anchorResult.worldXQ12 = bestCell->worldX;
@@ -681,16 +662,12 @@ AiPlacement_FindNearestValidWorkspace09Anchor
 
 
 /* Address: 0x00539EF0.
-   Ownership: gameplay/ai/placement.
-   Purpose: Builds up to four mode-one placement records for a special workspace entity while enforcing the
-   configured Manhattan separation threshold between accepted points. Accepted temporary records are linked into
-   the caller workspace. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier,
-   class, and faction-role semantics are not inferred from numeric adjacency. Typed parameters: p3
-   workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345. Calling convention, complete VariableStorage
-   serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: AiPlacement_FindNearestValidWorkspace09Anchor.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
-   ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
+   Probes the ARM_0333 building positions around a workspace cell: up to four times it takes the nearest free
+   workspace-09 anchor (AiPlacement_FindNearestValidWorkspace09Anchor), creates a temporary ARM_0333 instance
+   there (so the next search finds the next anchor) and checks its Manhattan distance to the cell. CF is clear
+   as soon as one of them lies closer than specialSiteSeparationQuantumQ12, and set when all are at least that
+   far or an anchor/instance is missing. Every temporary instance is destroyed again before returning; the
+   armyAssetId argument is not used.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiPlacement_ReserveSeparatedSpecialSiteChain
@@ -698,9 +675,9 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  Q12 worldYQ12;
+  Q12 firstAnchorXQ12;
   int deltaX;
-  Q12 worldXQ12;
+  Q12 firstAnchorYQ12;
   int deltaY;
   ArmyRuntimeCreateResult firstInstance;
   ArmyRuntimeCreateResult secondInstance;
@@ -713,21 +690,22 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
   anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
-  worldXQ12 = anchor.worldYQ12;
-  worldYQ12 = anchor.worldXQ12;
+  firstAnchorYQ12 = anchor.worldYQ12;
+  firstAnchorXQ12 = anchor.worldXQ12;
   if (anchor.notFound) {
     return true;
   }
+  /* Y before X, as at every ArmyRuntime_CreateInstanceFromAsset call site */
   firstInstance = ArmyRuntime_CreateInstanceFromAsset
-                    (1,0,worldXQ12,worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
+                    (1,0,firstAnchorYQ12,firstAnchorXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
   if (firstInstance.failed) {
     return true;
   }
-  deltaX = worldYQ12 - workspaceRecord->worldX;
+  deltaX = firstAnchorXQ12 - workspaceRecord->worldX;
   if (deltaX < 0) {
     deltaX = -deltaX;
   }
-  deltaY = worldXQ12 - workspaceRecord->worldY;
+  deltaY = firstAnchorYQ12 - workspaceRecord->worldY;
   if (deltaY < 0) {
     deltaY = -deltaY;
   }

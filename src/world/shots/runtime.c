@@ -226,11 +226,10 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
 
 
 /* Address: 0x0052B660.
-   Ownership: world/shots/runtime.
-   Purpose: Scans the fixed 256-pointer shot-definition registry for definitionId. A match returns ShotDefinition *
-   with CF clear. Failure writes the requested identifier to the package error buffer and returns error 0x44 with
-   CF set. The stock corpus contains 170 records and 136 unique ids across five shot banks; duplicate ids are
-   aliases/variants, not permission to invent distinct gameplay meanings.
+   Looks a shot definition up by id in the 256-slot registry (a second copy of
+   ShotDefinitionRegistry_FindByIdWithError, used by ShotDefinition registration to reject duplicates).
+   On a miss a number is formatted into g_PackageLastErrorPath and FATAL_ERROR_SHOT_ID_NOT_FOUND is returned
+   with CF set.
 */
 ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
@@ -241,19 +240,19 @@ ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
   ShotDefinition **registryCursor;
   ShotDefinitionResult failureResult;
   ShotDefinitionResult successResult;
-  ShotDefinition *candidateDefinition;
-  
+
   registryCursor = g_ShotDefinitionRegistry;
-  registrySlotsRemaining = 0x100;
-  while ((registryDefinition = *registryCursor, registryDefinition == (ShotDefinition *)0x0 ||
+  registrySlotsRemaining = SHOT_DEFINITION_REGISTRY_SLOT_COUNT;
+  while ((registryDefinition = *registryCursor, registryDefinition == NULL ||
          (registryDefinition->definitionId != definitionId))) {
-    registryCursor = registryCursor + 1;
-    registrySlotsRemaining = registrySlotsRemaining + -1;
+    registryCursor++;
+    registrySlotsRemaining--;
     if (registrySlotsRemaining == 0) {
+      /* the original formats EAX, i.e. the last registry slot, not the missing id (PUSH EAX at 0x0052B699) */
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.notFound = true;
-      failureResult.definitionOrError = (ShotDefinition *)0x44;
+      failureResult.definitionOrError = (ShotDefinition *)FATAL_ERROR_SHOT_ID_NOT_FOUND;
       return failureResult;
     }
   }

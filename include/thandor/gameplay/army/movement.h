@@ -12,6 +12,26 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/army/movement. */
+
+/* ArmyRuntimeSlot/ArmyMovementRuntime.movementStateFlags bits, as set and tested by the move-command starters
+   and ArmyRuntime_UpdateMovementAndWaypoints. Bits 0x04, 0x10 and 0x40 are not named yet. */
+#define ARMY_MOVEMENT_ACTIVE 0x1            /* a move target is set (movementWorld*Q12 / fallbackPosition) */
+#define ARMY_MOVEMENT_LOCKED 0x2            /* new move orders are appended to the waypoint queue, not started */
+#define ARMY_MOVEMENT_WAYPOINTS_QUEUED 0x8  /* queuedWaypoints[0..queuedWaypointCount-1] are in use */
+#define ARMY_MOVEMENT_TARGET_FOLLOWING 0x20 /* started by ArmyRuntimeCommand_UpdateTargetFollowingState; a new
+                                               command resets the move first */
+#define ARMY_MOVEMENT_DIRECT 0x80           /* ArmyRuntime_StartDirectMoveCommand: orders are never queued */
+#define ARMY_MOVEMENT_ROUTED 0x200          /* routed move command: kept by the reset/target-following paths */
+#define ARMY_MOVEMENT_MIRROR_TARGET 0x400   /* ArmyRuntime_SetPendingMoveTarget also sets movementTargetWorld*Q12 */
+/* retryCountdown after every route (re)build; while it is non-zero and the model has not moved,
+   ArmyRuntime_UpdateMovementAndWaypoints does not rebuild the route */
+#define ARMY_MOVEMENT_RETRY_TICKS 0x40
+/* ArmyMovementRuntime.queuedWaypoints[8]; when full, a new waypoint overwrites the last one */
+#define ARMY_MOVEMENT_WAYPOINT_CAPACITY 8
+/* ArmyRuntime_UpdateMovementAndWaypoints: the route end (fallbackPosition) counts as reached within
+   +-0x40 exclusive, the final target (movementTarget*) within +-1.0 (Q12) inclusive on both axes */
+#define ARMY_MOVEMENT_ROUTE_END_RADIUS_Q12 0x40
+#define ARMY_MOVEMENT_TARGET_RADIUS_Q12 0x1000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00520F60 */

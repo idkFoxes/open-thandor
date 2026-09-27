@@ -154,38 +154,35 @@ Technology_IsAvailableForFaction
 
 
 /* Address: 0x0052AE10.
-   Ownership: gameplay/technology/runtime.
-   Purpose: When the entity is not already in either blocked state bit, writes the technology index and the three
-   verified record values into its runtime technology state, applies the high-speed scaling path to entityValue28,
-   and sets state bit 0x80. Copies entityValue20/24/28 into entity runtime state; a runtime flag scales
-   entityValue28 before storage. The HUD reads these raw as xenit/energy/time costs (tech-tree.md). Stock tech.tec
-   has 512 records over canonical ids 0..255; localized titles do not prove source-building, tier, direction, or
-   effect mappings. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Copies TEC +0x20 Xenite requirement, +0x24
-   Energy requirement, and +0x28 duration into the entity technology payload.
+   Starts researching a technology in a building: unless a research is already assigned or running, stores the
+   technology index and copies the tech.tec record's Xenite cost (+0x20), energy cost (+0x24) and duration
+   (+0x28) into the entity; the HUD shows these as the research costs and time. The fast-build cheat divides the
+   duration by 16.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
 
 {
-  uint32_t appliedEntityValue28;
-  uint32_t recordEntityValue20;
-  uint32_t recordEntityValue24;
+  uint32_t researchDurationQ5;
+  uint32_t xeniteCostQ4;
+  uint32_t energyCostQ4;
   GameEntityRuntimeFlags *entityRuntimeFlags;
-  
-  if (((entity->common).runtimeFlags & 0xc0) == 0) {
-    recordEntityValue20 = g_TechnologyAsset->records[technologyIndex].xeniteCostQ4;
-    recordEntityValue24 = g_TechnologyAsset->records[technologyIndex].energyCostQ4;
-    appliedEntityValue28 = g_TechnologyAsset->records[technologyIndex].researchDurationQ5;
+
+  if (((entity->common).runtimeFlags &
+      (ENTITY_RUNTIME_FLAG_RESEARCH_RUNNING | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED)) == 0) {
+    xeniteCostQ4 = g_TechnologyAsset->records[technologyIndex].xeniteCostQ4;
+    energyCostQ4 = g_TechnologyAsset->records[technologyIndex].energyCostQ4;
+    researchDurationQ5 = g_TechnologyAsset->records[technologyIndex].researchDurationQ5;
     (entity->classPayload).technology.entityValue24 = 0;
     (entity->common).commandState = technologyIndex;
-    if ((g_UiCommandRuntimeFlags & 0x100000) != 0) {
-      appliedEntityValue28 = (appliedEntityValue28 >> 4) + 1;
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD) != 0) {
+      researchDurationQ5 = (researchDurationQ5 >> 4) + 1;
     }
-    (entity->classPayload).technology.xeniteCostQ4 = recordEntityValue20;
-    (entity->classPayload).technology.energyCostQ4 = recordEntityValue24;
-    (entity->classPayload).technology.appliedResearchDurationQ5 = appliedEntityValue28;
+    (entity->classPayload).technology.xeniteCostQ4 = xeniteCostQ4;
+    (entity->classPayload).technology.energyCostQ4 = energyCostQ4;
+    (entity->classPayload).technology.appliedResearchDurationQ5 = researchDurationQ5;
     entityRuntimeFlags = &(entity->common).runtimeFlags;
-    *entityRuntimeFlags = *entityRuntimeFlags | 0x80;
+    *entityRuntimeFlags = *entityRuntimeFlags | ENTITY_RUNTIME_FLAG_RESEARCH_ASSIGNED;
   }
   return;
 }

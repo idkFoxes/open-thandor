@@ -13,6 +13,10 @@
 
 /* Submodule: graphics/render/primitives. */
 
+/* DepthInterval_BuildBinMask: world coordinates (Q12) are hashed into 32 wrapping bins of 1 << 14 units
+   (4.0 world units) per axis */
+#define SPATIAL_BIN_SHIFT 14
+
 /* Primitive queue pool layout (GraphicsPrimitiveQueue_AllocateGlobalPool/ResetGlobal): a 0x20-byte header, then
    per packet one primary node and one radix scratch node (0x10 bytes each) and the 0x80-byte packet itself. */
 #define GRAPHICS_PRIMITIVE_QUEUE_HEADER_BYTES 0x20
@@ -25,6 +29,10 @@
    depth writes, and treats bit 17 as blend mode 1. */
 #define GRAPHICS_PRIMITIVE_FLAG_TEXTURED 0x10000
 #define GRAPHICS_PRIMITIVE_FLAG_FORCE_TRANSLUCENT 0x20000
+/* bits 12..17: raster handler index; the software queue renderers shift by 10 to get its byte offset */
+#define GRAPHICS_PRIMITIVE_RASTER_HANDLER_MASK 0x3f000
+/* set by SoftwareRenderer_PrepareTrianglePacket when all three vertex colours are equal */
+#define GRAPHICS_PRIMITIVE_FLAG_FLAT_SHADED 0x8000
 #define GRAPHICS_PRIMITIVE_BLEND_MASK 0x7000
 #define GRAPHICS_PRIMITIVE_BLEND_OPAQUE 0
 #define GRAPHICS_PRIMITIVE_BLEND_TRANSLUCENT 0x1000
@@ -104,12 +112,12 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
 
 /* 0x004FFC10 */
 DepthBinMask32 __thandor_eax_preserve_ecx_edx
-DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCenter32 centerDepth);
+DepthInterval_BuildBinMask(DepthIntervalRadius32 radiusQ12,DepthIntervalCenter32 centerQ12);
 
 /* 0x004FFC50 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DepthBinMasks_Overlap
-          (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,DepthBinMask32 secondMaskLow,
-          DepthBinMask32 secondMaskHigh);
+          (DepthBinMask32 firstMaskAxis0,DepthBinMask32 firstMaskAxis1,DepthBinMask32 secondMaskAxis0,
+          DepthBinMask32 secondMaskAxis1);
 
 #endif /* THANDOR_GRAPHICS_RENDER_PRIMITIVES_H */
