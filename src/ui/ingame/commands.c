@@ -622,11 +622,10 @@ InGameCommand_ExecuteLocalPlacementFromSelection
 
 
 /* Address: 0x0056A2A0.
-   Ownership: ui/ingame/commands.
-   Purpose: Collects up to 24 active runtime records for the current command context, chooses a compact grid,
-   updates variant-A controls from each record's textureSource, suppresses unused controls, and relayouts the
-   container.
-   Cross-module calls: UiGrid_ComputeDimensionsPacked [ui/controls/layout].
+   Rebuilds the army stock panel: the active faction's pooled army assets that have a texture (at most 24,
+   none while the world input is disabled) fill g_UiCommandSpriteVariantARecords and the slot buttons in a
+   grid of at most four columns; the frame is sized to the grid (smaller margins below 800 pixels width) and
+   hidden when the stock is empty, unused slots are hidden.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
 
@@ -645,31 +644,32 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
   UiCommandRuntimeRecordPrefix **recordCursor;
   uint32_t *assetCursor;
   UiGridDimensionsEdxEax8 gridDimensions;
-  
+
+  /* node becomes the in-game UI root (parent -1) */
   parentCursor = node->parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     node = node->parent;
     parentCursor = node->parent;
   }
+  /* countWidthOrOffset: slot counter here, then the extra frame width, then a slot's control offset */
   recordCursor = g_UiCommandSpriteVariantARecords;
-  for (countWidthOrOffset = 0x18; countWidthOrOffset != 0; countWidthOrOffset = countWidthOrOffset + -1) {
-    *recordCursor = (UiCommandRuntimeRecordPrefix *)0x0;
-    recordCursor = recordCursor + 1;
+  for (countWidthOrOffset = 24; countWidthOrOffset != 0; countWidthOrOffset--) {
+    *recordCursor = NULL;
+    recordCursor++;
   }
   recordCursor = g_UiCommandSpriteVariantARecords;
   remainingAssets = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetCount;
   itemCount = 0;
   assetCursor = g_GameFactionRuntimeImage.records[((WorldRuntimeContext *)INGAME_UI(node,worldView))->activeFactionRuntimeIndex].primaryArmyAssetPointersOrIds;
-  if ((remainingAssets != 0) && ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
+  if ((remainingAssets != 0) && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED) == 0)) {
     do {
-      if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource !=
-           (GraphicsTextureSourceAsset *)0x0) && (itemCount < 0x18)) {
+      if ((((UiCommandRuntimeRecordPrefix *)*assetCursor)->textureSource != NULL) && (itemCount < 24)) {
         *recordCursor = (UiCommandRuntimeRecordPrefix *)*assetCursor;
-        itemCount = itemCount + 1;
-        recordCursor = recordCursor + 1;
+        itemCount++;
+        recordCursor++;
       }
-      assetCursor = assetCursor + 1;
-      remainingAssets = remainingAssets - 1;
+      assetCursor++;
+      remainingAssets--;
     } while (remainingAssets != 0);
   }
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
@@ -679,20 +679,20 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
   }
   countWidthOrOffset = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  panelHeight = (int)(gridDimensions >> 0x20) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCommandSpriteVariantAColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    INGAME_UI(node,armyStockFrame)->leftOffset = -0x1f;
-    INGAME_UI(node,armyStockFrame)->rightOffset = -0x1f;
-    INGAME_UI(node,armyStockFrame)->topOffset = -0xd;
-    INGAME_UI(node,armyStockFrame)->bottomOffset = -0xd;
+    INGAME_UI(node,armyStockFrame)->leftOffset = -31;
+    INGAME_UI(node,armyStockFrame)->rightOffset = -31;
+    INGAME_UI(node,armyStockFrame)->topOffset = -13;
+    INGAME_UI(node,armyStockFrame)->bottomOffset = -13;
   }
   else {
-    INGAME_UI(node,armyStockFrame)->leftOffset = -0x27;
-    INGAME_UI(node,armyStockFrame)->rightOffset = -0x27;
-    INGAME_UI(node,armyStockFrame)->topOffset = -0x12;
-    INGAME_UI(node,armyStockFrame)->bottomOffset = -0x12;
+    INGAME_UI(node,armyStockFrame)->leftOffset = -39;
+    INGAME_UI(node,armyStockFrame)->rightOffset = -39;
+    INGAME_UI(node,armyStockFrame)->topOffset = -18;
+    INGAME_UI(node,armyStockFrame)->bottomOffset = -18;
   }
   INGAME_UI(node,armyStockFrame)->leftOffset = INGAME_UI(node,armyStockFrame)->leftOffset - countWidthOrOffset;
   INGAME_UI(node,armyStockFrame)->topOffset = INGAME_UI(node,armyStockFrame)->topOffset - panelHeight;
@@ -710,18 +710,18 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
     runtimeRecord = *recordCursor;
     if (slotIndex < itemCount) {
       controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
-      *controlFlags = *controlFlags & 0xfffffff7;
+      *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
       slotTexture = runtimeRecord->textureSource;
     }
     else {
       controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
-      *controlFlags = *controlFlags | 8;
-      slotTexture = (GraphicsTextureSourceAsset *)0x0;
+      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+      slotTexture = NULL;
     }
-    slotIndex = slotIndex + 1;
+    slotIndex++;
     ((UiCommandSpriteButtonControl *)((int)node + countWidthOrOffset))->sprite.primaryTextureSource = slotTexture;
-    recordCursor = recordCursor + 1;
-  } while (slotIndex < 0x18);
+    recordCursor++;
+  } while (slotIndex < 24);
   INGAME_UI(node,armyStockPanel)->vtable->layout(INGAME_UI(node,armyStockPanel));
   return;
 }

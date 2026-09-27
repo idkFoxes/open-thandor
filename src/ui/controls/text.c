@@ -11,19 +11,18 @@
 /* Implementation ownership: ui/controls/text. */
 
 /* Address: 0x004B0200.
-   Ownership: ui/controls/text.
-   Purpose: Decrements the tooltip countdown while the target remains eligible. On expiry, resolves and prepares
-   the target text; otherwise refreshes hover tracking from the last pointer position.
-   Local calls: UiTooltip_PrepareTargetText, UiTooltip_UpdateHoverTarget.
+   Per-frame tooltip delay: while the pointer rests on an enabled control (no button held), counts the
+   delay down and prepares the tooltip text when it expires. While a node has captured the pointer or the
+   hovered control is disabled, re-evaluates the hover target at the last pointer position instead.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void)
 
 {
-  if ((g_UiPointerCaptureTarget == (UiNodeBase *)0xffffffff) &&
-     ((g_UiTooltipState.targetNode == (UiNodeBase *)0x0 ||
+  if ((g_UiPointerCaptureTarget == UI_NODE_NONE) &&
+     ((g_UiTooltipState.targetNode == NULL ||
       (((g_UiTooltipState.targetNode)->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
     if ((g_UiTooltipState.countdownFrames != 0) &&
-       (g_UiTooltipState.countdownFrames = g_UiTooltipState.countdownFrames - 1,
+       (g_UiTooltipState.countdownFrames--,
        g_UiTooltipState.countdownFrames == 0)) {
       UiTooltip_PrepareTargetText(g_UiTooltipState.targetNode);
     }
@@ -1764,15 +1763,10 @@ UiPayloadPairTextButton_DrawFormattedPayloads
 
 
 /* Address: 0x004B0320.
-   Ownership: ui/controls/text.
-   Purpose: When the countdown has expired, resolves the target text, positions a three-part tooltip frame within
-   the target root bounds, draws the text, and clears the framebuffer when no root exists. Typed parameters: p0
-   clipBottom→UiPixelCoordinate_V297, p1 clipRight→UiPixelCoordinate_V297, p2 clipTop→UiPixelCoordinate_V297, p3
-   clipLeft→UiPixelCoordinate_V297. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_MeasureRegs [assets/text/richtext], RichTextCommandStream_DrawSingleLine
-   [assets/text/richtext].
+   Draws the tooltip once its delay has expired: a one-line box (win.gfx left cap 0xBC, tiled middle 0xBD,
+   right cap 0xBE) centred above the hovered control, kept inside its root window, and moved below the
+   control when there is no room above. Drawn last in the frame, over everything. With no root open at all,
+   the whole screen is darkened (ARGB 0x80000000: black at half alpha).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelCoordinate clipTop,
@@ -1795,9 +1789,11 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
   TextureSizeResult tileSize;
   
   tooltipTarget = g_UiTooltipState.targetNode;
-  if ((g_UiTooltipState.targetNode != (UiNodeBase *)0x0) && (g_UiTooltipState.countdownFrames == 0))
+  if ((g_UiTooltipState.targetNode != NULL) && (g_UiTooltipState.countdownFrames == 0))
   {
     rootNode = UiNode_GetRoot(g_UiTooltipState.targetNode);
+    /* the dword just before the node: a text resource id, or with UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16 the
+       text itself */
     commandStream = (uint16_t *)tooltipTarget[-1].nodeFlags;
     if ((tooltipTarget->nodeFlags & UI_NODE_TOOLTIP_REFERENCE_DIRECT_UTF16) == 0) {
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
@@ -1813,7 +1809,7 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       frameLeft = (targetLeftOrTileX + targetRight) - frameWidthOrMiddleEnd >> 1;
-      if (rootNode == (UiNodeBase *)0xffffffff) {
+      if (rootNode == UI_NODE_NONE) {
         rootNode = tooltipTarget;
       }
       frameRight = frameWidthOrMiddleEnd + frameLeft;
@@ -1847,12 +1843,12 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
         targetLeftOrTileX = targetLeftOrTileX + tileSize.logicalWidthPixels;
       } while (targetLeftOrTileX < frameWidthOrMiddleEnd);
       RichTextCommandStream_DrawSingleLine
-                (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,frameTop + 3,
+                (clipBottom,clipRight,clipTop,clipLeft,g_UiTooltipTextStyle,commandStream,frameTop + 3, /* text inset */
                  edgeTileWidth + frameLeft);
       g_GraphicsFramebufferEndAccess();
     }
   }
-  if (g_UiRootNode == (UiRootNode *)0xffffffff) {
+  if (g_UiRootNode == UI_ROOT_STACK_END) {
     framebufferUnavailable = g_GraphicsFramebufferBeginAccess();
     if (!framebufferUnavailable) {
       g_GraphicsFramebufferFillRectArgb
@@ -3365,11 +3361,9 @@ UiTextListControl_SuppressIfActionId(UiActionId actionId,UiTextListControl *cont
 
 
 /* Address: 0x004BA430.
-   Ownership: ui/controls/text.
-   Purpose: Initializes a pointer-list control from rich-text row pointers, computes line height and maximum
-   measured row width, clears offsets, and requests parent layout.
-   Cross-module calls: FontGlyph_GetLogicalSizeForStyleRegs [assets/text/resources],
-   RichTextCommandStream_MeasureRegs [assets/text/richtext].
+   Fills a pointer list whose rows are rich-text strings (rowPointers, one per row) and selects row 0. The
+   list's size follows its content: one list-font line plus 1 pixel per row, and the widest measured row
+   plus 6 pixels; the parent (the scrollable frame) is laid out again for the new size.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_InitializeMeasuredTextRows
@@ -3391,12 +3385,12 @@ UiPointerList_InitializeMeasuredTextRows
   maximumTextWidthPixels = 0;
   control->selectedRowSlot = rowPointers;
   (control->base).bottomOffset = rowHeightPixels * rowCount + 1;
-  for (; rowCount != 0; rowCount = rowCount - 1) {
+  for (; rowCount != 0; rowCount--) {
     measuredTextExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,*rowPointers);
     if (maximumTextWidthPixels < measuredTextExtent.widthPixels) {
       maximumTextWidthPixels = measuredTextExtent.widthPixels;
     }
-    rowPointers = rowPointers + 1;
+    rowPointers++;
   }
   parentNode = (control->base).parent;
   parentVtable = parentNode->vtable;

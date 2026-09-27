@@ -12,26 +12,27 @@
 /* Implementation ownership: audio/backend/runtime. */
 
 /* Address: 0x00583410.
-   Ownership: audio/backend/runtime.
-   Purpose: Handles direct sound shutdown.
-   Local calls: SoundBackendDisabled_StopAllVoices.
+   Shuts DirectSound down: restores the primary buffer's volume and pan saved by DirectSound_Init,
+   releases the primary buffer and the device, and frees the voice-set registry.
 */
 void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
 
 {
+  /* The original calls the silent stub here (CALL 0x004175F0), not DirectSound_StopAllVoices, so
+     playing voices are not stopped. */
   SoundBackendDisabled_StopAllVoices();
-  if (g_PrimarySoundBuffer != (IDirectSoundBuffer *)0x0) {
+  if (g_PrimarySoundBuffer != NULL) {
     g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,g_PrimaryVolume);
     g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,g_PrimaryPan);
     g_PrimarySoundBuffer->lpVtbl->Release(g_PrimarySoundBuffer);
-    g_PrimarySoundBuffer = (IDirectSoundBuffer *)0x0;
+    g_PrimarySoundBuffer = NULL;
   }
-  if (g_DirectSound != (IDirectSound *)0x0) {
+  if (g_DirectSound != NULL) {
     g_DirectSound->lpVtbl->Release(g_DirectSound);
-    g_DirectSound = (IDirectSound *)0x0;
+    g_DirectSound = NULL;
   }
   g_MemoryApi.free(g_DirectSoundVoiceSetRegistry);
-  g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)0x0;
+  g_DirectSoundVoiceSetRegistry = NULL;
   return;
 }
 
@@ -285,13 +286,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
 
 
 /* Address: 0x00583490.
-   Ownership: audio/backend/runtime.
-   Purpose: Validates a fixed 0x200-byte sam header, creates a 22050 Hz stereo 16-bit secondary buffer sized
-   decodedBlockCount*0x400, decodes each payload block into the locked buffer, allocates an eight-pointer
-   DirectSoundVoiceSet, stores the original buffer in voices[0], and registers the set in the 256-entry registry.
-   CF clear returns the set pointer in EAX; CF set returns an engine/DirectSound error code in EAX.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator], SoundSample_DecodePackedCoefficientBlock
-   [audio/codec/sam], SoundSample_DecodeCoefficientBlockToPcmMmx [audio/codec/sam].
+   Turns a .sam sound asset into a voice set: checks the 0x200-byte header, creates a 22050 Hz 16-bit
+   stereo secondary buffer of decodedBlockCount * 0x400 bytes, decodes every packed block into it and
+   registers a new eight-voice set holding the buffer in voices[0]. On failure CF is set, EAX holds the
+   error code and the failing stage number is left in g_PackageLastErrorPath.
 */
 SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
@@ -316,66 +314,72 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
   uint32_t lockedByteCount;
   short *lockedPcm;
   IDirectSoundBuffer *soundBuffer;
-  
-  soundBuffer = (IDirectSoundBuffer *)0x0;
-  failedStage = 100;
+
+  soundBuffer = NULL;
+  failedStage = DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER;
+  /* 0x14 bytes: the packed 18-byte WAVEFORMATEX and the two bytes behind it */
   Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
-  Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
-  voiceSetOrErrorCode = (IDirectSoundBuffer **)0x4a;
-  if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == 0x10000)) {
+  Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
+  voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_SOUND_SAMPLE_INVALID;
+  if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == SOUND_SAMPLE_FORMAT_VERSION)) {
     WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
     WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-    THANDOR_PART(uint16_t, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 0x5622;
-    WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 0x15888;
-    WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4;
-    WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;
+    /* the original writes only the low word (the dword was zeroed above) */
+    THANDOR_PART(uint16_t, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 22050;
+    WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
+    WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
+    WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
+    /* decodedBlockCount * SOUND_SAMPLE_DECODED_BLOCK_BYTES */
     PrimarySoundBufferDesc.dwBufferBytes = sampleAsset->decodedBlockCount << 10;
-    PrimarySoundBufferDesc.dwSize = 0x14;
+    PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
     PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
     PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
     directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                      (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
-    voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+                      (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
+    voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
     if (directSoundResult == 0) {
-      failedStage = 0x65;
+      failedStage = DIRECTSOUND_VOICE_STAGE_LOCK;
       directSoundResult = soundBuffer->lpVtbl->Lock
-                        (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
-      voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+                        (soundBuffer,0,0,&lockedPcm,&lockedByteCount,&wrapRegion,&wrapByteCount,
+                         DSBLOCK_ENTIREBUFFER);
+      voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
       if (directSoundResult == 0) {
-        failedStage = 0x66;
-        encodedBlock = sampleAsset + 1;
-        remainingBlocks = lockedByteCount >> 10;
+        failedStage = DIRECTSOUND_VOICE_STAGE_FILL;
+        encodedBlock = sampleAsset + 1; /* the packed blocks follow the 0x200-byte header */
+        remainingBlocks = lockedByteCount >> 10; /* / SOUND_SAMPLE_DECODED_BLOCK_BYTES */
         outputStereoPcm = lockedPcm;
         do {
           encodedBlockSize = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(uint8_t *)encodedBlock);
           SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,(short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0));
+          /* advance by encodedBlockSize bytes */
           encodedBlock = (SoundSampleAsset *)(encodedBlock->reserved04_0B + (encodedBlockSize - 4));
-          outputStereoPcm = outputStereoPcm + 0x200;
+          outputStereoPcm = outputStereoPcm + 0x200; /* SOUND_SAMPLE_DECODED_BLOCK_BYTES in shorts */
           remainingBlocks = remainingBlocks - 1;
         } while (remainingBlocks != 0);
         directSoundResult = soundBuffer->lpVtbl->Unlock(soundBuffer,lockedPcm,lockedByteCount,wrapRegion,wrapByteCount);
-        voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+        voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
         if (directSoundResult == 0) {
-          voiceSetAlloc = g_MemoryApi.alloc(0x20);
+          voiceSetAlloc = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet));
           voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
           if (!voiceSetAlloc.failed) {
-            remainingCount = 8;
+            remainingCount = DIRECTSOUND_VOICES_PER_SET;
             voiceCursor = voiceSetOrErrorCode;
             do {
-              *voiceCursor = (IDirectSoundBuffer *)0x0;
-              voiceCursor = voiceCursor + 1;
-              remainingCount = remainingCount + -1;
+              *voiceCursor = NULL;
+              voiceCursor++;
+              remainingCount--;
             } while (remainingCount != 0);
             registryCursor = g_DirectSoundVoiceSetRegistry;
             *voiceSetOrErrorCode = soundBuffer;
             /* Register the set in the first free registry slot; a full or missing registry is not an error. */
-            if (registryCursor != (DirectSoundVoiceSet **)0x0) {
-              for (registryRemaining = 0x100; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
-                if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+            if (registryCursor != NULL) {
+              for (registryRemaining = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryRemaining != 0;
+                   registryRemaining--) {
+                if (*registryCursor == NULL) {
                   *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
                   break;
                 }
-                registryCursor = registryCursor + 1;
+                registryCursor++;
               }
             }
             successResult.failed = false;
@@ -386,7 +390,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
       }
     }
   }
-  if (soundBuffer != (IDirectSoundBuffer *)0x0) {
+  if (soundBuffer != NULL) {
     soundBuffer->lpVtbl->Release(soundBuffer);
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
@@ -397,9 +401,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 
 /* Address: 0x00583690.
-   Ownership: audio/backend/runtime.
-   Purpose: Releases every non-null IDirectSoundBuffer in the eight-voice set, frees the set allocation, and
-   removes its pointer from the 256-entry registry. Null is accepted. CF is cleared.
+   Frees a voice set made by DirectSound_CreateSampleVoiceSet: releases its eight voices (the data
+   buffer and its duplicates), frees the set and clears its registry slot. NULL is accepted.
 */
 void __thandor_void_preserve_eax_ecx_edx
 DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -407,33 +410,34 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 {
   DirectSoundVoiceSet **registryGuard;
   int voicesRemaining;
-  DirectSoundVoiceSet **registryRemaining;
+  DirectSoundVoiceSet **registryRemaining; /* a count; Ghidra shares the register with registryGuard */
   IDirectSoundBuffer **voiceCursor;
   DirectSoundVoiceSet **registryCursor;
   IDirectSoundBuffer *voiceBuffer;
-  
-  voicesRemaining = 8;
+
+  voicesRemaining = DIRECTSOUND_VOICES_PER_SET;
   voiceCursor = voiceSet->voices;
-  if (voiceSet != (DirectSoundVoiceSet *)0x0) {
+  if (voiceSet != NULL) {
     do {
       voiceBuffer = *voiceCursor;
-      if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
+      if (voiceBuffer != NULL) {
         voiceBuffer->lpVtbl->Release(voiceBuffer);
       }
-      voiceCursor = voiceCursor + 1;
-      voicesRemaining = voicesRemaining + -1;
+      voiceCursor++;
+      voicesRemaining--;
     } while (voicesRemaining != 0);
     g_MemoryApi.free(voiceSet);
-    registryRemaining = (DirectSoundVoiceSet **)0x100;
+    registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
     registryCursor = g_DirectSoundVoiceSetRegistry;
     registryGuard = g_DirectSoundVoiceSetRegistry;
-    while (registryGuard != (DirectSoundVoiceSet **)0x0) {
+    /* first pass tests the registry pointer, later passes the remaining count */
+    while (registryGuard != NULL) {
       if (voiceSet == *registryCursor) {
-        *registryCursor = (DirectSoundVoiceSet *)0x0;
+        *registryCursor = NULL;
         return;
       }
-      registryCursor = registryCursor + 1;
-      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+      registryCursor++;
+      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
       registryGuard = registryRemaining;
     }
   }
@@ -442,9 +446,10 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
 
 
 /* Address: 0x00583720.
-   Ownership: audio/backend/runtime.
-   Purpose: CF clear returns the set pointer in EAX; CF set returns an error code.
-   Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
+   Wraps raw PCM data in a voice set: creates a secondary buffer of bufferByteCount bytes in the given
+   rate/bits/channels format, copies the data into it dword by dword and registers a new eight-voice set
+   holding the buffer in voices[0]. On failure CF is set, EAX holds the error code and the failing stage
+   number is left in g_PackageLastErrorPath.
 */
 PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreatePcmVoiceSet
@@ -472,63 +477,68 @@ DirectSound_CreatePcmVoiceSet
   uint32_t *lockedData;
   IDirectSoundBuffer *soundBuffer;
   
-  soundBuffer = (IDirectSoundBuffer *)0x0;
-  failedStage = 100;
+  soundBuffer = NULL;
+  failedStage = DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER;
+  /* 0x14 bytes: the packed 18-byte WAVEFORMATEX and the two bytes behind it */
   Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
-  Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
+  Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
+  /* the shared WaveFormat_PCM_22050_Stereo16 buffer is reused with the caller's format */
   WaveFormat_PCM_22050_Stereo16.nChannels = (AudioChannelCount)channelCount;
   WaveFormat_PCM_22050_Stereo16.wBitsPerSample = (AudioBitsPerSample)bitsPerSample;
-  blockAlignOrDwordCount = bitsPerSample * channelCount >> 3;
+  blockAlignOrDwordCount = bitsPerSample * channelCount >> 3; /* bytes per frame */
   PrimarySoundBufferDesc.dwBufferBytes = bufferByteCount;
   WaveFormat_PCM_22050_Stereo16.nBlockAlign = (AudioBlockAlignBytes)blockAlignOrDwordCount;
   WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = sampleRateHz;
   WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = blockAlignOrDwordCount * sampleRateHz;
   WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
-  PrimarySoundBufferDesc.dwSize = 0x14;
+  PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
   PrimarySoundBufferDesc.dwFlags = DSBCAPS_CTRLVOLUME|DSBCAPS_CTRLPAN;
   PrimarySoundBufferDesc.lpwfxFormat = &WaveFormat_PCM_22050_Stereo16;
   directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                    (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,(TH_LEGACY_LPVOID)0x0);
-  voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
+                    (g_DirectSound,&PrimarySoundBufferDesc,&soundBuffer,NULL);
+  voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
   pendingStage = failedStage;
   if (directSoundResult == 0) {
     directSoundResult = soundBuffer->lpVtbl->Lock
-                      (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,2);
-    voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
-    pendingStage = 0x65;
+                      (soundBuffer,0,0,&lockedData,&lockedByteCount,&wrapRegion,&wrapByteCount,
+                       DSBLOCK_ENTIREBUFFER);
+    voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
+    pendingStage = DIRECTSOUND_VOICE_STAGE_LOCK;
     if (directSoundResult == 0) {
-      failedStage = 0x66;
+      failedStage = DIRECTSOUND_VOICE_STAGE_FILL;
       destCursor = lockedData;
+      /* copies lockedByteCount / 4 dwords; a trailing 1..3 bytes stay uncopied */
       for (blockAlignOrDwordCount = lockedByteCount >> 2; blockAlignOrDwordCount != 0; blockAlignOrDwordCount = blockAlignOrDwordCount - 1) {
         *destCursor = *pcmData;
-        pcmData = pcmData + 1;
-        destCursor = destCursor + 1;
+        pcmData++;
+        destCursor++;
       }
       directSoundResult = soundBuffer->lpVtbl->Unlock(soundBuffer,lockedData,lockedByteCount,wrapRegion,wrapByteCount);
-      voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
-      pendingStage = 0x66;
+      voiceSetOrErrorCode = (IDirectSoundBuffer **)FATAL_ERROR_DIRECTSOUND_SETUP;
+      pendingStage = DIRECTSOUND_VOICE_STAGE_FILL;
       if (directSoundResult == 0) {
-        voiceSetAlloc = g_MemoryApi.alloc(0x20);
+        voiceSetAlloc = g_MemoryApi.alloc(sizeof(DirectSoundVoiceSet));
         voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
         pendingStage = failedStage;
         if (!voiceSetAlloc.failed) {
-          remainingCount = 8;
+          remainingCount = DIRECTSOUND_VOICES_PER_SET;
           voiceCursor = voiceSetOrErrorCode;
           do {
-            *voiceCursor = (IDirectSoundBuffer *)0x0;
-            voiceCursor = voiceCursor + 1;
-            remainingCount = remainingCount + -1;
+            *voiceCursor = NULL;
+            voiceCursor++;
+            remainingCount--;
           } while (remainingCount != 0);
           registryCursor = g_DirectSoundVoiceSetRegistry;
           *voiceSetOrErrorCode = soundBuffer;
           /* Register the set in the first free registry slot; a full or missing registry is not an error. */
-          if (registryCursor != (DirectSoundVoiceSet **)0x0) {
-            for (registryRemaining = 0x100; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
-              if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+          if (registryCursor != NULL) {
+            for (registryRemaining = DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY; registryRemaining != 0;
+                 registryRemaining--) {
+              if (*registryCursor == NULL) {
                 *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
                 break;
               }
-              registryCursor = registryCursor + 1;
+              registryCursor++;
             }
           }
           successResult.failed = false;
@@ -539,7 +549,7 @@ DirectSound_CreatePcmVoiceSet
     }
   }
   failedStage = pendingStage;
-  if (soundBuffer != (IDirectSoundBuffer *)0x0) {
+  if (soundBuffer != NULL) {
     soundBuffer->lpVtbl->Release(soundBuffer);
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
@@ -550,9 +560,8 @@ DirectSound_CreatePcmVoiceSet
 
 
 /* Address: 0x005838D0.
-   Ownership: audio/backend/runtime.
-   Purpose: Releases every non-null IDirectSoundBuffer in the eight-voice set, frees the set allocation, and
-   removes it from the registry. This is ownership-equivalent to the sample-set release service.
+   Frees a voice set made by DirectSound_CreatePcmVoiceSet; the same code as
+   DirectSound_ReleaseSampleVoiceSet (release the eight voices, free the set, clear its registry slot).
 */
 void __thandor_void_preserve_eax_ecx_edx
 DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
@@ -561,32 +570,33 @@ DirectSound_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
   IDirectSoundBuffer *voiceBuffer;
   DirectSoundVoiceSet **registryGuard;
   int voicesRemaining;
-  DirectSoundVoiceSet **registryRemaining;
+  DirectSoundVoiceSet **registryRemaining; /* a count; Ghidra shares the register with registryGuard */
   IDirectSoundBuffer **voiceCursor;
   DirectSoundVoiceSet **registryCursor;
-  
-  voicesRemaining = 8;
+
+  voicesRemaining = DIRECTSOUND_VOICES_PER_SET;
   voiceCursor = voiceSet->voices;
-  if (voiceSet != (DirectSoundVoiceSet *)0x0) {
+  if (voiceSet != NULL) {
     do {
       voiceBuffer = *voiceCursor;
-      if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
+      if (voiceBuffer != NULL) {
         voiceBuffer->lpVtbl->Release(voiceBuffer);
       }
-      voiceCursor = voiceCursor + 1;
-      voicesRemaining = voicesRemaining + -1;
+      voiceCursor++;
+      voicesRemaining--;
     } while (voicesRemaining != 0);
     g_MemoryApi.free(voiceSet);
-    registryRemaining = (DirectSoundVoiceSet **)0x100;
+    registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
     registryCursor = g_DirectSoundVoiceSetRegistry;
     registryGuard = g_DirectSoundVoiceSetRegistry;
-    while (registryGuard != (DirectSoundVoiceSet **)0x0) {
+    /* first pass tests the registry pointer, later passes the remaining count */
+    while (registryGuard != NULL) {
       if (voiceSet == *registryCursor) {
-        *registryCursor = (DirectSoundVoiceSet *)0x0;
+        *registryCursor = NULL;
         return;
       }
-      registryCursor = registryCursor + 1;
-      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+      registryCursor++;
+      registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
       registryGuard = registryRemaining;
     }
   }
@@ -610,7 +620,7 @@ static void DirectSound_ApplyChannelGains
   voice->lpVtbl->SetPan(voice,leftAttenuation - rightAttenuation);
 }
 
-/* Shared body of PlayOneShot/PlayLooping (0x00583930 / 0x00583A70), rewritten from the assembly:
+/* Shared body of PlayOneShot/PlayLooping (0x00583940 / 0x00583A70), rewritten from the assembly:
    the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
    voice 0 rewound to position 0; with all eight voices busy CF is set. */
 static SoundPlayResult DirectSound_PlayVoiceSet
@@ -622,14 +632,14 @@ static SoundPlayResult DirectSound_PlayVoiceSet
   TH_LEGACY_DWORD status;
   int slot;
 
-  result.soundBuffer = (IDirectSoundBuffer *)0x0;
+  result.soundBuffer = NULL;
   result.failed = true;
-  if (voiceSet == (DirectSoundVoiceSet *)0x0) {
+  if (voiceSet == NULL) {
     return result;
   }
-  for (slot = 0; slot < 8; slot = slot + 1) {
+  for (slot = 0; slot < DIRECTSOUND_VOICES_PER_SET; slot++) {
     voice = voiceSet->voices[slot];
-    if (voice == (IDirectSoundBuffer *)0x0) {
+    if (voice == NULL) {
       if (g_DirectSound->lpVtbl->DuplicateSoundBuffer
                     (g_DirectSound,voiceSet->voices[0],&voiceSet->voices[slot]) != 0) {
         return result;
@@ -640,11 +650,11 @@ static SoundPlayResult DirectSound_PlayVoiceSet
     }
     status = 0;
     voice->lpVtbl->GetStatus(voice,&status);
-    if ((status & 1) == 0) {
+    if ((status & DSBSTATUS_PLAYING) == 0) {
       break;
     }
   }
-  if (slot == 8) {
+  if (slot == DIRECTSOUND_VOICES_PER_SET) {
     return result;
   }
   voice->lpVtbl->Play(voice,0,0,playFlags);
@@ -656,11 +666,10 @@ static SoundPlayResult DirectSound_PlayVoiceSet
 
 
 /* Address: 0x00583940.
-   Ownership: audio/backend/runtime.
-   Purpose: Finds a non-playing voice or duplicates voices[0] into an empty slot, starts playback without
-   DSBPLAY_LOOPING, converts both 0..0x8000 gain inputs through the 129-entry attenuation table, and applies
-   overall volume plus signed pan. CF clear returns the selected IDirectSoundBuffer in EAX; CF set returns zero
-   when all eight voices are busy or duplication fails.
+   Plays a sound once on the first idle voice of the set (duplicating voices[0] into an empty slot when
+   needed) and sets its volume/pan from the two 0..0x8000 channel gains via the 129-entry attenuation
+   table. CF clear returns the voice in EAX; CF set (EAX 0) when all eight voices are busy or the
+   duplication fails.
 */
 SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_PlayOneShot
@@ -673,9 +682,7 @@ DirectSound_PlayOneShot
 
 
 /* Address: 0x00583A70.
-   Ownership: audio/backend/runtime.
-   Purpose: Finds a non-playing voice or duplicates voices[0], starts playback with DSBPLAY_LOOPING, and applies
-   the same gain-to-volume/pan conversion as the one-shot path. CF clear returns the selected IDirectSoundBuffer.
+   Like DirectSound_PlayOneShot, but the voice plays with DSBPLAY_LOOPING until it is stopped.
 */
 SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_PlayLooping
@@ -683,18 +690,17 @@ DirectSound_PlayLooping
           DirectSoundVoiceSet *voiceSet)
 
 {
-  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,1 /* DSBPLAY_LOOPING */);
+  return DirectSound_PlayVoiceSet(leftChannelGainQ15,rightChannelGainQ15,voiceSet,DSBPLAY_LOOPING);
 }
 
 
 /* Address: 0x00583B90.
-   Ownership: audio/backend/runtime.
-   Purpose: Calls IDirectSoundBuffer::Stop for a non-null voice. Null is accepted and CF is cleared.
+   Stops one voice (a buffer returned by the play functions); NULL is accepted.
 */
 void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffer *voice)
 
 {
-  if (voice != (IDirectSoundBuffer *)0x0) {
+  if (voice != NULL) {
     voice->lpVtbl->Stop(voice);
   }
   return;
@@ -702,29 +708,26 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopVoice(IDirectSoundBuffe
 
 
 /* Address: 0x00583BC0.
-   Ownership: audio/backend/runtime.
-   Purpose: Calls GetStatus and tests DSBSTATUS_PLAYING bit 0. CF clear means playing. CF set means null or not
-   playing. EAX is preserved rather than used as a scalar return.
+   Tells whether a voice is still playing. The result is inverted like all CF flags here: CF clear
+   (false) means playing, CF set (true) means NULL or stopped; EAX is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBuffer *voice)
 
 {
   bool notPlaying;
   TH_LEGACY_DWORD voiceStatusFlags;
-  
+
   notPlaying = true;
-  if (voice != (IDirectSoundBuffer *)0x0) {
+  if (voice != NULL) {
     voice->lpVtbl->GetStatus(voice,&voiceStatusFlags);
-    notPlaying = (voiceStatusFlags & 1) == 0;
+    notPlaying = (voiceStatusFlags & DSBSTATUS_PLAYING) == 0;
   }
   return notPlaying;
 }
 
 
 /* Address: 0x00583C00.
-   Ownership: audio/backend/runtime.
-   Purpose: Walks all 256 registered DirectSoundVoiceSet pointers and calls Stop for every non-null voice in each
-   eight-pointer set. CF is cleared.
+   Stops every voice of every voice set in the registry (empty registry slots and voices are skipped).
 */
 void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
 
@@ -732,29 +735,30 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
   IDirectSoundBuffer *voiceBuffer;
   DirectSoundVoiceSet **registryGuard;
   IDirectSoundBuffer **voiceGuard;
-  DirectSoundVoiceSet **registryRemaining;
+  DirectSoundVoiceSet **registryRemaining; /* counts; Ghidra shares their registers with the guards */
   IDirectSoundBuffer **voicesRemaining;
   IDirectSoundBuffer **voiceCursor;
   DirectSoundVoiceSet **registryCursor;
-  
-  registryRemaining = (DirectSoundVoiceSet **)0x100;
+
+  registryRemaining = (DirectSoundVoiceSet **)DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY;
   registryCursor = g_DirectSoundVoiceSetRegistry;
   registryGuard = g_DirectSoundVoiceSetRegistry;
-  while (registryGuard != (DirectSoundVoiceSet **)0x0) {
-    voicesRemaining = (IDirectSoundBuffer **)0x8;
+  while (registryGuard != NULL) {
+    voicesRemaining = (IDirectSoundBuffer **)DIRECTSOUND_VOICES_PER_SET;
+    /* voices is at offset 0, so an empty registry slot yields a NULL cursor and skips the set */
     voiceCursor = (*registryCursor)->voices;
     voiceGuard = voiceCursor;
-    while (voiceGuard != (IDirectSoundBuffer **)0x0) {
+    while (voiceGuard != NULL) {
       voiceBuffer = *voiceCursor;
-      if (voiceBuffer != (IDirectSoundBuffer *)0x0) {
+      if (voiceBuffer != NULL) {
         voiceBuffer->lpVtbl->Stop(voiceBuffer);
       }
-      voiceCursor = voiceCursor + 1;
-      voicesRemaining = (IDirectSoundBuffer **)((int)voicesRemaining + -1);
+      voiceCursor++;
+      voicesRemaining = (IDirectSoundBuffer **)((int)voicesRemaining - 1);
       voiceGuard = voicesRemaining;
     }
-    registryCursor = registryCursor + 1;
-    registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
+    registryCursor++;
+    registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining - 1);
     registryGuard = registryRemaining;
   }
   return;
@@ -762,9 +766,8 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
 
 
 /* Address: 0x00583C60.
-   Ownership: audio/backend/runtime.
-   Purpose: Consumes one voice pointer and returns EDX:EAX equal to zero. No executable call site references this
-   service slot, so the higher-level query semantics remain unresolved.
+   Backend slot g_SoundQueryVoiceRegs: takes a voice and returns 0 in EDX:EAX. No call site uses the
+   slot, so what it was meant to query is unknown.
 */
 uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
 
@@ -773,10 +776,9 @@ uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
 }
 
 /* Address: 0x00583C70.
-   Ownership: audio/backend/runtime.
-   Purpose: Updates a non-null playing voice with the same two-gain conversion used by both play services. The
-   louder input selects the DirectSound volume attenuation; the attenuation difference becomes signed pan. Null is
-   accepted and CF is cleared.
+   Updates the volume and pan of a playing voice from two new channel gains, with the same conversion as
+   the play functions (louder channel's attenuation = volume, attenuation difference = pan). NULL is
+   accepted.
 */
 void __thandor_void_preserve_eax_ecx_edx
 DirectSound_SetVoiceGains
@@ -784,7 +786,7 @@ DirectSound_SetVoiceGains
           IDirectSoundBuffer *voice)
 
 {
-  if (voice != (IDirectSoundBuffer *)0x0) {
+  if (voice != NULL) {
     DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
   }
 }

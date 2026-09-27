@@ -18,6 +18,14 @@
    previousRoot link holds it. */
 #define UI_ROOT_STACK_END ((UiRootNode *)0xffffffff)
 
+/* "No node" in the UI tree links (firstChild, nextSibling, parent) and the node-list pointers. */
+#ifndef UI_NODE_NONE
+#define UI_NODE_NONE ((UiNodeBase *)0xffffffff)
+#endif
+/* nodeFlags bit 0 (not in the UiNodeFlags enum): set on every node of the top root of the stack by
+   UiRootStack_Push/Pop/BringToFront through applyFlags; window frames draw their inactive variant without it. */
+#define UI_NODE_IN_FRONT_ROOT 0x01u
+
 /* 0x004B49A0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren

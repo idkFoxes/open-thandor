@@ -33,6 +33,29 @@
 /* g_UiCommandRuntimeFlags bit that ends the results screen after the end movie (Frontend_PlaySelectedEndMovie) */
 #define UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED 0x1000 /* set by the results buttons (actions 0x101B and 0x1025,
                                                          ui/ingame/commands.c) */
+/* further g_UiCommandRuntimeFlags bits (gameplay/session/runtime.c, gameplay/ai/planning.c) */
+#define UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF 0x02 /* skips the AI planning phase in local games; no writer
+                                                        with a constant mask in the original, so it can only come
+                                                        from UiCommandRuntimeFlags_ApplyClearSetToggleMasks */
+#define UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE 0x04 /* set with PAUSED by
+                                                                     InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState;
+                                                                     world sounds, camera keys and the full
+                                                                     simulation step are skipped meanwhile */
+#define UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING 0x20 /* an army asset waits for placement on the map
+                                                          (InGameCommand_ExecuteLocalPlacementFromSelection) */
+#define UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN 0x2000 /* the placement overlay was drawn onto the field
+                                                                  grid (EndGameResultsUiRuntime_UpdateAndHandleInput) */
+#define UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED 0x40000 /* toggled by typing the cheat code into the chat line
+                                                          (InGameUiAction1024_Handler) */
+#define UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD 0x100000 /* cheat hotkey: build and research times / 16 */
+
+/* Action id of the results screen's resultsContinueButton (InGameCommandAction_SetFlag1000OrMarkReady);
+   a network host only shows it once every client has pressed its own
+   (FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B). */
+#define INGAME_ACTION_RESULTS_CONTINUE 0x101B
+#define UI_COMMAND_RUNTIME_FLAG_COMMAND_POINTER_CAPTURED 0x80 /* a command-mode click captured the pointer
+                                                                 (InGameWorldInput_BeginPointerCapture); the
+                                                                 release then issues the mode command */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

@@ -103,11 +103,9 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
 
 
 /* Address: 0x00547D20.
-   Ownership: core/memory/allocator.
-   Purpose: Scans recordCount consecutive records of exactly 0x40 dwords and compares each against targetRecord. CF
-   clear reports a match; CF set reports exhaustion. Typed parameters: p0 recordCount→DwordBlockRecordCount_V343.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
+   Tells whether recordArray (recordCount records of 0x40 dwords each) contains a record equal to
+   candidateRecord. Inverted like all CF results: false (CF clear) = found, true (CF set) = not found.
+   recordCount must be at least 1.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DwordBlock64Array_ContainsExactRecord
@@ -123,16 +121,16 @@ DwordBlock64Array_ContainsExactRecord
     dwordsRemainingInRecord = 0x40;
     candidateRecordCursor = candidateRecord;
     do {
-      dwordsRemainingInRecord = dwordsRemainingInRecord + -1;
+      dwordsRemainingInRecord--;
       dwordsEqual = *recordArray == *candidateRecordCursor;
-      recordArray = recordArray + 1;
-      candidateRecordCursor = candidateRecordCursor + 1;
+      recordArray++;
+      candidateRecordCursor++;
     } while (dwordsEqual && (dwordsRemainingInRecord != 0));
     if (dwordsEqual) {
       return false;
     }
-    recordArray = recordArray + dwordsRemainingInRecord;
-    recordCount = recordCount + -1;
+    recordArray = recordArray + dwordsRemainingInRecord; /* skip the rest of the mismatching record */
+    recordCount--;
   } while (recordCount != 0);
   return true;
 }
@@ -177,8 +175,7 @@ void * __cdecl ArenaHeap_Init(void)
 
 
 /* Address: 0x00586470.
-   Ownership: core/memory/allocator.
-   Purpose: Handles arena heap shutdown.
+   Frees the arena allocation and destroys the private Win32 heap created by ArenaHeap_Init.
 */
 void __thandor_preserve_eax ArenaHeap_Shutdown(void)
 
@@ -190,11 +187,10 @@ void __thandor_preserve_eax ArenaHeap_Shutdown(void)
 
 
 /* Address: 0x005864A0.
-   Ownership: core/memory/allocator.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns payload
-   pointer in EAX. Typed parameters: p0 bytes→ArenaPayloadByteCount_V331. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   The arena's malloc (g_MemoryApi.alloc): first fit over the block chain for the size rounded up to 32
+   bytes, splitting off the rest of the block as a new free block when it is large enough. Returns the
+   payload pointer with CF clear; with CF set FATAL_ERROR_ARENA_EXHAUSTED (largest free size left in
+   g_PackageLastErrorPath) or ARENA_HEAP_FAILURE_SENTINEL_0x13 for a corrupt block chain.
 */
 ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
 
@@ -208,9 +204,9 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
   ArenaAllocResult corruptHeapResult;
   ArenaAllocResult exactFitResult;
   ArenaAllocResult splitResult;
-  
+
   largestFreeOrOriginalSize = 1;
-  alignedBytes = bytes + 0x1f & 0xffffffe0;
+  alignedBytes = bytes + ARENA_BLOCK_ALIGNMENT_MASK & ~ARENA_BLOCK_ALIGNMENT_MASK;
   blockCursor = g_Arena.firstBlock;
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
@@ -224,7 +220,7 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
       }
       if (alignedBytes <= blockCursor->payloadSize) {
         blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
-        if (blockCursor->payloadSize <= alignedBytes + 0x40) {
+        if (blockCursor->payloadSize <= alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES) {
           exactFitResult.failed = false;
           exactFitResult.payloadOrError = (uint32_t)(blockCursor + 1);
           return exactFitResult;
@@ -232,14 +228,15 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
         largestFreeOrOriginalSize = blockCursor->payloadSize;
         blockCursor->payloadSize = alignedBytes;
         followingBlock = blockCursor->next;
+        /* the new free block starts right behind the shortened payload */
         splitBlock = (ArenaBlockHeader *)
                  (blockCursor[1].alignmentPadding10_1F + (blockCursor->payloadSize - 0x10));
-        splitBlock->payloadSize = largestFreeOrOriginalSize - (blockCursor->payloadSize + 0x20);
+        splitBlock->payloadSize = largestFreeOrOriginalSize - (blockCursor->payloadSize + ARENA_BLOCK_HEADER_BYTES);
         splitBlock->stateMagic = ARENA_BLOCK_FREE;
         splitBlock->previous = blockCursor;
         blockCursor->next = splitBlock;
         splitBlock->next = followingBlock;
-        if (followingBlock != (ArenaBlockHeader *)0xffffffff) {
+        if (followingBlock != ARENA_BLOCK_LIST_END) {
           followingBlock->previous = splitBlock;
         }
         splitResult.failed = false;
@@ -248,10 +245,10 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
       }
     }
     blockCursor = blockCursor->next;
-    if (blockCursor == (ArenaBlockHeader *)0xffffffff) {
+    if (blockCursor == ARENA_BLOCK_LIST_END) {
       g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
       outOfMemoryResult.failed = true;
-      outOfMemoryResult.payloadOrError = 0x12;
+      outOfMemoryResult.payloadOrError = FATAL_ERROR_ARENA_EXHAUSTED;
       return outOfMemoryResult;
     }
   } while( true );
@@ -259,16 +256,15 @@ ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
 
 
 /* Address: 0x00586570.
-   Ownership: core/memory/allocator.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns the sum of
-   all free block payload sizes in EAX.
+   Returns the sum of all free payload bytes in the arena (g_MemoryApi.queryFreeBytes), or
+   ARENA_HEAP_FAILURE_SENTINEL_0x13 when the block chain is corrupt.
 */
 uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
 
 {
   uint32_t freePayloadBytes;
   ArenaBlockHeader *blockCursor;
-  
+
   freePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
   do {
@@ -279,13 +275,16 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
       freePayloadBytes = freePayloadBytes + blockCursor->payloadSize;
     }
     blockCursor = blockCursor->next;
-  } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
+  } while (blockCursor != ARENA_BLOCK_LIST_END);
   return freePayloadBytes;
 }
 
 /* Address: 0x005865B0.
-   Ownership: core/memory/allocator.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
+   The arena's free (g_MemoryApi.free): marks the block free and merges it with a free following block,
+   then merges a free preceding block with it. NULL is accepted; a payload whose header is not marked
+   allocated returns ARENA_HEAP_FAILURE_SENTINEL_0x13 with CF set.
+   The block header is accessed as dwords below the payload: -0x20 payloadSize, -0x1C stateMagic,
+   -0x18 next, -0x14 previous (see ArenaBlockHeader).
 */
 ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
@@ -297,29 +296,31 @@ ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
   int *adjacentFreeBlock;
   int nextBlockAddress;
   int *previousAdjacentBlockHeader;
-  
-  if (memory != (void *)0x0) {
-    freedBlockHeader = (int *)((int)memory + -0x20);
-    if (*(int *)((int)memory + -0x1c) != 0x5a5a5a5a) {
+
+  if (memory != NULL) {
+    freedBlockHeader = (int *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
+    if (*(int *)((int)memory - 0x1c) != ARENA_BLOCK_ALLOCATED) {
       corruptBlockResult.failed = true;
       corruptBlockResult.valueOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
       return corruptBlockResult;
     }
-    *(uint32_t *)((int)memory + -0x1c) = 0xa5a5a5a5;
-    adjacentFreeBlock = *(int **)((int)memory + -0x18);
-    if ((adjacentFreeBlock != (int *)0xffffffff) && (adjacentFreeBlock[1] == -0x5a5a5a5b)) {
-      *freedBlockHeader = *freedBlockHeader + *adjacentFreeBlock + 0x20;
+    *(uint32_t *)((int)memory - 0x1c) = ARENA_BLOCK_FREE;
+    /* merge the following block ([2] = next, [3] = previous) */
+    adjacentFreeBlock = *(int **)((int)memory - 0x18);
+    if ((adjacentFreeBlock != (int *)ARENA_BLOCK_LIST_END) && (adjacentFreeBlock[1] == (int)ARENA_BLOCK_FREE)) {
+      *freedBlockHeader = *freedBlockHeader + *adjacentFreeBlock + ARENA_BLOCK_HEADER_BYTES;
       nextBlockAddress = adjacentFreeBlock[2];
-      *(int *)((int)memory + -0x18) = nextBlockAddress;
+      *(int *)((int)memory - 0x18) = nextBlockAddress;
       if (nextBlockAddress != -1) {
         *(int **)(nextBlockAddress + 0xc) = freedBlockHeader;
       }
     }
-    previousAdjacentBlockHeader = *(int **)((int)memory + -0x14);
-    if ((previousAdjacentBlockHeader != (int *)0xffffffff) &&
-       (previousAdjacentBlockHeader[1] == -0x5a5a5a5b)) {
-      *previousAdjacentBlockHeader = *previousAdjacentBlockHeader + *freedBlockHeader + 0x20;
-      mergedNextBlockAddress = *(int *)((int)memory + -0x18);
+    /* merge into the preceding block */
+    previousAdjacentBlockHeader = *(int **)((int)memory - 0x14);
+    if ((previousAdjacentBlockHeader != (int *)ARENA_BLOCK_LIST_END) &&
+       (previousAdjacentBlockHeader[1] == (int)ARENA_BLOCK_FREE)) {
+      *previousAdjacentBlockHeader = *previousAdjacentBlockHeader + *freedBlockHeader + ARENA_BLOCK_HEADER_BYTES;
+      mergedNextBlockAddress = *(int *)((int)memory - 0x18);
       previousAdjacentBlockHeader[2] = mergedNextBlockAddress;
       if (mergedNextBlockAddress != -1) {
         *(int **)(mergedNextBlockAddress + 0xc) = previousAdjacentBlockHeader;
@@ -334,9 +335,10 @@ ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
 
 /* Address: 0x00586640.
-   Ownership: core/memory/allocator.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Marks the largest
-   free block allocated and returns its payload pointer in EAX.
+   Takes the largest free block whole (g_MemoryApi.allocLargestFreeBlock): marks it allocated and returns
+   its payload pointer in EAX and its size in ECX, for callers that shrink it afterwards with
+   ArenaHeap_ShrinkInPlace. CF set with FATAL_ERROR_ARENA_EXHAUSTED when nothing is free, or
+   ARENA_HEAP_FAILURE_SENTINEL_0x13 (ECX 0xFFFFFFFF) for a corrupt block chain.
 */
 ArenaLargestAllocResult __thandor_eax_ecx_cf_preserve_edx
 ArenaHeap_AllocLargestFreeBlock(void)
@@ -365,11 +367,11 @@ ArenaHeap_AllocLargestFreeBlock(void)
       }
     }
     blockCursor = blockCursor->next;
-  } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
+  } while (blockCursor != ARENA_BLOCK_LIST_END);
   if (largestFreePayloadBytes == 0) {
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
     outOfMemoryResult.failed = true;
-    outOfMemoryResult.allocationOrError = 0x12;
+    outOfMemoryResult.allocationOrError = FATAL_ERROR_ARENA_EXHAUSTED;
     outOfMemoryResult.blockSizeOrSentinel = 0;
     return outOfMemoryResult;
   }
@@ -382,9 +384,10 @@ ArenaHeap_AllocLargestFreeBlock(void)
 
 
 /* Address: 0x005866B0.
-   Ownership: core/memory/allocator.
-   Purpose: Arguments are (newSize, memory). EAX has no stable success value. ABI: CF clear means success. CF set
-   means failure and EAX contains an engine error code. Typed parameters: p0 newSize→ArenaPayloadByteCount_V331.
+   Shrinks an allocated block to newSize (rounded up to 32 bytes) and returns the tail as a free block,
+   merged with a free following block (g_MemoryApi.shrinkInPlace). A tail too small to split is kept.
+   CF clear on success (EAX carries no meaning); CF set with ARENA_HEAP_FAILURE_SENTINEL_0x13 when the
+   block is not allocated or newSize is larger than the block.
 */
 ArenaShrinkResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
@@ -400,27 +403,28 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   uint32_t *blockHeader;
   ArenaShrinkResult successResult;
   ArenaShrinkResult failureResult;
-  
-  blockHeader = (uint32_t *)((int)memory + -0x20);
-  alignedBytes = newSize + 0x1f & 0xffffffe0;
-  if ((*(int *)((int)memory + -0x1c) == 0x5a5a5a5a) && (alignedBytes <= *blockHeader)) {
-    thresholdOrSplitBlock = (int *)(alignedBytes + 0x40);
+
+  /* header dwords: [0] payloadSize, [1] stateMagic, [2] next, [3] previous (see ArenaBlockHeader) */
+  blockHeader = (uint32_t *)((int)memory - ARENA_BLOCK_HEADER_BYTES);
+  alignedBytes = newSize + ARENA_BLOCK_ALIGNMENT_MASK & ~ARENA_BLOCK_ALIGNMENT_MASK;
+  if ((*(int *)((int)memory - 0x1c) == ARENA_BLOCK_ALLOCATED) && (alignedBytes <= *blockHeader)) {
+    thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_SPLIT_SLACK_BYTES);
     if (thresholdOrSplitBlock < (int *)*blockHeader) {
       originalPayloadSize = *blockHeader;
       *blockHeader = alignedBytes;
-      splitPayloadSize = originalPayloadSize - (alignedBytes + 0x20);
-      followingBlock = *(int **)((int)memory + -0x18);
-      thresholdOrSplitBlock = (int *)(alignedBytes + 0x20 + (int)blockHeader);
-      *(int **)((int)memory + -0x18) = thresholdOrSplitBlock;
-      thresholdOrSplitBlock[1] = -0x5a5a5a5b;
+      splitPayloadSize = originalPayloadSize - (alignedBytes + ARENA_BLOCK_HEADER_BYTES);
+      followingBlock = *(int **)((int)memory - 0x18);
+      thresholdOrSplitBlock = (int *)(alignedBytes + ARENA_BLOCK_HEADER_BYTES + (int)blockHeader);
+      *(int **)((int)memory - 0x18) = thresholdOrSplitBlock;
+      thresholdOrSplitBlock[1] = (int)ARENA_BLOCK_FREE;
       *thresholdOrSplitBlock = splitPayloadSize;
       thresholdOrSplitBlock[3] = (int)blockHeader;
       thresholdOrSplitBlock[2] = (int)followingBlock;
-      if ((followingBlock != (int *)0xffffffff) && (followingBlock[3] = (int)thresholdOrSplitBlock, followingBlock[1] == -0x5a5a5a5b)) {
+      if ((followingBlock != (int *)ARENA_BLOCK_LIST_END) && (followingBlock[3] = (int)thresholdOrSplitBlock, followingBlock[1] == (int)ARENA_BLOCK_FREE)) {
         followingPayloadSize = *followingBlock;
         followingNextAddress = followingBlock[2];
         thresholdOrSplitBlock[2] = followingNextAddress;
-        *thresholdOrSplitBlock = splitPayloadSize + followingPayloadSize + 0x20;
+        *thresholdOrSplitBlock = splitPayloadSize + followingPayloadSize + ARENA_BLOCK_HEADER_BYTES;
         if (followingNextAddress != -1) {
           *(int **)(followingNextAddress + 0xc) = thresholdOrSplitBlock;
         }
@@ -437,21 +441,18 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 
 /* Address: 0x00586750.
-   Ownership: core/memory/allocator.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns the
-   previous linear cursor in EAX. Typed parameters: p0 bytes→ArenaPayloadByteCount_V331. Calling convention,
-   complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
-   remain unchanged.
+   Bump allocation from the linear region g_Arena.linearCursor..linearLimit (g_MemoryApi.reserveLinear):
+   returns the old cursor and advances it by bytes, or CF set with FATAL_ERROR_GENERAL_FAILURE when the
+   region is full. Nothing is ever given back.
 */
 ArenaReserveResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
   uint8_t *previousLinearCursor;
-  uint8_t *reservedLinearBase;
   ArenaReserveResult successResult;
   ArenaReserveResult failureResult;
-  
+
   previousLinearCursor = g_Arena.linearCursor;
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
@@ -460,23 +461,20 @@ ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
     return successResult;
   }
   failureResult.failed = true;
-  failureResult.baseOrError = 0x14;
+  failureResult.baseOrError = FATAL_ERROR_GENERAL_FAILURE;
   return failureResult;
 }
 
 
 /* Address: 0x005873A0.
-   Ownership: core/memory/allocator.
-   Purpose: Zeros floor(bytes/4) dwords at destination with rep stosd. Any trailing one to three bytes are
-   intentionally left unchanged. Typed parameters: p0 bytes→MemoryByteCount_V343. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Zeroes bytes / 4 dwords at destination (REP STOSD); a trailing one to three bytes are left unchanged,
+   so callers pass multiples of 4.
 */
 void __thandor_void_preserve_eax_ecx_edx Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
 
 {
   uint32_t dwordsRemaining;
-  
+
   for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
     *(uint32_t *)destination = 0;
     destination = (uint32_t *)((int)destination + 4);

@@ -261,8 +261,8 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control);
 /* 0x004B9490 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_ClampOffsetsToViewport
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiScrollableControl *control);
+          (UiPixelCoordinate targetBottom,UiPixelCoordinate targetRight,UiPixelCoordinate targetTop,
+          UiPixelCoordinate targetLeft,UiScrollableControl *control);
 
 
 /* 0x0040FF70 */

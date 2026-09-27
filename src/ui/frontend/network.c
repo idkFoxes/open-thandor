@@ -273,9 +273,8 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
 
 
 /* Address: 0x005474A0.
-   Ownership: ui/frontend/network.
-   Purpose: On frontend teardown, saves the status text resource id and the host address text of the frontend
-   template copy back into the frontend template (and the status id into the in-game template).
+   Frontend teardown: carries the status text id and the host address the player typed over into the frontend
+   template, so the next frontend built from it (and the in-game template's info text) shows them again.
 */
 void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(UiRootNode *root)
 
@@ -292,10 +291,10 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
   sourceCursor = (int32_t *)((UiRequiredTextEditControl *)FRONTEND_UI(root,hostAddressEdit))->textPrefix6C;
   destinationCursor = (int32_t *)g_FrontendHostAddressTextTemplate;
   g_InGameTemplateWorldViewInfoTextResourceId = g_FrontendTemplateStatusTextResourceId;
-  for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
+  for (dwordsRemaining = 0x20; dwordsRemaining != 0; dwordsRemaining--) {
     *destinationCursor = *sourceCursor;
-    sourceCursor = sourceCursor + 1;
-    destinationCursor = destinationCursor + 1;
+    sourceCursor++;
+    destinationCursor++;
   }
   return;
 }
@@ -364,15 +363,10 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
 
 
 /* Address: 0x0054C830.
-   Ownership: ui/frontend/network.
-   Purpose: Initializes the network setup page from SPIELER, SPIEL, and NETZWERK command-line options, formats the
-   selected counts, applies compact-layout state, and refreshes game-name validity. Queued UI action handler for
-   FRONTEND_PAGE20[1] (0x2001). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendNetworkSetupPage_InitializeSingleLocalPlayer.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], UiPageStack_SetActiveIndex
-   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpanded
-   [assets/text/richtext], UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
-   FrontendNetworkSettings_SetGameName [ui/frontend/settings].
+   Opens the host game setup page (action FRONTEND_ACTION_HOST_GAME). The command-line options
+   -SPIELER="n" (maximum players, 2..8), -SPIEL="name" (game name) and -NETZWERK="n" (network speed 1..7,
+   tick interval 2n) preset the page, each consumed by lower-casing its first letter; when all three are
+   given, the game is created at once (FrontendNetworkSetupPage_InitializeSingleLocalPlayer).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
@@ -381,76 +375,79 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   /* hostButton is the frontend template's networkGameHostButton (+0x4920). */
   FrontendUiImage *frontendUi;
   uint8_t optionChar;
-  uint32_t parsedCountOrTickSetting;
+  uint32_t digitValueOrSpeed; /* digit of -SPIELER / -NETZWERK, at the end the network speed */
   int remainingChars;
   uint16_t *destination;
-  int appliedOptionMask;
+  int appliedOptionMask; /* 1 = -SPIELER, 2 = -SPIEL, 4 = -NETZWERK */
   uint8_t *optionText;
   uint8_t *optionTextCursor;
   TextResolveResult resolvedText;
   CommandLineOptionResult findOptionResult;
-  
+
   appliedOptionMask = 0;
+  /* -SPIELER="n" */
   findOptionResult = g_CommandLineFindOption(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
   optionText = findOptionResult.option;
-  if ((((!findOptionResult.notFound) && (optionText[10] == 0x22)) &&
-      (parsedCountOrTickSetting = optionText[9] - 0x30, 0x2f < optionText[9] && parsedCountOrTickSetting != 0)) &&
-     (((optionText[0xb] == 0 && (parsedCountOrTickSetting < 9)) && (1 < parsedCountOrTickSetting)))) {
-    *optionText = 0x73;
+  if ((((!findOptionResult.notFound) && (optionText[10] == '"')) &&
+      (digitValueOrSpeed = optionText[9] - '0', '/' < optionText[9] && digitValueOrSpeed != 0)) &&
+     (((optionText[11] == 0 && (digitValueOrSpeed < 9)) && (1 < digitValueOrSpeed)))) {
+    *optionText = 's';
     appliedOptionMask = 1;
     ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,maxPlayersSlider))->value =
-         parsedCountOrTickSetting;
+         digitValueOrSpeed;
   }
+  /* -SPIEL="game name" */
   findOptionResult = g_CommandLineFindOption(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
   optionText = findOptionResult.option;
   if (!findOptionResult.notFound) {
     optionTextCursor = optionText + 7;
-    remainingChars = 0x13;
-    /* Find the closing quote within 0x13 characters (stop at control characters). */
+    remainingChars = 19;
+    /* find the closing quote within 19 characters (stop at control characters) */
     while( true ) {
       optionChar = *optionTextCursor;
-      if ((optionChar == 0) || (optionChar < 0x20)) break;
-      if (optionChar == 0x22) break;
-      remainingChars = remainingChars + -1;
+      if ((optionChar == 0) || (optionChar < ' ')) break;
+      if (optionChar == '"') break;
+      remainingChars--;
       if (remainingChars == 0) break;
-      optionTextCursor = optionTextCursor + 1;
+      optionTextCursor++;
     }
-    if (optionChar == 0x22) {
+    if (optionChar == '"') {
       destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textPrefix6C;
       *optionTextCursor = 0;
       if (optionTextCursor[1] == 0) {
-        *optionText = 0x73;
+        *optionText = 's';
         Text_CopyNarrowToUtf16(0x28,destination,optionText + 7);
-        *optionTextCursor = 0x22;
+        *optionTextCursor = '"';
         appliedOptionMask = appliedOptionMask + 2;
       }
     }
   }
+  /* -NETZWERK="n" */
   findOptionResult = g_CommandLineFindOption(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
   optionText = findOptionResult.option;
-  if (((((!findOptionResult.notFound) && (optionText[0xb] == 0x22)) &&
-       (parsedCountOrTickSetting = optionText[10] - 0x30, 0x2f < optionText[10] && parsedCountOrTickSetting != 0)) &&
-      ((optionText[0xc] == 0 && (parsedCountOrTickSetting < 8)))) && (parsedCountOrTickSetting != 0)) {
-    *optionText = 0x6e;
+  if (((((!findOptionResult.notFound) && (optionText[11] == '"')) &&
+       (digitValueOrSpeed = optionText[10] - '0', '/' < optionText[10] && digitValueOrSpeed != 0)) &&
+      ((optionText[12] == 0 && (digitValueOrSpeed < 8)))) && (digitValueOrSpeed != 0)) {
+    *optionText = 'n';
     ((UiRangeSliderControl *)FRONTEND_UI(g_FrontendRootNode,networkSpeedSlider))->value =
-         parsedCountOrTickSetting;
+         digitValueOrSpeed;
     appliedOptionMask = appliedOptionMask + 4;
-    g_SessionNetworkTickInterval = parsedCountOrTickSetting * 2;
+    g_SessionNetworkTickInterval = digitValueOrSpeed * 2;
   }
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(hostButton,-0x4920);
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
-  if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_HOST_GAME_SETUP,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
+  if ((int)g_FramebufferWidth < FRONTEND_COMPACT_LAYOUT_MAX_WIDTH + 1) {
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) |= FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
   }
-  g_FrontendNetworkState = 0;
+  g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
              ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,maxPlayersSlider))->value,
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
-  parsedCountOrTickSetting = g_SessionNetworkTickInterval >> 1;
-  ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = parsedCountOrTickSetting;
-  resolvedText = TextResource_Resolve(parsedCountOrTickSetting + 0x210d);
+  digitValueOrSpeed = g_SessionNetworkTickInterval >> 1;
+  ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = digitValueOrSpeed;
+  /* the speed caption; despite its name, g_FrontendNetworkPlayerCountLabelUtf16 holds the network speed */
+  resolvedText = TextResource_Resolve(digitValueOrSpeed + TEXT_ID_NETWORK_SPEED_BASE);
   RichTextCommandStream_CopyExpanded
             (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,resolvedText.text);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));

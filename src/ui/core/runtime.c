@@ -156,8 +156,8 @@ UiRuntimeRecordRing_DiscardOldest(void)
 
 
 /* Address: 0x004AF020.
-   Ownership: ui/core/runtime.
-   Purpose: Drops all pending records by copying the write index to the read index.
+   Discards every received network packet still waiting in the record ring (read index = write index),
+   e.g. before a new session is opened.
 */
 void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
 
@@ -283,9 +283,9 @@ void __thandor_preserve_eax UiRuntime_Initialize(void)
 
 
 /* Address: 0x004AF2F0.
-   Ownership: ui/core/runtime.
-   Purpose: Unregisters UI timers and frees the dirty-rectangle, action, input, and runtime buffers when the UI
-   runtime is initialized.
+   Counterpart of UiRuntime_Initialize at program end: stops the network receive timer and the frame-tick
+   timer and frees the network rings/buffers, the dirty-rectangle list and the action queue. Does nothing if
+   the UI runtime was never initialized.
 */
 void UiRuntime_Shutdown(void)
 
@@ -296,36 +296,36 @@ void UiRuntime_Shutdown(void)
     g_MemoryApi.free(g_UiRuntimeAuxiliaryBuffer8000);
     g_MemoryApi.free(g_UiTransferDataBuffer);
     g_MemoryApi.free(g_UiTransferEndpointBuffer);
-    g_UiRuntimeRecordRing = (UiRuntimeRecord *)0x0;
-    g_UiRuntimeAuxiliaryBuffer8000 = (void *)0x0;
-    g_UiTransferDataBuffer = (uint8_t *)0x0;
-    g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)0x0;
+    g_UiRuntimeRecordRing = NULL;
+    g_UiRuntimeAuxiliaryBuffer8000 = NULL;
+    g_UiTransferDataBuffer = NULL;
+    g_UiTransferEndpointBuffer = NULL;
     g_MemoryApi.free(g_UiDirtyRectEntries);
-    g_UiDirtyRectEntries = (UiDirtyRectEntry *)0x0;
+    g_UiDirtyRectEntries = NULL;
     g_MemoryApi.free(g_UiActionQueueEntries);
-    g_UiActionQueueEntries = (UiActionQueueEntry *)0x0;
+    g_UiActionQueueEntries = NULL;
     g_TimerUnregisterPeriodic(UiRuntime_IncrementPeriodicTickCounter);
-    g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + -1;
+    g_UiRuntimeInitializationCount--;
   }
   return;
 }
 
 /* Address: 0x004AF3A0.
-   Ownership: ui/core/runtime.
-   Purpose: Twenty-millisecond UI timer callback that increments the shared periodic UI tick counter.
+   Frame-tick timer (20 Hz, registered by UiRuntime_Initialize): counts the pending frame ticks that the
+   frame loop waits for and consumes.
 */
 void __cdecl UiRuntime_IncrementPeriodicTickCounter(void)
 
 {
-  g_UiPendingFrameTicks = g_UiPendingFrameTicks + 1;
+  g_UiPendingFrameTicks++;
   return;
 }
 
 /* Address: 0x004AF760.
-   Ownership: ui/core/runtime.
-   Purpose: Drains the 16-entry action queue under the UI spin lock. Resolves each action ID through
-   g_UiActionHandlerPages[highByte]->handlers[lowByte], shifts the remaining queue entries down, and calls the
-   handler with the queued source/context pointer.
+   Runs the queued UI actions (button clicks, list selections, ...) in order, under the frame lock. An
+   action id selects the handler page by its high byte (g_UiActionHandlerPages) and the handler by its low
+   byte; the handler gets the control that queued it. Each entry is removed (the rest moved down) before its
+   handler runs, so handlers may queue further actions.
 */
 void __cdecl UiActionQueue_DispatchPending(void)
 
@@ -341,13 +341,14 @@ void __cdecl UiActionQueue_DispatchPending(void)
   queueHead = g_UiActionQueueEntries;
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
-    g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8;
+    g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8; /* one entry */
     actionHandler = (void (*)(void *))
                     g_UiActionHandlerPages[(uint32_t)queueHead->actionId >> 8]->handlers
                     [(uint32_t)queueHead->actionId & 0xff];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
-    for (remainingCount = 0x1e; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount = remainingCount + -1) {
+    /* move entries 1..15 (30 dwords) down by one */
+    for (remainingCount = 30; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount--) {
       destinationEntry->actionId = sourceEntry->actionId;
       sourceEntry = (UiActionQueueEntry *)&sourceEntry->source;
       destinationEntry = (UiActionQueueEntry *)&destinationEntry->source;
@@ -535,9 +536,9 @@ UiNodeBase * UiNode_GetRoot(UiNodeBase *node)
 }
 
 /* Address: 0x004B1510.
-   Ownership: ui/core/runtime.
-   Purpose: Finds a node's control-tree root and appends a 0x18-byte UiDirtyRectEntry when invalidation is enabled
-   and fewer than 64 entries are queued.
+   Requests a redraw of the window (root) that contains node: its rectangle is added to this frame's dirty
+   list. Ignored while invalidation is suppressed or when UI_DIRTY_RECT_CAPACITY rectangles are already
+   collected.
 */
 void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
 
@@ -549,11 +550,11 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
   
   if (g_UiInvalidationSuppressed == 0) {
     parentNode = node->parent;
-    while (parentNode != (UiNodeBase *)0xffffffff) {
+    while (parentNode != UI_NODE_NONE) {
       node = (((UiRootNode *)node)->base).parent;
       parentNode = (((UiRootNode *)node)->base).parent;
     }
-    if (g_UiDirtyRectCount < 0x40) {
+    if (g_UiDirtyRectCount < UI_DIRTY_RECT_CAPACITY) {
       dirtyRectEntry = g_UiDirtyRectEntries + g_UiDirtyRectCount;
       edgeCoordinate = (((UiRootNode *)node)->base).right;
       dirtyRectEntry->left = (((UiRootNode *)node)->base).left;
@@ -563,7 +564,7 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
       dirtyRectEntry->bottom = bottomEdgeCoordinate;
       dirtyRectEntry->rootNode = (UiRootNode *)node;
       dirtyRectEntry->rootNodeCopy = (UiRootNode *)node;
-      g_UiDirtyRectCount = g_UiDirtyRectCount + 1;
+      g_UiDirtyRectCount++;
     }
   }
   return;
@@ -571,22 +572,21 @@ void __thandor_void_preserve_eax_ecx_edx UiNode_InvalidateRoot(UiNodeBase *node)
 
 
 /* Address: 0x004B1590.
-   Ownership: ui/core/runtime.
-   Purpose: Appends an actionId/source pair to the fixed 0x80-byte queue when space remains and actionId is not -1.
-   The queue holds sixteen 8-byte entries.
+   Queues action actionId of the control source for UiActionQueue_DispatchPending (at the end of the
+   frame). UI_ACTION_NONE and actions beyond the 16 queue entries are dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId actionId,void *source)
 
 {
   UiActionId *destinationEntry;
   
-  if (g_UiActionQueueUsedBytes < 0x80) {
+  if (g_UiActionQueueUsedBytes < UI_ACTION_QUEUE_BYTES) {
     destinationEntry =
          (UiActionId *)((int)&g_UiActionQueueEntries->actionId + g_UiActionQueueUsedBytes);
-    if (actionId != -1) {
+    if (actionId != UI_ACTION_NONE) {
       *destinationEntry = actionId;
       destinationEntry[1] = (UiActionId)source;
-      g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + 8;
+      g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes + 8; /* one entry */
     }
   }
   return;

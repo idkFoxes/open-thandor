@@ -12,6 +12,28 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: network/protocol/commands. */
+
+/* In-game command codes are handler addresses relative to InGameCommandQueue_AppendLocalPlayerCommand
+   (0x0055F130); a command is executed by calling INGAME_COMMAND_CODE_BASE + code. Single player calls the
+   named handler directly instead of queueing the code. */
+#define INGAME_COMMAND_CODE_BASE 0x0055F130
+#define INGAME_COMMAND_SELECT_SINGLE_ARMY 0x9A0 /* FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection */
+#define INGAME_COMMAND_REPLACE_SELECTION 0xA00 /* InGamePlayerSelection_ReplaceWithArmyRuntimeIndex */
+#define INGAME_COMMAND_SELECTION_INSERT 0xA60 /* FrontendPlayerSelection_InsertThreeEntriesAndRefresh */
+#define INGAME_COMMAND_SELECTION_REMOVE 0xB00 /* FrontendPlayerSelection_RemoveThreeEntriesAndRefresh */
+#define INGAME_COMMAND_SELECTION_CLEAR 0xBA0 /* FrontendPlayerSelection_ClearAndRefreshLocalPanels */
+#define INGAME_COMMAND_POSITION_VARIANT_B 0xD40 /* InGamePlayerSelection_ApplyPositionCommandVariantB */
+#define INGAME_COMMAND_POSITION 0xD70 /* InGamePlayerSelection_ApplyPositionCommand */
+#define INGAME_COMMAND_SELECT_ARMY 0xDA0 /* InGamePlayerSelection_SelectArmyRuntimeIndex */
+#define INGAME_COMMAND_TARGET_POSITION 0xDE0 /* InGamePlayerSelection_ApplyTargetPositionCommand */
+#define INGAME_COMMAND_PLACE_ARMY 0x13A0 /* InGameCommand_ExecuteLocalPlacementFromSelection */
+/* Frontend command codes work the same way, relative to FrontendCommandQueue_EnqueueLocalPlayerCommand
+   (0x00543F50). */
+#define FRONTEND_COMMAND_CODE_BASE 0x00543F50
+#define FRONTEND_COMMAND_PLAYER_READY 0xD0 /* FrontendPlayerRuntime_RecordReadyAndUpdateWaitState */
+#define FRONTEND_COMMAND_XOR_PLAYER_STATE 0x3B0 /* FrontendPlayerRuntime_XorStateMaskByPlayerId */
+#define FRONTEND_COMMAND_STOP_ROM_TRANSITION 0x1340 /* ScenarioCatalog_RequestRomTransitionStopCallback */
+#define FRONTEND_COMMAND_EXECUTE_ROM_ACTION 0x1350 /* FrontendRomActionTable_ExecuteRecord */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00543F50 */

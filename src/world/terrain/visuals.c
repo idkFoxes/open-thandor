@@ -56,12 +56,10 @@ static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,
 }
 
 /* Address: 0x0053D370.
-   Ownership: world/terrain/visuals.
-   Purpose: Allocates a gfx-compatible runtime image sized as 0x260 plus width*height*12, publishes it globally and
-   in the active game state, defines three direct-color source entries with consecutive ARGB planes, then fills
-   planes one and two and rebuilds plane zero. CF set propagates allocation failure.
-   Local calls: TerrainCompositeTexture_FillPlane1, TerrainCompositeTexture_FillPlane2,
-   TerrainCompositeTexture_RebuildPlane0.
+   Builds the terrain composite texture for the current field grid: an in-memory gfx asset with three direct-colour
+   ARGB images of one pixel per field cell, published in g_TerrainCompositeTexture and the in-game root. Fills
+   planes 1 and 2 and then derives plane 0 from them. Returns the total image size, or the allocator error with
+   CF set.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void)
 
@@ -81,11 +79,14 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(vo
   terrainFieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
   fieldWidth = terrainFieldGrid->gridWidth;
   fieldHeight = terrainFieldGrid->gridHeight;
+  /* layout: 0x200-byte gfx header, three 0x20-byte source entries (pixels from 0x260), three planes of
+     width * height * 4 bytes */
   allocResult = g_MemoryApi.alloc(fieldWidth * 0xc * fieldHeight + 0x260);
   compositeTexture = (TerrainCompositeTextureRuntime *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_TerrainCompositeTexture = compositeTexture;
     *(TerrainCompositeTextureRuntime **)(inGameRoot->opaque9A74_9B4B + 8) = compositeTexture;
+    /* paletteIndex -1: direct ARGB colour, no palette */
     compositeTexture->sourceEntries[0].pixelWidth = fieldWidth;
     compositeTexture->sourceEntries[0].pixelHeight = fieldHeight;
     compositeTexture->sourceEntries[0].originX = 0;
@@ -752,18 +753,17 @@ TerrainLighting_BuildColorRampAndSetBaseColor
 
 
 /* Address: 0x0053D4D0.
-   Ownership: world/terrain/visuals.
-   Purpose: Resolves the allocation base for the global terrain composite texture and frees it. This helper does
-   not clear the published pointer.
+   Frees the terrain composite texture built by TerrainCompositeTexture_Create (through its allocation base).
+   g_TerrainCompositeTexture and the in-game root keep the stale pointer.
 */
 void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
 
 {
-  GraphicsTextureSourceAsset *memory;
-  
-  memory = g_GraphicsTextureSourceResolveAllocationBase
+  GraphicsTextureSourceAsset *allocationBase;
+
+  allocationBase = g_GraphicsTextureSourceResolveAllocationBase
                      (&g_TerrainCompositeTexture->textureSource);
-  g_MemoryApi.free(memory);
+  g_MemoryApi.free(allocationBase);
   return;
 }
 

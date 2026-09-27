@@ -233,16 +233,16 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
 
 
 /* Address: 0x00576F20.
-   Ownership: platform/input/devices.
-   Purpose: Periodic DirectInput watchdog. While no mouse button is held, releases the current mouse device,
-   recreates it, reapplies data format, cooperative level, and buffer property, then reacquires it. g_MousePollBusy
-   brackets the refresh.
+   Periodic DirectInput watchdog that keeps the mouse usable after it was lost (e.g. on a task switch).
+   The original recreated the device while no button was held; this version reacquires the existing
+   device and only recreates one when there is none (see the deviations below). g_MousePollBusy keeps
+   DirectInputMouse_PollBufferedEvents off the device meanwhile.
 */
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(void)
 
 {
-  TH_LEGACY_HRESULT mouseDeviceSetupResult;
-  TH_LEGACY_HRESULT mouseDeviceOperationResult;
+  TH_LEGACY_HRESULT createInputResult;
+  TH_LEGACY_HRESULT createDeviceResult;
   TH_LEGACY_HRESULT deviceConfigResult;
   
   /* The original only increments the busy counter here, so a poll already running on the timer
@@ -256,7 +256,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
      mouse from a low-level hook thread, which crashed (DINPUT.DLL+0x8ADE, null device) when the
      device vanished under it. Reacquiring the existing device covers the lost-device case the
      refresh was for; the device is only (re)created when there is none. */
-  if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+  if (g_MouseDevice != NULL) {
     g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
     g_MousePollBusy = 0;
     return;
@@ -264,24 +264,23 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
   if ((g_MouseButtonMask & LEFT_MIDDLE_RIGHT) == CURSOR_BUTTON_NONE) {
     /* The original created a new DirectInput object every refresh without releasing the old one,
        accumulating thousands per session in dinput's hook thread. */
-    if (g_DirectInput != (IDirectInputA *)0x0) {
+    if (g_DirectInput != NULL) {
       g_DirectInput->lpVtbl->Release(g_DirectInput);
-      g_DirectInput = (IDirectInputA *)0x0;
+      g_DirectInput = NULL;
     }
-    mouseDeviceSetupResult =
-         pDirectInputCreateA(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
-    if (mouseDeviceSetupResult == 0) {
-      mouseDeviceOperationResult =
-           g_DirectInput->lpVtbl->CreateDevice
-                     (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,(TH_LEGACY_LPVOID)0x0);
-      if (mouseDeviceOperationResult == 0) {
+    createInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
+    if (createInputResult == DI_OK) {
+      createDeviceResult =
+           g_DirectInput->lpVtbl->CreateDevice(g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,NULL);
+      if (createDeviceResult == DI_OK) {
         deviceConfigResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
-        if (deviceConfigResult == 0) {
-          deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel(g_MouseDevice,g_MainWindow,5);
-          if (deviceConfigResult == 0) {
+        if (deviceConfigResult == DI_OK) {
+          deviceConfigResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
+                              (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
+          if (deviceConfigResult == DI_OK) {
             deviceConfigResult = g_MouseDevice->lpVtbl->SetProperty
-                              (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
-            if (deviceConfigResult == 0) {
+                              (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
+            if (deviceConfigResult == DI_OK) {
               g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
             }
           }
@@ -295,35 +294,36 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(vo
 
 
 /* Address: 0x00577000.
-   Ownership: platform/input/devices.
-   Purpose: Handles direct input mouse shutdown.
-   Cross-module calls: TimerSystem_UnregisterPeriodic [platform/system/time_locale].
+   Shuts the mouse down: releases the DirectInput device and object, stops the mouse-poll and
+   cursor-animation timers and gives Windows back its arrow cursor.
 */
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
 
 {
-  HCURSOR hCursor;
-  
-  if (g_MouseDevice != (IDirectInputDeviceA *)0x0) {
+  HCURSOR arrowCursor;
+
+  if (g_MouseDevice != NULL) {
     g_MouseDevice->lpVtbl->Release(g_MouseDevice);
-    g_MouseDevice = (IDirectInputDeviceA *)0x0;
+    g_MouseDevice = NULL;
   }
-  if (g_DirectInput != (IDirectInputA *)0x0) {
+  if (g_DirectInput != NULL) {
     g_DirectInput->lpVtbl->Release(g_DirectInput);
-    g_DirectInput = (IDirectInputA *)0x0;
+    g_DirectInput = NULL;
   }
   TimerSystem_UnregisterPeriodic(DirectInputMouse_PollBufferedEvents);
   TimerSystem_UnregisterPeriodic(GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
-  hCursor = LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
-  SetCursor(hCursor);
+  arrowCursor = LoadCursorA(NULL,IDC_ARROW);
+  SetCursor(arrowCursor);
   return;
 }
 
 
 /* Address: 0x00577080.
-   Ownership: platform/input/devices.
-   Purpose: The routine retries acquisition after DIERR_INPUTLOST and limits repeated polling errors to 16
-   attempts.
+   Mouse-poll timer callback (64 Hz): drains the buffered DirectInput mouse events, updates the mouse
+   position (clamped to the framebuffer, the excess kept in g_CursorOverflow*), button mask and wheel
+   delta, and appends one entry per motion, wheel or button event to the 256-entry g_CursorInputEvents
+   ring. A lost device is reacquired; after 16 errors the poll gives up until the next tick. Skipped when
+   a poll or DirectInputMouse_RefreshDeviceIfIdle is already running (g_MousePollBusy).
 */
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(void)
 
@@ -354,25 +354,26 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
     for (;;) {
       g_MouseDeviceDataCount = 1;
       directInputResult = g_MouseDevice->lpVtbl->GetDeviceData
-                        (g_MouseDevice,0x10,&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
+                        (g_MouseDevice,sizeof(DIDEVICEOBJECTDATA_DX3),&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
       wasBusyOrEventIndex = g_CursorInputWriteIndex;
-      if (directInputResult == 0) {
+      if (directInputResult == DI_OK) {
         if (g_MouseDeviceDataCount != 1) break;
-        processedCount = processedCount + 1;
+        processedCount++;
         g_MouseWheelDelta = 0;
-        if (g_MouseDeviceEvent.dwOfs == 0) {
+        /* axes carry a relative delta; buttons are down while bit 7 of dwData is set */
+        if (g_MouseDeviceEvent.dwOfs == DIMOFS_X) {
           eventType = MOTION_OR_WHEEL;
           g_MouseX = g_MouseX + g_MouseDeviceEvent.dwData;
         }
-        else if (g_MouseDeviceEvent.dwOfs == 4) {
+        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Y) {
           eventType = MOTION_OR_WHEEL;
           g_MouseY = g_MouseY + g_MouseDeviceEvent.dwData;
         }
-        else if (g_MouseDeviceEvent.dwOfs == 8) {
-          g_MouseWheelDelta = (int)g_MouseDeviceEvent.dwData / 0x78;
+        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_Z) {
+          g_MouseWheelDelta = (int)g_MouseDeviceEvent.dwData / WHEEL_DELTA;
           eventType = MOTION_OR_WHEEL;
         }
-        else if (g_MouseDeviceEvent.dwOfs == 0xc) {
+        else if (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON0) {
           eventType = LEFT_PRESS;
           if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
             eventType = LEFT_RELEASE;
@@ -382,7 +383,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
             g_MouseButtonMask = g_MouseButtonMask | LEFT;
           }
         }
-        else if ((g_MouseDeviceEvent.dwOfs == 0xe) || (g_MouseDeviceEvent.dwOfs == 0xf)) {
+        else if ((g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON2) || (g_MouseDeviceEvent.dwOfs == DIMOFS_BUTTON3)) {
           eventType = MIDDLE_PRESS;
           if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
             eventType = MIDDLE_RELEASE;
@@ -393,7 +394,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
           }
         }
         else {
-          if (g_MouseDeviceEvent.dwOfs != 0xd) continue; /* other axes/buttons: ignored */
+          if (g_MouseDeviceEvent.dwOfs != DIMOFS_BUTTON1) continue; /* other axes/buttons: ignored */
           eventType = RIGHT_PRESS;
           if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
             eventType = RIGHT_RELEASE;
@@ -404,7 +405,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
           }
         }
         nextWriteIndex = g_CursorInputWriteIndex + 1;
-        if (0xff < nextWriteIndex) {
+        if (255 < nextWriteIndex) {
           nextWriteIndex = 0;
         }
         eventRecord = g_CursorInputEvents + g_CursorInputWriteIndex;
@@ -447,13 +448,13 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
         g_CursorInputEvents[wasBusyOrEventIndex].buttonState04 = buttonState;
         continue;
       }
-      if (directInputResult == -0x7ff8ffe2) {
-        /* DIERR_INPUTLOST: reacquire and read again */
+      if (directInputResult == DIERR_INPUTLOST) {
+        /* reacquire and read again */
         directInputResult = g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-        if (directInputResult == 0) continue;
+        if (directInputResult == DI_OK) continue;
       }
-      errorAttempts = errorAttempts + 1;
-      if (0xf < errorAttempts) break;
+      errorAttempts++;
+      if (15 < errorAttempts) break;
     }
     g_MouseEventsProcessed = g_MouseEventsProcessed + processedCount;
     g_MousePollBusy = 0;
@@ -463,16 +464,15 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
 
 
 /* Address: 0x005772F0.
-   Ownership: platform/input/devices.
-   Purpose: Display-mode hook that releases three cursor surfaces, invokes the previous graphics hook, recreates
-   the cursor surfaces, updates half-width/half-height cursor coordinates, and reacquires the DirectInput device.
-   CF reports failure. Typed parameters: p2 framebufferHeight→GraphicsPixelDimension_V302. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
+   Mouse hook in front of g_GraphicsSetDisplayMode (installed by DirectInputMouse_Init): frees the three
+   cursor buffers, switches the mode through the chained setter, recreates the buffers in the new pixel
+   format, converts the cursor palette, centres the mouse and reacquires the device. CF set when the mode
+   switch fails. The original also fails on a failed buffer creation (CF of g_SoftwareFramebufferCreate);
+   this C version drops that CF, so the later previousHookFailed tests never fire.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 DirectInputMouse_SetDisplayMode
-          (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
+          (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
 
 {
@@ -482,16 +482,16 @@ DirectInputMouse_SetDisplayMode
   DisplayModeResult previousHookResult;
   DisplayModeResult successResult;
   bool previousHookFailed;
-  
-  g_GraphicsBackendAccessState = -1;
+
+  g_GraphicsBackendAccessState = -1; /* blocks backend access (timer cursor drawing) during the switch */
   g_MemoryApi.free(g_CursorSavedBackground);
   g_MemoryApi.free(g_CursorCompositeBuffer);
   g_MemoryApi.free(g_CursorAlternateSavedBackground);
-  g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
-  g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
-  g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
+  g_CursorSavedBackground = NULL;
+  g_CursorCompositeBuffer = NULL;
+  g_CursorAlternateSavedBackground = NULL;
   previousHookResult = g_DirectInputMouseChainedSetDisplayMode
-                    (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
+                    (adapterIndex,bitsPerPixel,framebufferHeight,framebufferWidth);
   primaryFramebuffer = g_FramebufferAccess;
   previousHookFailed = previousHookResult.failed;
   newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.valueOrError;
@@ -532,12 +532,8 @@ DirectInputMouse_SetDisplayMode
 
 
 /* Address: 0x00577420.
-   Ownership: platform/input/devices.
-   Purpose: Stores the requested pointer position into both published and DirectInput mouse coordinates and clears
-   the current wheel delta. The backend stack order is Y then X. Typed parameters: p0
-   positionY→Win32CursorCoordinate32_V303, p1 positionX→Win32CursorCoordinate32_V303. Nearby but non-identical
-   semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
-   globals, locals, and executable data remain unchanged.
+   g_PointerSetPosition implementation: moves the mouse to (positionX, positionY) in both the published
+   cursor state and the DirectInput position, and clears the wheel delta.
 */
 void __thandor_void_preserve_eax_ecx
 DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordinate32 positionX)
@@ -554,9 +550,9 @@ DirectInputMouse_SetPosition(Win32CursorCoordinate32 positionY,Win32CursorCoordi
 
 
 /* Address: 0x00577460.
-   Ownership: platform/input/devices.
-   Purpose: Copies the current DirectInput coordinates and wheel delta into the published cursor state, then drops
-   pending cursor events by copying the write index to the read index.
+   g_PointerFlushEvents implementation: publishes the current mouse position and wheel delta as the
+   cursor state and discards the queued cursor events. Note that it moves the write index back to the
+   read index (the keyboard flush moves the read index instead).
 */
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_FlushBufferedEvents(void)
 

@@ -530,12 +530,9 @@ GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
 
 
 /* Address: 0x00514730.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Recomputes explored-terrain percentage, unlocked-technology count, resource and progress components,
-   active army contribution, and the derived score fields for one faction. It is distinct from
-   FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
-   ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
+   Recomputes one faction's statistics for the score / results screens: explored terrain percent, unlocked
+   technologies beyond the five starting ones, extracted resource components, the economy and relation scores,
+   the summed value of its army assets on the map, and the combined progress score.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RecomputeProgressAndScoreMetrics
@@ -558,28 +555,30 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
   terrainGrid = worldRuntime->fieldGrid;
   cellOrTechnologyCount = terrainGrid->gridWidth * terrainGrid->gridHeight;
   tallyOrComponent = 0;
+  /* one byte per faction at cell +0x70; bits 3-7 set = the faction has explored the cell (0x80-byte cells) */
   cellVisibilityCursor = terrainGrid->cells[0].runtime60_6B + factionIndex + 0x10;
   cellsLeftOrBitOrRate = cellOrTechnologyCount;
   do {
     if ((*cellVisibilityCursor & 0xf8) != 0) {
-      tallyOrComponent = tallyOrComponent + 1;
+      tallyOrComponent++;
     }
     cellVisibilityCursor = cellVisibilityCursor + 0x80;
     cellsLeftOrBitOrRate = cellsLeftOrBitOrRate - 1;
   } while (cellsLeftOrBitOrRate != 0);
   g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent =
        (uint32_t)(tallyOrComponent * 100) / cellOrTechnologyCount;
+  /* count the set bits of the 256-bit technology mask at faction record +0x6E0 (technologyMasks256Bits) */
   cellsLeftOrBitOrRate = 1;
   cellOrTechnologyCount = 0;
   maskWordIndex = 0;
   do {
     do {
       if ((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + maskWordIndex * 4) & cellsLeftOrBitOrRate) != 0) {
-        cellOrTechnologyCount = cellOrTechnologyCount + 1;
+        cellOrTechnologyCount++;
       }
       cellsLeftOrBitOrRate = cellsLeftOrBitOrRate * 2;
     } while (cellsLeftOrBitOrRate != 0);
-    maskWordIndex = maskWordIndex + 1;
+    maskWordIndex++;
     cellsLeftOrBitOrRate = 1;
   } while (maskWordIndex < 8);
   technologyCountBeyondBaseline = cellOrTechnologyCount - 5;
@@ -595,14 +594,15 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
   g_GameFactionRuntimeImage.records[factionIndex].economyProgressScore =
        (int)(tallyOrComponent * 0x10 + tritiumComponentOrModelRecord * 8 + technologyCountBeyondBaseline * 0xa000 + exploredPercent * 0x1000) >> 0xc;
   g_GameFactionRuntimeImage.records[factionIndex].relationScore =
-       g_GameFactionRuntimeImage.records[factionIndex].relationCounterB * 0x28000 +
+       (g_GameFactionRuntimeImage.records[factionIndex].relationCounterB * 0x28000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterD * -0x14000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterA * 0x14000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterC * -0xa000 +
        g_GameFactionRuntimeImage.records[factionIndex].relationCounterE * 0x14000 +
-       g_GameFactionRuntimeImage.records[factionIndex].relationCounterF * 0x28000 >> 0xc;
+       g_GameFactionRuntimeImage.records[factionIndex].relationCounterF * 0x28000) >> 0xc;
+  /* sum the army-asset dword +0x28 over every model of this faction on the map */
   tallyOrComponent = 0;
-  for (ownerNode = worldRuntime->ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+  for (ownerNode = worldRuntime->ownerListHead; ownerNode != NULL;
       ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (tritiumComponentOrModelRecord = *(int *)((int)ownerNode->runtimePayload + 8), factionIndex == *(int *)(tritiumComponentOrModelRecord + 0xc)
@@ -1323,14 +1323,10 @@ PlayerRuntime_ClearState8094
 
 
 /* Address: 0x00565590.
-   Ownership: gameplay/faction/runtime.
-   Purpose: ORs the exact 64-dword secondary old-unit mask table into eight faction records at offset +0x6E0, then,
-   when runtime state and imported records are available, replays fixed 0x20-byte primary records, runs two
-   verified traversal callbacks, and refreshes the paired runtime values. Existing EAX and EDX results are
-   preserved.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
-   WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], FieldGrid_ClassifyCellFlagsToRuntimeByte
-   [world/terrain/grid].
+   Applies the mission carry-over stored by OldUnitRuntime_RebuildScenarioReplayTables at the start of the next
+   mission: ORs each faction's saved technology masks into its record, recreates every carried-over unit
+   (0x20-byte primary records: asset id, faction, position, rotation) in the world, then rebuilds terrain
+   occupancy and the cell classification for the active faction.
 */
 void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecords(void)
 
@@ -1347,30 +1343,33 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
   
   factionsRemaining = 8;
   wordsRemaining = 8;
+  /* 8 factions x 8 dwords; the faction records are 0x740 bytes apart */
   secondaryCursor = g_OldUnitSecondaryTable;
   nextMaskCursor = g_GameFactionRuntimeImage.records[0].technologyMasks256Bits;
   do {
     do {
       maskCursor = nextMaskCursor;
       *maskCursor = *maskCursor | *secondaryCursor;
-      runtimeRoot = g_InGameRuntimeRoot;
-      secondaryCursor = secondaryCursor + 1;
-      wordsRemaining = wordsRemaining + -1;
+      runtimeRoot = g_InGameRuntimeRoot; /* Ghidra placement; the original reads it once after the loop */
+      secondaryCursor++;
+      wordsRemaining--;
       nextMaskCursor = maskCursor + 1;
     } while (wordsRemaining != 0);
     wordsRemaining = 8;
-    factionsRemaining = factionsRemaining + -1;
+    factionsRemaining--;
     nextMaskCursor = maskCursor + 0x1c9;
   } while (factionsRemaining != 0);
-  if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) && (g_OldUnitRecordCount != 0)) {
+  if ((g_InGameRuntimeRoot != NULL) && (g_OldUnitRecordCount != 0)) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
     do {
+      /* record [2] and [3] go to the parameters named worldYQ12 / worldXQ12 (pushed as in the original,
+         0x005655FC/0x005655FF), although the rebuild stores the X coordinate in [2] */
       ArmyRuntime_CreateInstanceFromAsset
                 (6,primaryRecordCursor[4],primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,worldRuntime);
-      primaryRecordCursor = primaryRecordCursor + 8;
-      recordsRemaining = recordsRemaining - 1;
+      primaryRecordCursor = primaryRecordCursor + 8; /* 0x20-byte records */
+      recordsRemaining--;
     } while (recordsRemaining != 0);
     WorldRuntime_ForEachNodeInOwnerListD8
               (worldRuntime,ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback,
@@ -1411,9 +1410,8 @@ GameFactionRuntime_IsRecentTimedRelationState
 
 
 /* Address: 0x00565650.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Clears all 64 dwords in the secondary old-unit mask table and resets the imported primary-record count
-   to zero. EAX is preserved.
+   Drops any pending mission carry-over: clears the 64-dword technology-mask table and the unit-record count, so
+   OldUnitRuntime_MergeMasksAndReplayRecords has nothing to apply.
 */
 void __thandor_void_preserve_eax_ecx OldUnitRuntime_ResetPendingTables(void)
 
@@ -1423,9 +1421,9 @@ void __thandor_void_preserve_eax_ecx OldUnitRuntime_ResetPendingTables(void)
   
   tableCursor = g_OldUnitSecondaryTable;
   for (tableEntriesRemaining = 0x40; tableEntriesRemaining != 0;
-      tableEntriesRemaining = tableEntriesRemaining + -1) {
+      tableEntriesRemaining--) {
     *tableCursor = 0;
-    tableCursor = tableCursor + 1;
+    tableCursor++;
   }
   g_OldUnitRecordCount = 0;
   return;

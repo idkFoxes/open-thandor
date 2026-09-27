@@ -418,19 +418,15 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
 
 
 /* Address: 0x005442B0.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the configured frontend player blocks using exact stride 0x13B0, compares playerId against block
-   dword +0x14, and ORs bit 0x08 into block dword +0x60 on the first match. The callback consumes four dword
-   arguments; only playerId is used. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged.
+   Sets FRONTEND_PLAYER_STATE_LEVEL_RECEIVED in the roleStateFlags of the player block with this player id (the level's field grid arrived).
+   Command handler with four dword arguments (local command 0x360, run on every peer in a network session);
+   only the player id is used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag08ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
-  FrontendRoleStateFlags *roleFlags;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
@@ -438,12 +434,11 @@ FrontendPlayerRuntime_MarkFlag08ById
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
     if (playerId == playerBlock->playerRuntimeId) {
-      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
-      *roleFlags = *roleFlags | 8;
+      (playerBlock->factionAssignment).roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_RECEIVED;
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
@@ -476,19 +471,15 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
 
 
 /* Address: 0x00544360.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the configured frontend player blocks using exact stride 0x13B0, compares playerId against block
-   dword +0x14, and ORs bit 0x04 into block dword +0x60 on the first match. The callback consumes four dword
-   arguments; only playerId is used. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged.
+   Sets FRONTEND_PLAYER_STATE_LEVEL_LOADED in the roleStateFlags of the player block with this player id (the level package was loaded from disk).
+   Command handler with four dword arguments (local command 0x410, run on every peer in a network session);
+   only the player id is used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag04ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
-  FrontendRoleStateFlags *roleFlags;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
@@ -496,31 +487,26 @@ FrontendPlayerRuntime_MarkFlag04ById
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
     if (playerId == playerBlock->playerRuntimeId) {
-      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
-      *roleFlags = *roleFlags | 4;
+      (playerBlock->factionAssignment).roleStateFlags |= FRONTEND_PLAYER_STATE_LEVEL_LOADED;
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
 
 
 /* Address: 0x00544820.
-   Ownership: ui/frontend/player.
-   Purpose: Scans the configured frontend player blocks using exact stride 0x13B0, compares playerId against block
-   dword +0x14, and ORs bit 0x02 into block dword +0x60 on the first match. The callback consumes four dword
-   arguments; only playerId is used. Kept distinct from frontend slot indices, faction runtime indices, network
-   endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId. Calling convention,
-   storage, body bytes, control flow, and executable data remain unchanged.
+   Sets FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT in the roleStateFlags of the player block with this player id (the level arrived, the player can go on to task assignment).
+   Command handler with four dword arguments (local command 0x8D0, run on every peer in a network session);
+   only the player id is used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag02ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
-  FrontendRoleStateFlags *roleFlags;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
@@ -528,12 +514,11 @@ FrontendPlayerRuntime_MarkFlag02ById
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   do {
     if (playerId == playerBlock->playerRuntimeId) {
-      roleFlags = &(playerBlock->factionAssignment).roleStateFlags;
-      *roleFlags = *roleFlags | 2;
+      (playerBlock->factionAssignment).roleStateFlags |= FRONTEND_PLAYER_STATE_TASK_ASSIGNMENT;
       return;
     }
-    playerBlock = playerBlock + 1;
-    remainingBlocks = remainingBlocks - 1;
+    playerBlock++;
+    remainingBlocks--;
   } while (remainingBlocks != 0);
   return;
 }
@@ -757,14 +742,10 @@ FrontendPlayerRuntime_SetReadyFlagById
 
 
 /* Address: 0x0055F5A0.
-   Ownership: ui/frontend/player.
-   Purpose: Marks the matching frontend player block ready at field +0x54 and updates action 0x101B according to
-   local/network mode and remaining unready player blocks. Kept distinct from frontend slot indices, faction
-   runtime indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p2
-   playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged.
-   Cross-module calls: UiNodeList_UnsuppressActionId [ui/controls/lists], UiNodeList_SuppressActionId
-   [ui/controls/lists].
+   Results screen of a network game: a client that pressed continue (command 0x470) is marked ready on the
+   host, and the host's own continue button (INGAME_ACTION_RESULTS_CONTINUE) appears once every other player
+   is ready; the host re-checks with player id 0xFFFFFFFF every frame. On a client the local player's own
+   continue button disappears after pressing it (it then waits for the host).
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRuntimeId)
@@ -786,41 +767,41 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRun
           readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
           break;
         }
-        searchRemaining = searchRemaining - 1;
-        playerBlock = playerBlock + 1;
+        searchRemaining--;
+        playerBlock++;
         readyScanBlock = g_FrontendPlayerRuntimeBlocks;
         readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
       } while (searchRemaining != 0);
+      /* every block after the host's own (block 0) must be ready */
       do {
-        readyScanRemaining = readyScanRemaining - 1;
+        readyScanRemaining--;
         if (readyScanRemaining == 0) {
-          UiNodeList_UnsuppressActionId(0x101b,(UiNodeBase *)g_InGameRuntimeRoot);
+          UiNodeList_UnsuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
           return;
         }
         playerBlock = readyScanBlock + 1;
-        readyScanBlock = readyScanBlock + 1;
+        readyScanBlock++;
       } while ((playerBlock->factionAssignment).readyOrWaitState != 0);
     }
   }
   else if (playerRuntimeId == g_LocalPlayerRuntimeId) {
-    UiNodeList_SuppressActionId(0x101b,(UiNodeBase *)g_InGameRuntimeRoot);
+    UiNodeList_SuppressActionId(INGAME_ACTION_RESULTS_CONTINUE,(UiNodeBase *)g_InGameRuntimeRoot);
   }
   return;
 }
 
 
 /* Address: 0x0055F680.
-   Ownership: ui/frontend/player.
-   Purpose: Increments the matching player ready counter, resolves all-player readiness, queues command 0x550 when
-   required, and clears runtime flags 0x01 and 0x10 once the consensus threshold is reached. Kept distinct from
-   frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset identifiers. Typed
-   parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and
-   executable data remain unchanged.
-   Cross-module calls: InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
+   Handler of INGAME_COMMAND_PLAYER_READY (a player has loaded the level): counts the report in the player's
+   readyOrWaitState. When every player has reported, the host sends the command a second time; once the host's
+   count reaches 2 (or at once in a local game), the session's start pause ends
+   (UI_COMMAND_RUNTIME_FLAG_PAUSED and _WAITING_FOR_PLAYERS cleared). A client ends it when the host's
+   (id 0) second report arrives.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-          (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,uint32_t reserved2)
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          uint32_t unusedArgument3)
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
@@ -834,8 +815,7 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
       SESSION_NETWORK_ROLE_LOCAL) {
     do {
       if (playerRuntimeId == playerBlock->playerRuntimeId) {
-        (playerBlock->factionAssignment).readyOrWaitState =
-             (playerBlock->factionAssignment).readyOrWaitState + 1;
+        (playerBlock->factionAssignment).readyOrWaitState++;
         readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
         readyScanBlock = g_FrontendPlayerRuntimeBlocks;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
@@ -847,37 +827,40 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
             return;
           }
           /* Client: the host (id 0) reached consensus. */
-          if ((g_UiCommandRuntimeFlags & 0x10) != 0) {
-            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffee;
+          if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+            g_UiCommandRuntimeFlags &=
+                 ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
           }
           return;
         }
         break;
       }
-      searchRemaining = searchRemaining - 1;
+      searchRemaining--;
       readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
       readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-      playerBlock = playerBlock + 1;
+      playerBlock++;
     } while (searchRemaining != 0);
+    /* host: wait until every player has reported */
     do {
       if ((readyScanBlock->factionAssignment).readyOrWaitState == 0) {
         return;
       }
-      readyScanRemaining = readyScanRemaining - 1;
-      readyScanBlock = readyScanBlock + 1;
+      readyScanRemaining--;
+      readyScanBlock++;
     } while (readyScanRemaining != 0);
     if ((g_FrontendPlayerRuntimeBlocks->factionAssignment).readyOrWaitState < 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+        InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
         return;
       }
       FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus(g_LocalPlayerRuntimeId,0,0,0);
       return;
     }
   }
-  if ((g_UiCommandRuntimeFlags & 0x10) != 0) {
-    g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffee;
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
+    g_UiCommandRuntimeFlags &=
+         ~(UI_COMMAND_RUNTIME_FLAG_PAUSED | UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS);
   }
   return;
 }
@@ -1295,16 +1278,15 @@ FrontendPlayerSelection_ApplyEntryOrAll
 
 
 /* Address: 0x00544020.
-   Ownership: ui/frontend/player.
-   Purpose: Four-argument frontend callback. It scans exact 0x13B0-byte player blocks by ID, increments dword
-   +0x54, evaluates the mode-specific ready condition, and clears global wait-state bit 0x10 and its companion
-   state when the condition closes. EAX is preserved. Kept distinct from frontend slot indices, faction runtime
-   indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p0 playerId→PlayerRuntimeId.
-   Cross-module calls: FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Handler of FRONTEND_COMMAND_PLAYER_READY: counts the player's report in its readyOrWaitState. When every
+   player has reported, the host sends the command a second time; once the host's count reaches 2 (or at once
+   in a local game), FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS is cleared, which ends Frontend_Init's wait loop.
+   A client ends it when the host's (id 0) second report arrives. Same scheme as
+   FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus.
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4)
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3)
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
@@ -1318,8 +1300,7 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
       SESSION_NETWORK_ROLE_LOCAL) {
     do {
       if (playerId == playerBlock->playerRuntimeId) {
-        (playerBlock->factionAssignment).readyOrWaitState =
-             (playerBlock->factionAssignment).readyOrWaitState + 1;
+        (playerBlock->factionAssignment).readyOrWaitState++;
         readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
         readyScanBlock = g_FrontendPlayerRuntimeBlocks;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL)
@@ -1331,39 +1312,40 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
             return;
           }
           /* Client: the host (id 0) reached consensus. */
-          if ((g_FrontendRuntimeFlags & 0x10) != 0) {
+          if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
             g_FrontendNetworkTickCounter = 0;
-            g_FrontendRuntimeFlags = g_FrontendRuntimeFlags & 0xffffffef;
+            g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
           }
           return;
         }
         break;
       }
-      searchRemaining = searchRemaining - 1;
+      searchRemaining--;
       readyScanRemaining = g_FrontendPlayerRuntimeBlockCount;
       readyScanBlock = g_FrontendPlayerRuntimeBlocks;
-      playerBlock = playerBlock + 1;
+      playerBlock++;
     } while (searchRemaining != 0);
+    /* host: wait until every player has reported */
     do {
       if ((readyScanBlock->factionAssignment).readyOrWaitState == 0) {
         return;
       }
-      readyScanRemaining = readyScanRemaining - 1;
-      readyScanBlock = readyScanBlock + 1;
+      readyScanRemaining--;
+      readyScanBlock++;
     } while (readyScanRemaining != 0);
     if ((g_FrontendPlayerRuntimeBlocks->factionAssignment).readyOrWaitState < 2) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0xd0,0,0,0);
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_PLAYER_READY,0,0,0);
         return;
       }
       FrontendPlayerRuntime_RecordReadyAndUpdateWaitState(g_LocalPlayerRuntimeId,0,0,0);
       return;
     }
   }
-  if ((g_FrontendRuntimeFlags & 0x10) != 0) {
+  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0) {
     g_FrontendNetworkTickCounter = 0;
-    g_FrontendRuntimeFlags = g_FrontendRuntimeFlags & 0xffffffef;
+    g_FrontendRuntimeFlags &= ~FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS;
   }
   return;
 }

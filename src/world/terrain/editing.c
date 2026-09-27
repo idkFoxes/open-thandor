@@ -11,17 +11,13 @@
 /* Implementation ownership: world/terrain/editing. */
 
 /* Address: 0x005137F0.
-   Ownership: world/terrain/editing.
-   Purpose: Recursively expands a connected field-cell region through the verified neighboring rows and columns,
-   recording cells whose occupancy mask matches and whose material flags do not reject traversal. Typed parameters:
-   p2 requiredOccupancyMask→FieldGridRegionMask, p3 rowStrideBytes→FieldGridRowStrideBytes. Nearby but non-
-   identical semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control
-   flow, globals, locals, and executable data remain unchanged.
-   Local calls: TerrainRegionCollection_RecordConnectedCell.
+   Scanline flood fill over the field grid: records (TerrainRegionCollection_RecordConnectedCell, which also marks
+   them visited) the horizontal run of cells around cell that carry one of requiredCellFlags, then recurses into
+   matching cells of the rows above and below that run. Edge-ring and already visited cells stop the fill.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainRegionCollection_CollectConnectedCellsRecursive
-          (FieldGridRegionMask requiredOccupancyMask,FieldGridRowStrideBytes rowStrideBytes,
+          (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,
           FieldGridCell *cell)
 
 {
@@ -29,37 +25,40 @@ TerrainRegionCollection_CollectConnectedCellsRecursive
   FieldGridCell *spanStartCell;
   FieldGridCell *aboveRowCell;
   FieldGridCell *cursorOrSpanEndCell;
-  
+
   cursorOrSpanEndCell = cell;
   do {
     spanStartCell = cursorOrSpanEndCell;
-    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,spanStartCell);
-    if ((spanStartCell[-1].flagsAndMaterial & requiredOccupancyMask) == 0) break;
-    cursorOrSpanEndCell = spanStartCell + -1;
-  } while ((spanStartCell[-1].flagsAndMaterial & 0x88016000) == 0);
-  while ((cursorOrSpanEndCell = cell + 1, (cell[1].flagsAndMaterial & requiredOccupancyMask) != 0 &&
-         ((cell[1].flagsAndMaterial & 0x88016000) == 0))) {
-    TerrainRegionCollection_RecordConnectedCell(requiredOccupancyMask,cursorOrSpanEndCell);
+    TerrainRegionCollection_RecordConnectedCell(requiredCellFlags,spanStartCell);
+    if ((spanStartCell[-1].flagsAndMaterial & requiredCellFlags) == 0) break;
+    cursorOrSpanEndCell = spanStartCell - 1;
+  } while ((spanStartCell[-1].flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0);
+  while ((cursorOrSpanEndCell = cell + 1, (cell[1].flagsAndMaterial & requiredCellFlags) != 0 &&
+         ((cell[1].flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0))) {
+    TerrainRegionCollection_RecordConnectedCell(requiredCellFlags,cursorOrSpanEndCell);
     cell = cursorOrSpanEndCell;
   }
+  /* row above: from the span start up to the column of the cell that ended the span */
   aboveRowCell = (FieldGridCell *)((int)spanStartCell - rowStrideBytes);
   do {
-    if (((aboveRowCell->flagsAndMaterial & 0x88016000) == 0) &&
-       ((aboveRowCell->flagsAndMaterial & requiredOccupancyMask) != 0)) {
+    if (((aboveRowCell->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
+       ((aboveRowCell->flagsAndMaterial & requiredCellFlags) != 0)) {
       TerrainRegionCollection_CollectConnectedCellsRecursive
-                (requiredOccupancyMask,rowStrideBytes,aboveRowCell);
+                (requiredCellFlags,rowStrideBytes,aboveRowCell);
     }
     aboveRowCell = aboveRowCell + 1;
   } while (aboveRowCell <= (FieldGridCell *)((int)cursorOrSpanEndCell - rowStrideBytes));
-  rowCellCursor = (FieldGridCell *)(spanStartCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
+  /* row below: from one cell left of the span start up to the span's last cell
+     (runtime0C_3F - 0xC is the cell's own address) */
+  rowCellCursor = (FieldGridCell *)(spanStartCell[-1].runtime0C_3F + rowStrideBytes - 0xc);
   do {
-    if (((rowCellCursor->flagsAndMaterial & 0x88016000) == 0) &&
-       ((rowCellCursor->flagsAndMaterial & requiredOccupancyMask) != 0)) {
+    if (((rowCellCursor->flagsAndMaterial & TERRAIN_REGION_STOP_FLAGS) == 0) &&
+       ((rowCellCursor->flagsAndMaterial & requiredCellFlags) != 0)) {
       TerrainRegionCollection_CollectConnectedCellsRecursive
-                (requiredOccupancyMask,rowStrideBytes,rowCellCursor);
+                (requiredCellFlags,rowStrideBytes,rowCellCursor);
     }
     rowCellCursor = rowCellCursor + 1;
-  } while (rowCellCursor < (FieldGridCell *)(cursorOrSpanEndCell->runtime0C_3F + rowStrideBytes + -0xc));
+  } while (rowCellCursor < (FieldGridCell *)(cursorOrSpanEndCell->runtime0C_3F + rowStrideBytes - 0xc));
   return;
 }
 

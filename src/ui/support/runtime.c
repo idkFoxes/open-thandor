@@ -11,12 +11,10 @@
 /* Implementation ownership: ui/support/runtime. */
 
 /* Address: 0x0050F220.
-   Ownership: ui/support/runtime.
-   Purpose: Sorts all eight slots by descending serial, writes up to maxEntries slot pointers, clears stale
-   trailing serials, and increments the serial counter. Typed parameters: p0
-   maxEntries→RecentTextHistoryEntryLimit_V343. Calling convention, complete VariableStorage serialization,
-   function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RecentTextHistory_SwapSlots.
+   Builds the list of chat messages to show (output, newest first, at most maxEntries) and ages the history:
+   sorts the slots by serial, newest first, and lists them until an empty slot, an expired one (older than
+   RECENT_TEXT_HISTORY_LIFETIME) or maxEntries is reached. In the last two cases the remaining slots are
+   emptied, so messages beyond maxEntries are forgotten too. Finally the serial counter advances.
 */
 void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SortAndBuildPointerList
@@ -30,6 +28,7 @@ RecentTextHistory_SortAndBuildPointerList
   uint32_t outputIndex;
   int minimumRetainedSerial;
   
+  /* selection sort, newest (highest serial) first */
   secondIndex = 0;
   do {
     firstIndex = secondIndex + 1;
@@ -40,28 +39,28 @@ RecentTextHistory_SortAndBuildPointerList
         currentSerial = g_RecentTextEntrySerials[secondIndex];
       }
       slotCursor = g_RecentTextSlotStorage;
-      firstIndex = firstIndex + 1;
-    } while (firstIndex < 8);
-    secondIndex = secondIndex + 1;
-  } while (secondIndex < 7);
+      firstIndex++;
+    } while (firstIndex < RECENT_TEXT_HISTORY_SLOT_COUNT);
+    secondIndex++;
+  } while (secondIndex < RECENT_TEXT_HISTORY_SLOT_COUNT - 1);
   outputIndex = 0;
-  minimumRetainedSerial = g_RecentTextSerialCounter - 0x100;
+  minimumRetainedSerial = g_RecentTextSerialCounter - RECENT_TEXT_HISTORY_LIFETIME;
   output->count = 0;
   do {
     if (g_RecentTextEntrySerials[outputIndex] == 0)
     goto RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop;
     if ((int)g_RecentTextEntrySerials[outputIndex] < minimumRetainedSerial) break;
     output->entries[outputIndex] = slotCursor;
-    output->count = output->count + 1;
-    outputIndex = outputIndex + 1;
-    slotCursor = slotCursor + 1;
-    maxEntries = maxEntries - 1;
+    output->count++;
+    outputIndex++;
+    slotCursor++;
+    maxEntries--;
   } while (maxEntries != 0);
-  for (; outputIndex < 8; outputIndex = outputIndex + 1) {
+  for (; outputIndex < RECENT_TEXT_HISTORY_SLOT_COUNT; outputIndex++) {
     g_RecentTextEntrySerials[outputIndex] = 0;
   }
 RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
-  g_RecentTextSerialCounter = g_RecentTextSerialCounter + 1;
+  g_RecentTextSerialCounter++;
   return;
 }
 

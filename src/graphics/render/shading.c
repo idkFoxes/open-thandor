@@ -2638,19 +2638,18 @@ GraphicsShadingRuntime_AllocateRecordRegs
 
 
 /* Address: 0x004CCC60.
-   Ownership: graphics/render/shading.
-   Purpose: Clears all 256 GraphicsShadingRuntimeRecord entries, exactly 0x4000 bytes. Preserved EAX is incidental,
-   not a normal return value.
+   Zeroes the 256 runtime light records (0x40 bytes each, 0x4000 bytes in total) so that no light source is
+   active; GraphicsShadingRuntime_RebuildCompactLightingRecords only picks up records with a colour set.
 */
 void __thandor_void_preserve_eax_ecx GraphicsShadingRuntime_ClearRecordTable(void)
 
 {
   int recordDwordsRemaining;
   GraphicsShadingRuntimeRecord *recordDwordCursor;
-  
+
   recordDwordCursor = g_GraphicsShadingRuntimeRecords;
   for (recordDwordsRemaining = 0x1000; recordDwordsRemaining != 0;
-      recordDwordsRemaining = recordDwordsRemaining + -1) {
+      recordDwordsRemaining--) {
     recordDwordCursor->worldXQ12 = 0;
     recordDwordCursor = (GraphicsShadingRuntimeRecord *)&recordDwordCursor->worldYQ12;
   }
@@ -2751,14 +2750,10 @@ GraphicsShadingRuntime_CollectNearbyRecords
 
 
 /* Address: 0x004CCFF0.
-   Ownership: graphics/render/shading.
-   Purpose: Allocates a square byte grid of (gridHalfSize*2)^2, creates a generated gfx image with one 256-entry
-   palette and the source-entry table at fixed offset 0xA00, appends subresourceCount direct 0x20-byte source
-   entries with textureDimension squared pixels, derives fixed-point sampling state, creates the graphics texture
-   set, and reports failure through CF. Typed parameters: p0 subresourceCount→GraphicsAssetSubresourceCount_V308.
-   Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
-   bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p1
-   gridHalfSize→GraphicsPixelDimension_V302, p2 textureDimension→GraphicsPixelDimension_V302.
+   Sets up the generated shading textures: a zeroed square scratch grid of (2 * gridHalfSize)^2 bytes and
+   an in-memory gfx asset with one palette (white with an alpha ramp) and subresourceCount 8-bit images of
+   textureDimension^2 pixels, from which a texture set is created. Also derives the grid step and origin used to
+   map world positions into the textures. Returns the allocator/texture error with CF set on failure.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_InitializeGeneratedTexture
@@ -2784,18 +2779,19 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
     allocationSize = allocationSize >> 2;
     g_GraphicsShadingGridScratchInterior = (pointer)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
     g_GraphicsShadingGridScratch = allocationCursor;
-    for (; allocationSize != 0; allocationSize = allocationSize - 1) {
+    for (; allocationSize != 0; allocationSize--) {
       (allocationCursor->asset).common.magic = 0;
       allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
                &(allocationCursor->asset).common.allocationSizeBytes;
     }
+    /* gfx layout: header and palette up to 0xA00, then one 0x20-byte source entry per image, then the pixels */
     allocationSize = (textureDimension * textureDimension + 0x20) * subresourceCount + 0xa00;
     allocResult = g_MemoryApi.alloc(allocationSize);
     allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       entryCursor = allocationCursor;
       g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)allocationCursor;
-      for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
+      for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining--) {
         (entryCursor->asset).common.magic = 0;
         entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
                  &(entryCursor->asset).common.allocationSizeBytes;
@@ -2805,6 +2801,7 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
       (allocationCursor->asset).tableDescriptor.subresourceCount = subresourceCount;
       (allocationCursor->asset).tableDescriptor.paletteBankCount = 1;
       (allocationCursor->asset).tableDescriptor.subresourceTableOffset = 0xa00;
+      /* palette at +0x200: 256 ARGB entries 8 bytes apart (up to 0xA00), white with alpha = index */
       paletteEntry = 0xffffff;
       entryCursor = allocationCursor + 1;
       counterOrGridOrigin = 0x100;
@@ -2813,10 +2810,10 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
         paletteEntry = paletteEntry + 0x1000000;
         entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
                  &(entryCursor->asset).common.formatVersion;
-        counterOrGridOrigin = counterOrGridOrigin + -1;
+        counterOrGridOrigin--;
       } while (counterOrGridOrigin != 0);
       g_GraphicsShadingSubresourceCount = subresourceCount;
-      entryCursor = allocationCursor + 5;
+      entryCursor = allocationCursor + 5; /* source entry table at 0xA00 */
       pixelDataOffset = subresourceCount * 0x20 + 0xa00;
       do {
         (entryCursor->asset).common.magic = textureDimension;
@@ -2830,13 +2827,14 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
         pixelDataOffset = pixelDataOffset + textureDimension * textureDimension;
         entryCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)
                  &(entryCursor->asset).common.buildMetadata.timestamps.dateValue2;
-        subresourceCount = subresourceCount - 1;
+        subresourceCount--;
       } while (subresourceCount != 0);
       g_GraphicsShadingTextureDimension = textureDimension;
       g_GraphicsShadingGridHalfSize = gridHalfSize;
+      /* grid cells per texture pixel in Q20, and the grid origin (gridHalfSize / 2 - 1 cells) in Q12 */
       g_GraphicsShadingGridStepQ20 =
            (uint32_t)(((uint64_t)gridHalfSize * 0x100000) / (uint64_t)textureDimension);
-      counterOrGridOrigin = ((int)gridHalfSize >> 1) + -1;
+      counterOrGridOrigin = ((int)gridHalfSize >> 1) - 1;
       g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * 0x1000;
       g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -0x1000;
       g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
@@ -2856,19 +2854,18 @@ GraphicsShadingRuntime_InitializeGeneratedTexture
 
 
 /* Address: 0x004CD1B0.
-   Ownership: graphics/render/shading.
-   Purpose: Destroys the generated shading texture set, frees the generated gfx allocation and square grid
-   allocation, and clears all three published pointers. EAX is preserved.
+   Counterpart of GraphicsShadingRuntime_InitializeGeneratedTexture: destroys the texture set, frees the generated
+   gfx asset and the scratch grid, and clears the three pointers.
 */
 void __thandor_void_preserve_eax GraphicsShadingRuntime_Shutdown(void)
 
 {
   g_GraphicsDestroyTextureSet(g_GraphicsShadingTextureSet);
-  g_GraphicsShadingTextureSet = (GraphicsTextureSet *)0x0;
+  g_GraphicsShadingTextureSet = NULL;
   g_MemoryApi.free(g_GraphicsShadingGeneratedAsset);
-  g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)0x0;
+  g_GraphicsShadingGeneratedAsset = NULL;
   g_MemoryApi.free(g_GraphicsShadingGridScratch);
-  g_GraphicsShadingGridScratch = (void *)0x0;
+  g_GraphicsShadingGridScratch = NULL;
   return;
 }
 

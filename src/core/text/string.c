@@ -186,11 +186,9 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
 
 
 /* Address: 0x0041BAA0.
-   Ownership: core/text/string.
-   Purpose: Copies a NUL-terminated narrow string into a bounded UTF-16 destination by zero-extending each byte.
-   Capacity is measured in destination bytes; CF reports error 0x14. Typed parameters: p0
-   capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage serialization, function
-   body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Widens a NUL-terminated 8-bit string to UTF-16 (each byte zero-extended) into a buffer of capacityBytes
+   bytes. Returns the bytes written including the terminator; if the string does not fit it is cut off
+   and terminated, and CF is set with FATAL_ERROR_GENERAL_FAILURE.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
@@ -201,21 +199,22 @@ Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destinati
   StatusResult successResult;
   StatusResult overflowResult;
   uint8_t sourceByte;
-  
+
   remainingCapacityBytes = capacityBytes;
   do {
     sourceByte = *source;
+    /* SUB ECX,2 / JBE: fails once the capacity would reach zero, so one unit always stays unused */
     capacityExhausted = remainingCapacityBytes < 2;
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
       overflowResult.failed = true;
-      overflowResult.valueOrError = 0x14;
+      overflowResult.valueOrError = FATAL_ERROR_GENERAL_FAILURE;
       return overflowResult;
     }
     *destination = (uint16_t)sourceByte;
-    source = source + 1;
-    destination = destination + 1;
+    source++;
+    destination++;
   } while (sourceByte != 0);
   successResult.valueOrError = capacityBytes - remainingCapacityBytes;
   successResult.failed = false;

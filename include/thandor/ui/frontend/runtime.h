@@ -47,6 +47,7 @@
 #define FRONTEND_PLAYER_STATE_LEVEL_READY_MASK 0x0C
 
 /* Pages of FrontendUiImage.frontendPageStack (see generated/ui_templates.h). */
+#define FRONTEND_PAGE_MAIN 0 /* no dialog page: only the menu room */
 #define FRONTEND_PAGE_NETWORK_GAME 1 /* protocol, player name, host address, session list */
 #define FRONTEND_PAGE_HOST_GAME_SETUP 2
 #define FRONTEND_PAGE_HOST_LOBBY 3
@@ -74,6 +75,15 @@
 #define FRONTEND_NETWORK_STATE_IDLE 0
 #define FRONTEND_NETWORK_STATE_BROWSING 1 /* network game page: polls for sessions, handles join acks */
 #define FRONTEND_NETWORK_STATE_HOSTING 2 /* host lobby: publishes the session, handles joining players */
+#define FRONTEND_NETWORK_STATE_JOINED 3 /* client in the host lobby after the join ack
+                                           (FrontendTransfer_HandleSessionListAndJoinAckPackets) */
+#define FRONTEND_NETWORK_STATE_HOST_STARTING 4 /* host sends commands and player snapshots to the clients
+                                                  (FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands) */
+#define FRONTEND_NETWORK_STATE_CLIENT_STARTING 5 /* client receives the session start
+                                                    (FrontendTransfer_HandleHostSessionAndCommandBatchPackets) */
+/* Reload value of g_FrontendTimerCountdownTicks: the 80 Hz FrontendRuntime_TimerCountdownTick counts it down,
+   so Frontend_StateTick runs its network work at most 20 times per second. */
+#define FRONTEND_TIMER_TICKS_PER_NETWORK_TICK 4
 /* Text resource ids of the faction setup and mission briefing pages. */
 #define TEXT_ID_FACTION_NAME_BASE 0x2173
 #define TEXT_ID_FACTION_SETUP_TASK_TEMPLATE 0x218C /* "Task description (%s):", combined with the level title */
@@ -81,6 +91,8 @@
 #define TEXT_ID_FACTION_MODE_NOBODY 0x2199
 #define TEXT_ID_FACTION_MODE_COMPUTER 0x219A
 #define TEXT_ID_MISSION_BRIEFING_TEMPLATE 0x219B /* combined with the level title */
+/* Host game setup page: networkSpeedLabel's caption id; the text for network speed n (1..7) is this + n. */
+#define TEXT_ID_NETWORK_SPEED_BASE 0x210D
 
 /* g_FrontendRuntimeFlags bit set by Frontend_Init; cleared once every player has reported ready
    (FrontendPlayerRuntime_RecordReadyAndUpdateWaitState), which ends Frontend_Init's wait loop. */
@@ -176,7 +188,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMet
 void __cdecl FrontendRuntime_TimerCountdownTick(void);
 
 /* 0x00547FB0 */
-void __cdecl FrontendRuntime_IncrementActiveTickCounter(void);
+void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void);
 
 /* 0x00548030 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -189,23 +201,27 @@ void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStat
 /* 0x00548910 */
 uint32_t __thandor_eax_preserve_ecx_edx
 FrontendRuntime_UpdatePointerContextAndSceneView
-          (uint32_t pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,uint32_t pointerValue3,
-          void *pointedRecord,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
+          void *pointedModelNode,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
 
 /* 0x00548BE0 */
-void FrontendRuntimeCallback5C_NoOp (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5, uint32_t argument6);
+void FrontendRuntimeCallback5C_NoOp
+               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
+               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548BF0 */
-void FrontendRuntimeCallback60_NoOp (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5, uint32_t argument6);
+void FrontendRuntimeCallback60_NoOp
+               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
+               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548C00 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRuntimeCallback64_DispatchRecord1350
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,
-          FrontendCallbackArgument5 argument5,uint32_t argument6);
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
+          FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext);
 
 /* 0x00548C70 */
-void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t callbackArgument);
+void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext);
 
 /* 0x00548CB0 */
 void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);

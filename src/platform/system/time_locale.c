@@ -11,25 +11,23 @@
 /* Implementation ownership: platform/system/time_locale. */
 
 /* Address: 0x005867B0.
-   Ownership: platform/system/time_locale.
-   Purpose: Walks all 32 timer callback slots and unregisters every non-null callback. The unregister service
-   clears the callback and calls timeKillEvent for the paired WinMM timer ID.
-   Local calls: TimerSystem_UnregisterPeriodic.
+   Stops every periodic timer: unregisters each callback still present in the 32 slots (which also
+   kills its WinMM timer).
 */
 void __thandor_preserve_eax TimerSystem_Shutdown(void)
 
 {
   uint32_t callbackSlotByteOffset;
-  
+
+  /* the slots are walked by byte offset, as the WinMM dwUser values are */
   callbackSlotByteOffset = 0;
   do {
     if (*(int *)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) != 0) {
       TimerSystem_UnregisterPeriodic
-                (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset)
-                );
+                (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset));
     }
     callbackSlotByteOffset = callbackSlotByteOffset + 4;
-  } while (callbackSlotByteOffset < 0x80);
+  } while (callbackSlotByteOffset < sizeof g_TimerSystemState.callbacks);
   return;
 }
 
@@ -170,11 +168,9 @@ void __stdcall WinMM_TimerDispatchCallback
 
 
 /* Address: 0x00586820.
-   Ownership: platform/system/time_locale.
-   Purpose: Registers an engine callback in the first free one of 32 slots. The requested frequency is converted
-   with integer division periodMs=1000/frequencyHz. timeSetEvent is called with resolution 0,
-   WinMM_TimerDispatchCallback, the slot byte offset as dwUser, and TIME_PERIODIC. The returned timer ID is stored
-   in the paired ID array. A full table silently leaves the request unregistered.
+   Starts a periodic timer: puts callback into the first free of the 32 slots and has WinMM call it
+   frequencyHz times per second (period 1000 / frequencyHz ms, truncated) through
+   WinMM_TimerDispatchCallback, on WinMM's timer thread. With all slots taken the request is ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *callback)
@@ -182,35 +178,32 @@ TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *cal
 {
   WinMmTimerPeriodMilliseconds intervalMilliseconds;
   WinMmTimerId winmmTimerId;
-  TimerCallbackSlotByteOffset callbackSlotSearchByteOffset;
-  
+  TimerCallbackSlotByteOffset callbackSlotByteOffset;
+
   intervalMilliseconds = (WinMmTimerPeriodMilliseconds)(1000 / (uint64_t)frequencyHz);
-  callbackSlotSearchByteOffset = 0;
+  callbackSlotByteOffset = 0;
   do {
-    if (*(int *)((int)g_TimerSystemState.callbacks + callbackSlotSearchByteOffset) == 0) {
-      *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotSearchByteOffset) =
-           callback;
+    if (*(int *)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) == 0) {
+      *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = callback;
+      /* binding 2 is timeSetEvent; dwUser is the slot's byte offset */
       winmmTimerId = ((BootstrapTimeSetEventProc)g_BootstrapApiBindings[2].destination)
                                (intervalMilliseconds,0,WinMM_TimerDispatchCallback,
-                                callbackSlotSearchByteOffset,1 /* TIME_PERIODIC */);
+                                callbackSlotByteOffset,TIME_PERIODIC);
       /* Ghidra showed a stale 6th argument and indexed the ID array by intervalMilliseconds;
          the ID pairs with the callback slot (see TimerSystem_UnregisterPeriodic). */
-      *(WinMmTimerId *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotSearchByteOffset) = winmmTimerId
-      ;
+      *(WinMmTimerId *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset) = winmmTimerId;
       return;
     }
-    callbackSlotSearchByteOffset = callbackSlotSearchByteOffset + 4;
-  } while (callbackSlotSearchByteOffset < 0x80);
+    callbackSlotByteOffset = callbackSlotByteOffset + 4;
+  } while (callbackSlotByteOffset < sizeof g_TimerSystemState.callbacks);
   return;
 }
 
 
 /* Address: 0x00586DD0.
-   Ownership: platform/system/time_locale.
-   Purpose: Formats year, month, and day into destination using LocaleSystemState.longDateOrder and dateSeparator.
-   Order 0 is month/day/year, order 1 is day/month/year, and other values are year/month/day. Returns output byte
-   length excluding the final UTF-16 terminator.
-   Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
+   Writes a date as UTF-16 text in the user's order (LOCALE_ILDATE: 0 month-day-year, 1 day-month-year,
+   else year-month-day) with the user's date separator, without zero padding. Returns the byte length
+   without the terminator.
 */
 uint32_t Locale_FormatDateFieldsUtf16
                 (LocaleCalendarYearStack32 year,LocaleCalendarMonthStack32 month,
@@ -262,10 +255,8 @@ uint32_t Locale_FormatDateFieldsUtf16
 }
 
 /* Address: 0x00586F10.
-   Ownership: platform/system/time_locale.
-   Purpose: Calls GetLocalTime and formats the current year, month, and day using the localized date order and
-   separator. Returns output byte length excluding the final UTF-16 terminator.
-   Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
+   Writes today's local date like Locale_FormatDateFieldsUtf16 (user's order and separator). Returns the
+   byte length without the terminator.
 */
 uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
 
@@ -349,25 +340,23 @@ uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
 
 
 /* Address: 0x00587080.
-   Ownership: platform/system/time_locale.
-   Purpose: Calls GetLocalTime and returns (year << 16) | (month << 8) | day.
+   Returns today's local date packed as (year << 16) | (month << 8) | day, so packed dates compare in
+   calendar order.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   return (uint32_t)g_LocaleSystemState.localTime.day | (uint32_t)g_LocaleSystemState.localTime.month << 8 |
-         (uint32_t)g_LocaleSystemState.localTime.year << 0x10;
+         (uint32_t)g_LocaleSystemState.localTime.year << 16;
 }
 
 
 /* Address: 0x005870C0.
-   Ownership: platform/system/time_locale.
-   Purpose: Formats hour and minute with two-digit zero padding and the localized time separator. When LOCALE_ITIME
-   is zero, hours 12-23 are reduced by 12 and the localized AM/PM designator is appended; hour zero and hour twelve
-   therefore format as 00 AM and 00 PM in this implementation. Returns output byte length excluding the final
-   terminator.
-   Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
+   Writes hour:minute as UTF-16 text with the user's time separator. 24-hour locales get both fields
+   zero-padded; 12-hour locales (LOCALE_ITIME 0) get an unpadded hour 0..11 and a designator appended.
+   The designator is swapped in the original: hours below 12 get the S2359 (PM) text, the others the
+   S1159 (AM) text, and noon shows as 0. Returns the byte length without the terminator.
 */
 uint32_t Locale_FormatTimeFieldsUtf16
                 (LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,uint16_t *destination)
@@ -378,22 +367,23 @@ uint32_t Locale_FormatTimeFieldsUtf16
   uint16_t *designatorText;
   uint16_t *outputCursor;
   int completedByteOffset;
-  
+
+  /* the local time is fetched but not used */
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
     /* The decompiler dropped the designator selection (ECX in the original); note the original
        picks the field exported as pmDesignator for hours below 12. */
     designatorText = g_LocaleSystemState.pmDesignator;
-    if (0xb < hour) {
+    if (11 < hour) {
       designatorText = g_LocaleSystemState.amDesignator;
-      hour = hour - 0xc;
+      hour = hour - 12;
     }
     appendByteLength = g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
     separatorByteLength = Utf16_CopyAndReturnByteLength
                       ((uint16_t *)((int)destination + appendByteLength),g_LocaleSystemState.timeSeparator);
     outputCursor = (uint16_t *)((int)((int)destination + appendByteLength) + separatorByteLength);
     if (minute < 10) {
-      outputCursor[0] = 0x30;
+      outputCursor[0] = '0';
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
@@ -404,7 +394,7 @@ uint32_t Locale_FormatTimeFieldsUtf16
   else {
     outputCursor = destination;
     if (hour < 10) {
-      destination[0] = 0x30;
+      destination[0] = '0';
       destination[1] = 0;
       outputCursor = destination + 1;
     }
@@ -413,7 +403,7 @@ uint32_t Locale_FormatTimeFieldsUtf16
                       ((uint16_t *)((int)outputCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
     outputCursor = (uint16_t *)((int)((int)outputCursor + appendByteLength) + separatorByteLength);
     if (minute < 10) {
-      outputCursor[0] = 0x30;
+      outputCursor[0] = '0';
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
@@ -424,10 +414,8 @@ uint32_t Locale_FormatTimeFieldsUtf16
 }
 
 /* Address: 0x005871B0.
-   Ownership: platform/system/time_locale.
-   Purpose: Calls GetLocalTime and formats the current hour and minute with the localized time separator and
-   optional AM/PM designator. Returns output byte length excluding the final terminator.
-   Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
+   Writes the current local time like Locale_FormatTimeFieldsUtf16 (same padding and the same swapped
+   AM/PM designators). Returns the byte length without the terminator.
 */
 uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 
@@ -440,17 +428,15 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
   uint16_t *outputCursor;
   int completedByteOffset;
   uint16_t *timeCursor;
-  Win32Hour16 localHour;
-  Win32Minute16 localMinute;
-  
+
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
     hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
     /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
     designatorText = g_LocaleSystemState.pmDesignator;
-    if (0xb < hourOrMinute) {
+    if (11 < hourOrMinute) {
       designatorText = g_LocaleSystemState.amDesignator;
-      hourOrMinute = hourOrMinute - 0xc;
+      hourOrMinute = hourOrMinute - 12;
     }
     currentAppendByteLength =
          g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,destination);
@@ -460,7 +446,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
     outputCursor = (uint16_t *)((int)((int)destination + currentAppendByteLength) + appendByteLength);
     hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
     if (hourOrMinute < 10) {
-      outputCursor[0] = 0x30;
+      outputCursor[0] = '0';
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
@@ -472,7 +458,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
     hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
     timeCursor = destination;
     if (hourOrMinute < 10) {
-      destination[0] = 0x30;
+      destination[0] = '0';
       destination[1] = 0;
       timeCursor = destination + 1;
     }
@@ -482,7 +468,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
     timeCursor = (uint16_t *)((int)((int)timeCursor + appendByteLength) + separatorByteLength);
     hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
     if (hourOrMinute < 10) {
-      timeCursor[0] = 0x30;
+      timeCursor[0] = '0';
       timeCursor[1] = 0;
       timeCursor = timeCursor + 1;
     }
@@ -494,8 +480,7 @@ uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 
 
 /* Address: 0x005872B0.
-   Ownership: platform/system/time_locale.
-   Purpose: Calls GetLocalTime and returns (hour << 16) | (minute << 8) | second.
+   Returns the current local time packed as (hour << 16) | (minute << 8) | second.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
 
@@ -503,14 +488,13 @@ uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   return (uint32_t)g_LocaleSystemState.localTime.second |
          (uint32_t)g_LocaleSystemState.localTime.minute << 8 |
-         (uint32_t)g_LocaleSystemState.localTime.hour << 0x10;
+         (uint32_t)g_LocaleSystemState.localTime.hour << 16;
 }
 
 
 /* Address: 0x005872F0.
-   Ownership: platform/system/time_locale.
-   Purpose: Masks GetUserDefaultLCID with 0x1FF and maps English, German, French, Italian, Spanish, and Russian
-   primary-language values to telephone country codes 44, 49, 33, 39, 34, and 7. Other values return zero.
+   Guesses the player's telephone country code from the Windows user language: English 44, German 49,
+   French 33, Italian 39, Spanish 34, Russian 7, anything else 0.
 */
 uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
 
@@ -518,25 +502,25 @@ uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(vo
   LCID userLocaleId;
   uint32_t primaryLanguageId;
   uint32_t telephoneCountryCode;
-  
+
   userLocaleId = GetUserDefaultLCID();
-  primaryLanguageId = userLocaleId & 0x1ff;
-  if (primaryLanguageId == 9) {
-    telephoneCountryCode = 0x2c;
+  primaryLanguageId = userLocaleId & 0x1ff; /* PRIMARYLANGID would mask 0x3ff */
+  if (primaryLanguageId == LANG_ENGLISH) {
+    telephoneCountryCode = 44;
   }
-  else if (primaryLanguageId == 7) {
-    telephoneCountryCode = 0x31;
+  else if (primaryLanguageId == LANG_GERMAN) {
+    telephoneCountryCode = 49;
   }
-  else if (primaryLanguageId == 0xc) {
-    telephoneCountryCode = 0x21;
+  else if (primaryLanguageId == LANG_FRENCH) {
+    telephoneCountryCode = 33;
   }
-  else if (primaryLanguageId == 0x10) {
-    telephoneCountryCode = 0x27;
+  else if (primaryLanguageId == LANG_ITALIAN) {
+    telephoneCountryCode = 39;
   }
-  else if (primaryLanguageId == 10) {
-    telephoneCountryCode = 0x22;
+  else if (primaryLanguageId == LANG_SPANISH) {
+    telephoneCountryCode = 34;
   }
-  else if (primaryLanguageId == 0x19) {
+  else if (primaryLanguageId == LANG_RUSSIAN) {
     telephoneCountryCode = 7;
   }
   else {
@@ -547,19 +531,17 @@ uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(vo
 
 
 /* Address: 0x00587350.
-   Ownership: platform/system/time_locale.
-   Purpose: Copies exactly 0x40 bytes from the fixed UTF-16 label L"Computer", including trailing zero padding,
-   into destination.
+   Copies the default computer label (L"Computer", or the machine name FileSystem_Init put there) to
+   destination: always the whole 0x40-byte buffer including its zero padding.
 */
 void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
 
 {
   int copyDwordsRemaining;
   uint16_t *sourceCursor;
-  
+
   sourceCursor = g_DefaultComputerLabelUtf16;
-  for (copyDwordsRemaining = 0x10; copyDwordsRemaining != 0;
-      copyDwordsRemaining = copyDwordsRemaining + -1) {
+  for (copyDwordsRemaining = 0x10; copyDwordsRemaining != 0; copyDwordsRemaining--) {
     *(uint32_t *)destination = *(uint32_t *)sourceCursor; /* two UTF-16 units per dword */
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
@@ -569,35 +551,33 @@ void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(ui
 
 
 /* Address: 0x00586880.
-   Ownership: platform/system/time_locale.
-   Purpose: Finds the first timer slot whose callback pointer matches, clears that callback, and calls
-   timeKillEvent with the paired timer ID. The stored timer ID is left unchanged. A missing callback is silently
-   ignored.
+   Stops the periodic timer of callback: clears its slot (the first match) and kills the paired WinMM
+   timer; the stale timer id stays in the table. An unknown callback is ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCallbackProc *callback)
 
 {
   int callbackSlotByteOffset;
-  
+
   callbackSlotByteOffset = 0;
   do {
     if (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) ==
         callback) {
-      *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = (TimerCallbackProc *)0x0;
+      *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = NULL;
+      /* binding 3 is timeKillEvent */
       ((BootstrapTimeKillEventProc)g_BootstrapApiBindings[3].destination)
                 (*(uint32_t *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
       return;
     }
     callbackSlotByteOffset = callbackSlotByteOffset + 4;
-  } while (callbackSlotByteOffset != 0x80);
+  } while (callbackSlotByteOffset != (int)sizeof g_TimerSystemState.callbacks);
   return;
 }
 
 
 /* Address: 0x00586B70.
-   Ownership: platform/system/time_locale.
-   Purpose: Parses consecutive ASCII digits until NUL or the first non-digit. No sign, whitespace, hexadecimal, or
-   overflow handling is performed.
+   Parses the leading decimal digits of a GetLocaleInfoA number field ("1", "3;0", ...); stops at the
+   first non-digit. No sign, whitespace or overflow handling.
 */
 uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text)
 
@@ -606,9 +586,9 @@ uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text)
      parse and the locale's day-month order and 24-hour flag always read as 0 (US format). */
   uint32_t parsedValue = 0;
 
-  while ((*text >= 0x30) && (*text < 0x3a)) {
-    parsedValue = parsedValue * 10 + (uint32_t)(*text - 0x30);
-    text = text + 1;
+  while ((*text >= '0') && (*text < '9' + 1)) {
+    parsedValue = parsedValue * 10 + (uint32_t)(*text - '0');
+    text++;
   }
   return parsedValue;
 }

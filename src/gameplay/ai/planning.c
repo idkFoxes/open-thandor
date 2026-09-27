@@ -296,23 +296,11 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
 
 
 /* Address: 0x0053C810.
-   Ownership: gameplay/ai/planning.
-   Purpose: Runs the active faction planning phase selected by the runtime phase bit, rebuilding workspaces before
-   dispatching either candidate generation and construction processing or unit-behavior and group-assignment
-   updates. Table 0053C870: 0053C980, 0053C880. Rally knobs read live from ki.dat (+0xCC/+0xDC, A4). Typed
-   parameters: p2 planningPhase→AiPlanningPhaseIndex_V343, p3 inGameRuntime→WorldRuntimeContext *. Calling
-   convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: AiFactionPlanning_UpdateActiveEntityPressureFlag,
-   AiConstructionPlanner_ProcessPendingAssetRequests, AiResourceCandidate_AddWeightedId136,
-   AiStructureCandidate_AddWeightedId14BOr14CCandidate, AiArmyCandidate_AddBestScoredVariantA,
-   AiArmyCandidate_AddBestScoredVariantB, AiArmyCandidate_AddBestScoredVariantC,
-   AiStrategicClass_AddCandidate12DOr12FTo132.
-   Cross-module calls: AiPlanning_RebuildFactionWorkspaces [gameplay/ai/workspaces],
-   AiUnitBehavior_UpdateWorkspace01Entities [gameplay/ai/units], AiUnitGroup_AssignCollectedEntitiesToBestTarget
-   [gameplay/ai/combat], GameFactionRelations_UpdateAllPairsForFaction [gameplay/faction/relations],
-   AiCandidateWorkspace_Clear [gameplay/ai/workspaces], AiWorkspaceAssetCandidate_AddWeightedEntry
-   [gameplay/ai/workspaces].
+   AI planning job of the simulation step for one faction. Each faction gets its turn every 64 simulation ticks
+   (bits 3-5 of the tick select the faction); bit 6 alternates between the unit phase (behaviour update and
+   group-to-target assignment) and the economy phase (relations, pending construction requests, then the
+   purchase candidates, which are reused from the faction's cache while it is valid and the anchor cooldowns
+   are below 50).
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiRuntime_DispatchFactionPlanningPhase
@@ -320,22 +308,19 @@ AiRuntime_DispatchFactionPlanningPhase
 
 {
   uint32_t planningPhaseDispatchIndex;
-  FactionRuntimeIndex purchaseFactionIndexAfterCacheLoad;
-  FactionRuntimeIndex spareFactionIndex0;
-  FactionRuntimeIndex spareFactionIndex1;
   WorldObjectRecordCount *worldRuntime;
   bool phaseResult;
   AiKnowledgeDataImage *knowledgeData;
-  
+
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
-       SESSION_NETWORK_ROLE_LOCAL) || ((g_UiCommandRuntimeFlags & 2) == 0)) {
+       SESSION_NETWORK_ROLE_LOCAL) || ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_AI_PLANNING_OFF) == 0)) {
     planningPhaseDispatchIndex = g_GameFactionRuntimeImage.tail.simulationTick >> 6 & 1;
+    /* the world view inside the in-game root: inGameRuntime + 0xA30 (ADD EBX,0xa30 in the original) */
     worldRuntime = &inGameRuntime[7].objectCount;
     if ((g_GameFactionRuntimeImage.tail.simulationTick >> 3 & 7) == factionIndex) {
       AiPlanning_RebuildFactionWorkspaces
                 (planningPhaseDispatchIndex,factionIndex,factionIndex,
                  (WorldRuntimeContext *)worldRuntime);
-                    // WARNING: Switch is manually overridden
       switch(planningPhaseDispatchIndex) {
       case 0:
         AiUnitBehavior_UpdateWorkspace01Entities(factionIndex,(WorldRuntimeContext *)worldRuntime);

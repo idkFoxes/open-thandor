@@ -12,6 +12,20 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: audio/backend/runtime. */
+
+/* DirectSound voice sets: every loaded sound owns eight IDirectSoundBuffer voices (voices[0] is the
+   buffer that holds the data, the others are DuplicateSoundBuffer copies made on demand), and all sets
+   are listed in the 256-entry g_DirectSoundVoiceSetRegistry (DirectSound_Init allocates it). */
+#define DIRECTSOUND_VOICES_PER_SET 8
+#define DIRECTSOUND_VOICE_SET_REGISTRY_CAPACITY 256
+/* SoundSampleAsset.formatVersion the DirectSound backend accepts (1.0 in 16.16) */
+#define SOUND_SAMPLE_FORMAT_VERSION 0x10000
+/* The .sam decoder produces blocks of 256 stereo 16-bit frames = 0x400 bytes (0x200 shorts). */
+#define SOUND_SAMPLE_DECODED_BLOCK_BYTES 0x400
+/* Stage numbers DirectSound_Create*VoiceSet leave in g_PackageLastErrorPath on failure */
+#define DIRECTSOUND_VOICE_STAGE_CREATE_BUFFER 100
+#define DIRECTSOUND_VOICE_STAGE_LOCK 101
+#define DIRECTSOUND_VOICE_STAGE_FILL 102
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00583410 */

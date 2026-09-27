@@ -53,7 +53,7 @@ void __thandor_preserve_eax Network_Shutdown(void);
 
 /* 0x00584E50 */
 NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
-NetworkBackend_SetSessionContext(void *this,NetworkBackendSessionReturnValue32 returnValue);
+NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex);
 
 /* 0x00585210 */
 bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex);

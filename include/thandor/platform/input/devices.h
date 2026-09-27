@@ -18,6 +18,30 @@
 #define KEYBOARD_STATE_NUM_LOCK 0x10000
 #define KEYBOARD_STATE_SCROLL_LOCK 0x20000
 #define KEYBOARD_STATE_CAPS_LOCK 0x40000
+/* Modifier bits of g_KeyboardStateMask (Keyboard_OnKeyDown): left/right Shift 0x01/0x02, left/right Ctrl
+   0x04/0x08, left/right Alt 0x10/0x20. */
+#define KEYBOARD_STATE_SHIFT 0x03
+#define KEYBOARD_STATE_CTRL 0x0C
+#define KEYBOARD_STATE_ALT 0x30
+#define KEYBOARD_STATE_ANY_MODIFIER 0x3F
+/* Key codes of the events Keyboard_OnKeyDown queues (the commandCode of the keyboard dispatchers): digits and
+   letters are 0x30000 + their ASCII code (letters lowercase), special keys use the 0x10000 family. */
+#define KEYBOARD_KEY_CODE_CHAR(asciiCode) (0x30000 + (asciiCode))
+#define KEYBOARD_KEY_CODE_SPACE 0x20
+#define KEYBOARD_KEY_CODE_BACKSPACE 0x10003
+#define KEYBOARD_KEY_CODE_NUMPAD_5 0x10015 /* also VK_SELECT */
+/* Indices into g_KeyboardSpecialKeyDown: the low word of a 0x10000-family key code, 1 while the key is held
+   (Keyboard_OnKeyDown); the numpad keys map to the same codes. Used by the in-game camera keys. */
+#define KEYBOARD_SPECIAL_KEY_DELETE 0x06 /* also numpad decimal point */
+#define KEYBOARD_SPECIAL_KEY_INSERT 0x07 /* also numpad 0 */
+#define KEYBOARD_SPECIAL_KEY_HOME 0x10 /* also numpad 7 */
+#define KEYBOARD_SPECIAL_KEY_UP 0x11 /* also numpad 8 */
+#define KEYBOARD_SPECIAL_KEY_PAGE_UP 0x12 /* also numpad 9 */
+#define KEYBOARD_SPECIAL_KEY_LEFT 0x14 /* also numpad 4 */
+#define KEYBOARD_SPECIAL_KEY_RIGHT 0x16 /* also numpad 6 */
+#define KEYBOARD_SPECIAL_KEY_END 0x18 /* also numpad 1 */
+#define KEYBOARD_SPECIAL_KEY_DOWN 0x19 /* also numpad 2 */
+#define KEYBOARD_SPECIAL_KEY_PAGE_DOWN 0x1A /* also numpad 3 */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00417280 */
@@ -49,7 +73,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
 /* 0x005772F0 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 DirectInputMouse_SetDisplayMode
-          (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
+          (DisplayModeHookArgument0 adapterIndex,DisplayModeHookArgument1 bitsPerPixel,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth);
 
 /* 0x00577420 */

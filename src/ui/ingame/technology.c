@@ -115,14 +115,13 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
 
 
 /* Address: 0x00569DF0.
-   Ownership: ui/ingame/technology.
-   Purpose: Collects up to 48 matching runtime records, chooses a compact grid, updates catalog controls from each
-   record's textureSource and catalogDisplayValueQ4, suppresses unused controls, and relayouts the container.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], SelectionInfo_CollectCapabilityFlags
-   [gameplay/selection/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructure [gameplay/faction/runtime],
-   ArmyAssetRecord_HasFactionUnlockedLinkedDefinition [assets/army/catalog], UiGrid_ComputeDimensionsPacked
-   [ui/controls/layout].
+   Rebuilds the build catalog (48 entries): the production capabilities come from the selected buildings, or,
+   with none selected, from all own models (class 22 adds capability 8, class 13 its definition's flags at
+   +0xC4). Every registered army asset with flag 1, a texture and a matching capability that passes the
+   technology and ownership/unlock tests (CF results of ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction,
+   FactionRuntime_HasArmyAssetOrActiveStructure, ArmyAssetRecord_HasFactionUnlockedLinkedDefinition) gets a
+   slot, in a grid of at most eight columns with its texture and Xenite cost; the frame is sized to the grid
+   (smaller margins below 800 pixels width) and the panel hidden when the catalog is empty.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
 
@@ -133,7 +132,6 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   int32_t *offsetSlotOrTable;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
   uint32_t capabilityFlagsOrSlotIndex;
-  ArmyAssetRecordPrefix *armyAssetRecord;
   uint32_t columnCount;
   GraphicsTextureSourceAsset *textureAsset;
   int modelOrCounterOrOffset;
@@ -153,47 +151,50 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   factionIndex = *(int *)((uint8_t *)inGameUiGridView + 0xa80);
   capabilityFlagsOrSlotIndex = SelectionInfo_CollectCapabilityFlags();
   if (capabilityFlagsOrSlotIndex == 0) {
-    for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+    /* runtimePayload is a ModelRuntimeSlot: +0 model definition (runtime class at +0x4C), +8 owner army
+       (faction at +0x0C) */
+    for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
       if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelOrCounterOrOffset = *(int *)ownerNode->runtimePayload,
          *(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) == factionIndex)) {
-        if (*(int *)(modelOrCounterOrOffset + 0x4c) == 0x16) {
+        if (*(int *)(modelOrCounterOrOffset + 0x4c) == MODEL_RUNTIME_CLASS_22) {
           capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | 8;
         }
-        else if (*(int *)(modelOrCounterOrOffset + 0x4c) == 0xd) {
+        else if (*(int *)(modelOrCounterOrOffset + 0x4c) == MODEL_RUNTIME_CLASS_13) {
           capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | *(uint32_t *)(modelOrCounterOrOffset + 0xc4);
         }
       }
     }
   }
   recordCursor = g_UiCatalogGroup48Records;
-  for (modelOrCounterOrOffset = 0x30; modelOrCounterOrOffset != 0; modelOrCounterOrOffset = modelOrCounterOrOffset + -1) {
-    *recordCursor = (UiCommandRuntimeRecordPrefix *)0x0;
-    recordCursor = recordCursor + 1;
+  for (modelOrCounterOrOffset = 48; modelOrCounterOrOffset != 0; modelOrCounterOrOffset--) {
+    *recordCursor = NULL;
+    recordCursor++;
   }
+  /* catalog record +0x14 (reserved0C_1B + 8): the asset's flags; +0x1C (reserved0C_1B + 0x10): textureSource */
   recordCursor = g_UiCatalogGroup48Records;
   itemCount = 0;
   registryCursor = g_ArmyAssetRecordRegistry;
-  modelOrCounterOrOffset = 0x300;
+  modelOrCounterOrOffset = 768;
   do {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
-    if ((((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
+    if ((((((catalogRecord != NULL) &&
            ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
           (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                               (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult)
           ) && (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0xee) != 0 &&
                 (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))) &&
-        ((itemCount < 0x30 && ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & capabilityFlagsOrSlotIndex) != 0)))) &&
+        ((itemCount < 48 && ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & capabilityFlagsOrSlotIndex) != 0)))) &&
        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
                             (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
         (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                             (factionIndex,capabilityFlagsOrSlotIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))) {
       *recordCursor = catalogRecord;
-      itemCount = itemCount + 1;
-      recordCursor = recordCursor + 1;
+      itemCount++;
+      recordCursor++;
     }
-    registryCursor = registryCursor + 1;
-    modelOrCounterOrOffset = modelOrCounterOrOffset + -1;
+    registryCursor++;
+    modelOrCounterOrOffset--;
   } while (modelOrCounterOrOffset != 0);
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
   columnCount = (uint32_t)gridDimensions;
@@ -202,20 +203,20 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   }
   modelOrCounterOrOffset = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  panelHeight = (int)(gridDimensions >> 0x20) * g_InGamePanelTextureSubresource34Height +
+  panelHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
           g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup48ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -0x1f;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -0x1f;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -0x47;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -0x47;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -31;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -31;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -71;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -71;
   }
   else {
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -0x27;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -0x27;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -0x59;
-    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -0x59;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset = -39;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).rightOffset = -39;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).topOffset = -89;
+    (inGameUiGridView->catalogGroup48LayoutNode5E20).bottomOffset = -89;
   }
   offsetSlotOrTable = &(inGameUiGridView->catalogGroup48LayoutNode5E20).leftOffset;
   *offsetSlotOrTable = *offsetSlotOrTable - modelOrCounterOrOffset;
@@ -229,6 +230,8 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
     gridNodeFlags = &(inGameUiGridView->catalogGroup48GridNode5DB4).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
+  /* slot controls sit at root + offset table entry; opaque0058_017B + offset - 0x10 / - 4 / + 0x24 are the
+     control's nodeFlags (+0x48), texture (+0x54) and cost (+0x7C) */
   offsetSlotOrTable = g_UiCatalogGroup48OffsetTables[columnCount];
   capabilityFlagsOrSlotIndex = 0;
   recordCursor = g_UiCatalogGroup48Records;
@@ -237,21 +240,21 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
     catalogRecord = *recordCursor;
     if (capabilityFlagsOrSlotIndex < itemCount) {
       *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
-           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) & 0xfffffff7;
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) & ~UI_NODE_SUPPRESSED;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
       *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
-           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) | 8;
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) | UI_NODE_SUPPRESSED;
       xeniteCost = 0;
-      textureAsset = (GraphicsTextureSourceAsset *)0x0;
+      textureAsset = NULL;
     }
-    capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex + 1;
+    capabilityFlagsOrSlotIndex++;
     *(GraphicsTextureSourceAsset **)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -4) = textureAsset;
     *(ArmyBuildXeniteCostQ4 *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + 0x24) = xeniteCost;
-    recordCursor = recordCursor + 1;
-  } while (capabilityFlagsOrSlotIndex < 0x30);
+    recordCursor++;
+  } while (capabilityFlagsOrSlotIndex < 48);
   (*((inGameUiGridView->catalogGroup48GridNode5DB4).vtable)->layout)
             (&inGameUiGridView->catalogGroup48GridNode5DB4);
   return;
@@ -259,13 +262,11 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
 
 
 /* Address: 0x0056A050.
-   Ownership: ui/ingame/technology.
-   Purpose: Collects up to 42 matching runtime records, chooses a compact grid, updates catalog controls from each
-   record's textureSource and catalogDisplayValueQ4, suppresses unused controls, and relayouts the container.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
-   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructure [gameplay/faction/runtime],
-   ArmyAssetRecord_HasFactionUnlockedLinkedDefinition [assets/army/catalog], UiGrid_ComputeDimensionsPacked
-   [ui/controls/layout].
+   Rebuilds the special build catalog (42 entries), offered only while the active faction owns a model of
+   runtime class 11: every registered army asset with flags 1 and 0x10 and a texture that passes the technology
+   and ownership/unlock tests (CF results as in UiCatalogGroup48_RebuildGrid) gets a slot, in a grid of at most
+   six columns with its texture and Xenite cost. The frame is sized to the grid (smaller margins below 800
+   pixels width); an empty catalog hides its panel, and also the army stock panel when the stock is empty.
 */
 void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
 
@@ -275,7 +276,6 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
   UiCommandRuntimeRecordPrefix *catalogRecord;
   int32_t *offsetSlotOrTable;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
-  ArmyAssetRecordPrefix *armyAssetRecord;
   uint32_t columnCount;
   int factionOrExtentOrOffset;
   GraphicsTextureSourceAsset *textureAsset;
@@ -291,43 +291,46 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
   
   inGameUiGridView = (InGameRuntimeUiGridViewC3E4 *)UiNode_GetRoot(node);
   factionOrExtentOrOffset = (inGameUiGridView->worldRuntime0A30).activeFactionRuntimeIndex;
+  /* count the faction's class-11 models (ModelRuntimeSlot: +0 definition with the runtime class at +0x4C,
+     +8 owner army with the faction at +0x0C) */
   structureCountOrHeight = 0;
   for (ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
-      ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+      ownerNode != NULL; ownerNode = ownerNode->nextNode) {
     if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-        (*(int *)(*(int *)ownerNode->runtimePayload + 0x4c) == 0xb)) &&
+        (*(int *)(*(int *)ownerNode->runtimePayload + 0x4c) == MODEL_RUNTIME_CLASS_11)) &&
        (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) == factionOrExtentOrOffset)) {
-      structureCountOrHeight = structureCountOrHeight + 1;
+      structureCountOrHeight++;
     }
   }
   recordCursor = g_UiCatalogGroup42Records;
-  for (remainingCount = 0x2a; remainingCount != 0; remainingCount = remainingCount + -1) {
-    *recordCursor = (UiCommandRuntimeRecordPrefix *)0x0;
-    recordCursor = recordCursor + 1;
+  for (remainingCount = 42; remainingCount != 0; remainingCount--) {
+    *recordCursor = NULL;
+    recordCursor++;
   }
+  /* catalog record +0x14 (reserved0C_1B + 8): the asset's flags; +0x1C (reserved0C_1B + 0x10): textureSource */
   recordCursor = g_UiCatalogGroup42Records;
   itemCount = 0;
   registryCursor = g_ArmyAssetRecordRegistry;
-  remainingCount = 0x300;
+  remainingCount = 768;
   do {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
-    if (((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
+    if (((((catalogRecord != NULL) &&
           ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
          ((checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                               (factionOrExtentOrOffset,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult &&
           (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0x10) != 0 &&
-           (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))))) && (itemCount < 0x2a)) &&
+           (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))))) && (itemCount < 42)) &&
        ((structureCountOrHeight != 0 &&
         ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
                              (factionOrExtentOrOffset,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
          (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                              (factionOrExtentOrOffset,0x10,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))))) {
       *recordCursor = catalogRecord;
-      itemCount = itemCount + 1;
-      recordCursor = recordCursor + 1;
+      itemCount++;
+      recordCursor++;
     }
-    registryCursor = registryCursor + 1;
-    remainingCount = remainingCount + -1;
+    registryCursor++;
+    remainingCount--;
   } while (remainingCount != 0);
   gridDimensions = UiGrid_ComputeDimensionsPacked(7,itemCount);
   columnCount = (uint32_t)gridDimensions;
@@ -336,20 +339,20 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
   }
   factionOrExtentOrOffset = columnCount * g_InGamePanelTextureSubresource34Width + g_InGamePanelTextureSubresource27Width +
           g_InGamePanelTextureSubresource28Width;
-  structureCountOrHeight = (int)(gridDimensions >> 0x20) * g_InGamePanelTextureSubresource34Height +
+  structureCountOrHeight = (int)(gridDimensions >> 32) * g_InGamePanelTextureSubresource34Height +
            g_InGamePanelTextureSubresource26Height + g_InGamePanelTextureSubresource31Height;
   g_UiCatalogGroup42ColumnCount = columnCount;
   if ((int)g_FramebufferWidth < 800) {
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -0x1f;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -0x1f;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -0x2a;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -0x2a;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -31;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -31;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -42;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -42;
   }
   else {
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -0x27;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -0x27;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -0x37;
-    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -0x37;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset = -39;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).rightOffset = -39;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).topOffset = -55;
+    (inGameUiGridView->catalogGroup42LayoutNode76EC).bottomOffset = -55;
   }
   offsetSlotOrTable = &(inGameUiGridView->catalogGroup42LayoutNode76EC).leftOffset;
   *offsetSlotOrTable = *offsetSlotOrTable - factionOrExtentOrOffset;
@@ -374,6 +377,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
     gridNodeFlags = &(inGameUiGridView->commandSpriteVariantAGridNode8C4C).nodeFlags;
     *gridNodeFlags = *gridNodeFlags & ~UI_NODE_SUPPRESSED;
   }
+  /* slot controls as in UiCatalogGroup48_RebuildGrid: nodeFlags (+0x48), texture (+0x54), cost (+0x7C) */
   offsetSlotOrTable = g_UiCatalogGroup42OffsetTables[columnCount];
   slotIndex = 0;
   recordCursor = g_UiCatalogGroup42Records;
@@ -382,21 +386,21 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
     catalogRecord = *recordCursor;
     if (slotIndex < itemCount) {
       *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
-           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) & 0xfffffff7;
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) & ~UI_NODE_SUPPRESSED;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
       *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
-           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) | 8;
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) | UI_NODE_SUPPRESSED;
       xeniteCost = 0;
-      textureAsset = (GraphicsTextureSourceAsset *)0x0;
+      textureAsset = NULL;
     }
-    slotIndex = slotIndex + 1;
+    slotIndex++;
     *(GraphicsTextureSourceAsset **)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -4) = textureAsset;
     *(ArmyBuildXeniteCostQ4 *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + 0x24) = xeniteCost;
-    recordCursor = recordCursor + 1;
-  } while (slotIndex < 0x2a);
+    recordCursor++;
+  } while (slotIndex < 42);
   (*((inGameUiGridView->catalogGroup42GridNode7680).vtable)->layout)
             (&inGameUiGridView->catalogGroup42GridNode7680);
   return;

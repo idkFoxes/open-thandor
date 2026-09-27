@@ -11,16 +11,10 @@
 /* Implementation ownership: gameplay/technology/runtime. */
 
 /* Address: 0x005139C0.
-   Ownership: gameplay/technology/runtime.
-   Purpose: Sets one technology bit in the selected faction's 256-bit unlock mask when not already present, emits
-   the verified local-player notification, recursively processes dependencyTechnologyIndex, refreshes matching
-   active build records, and rebuilds the two affected catalog grids. The function preserves its nonstandard
-   register/flag result contract. Sets the unlock bit, recursively unlocks dependencyTechnologyIndex, queues the
-   completionMessageResourceId notification (the +0x30 field docs mislabeled "techRef"), applies model variants and
-   rebuilds the build-grid UI groups.
-   Cross-module calls: InGameNotificationQueue_InsertPriorityRecord [ui/ingame/runtime],
-   ModelRuntimeHierarchy_ApplyFactionTechnologyVariants [world/model/hierarchy], UiCatalogGroup48_RebuildGrid
-   [ui/ingame/technology], UiCatalogGroup42_RebuildGrid [ui/ingame/technology].
+   Unlocks a technology for a faction (once): sets its bit in the faction's 256-bit technology mask, announces it
+   to the local player (at the given map position, if any), recursively unlocks the technology it depends on,
+   applies the technology's model variants to the faction's models on the map and, for the local faction, rebuilds
+   the two build-catalog grids.
 */
 void __thandor_void_preserve_eax_ecx_edx
 Technology_UnlockForFaction
@@ -38,11 +32,13 @@ Technology_UnlockForFaction
   node = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
   technologyBitMask = 1 << ((uint8_t)technologyIndex & 0x1f);
+  /* the word of faction record +0x6E0 (technologyMasks256Bits) that holds the bit */
   factionTechnologyMaskWord = (uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4)
   ;
   if ((*factionTechnologyMaskWord & technologyBitMask) == 0) {
     *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
-    if (((g_UiCommandRuntimeFlags & 0x10) == 0) &&
+    /* no announcement while the session still waits for its players */
+    if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) &&
        (factionIndex == (node->worldRuntime0A30).activeFactionRuntimeIndex)) {
       if ((notificationYQ12 == 0) && (notificationXQ12 == 0)) {
         InGameNotificationQueue_InsertPriorityRecord
@@ -58,7 +54,7 @@ Technology_UnlockForFaction
     Technology_UnlockForFaction
               (0,0,technologyAsset->records[technologyIndex].dependencyTechnologyIndex,factionIndex)
     ;
-    for (ownerNode = (node->worldRuntime0A30).ownerListHead; ownerNode != (WorldOwnerListNode100 *)0x0;
+    for (ownerNode = (node->worldRuntime0A30).ownerListHead; ownerNode != NULL;
         ownerNode = ownerNode->nextNode) {
       if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
          (modelRuntimeHolder = *(ArmyRuntimeSlot **)((int)ownerNode->runtimePayload + 8),
@@ -197,14 +193,9 @@ Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntity
 
 
 /* Address: 0x00539BB0.
-   Ownership: gameplay/technology/runtime.
-   Purpose: Rebuilds derived per-class limits from the fixed army registry, computes eight reciprocal scale values,
-   clears the two 256-bit technology category masks, and scans all 256 TechnologyRecord entries to collect
-   categories 2 and 3. The original EDX faction input and preserved EAX contract remain explicit. Builds the
-   256-bit category masks for categories 2 and 3 (category field @+0x34, domain counts {0:29, 1:54, 2:48, 3:24} on
-   disk) plus derived per-faction limits. Stock tech.tec has 512 records over canonical ids 0..255; localized
-   titles do not prove source-building, tier, direction, or effect mappings.
-   Cross-module calls: ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
+   Recomputes values derived from the loaded army and technology files: per model category (0..7) the largest
+   model value +0x60 and its Q24 reciprocal, the largest value +0x0C of models with a non-zero +0x18 (used by the
+   AI army candidates), and the 256-bit masks of the technologies in categories 2 and 3.
 */
 void __thandor_void_preserve_eax_ecx_edx
 TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
@@ -230,17 +221,19 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   g_TechnologyCategoryMaximum6 = 1;
   g_TechnologyCategoryMaximum7 = 1;
   g_AiArmyCandidateFlaggedDefinitionValueMaximum = 0;
+  /* every registered army asset with flag +0x14 bit 0: look at its root model definition */
   armyAssetRegistryCursor = g_ArmyAssetRecordRegistry;
   remainingCount = 0x300;
   do {
     armyAssetRecord = *armyAssetRegistryCursor;
-    if ((armyAssetRecord != (ArmyAssetRecordPrefix *)0x0) &&
+    if ((armyAssetRecord != NULL) &&
        ((armyAssetRecord[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
       modelLookup = ModelDefinitionRegistry_FindByIdWithError
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
       definitionRecord = modelLookup.modelDefinition;
       if (!modelLookup.notFound) {
+        /* model definition +0x5C category, +0x60 value; +0x18 flag, +0x0C value */
         if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] < (int)definitionRecord[8].byteSize)
         {
           (&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] = definitionRecord[8].byteSize;
@@ -251,21 +244,23 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
         }
       }
     }
-    armyAssetRegistryCursor = armyAssetRegistryCursor + 1;
-    remainingCount = remainingCount + -1;
+    armyAssetRegistryCursor++;
+    remainingCount--;
   } while (remainingCount != 0);
   categoryReciprocalCursor = g_TechnologyCategoryMaximumReciprocalQ24Table8;
   remainingCount = 8;
   do {
+    /* the eight category maxima follow the reciprocal table directly */
     *categoryReciprocalCursor = 0x1000000u / categoryReciprocalCursor[8];
-    categoryReciprocalCursor = categoryReciprocalCursor + 1;
-    remainingCount = remainingCount + -1;
+    categoryReciprocalCursor++;
+    remainingCount--;
   } while (remainingCount != 0);
   categoryMaskClearCursor = &g_TechnologyCategoryMasks;
-  for (remainingCount = 0x10; remainingCount != 0; remainingCount = remainingCount + -1) {
+  for (remainingCount = 0x10; remainingCount != 0; remainingCount--) {
     categoryMaskClearCursor->category2[0] = 0;
     categoryMaskClearCursor = (TechnologyCategoryMasks *)(categoryMaskClearCursor->category2 + 1);
   }
+  /* one bit per technology record (256), category field at record +0x34 */
   remainingCount = 0x100;
   technologyRecordCursor = g_TechnologyAsset->records;
   technologyBitMask = 1;
@@ -279,13 +274,13 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
       g_TechnologyCategoryMasks.category3[maskWordIndex] =
            g_TechnologyCategoryMasks.category3[maskWordIndex] | technologyBitMask;
     }
-    technologyRecordCursor = technologyRecordCursor + 1;
+    technologyRecordCursor++;
     technologyBitMask = technologyBitMask * 2;
     if (technologyBitMask == 0) {
-      maskWordIndex = maskWordIndex + 1;
+      maskWordIndex++;
       technologyBitMask = 1;
     }
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   return;
 }

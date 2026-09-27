@@ -852,9 +852,8 @@ ModelRuntimeHierarchy_ClearMatchingTargetRecursive(RuntimeToken targetRuntimeId,
 
 
 /* Address: 0x0051C100.
-   Ownership: world/model/hierarchy.
-   Purpose: Walks the model runtime hierarchy and applies flag mask 0x418 to each node whose existing runtime flags
-   do not contain bit 0x08.
+   Sets runtime flags 0x418 (0x400 | 0x10 | 0x08) on every node of the model hierarchy rooted at *modelRuntime
+   that does not have flag 0x08 yet; the world context is not used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
@@ -1509,15 +1508,9 @@ ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *mode
 
 
 /* Address: 0x004BE390.
-   Ownership: world/model/hierarchy.
-   Purpose: Builds the current rotation basis when needed, composes every child transform with its parent, extracts
-   child Euler angles, propagates tint state, and recurses. Parent transform x child local basis -> child world
-   transform; extracts child eulers, propagates tint, recurses — the stock hierarchy composition the viewer's
-   KitHierarchyComposer mirrors. Role: Composes child local transforms with the parent world transform recursively.
-   Inputs: Parent world transform and each child local translation/rotation. Outputs: Updated child world matrices,
-   world positions and orientation values.
-   Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_Compose
-   [core/math/fixed], FixedTransform_ExtractEulerAnglesRegs [core/math/fixed].
+   Computes the world transforms of a model hierarchy: a root node first gets its rotation basis from its world
+   angles; then every child's world transform = parent world transform x child local transform, the child's world
+   Euler angles are extracted from it, the parent's tint is inherited, and the child's subtree is processed.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRuntime)
@@ -1525,13 +1518,11 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
 {
   ModelRuntimeNode *currentChild;
   uint32_t childIndex;
-  FixedEulerPairEdxEax8 extractedEulerAngles;
   FixedEulerAnglesEaxEcxEdx12 childEulerAngles;
-  ModelRuntimeNode *childNode;
   PackedArgb32 inheritedTintArgb;
-  
+
   childIndex = 0;
-  if (modelNodeRuntime->parentNode == (ModelRuntimeNode *)0x0) {
+  if (modelNodeRuntime->parentNode == NULL) {
     FixedTransform_BuildRotationBasis
               (&modelNodeRuntime->worldTransform,
                (modelNodeRuntime->modelPayload).worldRotationAngle2,
@@ -1541,8 +1532,9 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
   if (modelNodeRuntime->childCount != 0) {
     do {
       currentChild = modelNodeRuntime->childNodes[childIndex];
-      childIndex = childIndex + 1;
-      if (currentChild != (ModelRuntimeNode *)0x0) {
+      childIndex++;
+      if (currentChild != NULL) {
+        /* the scratch matrix plus the translation globals form the child's local transform */
         FixedTransform_BuildRotationBasis
                   ((GraphicsFixedMatrix3x4 *)&g_ModelTransformScratchMatrix,
                    (currentChild->modelPayload).localRotationAngle2,

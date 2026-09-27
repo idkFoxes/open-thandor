@@ -139,21 +139,19 @@ FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
 
 
 /* Address: 0x00408090.
-   Ownership: core/error/runtime.
-   Purpose: Allocates the 0x110-byte error-runtime state, publishes it globally, and replaces the fatal fallback
-   callback with the UI-capable error handler when allocation succeeds.
+   Allocates the 0x110-byte root node of the fatal-error dialog (FatalErrorRuntime_DispatchPendingError
+   fills it from g_FatalErrorUiRootTemplateImage) and, if that worked, switches FatalError_ReportIfFailed
+   from FatalError_Exit to the in-game dialog. Without the allocation errors keep ending the process.
 */
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 {
-  void *allocatedFatalErrorUiRootTemplate;
   ArenaAllocResult allocResult;
-  
-  allocResult = g_MemoryApi.alloc(0x110);
-  allocatedFatalErrorUiRootTemplate = (void *)allocResult.payloadOrError;
+
+  allocResult = g_MemoryApi.alloc(sizeof g_FatalErrorUiRootTemplateImage);
   if (!allocResult.failed) {
     g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
-    g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
+    g_FatalErrorUiRootTemplate = (UiRootNode *)allocResult.payloadOrError;
   }
   return;
 }
@@ -195,11 +193,10 @@ FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *des
 
 
 /* Address: 0x005758D0.
-   Ownership: core/error/runtime.
-   Purpose: Consumes EAX/CF engine error state, shuts down, displays a message, and exits.
-   Local calls: FatalError_CopyRichTextToNarrow.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], Runtime_Shutdown [core/memory/synchronization].
+   The fatal-error handler: with CF clear it passes EAX through; with CF set it builds the error message
+   (a code below 0x100 selects a text of the error page, anything else is a rich-text stream), fills in the
+   last path and the three detail strings, shuts everything down, shows the text in a message box and
+   exits the process.
 */
 FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
 FatalError_Exit(uint32_t errorOrValue,bool carryIn)
@@ -216,19 +213,19 @@ FatalError_Exit(uint32_t errorOrValue,bool carryIn)
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
   Thandor_Log("fatal error 0x%08X, last path \"%ls\"", errorOrValue, (wchar_t *)g_PackageLastErrorPath);
   Thandor_LogStack("fatal error stack", errorOrValue);
-  if ((errorOrValue & 0xffffff00) == 0) {
+  if ((errorOrValue & 0xffffff00) == 0) { /* an error code, not a text pointer */
     resolvedText = TextResource_Resolve(errorOrValue);
     errorOrValue = (uint32_t)resolvedText.text;
   }
+  /* payload selectors 0..3 of the message text */
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,(uint16_t *)errorOrValue);
-  FatalError_CopyRichTextToNarrow(0x400,g_FatalErrorNarrowBuffer,(uint16_t *)errorOrValue);
+  FatalError_CopyRichTextToNarrow(sizeof g_FatalErrorNarrowBuffer,g_FatalErrorNarrowBuffer,(uint16_t *)errorOrValue);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
-  MessageBoxA((HWND)0x0,(LPCSTR)g_FatalErrorNarrowBuffer,(LPCSTR)0x0,0x30);
-                    // WARNING: Subroutine does not return
+  MessageBoxA(NULL,(LPCSTR)g_FatalErrorNarrowBuffer,NULL,MB_ICONEXCLAMATION);
   ExitProcess(0);
 }
 

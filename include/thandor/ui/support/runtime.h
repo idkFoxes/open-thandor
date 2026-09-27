@@ -14,6 +14,12 @@
 /* Submodule: ui/support/runtime. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Recent-text (chat message) history: 8 slots, each stamped with g_RecentTextSerialCounter when inserted.
+   The counter advances with every RecentTextHistory_SortAndBuildPointerList call (once per frame in game),
+   and a message older than RECENT_TEXT_HISTORY_LIFETIME calls is dropped. */
+#define RECENT_TEXT_HISTORY_SLOT_COUNT 8
+#define RECENT_TEXT_HISTORY_LIFETIME 0x100
+
 /* 0x0050F220 */
 void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SortAndBuildPointerList

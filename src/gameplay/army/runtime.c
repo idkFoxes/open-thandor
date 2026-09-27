@@ -1251,122 +1251,122 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
 
 
 /* Address: 0x005274D0.
-   Ownership: gameplay/army/runtime.
-   Purpose: Army class command-table handler shared by the Group A class entries. Class-command handler used by the
-   ten non-default class slots.
-   Local calls: ArmyRuntime_TestClass13ProximityCandidate, ArmyRuntime_TestModelAttachmentProximity.
-   Cross-module calls: FixedMath_Atan2Angle16 [core/math/fixed], ArmyRuntime_ApplyImpactDamageAndFinalizeState
-   [gameplay/army/combat], FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors [world/terrain/grid],
-   EffectDefinitionRegistry_FindByIdWithError [assets/effect/catalog],
-   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
+   Class command of the structure classes (the ten non-default class slots that share it; session conditions
+   use it to tell structures from units). It hits every class-0/class-12 model standing inside the structure's
+   footprint with 0x100000 impact damage, stamps the structure's ground height into the field grid (unless
+   class-state bit 0x20 is set), and when every model of the same owner within reach is an idle class-18
+   model, marks the last of them (flag 8) and spawns its army-from-model completion effect.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ClassCommandHandlerGroupA
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  ModelRuntimeNode *referenceNode;
+  ModelRuntimeNode *ownNode;
   ArmyRuntimeSlot *candidateArmy;
   int64_t deltaYSquared;
   int64_t remainingRadiusSquared;
-  uint32_t angleOrRadius;
+  uint32_t impactAngleOrReach;
   uint8_t *proximityRadius;
   int axisDelta;
-  ModelRuntimeNode *modelNode1;
+  ModelRuntimeNode *scanNode;
   bool proximityHit;
   EffectDefinitionResult effectLookup;
   DamageAmount32 damageAmount;
-  int nearbyCount;
-  int nextNearbyCount;
-  ArmyRuntimeSlot *armySlot1;
+  int blockingCount;
+  int nextBlockingCount;
+  ArmyRuntimeSlot *scanArmy;
   
-  modelNode1 = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-  referenceNode = armyRuntime->modelNodeRuntime;
-  if ((modelNode1 != (ModelRuntimeNode *)0x0) && ((g_UiCommandRuntimeFlags & 4) == 0)) {
+  scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  ownNode = armyRuntime->modelNodeRuntime;
+  if ((scanNode != NULL) && ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0)) {
     do {
-      if (modelNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        armySlot1 = (modelNode1->runtimePayload).armyRuntime;
-        if ((referenceNode != modelNode1) &&
-           ((((armySlot1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0 ||
-            (((armySlot1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xc))))
+      if (scanNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+        scanArmy = (scanNode->runtimePayload).armyRuntime;
+        if ((ownNode != scanNode) &&
+           ((((scanArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0 ||
+            (((scanArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xc))))
         {
           /* Damage the candidate unless the class-13 test misses and the attachment proximity test hits. */
-          proximityHit = ArmyRuntime_TestClass13ProximityCandidate(armySlot1,armyRuntime);
-          if ((proximityHit) || (proximityHit = ArmyRuntime_TestModelAttachmentProximity(armySlot1,armyRuntime),
+          proximityHit = ArmyRuntime_TestClass13ProximityCandidate(scanArmy,armyRuntime);
+          if ((proximityHit) || (proximityHit = ArmyRuntime_TestModelAttachmentProximity(scanArmy,armyRuntime),
                                  !proximityHit)) {
             damageAmount = 0x100000;
-            angleOrRadius = FixedMath_Atan2Angle16
-                              ((modelNode1->worldTransform).translation.y -
-                               (referenceNode->worldTransform).translation.y,
-                               (modelNode1->worldTransform).translation.x -
-                               (referenceNode->worldTransform).translation.x);
-            ArmyRuntime_ApplyImpactDamageAndFinalizeState(angleOrRadius,damageAmount,armySlot1);
+            impactAngleOrReach = FixedMath_Atan2Angle16
+                              ((scanNode->worldTransform).translation.y -
+                               (ownNode->worldTransform).translation.y,
+                               (scanNode->worldTransform).translation.x -
+                               (ownNode->worldTransform).translation.x);
+            ArmyRuntime_ApplyImpactDamageAndFinalizeState(impactAngleOrReach,damageAmount,scanArmy);
           }
         }
       }
-      modelNode1 = (ModelRuntimeNode *)(modelNode1->common).nextNode;
-    } while (modelNode1 != (ModelRuntimeNode *)0x0);
+      scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode;
+    } while (scanNode != NULL);
   }
-  modelNode1 = armyRuntime->modelNodeRuntime;
+  scanNode = armyRuntime->modelNodeRuntime;
   if (((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classLinkState).classState68 & 0x20
       ) == 0) {
     FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
               ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC,
-               (modelNode1->worldTransform).translation.z,(modelNode1->worldTransform).translation.y
-               ,(modelNode1->worldTransform).translation.x,worldRuntime->fieldGrid);
+               (scanNode->worldTransform).translation.z,(scanNode->worldTransform).translation.y
+               ,(scanNode->worldTransform).translation.x,worldRuntime->fieldGrid);
   }
-  modelNode1 = (ModelRuntimeNode *)worldRuntime->ownerListHead;
-  referenceNode = (armyRuntime->linkedEntityRuntime->common).ownership.modelNode;
-  if (modelNode1 != (ModelRuntimeNode *)0x0) {
-    armySlot1 = (ArmyRuntimeSlot *)0x0;
-    nearbyCount = 0;
+  scanNode = (ModelRuntimeNode *)worldRuntime->ownerListHead;
+  ownNode = (armyRuntime->linkedEntityRuntime->common).ownership.modelNode;
+  if (scanNode != NULL) {
+    scanArmy = NULL;
+    blockingCount = 0;
     do {
-      nextNearbyCount = nearbyCount;
-      if ((((modelNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (modelNode1 != referenceNode)) &&
-          (angleOrRadius = ((((modelNode1->runtimePayload).armyRuntime)->modelRuntimeOrSavedOffset).
+      nextBlockingCount = blockingCount;
+      if ((((scanNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (scanNode != ownNode)) &&
+          (impactAngleOrReach = ((((scanNode->runtimePayload).armyRuntime)->modelRuntimeOrSavedOffset).
                    modelRuntime)->attachments140[2].reserved1C,
           (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex ==
-          (((modelNode1->runtimePayload).armyRuntime)->linkedEntityRuntime->common).ownership.
-          ownerIndex)) && (angleOrRadius != 0)) {
+          (((scanNode->runtimePayload).armyRuntime)->linkedEntityRuntime->common).ownership.
+          ownerIndex)) && (impactAngleOrReach != 0)) {
+        /* reach = own model-runtime dword +0x1A8 + candidate dword +0x19C (the pointer arithmetic below is
+           only Ghidra's spelling of that integer sum); inside when reach^2 - dx^2 - dy^2 >= 0 in 64 bits */
         proximityRadius = ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
-                  parentModelNodeOrSavedOffset08)->modelPayload).reserved2C_33 + (angleOrRadius - 0x38);
-        axisDelta = (referenceNode->worldTransform).translation.x - (modelNode1->worldTransform).translation.x;
+                  parentModelNodeOrSavedOffset08)->modelPayload).reserved2C_33 + (impactAngleOrReach - 0x38);
+        axisDelta = (ownNode->worldTransform).translation.x - (scanNode->worldTransform).translation.x;
         remainingRadiusSquared = (int64_t)(int)proximityRadius * (int64_t)(int)proximityRadius - (int64_t)axisDelta * (int64_t)axisDelta;
         if ((-1 < remainingRadiusSquared) &&
-           (axisDelta = (referenceNode->worldTransform).translation.y -
-                    (modelNode1->worldTransform).translation.y,
+           (axisDelta = (ownNode->worldTransform).translation.y -
+                    (scanNode->worldTransform).translation.y,
            deltaYSquared = (int64_t)axisDelta * (int64_t)axisDelta,
            -1 < (int)(((int)((uint64_t)remainingRadiusSquared >> 0x20) - (int)((uint64_t)deltaYSquared >> 0x20)) -
                      (uint32_t)((uint32_t)remainingRadiusSquared < (uint32_t)deltaYSquared)))) {
-          candidateArmy = (modelNode1->runtimePayload).armyRuntime;
-          nextNearbyCount = nearbyCount + 1;
+          candidateArmy = (scanNode->runtimePayload).armyRuntime;
+          nextBlockingCount = blockingCount + 1;
           if ((((candidateArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0x12) &&
              ((candidateArmy->runtimeFlags & 0x18) == 0)) {
-            nextNearbyCount = nearbyCount;
-            armySlot1 = candidateArmy;
+            /* an idle class-18 model does not block; remember it as the one to complete */
+            nextBlockingCount = blockingCount;
+            scanArmy = candidateArmy;
           }
         }
       }
-      modelNode1 = (ModelRuntimeNode *)(modelNode1->common).nextNode;
-      nearbyCount = nextNearbyCount;
-    } while (modelNode1 != (ModelRuntimeNode *)0x0);
-    if ((nextNearbyCount == 0) && (armySlot1 != (ArmyRuntimeSlot *)0x0)) {
-      modelNode1 = armySlot1->modelNodeRuntime;
-      armySlot1->runtimeFlags = armySlot1->runtimeFlags | 8;
+      scanNode = (ModelRuntimeNode *)(scanNode->common).nextNode;
+      blockingCount = nextBlockingCount;
+    } while (scanNode != NULL);
+    if ((nextBlockingCount == 0) && (scanArmy != NULL)) {
+      scanNode = scanArmy->modelNodeRuntime;
+      scanArmy->runtimeFlags = scanArmy->runtimeFlags | 8;
       effectLookup = EffectDefinitionRegistry_FindByIdWithError
                         (*(PckEffectDefinitionIdCatalog *)
-                          (((armySlot1->modelRuntimeOrSavedOffset).modelRuntime)->classState).
+                          (((scanArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).
                           reservedC4_C7);
       if (!effectLookup.notFound) {
         EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL,
-                   THANDOR_BITCAST(GameEntityRuntime *, EffectRuntimeOwnerReference4, armySlot1->linkedEntityRuntime),
-                   (modelNode1->modelPayload).worldRotationAngle2,
-                   (modelNode1->modelPayload).worldRotationAngle1,
-                   (modelNode1->modelPayload).worldRotationAngle0,
-                   (modelNode1->worldTransform).translation.z,
-                   (modelNode1->worldTransform).translation.y,
-                   (modelNode1->worldTransform).translation.x,effectLookup.definitionOrError,worldRuntime);
+                   THANDOR_BITCAST(GameEntityRuntime *, EffectRuntimeOwnerReference4, scanArmy->linkedEntityRuntime),
+                   (scanNode->modelPayload).worldRotationAngle2,
+                   (scanNode->modelPayload).worldRotationAngle1,
+                   (scanNode->modelPayload).worldRotationAngle0,
+                   (scanNode->worldTransform).translation.z,
+                   (scanNode->worldTransform).translation.y,
+                   (scanNode->worldTransform).translation.x,effectLookup.definitionOrError,worldRuntime);
       }
     }
   }

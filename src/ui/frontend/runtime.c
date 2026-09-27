@@ -1420,39 +1420,37 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMet
 
 
 /* Address: 0x00547620.
-   Ownership: ui/frontend/runtime.
-   Purpose: Periodic frontend timer callback. Decrements the shared countdown only when it is nonzero and otherwise
-   leaves it unchanged.
+   Periodic timer callback of the frontend (80 Hz): counts g_FrontendTimerCountdownTicks down to zero.
+   Frontend_StateTick uses the countdown to pace its network polling.
 */
 void __cdecl FrontendRuntime_TimerCountdownTick(void)
 
 {
   if (g_FrontendTimerCountdownTicks != 0) {
-    g_FrontendTimerCountdownTicks = g_FrontendTimerCountdownTicks + -1;
+    g_FrontendTimerCountdownTicks--;
   }
   return;
 }
 
 /* Address: 0x00547FB0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Frontend periodic timer callback. It increments the active tick counter only while the verified
-   frontend-active flag is nonzero.
+   Periodic timer callback of the frontend (256 Hz): advances the clock of the menu camera flight while a ROM
+   transition is pending; the flight's spline is evaluated at g_FrontendRomTransitionElapsedTicks.
 */
-void __cdecl FrontendRuntime_IncrementActiveTickCounter(void)
+void __cdecl FrontendRomTransition_AdvanceElapsedTicks(void)
 
 {
   if (g_FrontendRomTransitionPendingCount != 0) {
-    g_FrontendRomTransitionElapsedTicks = g_FrontendRomTransitionElapsedTicks + 1;
+    g_FrontendRomTransitionElapsedTicks++;
   }
   return;
 }
 
 /* Address: 0x00548030.
-   Ownership: ui/frontend/runtime.
-   Purpose: Frontend command dispatcher selected by command code and modifier flags. Typed parameters: p0
-   modifierFlags→UiKeyboardStateMask_V297, p1 commandCode→UiActionId_V338. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Keyboard fallback of the menu room's pointer context: looks the key up in the frontend hotkey table
+   (commandCode + required modifier class, see KEYBOARD_STATE_*). Alt+Q and Alt+key 0x20004 leave the
+   current menu: back to the main page, a network session is closed first; Ctrl+key 0x20001 on the faction
+   setup page toggles bit 0 of the local player's runtimeState64 (an eighth entry in the faction cycle,
+   FrontendUiAction2044_IndexedSelectionHelper). Returns true (CF set) when the key is not in the table.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendRuntime_DispatchCommandByCodeAndModifierFlags
@@ -1468,7 +1466,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
 
   (void)frontendRuntime;
   for (;; record++) {
-    uint32_t flags = record->modifierClassFlags;
+    uint32_t flags = record->modifierClassFlags; /* the modifier classes the entry requires */
     if (record->commandCode == 0) {
       return true;
     }
@@ -1476,23 +1474,23 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       continue;
     }
     if (flags == 0) {
-      if ((modifierFlags & 0x3f) != 0) continue;
+      if ((modifierFlags & KEYBOARD_STATE_ANY_MODIFIER) != 0) continue;
     }
     else {
-      if ((flags & 3) != 0) {
-        if ((modifierFlags & 3) == 0) continue;
+      if ((flags & KEYBOARD_STATE_SHIFT) != 0) {
+        if ((modifierFlags & KEYBOARD_STATE_SHIFT) == 0) continue;
       }
-      else if ((modifierFlags & 3) != 0) {
+      else if ((modifierFlags & KEYBOARD_STATE_SHIFT) != 0) {
         continue;
       }
-      if ((flags & 0x30) == 0) {
-        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+      if ((flags & KEYBOARD_STATE_ALT) == 0) {
+        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
       }
-      else if ((flags & 0xc) == 0) {
-        if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+      else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
+        if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
       }
       else {
-        if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+        if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
       }
     }
     target = (uint32_t)record->continuationEntryAddress;
@@ -1500,9 +1498,10 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   }
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageNotInList((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex == 0xb) {
-      if ((g_SessionNetworkRoleFlags & 3) != 0) {
-        FrontendCommandQueue_EnqueueLocalPlayerCommand(0x3b0,0,0,1);
+    if (UiPageStack_ActivePageNotInList((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex ==
+        FRONTEND_PAGE_FACTION_SETUP) {
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) != 0) {
+        FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_XOR_PLAYER_STATE,0,0,1);
       }
       else {
         FrontendPlayerRuntime_XorStateMaskByPlayerId(g_LocalPlayerRuntimeId,0,0,1);
@@ -1512,7 +1511,8 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
   case 0x548190: {
     FrontendPlayerRuntimeRecord *player;
     TextResolveResult text;
-    if ((g_SessionNetworkRoleFlags & 3) == 0) {
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0) {
+      /* local game with no campaign or scenario loaded: only queue UI action 0 */
       if ((g_FrontendLoadedCampaignAsset == 0) && (g_FrontendScenarioInitializationCount == 0)) {
         UiActionQueue_Enqueue(0,root);
         break;
@@ -1520,45 +1520,47 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlags
       Resource_Release((void *)(uintptr_t)g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = 0;
       g_FrontendScenarioInitializationCount = 0;
-      g_FrontendNetworkState = 0;
+      g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) =
-           FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
-      g_FrontendPendingPageAction = 0;
+      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
+      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionContextValue = 0;
       FrontendRomTransition_ActivateRecordById
-                (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
+                (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       break;
     }
-    /* Leaving a network session: host (bit 0, 0x00548320) or client (bit 1, 0x00548250). */
+    /* Leaving a network session. The transcription names bit 0 the host (0x00548320) and bit 1 the client
+       (0x00548250), but SESSION_NETWORK_ROLE_CLIENT is bit 0; the variable follows the enum. */
     {
-      int wasHost = (g_SessionNetworkRoleFlags & 1) != 0;
-      g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & 0xfffffffc;
-      g_FrontendNetworkState = 0;
+      int wasClient = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != 0;
+      g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
+      g_FrontendNetworkState = FRONTEND_NETWORK_STATE_IDLE;
       g_FrontendScenarioInitializationCount = 0;
       g_NetworkBackendSlot3();
       g_NetworkBackendSlot1();
-      UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
-      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) =
-           FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
-      g_FrontendPendingPageAction = 0;
+      UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(root,frontendPageStack));
+      FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+      g_FrontendPendingPageAction = FRONTEND_PAGE_ACTION_NONE;
       g_FrontendRomTransitionContextValue = 0;
-      player = (FrontendPlayerRuntimeRecord *)g_FrontendPlayerRuntimeBlocks;
+      player = g_FrontendPlayerRuntimeBlocks;
       FrontendRomTransition_ActivateRecordById
-                (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
-      text = TextResource_Resolve(wasHost ? 0xff02 : 0xff04);
-      RichTextCommandStream_PatchPayloadBySelector(0,(uint8_t *)player + 0x18,text.text);
+                (FRONTEND_ROM_RECORD_MAIN_MENU,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
+      /* chat history notice with the first player's name */
+      text = TextResource_Resolve(wasClient ? 0xff02 : 0xff04);
+      RichTextCommandStream_PatchPayloadBySelector(0,&player->playerName,text.text);
       FrontendRecentTextHistory_InsertAndRebuild5(text.text);
-      if (!wasHost) {
+      if (!wasClient) {
+        /* the player record becomes a fresh local one (same fields as the client path of
+           FrontendNetworkSetupPage_InitializeBackendMode) */
         g_FrontendPlayerRuntimeBlockCount = 1;
         g_LocalPlayerRuntimeId = 0;
-        *(uint32_t *)((uint8_t *)player + 0x18) = 0;
-        *(uint32_t *)((uint8_t *)player + 0x14) = 0;
-        *(uint32_t *)((uint8_t *)player + 0x60) = 0;
-        *(uint32_t *)((uint8_t *)player + 0x64) = 0;
-        *(uint32_t *)((uint8_t *)player + 0x68) = 0;
+        *(uint32_t *)&player->playerName = 0; /* first two code units */
+        player->playerRuntimeId = 0;
+        (player->factionAssignment).roleStateFlags = 0;
+        player->runtimeState64 = 0;
+        player->snapshotTransferFlags = 0;
       }
     }
     break;
@@ -1587,30 +1589,17 @@ void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStat
 
 
 /* Address: 0x00548910.
-   Ownership: ui/frontend/runtime.
-   Purpose: Frontend pointer callback that updates pointer context and scene-view state and returns the resolved
-   action value. [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum dictionary
-   FrontendPointerContextFlags after transferring its complete value vocabulary to code annotation. It is not a
-   safe whole-value storage type. Values: 16=FRONTEND_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION,
-   32=FRONTEND_POINTER_CONTEXT_ROUTE_TO_SECONDARY_CALLBACK,
-   64=FRONTEND_POINTER_CONTEXT_ROUTE_TO_BUILTIN_ACTION_RESOLUTION,
-   256=FRONTEND_POINTER_CONTEXT_OBSERVED_ACTION_BRANCH_00000100,
-   512=FRONTEND_POINTER_CONTEXT_OBSERVED_ACTION_BRANCH_00000200,
-   4096=FRONTEND_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY,
-   32768=FRONTEND_POINTER_CONTEXT_OBSERVED_ACTION_BRANCH_00008000,
-   4194304=FRONTEND_POINTER_CONTEXT_ALLOW_CANDIDATE_WITHOUT_NODE_FLAG_20,
-   67108864=FRONTEND_POINTER_CONTEXT_OBSERVED_BUTTON_BRANCH_04000000,
-   1073741824=FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_40000000,
-   2147483648=FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_80000000
-   Cross-module calls: UiPageStack_ActivePageNotInList [ui/controls/lists], RomRegistry_FindRecordBySlotValue
-   [assets/rom/runtime], RomRecordTable_FindRecordById [assets/rom/runtime],
-   WorldMotionSpline_BuildSixChannelCurves [core/math/interpolation], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_MeasureRegs [assets/text/richtext].
+   Hover handler of the menu room's pointer context (resolvedActionCallback104/108). On the main page (not on a
+   network client) an object of the room that has a usable ROM action record starts a camera flight towards
+   the record's keyframe and makes the pointer cursor frame 7; the record's hint text (text id 0x2000 + hint)
+   is shown in the hint box, hint 1 while a page action is still being processed, none otherwise.
+   Actions 3, 4, 9 and negative ones are not offered in a network session, the network page (2) not without
+   a network backend (the same rule as FrontendRomActionTable_ExecuteRecord). Returns the cursor frame index.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 FrontendRuntime_UpdatePointerContextAndSceneView
-          (uint32_t pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,uint32_t pointerValue3,
-          void *pointedRecord,FrontendPointerSceneRuntimeView43E8 *frontendRuntime)
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
+          void *pointedModelNode,FrontendPointerSceneRuntimeView43E8 *frontendRuntime)
 
 {
   int32_t *hintEdgeField;
@@ -1618,7 +1607,7 @@ FrontendRuntime_UpdatePointerContextAndSceneView
   UiNodeBase *control;
   UiNodeVtable *controlVtable;
   RomAssetRecordPrefix *pointedRomRecord;
-  int *transitionRecord;
+  int *transitionRecord; /* keyframe channels 0..5, [6] hint text, [8] FRONTEND_PAGE_ACTION_* */
   uint32_t resultCode;
   uint16_t *commandStream;
   RomRecordId recordId;
@@ -1629,25 +1618,27 @@ FrontendRuntime_UpdatePointerContextAndSceneView
   PageStackSearchResult pageStackStatus;
   TextResolveResult hintTextResult;
   TextureSizeResult windowTextureSize;
-  
+
   resultCode = 0;
   channel3OrHintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
      (pageStackStatus = UiPageStack_ActivePageNotInList(&frontendRuntime->activePageStack1A0),
      pageStackStatus.pageIndex == 0)) {
-    pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedRecord);
-    recordId = 0xf0000000;
-    if (pointedRomRecord != (RomAssetRecordPrefix *)0x0) {
+    pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedModelNode);
+    recordId = 0xf0000000; /* matches no record */
+    if (pointedRomRecord != NULL) {
       recordId = pointedRomRecord->recordId;
     }
     transitionRecord = RomRecordTable_FindRecordById(recordId,g_FrontendActiveRomRecordTable);
     /* Skip records without a transition, network-only pages (3/4/9/negative) in a networked session and the
        network page (2) when no backend exists. */
-    if ((transitionRecord != (int *)0x0) &&
-       ((((transitionRecord[8] != 3 && (transitionRecord[8] != 4)) && (transitionRecord[8] != 9)) &&
+    if ((transitionRecord != NULL) &&
+       ((((transitionRecord[8] != FRONTEND_PAGE_ACTION_GAMEPLAY_SETTINGS_PAGE &&
+          (transitionRecord[8] != FRONTEND_PAGE_ACTION_QUIT_CONFIRM_PAGE)) &&
+         (transitionRecord[8] != FRONTEND_PAGE_ACTION_CREDITS)) &&
          (transitionRecord[8] >= 0)) ||
         ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == SESSION_NETWORK_ROLE_LOCAL)) &&
-       ((transitionRecord[8] != 2) || (g_NetworkBackendInstanceCount != 0))) {
+       ((transitionRecord[8] != FRONTEND_PAGE_ACTION_NETWORK_SETUP_PAGE) || (g_NetworkBackendInstanceCount != 0))) {
       channel3OrHintValue = transitionRecord[3];
       channel4OrHalfHeight = transitionRecord[4];
       keyframeChannel5 = transitionRecord[5];
@@ -1659,6 +1650,8 @@ FrontendRuntime_UpdatePointerContextAndSceneView
          (((channel3OrHintValue != g_FrontendRomTransitionKeyframe1Channel3Q12) ||
           (channel4OrHalfHeight != g_FrontendRomTransitionKeyframe1Channel4Q12)) ||
           (keyframeChannel5 != g_FrontendRomTransitionKeyframe1Channel5Q12))) {
+        /* fly from the current camera (keyframe 0) to the record's camera (keyframe 1) in 0xC0 ticks of
+           FrontendRomTransition_AdvanceElapsedTicks; pending -1 = no record to activate at the end */
         g_FrontendRomTransitionKeyframe1Channel0Q12 = *transitionRecord;
         g_FrontendRomTransitionKeyframe1Channel1Q12 = transitionRecord[1];
         g_FrontendRomTransitionKeyframe1Channel2Q12 = transitionRecord[2];
@@ -1687,11 +1680,12 @@ FrontendRuntime_UpdatePointerContextAndSceneView
   if (channel3OrHintValue == 0) {
     if (g_FrontendPendingPageActionDepth == 0) {
       (frontendRuntime->hintControl4390).hintActive50 = 0;
-      (frontendRuntime->hintControl4390).commandStream54 = (uint16_t *)0x0;
+      (frontendRuntime->hintControl4390).commandStream54 = NULL;
       return resultCode;
     }
     channel3OrHintValue = 1;
   }
+  /* only when the text changed: size the hint box around it plus the window frame (texture frame 0x72) */
   previousCommandStream = (frontendRuntime->hintControl4390).commandStream54;
   hintTextResult = TextResource_Resolve(channel3OrHintValue + 0x2000);
   commandStream = hintTextResult.text;
@@ -1724,55 +1718,46 @@ FrontendRuntime_UpdatePointerContextAndSceneView
 
 
 /* Address: 0x00548BE0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Six-argument frontend runtime callback installed at object slot +0x5C. It performs no operation and
-   returns with ret 0x18.
+   Button-press handler of the menu room's pointer context (resolvedActionCallback10C): the frontend does nothing
+   on press, it acts on release (FrontendRuntimeCallback64_DispatchRecord1350).
 */
 void FrontendRuntimeCallback5C_NoOp
-               (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5,
-               uint32_t argument6)
+               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
+               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext)
 
 {
   return;
 }
 
 /* Address: 0x00548BF0.
-   Ownership: ui/frontend/runtime.
-   Purpose: Six-argument frontend runtime callback installed at object slot +0x60. It performs no operation and
-   returns with ret 0x18.
+   Drag handler of the menu room's pointer context (resolvedActionCallback110); dragging does nothing in the
+   frontend.
 */
 void FrontendRuntimeCallback60_NoOp
-               (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5,
-               uint32_t argument6)
+               (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,
+               uint32_t hitMetric,uint32_t pointedModelNode,uint32_t pointerContext)
 
 {
   return;
 }
 
 /* Address: 0x00548C00.
-   Ownership: ui/frontend/runtime.
-   Purpose: Six-argument frontend runtime callback installed at object slot +0x64. When frontend mode bit 0 is
-   clear, it resolves the fifth argument through the runtime record tables, maps the record identifier, and
-   dispatches the nonnegative result either through message 0x1350 or the local frontend service. Register results
-   remain preserved. Typed parameters: p4 argument5→FrontendCallbackArgument5_V344. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Cross-module calls: RomRegistry_FindRecordBySlotValue [assets/rom/runtime], RomRecordTable_FindIndexById
-   [assets/rom/runtime], FrontendRomActionTable_ExecuteRecord [assets/rom/runtime],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Button-release handler of the menu room's pointer context (resolvedActionCallback114): clicking an object of
+   the menu room runs the ROM action record that belongs to it (FrontendRomActionTable_ExecuteRecord). In a
+   network game the host sends it as a frontend command so every player follows; clients ignore clicks.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRuntimeCallback64_DispatchRecord1350
-          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,
-          FrontendCallbackArgument5 argument5,uint32_t argument6)
+          (uint32_t callbackArgument1,uint32_t callbackArgument2,uint32_t callbackArgument3,uint32_t hitMetric,
+          FrontendCallbackArgument5 pointedModelNode,uint32_t pointerContext)
 
 {
   RomAssetRecordPrefix *slotRecord;
   RomRecordTableIndex recordIndex;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    slotRecord = RomRegistry_FindRecordBySlotValue(argument5);
-    if (slotRecord != (RomAssetRecordPrefix *)0x0) {
+    slotRecord = RomRegistry_FindRecordBySlotValue(pointedModelNode);
+    if (slotRecord != NULL) {
       recordIndex = RomRecordTable_FindIndexById(slotRecord->recordId,g_FrontendActiveRomRecordTable);
       if (-1 < (int)recordIndex) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1780,7 +1765,7 @@ FrontendRuntimeCallback64_DispatchRecord1350
           FrontendRomActionTable_ExecuteRecord(g_LocalPlayerRuntimeId,0,0,recordIndex);
         }
         else {
-          FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1350,0,0,recordIndex);
+          FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_EXECUTE_ROM_ACTION,0,0,recordIndex);
         }
       }
     }
@@ -1790,14 +1775,11 @@ FrontendRuntimeCallback64_DispatchRecord1350
 
 
 /* Address: 0x00548C70.
-   Ownership: ui/frontend/runtime.
-   Purpose: One-argument frontend runtime callback installed at object slot +0x68. When frontend mode bit 0 is
-   clear, it dispatches a refresh through message 0x1340 or the local frontend service according to the remaining
-   mode bits.
-   Cross-module calls: ScenarioCatalog_RequestRomTransitionStopCallback [assets/scenario/catalog],
-   FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
+   Right-button release handler of the menu room's pointer context (rightReleaseCallback118): stops the running
+   camera flight (ScenarioCatalog_RequestRomTransitionStopCallback), in a network game as a frontend command
+   sent by the host; clients ignore it.
 */
-void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t callbackArgument)
+void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t pointerContext)
 
 {
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -1806,7 +1788,7 @@ void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t callbackArgument)
       ScenarioCatalog_RequestRomTransitionStopCallback(g_LocalPlayerRuntimeId,0,0,0);
     }
     else {
-      FrontendCommandQueue_EnqueueLocalPlayerCommand(0x1340,0,0,0);
+      FrontendCommandQueue_EnqueueLocalPlayerCommand(FRONTEND_COMMAND_STOP_ROM_TRANSITION,0,0,0);
     }
   }
   return;
@@ -3014,7 +2996,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                   UiFrame_FlushInputAndResetPendingTicks();
                   g_SpinLockAcquire(&g_FrontendStateTickSpinLock);
                   WorldMotionSpline_ClearCachedDerivatives();
-                  g_TimerRegisterPeriodic(0x100,FrontendRuntime_IncrementActiveTickCounter);
+                  g_TimerRegisterPeriodic(0x100,FrontendRomTransition_AdvanceElapsedTicks);
                   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                       SESSION_NETWORK_ROLE_LOCAL) {
                     FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
@@ -3053,40 +3035,36 @@ Frontend_Init_ReturnInitializationFailure:
 
 
 /* Address: 0x00547630.
-   Ownership: ui/frontend/runtime.
-   Purpose: Table 00547660: 00547680, 005476B0, 00547700, 00547750, 005477A0, 005477F0.
-   Local calls: FrontendDebugOverlay_RefreshCountersAndWorldCoordinates.
-   Cross-module calls: UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer],
-   UiRuntimeRecordRing_DiscardOldest [ui/core/runtime], FrontendTransfer_HandleSessionListAndJoinAckPackets
-   [network/protocol/transfer], FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
-   [network/protocol/transfer], FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets [network/protocol/transfer],
-   FrontendTransfer_SendPacket10006 [network/protocol/transfer].
+   Network work of the frontend, run under the frontend tick spin lock (skipped while the lock is busy); it is
+   also installed as the menu room's render-lock release callback. According to g_FrontendNetworkState
+   it sends the periodic packets of the state and hands every received packet to the state's handler, at most
+   once per FRONTEND_TIMER_TICKS_PER_NETWORK_TICK timer ticks (the session start states faster).
 */
 void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
 
 {
-  uint32_t unusedDispatchArg;
+  uint32_t frontendRoot; /* passed to the packet handlers */
   uint32_t previousTickCounter;
   bool callResult;
   RecordRingDiscardResult discardedRecord;
-  
+
   callResult = g_SpinLockTryAcquire(&g_FrontendStateTickSpinLock);
   previousTickCounter = g_FrontendNetworkTickCounter;
-  unusedDispatchArg = g_FrontendRootNode;
+  frontendRoot = g_FrontendRootNode;
   if (callResult) {
     return;
   }
-                    // WARNING: Switch is manually overridden
   switch(g_FrontendNetworkState) {
-  case 0:
+  case FRONTEND_NETWORK_STATE_IDLE:
     if (g_FrontendTimerCountdownTicks != 0) goto FrontendStateTick_ReleaseLock;
-    g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
-    g_FrontendTimerCountdownTicks = 4;
+    g_FrontendNetworkTickCounter++;
+    g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
     break;
-  case 1:
+  case FRONTEND_NETWORK_STATE_BROWSING:
     if (g_FrontendTimerCountdownTicks == 0) {
-      g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
-      g_FrontendTimerCountdownTicks = 4;
+      g_FrontendNetworkTickCounter++;
+      g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
+      /* the packet goes out on 15 of every 16 ticks */
       if ((previousTickCounter & 0xf) != 0) {
         UiTransfer_SendPacketType10000Value2931();
       }
@@ -3095,30 +3073,30 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleSessionListAndJoinAckPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
     goto FrontendStateTick_ReleaseLock;
-  case 2:
+  case FRONTEND_NETWORK_STATE_HOSTING:
     if (g_FrontendTimerCountdownTicks == 0) {
-      g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
-      g_FrontendTimerCountdownTicks = 4;
+      g_FrontendNetworkTickCounter++;
+      g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
       while( true ) {
         discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
     goto FrontendStateTick_ReleaseLock;
-  case 3:
+  case FRONTEND_NETWORK_STATE_JOINED:
     if (g_FrontendTimerCountdownTicks == 0) {
-      g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
-      g_FrontendTimerCountdownTicks = 4;
+      g_FrontendNetworkTickCounter++;
+      g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
       if ((previousTickCounter & 0xf) != 0) {
         FrontendTransfer_SendPacket10006();
       }
@@ -3127,44 +3105,46 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
     goto FrontendStateTick_ReleaseLock;
-  case 4:
+  case FRONTEND_NETWORK_STATE_HOST_STARTING:
     if (g_FrontendTimerCountdownTicks != 0) goto FrontendStateTick_ReleaseLock;
-    g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
-    g_FrontendTimerCountdownTicks = 4;
+    g_FrontendNetworkTickCounter++;
+    g_FrontendTimerCountdownTicks = FRONTEND_TIMER_TICKS_PER_NETWORK_TICK;
     while( true ) {
       discardedRecord = UiRuntimeRecordRing_DiscardOldest();
       if (discardedRecord.empty) break;
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
                 ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
-                 (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
+                 (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,frontendRoot);
     }
-    callResult = FrontendNetwork_HostTickCommandAndSnapshotTransfer(unusedDispatchArg);
+    callResult = FrontendNetwork_HostTickCommandAndSnapshotTransfer(frontendRoot);
     if (callResult) {
+      /* transfer still running: next tick at once */
       g_FrontendTimerCountdownTicks = 1;
       goto FrontendStateTick_ReleaseLock;
     }
     break;
-  case 5:
+  case FRONTEND_NETWORK_STATE_CLIENT_STARTING:
+    /* no pacing: works whenever a packet of this session has arrived */
     callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
     if (!callResult) goto FrontendStateTick_ReleaseLock;
-    g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
+    g_FrontendNetworkTickCounter++;
     do {
       discardedRecord = UiRuntimeRecordRing_DiscardOldest();
       if (discardedRecord.empty) break;
       callResult = FrontendTransfer_HandleGameplayCommandAndRosterPackets
                         ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                          (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,
-                         unusedDispatchArg);
+                         frontendRoot);
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagFrontend();
     if (callResult) goto FrontendStateTick_ReleaseLock;
   }
-  if ((g_FrontendRuntimeFlags & 0x10) == 0) {
+  if ((g_FrontendRuntimeFlags & FRONTEND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
     FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
   }
 FrontendStateTick_ReleaseLock:
@@ -3174,11 +3154,10 @@ FrontendStateTick_ReleaseLock:
 
 
 /* Address: 0x00543B70.
-   Ownership: ui/frontend/runtime.
-   Purpose: Loads gfx\panel\menue.gfx, stores it as the shared frontend-menu texture source, assigns it to verified
-   menu controls, and binds the preloaded button sound voice sets across the frontend UI.
+   Called by Frontend_Init for the freshly copied frontend UI: loads gfx\panel\menue.gfx as the texture of the
+   menu panels (also kept in g_FrontendMenuTextureSource) and gives the buttons their click sounds, button
+   sound voice sets 3 to 6 by control kind. Nothing is bound when the texture cannot be loaded.
 */
-
 void __thandor_void_preserve_ecx_edx
 FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
 
@@ -3277,6 +3256,7 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
     frontendUiState->buttonVoiceSet4_4044 = buttonVoiceSet;
     frontendUiState->buttonVoiceSet4_28B0 = buttonVoiceSet;
     controlIndex = 7;
+    /* the seven faction, player and selection-row controls of the faction setup page (entries 1..7) */
     do {
       *(DirectSoundVoiceSet **)
        (frontendUiState->opaqueGap0000_05DF +
@@ -3288,7 +3268,7 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
        (frontendUiState->opaqueGap0000_05DF +
        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[controlIndex] + 0x5c) = buttonVoiceSet;
       buttonVoiceSet5 = g_UiButtonSoundVoiceSets7[5];
-      controlIndex = controlIndex + -1;
+      controlIndex--;
     } while (controlIndex != 0);
     frontendUiState->buttonVoiceSet5_3C98 = g_UiButtonSoundVoiceSets7[5];
     frontendUiState->buttonVoiceSet5_41C0 = buttonVoiceSet5;
@@ -3567,7 +3547,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResou
 
   UiRuntime_SetSynchronizationHooks(NULL,NULL);
   g_TimerUnregisterPeriodic(FrontendRuntime_TimerCountdownTick);
-  g_TimerUnregisterPeriodic(FrontendRuntime_IncrementActiveTickCounter);
+  g_TimerUnregisterPeriodic(FrontendRomTransition_AdvanceElapsedTicks);
   root = g_FrontendRootNode;
   g_CursorVisibilityToken--;
   if (g_FrontendRootNode != (UiRootNode *)0x0) {

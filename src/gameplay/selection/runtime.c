@@ -830,11 +830,10 @@ SelectionPlayerRuntime_AdvancePrimarySelectionCycle
 
 
 /* Address: 0x0052CEE0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Loads gfx\panel\select.gfx and info.gfx plus their 0x1A4-byte .dat tables, clears eight fixed runtime
-   blocks, stores the caller's entity-slot table, and patches verified texture-source sequence descriptors used by
-   the selection and information panels. The .dat record semantics remain opaque.
-   Cross-module calls: Package_LoadEntry [assets/package/runtime].
+   Loads the selection and information panel graphics (gfx\panel\select.gfx, info.gfx) and their 0x1A4-byte .dat
+   tables, empties the selection of all eight player blocks and stores the caller's entity-slot table. Then it
+   patches sequence descriptors inside the loaded textures (swaps two select.gfx entries, rewrites frames of
+   info.gfx) - the exact meaning of these patches is not known. On failure returns the failing loader's error.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
@@ -868,20 +867,22 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
         packageLoad = Package_LoadEntry((uint16_t *)u_gfx_panel_info_dat_0052ce92);
         loadedResource = packageLoad.bufferOrError;
         if (!packageLoad.failed) {
-          blockCountOrRecordOffset = 8;
+          blockCountOrRecordOffset = 8; /* player blocks */
           playerBlockCursor = g_SelectionPlayerBlocks;
           g_InfoPanelData = loadedResource;
           do {
+            /* clear the 32 selection entries; the cursor then skips the rest of the 0x8118-byte block */
             for (entriesRemaining = 0x20; loadedResource = g_SelectionPanelTextureSource, entriesRemaining != 0;
-                entriesRemaining = entriesRemaining + -1) {
-              (playerBlockCursor->selection).entries[0] = (GameEntityRuntime *)0x0;
+                entriesRemaining--) {
+              (playerBlockCursor->selection).entries[0] = NULL;
               playerBlockCursor = (SelectionPlayerRuntimeBlock *)((playerBlockCursor->selection).entries + 1);
             }
             playerBlockCursor = (SelectionPlayerRuntimeBlock *)&playerBlockCursor->pendingSelectionEntityOffset8098;
-            blockCountOrRecordOffset = blockCountOrRecordOffset + -1;
+            blockCountOrRecordOffset--;
           } while (blockCountOrRecordOffset != 0);
           g_SelectionInfoEntitySlots = entitySlots;
           tableOffset = (g_SelectionPanelTextureSource->tableDescriptor).subresourceTableOffset;
+          /* select.gfx: swap the sequence offsets at table +0x110 and +0xF0 (XCHG in the original) */
           LOCK();
           swappedSelectionDataOffset =
                *(AssetRelativeOffset *)
@@ -893,6 +894,8 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
           UNLOCK();
           *(AssetRelativeOffset *)(loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0xf0) =
                swappedSelectionDataOffset;
+          /* info.gfx: rewrite records of several sequences; referencePayloadValue is the first dword of the record
+             the table entry +0xD0 points at */
           loadedResource = g_InfoPanelTextureSource;
           tableOffset = (g_InfoPanelTextureSource->tableDescriptor).subresourceTableOffset;
           referencePayloadValue =
@@ -1104,10 +1107,8 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
 
 
 /* Address: 0x0052D0F0.
-   Ownership: gameplay/selection/runtime.
-   Purpose: Releases both panel texture sources and both package-loaded .dat tables, then clears the four global
-   resource pointers.
-   Cross-module calls: Resource_Release [assets/resource/runtime].
+   Counterpart of SelectionInfoPanel_InitResources: releases both panel textures and both .dat tables and clears
+   the four resource pointers.
 */
 void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
 
@@ -1116,10 +1117,10 @@ void __thandor_preserve_eax SelectionInfoPanel_ShutdownResources(void)
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InfoPanelTextureSource);
   Resource_Release(g_SelectionPanelData);
   Resource_Release(g_InfoPanelData);
-  g_SelectionPanelTextureSource = (GraphicsTextureSourceAsset *)0x0;
-  g_InfoPanelTextureSource = (GraphicsTextureSourceAsset *)0x0;
-  g_SelectionPanelData = (void *)0x0;
-  g_InfoPanelData = (void *)0x0;
+  g_SelectionPanelTextureSource = NULL;
+  g_InfoPanelTextureSource = NULL;
+  g_SelectionPanelData = NULL;
+  g_InfoPanelData = NULL;
   return;
 }
 

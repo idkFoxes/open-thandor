@@ -53,7 +53,7 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
 /* 0x005442B0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag08ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3);
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544300 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -63,12 +63,12 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
 /* 0x00544360 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag04ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3);
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544820 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag02ById
-          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3);
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544D50 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -103,7 +103,8 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRun
 /* 0x0055F680 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-          (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,uint32_t reserved2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          uint32_t unusedArgument3);
 
 /* 0x0055FB90 */
 void __thandor_preserve_eax
@@ -161,7 +162,7 @@ FrontendPlayerSelection_ApplyEntryOrAll
 /* 0x00544020 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
-          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4);
+          (PlayerRuntimeId playerId,uint32_t unusedArgument1,uint32_t unusedArgument2,uint32_t unusedArgument3);
 
 /* 0x00544770 */
 void __thandor_void_preserve_eax_ecx_edx

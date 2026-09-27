@@ -390,9 +390,11 @@ FixedTransform_RotateDirectionScaledRegs
 
 
 /* Address: 0x00417620.
-   Ownership: core/math/fixed.
-   Purpose: Allocates one 0x40000-byte image, seeds its fixed prefix, and generates two signed-16-bit lookup
-   regions from g_FixedCosQ28. CF reports allocation failure.
+   Builds the two 256x256 cosine matrices of the .sam sound codec in one 0x40000-byte allocation (called by
+   DirectSound_Init). The first (g_CosineDerivedLookupAllocation, Q12) has row u, entry k =
+   cos((2k+1) * u * pi / 512), row 0 being 1/sqrt(2); the second (g_CosineDerivedLookupSecondTable, Q14) is
+   its transpose, row m, entry k = cos(k * (2m+1) * pi / 512), entry 0 being 1/sqrt(2). Angles are 16-bit
+   (65536 = full turn), so 0x40 is pi/512. On allocation failure the pointers stay unset.
 */
 void __cdecl CosineDerivedLookupTables_Init(void)
 
@@ -405,49 +407,51 @@ void __cdecl CosineDerivedLookupTables_Init(void)
   uint32_t angleIndex16;
   uint32_t secondAngleIndex16;
   ArenaAllocResult allocResult;
-  
+
   allocResult = g_MemoryApi.alloc(0x40000);
   outputCursor = (short *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_CosineDerivedLookupAllocation = outputCursor;
-    for (entriesRemainingInRow = 0x80; entriesRemainingInRow != 0;
-        entriesRemainingInRow = entriesRemainingInRow + -1) {
-      outputCursor[0] = 0xb50;
-      outputCursor[1] = 0xb50;
+    /* row 0: 256 entries of 1/sqrt(2) in Q12, written as 128 pairs (REP STOSD in the original) */
+    for (entriesRemainingInRow = 128; entriesRemainingInRow != 0; entriesRemainingInRow--) {
+      outputCursor[0] = 2896;
+      outputCursor[1] = 2896;
       outputCursor = outputCursor + 2;
     }
+    /* rows 1..255: angleStep16 = u * 0x40, entries at the odd multiples (2k+1) * angleStep16 */
     angleIndex16 = 0x40;
     angleStep16 = 0x40;
-    entriesRemaining = 0x100;
+    entriesRemaining = 256;
     do {
       do {
-        *outputCursor = (short)((uint32_t)g_FixedCosQ28[angleIndex16] >> 0x10);
-        outputCursor = outputCursor + 1;
+        *outputCursor = (short)((uint32_t)g_FixedCosQ28[angleIndex16] >> 16); /* Q28 -> Q12 */
+        outputCursor++;
         angleIndex16 = angleIndex16 + angleStep16 * 2 & 0xffff;
-        entriesRemaining = entriesRemaining + -1;
+        entriesRemaining--;
       } while (entriesRemaining != 0);
       angleStep16 = angleStep16 + 0x40;
-      entriesRemaining = 0x100;
+      entriesRemaining = 256;
       angleIndex16 = angleStep16 & 0xffff;
     } while (angleStep16 < 0x4000);
+    /* rows m = 0..255: secondAngleStep16 = (2m+1) * 0x40, entries at k * secondAngleStep16 */
     secondAngleIndex16 = 0;
-    entriesRemaining = 0x100;
+    entriesRemaining = 256;
     secondAngleStep16 = 0x40;
     g_CosineDerivedLookupSecondTable = outputCursor;
     do {
       do {
-        if (entriesRemaining == 0x100) {
-          *outputCursor = 0x2d41;
+        if (entriesRemaining == 256) {
+          *outputCursor = 11585; /* entry 0: 1/sqrt(2) in Q14 */
         }
         else {
-          *outputCursor = (short)(g_FixedCosQ28[secondAngleIndex16] >> 0xe);
+          *outputCursor = (short)(g_FixedCosQ28[secondAngleIndex16] >> 14); /* Q28 -> Q14 */
         }
-        outputCursor = outputCursor + 1;
+        outputCursor++;
         secondAngleIndex16 = secondAngleIndex16 + secondAngleStep16 & 0xffff;
-        entriesRemaining = entriesRemaining + -1;
+        entriesRemaining--;
       } while (entriesRemaining != 0);
       secondAngleStep16 = secondAngleStep16 + 0x80;
-      entriesRemaining = 0x100;
+      entriesRemaining = 256;
       secondAngleIndex16 = 0;
     } while (secondAngleStep16 < 0x8000);
   }
@@ -908,11 +912,8 @@ uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *
 
 
 /* Address: 0x00484CF0.
-   Ownership: core/math/fixed.
-   Purpose: Returns floor(sqrt(x*x + y*y)). Typed parameters: p0 x→FixedMathVectorComponent32_V342, p1
-   y→FixedMathVectorComponent32_V342. Calling convention, exact VariableStorage serialization, function body bytes,
-   control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FixedMath_UInt64Sqrt.
+   Length of the 2D vector (x, y): floor(sqrt(x*x + y*y)), with the squares summed in 64 bits so Q12
+   components cannot overflow. The result has the components' fixed-point scale.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
@@ -920,11 +921,11 @@ FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
 {
   uint32_t vectorLengthQ12;
   int64_t squaredLengthAccumulatorQ24;
-  
+
   squaredLengthAccumulatorQ24 = (int64_t)x * (int64_t)x + (int64_t)y * (int64_t)y;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 32),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   return vectorLengthQ12;
 }

@@ -367,11 +367,9 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_ProcessAndPresent(void)
 
 
 /* Address: 0x004B48D0.
-   Ownership: ui/controls/layout.
-   Purpose: Selects a page by index when it is in range and differs from the active child. Deactivates the old
-   subtree, activates the new subtree, and invalidates the stack root.
-   Local calls: UiNodeSubtree_ReleaseKeyboardFocus, UiNodeSubtree_AcquireKeyboardFocusDefaults.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Shows page pageIndex of a page stack (tabbed dialog pages): the visible page is the stack's only child
+   (firstChild), so switching replaces that link, moving the keyboard focus out of the old page and into the
+   new one, and redraws. Out-of-range indices and the already shown page are ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
@@ -508,12 +506,10 @@ UiResizableWindowControl_HandleWindowHotkeys
 
 
 /* Address: 0x004B1000.
-   Ownership: ui/controls/layout.
-   Purpose: Resolves a serialized root rectangle, stores its callback table, relocates its tree, pushes it above
-   the active root, suppresses the previous root, lays out and activates the new root, initializes focus, and
-   clears capture/tooltip state.
-   Local calls: UiSerializedTree_Relocate.
-   Cross-module calls: UiKeyboardFocus_SelectInitial [ui/controls/input].
+   Opens a dialog or screen: puts the serialized UI tree root on top of the root stack. Its rectangle is
+   computed from the framebuffer size and its anchors, its callbacks are attached and its tree pointers
+   relocated. The previous top root loses UI_NODE_IN_FRONT_ROOT (windows draw as inactive), the new one is
+   laid out, gets the flag and the initial keyboard focus; pointer capture and tooltip are reset.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
@@ -524,6 +520,7 @@ UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   int64_t currentAnchorPixelProductQ31;
   int64_t anchorPixelProductQ31;
   
+  /* each edge = (framebuffer extent * anchorQ31) >> 31 + offset, i.e. a fraction of the screen plus pixels */
   anchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
   (root->base).right =
        ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f)
@@ -540,65 +537,65 @@ UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
   (root->base).top =
        ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (root->base).topOffset;
   root->callbacks = callbacks;
-  (root->base).nextSibling = (UiNodeBase *)0xffffffff;
+  (root->base).nextSibling = UI_NODE_NONE;
+  /* the serialized tree links are offsets from the root: relocate by the root's address */
   UiSerializedTree_Relocate((SerializedImageRelocationDelta)root,&root->base);
   oldFrontRoot = g_UiRootNode;
   LOCK();
   g_UiRootNode = root;
   UNLOCK();
   root->previousRoot = oldFrontRoot;
-  if (oldFrontRoot != (UiRootNode *)0xffffffff) {
+  if (oldFrontRoot != UI_ROOT_STACK_END) {
     (oldFrontRoot->base).nextSibling = &root->base;
-    (*((oldFrontRoot->base).vtable)->applyFlags)(0,0xfffffffe,&oldFrontRoot->base);
+    (*((oldFrontRoot->base).vtable)->applyFlags)(0,~UI_NODE_IN_FRONT_ROOT,&oldFrontRoot->base);
   }
   (*((root->base).vtable)->layout)(&root->base);
-  (*((root->base).vtable)->applyFlags)(1,0xffffffff,&root->base);
+  (*((root->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&root->base);
   UiKeyboardFocus_SelectInitial(&root->base);
-  g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-  g_UiTooltipState.targetNode = (UiNodeBase *)0x0;
+  g_UiTooltipState.targetNode = NULL;
   return;
 }
 
 
 /* Address: 0x004B1110.
-   Ownership: ui/controls/layout.
-   Purpose: Finds the containing root and invokes callbacks->vetoClose when present. CF set vetoes removal and
-   invalidates the previous root; CF clear restores the previous root, focus, capture state, and redraw state.
-   Local calls: UiRootStack_InvalidateAll.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiKeyboardFocus_SelectInitial [ui/controls/input].
+   Closes the dialog or screen that contains root (any node of it may be passed): its close callback may
+   veto (CF set, returned). Otherwise the root below becomes the top again with UI_NODE_IN_FRONT_ROOT and its
+   initial focus, pointer capture and hover are reset and the whole screen is redrawn. The closed root is
+   assumed to be the top one: only g_UiRootNode is replaced.
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
 
 {
   bool closeCallbackVetoed;
-  UiRootNode *node;
+  UiRootNode *belowRoot;
   UiNodeBase *parentCursor;
   
   parentCursor = (root->base).parent;
-  while (parentCursor != (UiNodeBase *)0xffffffff) {
+  while (parentCursor != UI_NODE_NONE) {
     root = (UiRootNode *)(root->base).parent;
     parentCursor = (root->base).parent;
   }
-  node = root->previousRoot;
+  belowRoot = root->previousRoot;
   closeCallbackVetoed = false;
-  if (root->callbacks->vetoClose != (UiRootCloseCallback *)0x0) {
+  if (root->callbacks->vetoClose != NULL) {
     closeCallbackVetoed = root->callbacks->vetoClose(root);
   }
   if (closeCallbackVetoed) {
-    UiNode_InvalidateRoot(&node->base);
+    UiNode_InvalidateRoot(&belowRoot->base);
     return true;
   }
-  g_UiKeyboardFocusNode = (UiNodeBase *)0xffffffff;
-  g_UiRootNode = node;
-  if (node != (UiRootNode *)0xffffffff) {
-    (node->base).nextSibling = (UiNodeBase *)0xffffffff;
-    (*((node->base).vtable)->applyFlags)(1,0xffffffff,&node->base);
-    UiKeyboardFocus_SelectInitial(&node->base);
+  g_UiKeyboardFocusNode = UI_NODE_NONE;
+  g_UiRootNode = belowRoot;
+  if (belowRoot != UI_ROOT_STACK_END) {
+    (belowRoot->base).nextSibling = UI_NODE_NONE;
+    (*((belowRoot->base).vtable)->applyFlags)(UI_NODE_IN_FRONT_ROOT,0xffffffff,&belowRoot->base);
+    UiKeyboardFocus_SelectInitial(&belowRoot->base);
   }
-  g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+  g_UiPointerCaptureTarget = UI_NODE_NONE;
   g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-  g_UiImageControlHoverTarget = (UiImageControl *)0x0;
+  g_UiImageControlHoverTarget = NULL;
   UiRootStack_InvalidateAll();
   return false;
 }
@@ -1238,10 +1235,9 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
 
 
 /* Address: 0x004B0F30.
-   Ownership: ui/controls/layout.
-   Purpose: Loads engine\win.gfx and engine\winclass.gfx, registers texte\winclass.str as string-table page 1,
-   installs UI action-handler page zero, and resets the UI root stack to its 0xFFFFFFFF sentinel.
-   Cross-module calls: TextResourcePage_Load [assets/text/resources], UiActionHandlers_SetPage [ui/core/runtime].
+   Loads what every window needs: the frame graphics (engine\win.gfx, engine\winclass.gfx) and their texts
+   (texte\winclass.str as text page 1), installs the root-stack actions as action-handler page 0 and starts
+   with an empty root stack. A missing file is fatal.
 */
 void __thandor_preserve_eax UiWindowResources_Init(void)
 
@@ -1259,7 +1255,7 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
   pageLoadResult = TextResourcePage_Load(1,(uint16_t *)u_texte_winclass_str_004b0ee0);
   FatalError_ExitIfFailed(pageLoadResult.errorOrValue,pageLoadResult.failed);
   UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
-  g_UiRootNode = (UiRootNode *)0xffffffff;
+  g_UiRootNode = UI_ROOT_STACK_END;
   return;
 }
 
@@ -1913,49 +1909,49 @@ UiWindow_BlitTiledVerticalEdge
 
 
 /* Address: 0x004B0640.
-   Ownership: ui/controls/layout.
-   Purpose: Resolves each child rectangle from fixed offsets plus unsigned Q31 parent-relative anchors, stores
-   width/height, then invokes the child layout method.
+   Default layout of a container: stores its own width/height, then places every child. Each child edge is
+   (parent extent * anchorQ31) >> 31 + offset from the parent's left/top, i.e. a fraction of the parent plus
+   a pixel offset; then the child lays out its own children.
 */
 void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *control)
 
 {
   UiNodeBase *childNode;
-  int64_t edgeAnchorPixelProductQ31;
-  int computedEdgeCoordinate;
-  int currentEdgeCoordinate;
-  int edgeCoordinate;
-  int64_t currentAnchorPixelProductQ31;
-  int64_t anchorPixelProductQ31;
+  int64_t leftOrTopAnchorProduct;
+  int rightEdge;
+  int bottomEdge;
+  int leftOrTopEdge;
+  int64_t bottomAnchorProduct;
+  int64_t rightAnchorProduct;
   
   childNode = control->firstChild;
   control->layoutWidth = control->right - control->left;
   control->layoutHeight = control->bottom - control->top;
-  for (; childNode != (UiNodeBase *)0xffffffff; childNode = childNode->nextSibling) {
-    anchorPixelProductQ31 =
+  for (; childNode != UI_NODE_NONE; childNode = childNode->nextSibling) {
+    rightAnchorProduct =
          (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->rightAnchorQ31;
-    computedEdgeCoordinate =
-         ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f
+    rightEdge =
+         ((int)((uint64_t)rightAnchorProduct >> 0x20) << 1 | (uint32_t)rightAnchorProduct >> 0x1f
          ) + childNode->rightOffset + control->left;
-    childNode->right = computedEdgeCoordinate;
-    childNode->layoutWidth = computedEdgeCoordinate;
-    currentAnchorPixelProductQ31 =
+    childNode->right = rightEdge;
+    childNode->layoutWidth = rightEdge; /* minus the left edge below */
+    bottomAnchorProduct =
          (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->bottomAnchorQ31;
-    currentEdgeCoordinate =
-         ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-         (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + childNode->bottomOffset + control->top;
-    childNode->bottom = currentEdgeCoordinate;
-    childNode->layoutHeight = currentEdgeCoordinate;
-    edgeAnchorPixelProductQ31 = (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->leftAnchorQ31;
-    edgeCoordinate = ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->leftOffset +
+    bottomEdge =
+         ((int)((uint64_t)bottomAnchorProduct >> 0x20) << 1 |
+         (uint32_t)bottomAnchorProduct >> 0x1f) + childNode->bottomOffset + control->top;
+    childNode->bottom = bottomEdge;
+    childNode->layoutHeight = bottomEdge;
+    leftOrTopAnchorProduct = (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->leftAnchorQ31;
+    leftOrTopEdge = ((int)((uint64_t)leftOrTopAnchorProduct >> 0x20) << 1 | (uint32_t)leftOrTopAnchorProduct >> 0x1f) + childNode->leftOffset +
             control->left;
-    childNode->left = edgeCoordinate;
-    childNode->layoutWidth = childNode->layoutWidth - edgeCoordinate;
-    edgeAnchorPixelProductQ31 = (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->topAnchorQ31;
-    edgeCoordinate = ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->topOffset +
+    childNode->left = leftOrTopEdge;
+    childNode->layoutWidth = childNode->layoutWidth - leftOrTopEdge;
+    leftOrTopAnchorProduct = (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->topAnchorQ31;
+    leftOrTopEdge = ((int)((uint64_t)leftOrTopAnchorProduct >> 0x20) << 1 | (uint32_t)leftOrTopAnchorProduct >> 0x1f) + childNode->topOffset +
             control->top;
-    childNode->top = edgeCoordinate;
-    childNode->layoutHeight = childNode->layoutHeight - edgeCoordinate;
+    childNode->top = leftOrTopEdge;
+    childNode->layoutHeight = childNode->layoutHeight - leftOrTopEdge;
     childNode->vtable->layout(childNode);
   }
   return;

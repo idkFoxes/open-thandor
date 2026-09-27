@@ -74,7 +74,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
 
 /* 0x005651A0 */
 void __thandor_void_preserve_eax_ecx
-InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot);
+InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot);
 
 /* 0x00565E30 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void);

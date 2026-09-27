@@ -480,11 +480,9 @@ FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
 
 
 /* Address: 0x0054A810.
-   Ownership: ui/frontend/settings.
-   Purpose: Registered as UI action 0x2049. The original user-facing label remains unresolved. Queued UI action
-   handler for FRONTEND_PAGE20[73] (0x2049). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
-   [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
+   Handler of the gameplay settings checkbox with action 0x2049: stores its state as
+   PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL in the persistent map/mouse option flags, which the session
+   reads when it starts.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
@@ -493,16 +491,16 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
   uint32_t optionFlags;
   PersistentSettingsValue value;
   bool isSelected;
-  
-  optionFlags = PersistentSettings_Read(0,0x40);
+
+  optionFlags = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
-    value = optionFlags | 4;
+    value = optionFlags | PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL;
   }
   else {
-    value = optionFlags & 0xfffffffb;
+    value = optionFlags & ~PERSISTENT_MOUSE_RIGHT_BUTTON_DOES_NOT_SCROLL;
   }
-  PersistentSettings_Write(value,0x40);
+  PersistentSettings_Write(value,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
   return;
 }
 
@@ -1378,9 +1376,12 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
 
 
 /* Address: 0x00549620.
-   Ownership: ui/frontend/settings.
-   Purpose: Rebuilds faction and player control availability, selection state, labels, assignment buffers, and the
-   localized task-description payload for the active frontend task-assignment page.
+   Refreshes the faction setup page (FRONTEND_PAGE_FACTION_SETUP) from the player records: the task description
+   of the local player's faction, which of the seven faction rows can be chosen (only factions that are active
+   in the level; a player who has confirmed is locked), the mode caption per row (player / nobody / computer),
+   and in a network game the roster text naming the players of every faction plus the lock of the rows once the
+   Finish button is pressed. When another player with a lower readyOrWaitState has the local player's faction,
+   the local player's faction control is hidden.
 */
 void
 FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
@@ -1407,38 +1408,45 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   uint32_t controlClearMask;
   uint32_t controlSetMask;
   
+  /* the rows get these nodeFlags masks: shown, or hidden once the local player has confirmed */
   controlSetMask = 0;
-  controlClearMask = 0xfffffff7;
+  controlClearMask = ~UI_NODE_SUPPRESSED;
   localFactionIndex = (g_FrontendPlayerRuntimeBlocks->factionAssignment).factionAssignmentIndex;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   remainingSearchCount = g_FrontendPlayerRuntimeBlockCount;
+  /* network game: find the local player's record (the first test is the network role, then the count) */
   networkedOrRemainingCount = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
   while (networkedOrRemainingCount != SESSION_NETWORK_ROLE_LOCAL) {
     if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
       localFactionIndex = (playerRecord->factionAssignment).factionAssignmentIndex;
       if ((playerRecord->factionAssignment).consensusValue != 0) {
-        controlSetMask = 8;
+        controlSetMask = UI_NODE_SUPPRESSED;
         controlClearMask = 0xffffffff;
       }
       break;
     }
-    playerRecord = playerRecord + 1;
-    remainingSearchCount = remainingSearchCount - SESSION_NETWORK_ROLE_CLIENT;
+    playerRecord++;
+    remainingSearchCount = remainingSearchCount - 1;
     networkedOrRemainingCount = remainingSearchCount;
   }
+  /* 0x230010 + 0x10 * level title + faction selects the task description of the local player's faction */
   rowIndexOrCount = 7;
   FRONTEND_UI_FIELD(taskAssignmentRoot,taskDescriptionText,0x54,struct UiNodeBase *) =
        (UiNodeBase *)
        (localFactionIndex + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
+  /* Offsets from the control tables are control offsets in the page: + nodeFlags (+0x48) gives the control's
+     nodeFlags (UI_NODE_SUPPRESSED), + rootFlags (+0x4C) its stateFlags (UI_SELECTABLE_SELECTED_OR_CHECKED,
+     FRONTEND_CONTROL_INACTIVE), + previousRoot (+0x54) its caption text id. Rows 7..1; entry 0 is unused. */
   do {
     if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags +
-                  g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount]) & 2) != 0)
+                  g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount]) &
+         UI_SELECTABLE_SELECTED_OR_CHECKED) != 0)
     goto FrontendTaskAssignment_ApplyEligibleFactionControlState;
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL)
          && (controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount],
-            (*(uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset) & 8) != 0)) {
+            (*(uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset) & UI_NODE_SUPPRESSED) != 0)) {
         if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x40) != 0)
         goto FrontendTaskAssignment_DisableUnavailableFactionControl;
       }
@@ -1446,9 +1454,9 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
                SESSION_NETWORK_ROLE_LOCAL) {
         controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
         controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-        *controlFlags = *controlFlags | 8;
+        *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
         controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
-        *controlFlags = *controlFlags & 0xfffffbff;
+        *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
         goto FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop;
       }
 FrontendTaskAssignment_ApplyEligibleFactionControlState:
@@ -1458,49 +1466,50 @@ FrontendTaskAssignment_ApplyEligibleFactionControlState:
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags & controlClearMask;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
-      *controlFlags = *controlFlags & 0xfffffbff;
+      *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
     }
     else {
 FrontendTaskAssignment_DisableUnavailableFactionControl:
       controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-      *controlFlags = *controlFlags | 8;
+      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
-      *controlFlags = *controlFlags | 0x400;
+      *controlFlags = *controlFlags | FRONTEND_CONTROL_INACTIVE;
     }
 FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                      g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount]);
-    *controlFlags = *controlFlags | 8;
-    rowIndexOrCount = rowIndexOrCount + -1;
+    *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+    rowIndexOrCount--;
   } while (rowIndexOrCount != 0);
+  /* mode captions: nobody, computer for active factions, player where a player record has the faction */
   rowIndexOrCount = 7;
   do {
     controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
-    *(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
+    *(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = TEXT_ID_FACTION_MODE_NOBODY;
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-       (*(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
+       (*(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = TEXT_ID_FACTION_MODE_COMPUTER,
        (*(uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
-                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) & 8) ==
-       0)) {
+                 g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) &
+        UI_NODE_SUPPRESSED) == 0)) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags | controlSetMask;
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags & controlClearMask;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
-      *controlFlags = *controlFlags & 0xfffffbff;
+      *controlFlags = *controlFlags & ~FRONTEND_CONTROL_INACTIVE;
     }
     else {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-      *controlFlags = *controlFlags | 8;
+      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
       controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
-      *controlFlags = *controlFlags | 0x400;
+      *controlFlags = *controlFlags | FRONTEND_CONTROL_INACTIVE;
     }
     loadedLevelOrClearMask = g_FrontendLoadedLevelAsset;
-    rowIndexOrCount = rowIndexOrCount + -1;
+    rowIndexOrCount--;
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
   } while (rowIndexOrCount != 0);
@@ -1508,10 +1517,13 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     factionIndexOrSetMask = (playerRecord->factionAssignment).factionAssignmentIndex;
     *(uint32_t *)
      ((int)&taskAssignmentRoot->previousRoot +
-     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]) = 0x2198;
-    remainingPlayers = remainingPlayers - 1;
-    playerRecord = playerRecord + 1;
+     g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]) = TEXT_ID_FACTION_MODE_PLAYER;
+    remainingPlayers--;
+    playerRecord++;
   } while (remainingPlayers != 0);
+  /* Not a client: update the mode buttons, then hide those of factions taken by players. The original ORs
+     the last player's faction index and ANDs the address of g_FrontendLoadedLevelAsset here (EAX/ESI still
+     hold them, 0x00549878), where the set/clear masks were probably meant; kept as in the original. */
   rowIndexOrCount = 7;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     do {
@@ -1524,7 +1536,7 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
         controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
         *controlFlags = *controlFlags & (uint32_t)loadedLevelOrClearMask;
       }
-      rowIndexOrCount = rowIndexOrCount + -1;
+      rowIndexOrCount--;
       remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
       playerRecord = g_FrontendPlayerRuntimeBlocks;
     } while (rowIndexOrCount != 0);
@@ -1532,62 +1544,67 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
       controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets
                        [(playerRecord->factionAssignment).factionAssignmentIndex]);
-      *controlFlags = *controlFlags | 8;
-      remainingPlayers = remainingPlayers - 1;
-      playerRecord = playerRecord + 1;
+      *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
+      remainingPlayers--;
+      playerRecord++;
     } while (remainingPlayers != 0);
   }
+  /* clear the roster texts (0x8C dwords = seven 0x50-byte rows) */
   textRowCursor = g_FrontendUiDisplayModeAndTaskAssignmentScratch.taskAssignmentText.rows + 1;
-  for (rowIndexOrCount = 0x8c; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+  for (rowIndexOrCount = 0x8c; rowIndexOrCount != 0; rowIndexOrCount--) {
     textRowCursor->textUtf16[0] = 0;
     textRowCursor->textUtf16[1] = 0;
     textRowCursor = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(textRowCursor->textUtf16 + 2);
   }
+  /* the participant column exists only in a network game */
   rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,int32_t);
-  *rosterLayoutFlags = *rosterLayoutFlags | 8;
+  *rosterLayoutFlags = *rosterLayoutFlags | UI_NODE_SUPPRESSED;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
   rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,int32_t);
-  *rosterLayoutFlags = *rosterLayoutFlags & 0xfffffff7;
+  *rosterLayoutFlags = *rosterLayoutFlags & ~UI_NODE_SUPPRESSED;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
+  /* Append every player's name to the roster row of its faction. playerName walks the records; +0x40 from it
+     is the record's factionAssignmentIndex (+0x58), +0x44 its consensusValue (+0x5C). */
   do {
     rosterTextCursor = (uint16_t *)((int)&g_FrontendUiDisplayModeAndTaskAssignmentScratch +
                       *(FrontendFactionAssignmentIndex *)
                        ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 8) * 0x50);
-    rowIndexOrCount = 0x28;
+    rowIndexOrCount = 40; /* code units left in the row */
     if (*(int *)rosterTextCursor != 0) {
       /* The faction row already names a player: find its end and append ", " while room is left. */
       do {
         rosterScanCursor = rosterTextCursor;
         if (rowIndexOrCount == 0) break;
-        rowIndexOrCount = rowIndexOrCount + -1;
+        rowIndexOrCount--;
         rosterScanCursor = rosterTextCursor + 1;
         scannedChar = *rosterTextCursor;
         rosterTextCursor = rosterScanCursor;
       } while (scannedChar != 0);
       rosterTextCursor = rosterScanCursor + 1;
-      rowIndexOrCount = rowIndexOrCount + -1;
+      rowIndexOrCount--;
       if (rowIndexOrCount != 0) {
-        rosterScanCursor[-1] = 0x2c;
-        rosterScanCursor[0] = 0x20;
+        rosterScanCursor[-1] = ',';
+        rosterScanCursor[0] = ' ';
       }
     }
     if (rowIndexOrCount != 0) {
-      if (0x15 < rowIndexOrCount) {
-        rowIndexOrCount = 0x14;
+      if (21 < rowIndexOrCount) {
+        rowIndexOrCount = 20; /* at most the 20 code units of a player name */
       }
       if (*(FrontendConsensusValue *)
            ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 0xc) == 0) {
+        /* consensusValue 0: the name between rich-text codes 0x8001 and 0x8000, else after 0x8000 */
         *rosterTextCursor = 0x8001;
         nameCharCursor = playerName;
-        for (; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+        for (; rowIndexOrCount != 0; rowIndexOrCount--) {
           rosterTextCursor[1] = nameCharCursor->textUtf16[0];
           nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
-          rosterTextCursor = rosterTextCursor + 1;
+          rosterTextCursor++;
         }
         rosterTextCursor[0] = 0x8000;
         rosterTextCursor[1] = 0;
@@ -1595,26 +1612,27 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
       else {
         *rosterTextCursor = 0x8000;
         nameCharCursor = playerName;
-        for (; rowIndexOrCount != 0; rowIndexOrCount = rowIndexOrCount + -1) {
+        for (; rowIndexOrCount != 0; rowIndexOrCount--) {
           rosterTextCursor[1] = nameCharCursor->textUtf16[0];
           nameCharCursor = (FrontendPlayerNameUtf16_28 *)(nameCharCursor->textUtf16 + 1);
-          rosterTextCursor = rosterTextCursor + 1;
+          rosterTextCursor++;
         }
         *rosterTextCursor = 0;
       }
     }
-    remainingPlayers = remainingPlayers - 1;
-    playerName = playerName + 0x7e;
+    remainingPlayers--;
+    playerName = playerName + 0x7e; /* 0x7E names of 0x28 bytes = one 0x13B0-byte player record */
     if (remainingPlayers == 0) {
+      /* once the local player has pressed Finish, the faction rows are hidden */
       rowIndexOrCount = 7;
       if (((uint32_t)FRONTEND_UI_FIELD(taskAssignmentRoot,factionSetupFinishButton,0x4C,struct UiRootCallbacks *) & 2) == 0) {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & FRONTEND_CONTROL_INACTIVE) == 0) {
             controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-            *controlFlags = *controlFlags & 0xfffffff7;
+            *controlFlags = *controlFlags & ~UI_NODE_SUPPRESSED;
           }
-          rowIndexOrCount = rowIndexOrCount + -1;
+          rowIndexOrCount--;
           remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
           playerRecord = g_FrontendPlayerRuntimeBlocks;
         } while (rowIndexOrCount != 0);
@@ -1622,15 +1640,16 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
       else {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & FRONTEND_CONTROL_INACTIVE) == 0) {
             controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-            *controlFlags = *controlFlags | 8;
+            *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
           }
-          rowIndexOrCount = rowIndexOrCount + -1;
+          rowIndexOrCount--;
           remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
           playerRecord = g_FrontendPlayerRuntimeBlocks;
         } while (rowIndexOrCount != 0);
       }
+      /* another player with the local player's faction and a lower readyOrWaitState: hide the faction */
       do {
         if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
           rowIndexOrCount = (playerRecord->factionAssignment).factionAssignmentIndex;
@@ -1638,19 +1657,19 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
           while ((rowIndexOrCount != (otherPlayerRecord->factionAssignment).factionAssignmentIndex ||
                  ((int)(playerRecord->factionAssignment).readyOrWaitState <=
                   (int)(otherPlayerRecord->factionAssignment).readyOrWaitState))) {
-            otherPlayerRecord = otherPlayerRecord + 1;
-            remainingPlayers = remainingPlayers - 1;
+            otherPlayerRecord++;
+            remainingPlayers--;
             if (remainingPlayers == 0) {
               return;
             }
           }
           controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                            g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount]);
-          *controlFlags = *controlFlags | 8;
+          *controlFlags = *controlFlags | UI_NODE_SUPPRESSED;
           return;
         }
-        remainingPlayers = remainingPlayers - 1;
-        playerRecord = playerRecord + 1;
+        remainingPlayers--;
+        playerRecord++;
       } while (remainingPlayers != 0);
       return;
     }

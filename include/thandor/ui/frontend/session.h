@@ -69,6 +69,7 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
 /* 0x00544D10 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReturnToMainPage
-          (uint32_t callbackContext,uint32_t argument2,uint32_t argument3,FrontendStatusCode stateCode);
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendStatusCode romActionIndex);
 
 #endif /* THANDOR_UI_FRONTEND_SESSION_H */

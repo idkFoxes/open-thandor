@@ -14,7 +14,7 @@ digraph thandor {
   "InGameConditionRuntime_UpdateScheduledRecords" [label="0x0050E120\nInGameConditionRuntime_UpdateScheduledRecords"];
   "InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState" [label="0x00513160\nInGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState"];
   "InGameRuntime_UpdateCursorGridAndViewScaleCache" [label="0x0053D4F0\nInGameRuntime_UpdateCursorGridAndViewScaleCache"];
-  "InGameRuntime_PublishRootWorldStatePointer" [label="0x005651A0\nInGameRuntime_PublishRootWorldStatePointer"];
+  "InGameRuntime_SaveWorldViewInfoTextChoice" [label="0x005651A0\nInGameRuntime_SaveWorldViewInfoTextChoice"];
   "InGameRuntime_UpdateSimulationAndNetworkTick" [label="0x00565E30\nInGameRuntime_UpdateSimulationAndNetworkTick"];
   "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess" [label="0x0050E0B0\nInGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf"];
   "InGameRuntime_RunSessionUntilExit" -> "InGameRuntime_InitializeNewSession";
@@ -25,7 +25,7 @@ digraph thandor {
   "InGameRuntime_InitializeNewSession" -> "InGameRuntime_UpdateSimulationAndNetworkTick";
   "InGameRuntime_InitializeLoadedSession" -> "InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess";
   "InGameRuntime_InitializeLoadedSession" -> "InGameRuntime_UpdateSimulationAndNetworkTick";
-  "InGameRuntime_ShutdownAndReleaseResources" -> "InGameRuntime_PublishRootWorldStatePointer";
+  "InGameRuntime_ShutdownAndReleaseResources" -> "InGameRuntime_SaveWorldViewInfoTextChoice";
   "InGameRuntime_ShutdownAndReleaseResources" -> "InGameRuntime_ReleaseFactionScratchBuffers";
   "InGameRuntime_UpdateSimulationAndNetworkTick" -> "InGameConditionRuntime_UpdateScheduledRecords";
   "InGameRuntime_UpdateSimulationAndNetworkTick" -> "InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState";

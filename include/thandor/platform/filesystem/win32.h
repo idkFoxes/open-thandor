@@ -12,6 +12,10 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/filesystem/win32. */
+
+/* Size of one UTF-16 name record written by Win32FileSystem_EnumerateDirectoryOrVolumeEntries (0x100 code
+   units, NUL-padded); returned to the caller as the record stride */
+#define FILESYSTEM_ENUMERATION_RECORD_BYTES 0x200
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00575CB0 */

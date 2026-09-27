@@ -763,22 +763,22 @@ uint32_t __cdecl Network_Init(void)
 
 
 /* Address: 0x00584DF0.
-   Ownership: network/backend/runtime.
-   Purpose: Handles network shutdown.
+   Stops WinSock at program end: WSACleanup of the DLL that Network_Init started. The ws2_32 mode also
+   frees its heap-allocated backend instance table (the wsock32 table is static image data).
 */
 void __thandor_preserve_eax Network_Shutdown(void)
 
 {
-  if (g_NetworkBackendMode == 1) {
+  if (g_NetworkBackendMode == NETWORK_BACKEND_MODE_WSOCK32) {
     g_WinSock_WSACleanup();
-    g_NetworkBackendMode = 0;
+    g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
     return;
   }
-  if (g_NetworkBackendMode == 2) {
+  if (g_NetworkBackendMode == NETWORK_BACKEND_MODE_WS2_32) {
     g_Ws2_32_WSACleanup();
-    g_NetworkBackendMode = 0;
+    g_NetworkBackendMode = NETWORK_BACKEND_MODE_NONE;
     g_MemoryApi.free(g_NetworkBackendInstanceTable);
-    g_NetworkBackendInstanceTable = (NetworkBackendInstanceDescriptorPrefix *)0x0;
+    g_NetworkBackendInstanceTable = NULL;
     g_NetworkBackendInstanceCount = 0;
   }
   return;
@@ -786,20 +786,20 @@ void __thandor_preserve_eax Network_Shutdown(void)
 
 
 /* Address: 0x00584E50.
-   Ownership: network/backend/runtime.
-   Purpose: Typed parameters: p1 returnValue→NetworkBackendSessionReturnValue32_V345. Calling convention, complete
-   VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
-   unchanged.
+   Backend slot 0 ("select backend instance") of the wsock32 backend, which has a single instance: it
+   accepts any backendIndex and returns it with CF clear. It stores ECX, not the index, in
+   g_NetworkBackendSessionContext (the ws2_32 variant NetworkBackend_SelectInstanceByIndex stores the
+   index); the callers pass the index on the stack only.
 */
 NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
-NetworkBackend_SetSessionContext(void *this,NetworkBackendSessionReturnValue32 returnValue)
+NetworkBackend_SetSessionContext(void *sessionContext,NetworkBackendSessionReturnValue32 backendIndex)
 
 {
   NetworkSetSessionResult sessionResult;
-  
-  g_NetworkBackendSessionContext = this;
+
+  g_NetworkBackendSessionContext = sessionContext;
   sessionResult.failed = false;
-  sessionResult.valueOrError = returnValue;
+  sessionResult.valueOrError = backendIndex;
   return sessionResult;
 }
 

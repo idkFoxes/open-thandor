@@ -11,10 +11,13 @@
 /* Implementation ownership: network/protocol/transfer. */
 
 /* Address: 0x004AEB10.
-   Ownership: network/protocol/transfer.
-   Purpose: 125 ms transfer-mailbox service timer. Locks the mailbox/ring, consumes validated records, handles
-   segmented payload and acknowledgement/retry records, and updates retransmission state.
-   Local calls: UiTransferBlock_Transform64BitBlocksWithRoundKeys16, UiTransfer_StagePacketAndSend.
+   Network receive timer (125 Hz, so one tick is 8 ms). Drains the UDP socket into the record ring: each
+   datagram is descrambled and its XOR checksum verified. The transfer and ping packets are answered right
+   here; every other valid packet is kept in the ring for the frontend/in-game handlers. Transfer: the host
+   sends a data blob (g_UiTransferMailbox) in chunks of UI_TRANSFER_CHUNK_PAYLOAD_BYTES as 0x80030 packets,
+   each requested by the receiver with a 0x10031 packet naming the next offset; a request that stays
+   unanswered for UI_TRANSFER_CHUNK_RETRY_TICKS ticks is sent again. Ping: 0x10032 is echoed as 0x10033,
+   whose round trip becomes the player's latency text. Skipped while the ring lock is held elsewhere.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void)
 
@@ -40,17 +43,20 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitT
   NetworkReceiveResult receiveResult;
   ArenaAllocResult allocResult;
   
-  g_UiTransferMailboxTickCounter = g_UiTransferMailboxTickCounter + 1;
+  g_UiTransferMailboxTickCounter++;
   lockBusy = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (!lockBusy) {
-    /* Receive loop: every handled (or rejected) record jumps back here until the backend has no more data. */
+    /* Receive loop: every handled (or rejected) record jumps back here until the backend has no more data.
+       The datagram goes to ring slot g_UiRuntimeRecordWriteIndex (0x100 bytes), the sender's address to
+       the matching 0x80-byte slot of the auxiliary buffer; the slot is only kept (write index advanced)
+       for packets that are not handled here. */
 UiTransferMailbox_ReceiveNextRecord:
     slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex;
     ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex;
     nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1;
     receiveResult = g_NetworkBackendSlot4
                        ((WinSockAddress *)
-                        (g_UiRuntimeRecordWriteIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000),0x100,
+                        (g_UiRuntimeRecordWriteIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeAuxiliaryBuffer8000),0x100,
                         (uint8_t *)ringRecord);
     if (!receiveResult.failed) {
       UiTransferBlock_Transform64BitBlocksWithRoundKeys16
@@ -60,25 +66,30 @@ UiTransferMailbox_ReceiveNextRecord:
       checksum = *checksumField;
       *checksumField = 0;
       UNLOCK();
-      counterOrOffset = ((ringRecord->packetHeader).packedTypeAndUnitCount >> 0x10) << 3;
+      /* the XOR of all dwords of the packet (unit count * 8 dwords, checksum field zeroed) must equal the
+         transmitted checksum */
+      counterOrOffset = ((ringRecord->packetHeader).packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT) << 3;
       do {
         checksum = checksum ^ (ringRecord->packetHeader).packedTypeAndUnitCount;
         ringRecord = (UiRuntimeRecord *)&(ringRecord->packetHeader).sequenceToken;
-        counterOrOffset = counterOrOffset + -1;
+        counterOrOffset--;
       } while (counterOrOffset != 0);
       if (checksum == 0) {
         ringRecord = g_UiRuntimeRecordRing + slotIndexOrByteCount;
         auxiliaryEndpointRecord =
-             (UiTransferAuxiliaryEndpointRecord80 *)(slotIndexOrByteCount * 0x80 + g_UiRuntimeAuxiliaryBuffer8000);
+             (UiTransferAuxiliaryEndpointRecord80 *)(slotIndexOrByteCount * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeAuxiliaryBuffer8000);
         if ((ringRecord->packetHeader).packedTypeAndUnitCount == FRONTEND_PACKET_80030) {
+          /* a chunk of the transfer from the host of this session: payload = offset, total size, data */
           if ((g_FrontendSessionToken == (ringRecord->packetHeader).sequenceToken) &&
              (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
               (auxiliaryEndpointRecord->endpoint).ipv4AddressNetworkOrder)) {
-            g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks + 0x40;
+            g_SessionTransferTimeoutTicks = g_SessionTransferTimeoutTicks + 0x40; /* 512 ms */
             counterOrOffset = *(int *)ringRecord->payload10_FF;
             slotIndexOrByteCount = *(uint32_t *)(ringRecord->payload10_FF + 4);
-            if (g_UiTransferMailbox.receivedAllocation != (void *)0x0) {
-              if (g_UiTransferMailbox.receivedAllocation == (void *)0xffffffff) {
+            /* receivedAllocation: NULL = no transfer requested, UI_TRANSFER_MAILBOX_UNAVAILABLE = requested,
+               first chunk still missing (allocated here), otherwise the buffer being filled */
+            if (g_UiTransferMailbox.receivedAllocation != NULL) {
+              if (g_UiTransferMailbox.receivedAllocation == UI_TRANSFER_MAILBOX_UNAVAILABLE) {
                 allocResult = g_MemoryApi.alloc(slotIndexOrByteCount);
                 if (allocResult.failed) goto UiTransferMailbox_ReceiveNextRecord;
                 counterOrOffset = 0;
@@ -86,12 +97,13 @@ UiTransferMailbox_ReceiveNextRecord:
                 g_UiTransferMailbox.receivedByteCount = slotIndexOrByteCount;
                 g_UiTransferMailbox.receivedRemainingBytes = slotIndexOrByteCount;
               }
+              /* only the chunk at the expected offset of a transfer of the expected size is taken */
               chunkEndOffset = counterOrOffset + g_UiTransferMailbox.receivedRemainingBytes;
               if ((chunkEndOffset == g_UiTransferMailbox.receivedByteCount) && (chunkEndOffset == slotIndexOrByteCount)) {
                 counterOrOffset = chunkEndOffset - g_UiTransferMailbox.receivedRemainingBytes;
                 bytesRemaining = slotIndexOrByteCount - counterOrOffset;
-                nextIndexOrChunkSize = 0xe8;
-                if (bytesRemaining < 0xe8) {
+                nextIndexOrChunkSize = UI_TRANSFER_CHUNK_PAYLOAD_BYTES;
+                if (bytesRemaining < UI_TRANSFER_CHUNK_PAYLOAD_BYTES) {
                   nextIndexOrChunkSize = bytesRemaining;
                 }
                 g_UiTransferMailbox.receivedRemainingBytes =
@@ -99,16 +111,18 @@ UiTransferMailbox_ReceiveNextRecord:
                 receivedChunkSourceDwords = (uint32_t *)(ringRecord->payload10_FF + 8);
                 receivedChunkDestinationDwords =
                      (uint32_t *)((int)g_UiTransferMailbox.receivedAllocation + counterOrOffset);
-                for (nextIndexOrChunkSize = nextIndexOrChunkSize >> 2; nextIndexOrChunkSize != 0; nextIndexOrChunkSize = nextIndexOrChunkSize - 1) {
+                for (nextIndexOrChunkSize = nextIndexOrChunkSize >> 2; nextIndexOrChunkSize != 0; nextIndexOrChunkSize--) {
                   *receivedChunkDestinationDwords = *receivedChunkSourceDwords;
-                  receivedChunkSourceDwords = receivedChunkSourceDwords + 1;
-                  receivedChunkDestinationDwords = receivedChunkDestinationDwords + 1;
+                  receivedChunkSourceDwords++;
+                  receivedChunkDestinationDwords++;
                 }
                 if (g_UiTransferMailbox.receivedRemainingBytes != 0) {
-                  g_UiTransferMailbox.receiveRetryTicks = 4;
+                  /* request the next chunk */
+                  g_UiTransferMailbox.receiveRetryTicks = UI_TRANSFER_CHUNK_RETRY_TICKS;
                   g_UiTransferMailboxChunkOffset =
                        g_UiTransferMailbox.receivedByteCount -
                        g_UiTransferMailbox.receivedRemainingBytes;
+                  /* chunk packet header (at 0x004AE9E8) = FRONTEND_PACKET_10031: type 0x31, 1 unit */
                   s_mohTG_sakere___e_004ae9d8[0x10] = '1';
                   s_mohTG_sakere___e_004ae9d8[0x11] = '\0';
                   s_mohTG_sakere___e_004ae9d8[0x12] = '\x01';
@@ -123,39 +137,41 @@ UiTransferMailbox_ReceiveNextRecord:
           }
         }
         else if ((ringRecord->packetHeader).packedTypeAndUnitCount == FRONTEND_PACKET_10031) {
+          /* host: a player requests the chunk at the offset in the payload of the outgoing transfer */
           if (g_UiTransferMailbox.outgoingAllocation != (void *)0x0) {
             playersRemaining = g_FrontendPlayerRuntimeBlockCount;
             playerRecord = g_FrontendPlayerRuntimeBlocks;
             while (((ringRecord->packetHeader).sequenceToken != playerRecord->peerSequenceToken ||
                    ((auxiliaryEndpointRecord->endpoint).ipv4AddressNetworkOrder !=
                     (playerRecord->endpoint).ipv4AddressNetworkOrder))) {
-              playerRecord = playerRecord + 1;
-              playersRemaining = playersRemaining - 1;
+              playerRecord++;
+              playersRemaining--;
               if (playersRemaining == 0) goto UiTransferMailbox_ReceiveNextRecord;
             }
             auxiliaryEndpointRecord->transferTimeoutTicks =
-                 auxiliaryEndpointRecord->transferTimeoutTicks + 0x40;
+                 auxiliaryEndpointRecord->transferTimeoutTicks + 0x40; /* 512 ms */
             g_UiTransferMailboxChunkOffset = *(UiTransferMailboxByteOffset *)ringRecord->payload10_FF;
-            playerRecord->runtimeState70 = 0xe8;
+            playerRecord->runtimeState70 = UI_TRANSFER_CHUNK_PAYLOAD_BYTES;
             g_UiTransferMailboxTransferByteCount = g_UiTransferMailbox.outgoingByteCount;
             playerRecord->runtimeState70 = playerRecord->runtimeState70 + g_UiTransferMailboxChunkOffset;
+            /* chunk packet header = FRONTEND_PACKET_80030: type 0x30, 8 units (0x100 bytes) */
             s_mohTG_sakere___e_004ae9d8[0x10] = '0';
             s_mohTG_sakere___e_004ae9d8[0x11] = '\0';
             s_mohTG_sakere___e_004ae9d8[0x12] = '\b';
             s_mohTG_sakere___e_004ae9d8[0x13] = '\0';
             bytesRemaining = g_UiTransferMailboxTransferByteCount - g_UiTransferMailboxChunkOffset;
-            nextIndexOrChunkSize = 0xe8;
-            if (bytesRemaining < 0xe8) {
+            nextIndexOrChunkSize = UI_TRANSFER_CHUNK_PAYLOAD_BYTES;
+            if (bytesRemaining < UI_TRANSFER_CHUNK_PAYLOAD_BYTES) {
               nextIndexOrChunkSize = bytesRemaining;
             }
             mailboxCopySourceOrDestinationDwords =
                  (uint32_t *)((int)g_UiTransferMailbox.outgoingAllocation +
                           g_UiTransferMailboxChunkOffset);
-            chunkPayloadCursor = (uint32_t *)THANDOR_ADDR(g_UiTransferChunkPayload,0);
-            for (nextIndexOrChunkSize = nextIndexOrChunkSize >> 2; nextIndexOrChunkSize != 0; nextIndexOrChunkSize = nextIndexOrChunkSize - 1) {
+            chunkPayloadCursor = g_UiTransferChunkPayload;
+            for (nextIndexOrChunkSize = nextIndexOrChunkSize >> 2; nextIndexOrChunkSize != 0; nextIndexOrChunkSize--) {
               *chunkPayloadCursor = *mailboxCopySourceOrDestinationDwords;
-              mailboxCopySourceOrDestinationDwords = mailboxCopySourceOrDestinationDwords + 1;
-              chunkPayloadCursor = chunkPayloadCursor + 1;
+              mailboxCopySourceOrDestinationDwords++;
+              chunkPayloadCursor++;
             }
             g_UiTransferChunkPacketSequenceToken = g_UiTransferSequenceToken;
             UiTransfer_StagePacketAndSend
@@ -164,6 +180,7 @@ UiTransferMailbox_ReceiveNextRecord:
           }
         }
         else if ((ringRecord->packetHeader).packedTypeAndUnitCount == FRONTEND_PACKET_10032) {
+          /* ping: echo the sender's tick count back as 0x10033 */
           g_UiTransferMailboxReplyPacket10033EchoedTick = *(uint32_t *)ringRecord->payload10_FF;
           g_UiTransferMailboxReplyPacket10033 = 0x10033;
           g_UiTransferMailboxReplyPacket10033SequenceToken = g_UiTransferSequenceToken;
@@ -172,6 +189,7 @@ UiTransferMailbox_ReceiveNextRecord:
                      (UiTransferPacketHeader *)&g_UiTransferMailboxReplyPacket10033);
         }
         else if ((ringRecord->packetHeader).packedTypeAndUnitCount == FRONTEND_PACKET_10033) {
+          /* ping answer: store the round trip in ticks and "<ticks * 4>ms" (half the round trip) as text */
           counterOrOffset = g_FrontendPlayerRuntimeCount;
           playerRecord = g_FrontendPlayerRuntimeBlocks;
           if (0 < g_FrontendPlayerRuntimeCount) {
@@ -185,33 +203,35 @@ UiTransferMailbox_ReceiveNextRecord:
                 slotIndexOrByteCount = g_WideNumberFormatUtf16
                                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,counterOrOffset * 4,(uint16_t *)latencyTextCursor);
                 latencySuffixCursor = latencyTextCursor + slotIndexOrByteCount;
-                latencySuffixCursor[0] = 0x6d;
+                latencySuffixCursor[0] = 'm'; /* UTF-16 "ms" and terminator */
                 latencySuffixCursor[1] = 0;
-                latencySuffixCursor[2] = 0x73;
+                latencySuffixCursor[2] = 's';
                 latencySuffixCursor[3] = 0;
                 (latencyTextCursor + slotIndexOrByteCount + 4)[0] = 0;
                 (latencyTextCursor + slotIndexOrByteCount + 4)[1] = 0;
                 break;
               }
-              playerRecord = playerRecord + 1;
-              counterOrOffset = counterOrOffset + -1;
+              playerRecord++;
+              counterOrOffset--;
             } while (counterOrOffset != 0);
           }
         }
         else {
+          /* keep the packet: advance the ring write index (256 slots) */
           g_UiRuntimeRecordWriteIndex = nextIndexOrChunkSize;
-          if (0xff < nextIndexOrChunkSize) {
+          if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextIndexOrChunkSize) {
             g_UiRuntimeRecordWriteIndex = 0;
           }
         }
       }
       goto UiTransferMailbox_ReceiveNextRecord;
     }
+    /* no more data: re-request the missing chunk when the retry countdown expires */
     if (((g_UiTransferMailbox.receiveRetryTicks != 0) &&
         (g_UiTransferMailbox.receiveRetryTicks = g_UiTransferMailbox.receiveRetryTicks - 1,
         g_UiTransferMailbox.receiveRetryTicks == 0)) &&
        (g_UiTransferMailbox.receivedRemainingBytes != 0)) {
-      g_UiTransferMailbox.receiveRetryTicks = 4;
+      g_UiTransferMailbox.receiveRetryTicks = UI_TRANSFER_CHUNK_RETRY_TICKS;
       g_UiTransferMailboxChunkOffset =
            g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes;
       s_mohTG_sakere___e_004ae9d8[0x10] = '1';
@@ -552,11 +572,9 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
 
 
 /* Address: 0x0054E230.
-   Ownership: network/protocol/transfer.
-   Purpose: Builds the fixed packet header with packed type 0x00010000 and payload value 0x2931, then submits it
-   through the exact endpoint descriptor while preserving the backend CF result. Key sender: 0x10000 Handshake with
-   magic 0x2931 (typed opcode census, exe_net_packets.md section 4b).
-   Local calls: UiTransfer_StagePacketAndSend.
+   Sends the session discovery probe (0x10000 handshake with FRONTEND_PROTOCOL_MAGIC) to
+   g_FrontendNetworkEndpointScratch, the address from the join dialog or the broadcast address. Hosts answer
+   with a 0x50001 session advertisement. CF is the send result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(void)
 
@@ -564,7 +582,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(v
   bool sendCarry;
   
   g_FrontendPacket10000Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10000_HANDSHAKE;
-  g_FrontendPacket10000Buffer.protocolMagic2931 = 0x2931;
+  g_FrontendPacket10000Buffer.protocolMagic2931 = FRONTEND_PROTOCOL_MAGIC;
   sendCarry = UiTransfer_StagePacketAndSend
                     (&g_FrontendNetworkEndpointScratch,&g_FrontendPacket10000Buffer.header);
   return sendCarry;
@@ -572,12 +590,10 @@ bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(v
 
 
 /* Address: 0x0054E470.
-   Ownership: network/protocol/transfer.
-   Purpose: Builds packet 0x00020002 with a 0x40-byte payload, copies exactly ten dwords from the current player
-   descriptor, derives status bits 0x0001 and 0x0100, and submits the packet while preserving the existing EDX and
-   CF contracts. Key sender: 0x20002 PlayerDescriptor (10 dwords).
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: PcxPreview_Load64x64PaletteAndPixels [ui/support/runtime].
+   Introduces the local player to the host (0x20002 player descriptor): the player name (20 UTF-16 units)
+   whose last unit is replaced by flags: bit 0 = a 64x64 picture <name>.pcx was found (loaded into
+   g_FrontendLocalPlayerPcxPreview), bit 8 = shown as "CD" in the lobby list (always set). CF is the send
+   result.
 */
 bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(void)
 
@@ -591,11 +607,12 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(vo
   g_FrontendPacket20002Buffer.payloadByteCount = 0x40;
   nameSourceCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   payloadCursor = g_FrontendPacket20002Buffer.playerDescriptorPayload;
-  for (dwordCount = 10; dwordCount != 0; dwordCount = dwordCount + -1) {
+  for (dwordCount = 10; dwordCount != 0; dwordCount--) {
     *payloadCursor = *nameSourceCursor;
-    nameSourceCursor = nameSourceCursor + 1;
-    payloadCursor = payloadCursor + 1;
+    nameSourceCursor++;
+    payloadCursor++;
   }
+  /* the last name unit becomes the flags word */
   *(uint16_t *)((int)payloadCursor + -2) = 0;
   callCarry = PcxPreview_Load64x64PaletteAndPixels
                     (g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
@@ -1079,18 +1096,15 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
 
 
 /* Address: 0x00572920.
-   Ownership: network/protocol/transfer.
-   Purpose: Builds request type 0x00010021 in the fixed frontend packet, increments g_UiTransferSenderContext, runs
-   the packet preparation helper, and submits it through UiTransfer_StagePacketAndSend with the fixed endpoint
-   descriptor. EAX and CF remain authoritative. Key sender: 0x10021 in-game command single/batch request mirror.
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: InGameCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
+   Client side of the lockstep exchange: sends the host its next in-game command (FRONTEND_PACKET_COMMAND_SUBMIT)
+   with the oldest queued command, or an empty record when none is queued. The sender context counts the
+   submissions.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchRequest10021(void)
 
 {
-  g_FrontendPacket10021Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10021;
-  g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
+  g_FrontendPacket10021Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_SUBMIT;
+  g_UiTransferSenderContext++;
   InGameCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10021Buffer);
   UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
@@ -1142,18 +1156,17 @@ UiTransferMailbox_GetReceivedBuffer(void)
 
 
 /* Address: 0x004AF1C0.
-   Ownership: network/protocol/transfer.
-   Purpose: XORs the low sixteen bits of Random_NextPrimary into the transfer sequence token while preserving the
-   token's high word.
-   Cross-module calls: Random_NextPrimary [core/math/random].
+   Gives this machine a new random session identity before it opens or looks for a session: XORs a random
+   16-bit value into the low word of the transfer sequence token. The high word stays (a host answers the
+   discovery probe only for 0x1234).
 */
 void __thandor_preserve_eax_edx UiTransferMailbox_RandomizeSequenceToken(void)
 
 {
-  uint32_t sequenceTokenRandomSample;
+  uint32_t randomValue;
   
-  sequenceTokenRandomSample = Random_NextPrimary();
-  g_UiTransferSequenceToken = g_UiTransferSequenceToken ^ sequenceTokenRandomSample & 0xffff;
+  randomValue = Random_NextPrimary();
+  g_UiTransferSequenceToken = g_UiTransferSequenceToken ^ randomValue & 0xffff;
   return;
 }
 
@@ -1604,15 +1617,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
 
 
 /* Address: 0x004AEF70.
-   Ownership: network/protocol/transfer.
-   Purpose: Stages a variable packet in the exact 0x2000-byte rolling data buffer, copies its four-dword endpoint
-   descriptor into the parallel 0x1000-byte buffer, writes the sequence token and sender context, computes the
-   dword XOR checksum, and invokes network backend slot 5. The high word of packedTypeAndUnitCount is an exact
-   count of 0x20-byte units. All general registers are restored and CF is preserved from the backend submission
-   callback. Stages the packet (high word of packedTypeAndUnitCount = exact 0x20-byte unit count), computes the XOR
-   checksum over every dword (checksum field cleared first), scrambles via TransformPacketBlocks, sends. Wire
-   captures (exe_net_*.md) stay senior for live traffic.
-   Local calls: UiTransfer_TransformPacketBlocks.
+   Sends one packet to endpoint; every packet of the game goes through here. Stamps the header with this
+   machine's sequence token and sender context and the XOR checksum over all dwords, then writes a scrambled
+   copy (UiTransfer_TransformPacketBlocks) into the next free units of a 256-unit ring (0x20 bytes per unit,
+   with a parallel ring of 16-byte endpoint copies) and hands that copy to the backend send slot. The unit
+   count is the high word of packedTypeAndUnitCount. CF is the backend's send result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiTransfer_StagePacketAndSend
@@ -1638,12 +1647,13 @@ UiTransfer_StagePacketAndSend
   
   currentSenderContext = g_UiTransferSenderContext;
   currentSequenceToken = g_UiTransferSequenceToken;
-  unitCount = packet->packedTypeAndUnitCount >> 0x10;
-  dataOffsetOrDwordCount = g_UiTransferUnitCursor << 5;
+  unitCount = packet->packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
+  dataOffsetOrDwordCount = g_UiTransferUnitCursor << 5; /* 0x20 bytes per unit */
   nextUnitCursor = unitCount + g_UiTransferUnitCursor;
-  endpointOffset = g_UiTransferUnitCursor << 4;
+  endpointOffset = g_UiTransferUnitCursor << 4; /* 16 bytes per endpoint copy */
   g_UiTransferUnitCursor = nextUnitCursor;
   if (0xff < nextUnitCursor) {
+    /* the packet does not fit before the end of the ring: start over at unit 0 */
     dataOffsetOrDwordCount = 0;
     endpointOffset = 0;
     g_UiTransferUnitCursor = unitCount;
@@ -1668,11 +1678,12 @@ UiTransfer_StagePacketAndSend
   UiTransfer_TransformPacketBlocks
             ((uint32_t *)&g_UiTransferRoundKeys16,outputBlocks,byteCount,
              &packet->packedTypeAndUnitCount);
+  /* endpointBufferBase points 8 bytes into the endpoint ring, so "- 8" is the endpoint slot itself */
   endpointDestinationDwordCursor = (uint32_t *)(endpointBufferBase + endpointOffset + -8);
-  for (dataOffsetOrDwordCount = 4; dataOffsetOrDwordCount != 0; dataOffsetOrDwordCount = dataOffsetOrDwordCount + -1) {
+  for (dataOffsetOrDwordCount = 4; dataOffsetOrDwordCount != 0; dataOffsetOrDwordCount--) {
     *endpointDestinationDwordCursor = THANDOR_BITCAST(NetworkEndpointAddressHeader4, uint32_t, endpoint->addressHeader);
     endpoint = (UiTransferEndpointDescriptor *)&endpoint->ipv4AddressNetworkOrder;
-    endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
+    endpointDestinationDwordCursor++;
   }
   sendResult = g_NetworkBackendSlot5
                      ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);

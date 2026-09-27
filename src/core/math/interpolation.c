@@ -11,15 +11,10 @@
 /* Implementation ownership: core/math/interpolation. */
 
 /* Address: 0x0053CA30.
-   Ownership: core/math/interpolation.
-   Purpose: Evaluates six world-motion cubic channels and applies them to one world runtime. RET 0x10 proves four
-   stack arguments. Role: Evaluates six cubic channels at a Q12 time and applies position/motion parameters to the
-   world runtime. Inputs: 0x20-byte keyframes, coefficient tables, keyframe count and Q12 time. Outputs: World
-   position from channels 0..2, motion parameters from 3..5, plus six cached derivatives.
-   Local calls: CubicSpline_EvaluateValueQ12, CubicSpline_EvaluateDerivativeQ12,
-   WorldMotionSpline_ClearCachedDerivatives.
-   Cross-module calls: WorldRuntime_SetPosition60AndDistanceFromPosition80 [world/runtime/core],
-   WorldRuntime_SetMotionParameters6CThrough78Clamped [world/runtime/core].
+   Plays a six-channel keyframe spline at timeQ12: finds the first keyframe later than the time, evaluates
+   the cubic segment before it and applies channels 0..2 as the position and 3..5 as magnitude/yaw/pitch
+   to worldRuntime, caching the six derivatives. Returns true (CF set) while the spline runs; past the last
+   keyframe it applies that keyframe, clears the derivatives and returns false.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 WorldMotionSpline_EvaluateAndApplyAtTime
@@ -36,55 +31,56 @@ WorldMotionSpline_EvaluateAndApplyAtTime
   int keyframeIndex;
   WorldMotionSplineKeyframe *currentKeyframe;
   WorldRuntimeContext *runtimeCopy;
-  
+
   /* Every channel evaluates the same segment (keyframeIndex - 1); Ghidra showed the re-pushed register
-     as uninitialized segmentIndex_NN locals. */
+     as uninitialized segmentIndex_NN locals. A time before the first keyframe gives segment -1. */
   keyframeIndex = 0;
   do {
     currentKeyframe = keyframes;
     if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {
       runtimeCopy = worldRuntime;
       positionX = CubicSpline_EvaluateValueQ12
-                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
+                            (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[0]);
       positionY = CubicSpline_EvaluateValueQ12
-                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
+                            (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[1]);
       positionZ = CubicSpline_EvaluateValueQ12
-                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
+                            (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[2]);
       WorldRuntime_SetPosition60AndDistanceFromPosition80(positionZ,positionY,positionX,runtimeCopy);
       runtimeCopy = worldRuntime;
       magnitude = CubicSpline_EvaluateValueQ12
-                            (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+                            (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       yawAngle = CubicSpline_EvaluateValueQ12
-                        (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
-      yawAngle = yawAngle & 0xffff;
+                        (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
+      yawAngle = yawAngle & 0xffff; /* 16-bit angle: wrap to one turn */
       pitchAngle = CubicSpline_EvaluateValueQ12
-                             (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
+                             (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       WorldRuntime_SetMotionParameters6CThrough78Clamped
                 ((worldRuntime->motion).motionValue78,pitchAngle,yawAngle,magnitude,runtimeCopy);
       g_WorldMotionSplineCachedDerivatives[0] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[0]);
       g_WorldMotionSplineCachedDerivatives[1] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[1]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[1]);
       g_WorldMotionSplineCachedDerivatives[2] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[2]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[2]);
       g_WorldMotionSplineCachedDerivatives[3] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[3]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[3]);
       g_WorldMotionSplineCachedDerivatives[4] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[4]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[4]);
       g_WorldMotionSplineCachedDerivatives[5] =
            CubicSpline_EvaluateDerivativeQ12
-                     (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[5]);
+                     (timeQ12,keyframeIndex - 1,g_WorldMotionSplineCoefficientTables[5]);
       return true;
     }
-    keyframeIndex = keyframeIndex + 1;
-    keyframeCount = keyframeCount + -1;
+    keyframeIndex++;
+    keyframeCount--;
     keyframes = currentKeyframe + 1;
   } while (keyframeCount != 0);
+  /* past the end: hold the last keyframe */
   yawAngle = currentKeyframe->channel4Q12;
   WorldRuntime_SetPosition60AndDistanceFromPosition80
             (currentKeyframe->channel2Q12,currentKeyframe->channel1Q12,currentKeyframe->channel0Q12,worldRuntime);
@@ -582,22 +578,19 @@ CubicSpline_BackSubstituteRow
 
 
 /* Address: 0x0053CA10.
-   Ownership: core/math/interpolation.
-   Purpose: Clears the six cached derivative values used by the world-motion spline evaluator. Role: Clears the six
-   cached derivative values used by world-motion spline evaluation. Inputs: Global spline derivative cache.
-   Outputs: Zeroed six-channel derivative cache. Edges: Precedes building/evaluating a new motion spline.
+   Zeroes the six derivatives cached by the world-motion spline evaluators, so a finished or newly built
+   spline reports no motion.
 */
 void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(void)
 
 {
   int derivativesRemaining;
   float *derivativeCursor;
-  
+
   derivativeCursor = g_WorldMotionSplineCachedDerivatives;
-  for (derivativesRemaining = 6; derivativesRemaining != 0;
-      derivativesRemaining = derivativesRemaining + -1) {
+  for (derivativesRemaining = 6; derivativesRemaining != 0; derivativesRemaining--) {
     *derivativeCursor = 0.0;
-    derivativeCursor = derivativeCursor + 1;
+    derivativeCursor++;
   }
   return;
 }

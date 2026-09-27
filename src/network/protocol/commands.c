@@ -11,11 +11,9 @@
 /* Implementation ownership: network/protocol/commands. */
 
 /* Address: 0x00543F50.
-   Ownership: network/protocol/commands.
-   Purpose: Appends one 0x10-byte command record to the bounded sixteen-record frontend queue. RET 0x10 proves four
-   stack arguments. LOBBY command stack enqueue: dispatch base + (cmd>>8), bounded by the lobby handler-region end.
-   The 0x1540 chat RPC enqueues here (L3 closure — not an entity base). Typed parameters: p0
-   commandCode→UiActionId_V338.
+   Queues a lobby (frontend) command of the local player for the next network command batch: one 16-byte
+   record of (commandCode << 8 | local player id) and three payload dwords. The queue holds 16 records;
+   further commands are dropped. The lobby chat command (0x1540) is sent this way.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendCommandQueue_EnqueueLocalPlayerCommand
@@ -33,7 +31,7 @@ FrontendCommandQueue_EnqueueLocalPlayerCommand
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
-    g_FrontendCommandQueueEnd = g_FrontendCommandQueueEnd + 1;
+    g_FrontendCommandQueueEnd++;
   }
   return;
 }
@@ -83,11 +81,10 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
 
 
 /* Address: 0x0055F130.
-   Ownership: network/protocol/commands.
-   Purpose: Appends one 0x10-byte local-player command record to the bounded sixteen-record in-game queue. RET 0x10
-   proves four stack arguments. IN-GAME lockstep stack append — separate dispatch base from the lobby stack (N4
-   phase split). Typed parameters: p0 commandCode→UiActionId_V338. Nearby but non-identical semantic domains were
-   explicitly deferred.
+   Queues an in-game command of the local player for the next lockstep command batch: one 16-byte record
+   of (commandCode << 8 | local player id) and three payload dwords. commandCode is one of the
+   INGAME_COMMAND_* handler offsets (relative to this function's address). The queue holds 16 records;
+   further commands are dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandQueue_AppendLocalPlayerCommand
@@ -105,16 +102,16 @@ InGameCommandQueue_AppendLocalPlayerCommand
     writeRecord->payloadDword08 = payloadDword08;
     writeRecord->payloadDword0C = payloadDword0C;
     writeRecord->packedCommandAndPlayerId = packedCommandAndPlayerId;
-    g_InGameCommandQueueEnd = g_InGameCommandQueueEnd + 1;
+    g_InGameCommandQueueEnd++;
   }
   return;
 }
 
 
 /* Address: 0x0055F190.
-   Ownership: network/protocol/commands.
-   Purpose: Writes one UiCommandQueueRecord into FrontendCommandPacketRecord.command at +0x10, or clears the packed
-   command dword when the queue is empty. In-game stack dequeue.
+   Takes the oldest queued in-game command into outputRecord->command (offset 0x10 of the packet record)
+   and moves the remaining records one slot down. With an empty queue only the packed command dword is
+   cleared, which marks "no command" in the batch.
 */
 void __thandor_void_preserve_ecx_edx
 InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRecord)
@@ -134,8 +131,8 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
   }
   copySourceCursor = g_InGameCommandQueueRecords;
   outputRecordWriteCursor = &outputRecord->command;
-  for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0;
-      firstRecordDwordsRemaining = firstRecordDwordsRemaining + -1) {
+  /* REP MOVSD of the first record (4 dwords), then of the rest of the queue onto the start */
+  for (firstRecordDwordsRemaining = 4; firstRecordDwordsRemaining != 0; firstRecordDwordsRemaining--) {
     outputRecordWriteCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
     copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
@@ -143,13 +140,13 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
   copyDestinationCursor = g_InGameCommandQueueRecords;
   trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_InGameCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
-    for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
+    for (; trailingDwordCount != 0; trailingDwordCount--) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
       copySourceCursor = (UiCommandQueueRecord *)&copySourceCursor->payloadDword04;
       copyDestinationCursor = (UiCommandQueueRecord *)&copyDestinationCursor->payloadDword04;
     }
   }
-  g_InGameCommandQueueEnd = g_InGameCommandQueueEnd + -1;
+  g_InGameCommandQueueEnd--;
   return;
 }
 

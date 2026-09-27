@@ -12,12 +12,16 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/terrain/editing. */
+
+/* Cells that stop TerrainRegionCollection_CollectConnectedCellsRecursive: the map-edge ring and cells already
+   collected (FieldGridCell.flagsAndMaterial; = 0x88016000). */
+#define TERRAIN_REGION_STOP_FLAGS (FIELD_CELL_GRID_EDGE_MASK | FIELD_CELL_CONNECTED_REGION_VISITED)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005137F0 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainRegionCollection_CollectConnectedCellsRecursive
-          (FieldGridRegionMask requiredOccupancyMask,FieldGridRowStrideBytes rowStrideBytes,
+          (FieldGridRegionMask requiredCellFlags,FieldGridRowStrideBytes rowStrideBytes,
           FieldGridCell *cell);
 
 /* 0x00561A10 */

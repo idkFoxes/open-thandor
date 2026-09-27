@@ -781,22 +781,20 @@ UiScrollableControl_HandlePointerWheel
 
 
 /* Address: 0x004BA500.
-   Ownership: ui/controls/lists.
-   Purpose: Selects an in-range pointer-list entry by storing base + index*4 at +0x60 and invalidates the
-   corresponding fixed-height row. EAX, EDX, and flags remain governed by the original code.
-   Local calls: UiScrollableControl_ClampOffsetsToViewport.
+   Selects row index of a pointer list (without queueing its action) and scrolls the list's scrollable
+   parent so the row is visible. Out-of-range indices are ignored.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SelectIndexVariantA(UiListRowIndex index,UiPointerListControl *control)
 
 {
-  int clipBottom;
+  int rowTop;
   
   if (index < control->rowCount) {
     control->selectedRowSlot = control->rowSlots + index;
-    clipBottom = control->rowHeight * index;
+    rowTop = control->rowHeight * index;
     UiScrollableControl_ClampOffsetsToViewport
-              (clipBottom + 1 + control->rowHeight,(control->base).rightOffset,clipBottom,0,
+              (rowTop + 1 + control->rowHeight,(control->base).rightOffset,rowTop,0,
                (UiScrollableControl *)(control->base).parent);
   }
   return;
@@ -1713,17 +1711,14 @@ UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord
 }
 
 /* Address: 0x004B11C0.
-   Ownership: ui/controls/lists.
-   Purpose: Traverses a sibling list and forwards the action ID through vtable slot +0x3C, restoring matching
-   controls. Kept distinct from player IDs, command opcodes, and resource identifiers. Typed parameters: p0
-   actionId→UiActionId_V338. Calling convention, storage, body bytes, control flow, and executable data remain
-   unchanged.
+   Re-enables the controls bound to actionId among firstNode and its following siblings: each node's
+   unsuppressActionId method clears UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
-  for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
+  for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
     firstNode->vtable->unsuppressActionId(actionId,firstNode);
   }
   return;
@@ -1731,17 +1726,14 @@ UiNodeList_UnsuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 
 /* Address: 0x004B1200.
-   Ownership: ui/controls/lists.
-   Purpose: Traverses a sibling list and forwards the action ID through vtable slot +0x38, suppressing matching
-   controls. Kept distinct from player IDs, command opcodes, and resource identifiers. Typed parameters: p0
-   actionId→UiActionId_V338. Calling convention, storage, body bytes, control flow, and executable data remain
-   unchanged.
+   Disables (greys out) the controls bound to actionId among firstNode and its following siblings: each
+   node's suppressActionId method sets UI_NODE_SUPPRESSED when the action matches (containers recurse).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 
 {
-  for (; firstNode != (UiNodeBase *)0xffffffff; firstNode = firstNode->nextSibling) {
+  for (; firstNode != UI_NODE_NONE; firstNode = firstNode->nextSibling) {
     firstNode->vtable->suppressActionId(actionId,firstNode);
   }
   return;
@@ -1866,11 +1858,9 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
 
 
 /* Address: 0x004B2D30.
-   Ownership: ui/controls/lists.
-   Purpose: Variadic group test. CF=0 when at least one non-suppressed control has selected bit 0x02; CF=1 when
-   none does. Kept distinct from player IDs, command opcodes, and resource identifiers. Typed parameters: p0
-   controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
-   remain unchanged.
+   Asks a group of selectable controls (controlCount control pointers follow on the stack) whether none of
+   the enabled ones is selected: CF set when none is. Otherwise CF clear with the index (ECX) and node (EAX)
+   of the first enabled, selected control.
 */
 SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
@@ -1884,9 +1874,11 @@ UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
+  /* +0x48 = base.nodeFlags, +0x4C = stateFlags of the UiSelectableControl */
   while ((controlAddress = *(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset),
-         (*(uint32_t *)(controlAddress + 0x48) & 8) != 0 || ((*(uint32_t *)(controlAddress + 0x4c) & 2) == 0))) {
-    controlIndex = controlIndex + 1;
+         (*(uint32_t *)(controlAddress + 0x48) & UI_NODE_SUPPRESSED) != 0 ||
+         ((*(uint32_t *)(controlAddress + 0x4c) & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0))) {
+    controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
       noneSelectedResult.node = (UiNodeBase *)controlAddress;
@@ -1934,12 +1926,8 @@ UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
 
 
 /* Address: 0x004B2DA0.
-   Ownership: ui/controls/lists.
-   Purpose: Variadic exclusive-selection helper. Sets selected bit 0x02 only on the chosen control, clears it on
-   the remaining controls, and invalidates every listed control. Kept distinct from player IDs, command opcodes,
-   and resource identifiers. Typed parameters: p0 controlCount→UiControlCount_V338. Calling convention, storage,
-   body bytes, control flow, and executable data remain unchanged.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Radio-button behaviour for a group (controlCount control pointers follow selectedControl on the stack):
+   selects selectedControl, deselects all other group members and redraws them.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
@@ -1960,7 +1948,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
       node->stateFlags = node->stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     }
     UiNode_InvalidateRoot(&node->base);
-    controlIndex = controlIndex + 1;
+    controlIndex++;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
   return;
@@ -1985,11 +1973,8 @@ UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 
 /* Address: 0x004B2E10.
-   Ownership: ui/controls/lists.
-   Purpose: Clears selected bit 0x02, sets it when the boolean argument is nonzero, then invalidates the control
-   root. Typed parameters: p0 selected→UiBooleanState32_V342. Calling convention, exact VariableStorage
-   serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Sets or clears the selected/checked state of a selectable control (checkbox, radio or toggle button)
+   from code, without queueing its action, and redraws it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control)
@@ -2386,10 +2371,13 @@ UiScrollableControl_DrawFrameContentAndScrollbars
 
 
 /* Address: 0x004B8310.
-   Ownership: ui/controls/lists.
-   Purpose: Rebuilds the scrollable child rectangle, content extents, horizontal and vertical scrollbar visibility,
-   track bounds, thumb geometry, and clamped content offsets from the control rectangle and active child
-   dimensions.
+   Layout of a scroll frame (list boxes, text views): the single child is the content, its size is taken from
+   its right/bottom offsets. Decides which scroll bars are needed (a bar can reduce the room for the content
+   and so make the other one necessary; bits 4..7 of scrollStateFlags say which bar positions are allowed),
+   clamps the scroll offsets so no empty space shows, places the content (shifted by the scroll offsets, the
+   optional border and a left/top bar) and computes the thumb positions from the scroll offsets.
+   The win.gfx subresources used for sizes: 0x6A/0x72 border styles (flags 0x400/0x800), 0x5A horizontal bar
+   arrow, 0x5E vertical bar arrow, 0xC0/0xC2 horizontal/vertical thumb caps (half the minimum thumb).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
@@ -2418,7 +2406,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
          UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP);
   (control->base).layoutWidth = availableWidth;
   (control->base).layoutHeight = availableHeight;
-  if (contentChild != (UiNodeBase *)0xffffffff) {
+  if (contentChild != UI_NODE_NONE) {
     offsetX = control->scrollOffsetY;
     horizontalExtent = (control->base).top;
     contentChild->left = contentChild->leftOffset + control->scrollOffsetX + (control->base).left;
@@ -2461,11 +2449,15 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
            control->scrollStateFlags |
            (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT);
     }
+    /* keep only the bar positions allowed by bits 4..7 */
     control->scrollStateFlags =
          control->scrollStateFlags &
          (control->scrollStateFlags >> 4 |
          ~(UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT|
            UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP));
+    /* a vertical bar narrows the view: maybe a horizontal bar is needed now, and vice versa. The masks
+       0xffffffcf/0xffffff3f (as in the original) are practically always nonzero; 0x30/0xC0, the "allowed"
+       bits, were probably meant. The mask above filters disallowed bars again anyway. */
     if (((control->scrollStateFlags & 0xffffffcf) != 0) &&
        ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0)) {
@@ -2518,6 +2510,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
         control->contentOriginX = control->contentOriginX + textureSize.logicalWidthPixels;
       }
     }
+    /* clamp the scroll offsets (0 or negative) so the content does not end inside the view */
     offsetX = control->scrollOffsetX;
     offsetY = control->scrollOffsetY;
     contentChild = (control->base).firstChild;
@@ -2552,6 +2545,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     contentChild->right = contentChild->right + offsetX;
     contentChild->bottom = contentChild->bottom + offsetY;
     contentChild->vtable->layout(contentChild);
+    /* thumbs: length = view / content of the track (at least two caps), position from the offset */
     control->horizontalThumbLeft = 0;
     control->verticalThumbTop = 0;
     control->horizontalThumbRight = 0;
@@ -2749,8 +2743,8 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
 
 
 /* Address: 0x004BA560.
-   Ownership: ui/controls/lists.
-   Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04: clear when absent and set when present.
+   Returns the index of the selected row of a pointer list. The original also reports
+   UI_LIST_SELECTION_CONFIRMED in CF, which this C signature does not carry (both branches return the index).
 */
 UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control)
 
@@ -2924,10 +2918,10 @@ UiListControl_SuppressIfActionId(UiActionId actionId,UiListControl *control)
 
 
 /* Address: 0x004BB3B0.
-   Ownership: ui/controls/lists.
-   Purpose: Initializes a pointer-list control and derives content width from the absolute values of its fixed
-   column offsets before clearing scroll state and requesting parent layout.
-   Cross-module calls: FontGlyph_GetLogicalSizeForStyleRegs [assets/text/resources].
+   Fills a pointer list with rowCount rows (rowPointers, one record pointer per row) and selects row 0.
+   The list's size follows its content: one list-font line plus 1 pixel per row, and the sum of the column
+   widths (negative widths count by their magnitude) plus 6 pixels; the parent (the scrollable frame) is
+   laid out again for the new size.
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_InitializeColumnLayout
@@ -2954,13 +2948,13 @@ UiPointerList_InitializeColumnLayout
   columnsRemaining = ((UiListControl *)control)->columnCount;
   (control->base).bottomOffset = computedRowHeight * rowCount + 1;
   column = ((UiListControl *)control)->columns;
-  for (; columnsRemaining != 0; columnsRemaining = columnsRemaining - 1) {
+  for (; columnsRemaining != 0; columnsRemaining--) {
     columnWidth = column->width;
     if (columnWidth < 0) {
       columnWidth = -columnWidth;
     }
     totalWidth = columnWidth + totalWidth;
-    column = column + 1;
+    column++;
   }
   parent = (control->base).parent;
   parentVtable = parent->vtable;
@@ -3827,19 +3821,16 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
 
 
 /* Address: 0x004B9490.
-   Ownership: ui/controls/lists.
-   Purpose: Clamps enabled horizontal and vertical scroll offsets to the visible viewport, relayouts when an offset
-   changes, and invalidates the owning UI root. Typed parameters: p0 clipTop→UiPixelCoordinate_V297, p1
-   clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297.
-   Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain
-   unchanged.
-   Local calls: UiScrollableControl_RefreshChildAndScrollThumbs.
-   Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
+   Scrolls a scrollable control just far enough that the target rectangle (content coordinates, e.g. a
+   selected list row) is visible, on the axes that have a scroll bar: first so its right/bottom edge is
+   inside the view, then so its left/top edge is (that one wins when the target is larger than the view).
+   Relayouts when an offset changed and redraws. Does nothing unless control really is a
+   g_UiScrollableControlVtable node (callers pass their parent without checking).
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiScrollableControl_ClampOffsetsToViewport
-          (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiScrollableControl *control)
+          (UiPixelCoordinate targetBottom,UiPixelCoordinate targetRight,UiPixelCoordinate targetTop,
+          UiPixelCoordinate targetLeft,UiScrollableControl *control)
 
 {
   char changeCount;
@@ -3850,38 +3841,39 @@ UiScrollableControl_ClampOffsetsToViewport
   int horizontalOverflow;
   
   if ((control->base).vtable == &g_UiScrollableControlVtable) {
+    /* the visible content rectangle; the scroll offsets are the negated view position */
     viewLeftOrOverflow = -control->scrollOffsetX;
     viewTop = -control->scrollOffsetY;
-    changeCount = '\0';
+    changeCount = 0;
     viewRight = control->viewportWidth + viewLeftOrOverflow;
     viewBottom = control->viewportHeight + viewTop;
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      horizontalOverflow = viewRight - clipLeft;
-      changeCount = viewRight < clipLeft;
+      horizontalOverflow = viewRight - targetRight;
+      changeCount = viewRight < targetRight;
       if ((bool)changeCount) {
         control->scrollOffsetX = control->scrollOffsetX + horizontalOverflow;
         viewLeftOrOverflow = viewLeftOrOverflow - horizontalOverflow;
       }
-      if (viewLeftOrOverflow - clipRight != 0 && clipRight <= viewLeftOrOverflow) {
-        changeCount = changeCount + '\x01';
-        control->scrollOffsetX = control->scrollOffsetX + (viewLeftOrOverflow - clipRight);
+      if (viewLeftOrOverflow - targetLeft != 0 && targetLeft <= viewLeftOrOverflow) {
+        changeCount++;
+        control->scrollOffsetX = control->scrollOffsetX + (viewLeftOrOverflow - targetLeft);
       }
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      viewLeftOrOverflow = viewBottom - clipTop;
-      if (viewBottom < clipTop) {
+      viewLeftOrOverflow = viewBottom - targetBottom;
+      if (viewBottom < targetBottom) {
         control->scrollOffsetY = control->scrollOffsetY + viewLeftOrOverflow;
         viewTop = viewTop - viewLeftOrOverflow;
-        changeCount = changeCount + '\x01';
+        changeCount++;
       }
-      if (viewTop - clipBottom != 0 && clipBottom <= viewTop) {
-        changeCount = changeCount + '\x01';
-        control->scrollOffsetY = control->scrollOffsetY + (viewTop - clipBottom);
+      if (viewTop - targetTop != 0 && targetTop <= viewTop) {
+        changeCount++;
+        control->scrollOffsetY = control->scrollOffsetY + (viewTop - targetTop);
       }
     }
-    if (changeCount != '\0') {
+    if (changeCount != 0) {
       UiScrollableControl_RefreshChildAndScrollThumbs(control);
     }
     UiNode_InvalidateRoot(&control->base);

@@ -612,27 +612,23 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
 
 
 /* Address: 0x00544D10.
-   Ownership: ui/frontend/session.
-   Purpose: Selects frontend page index 0, clears compact-layout flag 0x2000 from runtime dword +0x3B4, and
-   dispatches the fourth callback argument through the established frontend state service. EAX is preserved. Typed
-   parameters: p3 stateCode→FrontendStatusCode_V306. Nearby but non-identical semantic domains were explicitly
-   deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data
-   remain unchanged.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], FrontendState_DispatchCode
-   [ui/frontend/runtime].
+   Closes the dialog pages (back to FRONTEND_PAGE_MAIN, the menu room renders again) and runs entry
+   romActionIndex of the frontend ROM action table (FrontendState_DispatchCode ->
+   FrontendRomActionTable_ExecuteRecord). Command handler with four dword arguments (frontend command 0xDC0 in a
+   network game); the player id and the two middle arguments are not used.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReturnToMainPage
-          (uint32_t callbackContext,uint32_t argument2,uint32_t argument3,FrontendStatusCode stateCode)
+          (uint32_t playerRuntimeId,uint32_t unusedArgument1,uint32_t unusedArgument2,
+          FrontendStatusCode romActionIndex)
 
 {
   int frontendRootAddress;
-  
+
   frontendRootAddress = g_FrontendRootNode;
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) =
-       FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
-  FrontendState_DispatchCode(stateCode);
+  UiPageStack_SetActiveIndex(FRONTEND_PAGE_MAIN,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
+  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) &= ~FRONTEND_MENU_ROOM_RENDER_SUPPRESSED;
+  FrontendState_DispatchCode(romActionIndex);
   return;
 }
 

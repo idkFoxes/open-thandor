@@ -83,9 +83,9 @@ WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path
 
 
 /* Address: 0x0040F320.
-   Ownership: core/text/path.
-   Purpose: Splits a bounded UTF-16 path at its final backslash into leaf and parent outputs. When no separator
-   exists, parent receives the complete path and leaf is cleared.
+   Splits a UTF-16 path (at most WIDE_PATH_MAX_CODE_UNITS units) at its last backslash: leafOut gets the
+   file name, parentOut the directory without the trailing backslash. Without a backslash the leaf is the
+   whole path and the parent is empty. Always returns false (CF clear).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
@@ -93,27 +93,27 @@ WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path
 {
   /* Rewritten from the assembly (0x0040F320): the decompiler lost the start of the final component
      (EDX), so nothing was ever split and every "directory" still ended in the file name. Leaf gets
-     everything after the last backslash (with the terminator); parent gets everything before it.
-     Without a backslash the leaf is the whole path and the parent is empty. */
-  int count;
+     everything after the last backslash (with the terminator); parent gets everything before it. */
+  int count; /* code units including the terminator (REPNE SCASW, at most WIDE_PATH_MAX_CODE_UNITS) */
   int remaining;
   int i;
   uint16_t *leafStart;
 
   count = 0;
-  while (count < 0x100) {
-    count = count + 1;
+  while (count < WIDE_PATH_MAX_CODE_UNITS) {
+    count++;
     if (path[count - 1] == 0) {
       break;
     }
   }
   leafStart = path;
   for (remaining = count, i = 0; remaining != 0; remaining--, i++) {
-    if (path[i] == 0x5c) {
+    if (path[i] == '\\') {
       leafStart = path + i + 1;
       if (remaining == 1) {
-        /* Backslash in the last scanned unit: the whole 0x100-unit buffer becomes the parent. */
-        for (i = 0; i < 0x100; i++) {
+        /* Backslash in the last scanned unit (only possible in an unterminated 0x100-unit path): the
+           whole buffer becomes the parent and the leaf is empty. */
+        for (i = 0; i < WIDE_PATH_MAX_CODE_UNITS; i++) {
           parentOut[i] = path[i];
         }
         leafOut[0] = 0;

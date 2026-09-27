@@ -14,15 +14,6 @@
 
 /* Implementation ownership: platform/system/win32. */
 
-/* Address: 0x005868D0.
-   Ownership: platform/system/win32.
-   Purpose: Nonblocking central message pump. Repeatedly calls PeekMessageA for g_MainWindow with PM_REMOVE,
-   conditionally calls TranslateMessage according to Win32_ShouldTranslateMessageFlags, and always dispatches the
-   message. It returns when the filtered queue is empty and no destroy is pending. WM_QUIT or a nonzero
-   g_WindowDestroyDepth triggers Runtime_Shutdown, DestroyWindow, and ExitProcess(0).
-   Local calls: Win32_ShouldTranslateMessageFlags.
-   Cross-module calls: Runtime_Shutdown [core/memory/synchronization].
-*/
 /* Test aid: OPEN_THANDOR_AUTOSHOT=<milliseconds> saves the game's own framebuffer to
    shots\shot_NNNN.bmp at that interval (checked from the message pump), so automated runs can be
    looked at without capturing the desktop. */
@@ -211,19 +202,24 @@ static void Win32_ScriptTick(void)
   }
 }
 
+/* Address: 0x005868D0.
+   The game's non-blocking message pump (g_Win32PumpMessages): handles every pending message of the main
+   window (TranslateMessage only where Win32_ShouldTranslateMessageFlags allows it) and returns once the
+   queue is empty. WM_QUIT or a window being destroyed (g_WindowDestroyDepth) shuts the game down and
+   ends the process instead. open-thandor first runs its test aids (autoshot, input script).
+*/
 void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
 
 {
   Win32_AutoShotTick();
   Win32_ScriptTick();
   BOOL messageAvailable;
-  bool shouldTranslateMessage;
   bool shouldTranslate;
-  
+
   while( true ) {
-    messageAvailable = PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,1);
+    messageAvailable = PeekMessageA((LPMSG)&g_MainMessage,g_MainWindow,0,0,PM_REMOVE);
     if (messageAvailable == 0) break;
-    if ((g_WindowDestroyDepth != 0) || (g_MainMessage.message == 0x12))
+    if ((g_WindowDestroyDepth != 0) || (g_MainMessage.message == WM_QUIT))
     goto Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest;
     shouldTranslate = Win32_ShouldTranslateMessageFlags(&g_MainMessage);
     if (shouldTranslate) {
@@ -237,7 +233,6 @@ void __thandor_void_preserve_eax_ecx_edx Win32_PumpMessages(void)
 Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
-                    // WARNING: Subroutine does not return
   ExitProcess(0);
 }
 

@@ -672,12 +672,10 @@ GridScratch_TestRuntimePairReachabilityFromWorldPoint
 
 
 /* Address: 0x005332C0.
-   Ownership: world/pathing/grid.
-   Purpose: Scales field-grid width and height by four, allocates and exchanges two equal cell-sized scratch
-   buffers plus one fixed 0x180000-byte auxiliary buffer, publishes its end pointer, and reports allocation failure
-   through CF. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Allocation arithmetic proves 8 bytes per GridScratch
-   record: scratchWidth*scratchHeight*8. Primary and secondary buffers therefore hold GridScratchCell_V419 records.
-   The fixed 0x180000-byte auxiliary allocation is the pointer queue now named g_GridPathCostQueueBegin..End.
+   Sizes the pathing scratch grids for a field grid (4x4 scratch cells per field cell, 8-byte GridScratchCell
+   records): allocates the primary and secondary scratch grids and the 0x180000-byte path-cost pointer queue
+   (g_GridPathCostQueueBegin..End), each replacing and freeing the previous buffer. Returns the allocator
+   error with CF set on failure.
 */
 GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
 GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
@@ -689,20 +687,19 @@ GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
   uint32_t *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
   uint32_t bytes;
-  bool allocationSizeOverflow;
   ArenaAllocResult allocResult;
   ArenaFreeResult freeResult;
   GridScratchAllocResult failureResult;
-  int64_t scratchAllocationByteCountProduct;
   GridScratchCell *previousScratchBuffer;
-  
+
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
   g_GridScratchHeight = fieldGrid->gridHeight * 4;
-  bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight;
+  bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight; /* scratch width * height * 8 */
   allocResult = g_MemoryApi.alloc(bytes);
   previousScratchBuffer = g_GridScratchPrimary;
   newScratchBuffer = (uint32_t *)allocResult.payloadOrError;
   if (!allocResult.failed) {
+    /* the original swaps the pointers with XCHG */
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
@@ -1572,8 +1569,9 @@ void __thandor_preserve_eax GridScratch_SwapPrimarySecondary(void)
 
 
 /* Address: 0x00533580.
-   Ownership: world/pathing/grid.
-   Purpose: Handles grid scratch flood fill connected cells register result.
+   Scanline flood fill over the scratch grid: marks the horizontal run of cells around currentCell that have no
+   traversalMask bit as visited, then recurses into every such cell of the row above and the row below that span.
+   A blocked or already visited start cell does nothing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GridScratch_FloodFillConnectedCellsRegs
@@ -1582,16 +1580,18 @@ GridScratch_FloodFillConnectedCellsRegs
 {
   GridScratchCell *spanLeftOrPrevRowCursor;
   GridScratchCell *nextRowCursor;
-  
-  if ((currentCell->stateMask & 0x80000001) == 0) {
+
+  if ((currentCell->stateMask & (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TRAVERSAL_VISITED)) == 0) {
     currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     spanLeftOrPrevRowCursor = currentCell;
-    while (spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor + -1, (spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
+    while (spanLeftOrPrevRowCursor = spanLeftOrPrevRowCursor - 1, (spanLeftOrPrevRowCursor->stateMask & traversalMask) == 0) {
       spanLeftOrPrevRowCursor->stateMask = spanLeftOrPrevRowCursor->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
     while (currentCell = currentCell + 1, (currentCell->stateMask & traversalMask) == 0) {
       currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
+    /* the row above is scanned from the span's first cell up to the column of the right stopping cell, the row
+       below from the column of the left stopping cell up to the span's last cell (addresses as in the original) */
     nextRowCursor = (GridScratchCell *)((int)&spanLeftOrPrevRowCursor->stateMask + rowStrideBytes);
     spanLeftOrPrevRowCursor = (GridScratchCell *)((int)spanLeftOrPrevRowCursor + (8 - rowStrideBytes));
     do {

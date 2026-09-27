@@ -31,13 +31,10 @@ static UiNodeBase *UiKeyboard_CheckedLink(UiNodeBase *holder,const char *field,U
 /* Implementation ownership: ui/controls/input. */
 
 /* Address: 0x004AF500.
-   Ownership: ui/controls/input.
-   Purpose: Consumes GraphicsCursorInputEvent records. Event 1 is left press, 2 middle press, 3 right press, 5-7
-   the corresponding releases, and 0 motion/wheel.
-   Local calls: UiPointer_DispatchMotionAndWheel, UiPointer_DispatchRightPress, UiPointer_DispatchLeftPress,
-   UiPointer_DispatchMiddlePress.
-   Cross-module calls: DirectInputMouse_PollBufferedEvents [platform/input/devices], Random_NextPrimary
-   [core/math/random].
+   Delivers the queued mouse events to the UI under the frame lock (polling DirectInput first when it is
+   the active mouse). Presses and motion go to the node under the pointer; a release goes to the node
+   that captured the pointer with that button, which then loses the capture and the pointer position is
+   dispatched again as motion. A release without a matching capture is dropped.
 */
 void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
 
@@ -62,24 +59,24 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
     pointerY = pointerEvent.pointerY;
     buttonMask = pointerEvent.buttonState;
     if (pointerEvent.queueEmpty) break;
-    eventKind = (char)pointerEvent.eventType;
-    if (eventKind < '\a') {
-      if (eventKind == '\x06') {
-        if ((control != (UiNodeBase *)0xffffffff) &&
+    eventKind = (char)pointerEvent.eventType; /* GraphicsCursorEventType */
+    if (eventKind < RIGHT_RELEASE) {
+      if (eventKind == MIDDLE_RELEASE) {
+        if ((control != UI_NODE_NONE) &&
            (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_MIDDLE)) {
           control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
           g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-          g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+          g_UiPointerCaptureTarget = UI_NODE_NONE;
           UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
-          Random_NextPrimary();
+          Random_NextPrimary(); /* only this release also advances the random generator */
         }
       }
-      else if (eventKind < '\x04') {
-        if (eventKind == '\x03') {
+      else if (eventKind < 4) { /* motion and the presses */
+        if (eventKind == RIGHT_PRESS) {
           UiPointer_DispatchRightPress(buttonMask,wheelDelta,pointerY,pointerX);
         }
-        else if (eventKind < '\x02') {
-          if (eventKind == '\x01') {
+        else if (eventKind < MIDDLE_PRESS) {
+          if (eventKind == LEFT_PRESS) {
             UiPointer_DispatchLeftPress(buttonMask,wheelDelta,pointerY,pointerX);
           }
           else {
@@ -90,19 +87,21 @@ void __thandor_void_preserve_eax_ecx_edx UiPointer_DispatchPendingEvents(void)
           UiPointer_DispatchMiddlePress(buttonMask,wheelDelta,pointerY,pointerX);
         }
       }
-      else if ((control != (UiNodeBase *)0xffffffff) &&
+      /* LEFT_RELEASE (and the unused code 4) */
+      else if ((control != UI_NODE_NONE) &&
               (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_LEFT)) {
         control->vtable->nonRightRelease(wheelDelta,pointerY,pointerX,control);
         g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-        g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+        g_UiPointerCaptureTarget = UI_NODE_NONE;
         UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
       }
     }
-    else if ((control != (UiNodeBase *)0xffffffff) &&
+    /* RIGHT_RELEASE */
+    else if ((control != UI_NODE_NONE) &&
             (g_UiPointerCaptureButton == UI_POINTER_CAPTURE_RIGHT)) {
       control->vtable->rightRelease(wheelDelta,pointerY,pointerX,control);
       g_UiPointerCaptureButton = UI_POINTER_CAPTURE_NONE;
-      g_UiPointerCaptureTarget = (UiNodeBase *)0xffffffff;
+      g_UiPointerCaptureTarget = UI_NODE_NONE;
       UiPointer_DispatchMotionAndWheel(wheelDelta,pointerY,pointerX);
     }
   }
@@ -131,11 +130,10 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase 
 
 
 /* Address: 0x004AF3D0.
-   Ownership: ui/controls/input.
-   Purpose: Drains keyboard events under the UI lock, offers each event to the focused node through
-   keyboardEvent, traverses alternate focusable nodes when CF requests it, and falls back to the active root
-   handler.
-   Local calls: UiKeyboardFocus_Set.
+   Delivers the queued key events to the UI under the frame lock. A key goes to the focused node; if it
+   passes the key on (CF), the next focus targets in tree order get it and the first one that takes it
+   receives the focus. Keys nobody takes, or pressed with no focus, go to the top root's keyboard
+   fallback. While a node has captured the pointer (a mouse button is held), keys are discarded.
 */
 void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
 
@@ -153,12 +151,12 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
   while( true ) {
     keyboardEvent = g_KeyboardReadEvent();
     if (keyboardEvent.queueEmpty) break;
-    if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) continue;
+    if (g_UiPointerCaptureTarget != UI_NODE_NONE) continue;
     keyboardStateMask = keyboardEvent.eventData;
     keyCode = keyboardEvent.eventCode;
     control = g_UiKeyboardFocusNode;
     dispatchToRoot = true;
-    if (control != (UiNodeBase *)0xffffffff) {
+    if (control != UI_NODE_NONE) {
       dispatchToRoot = false;
       wrappedOnce = false;
       passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
@@ -166,14 +164,14 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
          through the topmost ancestor; the first one that takes it gets the keyboard focus. */
       while (passToNext) {
         walkNode = UiKeyboard_CheckedLink(control,"firstChild",control->firstChild);
-        if (walkNode == (UiNodeBase *)0xffffffff) {
+        if (walkNode == UI_NODE_NONE) {
           while (walkNode = UiKeyboard_CheckedLink(control,"nextSibling",control->nextSibling),
-                walkNode == (UiNodeBase *)0xffffffff) {
+                walkNode == UI_NODE_NONE) {
             walkNode = UiKeyboard_CheckedLink(control,"parent",control->parent);
-            if (walkNode == (UiNodeBase *)0xffffffff) break;
+            if (walkNode == UI_NODE_NONE) break;
             control = walkNode;
           }
-          if (walkNode == (UiNodeBase *)0xffffffff) {
+          if (walkNode == UI_NODE_NONE) {
             if (wrappedOnce) {
               dispatchToRoot = true;
               break;
@@ -196,8 +194,8 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
         }
       }
     }
-    if ((dispatchToRoot) && (g_UiRootNode != (UiRootNode *)0xffffffff) &&
-       (g_UiRootNode->callbacks->keyboardFallback != (UiRootKeyboardFallback *)0x0)) {
+    if ((dispatchToRoot) && (g_UiRootNode != UI_ROOT_STACK_END) &&
+       (g_UiRootNode->callbacks->keyboardFallback != NULL)) {
       g_UiRootNode->callbacks->keyboardFallback(keyboardStateMask,keyCode,g_UiRootNode);
     }
   }

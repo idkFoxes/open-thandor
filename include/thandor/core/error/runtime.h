@@ -46,6 +46,30 @@
    loaders then leave the requested byte count in g_FatalErrorDetail1Utf16); the package loaders also return
    it for entries whose packed size exceeds PACKAGE_SCRATCH_BUFFER_BYTES */
 #define FATAL_ERROR_OUT_OF_MEMORY 0x05
+/* Network socket setup/send failed (NetworkFallback_OpenAndBindUdpSocket, NetworkFallback_SendDatagram); the
+   WSAGetLastError code is left in g_PackageLastErrorPath */
+#define FATAL_ERROR_NETWORK_SOCKET 0x2A
+/* DirectSound_CreateSampleVoiceSet: the asset is not a 'sam' of format version 0x10000 (a failing
+   secondary-buffer step there and in DirectSound_CreatePcmVoiceSet returns FATAL_ERROR_DIRECTSOUND_SETUP) */
+#define FATAL_ERROR_SOUND_SAMPLE_INVALID 0x4A
+/* Arena heap (core/memory/allocator): no free block is large enough (ArenaHeap_Alloc,
+   ArenaHeap_AllocLargestFreeBlock; the largest free payload size is left in g_PackageLastErrorPath).
+   A corrupt block chain returns ARENA_HEAP_FAILURE_SENTINEL_0x13 instead. */
+#define FATAL_ERROR_ARENA_EXHAUSTED 0x12
+/* Win32 file layer (platform/filesystem/win32, the g_FileSystem* table); the path is left in
+   g_PackageLastErrorPath. Named after the operations that return them. */
+#define FATAL_ERROR_FILE_ACCESS_FAILED 0x01 /* CreateFileA, DeleteFileA, MoveFileA, CopyFileA or GetFileTime failed */
+#define FATAL_ERROR_FILE_READ_FAILED 0x06 /* ReadFile transferred fewer bytes than requested */
+#define FATAL_ERROR_FILE_WRITE_INCOMPLETE 0x07 /* WriteFile succeeded but wrote fewer bytes than requested */
+#define FATAL_ERROR_FILE_WRITE_FAILED 0x08 /* WriteFile failed; also CreateDirectoryA */
+#define FATAL_ERROR_FILE_SEEK_FAILED 0x09 /* SetFilePointer failed */
+#define FATAL_ERROR_SET_DIRECTORY_FAILED 0x0A /* SetCurrentDirectoryA failed */
+#define FATAL_ERROR_REMOVE_DIRECTORY_FAILED 0x0B /* RemoveDirectoryA failed */
+/* Level loading (gameplay/session/level.c); the level path is left in g_PackageLastErrorPath */
+#define FATAL_ERROR_LEVEL_ASSET_INVALID 0x39 /* not a 'lev' asset of converter version 0x70001 */
+#define FATAL_ERROR_LEVEL_TOO_MANY_RESOURCES 0x3A /* the EFF/SHT/MDL/ARM lists name 0x200 or more files */
+#define FATAL_ERROR_TECHNOLOGY_ASSET_INVALID 0x4F /* the level's technology file is not a 'tec' asset of
+                                                     converter version 0x20000 */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

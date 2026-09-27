@@ -11,16 +11,14 @@
 /* Implementation ownership: ui/controls/buttons. */
 
 /* Address: 0x004B1D20.
-   Ownership: ui/controls/buttons.
-   Purpose: Depth-first traverses a UI subtree and advances nodes whose vtable is exactly
-   g_UiSpriteButtonControlVtable.
-   Local calls: UiSpriteButtonControl_AdvanceAnimation.
+   Advances the frame animation of every sprite button below root (depth first), so animated buttons
+   keep cycling their frames. Only nodes whose vtable is exactly g_UiSpriteButtonControlVtable count.
 */
 /* Rewritten from the assembly (0x004B1D20): a depth-first walk that pushes each node's next
    sibling on the machine stack before descending; the decompiler kept only one level. */
 static void UiTree_AdvanceSpriteButtonAnimationsFrom(UiNodeBase *node)
 {
-  while (node != (UiNodeBase *)0xffffffff) {
+  while (node != UI_NODE_NONE) {
     if (node->vtable == (UiNodeVtable *)&g_UiSpriteButtonControlVtable) {
       UiSpriteButtonControl_AdvanceAnimation((UiSpriteButtonControl *)node);
     }

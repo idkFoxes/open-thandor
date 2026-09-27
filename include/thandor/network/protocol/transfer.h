@@ -32,6 +32,15 @@
 /* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
 #define FRONTEND_PEER_TIMEOUT_TICKS 0x100
 
+/* Mailbox transfer (UiTransferMailbox_ServiceAndRetransmitTimer): data bytes per 0x80030 chunk packet (0x100
+   bytes minus the 0x10-byte header and the offset/total-size dwords), and the timer ticks (8 ms each) after
+   which an unanswered 0x10031 chunk request is repeated. */
+#define UI_TRANSFER_CHUNK_PAYLOAD_BYTES 0xE8
+#define UI_TRANSFER_CHUNK_RETRY_TICKS 4
+/* protocolMagic of the 0x10000 discovery probe (UiTransfer_SendPacketType10000Value2931); a host answers only
+   probes carrying it. */
+#define FRONTEND_PROTOCOL_MAGIC 0x2931
+
 /* 0x004AEB10 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void);
 

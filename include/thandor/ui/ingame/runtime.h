@@ -12,6 +12,13 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: ui/ingame/runtime. */
+
+/* Diplomacy panel texts (InGameOtherPlayerCommand_RebuildTargetEntries, see the diplomacyRow* labels in
+   ui_templates.h): the player number is 0x2190 + faction index, the relation label 0x21A3 + the 4-bit
+   relation state of the faction record's packedRelationStates. */
+#define TEXT_ID_PLAYER_NUMBER_BASE 0x2190
+#define TEXT_ID_DIPLOMATIC_RELATION_BASE 0x21A3
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0056E3C0 */
@@ -42,19 +49,19 @@ InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot);
 void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessionPrompts(void);
 
 /* 0x005640E0 */
-void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(void *uiState);
+void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(void *inGameRoot);
 
 /* 0x005678C0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
-          WorldRuntimeContext *inGameRuntime);
+          WorldRuntimeContext *world);
 
 /* 0x00569750 */
-void InGameUiRuntime_ClearTransientState1BCallback(void *context);
+void InGameUiRuntime_ClearTransientState1BCallback(void *worldView);
 
 /* 0x00569780 */
-void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *context);
+void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *world);
 
 /* 0x00569890 */
 void __thandor_void_preserve_eax_ecx_edx

@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/selection/overlay. */
+
+/* Tints of the ghost army that previews a placement or command-mode command
+   (InGameWorldOverlay_RebuildOrReleaseTransientMarkers). */
+#define OVERLAY_PREVIEW_TINT_ARGB 0xCFFFFFFF /* translucent white */
+#define OVERLAY_PREVIEW_TINT_MULTI_CANDIDATE_ARGB 0x4FFFFFFF /* fainter: the placement has several candidates */
+#define OVERLAY_PREVIEW_TINT_BLOCKED_MASK 0xFF707070 /* darkens the preview when the placement would fail */
+/* Capacities of g_InGameOwnedEntityTransientEffectMarkers and g_InGameCommandTargetTransientEffectMarkers. */
+#define OVERLAY_OWNED_MARKER_CAPACITY 32
+#define OVERLAY_COMMAND_TARGET_MARKER_CAPACITY 128
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00568300 */

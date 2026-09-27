@@ -213,7 +213,7 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
    Once per frontend frame: while a menu-room camera flight is pending, moves the camera along the flight
    spline for the elapsed ticks; when the spline has ended, clears the pending value and, if it is a record id
    (not negative), activates that ROM record. The elapsed ticks are advanced by the frontend timer callback
-   FrontendRuntime_IncrementActiveTickCounter; the body runs under the frontend tick spin lock.
+   FrontendRomTransition_AdvanceElapsedTicks; the body runs under the frontend tick spin lock.
 */
 void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(void)
 

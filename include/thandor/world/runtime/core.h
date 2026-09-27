@@ -12,6 +12,9 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: world/runtime/core. */
+
+/* WorldObjectRecord.common.allocationFlags value of a record in use (WorldObjectArray_AllocateFreeRecord). */
+#define WORLD_OBJECT_RECORD_ALLOCATED 0x40000000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00532FA0 */
@@ -213,8 +216,8 @@ WorldRuntime_SetTerrainLightingConfiguration
 /* 0x0050D5C0 */
 void __thandor_void_preserve_ecx_edx
 WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-          (FieldGridDimensionCells gridHeight,FieldGridDimensionCells gridWidth,Q12 originWorldYQ12,
-          Q12 originWorldXQ12,WorldRuntimeContext *worldRuntime);
+          (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
+          Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D6B0 */
 void __thandor_void_preserve_eax_ecx_edx

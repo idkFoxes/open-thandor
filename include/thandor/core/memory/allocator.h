@@ -18,6 +18,10 @@
 #define ARENA_HEAP_RESERVE_BYTES (ARENA_HEAP_PAYLOAD_BYTES + 0x40) /* + header and alignment slack */
 #define ARENA_BLOCK_ALIGNMENT_MASK 0x1f /* blocks and payload sizes are 32-byte aligned */
 #define ARENA_BLOCK_LIST_END ((ArenaBlockHeader *)0xffffffff)
+#define ARENA_BLOCK_HEADER_BYTES 0x20 /* sizeof(ArenaBlockHeader); the payload follows the header */
+/* A free block is split only when it exceeds the aligned request by more than this (room for a header
+   and a 32-byte payload); smaller remainders stay with the allocation. */
+#define ARENA_BLOCK_SPLIT_SLACK_BYTES 0x40
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005368E0 */

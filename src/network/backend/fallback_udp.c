@@ -125,8 +125,8 @@ void NetworkBackendFallback_Slot7_ClearOutput(char *outputText,WinSockAddress *s
 }
 
 /* Address: 0x00584E70.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Deliberate no-op network backend cleanup slot.
+   Cleanup slot of the WinSock UDP backend. Nothing to release here: the socket is closed by
+   NetworkFallback_CloseActiveSocket and WinSock itself by Network_Shutdown.
 */
 void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void)
 
@@ -136,10 +136,11 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void
 
 
 /* Address: 0x00584E80.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Creates an IPv4 UDP socket, resolves the configured local address when present, binds the requested
-   local port, applies broadcast/nonblocking/event options, and publishes the active fallback socket. CF reports
-   failure and EAX carries engine error 0x2A on setup errors.
+   Opens the game's UDP socket: bound to localPort on all interfaces, or on the address given as
+   -IP="host" on the command line (dotted address or host name), with broadcast allowed and non-blocking
+   I/O. Also presets the local endpoint descriptor to the IPv4 broadcast address on that port, used for
+   session discovery. On failure the WinSock error code is left in g_PackageLastErrorPath and
+   FATAL_ERROR_NETWORK_SOCKET is returned with CF set.
 */
 NetworkOpenBindResult __thandor_eax_cf_preserve_ecx_edx
 NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
@@ -156,33 +157,34 @@ NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
   NetworkOpenBindResult failureResult;
   CommandLineOptionResult ipOption;
   uint32_t socketToClose;
-  
-  socketToClose = 0xffffffff;
-  socketResult.valueOrError = g_WinSock_socket(2,2,0x11);
-  if (socketResult.valueOrError != 0xffffffff) {
-    bindAddress = 0;
-    ipOption = g_CommandLineFindOption(3,(char *)THANDOR_ADDR(s_CommandLineOptionIp,0));
+
+  socketToClose = INVALID_SOCKET;
+  socketResult.valueOrError = g_WinSock_socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+  if (socketResult.valueOrError != INVALID_SOCKET) {
+    bindAddress = 0; /* INADDR_ANY */
+    ipOption = g_CommandLineFindOption(3,s_CommandLineOptionIp); /* "IP=" */
     if (!ipOption.notFound) {
       optionCursor = ipOption.option + 4;
       nextOutput = g_PackageScratchBuffer;
-      if (ipOption.option[3] == 0x22) {
+      if (ipOption.option[3] == '"') {
+        /* copy the quoted value, including the closing quote, into the scratch buffer */
         do {
           outputCursor = nextOutput;
           copiedByte = *optionCursor;
           *outputCursor = copiedByte;
-          optionCursor = optionCursor + 1;
+          optionCursor++;
           if (copiedByte == 0) break;
           nextOutput = outputCursor + 1;
-        } while (copiedByte != 0x22);
+        } while (copiedByte != '"');
         /* A closing quote that ends the option: resolve the quoted address (unterminated quote: no bind
            address). */
-        if ((copiedByte == 0x22) && (*optionCursor == 0)) {
+        if ((copiedByte == '"') && (*optionCursor == 0)) {
           *outputCursor = 0;
           bindAddress = g_WinSock_inet_addr(g_PackageScratchBuffer);
-          if (bindAddress == 0xffffffff) {
+          if (bindAddress == INADDR_NONE) {
             hostEntry = g_WinSock_gethostbyname(g_PackageScratchBuffer);
             bindAddress = 0;
-            if (hostEntry != (WinSockHostEnt32 *)0x0) {
+            if (hostEntry != NULL) {
               bindAddress = *(NetworkIpv4AddressNetworkOrder *)*hostEntry->addressList;
             }
           }
@@ -197,8 +199,10 @@ NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
     g_NetworkFallbackBindEndpoint.zeroPadding[1] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[2] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[3] = 0;
+    /* the local descriptor gets the same family and port (family in the low word, port in the high word) */
     g_NetworkLocalEndpointDescriptor16.addressHeader.packedFamilyAndPort =
-         (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 0x10 | 2;
+         (uint32_t)g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder << 16 |
+         NETWORK_ADDRESS_FAMILY_IPV4;
     g_NetworkFallbackBindEndpoint.zeroPadding[4] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[5] = 0;
     g_NetworkFallbackBindEndpoint.zeroPadding[6] = 0;
@@ -206,11 +210,14 @@ NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
     winsockResultOrError = g_WinSock_bind(socketResult.valueOrError,&g_NetworkFallbackBindEndpoint,0x10);
     socketToClose = socketResult.valueOrError;
     if (winsockResultOrError == 0) {
-      winsockResultOrError = g_WinSock_setsockopt(socketResult.valueOrError,0xffff,0x20,(uint8_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0),4);
+      /* g_NetworkFallbackSocketOptionOn holds 1: enable SO_BROADCAST and non-blocking mode */
+      winsockResultOrError = g_WinSock_setsockopt(socketResult.valueOrError,SOL_SOCKET,SO_BROADCAST,
+                                                  (uint8_t *)&g_NetworkFallbackSocketOptionOn,4);
       if (winsockResultOrError == 0) {
-        winsockResultOrError = g_WinSock_ioctlsocket(socketResult.valueOrError,0x8004667e,(uint32_t *)THANDOR_ADDR(g_NetworkFallbackSocketOptionOn,0));
+        winsockResultOrError = g_WinSock_ioctlsocket(socketResult.valueOrError,FIONBIO,
+                                                     &g_NetworkFallbackSocketOptionOn);
         if (winsockResultOrError == 0) {
-          g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = 0xffffffff;
+          g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder = INADDR_BROADCAST;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[0] = 0;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[1] = 0;
           g_NetworkLocalEndpointDescriptor16.zeroPadding[2] = 0;
@@ -227,30 +234,30 @@ NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
     }
   }
   winsockResultOrError = g_WinSock_WSAGetLastError();
+  /* the error code as decimal text, for the fatal-error message */
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockResultOrError,g_PackageLastErrorPath);
-  if (socketToClose != 0xffffffff) {
+  if (socketToClose != INVALID_SOCKET) {
     g_WinSock_closesocket(socketToClose);
   }
   failureResult.failed = true;
-  failureResult.valueOrError = 0x2a;
+  failureResult.valueOrError = FATAL_ERROR_NETWORK_SOCKET;
   return failureResult;
 }
 
 
 /* Address: 0x00585030.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Fallback network-backend close callback. It atomically replaces the active socket with -1 and closes
-   the previous socket when present.
+   Closes the UDP socket, if one is open. The handle is swapped out (XCHG in the original) before
+   closesocket so that nobody uses the socket while it is being closed.
 */
 void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
 
 {
   NetworkSocketHandle32 socket;
-  
+
   socket = g_NetworkFallbackSocket;
-  if (g_NetworkFallbackSocket != 0xffffffff) {
+  if (g_NetworkFallbackSocket != INVALID_SOCKET) {
     LOCK();
-    g_NetworkFallbackSocket = 0xffffffff;
+    g_NetworkFallbackSocket = INVALID_SOCKET;
     UNLOCK();
     g_WinSock_closesocket(socket);
   }
@@ -259,9 +266,9 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
 
 
 /* Address: 0x00585060.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Fallback UDP receive callback wrapping recvfrom with a fixed 16-byte source-address length. CF is clear
-   on nonnegative Winsock result and set on failure.
+   Receives one datagram (non-blocking) into buffer and the sender's address into sourceAddress
+   (16-byte sockaddr_in). Returns the byte count; CF is set when no socket is open or recvfrom fails,
+   including WSAEWOULDBLOCK when nothing is pending.
 */
 NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx
 NetworkFallback_ReceiveDatagram
@@ -271,10 +278,10 @@ NetworkFallback_ReceiveDatagram
   uint32_t receivedByteCount;
   NetworkReceiveResult successResult;
   NetworkReceiveResult failureResult;
-  
+
   g_NetworkFallbackAddressLength = 0x10;
   receivedByteCount = g_NetworkFallbackSocket;
-  if (g_NetworkFallbackSocket != 0xffffffff) {
+  if (g_NetworkFallbackSocket != INVALID_SOCKET) {
     receivedByteCount =
          g_WinSock_recvfrom
                    (g_NetworkFallbackSocket,buffer,byteCount,0,sourceAddress,
@@ -292,9 +299,10 @@ NetworkFallback_ReceiveDatagram
 
 
 /* Address: 0x005850B0.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Fallback UDP send callback wrapping sendto with a fixed 16-byte destination-address length. It
-   preserves the legacy error-reporting path and returns status through EAX and CF.
+   Sends one datagram to destinationAddress (16-byte sockaddr_in) and returns the byte count. Without
+   an open socket nothing is sent and the call still succeeds (returning INVALID_SOCKET as the count).
+   A sendto error leaves the WinSock error code in g_PackageLastErrorPath and returns
+   FATAL_ERROR_NETWORK_SOCKET with CF set.
 */
 NetworkSendResult __thandor_eax_cf_preserve_ecx_edx
 NetworkFallback_SendDatagram
@@ -305,9 +313,9 @@ NetworkFallback_SendDatagram
   int winsockErrorCode;
   NetworkSendResult successResult;
   NetworkSendResult failureResult;
-  
+
   sentByteCount = g_NetworkFallbackSocket;
-  if (g_NetworkFallbackSocket != 0xffffffff) {
+  if (g_NetworkFallbackSocket != INVALID_SOCKET) {
     sentByteCount =
          g_WinSock_sendto(g_NetworkFallbackSocket,buffer,byteCount,0,destinationAddress,0x10);
     if ((int)sentByteCount < 0) {
@@ -315,7 +323,7 @@ NetworkFallback_SendDatagram
       g_WideNumberFormatUtf16
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,winsockErrorCode,g_PackageLastErrorPath);
       failureResult.failed = true;
-      failureResult.valueOrError = 0x2a;
+      failureResult.valueOrError = FATAL_ERROR_NETWORK_SOCKET;
       return failureResult;
     }
   }
@@ -326,10 +334,9 @@ NetworkFallback_SendDatagram
 
 
 /* Address: 0x00585120.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Parses a narrow peer endpoint string into the backend 16-byte address descriptor. Uses numeric IPv4
-   conversion first and host lookup as fallback. CF reports parse failure.
-   Cross-module calls: RichTextCommandStream_CopyToNarrow [assets/text/richtext].
+   Turns the UTF-16 peer address typed by the player (dotted address or host name) into a 16-byte
+   sockaddr_in with the game's port. An empty text yields the broadcast address from the local
+   endpoint descriptor. CF is set when the text does not convert or the host is unknown.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 NetworkFallback_ParsePeerEndpoint
@@ -340,8 +347,7 @@ NetworkFallback_ParsePeerEndpoint
   NetworkIpv4AddressNetworkOrder ipv4AddressNetworkOrder;
   WinSockHostEnt32 *resolvedHostEntry;
   StatusResult copyStatus;
-  NetworkPortNetworkOrder portNetworkOrder;
-  
+
   copyStatus = RichTextCommandStream_CopyToNarrow
                     (0xff,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText);
   if (copyStatus.failed) {
@@ -350,9 +356,9 @@ NetworkFallback_ParsePeerEndpoint
   ipv4AddressNetworkOrder = g_NetworkLocalEndpointDescriptor16.ipv4AddressNetworkOrder;
   if ((g_NetworkEndpointTextScratchA != '\0') &&
      (ipv4AddressNetworkOrder = g_WinSock_inet_addr((uint8_t *)&g_NetworkEndpointTextScratchA),
-     ipv4AddressNetworkOrder == 0xffffffff)) {
+     ipv4AddressNetworkOrder == INADDR_NONE)) {
     resolvedHostEntry = g_WinSock_gethostbyname((uint8_t *)&g_NetworkEndpointTextScratchA);
-    if (resolvedHostEntry == (WinSockHostEnt32 *)0x0) {
+    if (resolvedHostEntry == NULL) {
       return true;
     }
     ipv4AddressNetworkOrder = *(NetworkIpv4AddressNetworkOrder *)*resolvedHostEntry->addressList;
@@ -373,22 +379,21 @@ NetworkFallback_ParsePeerEndpoint
 
 
 /* Address: 0x005851C0.
-   Ownership: network/backend/fallback_udp.
-   Purpose: Fallback network callback that formats the address field at socket-address offset +4 into a bounded
-   0x200-byte narrow output string, or writes an empty string when conversion fails.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Writes the IPv4 address of socketAddress as dotted UTF-16 text (at most 0x200 bytes) into
+   outputText, for showing a peer's address; an empty string when inet_ntoa fails.
 */
 void __thandor_void_preserve_eax_ecx_edx
 NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
 
 {
-  uint8_t *source;
-  
-  source = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
-  if (source != (uint8_t *)0x0) {
-    Text_CopyNarrowToUtf16(0x200,(uint16_t *)outputText,source);
+  uint8_t *dottedAddress;
+
+  dottedAddress = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
+  if (dottedAddress != NULL) {
+    Text_CopyNarrowToUtf16(0x200,(uint16_t *)outputText,dottedAddress);
     return;
   }
+  /* outputText is really UTF-16: the four zero bytes are an empty string (a single dword store) */
   outputText[0] = '\0';
   outputText[1] = '\0';
   outputText[2] = '\0';

@@ -104,14 +104,10 @@ InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCar
 
 
 /* Address: 0x00566290.
-   Ownership: gameplay/session/runtime.
-   Purpose: End-game results update callback that advances presentation state and handles current input.
-   Local calls: InGameRuntime_UpdateCursorGridAndViewScaleCache.
-   Cross-module calls: FrontendClientSession_DecrementTimeoutsAndCompactPlayers [ui/frontend/session],
-   FrontendHostSession_TickShutdownOrReadyConsensus [ui/frontend/session], FieldGrid_SetAllCellOverlayColors
-   [world/terrain/grid], WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries [world/runtime/core],
-   RecentTextHistory_SortAndBuildPointerList [ui/support/runtime], InGameHud_UpdateStatusCountersAndSessionPrompts
-   [ui/ingame/runtime].
+   Frame update of the in-game UI root for the whole session (despite its name): network session upkeep, the
+   placement overlay, cursor frame and edge scrolling, keeping the camera target near the field, and, unless the
+   interaction subsystem is active, ambient effect sounds, music selection, the camera keys, the countdown text and
+   the terrain texture refresh. Nothing but the network upkeep runs while waiting for players.
 */
 
 void __thandor_void_preserve_eax_ecx_edx
@@ -154,10 +150,12 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
   else {
     FrontendHostSession_TickShutdownOrReadyConsensus();
   }
-  if ((g_UiCommandRuntimeFlags & 0x10) == 0) {
-    if ((g_UiCommandRuntimeFlags & 0x2000) == 0) {
-      if ((g_UiCommandRuntimeFlags & 0x20) != 0) {
-        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x2000;
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+    /* placement overlay: grey the field and mark where the pending army asset fits; refreshed every 8th
+       simulation tick, removed once the placement ends */
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN) == 0) {
+      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) != 0) {
+        g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
         FieldGrid_SetAllCellOverlayColors
                   (0xff808080,(endGameResultsRuntime->worldRuntime0A30).fieldGrid);
         WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
@@ -165,8 +163,8 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    &endGameResultsRuntime->worldRuntime0A30);
       }
     }
-    else if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffdfff;
+    else if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PLACEMENT_PENDING) == 0) {
+      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_PLACEMENT_OVERLAY_SHOWN;
       FieldGrid_SetAllCellOverlayColors
                 (0xffffffff,(endGameResultsRuntime->worldRuntime0A30).fieldGrid);
     }
@@ -180,11 +178,10 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
     cursorFrameOrScratch = 0;
     hoveredNode = (*((endGameResultsRuntime->rootUi0000).base.vtable)->hitTest)
                        (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)endGameResultsRuntime);
-    if (hoveredNode != (UiNodeBase *)0xffffffff) {
+    if (hoveredNode != (UiNodeBase *)0xffffffff) { /* hit test found a node */
       cursorFrameOrScratch = hoveredNode->vtable->pointerMove(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     }
-    g_GameFactionRuntimeImage.tail.presentationTick =
-         g_GameFactionRuntimeImage.tail.presentationTick + 1;
+    g_GameFactionRuntimeImage.tail.presentationTick++;
     RecentTextHistory_SortAndBuildPointerList(8,&endGameResultsRuntime->recentTextHistory09B8);
     currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
     worldRuntime = &endGameResultsRuntime->worldRuntime0A30;
@@ -198,6 +195,8 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
       cursorFrameOrScratch = candidateFrameOrScore;
     }
     g_GraphicsCursorSetFrame(cursorFrameOrScratch);
+    /* keep the camera target within 16 cells of the field: clamp the grid position, convert it back to world
+       coordinates and move target and camera by the difference */
     cameraFieldGrid = (endGameResultsRuntime->worldRuntime0A30).fieldGrid;
     outOfBoundsAxisCount = 0;
     targetGridPosition = FieldGrid_WorldToGridQ12
@@ -205,8 +204,8 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                         (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12);
     targetRowQ12 = targetGridPosition.rowQ12;
     columnDeltaOrCount = targetGridPosition.columnQ12;
-    gridColumn = (columnDeltaOrCount >> 0xc) + -8;
-    gridRowOrDeltaY = (targetRowQ12 >> 0xc) + -8;
+    gridColumn = (columnDeltaOrCount >> 0xc) - 8;
+    gridRowOrDeltaY = (targetRowQ12 >> 0xc) - 8;
     if (gridColumn < -0x10) {
       columnDeltaOrCount = -0x8000;
       outOfBoundsAxisCount = 1;
@@ -217,10 +216,10 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
     }
     if (gridRowOrDeltaY < -0x10) {
       targetRowQ12 = -0x8000;
-      outOfBoundsAxisCount = outOfBoundsAxisCount + 1;
+      outOfBoundsAxisCount++;
     }
     else if ((int)cameraFieldGrid->gridHeight < gridRowOrDeltaY) {
-      outOfBoundsAxisCount = outOfBoundsAxisCount + 1;
+      outOfBoundsAxisCount++;
       targetRowQ12 = (cameraFieldGrid->gridHeight + 8) * 0x1000;
     }
     if (outOfBoundsAxisCount != 0) {
@@ -240,15 +239,16 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
       *motionCoordinate = *motionCoordinate + gridRowOrDeltaY;
       WorldRuntime_ClearFieldGridDirtyFlag(worldRuntime);
     }
-    if ((g_UiCommandRuntimeFlags & 4) == 0) {
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_INTERACTION_SUBSYSTEM_ACTIVE) == 0) {
       TerrainDirectionTable_AdvanceAndRebuildVectors();
-      cursorFrameOrScratch = PersistentSettings_Read(3,0x20);
-      if ((cursorFrameOrScratch & 1) != 0) {
+      cursorFrameOrScratch = PersistentSettings_Read(3,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
+      if ((cursorFrameOrScratch & 1) != 0) { /* effects on */
+        /* every 8th frame: recompute the spatial sound gains of all world objects */
         if ((currentPresentationTick & 7) == 0) {
           SpatialSoundPool_ClearDesiredGains();
           for (armyRuntime = (ArmyRuntimeSlot *)
                              (endGameResultsRuntime->worldRuntime0A30).ownerListHead;
-              armyRuntime != (ArmyRuntimeSlot *)0x0;
+              armyRuntime != NULL;
               armyRuntime = (ArmyRuntimeSlot *)armyRuntime->modelNodeRuntime) {
             (*(&g_RuntimeMaintenanceCallbackPhases.audioRefresh.army)[armyRuntime->runtimeStateA4])
                       (worldRuntime,armyRuntime);
@@ -256,18 +256,21 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
           SpatialSoundPool_ApplyDesiredGains();
           InGameSelectionDetailPanel_Rebuild();
         }
+        /* g_InGameEffectsEnabled counts frames until the next ambient effect sound: at 0 it waits for the current
+           one to end and starts a new delay of 1..64 frames; when it counts down to 0 one of the four level
+           effects plays */
         if (g_InGameEffectsEnabled == 0) {
           voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveEffectVoice);
           if (voicePlaying) {
-            g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
+            g_InGameActiveEffectVoice = NULL;
             cursorFrameOrScratch = Random_NextPrimary();
             g_InGameEffectsEnabled = (cursorFrameOrScratch & 0x3f) + 1;
           }
         }
         else {
-          g_InGameEffectsEnabled = g_InGameEffectsEnabled - 1;
+          g_InGameEffectsEnabled--;
           if (g_InGameEffectsEnabled == 0) {
-            cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x24);
+            cursorFrameOrScratch = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_EFFECTS_GAIN);
             candidateFrameOrScore = Random_NextPrimary();
             playVoiceResult = g_SoundPlayOneShot
                                (cursorFrameOrScratch,cursorFrameOrScratch,
@@ -278,19 +281,19 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
           }
         }
       }
-      cursorFrameOrScratch = PersistentSettings_Read(3,0x20);
+      cursorFrameOrScratch = PersistentSettings_Read(3,PERSISTENT_SETTING_SOUND_OPTION_FLAGS);
       levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-      if ((cursorFrameOrScratch & 2) != 0) {
+      if ((cursorFrameOrScratch & 2) != 0) { /* music on: same delay scheme, then the best-suited of the four tracks */
         if (g_InGameMusicEnabled == 0) {
           voicePlaying = g_SoundIsVoicePlaying(g_InGameActiveMusicVoice);
           if (voicePlaying) {
-            g_InGameActiveMusicVoice = (IDirectSoundBuffer *)0x0;
+            g_InGameActiveMusicVoice = NULL;
             cursorFrameOrScratch = Random_NextPrimary();
             g_InGameMusicEnabled = (cursorFrameOrScratch & 0x3f) + 1;
           }
         }
         else {
-          g_InGameMusicEnabled = g_InGameMusicEnabled - 1;
+          g_InGameMusicEnabled--;
           if (g_InGameMusicEnabled == 0) {
             cursorFrameOrScratch = 0;
             bestTrackOrSecondsLeft = 0;
@@ -308,7 +311,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
             } while (nextTrackIndex < 4);
             if (cursorFrameOrScratch != 0) {
               selectedMusicTrackId = (levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[bestTrackOrSecondsLeft];
-              cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x2c);
+              cursorFrameOrScratch = PersistentSettings_Read(0x8000,PERSISTENT_SETTING_MUSIC_GAIN);
               g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
               playVoiceResult = g_SoundPlayOneShot
                                  (cursorFrameOrScratch,cursorFrameOrScratch,
@@ -320,34 +323,36 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
           }
         }
       }
-      if ((g_UiCommandRuntimeFlags & 1) != 0)
+      if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_PAUSED) != 0)
       goto EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn;
       pageStackStatus = UiPageStack_ActivePageNotInList(&endGameResultsRuntime->gameWindowPageStack0BD0);
       if (pageStackStatus.pageIndex == 2) {
         InGameTechnologyPanel_Rebuild(&endGameResultsRuntime->rootUi0000);
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
-      if (g_KeyboardSpecialKeyDown[0x14] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
+      /* camera keys: arrows scroll by the configured step, Page Up/Down tilt, Insert/Delete rotate,
+         Home/End zoom (0x400 = 1/64 turn, 0x800 = 0.5 in Q12) */
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_LEFT] != 0) {
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
         WorldRuntime_TranslateCameraByScreenDelta(0,-cursorFrameOrScratch,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
-      if (g_KeyboardSpecialKeyDown[0x16] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_RIGHT] != 0) {
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
         WorldRuntime_TranslateCameraByScreenDelta(0,cursorFrameOrScratch,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
-      if (g_KeyboardSpecialKeyDown[0x11] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_UP] != 0) {
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
         WorldRuntime_TranslateCameraByScreenDelta(-cursorFrameOrScratch,0,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
-      if (g_KeyboardSpecialKeyDown[0x19] != 0) {
-        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DOWN] != 0) {
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,PERSISTENT_SETTING_CAMERA_SCROLL_STEP);
         WorldRuntime_TranslateCameraByScreenDelta(cursorFrameOrScratch,0,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
-      if (g_KeyboardSpecialKeyDown[0x12] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_UP] != 0) {
         clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle - 0x400;
         if ((int)clampedPitchAngle < (int)(endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle) {
           clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.minimumPitchAngle;
@@ -360,7 +365,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
         ;
       }
-      if (g_KeyboardSpecialKeyDown[0x1a] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_PAGE_DOWN] != 0) {
         clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle + 0x400;
         if ((int)(endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle < (int)clampedPitchAngle) {
           clampedPitchAngle = (endGameResultsRuntime->worldRuntime0A30).motion.maximumPitchAngle;
@@ -373,7 +378,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
         ;
       }
-      if (g_KeyboardSpecialKeyDown[7] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_INSERT] != 0) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle - 0x400 & 0xffff,
@@ -383,7 +388,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
         ;
       }
-      if (g_KeyboardSpecialKeyDown[6] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_DELETE] != 0) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((endGameResultsRuntime->worldRuntime0A30).motion.pitchAngle,
                    (endGameResultsRuntime->worldRuntime0A30).motion.headingAngle + 0x400 & 0xffff,
@@ -393,7 +398,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
         ;
       }
-      if (g_KeyboardSpecialKeyDown[0x10] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_HOME] != 0) {
         clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12 - 0x800;
         if ((int)clampedTargetDistance < (int)(endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12) {
           clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).minimumCameraDistanceQ12;
@@ -406,7 +411,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
                    (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12,worldRuntime)
         ;
       }
-      if (g_KeyboardSpecialKeyDown[0x18] != 0) {
+      if (g_KeyboardSpecialKeyDown[KEYBOARD_SPECIAL_KEY_END] != 0) {
         clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).motion.targetDistanceQ12 + 0x800;
         if ((int)(endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12 < (int)clampedTargetDistance) {
           clampedTargetDistance = (endGameResultsRuntime->worldRuntime0A30).maximumCameraDistanceQ12;
@@ -423,6 +428,8 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
       endGameResultsRuntime->sessionTimerNodeFlags44C0 =
            endGameResultsRuntime->sessionTimerNodeFlags44C0 & ~UI_NODE_SUPPRESSED;
       currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
+      /* countdown text: the first of the 64 scheduled conditions that is a running countdown shows its
+         remaining seconds as minutes:seconds; without one the timer node stays hidden */
       columnDeltaOrCount = 0x40;
       scheduledCondition = &levelConditionStorage->schedule;
       do {
@@ -430,17 +437,17 @@ EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endG
              INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
            (bestTrackOrSecondsLeft = scheduledCondition->conditions[0].payload.operands[1], bestTrackOrSecondsLeft != 0)) {
           cursorFrameOrScratch = g_WideNumberFormatUtf16
-                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 0x3c,(uint16_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
-          *(uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
+                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 60,(uint16_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
+          *(uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a; /* ':' */
           g_WideNumberFormatUtf16
-                    (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 0x3c,
+                    (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 60,
                      (uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
           currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
           goto 
           EndGameResultsUiRuntime_UpdateAndHandleInput_RefreshTerrainCompositeOnPresentationCadence;
         }
         scheduledCondition = (InGameConditionScheduleImageView480 *)(scheduledCondition->conditions + 1);
-        columnDeltaOrCount = columnDeltaOrCount + -1;
+        columnDeltaOrCount--;
       } while (columnDeltaOrCount != 0);
       endGameResultsRuntime->sessionTimerNodeFlags44C0 =
            endGameResultsRuntime->sessionTimerNodeFlags44C0 | UI_NODE_SUPPRESSED;
@@ -574,31 +581,25 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
 
 
 /* Address: 0x00565E10.
-   Ownership: gameplay/session/runtime.
-   Purpose: In-game periodic timer callback. It decrements the startup/countdown field when nonzero and advances
-   the shared runtime clock while the pause byte is clear.
+   Periodic timer callback of the in-game session: counts the network tick countdown down to zero and advances the
+   periodic clock while no resource registration is in progress.
 */
 void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
 
 {
   if (g_InGameNetworkTickCountdown != 0) {
-    g_InGameNetworkTickCountdown = g_InGameNetworkTickCountdown + -1;
+    g_InGameNetworkTickCountdown--;
   }
   if (g_InGameResourceRegistrationBusyCount == '\0') {
-    g_GameFactionRuntimeImage.tail.periodicClockTick =
-         g_GameFactionRuntimeImage.tail.periodicClockTick + 1;
+    g_GameFactionRuntimeImage.tail.periodicClockTick++;
   }
   return;
 }
 
 /* Address: 0x00567060.
-   Ownership: gameplay/session/runtime.
-   Purpose: In-game hotkeys (the in-game root's keyboard fallback, also installed by the frontend for
-   the running game): chat, windows, save, quit, panels and the cheat keys, selected by command code and
-   modifier flags. Typed parameters: p0
-   modifierFlags→UiKeyboardStateMask_V297, p1 commandCode→UiActionId_V338. Nearby but non-identical semantic
-   domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
-   locals, and executable data remain unchanged.
+   Keyboard fallback of the in-game UI root: looks the key up in the hotkey table (key code plus required Ctrl/Alt
+   combination) and runs its action: chat, message window, menus, save, pause, game speed, side panel,
+   screenshot, leaving the game and the three cheat keys (only while cheats are enabled).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 InGameHotkeys_DispatchCommandByFlags
@@ -613,7 +614,10 @@ InGameHotkeys_DispatchCommandByFlags
   uint8_t *rt = (uint8_t *)endGameResultsRuntime;
   UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
   uint32_t target = 0;
-  bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
+  bool localSession = (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) == 0;
+
+  /* A record without modifier class matches only without Ctrl and Alt; otherwise exactly the named
+     combination (Ctrl, Alt, or both) must be held. */
 
   for (;; record++) {
     uint32_t flags = record->modifierClassFlags;
@@ -624,38 +628,38 @@ InGameHotkeys_DispatchCommandByFlags
       continue;
     }
     if (flags == 0) {
-      if ((modifierFlags & 0x3c) != 0) continue;
+      if ((modifierFlags & (KEYBOARD_STATE_CTRL | KEYBOARD_STATE_ALT)) != 0) continue;
     }
-    else if ((flags & 0x30) == 0) {
-      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) != 0)) continue;
+    else if ((flags & KEYBOARD_STATE_ALT) == 0) {
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) != 0)) continue;
     }
-    else if ((flags & 0xc) == 0) {
-      if (((modifierFlags & 0xc) != 0) || ((modifierFlags & 0x30) == 0)) continue;
+    else if ((flags & KEYBOARD_STATE_CTRL) == 0) {
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) != 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
     }
     else {
-      if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
+      if (((modifierFlags & KEYBOARD_STATE_CTRL) == 0) || ((modifierFlags & KEYBOARD_STATE_ALT) == 0)) continue;
     }
     target = (uint32_t)record->continuationEntryAddress;
     break;
   }
   switch (target) {
-  case 0x5671e0: /* cheat: toggle runtime flag 0x100000 */
-    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
-      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 0x100000;
+  case 0x5671e0: /* Ctrl+Alt+Z, cheat: toggle fast build and research */
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
+      g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ UI_COMMAND_RUNTIME_FLAG_CHEAT_FAST_BUILD;
     }
     break;
-  case 0x567200: /* cheat: add xenite */
-    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
+  case 0x567200: /* Ctrl+Alt+X, cheat: +1000 Xenite (xeniteCurrentQ4 += 0x3E80) */
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
       *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740) += 0x3e80;
     }
     break;
-  case 0x567230: /* cheat: add energy */
-    if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
+  case 0x567230: /* Ctrl+Alt+E, cheat: +100 energy supply and capacity (record +0x20 and +0x24, Q4) */
+    if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_CHEATS_ENABLED) != 0) {
       *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x20) += 0x640;
       *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x24) += 0x640;
     }
     break;
-  case 0x567270:
+  case 0x567270: /* Enter: open the chat line */
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)INGAME_UI(rt,chatInputPageStack));
     ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->cursorIndex = 0;
     ((UiTextEditControl *)INGAME_UI(rt,chatInputTextEdit))->selectionStart = 0;
@@ -673,10 +677,10 @@ InGameHotkeys_DispatchCommandByFlags
     }
     UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
     break;
-  case 0x567340:
-  case 0x5673a0:
-  case 0x567410:
-  case 0x567460: {
+  case 0x567340: /* Alt+F4: game menu on the quit page */
+  case 0x5673a0: /* F2: game menu on the save page (local games only) */
+  case 0x567410: /* Esc: game menu */
+  case 0x567460: { /* F1: mission objectives */
     UiSelectableControl *toggle;
     if ((target == 0x5673a0) && !localSession) {
       break;
@@ -702,7 +706,7 @@ InGameHotkeys_DispatchCommandByFlags
     }
     break;
   }
-  case 0x5674b0: {
+  case 0x5674b0: { /* C: toggle the message window (network games only) */
     UiPageStackControl *stack;
     uint32_t index;
     SelectableGroupNodeResult visible;
@@ -734,7 +738,7 @@ InGameHotkeys_DispatchCommandByFlags
     g_KeyboardFlushEvents();
     break;
   }
-  case 0x5675e0: /* pause */
+  case 0x5675e0: /* P: pause */
     if (localSession) {
       InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal(g_LocalPlayerRuntimeId,0,0,0);
     }
@@ -742,8 +746,8 @@ InGameHotkeys_DispatchCommandByFlags
       InGameCommandQueue_AppendLocalPlayerCommand(0x370,0,0,0);
     }
     break;
-  case 0x567620: /* faster */
-  case 0x567660: /* slower */ {
+  case 0x567620: /* G: faster */
+  case 0x567660: /* Alt+G: slower */ {
     int step = (target == 0x567620) ? 1 : -1;
     if (localSession) {
       InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks(g_LocalPlayerRuntimeId,0,0,step);
@@ -753,8 +757,8 @@ InGameHotkeys_DispatchCommandByFlags
     }
     break;
   }
-  case 0x5676a0: {
-    uint32_t settings = PersistentSettings_Read(0,0x40);
+  case 0x5676a0: { /* Tab: hide or show the side panel; bit 2 of the map/mouse settings remembers it */
+    uint32_t settings = PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
     if (UiPageStack_ActivePageNotInList(stack).pageIndex != 0) {
       UiPageStack_SetActiveIndex(0,stack);
@@ -771,10 +775,10 @@ InGameHotkeys_DispatchCommandByFlags
       settings = settings | 4;
     }
     UiContainer_LayoutChildren((UiNodeBase *)rt);
-    PersistentSettings_Write(settings,0x40);
+    PersistentSettings_Write(settings,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
     break;
   }
-  case 0x5677e0: { /* screenshot */
+  case 0x5677e0: { /* Alt+P: screenshot to the next numbered PCX file */
     FramebufferCaptureResult capture =
          g_GraphicsFramebufferCaptureRegion(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeResult pcx;
@@ -792,18 +796,19 @@ InGameHotkeys_DispatchCommandByFlags
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     g_MemoryApi.free(pcx.encodedBytesOrError);
     g_MemoryApi.free(capture.capture);
+    /* advance the two-digit number in the file name */
     *digitLow = *digitLow + 1;
-    if (*digitLow > 0x39) {
+    if (*digitLow > '9') {
       *digitHigh = *digitHigh + 1;
       *digitLow = *digitLow - 10;
-      if (*digitHigh > 0x39) {
+      if (*digitHigh > '9') {
         *digitHigh = *digitHigh - 10;
       }
     }
     break;
   }
-  case 0x567870:
-    if ((g_SessionNetworkRoleFlags & 2) != 0) {
+  case 0x567870: /* Alt+Q: leave the game (not as host) */
+    if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != 0) {
       break;
     }
     if (localSession) {
@@ -822,10 +827,10 @@ InGameHotkeys_DispatchCommandByFlags
 
 
 /* Address: 0x00569920.
-   Ownership: gameplay/session/runtime.
-   Purpose: Ten-millisecond gameplay timer that advances queued session notification and status records.
-   Cross-module calls: Movie_Open [movie/runtime/playback], Movie_SetAudioGainQ15 [movie/runtime/playback],
-   Movie_AdvanceFrame [movie/runtime/playback], Movie_Close [movie/runtime/playback].
+   Periodic timer that plays the queued in-game notification movies: while one plays it advances a frame and, at
+   the end, closes it and keeps the notification's map target clickable for 0x280 more ticks; otherwise it starts
+   the movie of the queue head ("flm\movie%03d.flm"), makes its payload the active notification and pops the
+   four-entry queue.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
@@ -849,6 +854,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
      (g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C == PAYLOAD_ACTIVE)) {
     g_InGameRuntimeRoot->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
   }
+  /* observedSessionNotificationValue9B50 holds the playing movie, or the panel texture source when none plays */
   if (panelTextureSource == (GraphicsTextureSourceAsset *)inGameRoot->observedSessionNotificationValue9B50) {
     if (inGameRoot->notificationQueue9E60[0].priority04 != 0) {
       notificationMovieNumber = inGameRoot->notificationQueue9E60[0].notificationMovieId00;
@@ -856,6 +862,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
                 (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
       openResult = Movie_Open(0x80000000,(uint16_t *)u_flm_movie000_flm_0056314e);
       if (!openResult.failed) {
+        /* movies 100-299 and 700-899 play at the alternate movie gain */
         if ((99 < notificationMovieNumber) && ((notificationMovieNumber < 300 || ((699 < notificationMovieNumber && (notificationMovieNumber < 900)))))) {
           Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
         }
@@ -863,9 +870,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
         if (!frameResult.ended) {
           inGameRoot->observedSessionNotificationValue9B50 = frameResult.movieOrError;
           inGameRoot->notificationPlaybackCompletionCode9B54 = 0;
+          /* copy the 0x18-byte payload of the queue head into the active notification */
           sourcePayload = &inGameRoot->notificationQueue9E60[0].payload08;
           destinationPayload = &inGameRoot->activeNotificationPayload9E40;
-          for (remainingWords = 6; remainingWords != 0; remainingWords = remainingWords + -1) {
+          for (remainingWords = 6; remainingWords != 0; remainingWords--) {
             destinationPayload->primaryWorldCoordinateQ12_00 = sourcePayload->primaryWorldCoordinateQ12_00;
             sourcePayload = (InGameNotificationPayload18 *)&sourcePayload->secondaryWorldCoordinateQ12_04;
             destinationPayload = (InGameNotificationPayload18 *)&destinationPayload->secondaryWorldCoordinateQ12_04;
@@ -879,14 +887,15 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
           }
         }
       }
+      /* pop the queue head: move entries 1-3 (0x18 dwords) forward and clear the last 0x20-byte entry */
       sourceRecord = inGameRoot->notificationQueue9E60 + 1;
       destinationRecord = inGameRoot->notificationQueue9E60;
-      for (remainingWords = 0x18; remainingWords != 0; remainingWords = remainingWords + -1) {
+      for (remainingWords = 0x18; remainingWords != 0; remainingWords--) {
         destinationRecord->notificationMovieId00 = sourceRecord->notificationMovieId00;
         sourceRecord = (InGameNotificationQueueRecord20 *)&sourceRecord->priority04;
         destinationRecord = (InGameNotificationQueueRecord20 *)&destinationRecord->priority04;
       }
-      for (remainingWords = 8; remainingWords != 0; remainingWords = remainingWords + -1) {
+      for (remainingWords = 8; remainingWords != 0; remainingWords--) {
         destinationRecord->notificationMovieId00 = 0;
         destinationRecord = (InGameNotificationQueueRecord20 *)&destinationRecord->priority04;
       }
@@ -1688,7 +1697,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
   if (inGameRoot != NULL) {
-    InGameRuntime_PublishRootWorldStatePointer(&inGameRoot->rootUi0000);
+    InGameRuntime_SaveWorldViewInfoTextChoice(&inGameRoot->rootUi0000);
     world = &inGameRoot->worldRuntime0A30;
     WorldRuntime_ForEachNodeInOwnerListD8
               (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
@@ -1722,8 +1731,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
 
 
 /* Address: 0x0050E0D0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Releases and clears the paired per-faction scratch-buffer arrays used by the in-game runtime.
+   Frees the two scratch buffers of each of the eight factions (sets A and B) at session shutdown and clears the
+   pointers.
 */
 void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(void)
 
@@ -1738,11 +1747,11 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
   do {
     g_MemoryApi.free(*scratchBufferSetACursor);
     g_MemoryApi.free(*scratchBufferSetBCursor);
-    *scratchBufferSetACursor = (void *)0x0;
-    *scratchBufferSetBCursor = (void *)0x0;
-    scratchBufferSetACursor = scratchBufferSetACursor + 1;
-    scratchBufferSetBCursor = scratchBufferSetBCursor + 1;
-    remainingFactions = remainingFactions + -1;
+    *scratchBufferSetACursor = NULL;
+    *scratchBufferSetBCursor = NULL;
+    scratchBufferSetACursor++;
+    scratchBufferSetBCursor++;
+    remainingFactions--;
   } while (remainingFactions != 0);
   return;
 }
@@ -2471,13 +2480,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
 
 
 /* Address: 0x005651A0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Before shutdown traversal, saves the text resource id currently shown by the in-game copy's
-   worldViewCyclingInfoText (root offset 0x23D8, cycled 0x112..0x117) back into the in-game template and into the
-   frontend template's bottomBarStatusText, so the choice survives the next template copy.
+   Called before the session shutdown: remembers which info text the world view shows (text resource
+   0x112..0x117, cycled by the player) in the in-game template and in the frontend template's status text, so the
+   choice survives the next copy of the templates.
 */
 void __thandor_void_preserve_eax_ecx
-InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
+InGameRuntime_SaveWorldViewInfoTextChoice(UiRootNode *inGameRoot)
 
 {
   g_InGameTemplateWorldViewInfoTextResourceId =
@@ -2722,12 +2730,8 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
 
 
 /* Address: 0x0050E0B0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Initialization callback used by both new-session and loaded-session setup. Both binary call sites pass
-   one argument and branch on carry immediately after return. The reachable implementation clears carry and returns
-   at 0050E0C1-0050E0C3. The detached bytes at 0050E0C4-0050E0CF form an unreachable carry-set epilogue with no
-   direct branch, call, or absolute-pointer reference in the archived executable, so they are verified separately
-   and are not included in the function range.
+   Optional initialisation step of new and loaded sessions; it always succeeds (CF clear), so the callers' failure
+   branches never run. The unreachable CF-set epilogue at 0x0050E0C4 is not part of the function.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
 InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)

@@ -23,8 +23,9 @@ static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int 
   return lanes.q;
 }
 
-/* One lighting color pair: PUNPCKLBW/PSRLW 6 of both colors, PMULHW by the forward and inverse blend
-   factors, PADDW, PACKUSWB (low dword). */
+/* Not a function of its own in the original: the inlined MMX sequence that blends one colour pair of
+   WorldLightingRuntime_UpdateInterpolatedTerrainLighting per byte, color * forward + alternateColor * inverse
+   with unsigned saturation (PUNPCKLBW/PSRLW 6 of both colours, PMULHW by the factors, PADDW, PACKUSWB). */
 static __inline uint32_t WorldLighting_BlendColors
           (uint32_t color,uint32_t alternateColor,SoftwareBgraWordLanes forwardFactors,
           SoftwareBgraWordLanes inverseFactors)
@@ -39,7 +40,7 @@ static __inline uint32_t WorldLighting_BlendColors
   forwardTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(color,6),forwardFactors);
   inverseTerm.q = pmulhw(WorldLighting_UnpackBytesShiftRight(alternateColor,6),inverseFactors);
   packed = 0;
-  for (lane = 0; lane < 4; lane = lane + 1) {
+  for (lane = 0; lane < 4; lane++) {
     sum = (short)(forwardTerm.sw[lane] + inverseTerm.sw[lane]);
     packed = packed | (uint32_t)(sum < 0 ? 0 : (0xff < sum ? 0xff : sum)) << (lane * 8);
   }
@@ -576,9 +577,8 @@ void __thandor_preserve_eax WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContex
 
 
 /* Address: 0x0050D510.
-   Ownership: world/runtime/core.
-   Purpose: Stores arrayBase at context offset 0x58 and count at offset 0xAC. Verified callers attach arrays
-   containing 0x100 or 0x4000 entries.
+   Attaches the pool of 0x100-byte object records that WorldObjectArray_AllocateFreeRecord hands out (callers
+   attach 0x100 or 0x4000 records).
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_AttachObjectArray
@@ -740,9 +740,8 @@ uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
 }
 
 /* Address: 0x0050D710.
-   Ownership: world/runtime/core.
-   Purpose: Stores array at context offset 0xC0 and count at 0xC4, then clears exactly count dwords beginning at
-   array.
+   Attaches a caller-owned workspace of count dwords to the world runtime (see WorldRuntime_GetDwordArray) and
+   zeroes it.
 */
 void __thandor_void_preserve_eax_ecx
 WorldRuntime_AttachAndClearDwordArray
@@ -751,7 +750,7 @@ WorldRuntime_AttachAndClearDwordArray
 {
   world->dwordArray = array;
   world->dwordArrayCount = count;
-  for (; count != 0; count = count - 1) {
+  for (; count != 0; count--) {
     *array = 0;
     array = array + 1;
   }
@@ -770,9 +769,9 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
 }
 
 /* Address: 0x0050D7D0.
-   Ownership: world/runtime/core.
-   Purpose: Scans the attached fixed-size 0x100-byte object records for a slot without allocation bit 0x40000000,
-   marks the selected slot, stores its owning world runtime, and reports exhaustion or success through carry.
+   Takes the first free record of the world's object pool (WorldRuntime_AttachObjectArray): marks it allocated
+   (which also resets its other flag bits) and stores the owning world. Returns FATAL_ERROR_GENERAL_FAILURE with
+   CF set when the pool is exhausted.
 */
 WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
 WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
@@ -782,20 +781,20 @@ WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
   WorldObjectRecord *recordCursor;
   WorldObjectAllocResult exhaustedResult;
   WorldObjectAllocResult allocatedResult;
-  
+
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
   while( true ) {
     if (recordsRemaining == 0) {
       exhaustedResult.failed = true;
-      exhaustedResult.recordOrError = (WorldObjectRecord *)0x14;
+      exhaustedResult.recordOrError = (WorldObjectRecord *)FATAL_ERROR_GENERAL_FAILURE;
       return exhaustedResult;
     }
-    if (((recordCursor->common).allocationFlags & 0x40000000) == 0) break;
+    if (((recordCursor->common).allocationFlags & WORLD_OBJECT_RECORD_ALLOCATED) == 0) break;
     recordCursor = recordCursor + 1;
-    recordsRemaining = recordsRemaining - 1;
+    recordsRemaining--;
   }
-  (recordCursor->common).allocationFlags = 0x40000000;
+  (recordCursor->common).allocationFlags = WORLD_OBJECT_RECORD_ALLOCATED;
   (recordCursor->common).ownerWorld = worldRuntime;
   allocatedResult.failed = false;
   allocatedResult.recordOrError = recordCursor;
@@ -863,8 +862,8 @@ WorldRuntime_UnlinkNodeFromOwnerListD8(WorldOwnerListNode100 *node)
 
 
 /* Address: 0x0050D8F0.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime for each node in owner list d8.
+   Calls callback(callbackContext, node) for every node of the world's owner list (head at +0xD8), from the most
+   recently linked one on.
 */
 void __thandor_preserve_eax_edx
 WorldRuntime_ForEachNodeInOwnerListD8
@@ -873,8 +872,8 @@ WorldRuntime_ForEachNodeInOwnerListD8
 
 {
   WorldOwnerListNode100 *node;
-  
-  for (node = world->ownerListHead; node != (WorldOwnerListNode100 *)0x0; node = node->nextNode) {
+
+  for (node = world->ownerListHead; node != NULL; node = node->nextNode) {
     callback(callbackContext,node);
   }
   return;
@@ -1144,10 +1143,10 @@ WorldRuntimeNode_ClearDetachedEntityReferencesCallback
 
 
 /* Address: 0x00565110.
-   Ownership: world/runtime/core.
-   Purpose: In-game shutdown owner-list callback. It releases kind-0 bindings and clears the verified kind-1 and
-   kind-2 back-reference fields before level resources are destroyed.
-   Cross-module calls: ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
+   WorldRuntime_ForEachNodeInOwnerListD8 callback used when an in-game session shuts down, before the level
+   resources are destroyed: destroys the army of every model node; for shot and effect nodes it clears flag bits
+   31 (linked into the owner list) and 30 and zeroes one back-reference field of their runtime payload (+0x10 for
+   shots, +4 for effects).
 */
 void __thandor_preserve_eax_edx
 WorldRuntimeNode_ReleaseShutdownBindingsCallback
@@ -1248,9 +1247,8 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
 
 
 /* Address: 0x0050D760.
-   Ownership: world/runtime/core.
-   Purpose: Handles world runtime set terrain lighting configuration.
-   Cross-module calls: TerrainLighting_BuildColorRampAndSetBaseColor [world/terrain/visuals].
+   Stores the eight terrain lighting colours of the level (or of the current lighting-cycle blend) in the world
+   runtime and rebuilds the terrain colour ramp from the two ramp colours and the base colour.
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_SetTerrainLightingConfiguration
@@ -1275,26 +1273,25 @@ WorldRuntime_SetTerrainLightingConfiguration
 
 
 /* Address: 0x0050D5C0.
-   Ownership: world/runtime/core.
-   Purpose: Typed parameters: p2 gridHeight→FieldGridDimensionCells_V343, p3
-   gridWidth→FieldGridDimensionCells_V343. Calling convention, complete VariableStorage serialization, function
-   bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: FieldGrid_RecomputeInteriorTriangleNormalAngles [world/terrain/grid],
-   FieldGrid_RecomputeInteriorDirectionalLighting [world/terrain/grid].
+   Sets the terrain light direction (elevation, azimuth) and relights the field: recomputes the triangle normals
+   and the directional lighting of the field grid. The auxiliary angle pair is only stored (in the fields named
+   fieldRegion.regionHeight/regionWidth; callers clamp and wrap it like the light direction, elevation
+   -0x4000..-0x1000, azimuth & 0xFFFF). Callers: level load, the periodic lighting cycle and the light-direction
+   commands.
 */
 void __thandor_void_preserve_ecx_edx
 WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-          (FieldGridDimensionCells gridHeight,FieldGridDimensionCells gridWidth,Q12 originWorldYQ12,
-          Q12 originWorldXQ12,WorldRuntimeContext *worldRuntime)
+          (FieldGridDimensionCells auxiliaryElevationAngle,FieldGridDimensionCells auxiliaryAzimuthAngle,
+          Q12 lightElevationAngle,Q12 lightAzimuthAngle,WorldRuntimeContext *worldRuntime)
 
 {
-  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x1c) = originWorldXQ12;
-  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x20) = originWorldYQ12;
+  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x1c) = lightAzimuthAngle;
+  *(Q12 *)(worldRuntime[1].interaction.reserved00_47 + 0x20) = lightElevationAngle;
   FieldGrid_RecomputeInteriorTriangleNormalAngles(worldRuntime->fieldGrid);
   FieldGrid_RecomputeInteriorDirectionalLighting
-            (originWorldYQ12,originWorldXQ12,worldRuntime->fieldGrid);
-  (worldRuntime->fieldRegion).regionWidth = gridWidth;
-  (worldRuntime->fieldRegion).regionHeight = gridHeight;
+            (lightElevationAngle,lightAzimuthAngle,worldRuntime->fieldGrid);
+  (worldRuntime->fieldRegion).regionWidth = auxiliaryAzimuthAngle;
+  (worldRuntime->fieldRegion).regionHeight = auxiliaryElevationAngle;
   return;
 }
 

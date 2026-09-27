@@ -19,6 +19,14 @@
 #define UI_RUNTIME_RECORD_RING_LAST_INDEX 0xff
 #define UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE 0x80
 
+/* Action queue (g_UiActionQueueEntries, allocated by UiRuntime_Initialize): 16 entries of 8 bytes
+   (actionId, source), filled by UiActionQueue_Enqueue and drained once per frame by
+   UiActionQueue_DispatchPending. actionId -1 means "no action" and is never queued. */
+#define UI_ACTION_QUEUE_BYTES 0x80
+#define UI_ACTION_NONE (-1)
+/* Dirty rectangles collected by UiNode_InvalidateRoot per frame (0x18-byte UiDirtyRectEntry each). */
+#define UI_DIRTY_RECT_CAPACITY 0x40
+
 /* 0x004228F0 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);
 
