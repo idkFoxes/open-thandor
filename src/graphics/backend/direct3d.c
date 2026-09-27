@@ -60,7 +60,7 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
   GraphicsAdapterRecord *recordCursor;
   TH_LEGACY_GUID *guidCursor;
   D3DDEVICEDESC_DX6 *descCursor;
-  ArenaAllocEaxCf5 descAllocation;
+  ArenaAllocResult descAllocation;
   
   newAdapterIndex = g_GraphicsAdapterCount;
   if ((g_GraphicsAdapterCount < 0x10) &&
@@ -84,7 +84,7 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
          (((hardwareDesc->dpcTriCaps).dwRasterCaps & 0x200) != 0)))))))))) {
     descAllocation = (*g_MemoryApi.alloc)(0x198);
     updatedAdapterCount = g_GraphicsAdapterCount;
-    if (!descAllocation.carry) {
+    if (!descAllocation.failed) {
       newRecord = g_GraphicsAdapters + newAdapterIndex;
       remainingDwords = 0x20;
       g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
@@ -105,8 +105,8 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
         guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
       }
       Text_CopyNarrowToUtf16Cf(0x28,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
-      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
-      descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
+      filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
+      descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
       for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
         descCursor->dwSize = hardwareDesc->dwSize;
         hardwareDesc = (D3DDEVICEDESC_DX6 *)&hardwareDesc->dwFlags;
@@ -226,24 +226,24 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set antialias mode.
 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
 
 {
   int32_t direct3DResult;
-  Direct3DRenderStateApplyEaxCf5 successResult;
-  Direct3DRenderStateApplyEaxCf5 failureResult;
+  RenderStateApplyResult successResult;
+  RenderStateApplyResult failureResult;
   
   direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                     (g_Direct3DDevice2,D3DRENDERSTATE_ANTIALIAS,antialiasMode);
   if (direct3DResult == 0) {
     g_Direct3DAntialiasMode = antialiasMode;
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.appliedValueOrError = antialiasMode;
     return successResult;
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
 }
@@ -253,13 +253,13 @@ Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set texture filter mode.
 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
 
 {
   int32_t direct3DResult;
-  Direct3DRenderStateApplyEaxCf5 successResult;
-  Direct3DRenderStateApplyEaxCf5 failureResult;
+  RenderStateApplyResult successResult;
+  RenderStateApplyResult failureResult;
   int32_t errorCode;
   
   errorCode = 0x6e;
@@ -271,13 +271,13 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
                       (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREMIN,textureFilterMode);
     if (direct3DResult == 0) {
       g_Direct3DTextureFilterMode = textureFilterMode;
-      successResult.carry = false;
+      successResult.failed = false;
       successResult.appliedValueOrError = textureFilterMode;
       return successResult;
     }
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,errorCode,g_PackageLastErrorPath);
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
 }
@@ -287,24 +287,24 @@ Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
    Ownership: graphics/backend/direct3d.
    Purpose: Handles direct3 drenderer set texture perspective enabled.
 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
 
 {
   int32_t direct3DResult;
-  Direct3DRenderStateApplyEaxCf5 successResult;
-  Direct3DRenderStateApplyEaxCf5 failureResult;
+  RenderStateApplyResult successResult;
+  RenderStateApplyResult failureResult;
   
   direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
                     (g_Direct3DDevice2,D3DRENDERSTATE_TEXTUREPERSPECTIVE,texturePerspectiveEnabled);
   if (direct3DResult == 0) {
     g_Direct3DTexturePerspectiveEnabled = texturePerspectiveEnabled;
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.appliedValueOrError = texturePerspectiveEnabled;
     return successResult;
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x78,g_PackageLastErrorPath);
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.appliedValueOrError = 0x1d;
   return failureResult;
 }

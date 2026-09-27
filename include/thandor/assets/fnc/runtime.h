@@ -18,10 +18,10 @@
 uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module);
 
 /* 0x0041A640 */
-FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule);
+FncModuleLoadResult FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule);
 
 /* 0x0041A710 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module);
 
 #endif /* THANDOR_ASSETS_FNC_RUNTIME_H */

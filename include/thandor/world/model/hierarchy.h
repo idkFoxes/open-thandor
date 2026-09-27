@@ -57,13 +57,13 @@ ModelNodeRuntime_TransformLocalPointRegs
 ModelRelativeDirectionAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx ModelNodeRuntime_ComputeRelativeDirectionAngle (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle);
 
 /* 0x0050A7A0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context);
 
 /* 0x0050B1D0 */
-ModelRaycastNearestHitEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x0051B650 */
@@ -98,7 +98,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           MdlSerializedNodeHeader38 *definitionNode);
 
 /* 0x00528E90 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelNodeRuntime_CreateHierarchyRecursiveCf
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
@@ -120,10 +120,10 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime);
 ModelRuntimeActiveTotalMetricRegisterPair ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime);
 
 /* 0x0052AAC0 */
-ModelSmoothEaxCf5 __thandor_eax_cf_preserve_ecx_edx ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetYawAngle16);
+AimSmoothResult __thandor_eax_cf_preserve_ecx_edx ModelNodeRuntime_SmoothYawTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetYawAngle16);
 
 /* 0x0052AC00 */
-ModelSmoothEaxCf5 __thandor_eax_cf_preserve_ecx_edx ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetPitchAngle16);
+AimSmoothResult __thandor_eax_cf_preserve_ecx_edx ModelNodeRuntime_SmoothPitchTowardTarget (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState, AngleTurn32 targetPitchAngle16);
 
 /* 0x004BD1A0 */
 void __thandor_void_preserve_eax_ecx_edx

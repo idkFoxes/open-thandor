@@ -28,7 +28,7 @@
    GraphicsTexture_CreateDeviceTexture.
    Cross-module calls: Glide3_TextureSet_CreateBackend [graphics/backend/glide].
 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
 
 {
@@ -39,10 +39,10 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
   DDPIXELFORMAT *selectedPixelFormat;
   GraphicsTextureResource *newTexture;
   bool registerFailed;
-  GraphicsTextureSetEaxCf5 allocatedSet;
-  ArenaAllocEaxCf5 textureAllocation;
-  GraphicsTextureSetEaxCf5 successResult;
-  GraphicsTextureSetEaxCf5 failureResult;
+  TextureSetResult allocatedSet;
+  ArenaAllocResult textureAllocation;
+  TextureSetResult successResult;
+  TextureSetResult failureResult;
   GraphicsTextureSetEntry *entryCursor;
   AssetSubresourceCount entriesRemaining;
   GraphicsSubresourceIndex subresourceIndex;
@@ -50,13 +50,13 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
   adapters = g_GraphicsAdapters;
   adapterIndex = g_ActiveGraphicsAdapterIndex;
   allocatedSet = GraphicsTextureSet_AllocateMetadata(sourceAsset);
-  if (allocatedSet.carry) {
-    failureResult.carry = true;
+  if (allocatedSet.failed) {
+    failureResult.failed = true;
     failureResult.textureSet = allocatedSet.textureSet;
     return failureResult;
   }
   if (adapters[adapterIndex].deviceGuid.Data1 == 1) {
-    allocatedSet.carry = Glide3_TextureSet_CreateBackend(allocatedSet.textureSet,sourceAsset);
+    allocatedSet.failed = Glide3_TextureSet_CreateBackend(allocatedSet.textureSet,sourceAsset);
     return allocatedSet;
   }
   setSourceAsset = (allocatedSet.textureSet)->sourceAsset;
@@ -66,8 +66,8 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(subresourceIndex,setSourceAsset);
     textureAllocation = (*g_MemoryApi.alloc)(0x50);
-    newTexture = (GraphicsTextureResource *)textureAllocation.eax;
-    if (!textureAllocation.carry) {
+    newTexture = (GraphicsTextureResource *)textureAllocation.payloadOrError;
+    if (!textureAllocation.failed) {
       newTexture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
       newTexture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
       newTexture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
@@ -97,7 +97,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
     entryCursor = entryCursor + 1;
     entriesRemaining = entriesRemaining - 1;
   } while (entriesRemaining != 0);
-  successResult.carry = false;
+  successResult.failed = false;
   successResult.textureSet = allocatedSet.textureSet;
   return successResult;
 }
@@ -196,27 +196,27 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
    means success. CF set means package loading or texture-set creation failed.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsTextureSourceAsset *loadedTextureSource;
   GraphicsTextureSet *createdTextureSet;
-  PackageLoadEntryEaxCf5 loadResult;
-  GraphicsTextureSetEaxCf5 createResult;
+  PackageLoadResult loadResult;
+  TextureSetResult createResult;
   
   loadResult = Package_LoadEntry(pathUtf16);
   loadedTextureSource = loadResult.bufferOrError;
-  if (!loadResult.carry) {
+  if (!loadResult.failed) {
     createResult = (*g_GraphicsCreateTextureSet)(loadedTextureSource);
     createdTextureSet = createResult.textureSet;
-    if (!createResult.carry) {
+    if (!createResult.failed) {
       return createResult;
     }
     Resource_Release(loadedTextureSource);
     loadedTextureSource = (GraphicsTextureSourceAsset *)createdTextureSet;
   }
-  createResult.carry = true;
+  createResult.failed = true;
   createResult.textureSet = (GraphicsTextureSet *)loadedTextureSource;
   return createResult;
 }
@@ -267,13 +267,13 @@ void __cdecl GraphicsTexture_RebuildNoOp(void)
    Purpose: Validates the source asset and subresource index. EAX returns logicalWidth and EDX returns
    logicalHeight. ABI: CF clear means success. CF set means failure.
 */
-GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TextureSizeResult __thandor_eax_edx_cf_preserve_ecx
 GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  GraphicsTextureSizeEaxEdxCf9 successResult;
-  GraphicsTextureSizeEaxEdxCf9 failureResult;
+  TextureSizeResult successResult;
+  TextureSizeResult failureResult;
   AssetRelativeOffset subresourceTableOffset;
   
   if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -287,13 +287,13 @@ GraphicsTextureSource_GetLogicalSizeRegs
          *(uint32_t *)
           ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
           subresourceIndex * 0x20 + subresourceTableOffset + -0x28);
-    successResult.carry = false;
+    successResult.failed = false;
     return successResult;
   }
   /* Failure (CF set): the original leaves EAX/EDX untouched; callers check CF before using the width. */
   failureResult.logicalHeightPixels = 0;
   failureResult.logicalWidthPixels = 0;
-  failureResult.carry = true;
+  failureResult.failed = true;
   return failureResult;
 }
 
@@ -386,7 +386,7 @@ GraphicsTextureSource_BlitTiledSourceAlpha
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -459,7 +459,7 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -531,7 +531,7 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -603,7 +603,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
   uint32_t tileHeight;
   int tileY;
   bool overflowed;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceIndex,sourceAsset);
   tileHeight = logicalSize.logicalHeightPixels;
@@ -657,7 +657,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
    Ownership: graphics/resources/texture.
    Purpose: Decomposes texture-source subresource regions and returns the recovered EAX/CF asset result.
 */
-GraphicsTextureSourceAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_DecomposeSubresourceRegionsCf
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
 
@@ -699,11 +699,11 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   uint32_t *fillCursor;
   bool matchedOrEdgeTransparent;
   bool bytesMatched;
-  ArenaShrinkEaxCf5 shrinkResult;
-  GraphicsTextureSourceAssetEaxCf5 decomposedAsset;
-  GraphicsTextureSourceAssetEaxCf5 successResult;
-  GraphicsTextureSourceAssetEaxCf5 failureResult;
-  ArenaLargestAllocationEaxEcxCf9 largestBlock;
+  ArenaShrinkResult shrinkResult;
+  TextureSourceDecomposeResult decomposedAsset;
+  TextureSourceDecomposeResult successResult;
+  TextureSourceDecomposeResult failureResult;
+  ArenaLargestAllocResult largestBlock;
   uint32_t *regionStart;
   uint32_t packedPixelBytes;
   uint32_t *packedPixelCursor;
@@ -713,7 +713,7 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   
   if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
      ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) {
-    failureResult.carry = true;
+    failureResult.failed = true;
     failureResult.assetOrError = (GraphicsTextureSourceAsset *)0x2c;
     return failureResult;
   }
@@ -725,8 +725,8 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
   largestBlockSize = largestBlock.blockSizeOrSentinel;
   decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)largestBlock.allocationOrError;
-  if (largestBlock.carry) {
-    failureResult.carry = true;
+  if (largestBlock.failed) {
+    failureResult.failed = true;
     failureResult.assetOrError = decomposedAsset.assetOrError;
     return failureResult;
   }
@@ -992,7 +992,7 @@ TrueColorPackRegion:
                              (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
                               decomposedAsset.assetOrError);
           copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
-          if (!shrinkResult.carry) {
+          if (!shrinkResult.failed) {
             pixelDataOffset = ((decomposedAsset.assetOrError)->common).allocationSizeBytes;
             copySourceOrError = decomposedAsset.assetOrError + 1;
             entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
@@ -1004,7 +1004,7 @@ TrueColorPackRegion:
                        &(copySourceOrError->common).buildMetadata.timestamps.dateValue2;
               entryCount = entryCount - 1;
             } while (entryCount != 0);
-            successResult.carry = false;
+            successResult.failed = false;
             successResult.assetOrError = decomposedAsset.assetOrError;
             return successResult;
           }
@@ -1265,7 +1265,7 @@ PalettedPackRegion:
                                  (((decomposedAsset.assetOrError)->common).allocationSizeBytes,
                                   decomposedAsset.assetOrError);
               copySourceOrError = (GraphicsTextureSourceAsset *)shrinkResult.scratchOrError;
-              if (!shrinkResult.carry) {
+              if (!shrinkResult.failed) {
                 pixelDataOffset = ((decomposedAsset.assetOrError)->common).allocationSizeBytes;
                 copySourceOrError = decomposedAsset.assetOrError + 5;
                 entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
@@ -1278,7 +1278,7 @@ PalettedPackRegion:
                            &(copySourceOrError->common).buildMetadata.timestamps.dateValue2;
                   entryCount = entryCount - 1;
                 } while (entryCount != 0);
-                decomposedAsset.carry = false;
+                decomposedAsset.failed = false;
                 return decomposedAsset;
               }
             }
@@ -1290,7 +1290,7 @@ PalettedPackRegion:
 DecomposeFreeWorkBufferAndFail:
   (*g_MemoryApi.free)(decomposedAsset.assetOrError);
   decomposedAsset.assetOrError = copySourceOrError;
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.assetOrError = decomposedAsset.assetOrError;
   return failureResult;
 }
@@ -1303,28 +1303,28 @@ DecomposeFreeWorkBufferAndFail:
    means load or palette conversion failure.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteTextureSourceAsset *loadedPaletteTextureSource;
   GraphicsPaletteTextureSourceAsset *convertedTextureSource;
-  PackageLoadEntryEaxCf5 loadResult;
-  GraphicsTextureSourceLoadEaxCf5 convertResult;
+  PackageLoadResult loadResult;
+  TextureSourceLoadResult convertResult;
   
   loadResult = Package_LoadEntry(pathUtf16);
   loadedPaletteTextureSource = loadResult.bufferOrError;
-  if (!loadResult.carry) {
-    convertResult = THANDOR_BITCAST(GraphicsPaletteTextureSourceEaxCf5, GraphicsTextureSourceLoadEaxCf5, (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource));
-    convertedTextureSource = (GraphicsPaletteTextureSourceAsset *)convertResult.eax;
-    if (!convertResult.carry) {
+  if (!loadResult.failed) {
+    convertResult = THANDOR_BITCAST(PaletteTextureSourceResult, TextureSourceLoadResult, (*g_GraphicsTextureSourceConvertPaletteEntries)(loadedPaletteTextureSource));
+    convertedTextureSource = (GraphicsPaletteTextureSourceAsset *)convertResult.textureSource;
+    if (!convertResult.failed) {
       return convertResult;
     }
     Resource_Release(loadedPaletteTextureSource);
     loadedPaletteTextureSource = convertedTextureSource;
   }
-  convertResult.carry = true;
-  convertResult.eax = (GraphicsTextureSourceAsset *)loadedPaletteTextureSource;
+  convertResult.failed = true;
+  convertResult.textureSource = (GraphicsTextureSourceAsset *)loadedPaletteTextureSource;
   return convertResult;
 }
 
@@ -1342,14 +1342,14 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
   GraphicsPaletteTextureSourceAsset *clonedAsset;
   uint32_t allocationSizeOrCount;
   GraphicsPaletteTextureSourceAsset *cloneCursor;
-  ArenaAllocEaxCf5 cloneAllocation;
-  GraphicsPaletteTextureSourceEaxCf5 convertResult;
-  ArenaFreeEaxCf5 freeResult;
+  ArenaAllocResult cloneAllocation;
+  PaletteTextureSourceResult convertResult;
+  ArenaFreeResult freeResult;
   
   allocationSizeOrCount = (sourceAsset->common).allocationSizeBytes;
   cloneAllocation = (*g_MemoryApi.alloc)(allocationSizeOrCount);
-  clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocation.eax;
-  if (!cloneAllocation.carry) {
+  clonedAsset = (GraphicsPaletteTextureSourceAsset *)cloneAllocation.payloadOrError;
+  if (!cloneAllocation.failed) {
     cloneCursor = clonedAsset;
     for (allocationSizeOrCount = allocationSizeOrCount >> 2; allocationSizeOrCount != 0; allocationSizeOrCount = allocationSizeOrCount - 1) {
       cloneCursor->magic = (sourceAsset->common).magic;
@@ -1357,11 +1357,11 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
       cloneCursor = (GraphicsPaletteTextureSourceAsset *)&cloneCursor->allocationSizeBytes;
     }
     convertResult = (*g_GraphicsTextureSourceConvertPaletteEntries)(clonedAsset);
-    if (!convertResult.carry) {
+    if (!convertResult.failed) {
       return (GraphicsTextureSourceAsset *)convertResult.paletteSource;
     }
     freeResult = (*g_MemoryApi.free)(clonedAsset);
-    clonedAsset = (GraphicsPaletteTextureSourceAsset *)freeResult.eax;
+    clonedAsset = (GraphicsPaletteTextureSourceAsset *)freeResult.valueOrError;
   }
   return (GraphicsTextureSourceAsset *)clonedAsset;
 }
@@ -1373,14 +1373,14 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
    Each 8-byte entry retains argb8888 and receives framebufferPixel through g_SoftwarePixelPackTables. ABI: CF
    clear means success. CF set means invalid input.
 */
-GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset)
 
 {
   int paletteEntriesRemaining;
   GraphicsTexturePaletteEntry *paletteEntryCursor;
-  GraphicsPaletteTextureSourceEaxCf5 successResult;
-  GraphicsPaletteTextureSourceEaxCf5 failureResult;
+  PaletteTextureSourceResult successResult;
+  PaletteTextureSourceResult failureResult;
   uint32_t argb8888;
   
   if ((sourceAsset != (GraphicsPaletteTextureSourceAsset *)0x0) &&
@@ -1396,11 +1396,11 @@ GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *s
            g_SoftwarePixelPackTables->blue[argb8888 & 0xff];
       paletteEntryCursor = paletteEntryCursor + 1;
     }
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.paletteSource = sourceAsset;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.paletteSource = (GraphicsPaletteTextureSourceAsset *)0x2c;
   return failureResult;
 }
@@ -1462,18 +1462,18 @@ GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAs
    EAX and logicalHeight into EDX from the first source entry at subresourceTableOffset. The qword return models
    EDX:EAX. ABI: CF clear means success; CF set means invalid input.
 */
-GraphicsTextureSizeEaxEdxCf9
+TextureSizeResult
 GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   uint32_t entryCount;
   uint8_t *firstSubresourceRecord;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
 
   /* Failure (CF set): the original leaves EAX untouched and EDX = sourceAsset; no caller reads them then. */
   logicalSize.logicalWidthPixels = 0;
   logicalSize.logicalHeightPixels = (uint32_t)sourceAsset;
-  logicalSize.carry = true;
+  logicalSize.failed = true;
   if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
     entryCount = (sourceAsset->tableDescriptor).subresourceCount;
     if ((entryCount != 0) && (entryCount <= 0xfff)) {
@@ -1482,7 +1482,7 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
            ((sourceAsset->tableDescriptor).subresourceTableOffset - 0x28);
       logicalSize.logicalWidthPixels = *(uint32_t *)firstSubresourceRecord;
       logicalSize.logicalHeightPixels = *(uint32_t *)(firstSubresourceRecord + 4);
-      logicalSize.carry = false;
+      logicalSize.failed = false;
     }
   }
   return logicalSize;
@@ -3614,7 +3614,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
   bool evictFailed;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   uint32_t textureHandle;
   IDirect3DTexture2 *deviceTexture2;
   IDirectDrawSurface3 *deviceSurface3;
@@ -3726,7 +3726,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
    pixelHeight must be an exact power of two. widthLog2 and heightLog2 are generated with BSR. ABI: CF clear means
    success. CF set means palette conversion, allocation, or power-of-two validation failed.
 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
 
 {
@@ -3737,20 +3737,20 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
   int entryIndex;
   GraphicsPaletteTextureFormatVersion *entryFieldCursor;
   uint8_t *sourceEntry;
-  GraphicsPaletteTextureSourceEaxCf5 convertResult;
-  ArenaAllocEaxCf5 metadataAllocation;
-  GraphicsTextureSetEaxCf5 failureResult;
+  PaletteTextureSourceResult convertResult;
+  ArenaAllocResult metadataAllocation;
+  TextureSetResult failureResult;
   GraphicsAssetAllocationByteSize entriesRemaining;
   
   convertResult = (*g_GraphicsTextureSourceConvertPaletteEntries)
                     ((GraphicsPaletteTextureSourceAsset *)sourceAsset);
   convertedSource = convertResult.paletteSource;
   metadataOrError = convertedSource;
-  if (!convertResult.carry) {
+  if (!convertResult.failed) {
     entriesRemaining = convertedSource->subresourceCount;
     metadataAllocation = (*g_MemoryApi.alloc)(entriesRemaining * 0x20 + 8);
-    metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocation.eax;
-    if (!metadataAllocation.carry) {
+    metadataOrError = (GraphicsPaletteTextureSourceAsset *)metadataAllocation.payloadOrError;
+    if (!metadataAllocation.failed) {
       entryFieldCursor = &metadataOrError->formatVersion;
       metadataOrError->magic = (GraphicsPaletteTextureAssetMagic)convertedSource;
       metadataOrError->allocationSizeBytes = entriesRemaining;
@@ -3780,13 +3780,13 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
         entryIndex = entryIndex + 1;
         entriesRemaining = entriesRemaining - 1;
         if (entriesRemaining == 0) {
-          return THANDOR_BITCAST(uint64_t, GraphicsTextureSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, metadataAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+          return THANDOR_BITCAST(uint64_t, TextureSetResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, metadataAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       }
       metadataOrError = (GraphicsPaletteTextureSourceAsset *)&k_LowAddressLiteral0000002F;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.textureSet = (GraphicsTextureSet *)metadataOrError;
   return failureResult;
 }
@@ -3967,7 +3967,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
   int dwordsRemaining;
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  TextureSizeResult logicalSize;
   IDirect3DTexture2 *texture2;
   IDirectDrawSurface3 *surface3;
   IDirectDrawSurface *surfaceBase;

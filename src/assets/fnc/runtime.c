@@ -29,7 +29,7 @@ uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module)
    Purpose: Validates the fnc signature, copies the complete image into linear memory, relocates export-table dword
    offsets, and binds seven host services when bindingMode is zero. CF reports failure.
 */
-FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule)
+FncModuleLoadResult FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule)
 
 {
   ArenaFreeProc *arenaFreeProc;
@@ -41,8 +41,8 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
   AssetMagic *copyCursor;
   int *relocationCursor;
   void **runtimeCallbackTableCursor;
-  ArenaLinearReserveEaxCf5 reserveResult;
-  FncModuleLoadEaxCf5 failureResult;
+  ArenaReserveResult reserveResult;
+  FncModuleLoadResult failureResult;
   
   moduleBaseOrError = (AssetMagic *)0x62;
   if (serializedModule->magic == ASSET_MAGIC_FNC) {
@@ -51,7 +51,7 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
     if ((serializedModule->exportBinding).bindingMode == 0) {
       reserveResult = (*g_MemoryApi.reserveLinear)(sizeOrDwordCount);
       moduleBaseOrError = (AssetMagic *)reserveResult.baseOrError;
-      if (!reserveResult.carry) {
+      if (!reserveResult.failed) {
         copyCursor = moduleBaseOrError;
         for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount = sizeOrDwordCount - 1) {
           *copyCursor = serializedModule->magic;
@@ -77,11 +77,11 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
           runtimeCallbackTableCursor[5] = packedDateProc;
           runtimeCallbackTableCursor[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
-        return THANDOR_BITCAST(uint64_t, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, uint64_t, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FncModuleLoadResult, ((THANDOR_BITCAST(ArenaReserveResult, uint64_t, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.moduleBase = (int *)moduleBaseOrError;
   return failureResult;
 }
@@ -94,21 +94,21 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
    VariableStorage serialization, function body bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module)
 
 {
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   if (exportIndex < (module->exportBinding).exportCount) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.valueOrError =
          *(uint32_t *)(module->reserved10_AF +
                   exportIndex * 4 + (module->exportBinding).exportTableOffset + -0x10);
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = 99;
   return failureResult;
 }

@@ -20,13 +20,13 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
           (ArmyRuntimeSlot *targetArmyRuntime,ShotRuntimeSlot *shotRuntime);
 
 /* 0x0052B540 */
-StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath);
+StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath);
 
 /* 0x0052B5C0 */
 void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void);
 
 /* 0x0052B660 */
-ShotDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B750 */

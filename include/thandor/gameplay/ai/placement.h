@@ -51,7 +51,7 @@ AiPlacement_TestMode4AtWorkspaceRecord
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053B570 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 AiPlacement_QueryReachableSiteBucketCount
           (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
@@ -63,12 +63,12 @@ AiPlacement_ReserveMode3SiteCluster
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053AD50 */
-AiCandidateScoreEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SiteWeightResult __thandor_eax_cf_preserve_ecx_edx
 AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00539330 */
-AiWorkspace09AnchorEcxEdxCf9 __thandor_preserve_eax
+AiAnchorResult __thandor_preserve_eax
 AiPlacement_FindNearestValidWorkspace09Anchor
           (Q12 referenceWorldXQ12,Q12 referenceWorldYQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);

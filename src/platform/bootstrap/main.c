@@ -33,8 +33,8 @@ static void Thandor_SelfTestCodec(void)
         uint8_t *unpacked = (uint8_t *)malloc(size + guard);
         unsigned i;
         unsigned seed = 12345;
-        PckCodecEaxCf5 enc;
-        PckCodecEaxCf5 dec;
+        PckCodecResult enc;
+        PckCodecResult dec;
         int packedGuardOk = 1;
         int unpackedGuardOk = 1;
         int same;
@@ -53,15 +53,15 @@ static void Thandor_SelfTestCodec(void)
             if (packed[i] != 0xCD) { packedGuardOk = 0; break; }
         }
         Thandor_Log("codec selftest %u: size=%x noisy=%d encode carry=%d packed=%x guard=%s", t, size,
-                    noisy, enc.carry, enc.eax, packedGuardOk ? "ok" : "OVERWRITTEN");
-        if (!enc.carry) {
-            dec = (*g_PckDecoderTable[0])(size, unpacked, enc.eax, packed);
+                    noisy, enc.failed, enc.byteCountOrError, packedGuardOk ? "ok" : "OVERWRITTEN");
+        if (!enc.failed) {
+            dec = (*g_PckDecoderTable[0])(size, unpacked, enc.byteCountOrError, packed);
             for (i = size; i < size + guard; i++) {
                 if (unpacked[i] != 0xCD) { unpackedGuardOk = 0; break; }
             }
             same = memcmp(source, unpacked, size) == 0;
-            Thandor_Log("codec selftest %u: decode carry=%d eax=%x roundtrip=%s guard=%s", t, dec.carry,
-                        dec.eax, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
+            Thandor_Log("codec selftest %u: decode carry=%d eax=%x roundtrip=%s guard=%s", t, dec.failed,
+                        dec.byteCountOrError, same ? "ok" : "MISMATCH", unpackedGuardOk ? "ok" : "OVERWRITTEN");
         }
         free(source);
         free(packed);
@@ -237,17 +237,17 @@ static void Thandor_SelfTestStretchCompare(void)
    scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
    original code or data addresses. */
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
-static ArenaAllocEaxCf5 SelfTest_Alloc(uint32_t bytes)
+static ArenaAllocResult SelfTest_Alloc(uint32_t bytes)
 {
-    ArenaAllocEaxCf5 result;
-    result.eax = (uint32_t)(uintptr_t)malloc(bytes);
-    result.carry = result.eax == 0;
+    ArenaAllocResult result;
+    result.payloadOrError = (uint32_t)(uintptr_t)malloc(bytes);
+    result.failed = result.payloadOrError == 0;
     return result;
 }
 
-static ArenaFreeEaxCf5 SelfTest_Free(void *memory)
+static ArenaFreeResult SelfTest_Free(void *memory)
 {
-    ArenaFreeEaxCf5 result;
+    ArenaFreeResult result;
     memset(&result, 0, sizeof result);
     free(memory);
     return result;
@@ -255,8 +255,8 @@ static ArenaFreeEaxCf5 SelfTest_Free(void *memory)
 
 static void Thandor_SelfTestScanAddresses(void)
 {
-    ArenaAllocEaxCf5 (*savedAlloc)(uint32_t) = g_MemoryApi.alloc;
-    ArenaFreeEaxCf5 (*savedFree)(void *) = g_MemoryApi.free;
+    ArenaAllocResult (*savedAlloc)(uint32_t) = g_MemoryApi.alloc;
+    ArenaFreeResult (*savedFree)(void *) = g_MemoryApi.free;
     static const char *packages[] = {"DATEN.PCK", "ENGINE.PCK", "GRAPHIK.PCK", "LEVEL.PCK",
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
@@ -298,7 +298,7 @@ static void Thandor_SelfTestScanAddresses(void)
         for (;;) {
             PckEntryHeader header;
             uint8_t *unpacked;
-            PckCodecEaxCf5 decoded;
+            PckCodecResult decoded;
             char name[247];
             int k;
             uint32_t i;
@@ -329,7 +329,7 @@ static void Thandor_SelfTestScanAddresses(void)
             decoded = (*g_PckDecoderTable[header.compressionMethod])
                           (header.unpackedSize, unpacked, header.packedSize, packed);
             totalEntries++;
-            if (decoded.carry) {
+            if (decoded.failed) {
                 fprintf(out, "%s %s DECODE-FAILED\n", list[p], name);
             }
             else {

@@ -196,7 +196,7 @@ int32_t __stdcall DirectDraw_EnumDisplayModeCallback
    Glide3_Shutdown [graphics/backend/glide], GraphicsTexture_ReleaseObjects [graphics/resources/texture],
    Memory_ZeroDwords [core/memory/allocator], GraphicsTexture_CreateStagingTexture [graphics/resources/texture].
 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
@@ -213,9 +213,9 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
   uint32_t *formatDest;
   GraphicsTextureResource **textureSlotCursor;
   bool guidMatchOrCarry;
-  DisplayModeEaxCf5 displayModeResult;
-  DisplayModeEaxCf5 exitResult;
-  DisplayModeEaxCf5 failureResult;
+  DisplayModeResult displayModeResult;
+  DisplayModeResult exitResult;
+  DisplayModeResult failureResult;
   int completedStages;
 
   completedStages = 0;
@@ -223,7 +223,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
      original hands back whatever EAX held before the call (the caller's EAX on the first call, otherwise the last
      COM Release result). The caller only reads it with CF set; 0x1a is the mode error the Glide callee computes
      but discards, which gives a meaningful message. */
-  displayModeResult.eax = 0x1a;
+  displayModeResult.valueOrError = 0x1a;
   if ((g_ActiveGraphicsAdapterIndex != -1) &&
      (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].adapterGuid.Data1 == 1)) {
     /* Leaving the Glide backend: shut it down and create the new backend from scratch. */
@@ -247,41 +247,41 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
     g_LastViewportRect.x2 = 0;
     g_LastViewportRect.y2 = 0;
     if (g_Direct3DViewport2 != (IDirect3DViewport2 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
+      displayModeResult.valueOrError = (uint32_t)(*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
       g_Direct3DViewport2 = (IDirect3DViewport2 *)0x0;
     }
     if (g_ZSurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
+      displayModeResult.valueOrError = (uint32_t)(*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
       g_ZSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_ZSurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
+      displayModeResult.valueOrError = (uint32_t)(*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
       g_ZSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_Direct3DDevice2 != (IDirect3DDevice2 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
+      displayModeResult.valueOrError = (uint32_t)(*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
       g_Direct3DDevice2 = (IDirect3DDevice2 *)0x0;
     }
     if (g_Direct3D2 != (IDirect3D2 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
+      displayModeResult.valueOrError = (uint32_t)(*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
       g_Direct3D2 = (IDirect3D2 *)0x0;
     }
     g_CursorCurrentVisibilityToken = -1;
     g_CursorAlternateVisibilityToken = -1;
     if (g_BackSurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
+      displayModeResult.valueOrError = (uint32_t)(*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
       g_BackSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_BackSurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
+      displayModeResult.valueOrError = (uint32_t)(*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
       g_BackSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_PrimarySurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
+      displayModeResult.valueOrError = (uint32_t)(*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
       g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_PrimarySurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (uint32_t)(*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
+      displayModeResult.valueOrError = (uint32_t)(*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
       g_PrimarySurfaceBase = (IDirectDrawSurface *)0x0;
     }
     /* REPE CMPSD over the 16-byte adapter GUIDs. */
@@ -299,11 +299,11 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
     if (!guidMatchOrCarry) {
       g_ActiveGraphicsAdapterIndex = -1;
       if (g_DirectDraw2 != (IDirectDraw2 *)0x0) {
-        displayModeResult.eax = (uint32_t)(*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
+        displayModeResult.valueOrError = (uint32_t)(*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
         g_DirectDraw2 = (IDirectDraw2 *)0x0;
       }
       if (g_DirectDraw != (IDirectDraw *)0x0) {
-        displayModeResult.eax = (uint32_t)(*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
+        displayModeResult.valueOrError = (uint32_t)(*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
         g_DirectDraw = (IDirectDraw *)0x0;
       }
     }
@@ -313,8 +313,8 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
     if (g_GraphicsAdapters[adapterIndex].adapterGuid.Data1 == 1) {
       guidMatchOrCarry = GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
                          (adapterIndex,bitsPerPixel,height,width);
-      exitResult.carry = guidMatchOrCarry;
-      exitResult.eax = displayModeResult.eax;
+      exitResult.failed = guidMatchOrCarry;
+      exitResult.valueOrError = displayModeResult.valueOrError;
       return exitResult;
     }
     g_ActiveGraphicsAdapterIndex = -1;
@@ -672,21 +672,21 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
           }
           g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
           displayModeResult = (*g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
-          if (displayModeResult.carry) {
-            displayModeResult.carry = true;
+          if (displayModeResult.failed) {
+            displayModeResult.failed = true;
             return displayModeResult;
           }
           stageOrLoopCounter = 0x1000;
           textureSlotCursor = g_GraphicsTextureSlots;
           do {
             if (*textureSlotCursor != (GraphicsTextureResource *)0x0) {
-              displayModeResult.eax = (uint32_t)GraphicsTexture_CreateStagingTexture(*textureSlotCursor);
+              displayModeResult.valueOrError = (uint32_t)GraphicsTexture_CreateStagingTexture(*textureSlotCursor);
             }
             textureSlotCursor = textureSlotCursor + 1;
             stageOrLoopCounter = stageOrLoopCounter + -1;
           } while (stageOrLoopCounter != 0);
-          exitResult.carry = false;
-          exitResult.eax = displayModeResult.eax;
+          exitResult.failed = false;
+          exitResult.valueOrError = displayModeResult.valueOrError;
           return exitResult;
         }
       }
@@ -695,8 +695,8 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
 GraphicsDirectDraw_ReleasePartialInitializationAfterFailure:
   completedStages = stageOrLoopCounter;
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,completedStages,g_PackageLastErrorPath);
-  failureResult.carry = true;
-  failureResult.eax = errorCodeOrCullMode;
+  failureResult.failed = true;
+  failureResult.valueOrError = errorCodeOrCullMode;
   return failureResult;
 }
 

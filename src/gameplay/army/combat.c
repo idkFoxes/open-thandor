@@ -47,9 +47,9 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
   bool callCarry;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
-  ModelSmoothEaxCf5 smoothResult;
-  WorldPositionXYEaxEdxCf9 movementResult;
-  WorldPositionEaxEcxEdxCf13 aimPoint;
+  AimSmoothResult smoothResult;
+  MovementStepResult movementResult;
+  WorldPositionResult aimPoint;
   GameEntityRuntime *ownerEntity;
   ModelRuntimeNode *currentNode;
   
@@ -128,10 +128,10 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     point0X = aimPoint.worldZQ12;
     point0Y = aimPoint.worldYQ12;
     point0Z = aimPoint.worldXQ12;
-    if (aimPoint.carry) {
+    if (aimPoint.unresolved) {
       movementResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)ownerEntity);
-      if (((!movementResult.carry) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
+      if (((!movementResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         currentNode = modelRuntime->rootModelNode;
         ModelNodeRuntime_SmoothYawTowardTarget(currentNode,modelRuntime,0);
@@ -150,13 +150,13 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
       smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
                          (currentNode,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.carry) {
+      if (smoothResult.outsideTolerance) {
         ModelNodeRuntime_SmoothPitchTowardTarget(pitchNode,modelRuntime,targetPitchAngle16);
       }
       else {
         smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
                            (pitchNode,modelRuntime,targetPitchAngle16);
-        if (((smoothResult.eax == targetPitchAngle16) &&
+        if (((smoothResult.value == targetPitchAngle16) &&
             (weaponDefinitionView = modelRuntime->modelDefinition, modelRuntime->sharedInterShotTicks == 0)) &&
            (callCarry = ArmyRuntimeCommand_UpdateTargetFollowingState
                               (point0X,point0Y,point0Z,worldRuntime,(ArmyRuntimeSlot *)modelRuntime)
@@ -456,8 +456,8 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
   int maxAngleOrRange;
   uint32_t distanceDifference;
   FixedLengthAngleEaxEdx8 horizontalVector;
-  FieldGridRaycastEaxEdxCf9 terrainHit;
-  ModelRaycastNearestHitEaxEdxCf9 modelHit;
+  TerrainRaycastResult terrainHit;
+  ModelRaycastResult modelHit;
   FixedLengthAnglesEaxEcxEdx12 targetVector;
   GraphicsWorldCoordinateQ12 originZQ12;
   GraphicsWorldCoordinateQ12 originYQ12;
@@ -505,7 +505,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
                         (originNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                         (armyRuntime->linkedEntityRuntime->common).ownership.modelNode,worldRuntime)
     ;
-    if (!modelHit.carry) {
+    if (!modelHit.hit) {
       return false;
     }
     ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
@@ -553,7 +553,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
   modelHit = ModelRuntime_RaycastCandidateListNearestCf
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime);
-  if ((!modelHit.carry) ? (minAngleOwnerOrDistance <= 0x7ffffffe) :
+  if ((!modelHit.hit) ? (minAngleOwnerOrDistance <= 0x7ffffffe) :
       (minAngleOwnerOrDistance < modelHit.nearestDistanceQ12)) {
     /* The terrain is hit first: only a ground shot without an entity target landing within 0x400 of the
        aim distance is clear. */
@@ -567,12 +567,12 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
     }
     return true;
   }
-  if (modelHit.carry) {
+  if (modelHit.hit) {
     /* A model is hit first: blocked (CF set) when its owner fails the commandState owner test and it is not
        the command target; otherwise fall through to the range check. */
     ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
     hitEntity =
-         (((modelHit.edxCarrier.nearestModelNode)->runtimePayload).armyRuntime)->linkedEntityRuntime;
+         (((modelHit.nearestNodeOrScratch.nearestModelNode)->runtimePayload).armyRuntime)->linkedEntityRuntime;
     minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
     if (((ownOrTargetEntity->common).commandState < 1) ?
         (minAngleOwnerOrDistance != (hitEntity->common).ownership.ownerIndex) :
@@ -665,7 +665,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   uint32_t randomOffset;
   uint32_t worldZQ12;
   AngleTurn32 orientationAngle0;
-  ModelLookupEntryEaxCf5 lookupResult;
+  ModelLookupEntryResult lookupResult;
   ModelLocalPointRegs12 transformedPoint;
   EffectDefinition *effectDefinition;
   
@@ -694,14 +694,14 @@ ArmyRuntime_EmitDamageThresholdEffect
                     (armyRuntime->selectionMetric4,3,(modelNodeRuntime->modelPayload).modelResource)
   ;
   localPointRecord = lookupResult.entry;
-  if (lookupResult.carry) {
+  if (lookupResult.notFound) {
     /* Wrap around to the first emitter point. */
     armyRuntime->selectionMetric4 = -1;
     lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,(modelNodeRuntime->modelPayload).modelResource)
     ;
     localPointRecord = lookupResult.entry;
   }
-  if (lookupResult.carry) {
+  if (lookupResult.notFound) {
     /* No emitter point at all: use the model origin. */
     randomOrPointX = (modelNodeRuntime->worldTransform).translation.x;
     worldXQ12 = (modelNodeRuntime->worldTransform).translation.y;

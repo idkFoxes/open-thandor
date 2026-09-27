@@ -21,7 +21,7 @@ FrontendRomActionTable_ExecuteRecord
           RomRecordTableIndex recordIndex);
 
 /* 0x00546450 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomAssetHeader *asset);
+StatusResult __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomAssetHeader *asset);
 
 /* 0x005466A0 */
 bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime);
@@ -51,7 +51,7 @@ RomRecordTableIndex __thandor_eax_preserve_ecx_edx
 RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
 /* 0x005484D0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
 /* 0x00548600 */
@@ -60,11 +60,11 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
           (RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
 /* 0x00546330 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *assetBase);
 
 /* 0x005464C0 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 RomRuntime_BuildNodeTreeRecursive
           (PackedArgb32 stateTintArgb,RomSerializedNodeHeader34 *romNodeRecord,
           WorldRuntimeContext *worldObjectArray);
@@ -75,7 +75,7 @@ FrontendRomTransition_InitializeFromRecord
           (FrontendBooleanState32 transitionEnabled,RomAssetRecordPrefix *record);
 
 /* 0x005487A0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId);
 
 /* 0x00548410 */
@@ -83,7 +83,7 @@ void __thandor_void_preserve_eax_ecx_edx
 RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record);
 
 /* 0x00548740 */
-RomRecordLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RomRecordResult __thandor_eax_cf_preserve_ecx_edx
 RomRegistry_FindRecordByIdCf(RomRecordId recordId);
 
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */

@@ -20,7 +20,7 @@
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: ModelDefinition_IsFactionTechnologyUnlockedCf, ModelDefinitionRegistry_FindByIdWithErrorCf.
 */
-ModelDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
@@ -29,7 +29,7 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
   int linkedSlotsRemaining;
   PckModelDefinitionIdCatalog definitionId;
   bool technologyLocked;
-  ModelDefinitionLookupEaxCf5 lookupResult;
+  ModelDefinitionResult lookupResult;
   
   linkedSlotsRemaining = 8;
   definitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
@@ -47,7 +47,7 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
     linkedSlotsRemaining = linkedSlotsRemaining + -1;
   } while (linkedSlotsRemaining != 0);
   lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(definitionId);
-  lookupResult.carry = false; /* the original ends with CLC after the lookup */
+  lookupResult.notFound = false; /* the original ends with CLC after the lookup */
   return lookupResult;
 }
 
@@ -132,15 +132,15 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
    variable-size MDL records and registers each model definition.
    Local calls: ModelDefinition_RegisterAndResolveReferencesCf.
 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
+StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ModelDefinitionResolvePhaseView280 *definition;
   ModelDefinitionRecordPrefix *definitionCursor;
-  StatusValueEaxCf5 registrationResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult registrationResult;
+  StatusResult failureResult;
   
   registrationStatusCode = 0x3d;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_MDL) &&
@@ -149,19 +149,19 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(Mode
     definition = (ModelDefinitionResolvePhaseView280 *)(asset + 1);
     while( true ) {
       if (recordsRemaining == 0) {
-        registrationResult.carry = false;
+        registrationResult.failed = false;
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
       }
       registrationResult = ModelDefinition_RegisterAndResolveReferencesCf(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
-      if (registrationResult.carry) break;
+      if (registrationResult.failed) break;
       definition = (ModelDefinitionResolvePhaseView280 *)
                    (definition->reserved010_017 + (definition->byteSize - 0x10));
       recordsRemaining = recordsRemaining - 1;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = registrationStatusCode;
   return failureResult;
 }
@@ -175,7 +175,7 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(Mode
    runtime class ids remain separate. Key index and key class remain separate 32-bit domains. Typed parameters: p0
    keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
 */
-ModelLookupPayloadEaxEcxEdxCf13
+ModelLookupPayloadResult
 ModelLookupTable_FindPackedKeyEntryRegsCf
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition)
@@ -183,7 +183,7 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
 {
   int entriesRemaining;
   uint32_t *packedKeyEntryCursor;
-  ModelLookupPayloadEaxEcxEdxCf13 payloadResult;
+  ModelLookupPayloadResult payloadResult;
   
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   packedKeyEntryCursor =
@@ -192,20 +192,20 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
     if (entriesRemaining == 0) {
       /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
          64 bits and lost the CF byte) */
-      payloadResult.payloadEax = 0;
-      payloadResult.payloadEcx = 0;
-      payloadResult.payloadEdx = 0;
-      payloadResult.carry = true;
+      payloadResult.payload4 = 0;
+      payloadResult.payload8 = 0;
+      payloadResult.payload12 = 0;
+      payloadResult.notFound = true;
       return payloadResult;
     }
     if ((keyClass | keyIndex << 4) == *packedKeyEntryCursor) break;
     packedKeyEntryCursor = packedKeyEntryCursor + 4;
     entriesRemaining = entriesRemaining - 1;
   }
-  payloadResult.carry = false;
-  payloadResult.payloadEax = packedKeyEntryCursor[1];
-  payloadResult.payloadEcx = packedKeyEntryCursor[2];
-  payloadResult.payloadEdx = packedKeyEntryCursor[3];
+  payloadResult.notFound = false;
+  payloadResult.payload4 = packedKeyEntryCursor[1];
+  payloadResult.payload8 = packedKeyEntryCursor[2];
+  payloadResult.payload12 = packedKeyEntryCursor[3];
   return payloadResult;
 }
 
@@ -217,7 +217,7 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
    attachment selectors, and runtime class ids remain separate. Key index and key class remain separate 32-bit
    domains. Typed parameters: p0 keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
 */
-ModelLookupEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
 ModelLookupTable_ContainsPackedKeyCf
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition)
@@ -225,8 +225,8 @@ ModelLookupTable_ContainsPackedKeyCf
 {
   ModelPackedPointRecord *packedKeyEntryCursor;
   int entriesRemaining;
-  ModelLookupEntryEaxCf5 foundResult;
-  ModelLookupEntryEaxCf5 notFoundResult;
+  ModelLookupEntryResult foundResult;
+  ModelLookupEntryResult notFoundResult;
   
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   packedKeyEntryCursor =
@@ -234,7 +234,7 @@ ModelLookupTable_ContainsPackedKeyCf
        (modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
   while( true ) {
     if (entriesRemaining == 0) {
-      notFoundResult.carry = true;
+      notFoundResult.notFound = true;
       notFoundResult.entry = packedKeyEntryCursor;
       return notFoundResult;
     }
@@ -242,7 +242,7 @@ ModelLookupTable_ContainsPackedKeyCf
     packedKeyEntryCursor = packedKeyEntryCursor + 1;
     entriesRemaining = entriesRemaining - 1;
   }
-  foundResult.carry = false;
+  foundResult.notFound = false;
   foundResult.entry = packedKeyEntryCursor;
   return foundResult;
 }
@@ -253,7 +253,7 @@ ModelLookupTable_ContainsPackedKeyCf
    Purpose: Intersects the shared model-space ray with one exact 0x40-byte triangle record. EAX is Q12 distance; CF
    set means hit, CF clear means no hit.
 */
-TerrainDistanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangle)
 
 {
@@ -281,8 +281,8 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
   int hitRelativeZ;
   uint32_t offsetHighOrCrossZ;
   int halfOffsetOrEdge1Y;
-  TerrainDistanceEaxCf5 missResult;
-  TerrainDistanceEaxCf5 hitResult;
+  TerrainRayTriangleResult missResult;
+  TerrainRayTriangleResult hitResult;
   bool hitFound;
 
   normalX = triangle->planeNormalX << 0x10;
@@ -380,12 +380,12 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
                       (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
     }
     if (hitFound) {
-      hitResult.carry = true;
+      hitResult.missed = true;
       return hitResult;
     }
   }
 ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
-  missResult.carry = false;
+  missResult.missed = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;
 }
@@ -396,15 +396,15 @@ ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
    Purpose: Finds a model definition by identifier in the 768-slot registry and returns its runtime descriptor at
    record +0x188; error 0x3E reports a miss.
 */
-ModelBuildMetricEaxEcxEdxCf13
+BuildMetricResult
 ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
-  ModelBuildMetricEaxEcxEdxCf13 missResult;
-  ModelBuildMetricEaxEcxEdxCf13 foundResult;
+  BuildMetricResult missResult;
+  BuildMetricResult foundResult;
   ModelDefinitionRuntimeSemanticView280 *candidateDefinition;
   
   registryCursor = g_ModelDefinitionRegistry;
@@ -419,14 +419,14 @@ ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(PckModelDefinitionIdCatalog d
       missResult.metric1 = definitionId;
       missResult.metric0 = 0x3e;
       missResult.metric2 = 0;
-      missResult.carry = true;
+      missResult.notFound = true;
       return missResult;
     }
   }
   foundResult.metric1 = registeredDefinition[0x20].byteSize;
   foundResult.metric0 = registeredDefinition[0x20].definitionId;
   foundResult.metric2 = registeredDefinition[0x20].flags;
-  foundResult.carry = false;
+  foundResult.notFound = false;
   return foundResult;
 }
 
@@ -505,22 +505,22 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
   uint32_t i;
   if ((node->nodeFlags & 0xf) == 0) {
     uint16_t *spritePath = (uint16_t *)(node + 1);
-    PackageLoadEntryEaxCf5 loaded;
+    PackageLoadResult loaded;
     SpriteAssetHeader *registered;
     WidePath_SetExtensionCode(0x727073,spritePath); /* ".spr" */
     loaded = Package_LoadEntry(spritePath);
-    if (loaded.carry) {
+    if (loaded.failed) {
       *error = (uint32_t)loaded.bufferOrError;
       return true;
     }
     registered = SpriteAssetRegistry_FindById
                            (((SpriteAssetHeader *)loaded.bufferOrError)->registryHeader.registryId);
     if (registered == (SpriteAssetHeader *)0x0) {
-      SpriteRegisterRelocateEaxCf5 relocated;
+      SpriteRegisterResult relocated;
       node->ownedNestedResourcePresent = node->ownedNestedResourcePresent + 1;
       (node->spriteAssetReference).spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
       relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
-      if (relocated.carry) {
+      if (relocated.failed) {
         *error = (uint32_t)relocated.assetOrError;
         return true;
       }
@@ -555,7 +555,7 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
    [assets/shot/catalog].
 */
 
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_RegisterAndResolveReferencesCf
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
 
@@ -576,18 +576,18 @@ ModelDefinition_RegisterAndResolveReferencesCf
   ModelDefinitionRecordPrefix **registrySlotCursor;
   MdlSerializedNodeHeader38 *serializedNodeCursor;
   bool resolveFailed;
-  ModelDefinitionLookupEaxCf5 existingLookup;
-  StatusValueEaxCf5 failureResult;
-  PackageLoadEntryEaxCf5 spriteLoadResult;
-  SpriteRegisterRelocateEaxCf5 spriteRelocateResult;
-  ShotDefinitionLookupEaxCf5 shotLookup;
-  EffectDefinitionLookupEaxCf5 effectLookup;
-  StatusValueEaxCf5 successResult;
+  ModelDefinitionResult existingLookup;
+  StatusResult failureResult;
+  PackageLoadResult spriteLoadResult;
+  SpriteRegisterResult spriteRelocateResult;
+  ShotDefinitionResult shotLookup;
+  EffectDefinitionResult effectLookup;
+  StatusResult successResult;
   
   registrySlotCursor = g_ModelDefinitionRegistry;
   slotsRemainingOrClassIndex = 0x300;
   existingLookup = ModelDefinitionRegistry_FindByIdWithErrorCf(definition->definitionId);
-  if (!existingLookup.carry) {
+  if (!existingLookup.notFound) {
     /* Duplicate identifier. */
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
@@ -624,56 +624,56 @@ ModelDefinition_RegisterAndResolveReferencesCf
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
   resolvedShotDefinition2C = shotLookup.definitionOrError;
   resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition2C;
-  if (!shotLookup.carry) {
+  if (!shotLookup.notFound) {
     definition->shotDefinitionReference2C = resolvedShotDefinition2C;
     effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                        ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
     resolvedEffectDefinition80ToB8 = effectLookup.definitionOrError;
     resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinition80ToB8;
-    if (!effectLookup.carry) {
+    if (!effectLookup.notFound) {
       definition->effectDefinitionReference80 = resolvedEffectDefinition80ToB8;
       effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                          ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
       resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-      if (!effectLookup.carry) {
+      if (!effectLookup.notFound) {
         definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                            ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
         resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-        if (!effectLookup.carry) {
+        if (!effectLookup.notFound) {
           definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
           effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                              ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98)
           ;
           resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-          if (!effectLookup.carry) {
+          if (!effectLookup.notFound) {
             definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
             effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                ((PckEffectDefinitionIdCatalog)
                                 definition->effectDefinitionReferenceA0);
             resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-            if (!effectLookup.carry) {
+            if (!effectLookup.notFound) {
               definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel
               ;
               effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                  ((PckEffectDefinitionIdCatalog)
                                   definition->effectDefinitionReferenceA8);
               resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-              if (!effectLookup.carry) {
+              if (!effectLookup.notFound) {
                 definition->effectDefinitionReferenceA8 =
                      (EffectDefinition *)resolverStatusOrSentinel;
                 effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                    ((PckEffectDefinitionIdCatalog)
                                     definition->effectDefinitionReferenceB0);
                 resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                if (!effectLookup.carry) {
+                if (!effectLookup.notFound) {
                   definition->effectDefinitionReferenceB0 =
                        (EffectDefinition *)resolverStatusOrSentinel;
                   effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                      ((PckEffectDefinitionIdCatalog)
                                       definition->effectDefinitionReferenceB8);
                   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                  if (!effectLookup.carry) {
+                  if (!effectLookup.notFound) {
                     definition->effectDefinitionReferenceB8 =
                          (EffectDefinition *)resolverStatusOrSentinel;
                     if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
@@ -682,7 +682,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                           definition->shotDefinitionReference168);
                       resolvedShotDefinition168 = shotLookup.definitionOrError;
                       resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition168;
-                      if (shotLookup.carry) goto ModelDefinition_ReturnReferenceResolutionResult;
+                      if (shotLookup.notFound) goto ModelDefinition_ReturnReferenceResolutionResult;
                       definition->shotDefinitionReference168 = resolvedShotDefinition168;
                     }
                     effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
@@ -690,27 +690,27 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                         definition->effectDefinitionReference174);
                     resolvedEffectDefinitionTail = effectLookup.definitionOrError;
                     resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinitionTail;
-                    if (!effectLookup.carry) {
+                    if (!effectLookup.notFound) {
                       definition->effectDefinitionReference174 = resolvedEffectDefinitionTail;
                       effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                          ((PckEffectDefinitionIdCatalog)
                                           definition->effectDefinitionReference58);
                       resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                      if (!effectLookup.carry) {
+                      if (!effectLookup.notFound) {
                         definition->effectDefinitionReference58 =
                              (EffectDefinition *)resolverStatusOrSentinel;
                         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                            ((PckEffectDefinitionIdCatalog)
                                             definition->effectDefinitionReference190);
                         resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                        if (!effectLookup.carry) {
+                        if (!effectLookup.notFound) {
                           definition->effectDefinitionReference190 =
                                (EffectDefinition *)resolverStatusOrSentinel;
                           effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                              ((PckEffectDefinitionIdCatalog)
                                               definition->effectDefinitionReference254);
                           resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
-                          if (!effectLookup.carry) {
+                          if (!effectLookup.notFound) {
                             definition->effectDefinitionReference254 =
                                  (EffectDefinition *)resolverStatusOrSentinel;
                             nodeOffsetOrGridClass = definition->gridClassification264;
@@ -753,7 +753,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                 definition->runtimeValue268 = secondaryThreshold;
                               }
                             }
-                            successResult.carry = false;
+                            successResult.failed = false;
                             successResult.valueOrError = resolverStatusOrSentinel;
                             return successResult;
                           }
@@ -770,7 +770,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
     }
   }
 ModelDefinition_ReturnReferenceResolutionResult:
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = resolverStatusOrSentinel;
   return failureResult;
 }
@@ -787,10 +787,10 @@ ModelDefinition_UnlockLinkedTechnologyForFactionCf
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
-  ModelDefinitionLookupEaxCf5 lookupResult;
+  ModelDefinitionResult lookupResult;
   
   lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
-  if (!lookupResult.carry) {
+  if (!lookupResult.notFound) {
     Technology_UnlockForFaction(0,0,lookupResult.modelDefinition[0x25].definitionId,factionIndex);
   }
   return;
@@ -808,10 +808,10 @@ ModelDefinition_IsFactionTechnologyUnlockedCf
 
 {
   uint32_t technologyBitIndex;
-  ModelDefinitionLookupEaxCf5 lookupResult;
+  ModelDefinitionResult lookupResult;
   
   lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
-  if ((!lookupResult.carry) &&
+  if ((!lookupResult.notFound) &&
      (technologyBitIndex = lookupResult.modelDefinition[0x25].flags,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
     return false;
@@ -825,15 +825,15 @@ ModelDefinition_IsFactionTechnologyUnlockedCf
    Purpose: Scans the 768-slot model-definition registry. On a miss it formats the unresolved identifier into
    g_PackageLastErrorPath and returns error 0x3E with CF set.
 */
-ModelDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
   int registrySlotsRemaining;
   ModelDefinitionRecordPrefix **registryCursor;
-  ModelDefinitionLookupEaxCf5 missResult;
-  ModelDefinitionLookupEaxCf5 foundResult;
+  ModelDefinitionResult missResult;
+  ModelDefinitionResult foundResult;
   ModelDefinitionRecordPrefix *candidateDefinition;
   
   registryCursor = g_ModelDefinitionRegistry;
@@ -845,12 +845,12 @@ ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definiti
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
-      missResult.carry = true;
+      missResult.notFound = true;
       missResult.modelDefinition = (ModelDefinitionRecordPrefix *)0x3e;
       return missResult;
     }
   }
-  foundResult.carry = false;
+  foundResult.notFound = false;
   foundResult.modelDefinition = registeredDefinition;
   return foundResult;
 }

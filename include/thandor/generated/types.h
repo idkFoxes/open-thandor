@@ -13,73 +13,73 @@
 /* Forward declarations (hoisted by tools/sort_types.py). */
 /* Forward declarations (hoisted by tools/sort_types.py). */
 
-typedef struct MovieOpenEaxCf5 MovieOpenEaxCf5, *PMovieOpenEaxCf5;
-typedef struct Win32FileSeekEaxCf5 Win32FileSeekEaxCf5, *PWin32FileSeekEaxCf5;
-typedef struct GridScratchAllocEaxCf5 GridScratchAllocEaxCf5, *PGridScratchAllocEaxCf5;
+typedef struct MovieOpenResult MovieOpenResult, *PMovieOpenResult;
+typedef struct Win32FileSeekResult Win32FileSeekResult, *PWin32FileSeekResult;
+typedef struct GridScratchAllocResult GridScratchAllocResult, *PGridScratchAllocResult;
 typedef struct ArmyRegistryEaxCf5_51b6d0 ArmyRegistryEaxCf5_51b6d0, *PArmyRegistryEaxCf5_51b6d0;
-typedef struct CommandLineFindOptionEbxCf5 CommandLineFindOptionEbxCf5, *PCommandLineFindOptionEbxCf5;
-typedef struct ResourceLoadEaxEcxCf9 ResourceLoadEaxEcxCf9, *PResourceLoadEaxEcxCf9;
+typedef struct CommandLineOptionResult CommandLineOptionResult, *PCommandLineOptionResult;
+typedef struct ResourceLoadResult ResourceLoadResult, *PResourceLoadResult;
 typedef struct ArmyRegistryIdEaxCf5_571ca0 ArmyRegistryIdEaxCf5_571ca0, *PArmyRegistryIdEaxCf5_571ca0;
 typedef struct ArmyRegistryIdEaxCf5_5719f0 ArmyRegistryIdEaxCf5_5719f0, *PArmyRegistryIdEaxCf5_5719f0;
 typedef struct ArmyRegistryEaxCf5_51b740 ArmyRegistryEaxCf5_51b740, *PArmyRegistryEaxCf5_51b740;
-typedef struct Win32FileReadEaxCf5 Win32FileReadEaxCf5, *PWin32FileReadEaxCf5;
-typedef struct FileSystemSeekEaxCf5 FileSystemSeekEaxCf5, *PFileSystemSeekEaxCf5;
-typedef struct MovieAdvanceFrameEaxCf5 MovieAdvanceFrameEaxCf5, *PMovieAdvanceFrameEaxCf5;
-typedef struct NetworkBackendReceiveEaxCf5 NetworkBackendReceiveEaxCf5, *PNetworkBackendReceiveEaxCf5;
+typedef struct Win32FileReadResult Win32FileReadResult, *PWin32FileReadResult;
+typedef struct FileSystemSeekResult FileSystemSeekResult, *PFileSystemSeekResult;
+typedef struct MovieFrameResult MovieFrameResult, *PMovieFrameResult;
+typedef struct NetworkReceiveResult NetworkReceiveResult, *PNetworkReceiveResult;
 typedef struct FixedMathVectorAnglesRegs8 FixedMathVectorAnglesRegs8, *PFixedMathVectorAnglesRegs8;
-typedef struct NetworkBackendOpenBindEaxCf5 NetworkBackendOpenBindEaxCf5, *PNetworkBackendOpenBindEaxCf5;
-typedef struct Win32FileOpenEaxCf5 Win32FileOpenEaxCf5, *PWin32FileOpenEaxCf5;
-typedef struct FileSystemReadEaxCf5 FileSystemReadEaxCf5, *PFileSystemReadEaxCf5;
-typedef struct RichTextCopyExpandedEaxCf5 RichTextCopyExpandedEaxCf5, *PRichTextCopyExpandedEaxCf5;
+typedef struct NetworkOpenBindResult NetworkOpenBindResult, *PNetworkOpenBindResult;
+typedef struct Win32FileOpenResult Win32FileOpenResult, *PWin32FileOpenResult;
+typedef struct FileSystemReadResult FileSystemReadResult, *PFileSystemReadResult;
+typedef struct RichTextCopyResult RichTextCopyResult, *PRichTextCopyResult;
 typedef struct ArmyRegistryIdEaxCf5_571a60 ArmyRegistryIdEaxCf5_571a60, *PArmyRegistryIdEaxCf5_571a60;
 typedef struct ArmyRegistryIdEaxCf5_571d40 ArmyRegistryIdEaxCf5_571d40, *PArmyRegistryIdEaxCf5_571d40;
 typedef struct ArmyRegistryIdEaxCf5_571b00 ArmyRegistryIdEaxCf5_571b00, *PArmyRegistryIdEaxCf5_571b00;
-typedef struct FileSystemSizeEaxCf5 FileSystemSizeEaxCf5, *PFileSystemSizeEaxCf5;
-typedef struct ArenaFreeEaxCf5 ArenaFreeEaxCf5, *PArenaFreeEaxCf5;
-typedef struct Win32FileSizeEaxCf5 Win32FileSizeEaxCf5, *PWin32FileSizeEaxCf5;
-typedef struct NetworkBackendSendEaxCf5 NetworkBackendSendEaxCf5, *PNetworkBackendSendEaxCf5;
+typedef struct FileSystemSizeResult FileSystemSizeResult, *PFileSystemSizeResult;
+typedef struct ArenaFreeResult ArenaFreeResult, *PArenaFreeResult;
+typedef struct Win32FileSizeResult Win32FileSizeResult, *PWin32FileSizeResult;
+typedef struct NetworkSendResult NetworkSendResult, *PNetworkSendResult;
 typedef struct ArmyMetric6CDefinitionC4Regs8 ArmyMetric6CDefinitionC4Regs8, *PArmyMetric6CDefinitionC4Regs8;
-typedef struct ArmyCollisionFindEaxCf5 ArmyCollisionFindEaxCf5, *PArmyCollisionFindEaxCf5;
+typedef struct ArmyCollisionResult ArmyCollisionResult, *PArmyCollisionResult;
 typedef struct ArmyRegistryIdEaxCf5_571c30 ArmyRegistryIdEaxCf5_571c30, *PArmyRegistryIdEaxCf5_571c30;
-typedef struct FileSystemWriteEaxCf5 FileSystemWriteEaxCf5, *PFileSystemWriteEaxCf5;
-typedef struct FileSystemOpenEaxCf5 FileSystemOpenEaxCf5, *PFileSystemOpenEaxCf5;
-typedef struct FatalErrorEaxCf5 FatalErrorEaxCf5, *PFatalErrorEaxCf5;
-typedef struct PckCodecEaxCf5 PckCodecEaxCf5, *PPckCodecEaxCf5;
+typedef struct FileSystemWriteResult FileSystemWriteResult, *PFileSystemWriteResult;
+typedef struct FileSystemOpenResult FileSystemOpenResult, *PFileSystemOpenResult;
+typedef struct FatalErrorCheckResult FatalErrorCheckResult, *PFatalErrorCheckResult;
+typedef struct PckCodecResult PckCodecResult, *PPckCodecResult;
 typedef struct FieldGridNearestPointRegsCf13 FieldGridNearestPointRegsCf13, *PFieldGridNearestPointRegsCf13;
 typedef struct ArmyRegistryIdEaxCf5_571cf0 ArmyRegistryIdEaxCf5_571cf0, *PArmyRegistryIdEaxCf5_571cf0;
 typedef struct ModelLocalPointRegs12 ModelLocalPointRegs12, *PModelLocalPointRegs12;
 typedef struct ArmyRegistryIdEaxCf5_571ab0 ArmyRegistryIdEaxCf5_571ab0, *PArmyRegistryIdEaxCf5_571ab0;
-typedef struct TextResourceResolveEaxCf5 TextResourceResolveEaxCf5, *PTextResourceResolveEaxCf5;
-typedef struct PackageDecodeEaxCf5 PackageDecodeEaxCf5, *PPackageDecodeEaxCf5;
-typedef struct ArenaAllocEaxCf5 ArenaAllocEaxCf5, *PArenaAllocEaxCf5;
-typedef struct Win32FileWriteEaxCf5 Win32FileWriteEaxCf5, *PWin32FileWriteEaxCf5;
+typedef struct TextResolveResult TextResolveResult, *PTextResolveResult;
+typedef struct PackageDecodeResult PackageDecodeResult, *PPackageDecodeResult;
+typedef struct ArenaAllocResult ArenaAllocResult, *PArenaAllocResult;
+typedef struct Win32FileWriteResult Win32FileWriteResult, *PWin32FileWriteResult;
 typedef struct FixedDirectionXyzRegs12 FixedDirectionXyzRegs12, *PFixedDirectionXyzRegs12;
-typedef struct UiTransferMailboxReceivedEaxEcxCf9 UiTransferMailboxReceivedEaxEcxCf9, *PUiTransferMailboxReceivedEaxEcxCf9;
-typedef struct ArmyRuntimeCreateEaxCf5 ArmyRuntimeCreateEaxCf5, *PArmyRuntimeCreateEaxCf5;
-typedef struct PackageFindEntryEaxEbxCf9 PackageFindEntryEaxEbxCf9, *PPackageFindEntryEaxEbxCf9;
-typedef struct NetworkBackendSetSessionEaxCf5 NetworkBackendSetSessionEaxCf5, *PNetworkBackendSetSessionEaxCf5;
+typedef struct MailboxReceiveResult MailboxReceiveResult, *PMailboxReceiveResult;
+typedef struct ArmyRuntimeCreateResult ArmyRuntimeCreateResult, *PArmyRuntimeCreateResult;
+typedef struct PackageEntryLookupResult PackageEntryLookupResult, *PPackageEntryLookupResult;
+typedef struct NetworkSetSessionResult NetworkSetSessionResult, *PNetworkSetSessionResult;
 typedef struct ArmyRegistryIdEaxCf5_571c50 ArmyRegistryIdEaxCf5_571c50, *PArmyRegistryIdEaxCf5_571c50;
 typedef struct ArmyRegistryIdEaxCf5_571a10 ArmyRegistryIdEaxCf5_571a10, *PArmyRegistryIdEaxCf5_571a10;
 /* Graphics/display result records. */
-typedef struct DisplayModeEaxCf5 DisplayModeEaxCf5, *PDisplayModeEaxCf5;
-typedef struct GraphicsCursorFrameEaxCf5 GraphicsCursorFrameEaxCf5, *PGraphicsCursorFrameEaxCf5;
-typedef struct GraphicsTextureSizeEaxEdxCf9 GraphicsTextureSizeEaxEdxCf9, *PGraphicsTextureSizeEaxEdxCf9;
-typedef struct GraphicsFramebufferCaptureEaxCf5 GraphicsFramebufferCaptureEaxCf5, *PGraphicsFramebufferCaptureEaxCf5;
-typedef struct GraphicsTextureSourceLoadEaxCf5 GraphicsTextureSourceLoadEaxCf5, *PGraphicsTextureSourceLoadEaxCf5;
+typedef struct DisplayModeResult DisplayModeResult, *PDisplayModeResult;
+typedef struct CursorFrameResult CursorFrameResult, *PCursorFrameResult;
+typedef struct TextureSizeResult TextureSizeResult, *PTextureSizeResult;
+typedef struct FramebufferCaptureResult FramebufferCaptureResult, *PFramebufferCaptureResult;
+typedef struct TextureSourceLoadResult TextureSourceLoadResult, *PTextureSourceLoadResult;
 /* DirectSound result records. */
-typedef struct SoundCreateSampleVoiceSetEaxCf5 SoundCreateSampleVoiceSetEaxCf5, *PSoundCreateSampleVoiceSetEaxCf5;
-typedef struct SoundCreatePcmVoiceSetEaxCf5 SoundCreatePcmVoiceSetEaxCf5, *PSoundCreatePcmVoiceSetEaxCf5;
-typedef struct SoundPlayVoiceEaxCf5 SoundPlayVoiceEaxCf5, *PSoundPlayVoiceEaxCf5;
-typedef struct FrontendInitEaxCf5 FrontendInitEaxCf5, *PFrontendInitEaxCf5;
-typedef struct ArmyRuntimeInitEaxCf5 ArmyRuntimeInitEaxCf5, *PArmyRuntimeInitEaxCf5;
-typedef struct InGameLevelDefaultLoadEaxCf5 InGameLevelDefaultLoadEaxCf5, *PInGameLevelDefaultLoadEaxCf5;
-typedef struct FrontendMainLoopEaxCf5 FrontendMainLoopEaxCf5, *PFrontendMainLoopEaxCf5;
-typedef struct ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidateEaxCf5, *PArmyPlacementCandidateEaxCf5;
-typedef struct InGameRuntimeLoadedInitEaxCf5 InGameRuntimeLoadedInitEaxCf5, *PInGameRuntimeLoadedInitEaxCf5;
-typedef struct InGameRuntimeInitEaxCf5 InGameRuntimeInitEaxCf5, *PInGameRuntimeInitEaxCf5;
-typedef struct InGameLevelLoadEaxCf5 InGameLevelLoadEaxCf5, *PInGameLevelLoadEaxCf5;
-typedef struct InGameRuntimeRunEaxCf5 InGameRuntimeRunEaxCf5, *PInGameRuntimeRunEaxCf5;
-typedef struct TextResourceLoadEaxCf5 TextResourceLoadEaxCf5, *PTextResourceLoadEaxCf5;
+typedef struct SampleVoiceSetResult SampleVoiceSetResult, *PSampleVoiceSetResult;
+typedef struct PcmVoiceSetResult PcmVoiceSetResult, *PPcmVoiceSetResult;
+typedef struct SoundPlayResult SoundPlayResult, *PSoundPlayResult;
+typedef struct FrontendInitResult FrontendInitResult, *PFrontendInitResult;
+typedef struct ArmyRuntimeInitResult ArmyRuntimeInitResult, *PArmyRuntimeInitResult;
+typedef struct LevelDefaultLoadResult LevelDefaultLoadResult, *PLevelDefaultLoadResult;
+typedef struct FrontendMainLoopResult FrontendMainLoopResult, *PFrontendMainLoopResult;
+typedef struct PlacementCandidateResult PlacementCandidateResult, *PPlacementCandidateResult;
+typedef struct LoadedSessionInitResult LoadedSessionInitResult, *PLoadedSessionInitResult;
+typedef struct NewSessionInitResult NewSessionInitResult, *PNewSessionInitResult;
+typedef struct LevelLoadResult LevelLoadResult, *PLevelLoadResult;
+typedef struct SessionRunResult SessionRunResult, *PSessionRunResult;
+typedef struct TextPageLoadResult TextPageLoadResult, *PTextPageLoadResult;
 typedef union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion;
 typedef struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct, *PIMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
 typedef struct _OVERLAPPED _OVERLAPPED, *P_OVERLAPPED;
@@ -553,7 +553,7 @@ typedef struct CommandLineState CommandLineState, *PCommandLineState;
 typedef struct ArenaState ArenaState, *PArenaState;
 typedef struct TH_WNDCLASSA TH_WNDCLASSA, *PTH_WNDCLASSA;
 typedef struct MemoryApiTable MemoryApiTable, *PMemoryApiTable;
-typedef struct ArenaLinearReserveEaxCf5 ArenaLinearReserveEaxCf5, *PArenaLinearReserveEaxCf5;
+typedef struct ArenaReserveResult ArenaReserveResult, *PArenaReserveResult;
 typedef struct ArmyPlacementContactCallbackTable5 ArmyPlacementContactCallbackTable5, *PArmyPlacementContactCallbackTable5;
 typedef struct DIPROPHEADER DIPROPHEADER, *PDIPROPHEADER;
 typedef struct PALETTEENTRY_DX6 PALETTEENTRY_DX6, *PPALETTEENTRY_DX6;
@@ -645,103 +645,103 @@ typedef struct IMAGE_SECTION_HEADER IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER
 typedef union Misc Misc, *PMisc;
 typedef struct IMAGE_RESOURCE_DATA_ENTRY IMAGE_RESOURCE_DATA_ENTRY, *PIMAGE_RESOURCE_DATA_ENTRY;
 typedef struct IMAGE_RESOURCE_DIRECTORY IMAGE_RESOURCE_DIRECTORY, *PIMAGE_RESOURCE_DIRECTORY;
-typedef struct AiCandidateScoreEaxCf5 AiCandidateScoreEaxCf5, *PAiCandidateScoreEaxCf5;
-typedef struct ModelBuildMetricEaxEcxEdxCf13 ModelBuildMetricEaxEcxEdxCf13, *PModelBuildMetricEaxEcxEdxCf13;
-typedef struct FieldGridHeightEaxCf5 FieldGridHeightEaxCf5, *PFieldGridHeightEaxCf5;
-typedef struct UiListRowIndexEaxCf5 UiListRowIndexEaxCf5, *PUiListRowIndexEaxCf5;
+typedef struct SiteWeightResult SiteWeightResult, *PSiteWeightResult;
+typedef struct BuildMetricResult BuildMetricResult, *PBuildMetricResult;
+typedef struct HeightSampleResult HeightSampleResult, *PHeightSampleResult;
+typedef struct ListSelectionResult ListSelectionResult, *PListSelectionResult;
 typedef struct FixedVectorEaxEcxEdx12 FixedVectorEaxEcxEdx12, *PFixedVectorEaxEcxEdx12;
-typedef struct GraphicsPaletteTextureSourceEaxCf5 GraphicsPaletteTextureSourceEaxCf5, *PGraphicsPaletteTextureSourceEaxCf5;
-typedef struct ModelLookupEntryEaxCf5 ModelLookupEntryEaxCf5, *PModelLookupEntryEaxCf5;
-typedef struct EffectRuntimeCreateEaxCf5 EffectRuntimeCreateEaxCf5, *PEffectRuntimeCreateEaxCf5;
-typedef struct GraphicsPaletteAssetEaxCf5 GraphicsPaletteAssetEaxCf5, *PGraphicsPaletteAssetEaxCf5;
-typedef struct ArmyPreviewTextureEaxCf5 ArmyPreviewTextureEaxCf5, *PArmyPreviewTextureEaxCf5;
-typedef struct EntityPathingDestinationEaxEdxEbxEcxCf17 EntityPathingDestinationEaxEdxEbxEcxCf17, *PEntityPathingDestinationEaxEdxEbxEcxCf17;
-typedef struct WorldRuntimeFlagsEaxCf5 WorldRuntimeFlagsEaxCf5, *PWorldRuntimeFlagsEaxCf5;
+typedef struct PaletteTextureSourceResult PaletteTextureSourceResult, *PPaletteTextureSourceResult;
+typedef struct ModelLookupEntryResult ModelLookupEntryResult, *PModelLookupEntryResult;
+typedef struct EffectCreateResult EffectCreateResult, *PEffectCreateResult;
+typedef struct PaletteAssetResult PaletteAssetResult, *PPaletteAssetResult;
+typedef struct ArmyPreviewTextureResult ArmyPreviewTextureResult, *PArmyPreviewTextureResult;
+typedef struct PathingDestinationResult PathingDestinationResult, *PPathingDestinationResult;
+typedef struct WorldFlagsResult WorldFlagsResult, *PWorldFlagsResult;
 typedef struct FieldGridCoordinatesEaxEdx8 FieldGridCoordinatesEaxEdx8, *PFieldGridCoordinatesEaxEdx8;
-typedef struct FieldGridRaycastEaxEdxCf9 FieldGridRaycastEaxEdxCf9, *PFieldGridRaycastEaxEdxCf9;
-typedef struct FontGlyphSizeEaxEdxCf9 FontGlyphSizeEaxEdxCf9, *PFontGlyphSizeEaxEdxCf9;
-typedef struct PackageFindEntryEaxEcxCf9 PackageFindEntryEaxEcxCf9, *PPackageFindEntryEaxEcxCf9;
-typedef struct WorldObjectRecordEaxCf5 WorldObjectRecordEaxCf5, *PWorldObjectRecordEaxCf5;
-typedef struct GridPathNearestCellEaxEbxCf9 GridPathNearestCellEaxEbxCf9, *PGridPathNearestCellEaxEbxCf9;
-typedef struct Recovered0040FFE0EaxCf5 Recovered0040FFE0EaxCf5, *PRecovered0040FFE0EaxCf5;
-typedef struct SoftwareFramebufferEaxCf5 SoftwareFramebufferEaxCf5, *PSoftwareFramebufferEaxCf5;
-typedef struct GraphicsOffscreenAllocationEaxCf5 GraphicsOffscreenAllocationEaxCf5, *PGraphicsOffscreenAllocationEaxCf5;
-typedef struct StatusValueEaxCf5 StatusValueEaxCf5, *PStatusValueEaxCf5;
-typedef struct EffectDefinitionLookupEaxCf5 EffectDefinitionLookupEaxCf5, *PEffectDefinitionLookupEaxCf5;
+typedef struct TerrainRaycastResult TerrainRaycastResult, *PTerrainRaycastResult;
+typedef struct GlyphSizeResult GlyphSizeResult, *PGlyphSizeResult;
+typedef struct PackageFindResult PackageFindResult, *PPackageFindResult;
+typedef struct WorldObjectAllocResult WorldObjectAllocResult, *PWorldObjectAllocResult;
+typedef struct NearestCellResult NearestCellResult, *PNearestCellResult;
+typedef struct DirectoryRecordBlockResult DirectoryRecordBlockResult, *PDirectoryRecordBlockResult;
+typedef struct SoftwareFramebufferResult SoftwareFramebufferResult, *PSoftwareFramebufferResult;
+typedef struct OffscreenRenderResult OffscreenRenderResult, *POffscreenRenderResult;
+typedef struct StatusResult StatusResult, *PStatusResult;
+typedef struct EffectDefinitionResult EffectDefinitionResult, *PEffectDefinitionResult;
 typedef struct CompareFlagsCfZf2 CompareFlagsCfZf2, *PCompareFlagsCfZf2;
 typedef struct WorldVector1EaxEcxEdx12 WorldVector1EaxEcxEdx12, *PWorldVector1EaxEcxEdx12;
-typedef struct GraphicsPrimitiveQueueEaxCf5 GraphicsPrimitiveQueueEaxCf5, *PGraphicsPrimitiveQueueEaxCf5;
+typedef struct PrimitiveQueueResult PrimitiveQueueResult, *PPrimitiveQueueResult;
 typedef struct ShotLaunchAnglesEaxEdx8 ShotLaunchAnglesEaxEdx8, *PShotLaunchAnglesEaxEdx8;
-typedef struct GraphicsPrimitivePacketEaxCf5 GraphicsPrimitivePacketEaxCf5, *PGraphicsPrimitivePacketEaxCf5;
-typedef struct GraphicsTextureSetEaxCf5 GraphicsTextureSetEaxCf5, *PGraphicsTextureSetEaxCf5;
-typedef struct KeyboardEventEaxEdxCf9 KeyboardEventEaxEdxCf9, *PKeyboardEventEaxEdxCf9;
+typedef struct PrimitivePacketResult PrimitivePacketResult, *PPrimitivePacketResult;
+typedef struct TextureSetResult TextureSetResult, *PTextureSetResult;
+typedef struct KeyboardEventResult KeyboardEventResult, *PKeyboardEventResult;
 typedef struct FixedVectorXEaxYEbxZEdx12 FixedVectorXEaxYEbxZEdx12, *PFixedVectorXEaxYEbxZEdx12;
-typedef struct WorldPositionEaxEcxEdxCf13 WorldPositionEaxEcxEdxCf13, *PWorldPositionEaxEcxEdxCf13;
-typedef struct SpatialSoundSlotEaxCf5 SpatialSoundSlotEaxCf5, *PSpatialSoundSlotEaxCf5;
-typedef struct GridPathBacktrackEaxEbxEcxCf13 GridPathBacktrackEaxEbxEcxCf13, *PGridPathBacktrackEaxEbxEcxCf13;
-typedef struct EndingMoviePathEaxCf5 EndingMoviePathEaxCf5, *PEndingMoviePathEaxCf5;
-typedef struct ModelRaycastNearestHitEaxEdxCf9 ModelRaycastNearestHitEaxEdxCf9, *PModelRaycastNearestHitEaxEdxCf9;
-typedef struct ModelSmoothEaxCf5 ModelSmoothEaxCf5, *PModelSmoothEaxCf5;
+typedef struct WorldPositionResult WorldPositionResult, *PWorldPositionResult;
+typedef struct SpatialSoundSlotResult SpatialSoundSlotResult, *PSpatialSoundSlotResult;
+typedef struct PathBacktrackResult PathBacktrackResult, *PPathBacktrackResult;
+typedef struct EndingMoviePathResult EndingMoviePathResult, *PEndingMoviePathResult;
+typedef struct ModelRaycastResult ModelRaycastResult, *PModelRaycastResult;
+typedef struct AimSmoothResult AimSmoothResult, *PAimSmoothResult;
 typedef struct FixedEulerAnglesEaxEcxEdx12 FixedEulerAnglesEaxEcxEdx12, *PFixedEulerAnglesEaxEcxEdx12;
-typedef struct FieldGridHeightNormalEaxEdxCf9 FieldGridHeightNormalEaxEdxCf9, *PFieldGridHeightNormalEaxEdxCf9;
-typedef struct UiSelectableNodeEaxCf5 UiSelectableNodeEaxCf5, *PUiSelectableNodeEaxCf5;
-typedef struct RomRecordLookupEaxCf5 RomRecordLookupEaxCf5, *PRomRecordLookupEaxCf5;
-typedef struct RichTextLineAdvanceEaxCf5 RichTextLineAdvanceEaxCf5, *PRichTextLineAdvanceEaxCf5;
-typedef struct InputEventEaxCf5 InputEventEaxCf5, *PInputEventEaxCf5;
-typedef struct WorldPositionXYEaxEdxCf9 WorldPositionXYEaxEdxCf9, *PWorldPositionXYEaxEdxCf9;
-typedef struct FncModuleLoadEaxCf5 FncModuleLoadEaxCf5, *PFncModuleLoadEaxCf5;
-typedef struct ShotDefinitionLookupEaxCf5 ShotDefinitionLookupEaxCf5, *PShotDefinitionLookupEaxCf5;
+typedef struct HeightNormalSampleResult HeightNormalSampleResult, *PHeightNormalSampleResult;
+typedef struct SelectableNodeResult SelectableNodeResult, *PSelectableNodeResult;
+typedef struct RomRecordResult RomRecordResult, *PRomRecordResult;
+typedef struct WrappedLineResult WrappedLineResult, *PWrappedLineResult;
+typedef struct InputEventResult InputEventResult, *PInputEventResult;
+typedef struct MovementStepResult MovementStepResult, *PMovementStepResult;
+typedef struct FncModuleLoadResult FncModuleLoadResult, *PFncModuleLoadResult;
+typedef struct ShotDefinitionResult ShotDefinitionResult, *PShotDefinitionResult;
 typedef struct WorldVector0EaxEcxEdx12 WorldVector0EaxEcxEdx12, *PWorldVector0EaxEcxEdx12;
-typedef struct DynApiResolveEaxCf5 DynApiResolveEaxCf5, *PDynApiResolveEaxCf5;
-typedef struct FactionRuntimeGroupIndexEaxCf5 FactionRuntimeGroupIndexEaxCf5, *PFactionRuntimeGroupIndexEaxCf5;
+typedef struct DynApiResolveResult DynApiResolveResult, *PDynApiResolveResult;
+typedef struct RuntimeGroupIndexResult RuntimeGroupIndexResult, *PRuntimeGroupIndexResult;
 typedef struct FixedLengthAnglesEaxEcxEdx12 FixedLengthAnglesEaxEcxEdx12, *PFixedLengthAnglesEaxEcxEdx12;
-typedef struct AiWorkspace09AnchorEcxEdxCf9 AiWorkspace09AnchorEcxEdxCf9, *PAiWorkspace09AnchorEcxEdxCf9;
-typedef struct FieldGridSurfacePointEaxEcxEdxCf13 FieldGridSurfacePointEaxEcxEdxCf13, *PFieldGridSurfacePointEaxEcxEdxCf13;
-typedef struct ModelLookupPayloadEaxEcxEdxCf13 ModelLookupPayloadEaxEcxEdxCf13, *PModelLookupPayloadEaxEcxEdxCf13;
-typedef struct PackageEntryEaxCf5 PackageEntryEaxCf5, *PPackageEntryEaxCf5;
-typedef struct SpriteRegisterRelocateEaxCf5 SpriteRegisterRelocateEaxCf5, *PSpriteRegisterRelocateEaxCf5;
-typedef struct ArmyPlacementDispatchEaxCf5 ArmyPlacementDispatchEaxCf5, *PArmyPlacementDispatchEaxCf5;
-typedef struct PackageLoadEntryEaxCf5 PackageLoadEntryEaxCf5, *PPackageLoadEntryEaxCf5;
-typedef struct ModelDefinitionLookupEaxCf5 ModelDefinitionLookupEaxCf5, *PModelDefinitionLookupEaxCf5;
-typedef struct ModelNodeCreateEaxCf5 ModelNodeCreateEaxCf5, *PModelNodeCreateEaxCf5;
+typedef struct AiAnchorResult AiAnchorResult, *PAiAnchorResult;
+typedef struct SurfacePointResult SurfacePointResult, *PSurfacePointResult;
+typedef struct ModelLookupPayloadResult ModelLookupPayloadResult, *PModelLookupPayloadResult;
+typedef struct PackageMountEntryResult PackageMountEntryResult, *PPackageMountEntryResult;
+typedef struct SpriteRegisterResult SpriteRegisterResult, *PSpriteRegisterResult;
+typedef struct PlacementDispatchResult PlacementDispatchResult, *PPlacementDispatchResult;
+typedef struct PackageLoadResult PackageLoadResult, *PPackageLoadResult;
+typedef struct ModelDefinitionResult ModelDefinitionResult, *PModelDefinitionResult;
+typedef struct ModelNodeCreateResult ModelNodeCreateResult, *PModelNodeCreateResult;
 typedef struct FixedEulerAnglesEaxEbxEdx12 FixedEulerAnglesEaxEbxEdx12, *PFixedEulerAnglesEaxEbxEdx12;
-typedef struct TerrainDistanceEaxCf5 TerrainDistanceEaxCf5, *PTerrainDistanceEaxCf5;
-typedef struct DynDllLoadEaxCf5 DynDllLoadEaxCf5, *PDynDllLoadEaxCf5;
-typedef struct GraphicsProjectedBlockEaxCf5 GraphicsProjectedBlockEaxCf5, *PGraphicsProjectedBlockEaxCf5;
-typedef struct FileSystemEnumerationEaxEcxCf9 FileSystemEnumerationEaxEcxCf9, *PFileSystemEnumerationEaxEcxCf9;
-typedef struct UiRuntimeRecordRingDiscardEaxEdxCf9 UiRuntimeRecordRingDiscardEaxEdxCf9, *PUiRuntimeRecordRingDiscardEaxEdxCf9;
+typedef struct TerrainRayTriangleResult TerrainRayTriangleResult, *PTerrainRayTriangleResult;
+typedef struct DllLoadResult DllLoadResult, *PDllLoadResult;
+typedef struct ProjectedBlockReserveResult ProjectedBlockReserveResult, *PProjectedBlockReserveResult;
+typedef struct DirectoryEnumerationResult DirectoryEnumerationResult, *PDirectoryEnumerationResult;
+typedef struct RecordRingDiscardResult RecordRingDiscardResult, *PRecordRingDiscardResult;
 typedef struct AiSecondaryWorkspaceDistanceSelectionRegs8 AiSecondaryWorkspaceDistanceSelectionRegs8, *PAiSecondaryWorkspaceDistanceSelectionRegs8;
 typedef struct TerrainOccupancyRuntimeFlagsEaxEcx8 TerrainOccupancyRuntimeFlagsEaxEcx8, *PTerrainOccupancyRuntimeFlagsEaxEcx8;
 typedef struct TerrainOccupancyResolvedMasksRegs12 TerrainOccupancyResolvedMasksRegs12, *PTerrainOccupancyResolvedMasksRegs12;
 typedef struct AiWorkspace05DistanceSelectionRegs8 AiWorkspace05DistanceSelectionRegs8, *PAiWorkspace05DistanceSelectionRegs8;
-typedef struct ArenaLargestAllocationEaxEcxCf9 ArenaLargestAllocationEaxEcxCf9, *PArenaLargestAllocationEaxEcxCf9;
+typedef struct ArenaLargestAllocResult ArenaLargestAllocResult, *PArenaLargestAllocResult;
 typedef struct GridPathUnreachableRecursiveEdiEdx8 GridPathUnreachableRecursiveEdiEdx8, *PGridPathUnreachableRecursiveEdiEdx8;
 typedef struct AiStrategicClassSelectionRegs8 AiStrategicClassSelectionRegs8, *PAiStrategicClassSelectionRegs8;
-typedef struct ArenaShrinkEaxCf5 ArenaShrinkEaxCf5, *PArenaShrinkEaxCf5;
-typedef struct Direct3DRenderStateApplyEaxCf5 Direct3DRenderStateApplyEaxCf5, *PDirect3DRenderStateApplyEaxCf5;
+typedef struct ArenaShrinkResult ArenaShrinkResult, *PArenaShrinkResult;
+typedef struct RenderStateApplyResult RenderStateApplyResult, *PRenderStateApplyResult;
 typedef struct DriveLetterEnumerationEaxEcx8 DriveLetterEnumerationEaxEcx8, *PDriveLetterEnumerationEaxEcx8;
-typedef struct FileBufferEaxCf5 FileBufferEaxCf5, *PFileBufferEaxCf5;
-typedef struct FileSystemStringTableEaxEcxCf9 FileSystemStringTableEaxEcxCf9, *PFileSystemStringTableEaxEcxCf9;
+typedef struct FileLoadResult FileLoadResult, *PFileLoadResult;
+typedef struct EnumerationStringTableResult EnumerationStringTableResult, *PEnumerationStringTableResult;
 typedef struct FrontendCreditsUiStateView FrontendCreditsUiStateView, *PFrontendCreditsUiStateView;
 typedef struct GeneratedTextureRenderContextView GeneratedTextureRenderContextView, *PGeneratedTextureRenderContextView;
 typedef struct GraphicsCursorInputEventRegsCf21 GraphicsCursorInputEventRegsCf21, *PGraphicsCursorInputEventRegsCf21;
 typedef struct GraphicsProjectedPointPair GraphicsProjectedPointPair, *PGraphicsProjectedPointPair;
-typedef struct GraphicsShadingRuntimeRecordEaxCf5 GraphicsShadingRuntimeRecordEaxCf5, *PGraphicsShadingRuntimeRecordEaxCf5;
+typedef struct ShadingRecordResult ShadingRecordResult, *PShadingRecordResult;
 typedef struct GraphicsTextureSourceHeaderViewBC GraphicsTextureSourceHeaderViewBC, *PGraphicsTextureSourceHeaderViewBC;
 typedef struct InGameLevelSaveWorldView InGameLevelSaveWorldView, *PInGameLevelSaveWorldView;
 typedef struct ModelProjectedBoundsPixels ModelProjectedBoundsPixels, *PModelProjectedBoundsPixels;
-typedef struct MovieFrameProviderEaxCf5 MovieFrameProviderEaxCf5, *PMovieFrameProviderEaxCf5;
-typedef struct PcxDecodeEaxCf5 PcxDecodeEaxCf5, *PPcxDecodeEaxCf5;
-typedef struct PcxEncodeEaxEcxCf9 PcxEncodeEaxEcxCf9, *PPcxEncodeEaxEcxCf9;
-typedef struct RichTextStringAssetEaxCf5 RichTextStringAssetEaxCf5, *PRichTextStringAssetEaxCf5;
+typedef struct FrameProviderResult FrameProviderResult, *PFrameProviderResult;
+typedef struct PcxDecodeResult PcxDecodeResult, *PPcxDecodeResult;
+typedef struct PcxEncodeResult PcxEncodeResult, *PPcxEncodeResult;
+typedef struct RichTextAssetResult RichTextAssetResult, *PRichTextAssetResult;
 typedef struct RomSerializedNodeHeader34 RomSerializedNodeHeader34, *PRomSerializedNodeHeader34;
 typedef struct RuntimeModelFactionPrefix10 RuntimeModelFactionPrefix10, *PRuntimeModelFactionPrefix10;
 typedef struct TerrainProjectedVertexWorkRecord TerrainProjectedVertexWorkRecord, *PTerrainProjectedVertexWorkRecord;
 typedef struct TriangleBarycentricWeightsQ12 TriangleBarycentricWeightsQ12, *PTriangleBarycentricWeightsQ12;
-typedef struct UiSelectableGroupIndexEcxCf5 UiSelectableGroupIndexEcxCf5, *PUiSelectableGroupIndexEcxCf5;
-typedef struct UiSelectableNodeEaxEcxCf9 UiSelectableNodeEaxEcxCf9, *PUiSelectableNodeEaxEcxCf9;
+typedef struct SelectableGroupIndexResult SelectableGroupIndexResult, *PSelectableGroupIndexResult;
+typedef struct SelectableGroupNodeResult SelectableGroupNodeResult, *PSelectableGroupNodeResult;
 typedef struct UiSelectionGeometryControl UiSelectionGeometryControl, *PUiSelectionGeometryControl;
-typedef struct UiTimedListDirectoryHierarchyEaxEdxCf9 UiTimedListDirectoryHierarchyEaxEdxCf9, *PUiTimedListDirectoryHierarchyEaxEdxCf9;
+typedef struct DirectoryHierarchyResult DirectoryHierarchyResult, *PDirectoryHierarchyResult;
 typedef union RomSerializedNodeReferenceOrSavedOffset4 RomSerializedNodeReferenceOrSavedOffset4, *PRomSerializedNodeReferenceOrSavedOffset4;
 typedef struct InGameRuntimeUiGridViewC3E4 InGameRuntimeUiGridViewC3E4, *PInGameRuntimeUiGridViewC3E4;
 typedef struct EndGameResultsRuntimeView44C4 EndGameResultsRuntimeView44C4, *PEndGameResultsRuntimeView44C4;
@@ -751,7 +751,7 @@ typedef struct ModelLinkedDefinitionBranchView18 ModelLinkedDefinitionBranchView
 typedef struct WorldRuntimeExtendedMapControlView170 WorldRuntimeExtendedMapControlView170, *PWorldRuntimeExtendedMapControlView170;
 typedef struct ArmyRuntimeClassUpdate21DefinitionView27C ArmyRuntimeClassUpdate21DefinitionView27C, *PArmyRuntimeClassUpdate21DefinitionView27C;
 typedef struct FixedTriangleJointAnglesEaxEdx8 FixedTriangleJointAnglesEaxEdx8, *PFixedTriangleJointAnglesEaxEdx8;
-typedef struct ShotModeRangeLimitEbxCf5 ShotModeRangeLimitEbxCf5, *PShotModeRangeLimitEbxCf5;
+typedef struct ShotRangeLimitResult ShotRangeLimitResult, *PShotRangeLimitResult;
 typedef struct SelectionPanelAdvanceEaxEdx8 SelectionPanelAdvanceEaxEdx8, *PSelectionPanelAdvanceEaxEdx8;
 typedef struct GeneratedTextureSampleWorkRecord18 GeneratedTextureSampleWorkRecord18, *PGeneratedTextureSampleWorkRecord18;
 typedef struct GeneratedTextureScratchRuntime1A8 GeneratedTextureScratchRuntime1A8, *PGeneratedTextureScratchRuntime1A8;
@@ -795,8 +795,8 @@ typedef struct ModelRuntimeWeaponUpdateView200 ModelRuntimeWeaponUpdateView200, 
 typedef union ModelRaycastNearestNodeOrScratch4 ModelRaycastNearestNodeOrScratch4, *PModelRaycastNearestNodeOrScratch4;
 typedef struct WorldPositionXYEaxEdx8 WorldPositionXYEaxEdx8, *PWorldPositionXYEaxEdx8;
 typedef struct FixedLengthAngleEaxEdx8 FixedLengthAngleEaxEdx8, *PFixedLengthAngleEaxEdx8;
-typedef struct TerrainPlacementTestEaxCf5 TerrainPlacementTestEaxCf5, *PTerrainPlacementTestEaxCf5;
-typedef struct GraphicsTextureSourceAssetEaxCf5 GraphicsTextureSourceAssetEaxCf5, *PGraphicsTextureSourceAssetEaxCf5;
+typedef struct TerrainPlacementResult TerrainPlacementResult, *PTerrainPlacementResult;
+typedef struct TextureSourceDecomposeResult TextureSourceDecomposeResult, *PTextureSourceDecomposeResult;
 typedef struct TerrainProjectedRowSpan TerrainProjectedRowSpan, *PTerrainProjectedRowSpan;
 typedef struct WinSockIpxAddress16 WinSockIpxAddress16, *PWinSockIpxAddress16;
 typedef union NetworkBackendSocketAddress16 NetworkBackendSocketAddress16, *PNetworkBackendSocketAddress16;
@@ -982,20 +982,20 @@ typedef pointer32 ImageBaseOffset32;
 #define __thandor_void_preserve_eax
 #endif
 
-struct MovieOpenEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
-    uint32_t playbackRateHzEcx; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
+struct MovieOpenResult {
+    uint32_t frameCountOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
+    uint32_t playbackRateHz; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
 };
 
-struct Win32FileSeekEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct Win32FileSeekResult {
+    uint32_t positionOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct GridScratchAllocEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct GridScratchAllocResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct ArmyRegistryEaxCf5_51b6d0 {
@@ -1003,15 +1003,15 @@ struct ArmyRegistryEaxCf5_51b6d0 {
     bool carry; // Physical ABI component CF
 };
 
-struct CommandLineFindOptionEbxCf5 {
-    uint8_t *ebx; // Physical ABI component EBX
-    bool carry; // Physical ABI component CF
+struct CommandLineOptionResult {
+    uint8_t *option; // Physical ABI component EBX
+    bool notFound; // Physical ABI component CF
 };
 
-struct ResourceLoadEaxEcxCf9 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ecx; // Physical ABI component ECX
-    bool carry; // Physical ABI component CF
+struct ResourceLoadResult {
+    uint32_t bufferOrError; // Physical ABI component EAX
+    uint32_t byteCount; // Physical ABI component ECX
+    bool failed; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571ca0 {
@@ -1029,24 +1029,24 @@ struct ArmyRegistryEaxCf5_51b740 {
     bool carry; // Physical ABI component CF
 };
 
-struct Win32FileReadEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct Win32FileReadResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct FileSystemSeekEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FileSystemSeekResult {
+    uint32_t positionOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct MovieAdvanceFrameEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct MovieFrameResult {
+    uint32_t movieOrError; // Physical ABI component EAX
+    bool ended; // Physical ABI component CF
 };
 
-struct NetworkBackendReceiveEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct NetworkReceiveResult {
+    uint32_t byteCountOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct FixedMathVectorAnglesRegs8 {
@@ -1054,24 +1054,24 @@ struct FixedMathVectorAnglesRegs8 {
     uint32_t edx; // Physical ABI component EDX
 };
 
-struct NetworkBackendOpenBindEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct NetworkOpenBindResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct Win32FileOpenEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct Win32FileOpenResult {
+    uint32_t handleOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct FileSystemReadEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FileSystemReadResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct RichTextCopyExpandedEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct RichTextCopyResult {
+    uint32_t bytesWritten; // Physical ABI component EAX
+    bool overflowed; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571a60 {
@@ -1089,24 +1089,24 @@ struct ArmyRegistryIdEaxCf5_571b00 {
     bool carry; // Physical ABI component CF
 };
 
-struct FileSystemSizeEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FileSystemSizeResult {
+    uint32_t sizeOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct ArenaFreeEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ArenaFreeResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct Win32FileSizeEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct Win32FileSizeResult {
+    uint32_t sizeOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct NetworkBackendSendEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct NetworkSendResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct ArmyMetric6CDefinitionC4Regs8 {
@@ -1114,9 +1114,9 @@ struct ArmyMetric6CDefinitionC4Regs8 {
     uint32_t ecx; // Physical ABI component ECX
 };
 
-struct ArmyCollisionFindEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ArmyCollisionResult {
+    uint32_t blockingArmy; // Physical ABI component EAX
+    bool blocked; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571c30 {
@@ -1124,24 +1124,24 @@ struct ArmyRegistryIdEaxCf5_571c30 {
     bool carry; // Physical ABI component CF
 };
 
-struct FileSystemWriteEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FileSystemWriteResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct FileSystemOpenEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FileSystemOpenResult {
+    uint32_t handleOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct FatalErrorEaxCf5 {
-    uint32_t eax;
-    bool carry;
+struct FatalErrorCheckResult {
+    uint32_t valueOrError;
+    bool failed;
 };
 
-struct PckCodecEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct PckCodecResult {
+    uint32_t byteCountOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct FieldGridNearestPointRegsCf13 {
@@ -1167,19 +1167,19 @@ struct ArmyRegistryIdEaxCf5_571ab0 {
     bool carry; // Physical ABI component CF
 };
 
-struct PackageDecodeEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct PackageDecodeResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct ArenaAllocEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ArenaAllocResult {
+    uint32_t payloadOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct Win32FileWriteEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct Win32FileWriteResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct FixedDirectionXyzRegs12 {
@@ -1188,26 +1188,26 @@ struct FixedDirectionXyzRegs12 {
     uint32_t edx; // Physical ABI component EDX
 };
 
-struct UiTransferMailboxReceivedEaxEcxCf9 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ecx; // Physical ABI component ECX
-    bool carry; // Physical ABI component CF
+struct MailboxReceiveResult {
+    uint32_t buffer; // Physical ABI component EAX
+    uint32_t byteCount; // Physical ABI component ECX
+    bool unavailable; // Physical ABI component CF
 };
 
-struct ArmyRuntimeCreateEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct ArmyRuntimeCreateResult {
+    uint32_t armyRuntimeOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
-struct PackageFindEntryEaxEbxCf9 {
-    uint32_t eax; // Physical ABI component EAX
-    uint32_t ebx; // Physical ABI component EBX
-    bool carry; // Physical ABI component CF
+struct PackageEntryLookupResult {
+    uint32_t entry; // Physical ABI component EAX
+    uint32_t fileHandle; // Physical ABI component EBX
+    bool notFound; // Physical ABI component CF
 };
 
-struct NetworkBackendSetSessionEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct NetworkSetSessionResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571c50 {
@@ -1219,48 +1219,48 @@ struct ArmyRegistryIdEaxCf5_571a10 {
     uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
-struct DisplayModeEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct DisplayModeResult {
+    uint32_t valueOrError; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct GraphicsCursorFrameEaxCf5 {
-    uint32_t eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct CursorFrameResult {
+    uint32_t errorCode; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct GraphicsTextureSizeEaxEdxCf9 {
+struct TextureSizeResult {
     uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
     uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
-    bool carry; // Carry/status: false on success; true on failure
+    bool failed; // Carry/status: false on success; true on failure
 };
-struct GraphicsFramebufferCaptureEaxCf5 {
-    struct GraphicsCapturedTextureSourceAsset *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct FramebufferCaptureResult {
+    struct GraphicsCapturedTextureSourceAsset *capture; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct GraphicsTextureSourceLoadEaxCf5 {
-    struct GraphicsTextureSourceAsset *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct TextureSourceLoadResult {
+    struct GraphicsTextureSourceAsset *textureSource; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct SoundCreateSampleVoiceSetEaxCf5 {
-    struct DirectSoundVoiceSet *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct SampleVoiceSetResult {
+    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct SoundCreatePcmVoiceSetEaxCf5 {
-    struct DirectSoundVoiceSet *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct PcmVoiceSetResult {
+    struct DirectSoundVoiceSet *voiceSet; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
-struct SoundPlayVoiceEaxCf5 {
-    struct IDirectSoundBuffer *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct SoundPlayResult {
+    struct IDirectSoundBuffer *soundBuffer; // Physical ABI component EAX
+    bool failed; // Physical ABI component CF
 };
 
 /* Callback/function-definition ABIs. */
-typedef GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsCursorSetFrameProc(uint32_t arg0);
-typedef DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoftwareDisplayModeHookProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3);
+typedef CursorFrameResult __thandor_eax_cf_preserve_ecx_edx GraphicsCursorSetFrameProc(uint32_t arg0);
+typedef DisplayModeResult __thandor_eax_cf_preserve_ecx_edx SoftwareDisplayModeHookProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * arg0);
-typedef GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsFramebufferCaptureRegionProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3);
+typedef FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx GraphicsFramebufferCaptureRegionProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3);
 typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebufferBeginAccessProc(void);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferEndAccessProc(void);
-typedef GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx GraphicsTextureSourceGetLogicalSizeProc(uint32_t arg0, GraphicsTextureSourceAsset * arg1);
+typedef TextureSizeResult __thandor_eax_edx_cf_preserve_ecx GraphicsTextureSourceGetLogicalSizeProc(uint32_t arg0, GraphicsTextureSourceAsset * arg1);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferFillRectArgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, SoftwareFramebufferAccess * arg9);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyRegionToOriginProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyOriginToRegionProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
@@ -1275,54 +1275,54 @@ typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledSatur
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5, SoftwareFramebufferAccess * arg6);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundCreateSampleVoiceSetProc(SoundSampleAsset * arg0);
-typedef SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundCreatePcmVoiceSetProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, void * arg4);
-typedef SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundPlayVoiceProc(uint32_t arg0, uint32_t arg1, DirectSoundVoiceSet * arg2);
+typedef SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx SoundCreateSampleVoiceSetProc(SoundSampleAsset * arg0);
+typedef PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx SoundCreatePcmVoiceSetProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, void * arg4);
+typedef SoundPlayResult __thandor_eax_cf_preserve_ecx_edx SoundPlayVoiceProc(uint32_t arg0, uint32_t arg1, DirectSoundVoiceSet * arg2);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundStopVoiceProc(IDirectSoundBuffer * arg0);
 typedef bool __thandor_cf_preserve_eax_ecx_edx SoundIsVoicePlayingProc(IDirectSoundBuffer * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundStopAllVoicesProc(void);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundSetVoiceGainsProc(uint32_t arg0, uint32_t arg1, IDirectSoundBuffer * arg2);
-struct FrontendInitEaxCf5 {
+struct FrontendInitResult {
     uint32_t frontendRootOrError; /* EAX result/error value. */
-    bool carry;               /* Carry-flag status. */
+    bool failed;               /* Carry-flag status. */
 };
-struct ArmyRuntimeInitEaxCf5 {
+struct ArmyRuntimeInitResult {
     uint32_t errorOrValue; /* EAX result/error value. */
-    bool carry;         /* Carry-flag status. */
+    bool failed;         /* Carry-flag status. */
 };
-struct InGameLevelDefaultLoadEaxCf5 {
+struct LevelDefaultLoadResult {
     uint32_t errorOrValue; /* EAX result/error value. */
-    bool carry;         /* Carry-flag status. */
+    bool failed;         /* Carry-flag status. */
 };
-struct FrontendMainLoopEaxCf5 {
+struct FrontendMainLoopResult {
     uint32_t errorOrValue; /* EAX result/error value. */
-    bool carry;         /* Carry-flag status. */
+    bool failed;         /* Carry-flag status. */
 };
-struct ArmyPlacementCandidateEaxCf5 {
-    int eax;   /* Placement candidate/result value carried in EAX. */
-    bool carry; /* Carry-flag status. */
+struct PlacementCandidateResult {
+    int value;   /* Placement candidate/result value carried in EAX. */
+    bool rejected; /* Carry-flag status. */
 };
-struct InGameRuntimeLoadedInitEaxCf5 {
+struct LoadedSessionInitResult {
     uint32_t runtimeRootOrError; /* EAX result/error value. */
-    bool carry;               /* Carry-flag status. */
+    bool failed;               /* Carry-flag status. */
 };
-struct InGameRuntimeInitEaxCf5 {
+struct NewSessionInitResult {
     uint32_t runtimeRootOrError; /* EAX result/error value. */
-    bool carry;               /* Carry-flag status. */
+    bool failed;               /* Carry-flag status. */
 };
-struct InGameLevelLoadEaxCf5 {
+struct LevelLoadResult {
     uint32_t errorOrValue; /* EAX result/error value. */
-    bool carry;         /* Carry-flag status. */
+    bool failed;         /* Carry-flag status. */
 };
-struct InGameRuntimeRunEaxCf5 {
+struct SessionRunResult {
     uint32_t exitCodeOrError; /* EAX result/error value. */
-    bool carry;            /* Carry-flag status. */
+    bool failed;            /* Carry-flag status. */
 };
-struct TextResourceLoadEaxCf5 {
+struct TextPageLoadResult {
     uint32_t errorOrValue; /* EAX result/error value. */
-    bool carry;         /* Carry-flag status. */
+    bool failed;         /* Carry-flag status. */
 };
 
 #ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
@@ -1330,11 +1330,11 @@ struct TextResourceLoadEaxCf5 {
 typedef unsigned short wchar_t;
 #endif
 
-struct TextResourceResolveEaxCf5 {
-    uint16_t *eax; // Physical ABI component EAX
-    bool carry; // Physical ABI component CF
+struct TextResolveResult {
+    uint16_t *text; // Physical ABI component EAX
+    bool notFound; // Physical ABI component CF
 };
-typedef GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
+typedef TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
 
 /* Recovered semantic scalar types used by canonical records. */
 typedef uint32_t ResourceExtractionDescriptor32;
@@ -9910,9 +9910,9 @@ struct TH_WNDCLASSA {
     char *lpszClassName;
 };
 
-struct ArenaLinearReserveEaxCf5 {
+struct ArenaReserveResult {
     uint32_t baseOrError; // EAX: reserved linear base on CF-clear; engine error on CF-set.
-    bool carry; // Carry flag: clear success, set failure.
+    bool failed; // Carry flag: clear success, set failure.
 };
 
 struct ArmyPlacementContactCallbackTable5 {
@@ -10777,30 +10777,30 @@ struct IMAGE_RESOURCE_DIRECTORY {
     uint16_t NumberOfIdEntries;
 };
 
-struct AiCandidateScoreEaxCf5 {
+struct SiteWeightResult {
     uint32_t score; // EAX candidate score
-    bool carry; // CF status
+    bool noSite; // CF status
 };
 
-struct ModelBuildMetricEaxEcxEdxCf13 {
+struct BuildMetricResult {
     uint32_t metric0; // EAX build metric component
     uint32_t metric1; // ECX build metric component
     uint32_t metric2; // EDX build metric component
-    bool carry; // CF lookup status
+    bool notFound; // CF lookup status
 };
 
-struct FieldGridHeightEaxCf5 {
+struct HeightSampleResult {
     Q12 heightQ12; // EAX interpolated height
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
 struct FieldGridInterpolationCallbackTable5 {
-    FieldGridHeightEaxCf5 (*callbacks[5])(Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    HeightSampleResult (*callbacks[5])(Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
 };
 
-struct UiListRowIndexEaxCf5 {
+struct ListSelectionResult {
     UiListRowIndex rowIndex; // EAX selected row index
-    bool carry; // CF selection/status
+    bool confirmed; // CF selection/status
 };
 
 struct FixedVectorEaxEcxEdx12 {
@@ -10809,42 +10809,42 @@ struct FixedVectorEaxEcxEdx12 {
     Q12 zQ12; // EDX vector Z
 };
 
-struct GraphicsPaletteTextureSourceEaxCf5 {
+struct PaletteTextureSourceResult {
     struct GraphicsPaletteTextureSourceAsset *paletteSource; // EAX palette-source pointer / error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct ModelLookupEntryEaxCf5 {
+struct ModelLookupEntryResult {
     struct ModelPackedPointRecord *entry; // EAX matching lookup entry
-    bool carry; // CF status
+    bool notFound; // CF status
 };
 
-struct EffectRuntimeCreateEaxCf5 {
+struct EffectCreateResult {
     struct EffectRuntimeSlot *effectRuntime; // EAX live effect slot
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct GraphicsPaletteAssetEaxCf5 {
+struct PaletteAssetResult {
     struct GraphicsPaletteAsset *paletteAsset; // EAX palette asset pointer / error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct ArmyPreviewTextureEaxCf5 {
+struct ArmyPreviewTextureResult {
     struct GraphicsTextureResource *previewTexture; // EAX preview texture resource
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct EntityPathingDestinationEaxEdxEbxEcxCf17 {
+struct PathingDestinationResult {
     Q12 primaryWorldXQ12; // EAX primary X
     Q12 primaryWorldYQ12; // EDX primary Y
     Q12 fallbackWorldXQ12; // EBX fallback X
     Q12 fallbackWorldYQ12; // ECX fallback Y
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct WorldRuntimeFlagsEaxCf5 {
+struct WorldFlagsResult {
     uint32_t flags; // EAX world runtime flags
-    bool carry; // CF status (implementation clears on return)
+    bool failed; // CF status (implementation clears on return)
 };
 
 struct FieldGridCoordinatesEaxEdx8 {
@@ -10852,58 +10852,58 @@ struct FieldGridCoordinatesEaxEdx8 {
     Q12 rowQ12; // EDX row coordinate
 };
 
-struct FieldGridRaycastEaxEdxCf9 {
+struct TerrainRaycastResult {
     Q12 distanceQ12; // EAX nearest distance
     uint32_t materialOrCellIndex; // EDX cell/material result
-    bool carry; // CF hit status
+    bool hit; // CF hit status
 };
 
-struct FontGlyphSizeEaxEdxCf9 {
+struct GlyphSizeResult {
     uint32_t width; // EAX glyph width
     uint32_t lineHeight; // EDX active font line height
-    bool carry; // CF state (implementation clears on return)
+    bool failed; // CF state (implementation clears on return)
 };
 
-struct PackageFindEntryEaxEcxCf9 {
+struct PackageFindResult {
     uint32_t recordSizeOrError; // EAX 0x200 record size or error code
     uint32_t matchCount; // ECX matching entry count
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct WorldObjectRecordEaxCf5 {
+struct WorldObjectAllocResult {
     struct WorldObjectRecord *recordOrError; // EAX allocated WorldObjectRecord on CF-clear; error-coded value when CF-set
-    bool carry; // CF allocation status
+    bool failed; // CF allocation status
 };
 
-struct GridPathNearestCellEaxEbxCf9 {
+struct NearestCellResult {
     FieldGridCellCoordinate selectedColumn; // EAX selected column
     FieldGridCellCoordinate selectedRow; // EBX selected row
-    bool carry; // CF status
+    bool relocated; // CF status
 };
 
-struct Recovered0040FFE0EaxCf5 {
+struct DirectoryRecordBlockResult {
     void *recordBlockOrError; // EAX: allocated timed-list record/text block on CF-clear success; error-coded value on CF-set failure. Opaque because the allocation contains both 16-byte records and variable UTF-16 tails.
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct SoftwareFramebufferEaxCf5 {
+struct SoftwareFramebufferResult {
     struct SoftwareFramebufferAccess *framebuffer; // EAX framebuffer pointer / allocator error value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct GraphicsOffscreenAllocationEaxCf5 {
+struct OffscreenRenderResult {
     void *allocation; // EAX offscreen allocation base
-    bool carry; // CF allocation/render status
+    bool failed; // CF allocation/render status
 };
 
-struct StatusValueEaxCf5 {
+struct StatusResult {
     uint32_t valueOrError; // EAX value/error code
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct EffectDefinitionLookupEaxCf5 {
+struct EffectDefinitionResult {
     struct EffectDefinition *definitionOrError; // EAX definition pointer or error-coded value
-    bool carry; // CF status
+    bool notFound; // CF status
 };
 
 struct CompareFlagsCfZf2 {
@@ -10917,9 +10917,9 @@ struct WorldVector1EaxEcxEdx12 {
     AngleTurn32 pitchAngle; // EDX world motion pitch
 };
 
-struct GraphicsPrimitiveQueueEaxCf5 {
+struct PrimitiveQueueResult {
     struct GraphicsPrimitiveQueue *queue; // EAX primitive queue
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
 struct ShotLaunchAnglesEaxEdx8 {
@@ -10927,20 +10927,20 @@ struct ShotLaunchAnglesEaxEdx8 {
     AngleTurn32 elevationAngle; // EDX launch elevation
 };
 
-struct GraphicsPrimitivePacketEaxCf5 {
+struct PrimitivePacketResult {
     struct GraphicsPrimitivePacket *packet; // EAX queued primitive packet
-    bool carry; // CF queue-full status
+    bool noPacket; // CF queue-full status
 };
 
-struct GraphicsTextureSetEaxCf5 {
+struct TextureSetResult {
     struct GraphicsTextureSet *textureSet; // EAX texture-set pointer / error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct KeyboardEventEaxEdxCf9 {
+struct KeyboardEventResult {
     uint32_t eventCode; // EAX keyboard event code
     uint32_t eventData; // EDX keyboard event payload
-    bool carry; // CF queue-empty status
+    bool queueEmpty; // CF queue-empty status
 };
 
 struct FixedVectorXEaxYEbxZEdx12 {
@@ -10949,33 +10949,33 @@ struct FixedVectorXEaxYEbxZEdx12 {
     Q12 zQ12; // EDX vector Z
 };
 
-struct WorldPositionEaxEcxEdxCf13 {
+struct WorldPositionResult {
     Q12 worldXQ12; // EAX world X
     Q12 worldYQ12; // ECX world Y
     Q12 worldZQ12; // EDX world Z
-    bool carry; // CF validity/status
+    bool unresolved; // CF validity/status
 };
 
-struct SpatialSoundSlotEaxCf5 {
+struct SpatialSoundSlotResult {
     struct SpatialSoundSlot *soundSlot; // EAX allocated spatial-sound slot / error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct GridPathBacktrackEaxEbxEcxCf13 {
+struct PathBacktrackResult {
     FieldGridCellCoordinate selectedColumn; // EAX selected column
     FieldGridCellCoordinate selectedRow; // EBX selected row
     FieldGridRegionMask routeStateMask; // ECX route-state mask
-    bool carry; // CF status
+    bool reachedTarget; // CF status
 };
 
-struct EndingMoviePathEaxCf5 {
+struct EndingMoviePathResult {
     uint16_t *moviePath; // EAX ending-movie path
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct ModelSmoothEaxCf5 {
-    uint32_t eax; // EAX smoothing state/value
-    bool carry; // CF threshold/status
+struct AimSmoothResult {
+    uint32_t value; // EAX smoothing state/value
+    bool outsideTolerance; // CF threshold/status
 };
 
 struct FixedEulerAnglesEaxEcxEdx12 {
@@ -10984,46 +10984,46 @@ struct FixedEulerAnglesEaxEcxEdx12 {
     AngleTurn32 edxAngle; // EDX extracted Euler component
 };
 
-struct FieldGridHeightNormalEaxEdxCf9 {
+struct HeightNormalSampleResult {
     Q12 heightQ12; // EAX interpolated terrain height
     uint32_t packedNormalAngles; // EDX packed normal angles
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct UiSelectableNodeEaxCf5 {
+struct SelectableNodeResult {
     struct UiNodeBase *node; // EAX selected/last node
-    bool carry; // CF none-visible-selected status
+    bool noneSelected; // CF none-visible-selected status
 };
 
-struct RomRecordLookupEaxCf5 {
+struct RomRecordResult {
     struct RomAssetRecordPrefix *recordOrError; // EAX ROM record pointer or error-coded value
-    bool carry; // CF status
+    bool notFound; // CF status
 };
 
-struct RichTextLineAdvanceEaxCf5 {
+struct WrappedLineResult {
     UiPixelExtent lineAdvancePixels; // EAX wrapped-line vertical advance
-    bool carry; // CF end/error status
+    bool endOfText; // CF end/error status
 };
 
-struct InputEventEaxCf5 {
+struct InputEventResult {
     uint32_t eventType; // EAX input event type
-    bool carry; // CF queue-empty status
+    bool queueEmpty; // CF queue-empty status
 };
 
-struct WorldPositionXYEaxEdxCf9 {
+struct MovementStepResult {
     Q12 worldXQ12; // EAX world X
     Q12 worldYQ12; // EDX world Y
-    bool carry; // CF movement/status
+    bool arrived; // CF movement/status
 };
 
-struct FncModuleLoadEaxCf5 {
+struct FncModuleLoadResult {
     int *moduleBase; // EAX relocated module base / error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct ShotDefinitionLookupEaxCf5 {
+struct ShotDefinitionResult {
     struct ShotDefinition *definitionOrError; // EAX shot definition pointer or error-coded value
-    bool carry; // CF status
+    bool notFound; // CF status
 };
 
 struct WorldVector0EaxEcxEdx12 {
@@ -11032,14 +11032,14 @@ struct WorldVector0EaxEcxEdx12 {
     Q12 zQ12; // EDX world motion Z
 };
 
-struct DynApiResolveEaxCf5 {
+struct DynApiResolveResult {
     void *procedureOrError; // EAX procedure address or error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct FactionRuntimeGroupIndexEaxCf5 {
+struct RuntimeGroupIndexResult {
     uint32_t runtimeGroupIndex; // EAX one-based runtime group index
-    bool carry; // CF not-found status
+    bool notFound; // CF not-found status
 };
 
 struct FixedLengthAnglesEaxEcxEdx12 {
@@ -11048,39 +11048,39 @@ struct FixedLengthAnglesEaxEcxEdx12 {
     AngleTurn32 elevationAngle; // EDX elevation/pitch
 };
 
-struct AiWorkspace09AnchorEcxEdxCf9 {
+struct AiAnchorResult {
     Q12 worldXQ12; // ECX selected anchor X
     Q12 worldYQ12; // EDX selected anchor Y
-    bool carry; // CF not-found status
+    bool notFound; // CF not-found status
 };
 
-struct FieldGridSurfacePointEaxEcxEdxCf13 {
+struct SurfacePointResult {
     Q12 worldXQ12; // EAX surface-point X
     Q12 worldYQ12; // ECX surface-point Y
     Q12 worldZQ12; // EDX top-surface Z
-    bool carry; // CF status
+    bool outOfBounds; // CF status
 };
 
-struct ModelLookupPayloadEaxEcxEdxCf13 {
-    uint32_t payloadEax; // EAX entry payload +4
-    uint32_t payloadEcx; // ECX entry payload +8
-    uint32_t payloadEdx; // EDX entry payload +12
-    bool carry; // CF status
+struct ModelLookupPayloadResult {
+    uint32_t payload4; // EAX entry payload +4
+    uint32_t payload8; // ECX entry payload +8
+    uint32_t payload12; // EDX entry payload +12
+    bool notFound; // CF status
 };
 
-struct PackageEntryEaxCf5 {
+struct PackageMountEntryResult {
     struct PckEntryHeader *entry; // EAX package entry header
-    bool carry; // CF found/status
+    bool notFound; // CF found/status
 };
 
-struct SpriteRegisterRelocateEaxCf5 {
+struct SpriteRegisterResult {
     struct SpriteAssetHeader *assetOrError; // EAX relocated asset pointer or error-coded value
-    bool carry; // CF validation status
+    bool failed; // CF validation status
 };
 
-struct ArmyPlacementDispatchEaxCf5 {
-    uint32_t eax; // EAX placement result
-    bool carry; // CF status
+struct PlacementDispatchResult {
+    uint32_t value; // EAX placement result
+    bool failed; // CF status
 };
 
 struct ArmyRuntimeOrderHandlerMatrix11x24 {
@@ -11091,25 +11091,25 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     bool (*placementValidationCf[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView200 *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
-    ArmyPlacementDispatchEaxCf5 (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
+    PlacementDispatchResult (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
     void (*classCommand[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
 };
 
-struct PackageLoadEntryEaxCf5 {
+struct PackageLoadResult {
     void *bufferOrError; // EAX loaded buffer or error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct ModelDefinitionLookupEaxCf5 {
+struct ModelDefinitionResult {
     struct ModelDefinitionRecordPrefix *modelDefinition; // EAX model definition or error-coded value
-    bool carry; // CF status
+    bool notFound; // CF status
 };
 
-struct ModelNodeCreateEaxCf5 {
+struct ModelNodeCreateResult {
     struct ModelRuntimeNode *modelNode; // EAX created model runtime node
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
 struct FixedEulerAnglesEaxEbxEdx12 {
@@ -11118,29 +11118,29 @@ struct FixedEulerAnglesEaxEbxEdx12 {
     AngleTurn32 angle2; // EDX composed Euler angle 2
 };
 
-struct TerrainDistanceEaxCf5 {
+struct TerrainRayTriangleResult {
     Q12 distanceQ12; // EAX intersection distance
-    bool carry; // CF status
+    bool missed; // CF status
 };
 
-struct DynDllLoadEaxCf5 {
+struct DllLoadResult {
     HINSTANCE moduleOrError; // EAX module handle or error-coded value
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct GraphicsProjectedBlockEaxCf5 {
+struct ProjectedBlockReserveResult {
     void *firstBlock; // EAX first reserved projected-point block
-    bool carry; // CF capacity status
+    bool poolFull; // CF capacity status
 };
-struct FileSystemEnumerationEaxEcxCf9 {
+struct DirectoryEnumerationResult {
     uint32_t recordSizeBytes; /* EAX physical enumeration record size; current backend returns 0x200. */
     uint32_t entryCount;      /* ECX number of output records produced. */
-    bool carry;            /* CF enumeration status; current Win32 backend clears CF on every return. */
+    bool failed;            /* CF enumeration status; current Win32 backend clears CF on every return. */
 };
-struct UiRuntimeRecordRingDiscardEaxEdxCf9 {
-    uint32_t eaxPayloadOrReadIndex; /* EAX: packet-buffer pointer on CF=0; ring read index on CF=1. */
-    uint32_t edxEndpointOrReadIndex; /* EDX: endpoint pointer on CF=0; same ring read index on CF=1. */
-    bool carryEmpty;             /* CF=1 when empty; CF=0 when one record was removed. */
+struct RecordRingDiscardResult {
+    uint32_t payloadOrReadIndex; /* EAX: packet-buffer pointer on CF=0; ring read index on CF=1. */
+    uint32_t endpointOrReadIndex; /* EDX: endpoint pointer on CF=0; same ring read index on CF=1. */
+    bool empty;             /* CF=1 when empty; CF=0 when one record was removed. */
 };
 struct AiSecondaryWorkspaceDistanceSelectionRegs8 {
     AiCandidateScore32 score;
@@ -11159,10 +11159,10 @@ struct AiWorkspace05DistanceSelectionRegs8 {
     AiCandidateScore32 score;
     struct AiScoredSiteWorkspaceEntry *selectedEntry;
 };
-struct ArenaLargestAllocationEaxEcxCf9 {
+struct ArenaLargestAllocResult {
     uint32_t allocationOrError;    /* EAX: allocation pointer on success; arena error code on failure. */
     uint32_t blockSizeOrSentinel;  /* ECX: selected block size on success; failure sentinel otherwise. */
-    bool carry;                 /* CF: clear on success, set on failure. */
+    bool failed;                 /* CF: clear on success, set on failure. */
 };
 struct GridPathUnreachableRecursiveEdiEdx8 {
     uint32_t bestCellByteOffset; /* EDI in/out: byte offset from g_GridScratchBase. */
@@ -11173,23 +11173,23 @@ struct AiStrategicClassSelectionRegs8 {
     RuntimeToken selectedRuntimeToken;
 };
 
-struct ArenaShrinkEaxCf5 {
+struct ArenaShrinkResult {
     uint32_t scratchOrError; // Physical ABI component EAX; arithmetic/free-block scratch on success, engine error on failure
-    bool carry; // Physical ABI component CF; clear=success, set=failure
+    bool failed; // Physical ABI component CF; clear=success, set=failure
 };
 
 struct MemoryApiTable {
-    ArenaAllocEaxCf5 (*alloc)(uint32_t); // 0x005864A0
-    ArenaFreeEaxCf5 (*free)(void *); // 0x005865B0
-    ArenaLargestAllocationEaxEcxCf9 (*allocLargestFreeBlock)(void); // 0x00586640
-    ArenaShrinkEaxCf5 (*shrinkInPlace)(uint32_t, void *); // 0x005866B0; arguments are (newSize, memory). Status is returned through CF; EAX is only meaningful on failure.
+    ArenaAllocResult (*alloc)(uint32_t); // 0x005864A0
+    ArenaFreeResult (*free)(void *); // 0x005865B0
+    ArenaLargestAllocResult (*allocLargestFreeBlock)(void); // 0x00586640
+    ArenaShrinkResult (*shrinkInPlace)(uint32_t, void *); // 0x005866B0; arguments are (newSize, memory). Status is returned through CF; EAX is only meaningful on failure.
     uint32_t (*queryFreeBytes)(void); // 0x00586570
-    ArenaLinearReserveEaxCf5 (*reserveLinear)(uint32_t); // 0x00586750; returns the previous linear cursor in EAX.
+    ArenaReserveResult (*reserveLinear)(uint32_t); // 0x00586750; returns the previous linear cursor in EAX.
 };
 
-struct Direct3DRenderStateApplyEaxCf5 {
+struct RenderStateApplyResult {
     uint32_t appliedValueOrError; // EAX: requested state value on success; error 0x1d on failure.
-    bool carry; // CF: clear on success, set on failure.
+    bool failed; // CF: clear on success, set on failure.
 };
 
 struct DriveLetterEnumerationEaxEcx8 {
@@ -11197,15 +11197,15 @@ struct DriveLetterEnumerationEaxEcx8 {
     uint32_t driveCountMirror; // ECX mirrored drive count
 };
 
-struct FileBufferEaxCf5 {
+struct FileLoadResult {
     void *bufferOrError; // EAX: allocated whole-file buffer on success, live error-coded value on failure.
-    bool carry; // CF: clear on success, set on failure.
+    bool failed; // CF: clear on success, set on failure.
 };
 
-struct FileSystemStringTableEaxEcxCf9 {
+struct EnumerationStringTableResult {
     uint32_t tableOrError; // EAX: packed pointer/string-table allocation on success; engine error/scratch value on failure.
     uint32_t entryCountOrScratch; // ECX: entry count on success; live backend/cleanup scratch on failure.
-    bool carry; // CF: clear on success, set on failure.
+    bool failed; // CF: clear on success, set on failure.
 };
 
 struct FrontendCreditsUiStateView {
@@ -11239,9 +11239,9 @@ struct GraphicsProjectedPointPair {
     GraphicsPrimitiveBackendCoordinate projectedY; // EDX: second projected component.
 };
 
-struct GraphicsShadingRuntimeRecordEaxCf5 {
+struct ShadingRecordResult {
     struct GraphicsShadingRuntimeRecord *record; // EAX success value; null on failure
-    bool carry; // CF status: clear success, set failure
+    bool failed; // CF status: clear success, set failure
 };
 
 struct GraphicsTextureSourceHeaderViewBC {
@@ -11263,25 +11263,25 @@ struct ModelProjectedBoundsPixels {
     UiPixelCoordinate maxY; // Maximum projected pixel Y.
 };
 
-struct MovieFrameProviderEaxCf5 {
+struct FrameProviderResult {
     void *frameOrError; // EAX frame pointer on CF-clear; error-coded value on CF-set
-    bool carry; // CF status
+    bool noFrame; // CF status
 };
 
-struct PcxDecodeEaxCf5 {
+struct PcxDecodeResult {
     void *decodedImageOrError; // EAX decoded image or error
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct PcxEncodeEaxEcxCf9 {
+struct PcxEncodeResult {
     void *encodedBytesOrError; // EAX encoded allocation or error
     uint32_t encodedByteCount; // ECX encoded byte count
-    bool carry; // CF status
+    bool failed; // CF status
 };
 
-struct RichTextStringAssetEaxCf5 {
+struct RichTextAssetResult {
     void *assetOrError; // EAX: allocated rich-text string asset on success; live error-coded value on failure.
-    bool carry; // CF: clear on success, set on failure.
+    bool failed; // CF: clear on success, set on failure.
 };
 
 struct RuntimeModelFactionPrefix10 {
@@ -11317,15 +11317,15 @@ struct TriangleBarycentricWeightsQ12 {
     Q12 weightVertexA_Q12; // EDX: interpolation weight applied to vertex A relative to vertex C.
 };
 
-struct UiSelectableGroupIndexEcxCf5 {
+struct SelectableGroupIndexResult {
     uint32_t selectedIndexOrCount;
-    bool carryNoneSelected;
+    bool noneSelected;
 };
 
-struct UiSelectableNodeEaxEcxCf9 {
+struct SelectableGroupNodeResult {
     struct UiNodeBase *node;
     UiControlCount controlIndexOrCount;
-    bool carry;
+    bool noneSelected;
 };
 
 struct UiSelectionGeometryControl {
@@ -11341,10 +11341,10 @@ struct UiSelectionGeometryControl {
     Q12 selectedSourceXQ12; // Pointer position transformed into source-space X before action dispatch.
 };
 
-struct UiTimedListDirectoryHierarchyEaxEdxCf9 {
+struct DirectoryHierarchyResult {
     struct UiTimedListTreeRecord16 *rootRecordBlockOrError; // EAX: root timed-list record block on success; live error-coded value on failure.
     struct UiTimedListTreeRecord16 *selectedRecordOrNull; // EDX: record matching the requested path on success; null on failure.
-    bool carry; // CF: clear on success, set on failure.
+    bool failed; // CF: clear on success, set on failure.
 };
 
 union RomSerializedNodeReferenceOrSavedOffset4 {
@@ -11621,9 +11621,9 @@ struct FixedTriangleJointAnglesEaxEdx8 {
     AngleTurn32 jointAngle1; // EDX second/combined triangle joint angle
 };
 
-struct ShotModeRangeLimitEbxCf5 {
+struct ShotRangeLimitResult {
     Q12 rangeLimitQ12; // EBX mode-dependent shot range/launch-speed limit; 0x7fffffff sentinel when unrestricted
-    bool carry; // CF is machine-clear on all verified returns; included to match physical convention storage
+    bool failed; // CF is machine-clear on all verified returns; included to match physical convention storage
 };
 
 struct SelectionPanelAdvanceEaxEdx8 {
@@ -12650,10 +12650,10 @@ union ModelRaycastNearestNodeOrScratch4 {
     int scratchSigned; // EDX arithmetic/scratch carrier when CF is clear or before success assignment
 };
 
-struct ModelRaycastNearestHitEaxEdxCf9 {
+struct ModelRaycastResult {
     Q12 nearestDistanceQ12; // EAX nearest hit distance
-    union ModelRaycastNearestNodeOrScratch4 edxCarrier; // EDX: nearestModelNode only when CF is set; otherwise arithmetic/scratch carrier
-    bool carry; // CF hit/status
+    union ModelRaycastNearestNodeOrScratch4 nearestNodeOrScratch; // EDX: nearestModelNode only when CF is set; otherwise arithmetic/scratch carrier
+    bool hit; // CF hit/status
 };
 
 struct WorldPositionXYEaxEdx8 {
@@ -12666,9 +12666,9 @@ struct FixedLengthAngleEaxEdx8 {
     AngleTurn32 angle; // Physical EDX result: masked low-16 angle from FixedMath_Atan2Angle16.
 };
 
-struct TerrainPlacementTestEaxCf5 {
-    int eax; // Physical callback result in EAX; callers use it only on machine-proven paths.
-    bool carry; // Physical callback status in CF.
+struct TerrainPlacementResult {
+    int value; // Physical callback result in EAX; callers use it only on machine-proven paths.
+    bool rejected; // Physical callback status in CF.
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
@@ -12678,9 +12678,9 @@ struct TerrainClassPlacementAndOverlayCallbackTable10 {
 
 
 typedef uint32_t NetworkSocketHandle32;
-struct GraphicsTextureSourceAssetEaxCf5 {
+struct TextureSourceDecomposeResult {
     struct GraphicsTextureSourceAsset *assetOrError;
-    bool carry;
+    bool failed;
 };
 struct TerrainProjectedRowSpan {
     int firstColumn;

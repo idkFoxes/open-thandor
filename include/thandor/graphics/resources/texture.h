@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0057E970 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x0057AD30 */
@@ -26,7 +26,7 @@ GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
 GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
 
 /* 0x00485E40 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x00485E80 */
@@ -40,7 +40,7 @@ GraphicsTextureSet_RefreshNoOp(GraphicsSubresourceIndex subresourceIndex,Graphic
 void __cdecl GraphicsTexture_RebuildNoOp(void);
 
 /* 0x004A9270 */
-GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TextureSizeResult __thandor_eax_edx_cf_preserve_ecx
 GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset);
 
@@ -92,14 +92,14 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           SoftwareFramebufferAccess *framebuffer);
 
 /* 0x004AD630 */
-GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSourceLoadResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16);
 
 /* 0x004AD670 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD6C0 */
-GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *sourceAsset);
 
 /* 0x004AD770 */
@@ -115,7 +115,7 @@ GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx
 GraphicsTextureSource_ResolveAllocationBase(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x004AD7C0 */
-GraphicsTextureSizeEaxEdxCf9
+TextureSizeResult
 GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x0057ADA0 */
@@ -155,7 +155,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture);
 
 /* 0x00485EA0 */
-GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset);
 
 /* 0x00485F90 */
@@ -182,7 +182,7 @@ GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
 
 
 /* 0x004AC8E0 */
-GraphicsTextureSourceAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSource_DecomposeSubresourceRegionsCf
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset);
 

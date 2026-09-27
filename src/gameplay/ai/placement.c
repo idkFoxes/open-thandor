@@ -31,7 +31,7 @@ AiPlacement_ReserveAdditionalSpecialSite
   uint32_t placementCount;
   uint32_t normalAnglesOrQuantum;
   bool chainFailed;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  PlacementDispatchResult dispatchResult;
   
   knowledgeData = g_AiKnowledgeData;
   normalAnglesOrQuantum = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
@@ -39,12 +39,12 @@ AiPlacement_ReserveAdditionalSpecialSite
                     (7,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,normalAnglesOrQuantum,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
                      (UiRootNode *)worldRuntime);
-  placementCount = dispatchResult.eax;
-  if ((!dispatchResult.carry) && (placementCount != 0)) {
+  placementCount = dispatchResult.value;
+  if ((!dispatchResult.failed) && (placementCount != 0)) {
     dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                       (4,0,normalAnglesOrQuantum,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                        factionIndex,(UiRootNode *)worldRuntime);
-    if ((dispatchResult.carry) &&
+    if ((dispatchResult.failed) &&
        (normalAnglesOrQuantum = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
        ((placementCount - 1) + normalAnglesOrQuantum) / normalAnglesOrQuantum < 5)) {
       chainFailed = AiPlacement_ReserveSeparatedSpecialSiteChain
@@ -73,7 +73,7 @@ AiCandidatePlanning_AddSpecialSiteCandidate
 
 {
   bool hasEntry;
-  AiCandidateScoreEaxCf5 weightResult;
+  SiteWeightResult weightResult;
   
   hasEntry = AiSecondaryWorkspace_HasEntryByIdCf(ARM_0050_UNIT_MDL0103);
   if (!hasEntry) {
@@ -84,13 +84,13 @@ AiCandidatePlanning_AddSpecialSiteCandidate
         if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 0x800) == 0
            ) {
           weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          if (!weightResult.carry) {
+          if (!weightResult.noSite) {
             AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0xb,weightResult.score,2);
           }
         }
         else {
           weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-          if (!weightResult.carry) {
+          if (!weightResult.noSite) {
             AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x32,weightResult.score,0);
           }
         }
@@ -98,7 +98,7 @@ AiCandidatePlanning_AddSpecialSiteCandidate
     }
     else {
       weightResult = AiCandidatePlanning_ComputeSpecialSiteWeight(factionIndex,worldRuntime);
-      if (!weightResult.carry) {
+      if (!weightResult.noSite) {
         AiCandidateWorkspace_AddOrAccumulateWeightedEntry(0x12d,weightResult.score,0);
       }
     }
@@ -286,7 +286,7 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
   int entityOrDeltaY;
   PckArmyAssetIdCatalog featureAssetId;
   AiWorkspace00EntryView8 *workspace00Entry;
-  ModelLookupEntryEaxCf5 markerLookup;
+  ModelLookupEntryResult markerLookup;
   ModelLocalPointRegs12 markerPoint;
   int nearestDistanceOrPriority;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
@@ -305,7 +305,7 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
        (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1], *(int *)(*runtimeSlot + 0x4c) == 0xd)) {
       markerLookup = ModelLookupTable_ContainsPackedKeyCf
                          (1,5,(modelNodeRuntime->modelPayload).modelResource);
-      if (!markerLookup.carry) {
+      if (!markerLookup.notFound) {
         markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerLookup.entry,modelNodeRuntime);
         markerDistance = FixedMath_Length2(markerPoint.ecx - terrainFeatureCell->worldY,
                                   markerPoint.eax - terrainFeatureCell->worldX);
@@ -428,13 +428,13 @@ AiPlacement_TestWorkspaceRecordAtPoint
           ArmyPlacementContext placementContext,UiRootNode *inGameRoot)
 
 {
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  PlacementDispatchResult dispatchResult;
   
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                     (0,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,placementContext,
                      inGameRoot);
-  return dispatchResult.carry;
+  return dispatchResult.failed;
 }
 
 
@@ -452,13 +452,13 @@ AiPlacement_TestMode4AtWorkspaceRecord
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  PlacementDispatchResult dispatchResult;
   
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                     (4,0,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
                      (UiRootNode *)worldRuntime);
-  return dispatchResult.carry;
+  return dispatchResult.failed;
 }
 
 
@@ -472,7 +472,7 @@ AiPlacement_TestMode4AtWorkspaceRecord
    unchanged.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 AiPlacement_QueryReachableSiteBucketCount
           (PckArmyAssetIdCatalog armyAssetId,FieldGridCell *workspaceRecord,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -481,9 +481,9 @@ AiPlacement_QueryReachableSiteBucketCount
   AiKnowledgeDataImage *knowledgeData;
   uint32_t placementCount;
   uint32_t normalAnglesOrBucketCount;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
-  StatusValueEaxCf5 countResult;
-  StatusValueEaxCf5 failureResult;
+  PlacementDispatchResult dispatchResult;
+  StatusResult countResult;
+  StatusResult failureResult;
   
   knowledgeData = g_AiKnowledgeData;
   normalAnglesOrBucketCount = (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles;
@@ -491,14 +491,14 @@ AiPlacement_QueryReachableSiteBucketCount
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,normalAnglesOrBucketCount,
                      workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,factionIndex,
                      (UiRootNode *)worldRuntime);
-  placementCount = dispatchResult.eax;
-  if (dispatchResult.carry) {
+  placementCount = dispatchResult.value;
+  if (dispatchResult.failed) {
     dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                       (0,0,normalAnglesOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                        factionIndex,(UiRootNode *)worldRuntime);
-    if (dispatchResult.carry) {
-      failureResult.valueOrError = dispatchResult.eax;
-      failureResult.carry = dispatchResult.carry;
+    if (dispatchResult.failed) {
+      failureResult.valueOrError = dispatchResult.value;
+      failureResult.failed = dispatchResult.failed;
       return failureResult;
     }
     normalAnglesOrBucketCount = 0;
@@ -506,7 +506,7 @@ AiPlacement_QueryReachableSiteBucketCount
   else if ((placementCount != 0) &&
           (dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                              (0,0,normalAnglesOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
-                              factionIndex,(UiRootNode *)worldRuntime), dispatchResult.carry)) {
+                              factionIndex,(UiRootNode *)worldRuntime), dispatchResult.failed)) {
     /* Round the placement count up to whole separation quanta. */
     normalAnglesOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
     normalAnglesOrBucketCount = ((placementCount - 1) + normalAnglesOrBucketCount) / normalAnglesOrBucketCount;
@@ -514,7 +514,7 @@ AiPlacement_QueryReachableSiteBucketCount
   else {
     normalAnglesOrBucketCount = 0;
   }
-  countResult.carry = false;
+  countResult.failed = false;
   countResult.valueOrError = normalAnglesOrBucketCount;
   return countResult;
 }
@@ -540,16 +540,16 @@ AiPlacement_ReserveMode3SiteCluster
   AiKnowledgeDataImage *knowledgeData;
   uint32_t quantumOrBucketCount;
   bool chainFailed;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  PlacementDispatchResult dispatchResult;
   
   knowledgeData = g_AiKnowledgeData;
   dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                     (3,(g_AiKnowledgeData->parameters).placementClearancePaddingQ12,
                      (uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,workspaceRecord->worldY,
                      workspaceRecord->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-  if ((dispatchResult.carry) ||
+  if ((dispatchResult.failed) ||
      (quantumOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12,
-     quantumOrBucketCount = ((dispatchResult.eax - 1) + quantumOrBucketCount) / quantumOrBucketCount, quantumOrBucketCount == 0)) {
+     quantumOrBucketCount = ((dispatchResult.value - 1) + quantumOrBucketCount) / quantumOrBucketCount, quantumOrBucketCount == 0)) {
     return true;
   }
   if ((quantumOrBucketCount < 5) &&
@@ -571,7 +571,7 @@ AiPlacement_ReserveMode3SiteCluster
    AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
    AiPrimaryWorkspace_CountAssignedEntriesById [gameplay/ai/workspaces].
 */
-AiCandidateScoreEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SiteWeightResult __thandor_eax_cf_preserve_ecx_edx
 AiCandidatePlanning_ComputeSpecialSiteWeight
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
@@ -582,7 +582,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
   uint32_t weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;
   bool clusterRejected;
-  AiCandidateScoreEaxCf5 weightResult;
+  SiteWeightResult weightResult;
   AiKnowledgeDataImage *knowledgeData;
 
   knowledgeData = g_AiKnowledgeData;
@@ -592,7 +592,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
     if (countOrTritium == 0) {
       /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
          clear. */
-      weightResult.carry = true;
+      weightResult.noSite = true;
       weightResult.score = 0;
       return weightResult;
     }
@@ -625,7 +625,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
                                suppliedEnergyDemandQ4)) / (int64_t)countOrTritium);
     }
   }
-  weightResult.carry = false;
+  weightResult.noSite = false;
   weightResult.score = weight;
   return weightResult;
 }
@@ -640,7 +640,7 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
    flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
-AiWorkspace09AnchorEcxEdxCf9 __thandor_preserve_eax
+AiAnchorResult __thandor_preserve_eax
 AiPlacement_FindNearestValidWorkspace09Anchor
           (Q12 referenceWorldXQ12,Q12 referenceWorldYQ12,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
@@ -652,8 +652,8 @@ AiPlacement_FindNearestValidWorkspace09Anchor
   int deltaY;
   uint32_t bestDistance;
   FieldGridCell **gridCellCursor;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
-  AiWorkspace09AnchorEcxEdxCf9 anchorResult;
+  PlacementDispatchResult dispatchResult;
+  AiAnchorResult anchorResult;
   FieldGridCell *bestCell;
   FieldGridCell *candidateCell;
 
@@ -679,7 +679,7 @@ AiPlacement_FindNearestValidWorkspace09Anchor
         dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                           (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                            candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-        if (!dispatchResult.carry) {
+        if (!dispatchResult.failed) {
           bestDistance = candidateDistance;
           bestCell = candidateCell;
         }
@@ -690,11 +690,11 @@ AiPlacement_FindNearestValidWorkspace09Anchor
     if ((int)bestDistance < 0x7fffffff) {
       anchorResult.worldXQ12 = bestCell->worldX;
       anchorResult.worldYQ12 = bestCell->worldY;
-      anchorResult.carry = false;
+      anchorResult.notFound = false;
       return anchorResult;
     }
   }
-  anchorResult.carry = true;
+  anchorResult.notFound = true;
   anchorResult.worldXQ12 = 0;
   anchorResult.worldYQ12 = (Q12)candidateDistance;
   return anchorResult;
@@ -723,11 +723,11 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
   int deltaX;
   Q12 worldXQ12;
   int deltaY;
-  ArmyRuntimeCreateEaxCf5 firstInstance;
-  ArmyRuntimeCreateEaxCf5 secondInstance;
-  ArmyRuntimeCreateEaxCf5 thirdInstance;
-  ArmyRuntimeCreateEaxCf5 fourthInstance;
-  AiWorkspace09AnchorEcxEdxCf9 anchor;
+  ArmyRuntimeCreateResult firstInstance;
+  ArmyRuntimeCreateResult secondInstance;
+  ArmyRuntimeCreateResult thirdInstance;
+  ArmyRuntimeCreateResult fourthInstance;
+  AiAnchorResult anchor;
   AiKnowledgeDataImage *knowledgeData;
   
   knowledgeData = g_AiKnowledgeData;
@@ -736,12 +736,12 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
                      factionIndex,worldRuntime);
   worldXQ12 = anchor.worldYQ12;
   worldYQ12 = anchor.worldXQ12;
-  if (anchor.carry) {
+  if (anchor.notFound) {
     return true;
   }
   firstInstance = ArmyRuntime_CreateInstanceFromAssetCf
                     (1,0,worldXQ12,worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
-  if (firstInstance.carry) {
+  if (firstInstance.failed) {
     return true;
   }
   deltaX = worldYQ12 - workspaceRecord->worldX;
@@ -757,11 +757,11 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
   anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
-  if (anchor.carry) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  if (anchor.notFound) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
   secondInstance = ArmyRuntime_CreateInstanceFromAssetCf
                     (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
                      worldRuntime);
-  if (secondInstance.carry) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
+  if (secondInstance.failed) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
   deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
   if (deltaX < 0) {
     deltaX = -deltaX;
@@ -774,11 +774,11 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
     anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                       (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                        factionIndex,worldRuntime);
-    if (!anchor.carry) {
+    if (!anchor.notFound) {
       thirdInstance = ArmyRuntime_CreateInstanceFromAssetCf
                         (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
                          worldRuntime);
-      if (!thirdInstance.carry) {
+      if (!thirdInstance.failed) {
         deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
         if (deltaX < 0) {
           deltaX = -deltaX;
@@ -789,17 +789,17 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
         }
         if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12) {
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear:
-          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.eax);
+          ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
           goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear;
         }
         anchor = AiPlacement_FindNearestValidWorkspace09Anchor
                           (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
                            ,factionIndex,worldRuntime);
-        if (!anchor.carry) {
+        if (!anchor.notFound) {
           fourthInstance = ArmyRuntime_CreateInstanceFromAssetCf
                             (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,
                              ARM_0333_BUILDING_MDL0307,worldRuntime);
-          if (!fourthInstance.carry) {
+          if (!fourthInstance.failed) {
             deltaX = anchor.worldXQ12 - workspaceRecord->worldX;
             if (deltaX < 0) {
               deltaX = -deltaX;
@@ -810,26 +810,26 @@ AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCar
             }
             if ((uint32_t)(deltaX + deltaY) < (knowledgeData->parameters).specialSiteSeparationQuantumQ12)
             {
-              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.eax);
+              ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
               goto 
               AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCarryClear
               ;
             }
-            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.eax);
+            ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)fourthInstance.armyRuntimeOrError);
           }
         }
-        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.eax);
+        ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)thirdInstance.armyRuntimeOrError);
       }
     }
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.eax);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet:
-    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.eax);
+    ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
     return true;
   }
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroySecondFirstAndReturnCarryClear:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.eax);
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)secondInstance.armyRuntimeOrError);
 AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarryClear:
-  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.eax);
+  ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,(GameEntityRuntime *)firstInstance.armyRuntimeOrError);
   return false;
 }
 

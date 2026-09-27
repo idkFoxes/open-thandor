@@ -24,15 +24,15 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context);
 
 /* 0x0057A450 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
 
 /* 0x0057A4C0 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
 
 /* 0x0057A550 */
-Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RenderStateApplyResult __thandor_eax_cf_preserve_ecx_edx
 Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
 
 /* 0x0057CCB0 */

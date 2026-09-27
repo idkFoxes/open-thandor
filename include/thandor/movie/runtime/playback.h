@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004A8040 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Movie_EncodeFlmBufferFromFrameProviderCf
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderCfProc *frameProvider);
@@ -24,7 +24,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
 void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void);
 
 /* 0x004A8590 */
-MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path);
+MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path);
 
 /* 0x004A8A20 */
 MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDimensions(void);
@@ -65,7 +65,7 @@ Movie_EncodeFrame4x4Delta
           uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels);
 
 /* 0x004A8A60 */
-MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void);
+MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void);
 
 /* 0x00564080 */
 void __thandor_void_preserve_eax_ecx_edx

@@ -147,12 +147,12 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
   UiNodeBase *control;
   UiNodeBase *walkNode;
   bool passToNext;
-  KeyboardEventEaxEdxCf9 keyboardEvent;
+  KeyboardEventResult keyboardEvent;
 
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
   while( true ) {
     keyboardEvent = (*g_KeyboardReadEvent)();
-    if (keyboardEvent.carry) break;
+    if (keyboardEvent.queueEmpty) break;
     if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) continue;
     keyboardStateMask = keyboardEvent.eventData;
     keyCode = keyboardEvent.eventCode;
@@ -427,7 +427,7 @@ UiRangeSliderControl_UpdateValueFromPointer
   uint32_t pointerOffset;
   int32_t sliderValue;
   uint32_t trackLength;
-  GraphicsTextureSizeEaxEdxCf9 thumbSize;
+  TextureSizeResult thumbSize;
 
   if ((control->sliderFlags & 2) != 0) {
     if ((control->sliderFlags & 1) == 0) {

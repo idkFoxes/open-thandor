@@ -30,7 +30,7 @@ UiRuntime_OpenFourValueDialogCf
           UiPixelCoordinate value3);
 
 /* 0x004AEF00 */
-UiRuntimeRecordRingDiscardEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
 UiRuntimeRecordRing_DiscardOldestCf(void);
 
 /* 0x004AF020 */

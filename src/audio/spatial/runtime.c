@@ -14,17 +14,17 @@
    Ownership: audio/spatial/runtime.
    Purpose: Allocates and zeroes 0x1000 bytes, exactly 256 SpatialSoundSlot records. CF reports allocation failure.
 */
-StatusValueEaxCf5 SpatialSoundPool_Init(void)
+StatusResult SpatialSoundPool_Init(void)
 
 {
   SpatialSoundSlot *spatialSoundStorageCursor;
   int allocationDwordsRemaining;
   bool allocationFailed;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x1000);
-  allocationFailed = allocResult.carry;
-  spatialSoundStorageCursor = (SpatialSoundSlot *)allocResult.eax;
+  allocationFailed = allocResult.failed;
+  spatialSoundStorageCursor = (SpatialSoundSlot *)allocResult.payloadOrError;
   if (!allocationFailed) {
     g_SpatialSoundSlots = spatialSoundStorageCursor;
     for (allocationDwordsRemaining = 0x400; allocationDwordsRemaining != 0;
@@ -34,7 +34,7 @@ StatusValueEaxCf5 SpatialSoundPool_Init(void)
     }
     allocationFailed = false;
   }
-  return allocationFailed ? StatusValue_Fail(allocResult.eax) : StatusValue_Ok(0);
+  return allocationFailed ? StatusValue_Fail(allocResult.payloadOrError) : StatusValue_Ok(0);
 }
 
 
@@ -212,20 +212,20 @@ SpatialSound_UpdateDesiredPositionedGains
    stores the voice set, clears activeVoice and both desired gains, and returns the slot in EAX with CF clear. A
    full pool releases the new voice set and returns error 0x14 with CF set.
 */
-SpatialSoundSlotEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SpatialSoundSlotResult __thandor_eax_cf_preserve_ecx_edx
 SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
 
 {
   SpatialSoundSlot *voiceSetOrError;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
-  SoundCreateSampleVoiceSetEaxCf5 createResult;
-  SpatialSoundSlotEaxCf5 failureResult;
-  SpatialSoundSlotEaxCf5 successResult;
+  SampleVoiceSetResult createResult;
+  SpatialSoundSlotResult failureResult;
+  SpatialSoundSlotResult successResult;
   
   createResult = (*g_SoundCreateSampleVoiceSet)(sampleAsset);
-  voiceSetOrError = (SpatialSoundSlot *)createResult.eax;
-  if (!createResult.carry) {
+  voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
+  if (!createResult.failed) {
     slotsRemaining = 0x100;
     slotCursor = g_SpatialSoundSlots;
     do {
@@ -234,7 +234,7 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
         slotCursor->desiredLeftGainQ15 = 0;
         slotCursor->desiredRightGainQ15 = 0;
         slotCursor->activeVoice = (IDirectSoundBuffer *)0x0;
-        successResult.carry = false;
+        successResult.failed = false;
         successResult.soundSlot = slotCursor;
         return successResult;
       }
@@ -244,7 +244,7 @@ SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset)
     (*g_SoundReleaseSampleVoiceSet)((DirectSoundVoiceSet *)voiceSetOrError);
     voiceSetOrError = (SpatialSoundSlot *)0x14;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.soundSlot = voiceSetOrError;
   return failureResult;
 }
@@ -264,12 +264,12 @@ SpatialSoundSlot_CreateFromPcm
   SpatialSoundSlot *voiceSetOrError;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
-  SoundCreatePcmVoiceSetEaxCf5 createResult;
+  PcmVoiceSetResult createResult;
   
   createResult = (*g_SoundCreatePcmVoiceSet)
                     (bufferByteCount,sampleRateHz,bitsPerSample,channelCount,pcmData);
-  voiceSetOrError = (SpatialSoundSlot *)createResult.eax;
-  if (!createResult.carry) {
+  voiceSetOrError = (SpatialSoundSlot *)createResult.voiceSet;
+  if (!createResult.failed) {
     slotsRemaining = 0x100;
     slotCursor = g_SpatialSoundSlots;
     do {
@@ -371,7 +371,7 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
   IDirectSoundBuffer *activeVoice;
   int slotsRemaining;
   SpatialSoundSlot *slotCursor;
-  SoundPlayVoiceEaxCf5 playResult;
+  SoundPlayResult playResult;
   
   slotsRemaining = 0x100;
   slotCursor = g_SpatialSoundSlots;
@@ -383,7 +383,7 @@ void __thandor_void_preserve_eax_ecx_edx SpatialSoundPool_ApplyDesiredGains(void
           playResult = (*g_SoundPlayLooping)
                             (slotCursor->desiredRightGainQ15,slotCursor->desiredLeftGainQ15,
                              slotCursor->voiceSet);
-          activeVoice = playResult.eax;
+          activeVoice = playResult.soundBuffer;
           slotCursor->activeVoice = activeVoice;
         }
       }

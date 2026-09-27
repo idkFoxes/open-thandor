@@ -60,7 +60,7 @@ Glide3_TextureSet_CreateBackend
   DDPIXELFORMAT *selectedPixelFormat;
   GraphicsTextureResource *texture;
   bool registerFailed;
-  ArenaAllocEaxCf5 textureAlloc;
+  ArenaAllocResult textureAlloc;
   GraphicsTextureSetEntry *entryCursor;
   AssetSubresourceCount remainingSubresources;
   GraphicsSubresourceIndex currentSubresource;
@@ -72,8 +72,8 @@ Glide3_TextureSet_CreateBackend
   do {
     selectedPixelFormat = GraphicsTexture_SelectPixelFormat(currentSubresource,setSourceAsset);
     textureAlloc = (*g_MemoryApi.alloc)(0x50);
-    texture = (GraphicsTextureResource *)textureAlloc.eax;
-    if (!textureAlloc.carry) {
+    texture = (GraphicsTextureResource *)textureAlloc.payloadOrError;
+    if (!textureAlloc.failed) {
       texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
       texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
       texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
@@ -175,10 +175,10 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
   GlideImportBinding *binding;
   void *resolutionCursor;
   GraphicsTextureResource **textureSlotCursor;
-  DynDllLoadEaxCf5 glideDll;
-  DynApiResolveEaxCf5 resolveResult;
-  ArenaAllocEaxCf5 resolutionAlloc;
-  DisplayModeEaxCf5 displayModeResult;
+  DllLoadResult glideDll;
+  DynApiResolveResult resolveResult;
+  ArenaAllocResult resolutionAlloc;
+  DisplayModeResult displayModeResult;
   uint32_t *tmuCountOutput;
   uint32_t resolutionQueryCode;
   
@@ -190,12 +190,12 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
        (resolutionQueryCode = 0xd, resolutionKeyOrBestHz == 0x4000500)))) ||
      (resolutionQueryCode = 0xe, resolutionKeyOrBestHz == 0x4b00640)) {
     glideDll = DynDLL_Load(dynapi_5);
-    if (!glideDll.carry) {
+    if (!glideDll.failed) {
       g_GlideRuntimeActiveCount = g_GlideRuntimeActiveCount + 1;
       binding = g_GlideImportBindings;
       do {
         resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
-        if (resolveResult.carry) {
+        if (resolveResult.failed) {
           DynDLL_Unload(dynapi_5);
           g_GlideRuntimeActiveCount = 0;
           return true;
@@ -211,8 +211,8 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
       output = (void *)0x19;
       if (0xf < (int)sstIndexOrSizeOrCount) {
         resolutionAlloc = (*g_MemoryApi.alloc)(sstIndexOrSizeOrCount);
-        output = (void *)resolutionAlloc.eax;
-        if (!resolutionAlloc.carry) {
+        output = (void *)resolutionAlloc.payloadOrError;
+        if (!resolutionAlloc.failed) {
           remainingResolutions = sstIndexOrSizeOrCount >> 4;
           (*g_GrQueryResolutions)(&g_GlideSelectedResolutionQuery,output);
           resolutionKeyOrBestHz = 0;
@@ -314,8 +314,8 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
             g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
             g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
             displayModeResult = (*g_GraphicsDisplayModeFinalizeCf)(adapterIndex,bitsPerPixel,height,width);
-            output = (void *)displayModeResult.eax;
-            if (!displayModeResult.carry) {
+            output = (void *)displayModeResult.valueOrError;
+            if (!displayModeResult.failed) {
               slotsRemaining = 0x1000;
               textureSlotCursor = g_GraphicsTextureSlots;
               do {
@@ -363,7 +363,7 @@ Glide3_DrawPrimitiveQueue
   uint8_t coordinateShift;
   uint32_t maxDimensionLog2;
   uint32_t widthLog2OrFlags;
-  GraphicsPrimitivePacketEaxCf5 packetResult;
+  PrimitivePacketResult packetResult;
   
   previousAccessState = g_GraphicsBackendAccessState;
   LOCK();
@@ -371,7 +371,7 @@ Glide3_DrawPrimitiveQueue
   UNLOCK();
   if (previousAccessState == 0) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
-    while (currentPacket = packetResult.packet, !packetResult.carry) {
+    while (currentPacket = packetResult.packet, !packetResult.noPacket) {
       if (currentPacket->vertices[0].screenX < 0x7f0001) {
         if (currentPacket->vertices[0].screenX < -0x7f0000) {
           currentPacket->vertices[0].screenX = -0x7f0000;
@@ -712,7 +712,7 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
 {
   uint8_t *source;
@@ -726,26 +726,26 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
   GlideImportBinding *binding;
   GraphicsAdapterRecord *adapter;
   GraphicsDisplayMode *displayMode;
-  DynDllLoadEaxCf5 glideDll;
-  DynApiResolveEaxCf5 resolveResult;
-  ArenaAllocEaxCf5 resolutionAlloc;
+  DllLoadResult glideDll;
+  DynApiResolveResult resolveResult;
+  ArenaAllocResult resolutionAlloc;
   uint32_t sstIndex;
   int remainingBoards;
-  StatusValueEaxCf5 result;
+  StatusResult result;
   
   glideDll = DynDLL_Load(dynapi_5);
-  if (glideDll.carry) {
+  if (glideDll.failed) {
     result.valueOrError = (uint32_t)glideDll.moduleOrError;
-    result.carry = true;
+    result.failed = true;
     return result;
   }
   binding = g_GlideImportBindings;
   do {
     resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
-    if (resolveResult.carry) {
+    if (resolveResult.failed) {
       DynDLL_Unload(dynapi_5);
       result.valueOrError = (uint32_t)resolveResult.procedureOrError;
-      result.carry = true;
+      result.failed = true;
       return result;
     }
     binding = binding + 1;
@@ -769,8 +769,8 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
       querySizeOrAdapterIndex = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,(void *)0x0);
       if (querySizeOrAdapterIndex != 0) {
         resolutionAlloc = (*g_MemoryApi.alloc)(querySizeOrAdapterIndex);
-        output = (int *)resolutionAlloc.eax;
-        if (!resolutionAlloc.carry) {
+        output = (int *)resolutionAlloc.payloadOrError;
+        if (!resolutionAlloc.failed) {
           remainingResolutions = querySizeOrAdapterIndex >> 4;
           (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,output);
           displayMode = g_GraphicsDisplayModes + g_GraphicsDisplayModeCount;
@@ -831,7 +831,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
   }
   DynDLL_Unload(dynapi_5);
   result.valueOrError = 0;
-  result.carry = false;
+  result.failed = false;
   return result;
 }
 
@@ -937,7 +937,7 @@ Glide3_TextureSet_RefreshAlpha(GraphicsSubresourceIndex subresourceIndex,Graphic
    0x220. sourceEntry uses paletteIndex=-1, dataOffset=0x220, originX=originY=0, and logical/pixel dimensions equal
    to the capture dimensions. ABI: CF clear means success. CF set means failure.
 */
-GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 Glide3_Framebuffer_CaptureRegion
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
@@ -950,16 +950,16 @@ Glide3_Framebuffer_CaptureRegion
   uint16_t *sourcePixelCursor;
   GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *argbCursor;
-  GraphicsFramebufferCaptureEaxCf5 captureResult;
+  FramebufferCaptureResult captureResult;
   uint32_t buffer;
   GraphicsPixelDimension width;
   GraphicsPixelDimension height;
   uint16_t *destinationPixels;
   
   pixelCountOrRemaining = captureWidth * captureHeight;
-  captureResult = THANDOR_BITCAST(ArenaAllocEaxCf5, GraphicsFramebufferCaptureEaxCf5, (*g_MemoryApi.alloc)(pixelCountOrRemaining * 4 + 0x220));
-  capturedAsset = captureResult.eax;
-  if (!captureResult.carry) {
+  captureResult = THANDOR_BITCAST(ArenaAllocResult, FramebufferCaptureResult, (*g_MemoryApi.alloc)(pixelCountOrRemaining * 4 + 0x220));
+  capturedAsset = captureResult.capture;
+  if (!captureResult.failed) {
     destinationPixels = (uint16_t *)((int)capturedAsset->argb8888Pixels + pixelCountOrRemaining * 2);
     strideOrTimestamp = captureWidth * 2;
     clearCursor = capturedAsset;
@@ -1011,7 +1011,7 @@ Glide3_Framebuffer_CaptureRegion
       argbCursor = argbCursor + 1;
       pixelCountOrRemaining = pixelCountOrRemaining + -1;
     } while (pixelCountOrRemaining != 0);
-    captureResult = THANDOR_BITCAST(uint64_t, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(GraphicsFramebufferCaptureEaxCf5, uint64_t, captureResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+    captureResult = THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(FramebufferCaptureResult, uint64_t, captureResult) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   return captureResult;
 }
@@ -4057,8 +4057,8 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   uint32_t globalDownsampleShift;
   uint32_t widthOrLodSize;
   uint32_t heightValue;
-  ArenaAllocEaxCf5 uploadAlloc;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  ArenaAllocResult uploadAlloc;
+  TextureSizeResult logicalSize;
   
   globalDownsampleShift = g_TextureDownsampleShift;
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(texture->subresourceIndex,texture->sourceAsset);
@@ -4102,8 +4102,8 @@ Glide3_TextureResource_Initialize(GraphicsTextureResource *texture)
   uploadAlloc = (*g_MemoryApi.alloc)
                     ((logicalSize.logicalHeightPixels >> ((uint8_t)shift & 0x1f)) *
                      (logicalSize.logicalWidthPixels >> ((uint8_t)shift & 0x1f)) * 2);
-  if (!uploadAlloc.carry) {
-    (texture->glideInfo).data = (void *)uploadAlloc.eax;
+  if (!uploadAlloc.failed) {
+    (texture->glideInfo).data = (void *)uploadAlloc.payloadOrError;
     (*g_GlideTextureColorUpload[shift])(texture);
   }
   return;

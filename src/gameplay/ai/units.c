@@ -420,8 +420,8 @@ AiUnitBehavior_UpdateSpecialClass12Entity
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool chainReserved;
   FixedSinCosEdxEax8 headingOffset;
-  StatusValueEaxCf5 bucketCount;
-  WorldPositionXYEaxEdxCf9 movementUpdate;
+  StatusResult bucketCount;
+  MovementStepResult movementUpdate;
   FieldGridCell *bestCell;
   ModelRuntimeNode *modelNode;
   
@@ -429,7 +429,7 @@ AiUnitBehavior_UpdateSpecialClass12Entity
   sitesRemainingOrX = g_AiWorkspace00Count;
   if (((armyRuntime->movementStateFlags & 0x100) == 0) &&
      (movementUpdate = ArmyRuntime_UpdateMovementAndWaypoints
-                         (worldRuntime,(ArmyMovementRuntime *)armyRuntime), movementUpdate.carry)) {
+                         (worldRuntime,(ArmyMovementRuntime *)armyRuntime), movementUpdate.arrived)) {
     if (sitesRemainingOrX == siteScoreOrY) {
       modelNode = armyRuntime->modelNodeRuntime;
       headingOffset = FixedMath_SinCosScaled((modelNode->modelPayload).worldRotationAngle2,0x2d05);
@@ -456,7 +456,7 @@ AiUnitBehavior_UpdateSpecialClass12Entity
           bucketCount = AiPlacement_QueryReachableSiteBucketCount
                              (terrainFeatureEntry->armyAssetId,workspaceRecord,factionIndex,
                               worldRuntime);
-          if (!bucketCount.carry) {
+          if (!bucketCount.failed) {
             if (bucketCount.valueOrError == 0) {
               return;
             }

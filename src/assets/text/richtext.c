@@ -29,7 +29,7 @@ RichTextCommandStream_MeasureWrappedBlockRegs
   uint32_t colorPaletteIndex;
   int totalHeight;
   RichTextExtentRegs blockExtent;
-  RichTextLineAdvanceEaxCf5 lineResult;
+  WrappedLineResult lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> 0x10 & 7;
@@ -41,7 +41,7 @@ RichTextCommandStream_MeasureWrappedBlockRegs
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
     lineResult = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
-    if (lineResult.carry) break;
+    if (lineResult.endOfText) break;
     totalHeight = totalHeight + lineResult.lineAdvancePixels;
   }
   blockExtent.heightPixels = totalHeight + lineResult.lineAdvancePixels;
@@ -67,7 +67,7 @@ RichTextCommandStream_DrawWrappedBlockCf
 
 {
   uint32_t colorPaletteIndex;
-  RichTextLineAdvanceEaxCf5 lineResult;
+  WrappedLineResult lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
   colorPaletteIndex = packedStyle >> 0x10 & 7;
@@ -79,7 +79,7 @@ RichTextCommandStream_DrawWrappedBlockCf
   while( true ) {
     lineResult = RichTextCommandStream_DrawNextWrappedLineCf
                       (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX);
-    if (lineResult.carry) break;
+    if (lineResult.endOfText) break;
     drawY = drawY + lineResult.lineAdvancePixels;
   }
   return;
@@ -111,7 +111,7 @@ RichTextCommandStream_DrawSingleLine
   uint32_t imageWidth;
   uint16_t *commandCursor;
   RichTextExtentRegs lineExtent;
-  GraphicsTextureSizeEaxEdxCf9 imageSize;
+  TextureSizeResult imageSize;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
@@ -571,15 +571,15 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBi
    Typed parameters: p1 param_2→RichTextCommandOrdinal_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
 
 {
   uint16_t commandCodeUnit;
   int remainingCount;
   uint32_t *commandCursor;
-  StatusValueEaxCf5 foundResult;
-  StatusValueEaxCf5 endResult;
+  StatusResult foundResult;
+  StatusResult endResult;
   
   remainingCount = commandOrdinal + 1;
   do {
@@ -588,7 +588,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
       commandCodeUnit = (uint16_t)*commandCursor;
       if (commandCodeUnit == 0) {
         endResult.valueOrError = 0;
-        endResult.carry = true;
+        endResult.failed = true;
         return endResult;
       }
       commandStream = (uint16_t *)((int)commandCursor + 2);
@@ -604,7 +604,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
       commandStream = (uint16_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
         foundResult.valueOrError = *commandCursor & 3;
-        foundResult.carry = false;
+        foundResult.failed = false;
         return foundResult;
       }
       break;
@@ -624,7 +624,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
    Typed parameters: p0 capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_CopyToNarrowCf
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
@@ -634,8 +634,8 @@ RichTextCommandStream_CopyToNarrowCf
   uint16_t *commandCursor;
   uint16_t *streamCursor;
   bool newlineCapacityUnderflow;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 errorResult;
+  StatusResult successResult;
+  StatusResult errorResult;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   uint16_t commandOrCodeUnit;
@@ -709,12 +709,12 @@ RichTextCommandStream_CopyToNarrowCf
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
     successResult.valueOrError = capacityBytes - (remainingCapacityBytes - 1);
-    successResult.carry = false;
+    successResult.failed = false;
     return successResult;
   }
 RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
   destination[-1] = 0;
-  errorResult.carry = true;
+  errorResult.failed = true;
   errorResult.valueOrError = 0x14;
   return errorResult;
 }
@@ -728,7 +728,7 @@ RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
    Typed parameters: p0 param_1→RichTextMarkupCapacityCodeUnits_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-RichTextStringAssetEaxCf5 __thandor_eax_cf_preserve_edx
+RichTextAssetResult __thandor_eax_cf_preserve_edx
 RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
 
 {
@@ -757,11 +757,11 @@ RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
   int *assetWriteCursor;
   bool capacityUnderflow;
   bool insideTagOrUnderflow;
-  RichTextStringAssetEaxCf5 errorMessageResult;
-  RichTextStringAssetEaxCf5 capacityErrorResult;
-  ArenaShrinkEaxCf5 shrinkResult;
-  RichTextStringAssetEaxCf5 stringAsset;
-  ArenaLargestAllocationEaxEcxCf9 largestBlock;
+  RichTextAssetResult errorMessageResult;
+  RichTextAssetResult capacityErrorResult;
+  ArenaShrinkResult shrinkResult;
+  RichTextAssetResult stringAsset;
+  ArenaLargestAllocResult largestBlock;
   WideNumberFormatFlags aWStackY_44 [2];
   uint32_t dStackY_3c;
   int assetGroupCount;
@@ -770,7 +770,7 @@ RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
   largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
   remainingCapacityBytes = largestBlock.blockSizeOrSentinel;
   memory = (wchar_t *)largestBlock.allocationOrError;
-  if (!largestBlock.carry) {
+  if (!largestBlock.failed) {
     codeUnitBias = 0;
     tagCount = 0;
     markupCursor = markupBytes;
@@ -868,10 +868,10 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
           tagCount = tagCount + 1;
           dStackY_3c = 0x41c70a;
           shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)outputCursor - (int)memory,memory);
-          if (!shrinkResult.carry) {
+          if (!shrinkResult.failed) {
             largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
             stringAsset.assetOrError = (int *)largestBlock.allocationOrError;
-            if (!largestBlock.carry) {
+            if (!largestBlock.failed) {
               remainingCapacityBytes = largestBlock.blockSizeOrSentinel - 0x200;
               if (0x1ff < largestBlock.blockSizeOrSentinel && remainingCapacityBytes != 0) {
                 assetGroupCount = 0;
@@ -914,7 +914,7 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0x1c;
                       *(uint32_t *)(callStackSlot + -8) = 0x41c7f9;
                       (*g_LocaleCopyDefaultComputerLabelUtf16)(*(uint16_t **)(callStackSlot + -4));
-                      stringAsset.carry = false;
+                      stringAsset.failed = false;
                       return stringAsset;
                     }
                   }
@@ -972,7 +972,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
           *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
           (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
-          capacityErrorResult.carry = true;
+          capacityErrorResult.failed = true;
           capacityErrorResult.assetOrError = (void *)0x14;
           return capacityErrorResult;
         }
@@ -1087,7 +1087,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
     }
   }
 RichTextMarkup_ParseAndBuildStringAsset_ReturnError:
-  errorMessageResult.carry = true;
+  errorMessageResult.failed = true;
   errorMessageResult.assetOrError = memory;
   return errorMessageResult;
 RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
@@ -1118,7 +1118,7 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
    capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage serialization, function
    body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-RichTextCopyExpandedEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RichTextCopyResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_CopyExpandedCf
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source)
 
@@ -1128,8 +1128,8 @@ RichTextCommandStream_CopyExpandedCf
   uint16_t *nextSource;
   uint16_t *destinationCursor;
   bool capacityUnderflow;
-  RichTextCopyExpandedEaxCf5 successResult;
-  RichTextCopyExpandedEaxCf5 errorResult;
+  RichTextCopyResult successResult;
+  RichTextCopyResult errorResult;
   uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
@@ -1211,14 +1211,14 @@ RichTextCommandStream_CopyExpandedCf
   }
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
-    successResult.eax = (int)destinationCursor - (int)destination;
-    successResult.carry = false;
+    successResult.bytesWritten = (int)destinationCursor - (int)destination;
+    successResult.overflowed = false;
     return successResult;
   }
 RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
   destinationCursor[-1] = 0;
-  errorResult.carry = true;
-  errorResult.eax = 0x14;
+  errorResult.overflowed = true;
+  errorResult.bytesWritten = 0x14;
   return errorResult;
 }
 
@@ -1241,8 +1241,8 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
   uint16_t *returnStack[RICHTEXT_NESTING_LIMIT];
   int nesting = 0;
   RichTextExtentRegs extent;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  GlyphSizeResult glyphSize;
+  TextureSizeResult textureSize;
   uint16_t *command;
   int value;
 
@@ -1328,7 +1328,7 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
    globals, locals, and executable data remain unchanged.
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
 */
-RichTextLineAdvanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
 
 {
@@ -1337,9 +1337,9 @@ RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
   uint32_t maxLineHeight;
   uint8_t *commandCursor;
   uint8_t *readCursor;
-  RichTextLineAdvanceEaxCf5 lineResult;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
-  GraphicsTextureSizeEaxEdxCf9 imageSize;
+  WrappedLineResult lineResult;
+  GlyphSizeResult glyphSize;
+  TextureSizeResult imageSize;
   uint8_t *wrapPoint;
 
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
@@ -1422,7 +1422,7 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
     wrapPoint = readCursor;
   }
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
-  lineResult.carry = *(short *)(wrapPoint + -2) == 0;
+  lineResult.endOfText = *(short *)(wrapPoint + -2) == 0;
   lineResult.lineAdvancePixels = maxLineHeight;
   return lineResult;
 }
@@ -1439,7 +1439,7 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources], FontGlyph_DrawVerticallyCentered
    [assets/text/resources].
 */
-RichTextLineAdvanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_DrawNextWrappedLineCf
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
@@ -1455,10 +1455,10 @@ RichTextCommandStream_DrawNextWrappedLineCf
   uint8_t *measureCommand;
   uint8_t *scanCursor;
   uint8_t *drawCursor;
-  RichTextLineAdvanceEaxCf5 moreLinesResult;
-  RichTextLineAdvanceEaxCf5 endResult;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
-  GraphicsTextureSizeEaxEdxCf9 imageSize;
+  WrappedLineResult moreLinesResult;
+  WrappedLineResult endResult;
+  GlyphSizeResult glyphSize;
+  TextureSizeResult imageSize;
   uint8_t *wrapPoint;
   
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
@@ -1550,7 +1550,7 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
     drawCursor = scanCursor + 2;
     if (glyphSubresource == 0) {
       g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-      endResult.carry = true;
+      endResult.endOfText = true;
       endResult.lineAdvancePixels = lineTop;
       return endResult;
     }
@@ -1638,7 +1638,7 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
   }
 RichTextCommandStream_DrawNextWrappedLine_EndLine:
   g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
-  moreLinesResult.carry = false;
+  moreLinesResult.endOfText = false;
   moreLinesResult.lineAdvancePixels = lineTop;
   return moreLinesResult;
 }

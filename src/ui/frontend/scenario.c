@@ -40,10 +40,10 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   uint32_t levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
   uint32_t maskWordIndex;
-  MovieAdvanceFrameEaxCf5 movieFrame;
-  StatusValueEaxCf5 activePageStatus;
-  TextResourceResolveEaxCf5 markerText;
-  UiSelectableGroupIndexEcxCf5 selectedGroup;
+  MovieFrameResult movieFrame;
+  StatusResult activePageStatus;
+  TextResolveResult markerText;
+  SelectableGroupIndexResult selectedGroup;
   uint16_t availabilityMarker;
   
   networkState = g_FrontendNetworkState;
@@ -69,7 +69,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   }
   if ((g_FrontendRuntimeFlags & 0x10) == 0) {
     if ((*(int *)(frontendRoot->opaqueGap0000_4B67 + 0x904) != 0) &&
-       (movieFrame = Movie_AdvanceFrame(), movieFrame.carry)) {
+       (movieFrame = Movie_AdvanceFrame(), movieFrame.ended)) {
       Movie_Rewind();
     }
     if (*(int *)(frontendRoot->opaqueGap0000_4B67 + 0x224) != 0) {
@@ -107,7 +107,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));
-    if (((!selectedGroup.carryNoneSelected) && (selectedGroup.selectedIndexOrCount == 1)) &&
+    if (((!selectedGroup.noneSelected) && (selectedGroup.selectedIndexOrCount == 1)) &&
        (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
       levelRecordAddress = (int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset;
@@ -128,7 +128,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
             playerCursor = playerCursor + 1;
           } while ((*(uint32_t *)(nextPlayer->reserved78_7F + maskWordIndex * 4 + 0xc) & levelMaskBit) != 0);
           markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + 0x2230);
-          *markerText.eax = availabilityMarker;
+          *markerText.text = availabilityMarker;
           levelRecordAddress = levelRecordAddress + 0x100;
           levelMaskBit = levelMaskBit * 2;
           if (levelMaskBit == 0) {
@@ -173,10 +173,10 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   int unclaimedActiveFactions;
   FactionRuntimeLifecycleObservedState *factionStateCursor;
   RichTextExtentRegs textExtent;
-  TextResourceResolveEaxCf5 briefingText;
-  TextResourceResolveEaxCf5 templateText;
-  MovieOpenEaxCf5 movieOpen;
-  MovieAdvanceFrameEaxCf5 firstFrame;
+  TextResolveResult briefingText;
+  TextResolveResult templateText;
+  MovieOpenResult movieOpen;
+  MovieFrameResult firstFrame;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedSettingValue = PersistentSettings_ReadDword(100,0x44);
@@ -202,20 +202,20 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
        (playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
        (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10;
   briefingText = TextResource_Resolve(titleTextId + 0x2230);
-  *briefingText.eax = 0x8000;
+  *briefingText.text = 0x8000;
   templateText = TextResource_Resolve(0x219b);
-  RichTextCommandStream_PatchPayloadBySelector(0,briefingText.eax,templateText.eax);
+  RichTextCommandStream_PatchPayloadBySelector(0,briefingText.text,templateText.text);
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,(loadedLevel->header).titleTextResourceIndex,
              (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
   WidePath_SetExtensionCode(0x6d6c66,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   movieOpen = Movie_Open(0x80000000,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
-  if (movieOpen.carry) {
+  if (movieOpen.failed) {
     FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = 0;
   }
   else {
     firstFrame = Movie_AdvanceFrame();
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = firstFrame.eax;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = firstFrame.movieOrError;
     FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x58,int32_t) = 0;
   }
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
@@ -273,7 +273,7 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
   } while (playersRemaining != 0);
   briefingText = TextResource_Resolve(FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,int32_t));
   textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
-                     (g_UiTextStyleNormal,briefingText.eax,(UiPixelExtent)FRONTEND_UI_FIELD(frontendRoot,briefingText,0x50,struct UiNodeVtable *));
+                     (g_UiTextStyleNormal,briefingText.text,(UiPixelExtent)FRONTEND_UI_FIELD(frontendRoot,briefingText,0x50,struct UiNodeVtable *));
   FRONTEND_UI_FIELD(frontendRoot,briefingText,0x28,uint32_t) = textExtent.widthPixels + 6;
   FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
   control = (UiAnchorFractionQ31 *)FRONTEND_UI(frontendRoot,briefingTextScroller);

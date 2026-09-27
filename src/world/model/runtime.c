@@ -22,7 +22,7 @@
    ModelRuntimePool_CreateInstanceByDefinitionIdCf.
    Local calls: ModelRuntimePool_CreateInstanceByDefinitionIdCf.
 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
@@ -35,8 +35,8 @@ ModelRuntimePool_RepairDeferredChild
   AngleTurn32 rotationAngle2;
   Q12 translationX;
   Q12 translationY;
-  ModelNodeCreateEaxCf5 createResult;
-  ModelNodeCreateEaxCf5 repairResult;
+  ModelNodeCreateResult createResult;
+  ModelNodeCreateResult repairResult;
   ModelRuntimeNode *parentModelNode;
   ModelRuntimeNode *childRootNode;
   
@@ -45,8 +45,8 @@ ModelRuntimePool_RepairDeferredChild
                       (paletteAsset,textureSet,
                        (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime,childDefinitionId,
                        worldRuntime);
-    if (createResult.carry) {
-      createResult.carry = true;
+    if (createResult.failed) {
+      createResult.failed = true;
       return createResult;
     }
     modelRuntime->attachments140[attachmentIndex].childModelRuntimeOrSavedOffset00 = createResult.modelNode
@@ -69,13 +69,13 @@ ModelRuntimePool_RepairDeferredChild
          sourceTransform->localTranslationZQ12;
     (((WorldRuntimeNodePayload *)&childRootNode->modelPayload)->model).localTranslationYQ12 = translationY;
     (((WorldRuntimeNodePayload *)&childRootNode->modelPayload)->model).localTranslationXQ12 = translationX;
-    repairResult.carry = false;
+    repairResult.failed = false;
     repairResult.modelNode = createResult.modelNode;
     return repairResult;
   }
   /* Index past the attachment count: the original leaves EAX untouched, and in its only caller
      (ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf) EAX holds childDefinitionId at the call. */
-  repairResult.carry = false;
+  repairResult.failed = false;
   repairResult.modelNode = (ModelRuntimeNode *)(uintptr_t)childDefinitionId;
   return repairResult;
 }
@@ -248,7 +248,7 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
    [core/math/fixed], DepthBinMasks_OverlapCf [graphics/render/primitives],
    ModelNodeRuntime_RaycastHierarchyNearestCf [world/model/hierarchy].
 */
-ModelRaycastNearestHitEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelRuntime_RaycastCandidateListNearestCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
@@ -262,7 +262,7 @@ ModelRuntime_RaycastCandidateListNearestCf
   int bestDistanceQ12;
   ModelRuntimeNode *nearestModelNode;
   bool masksOverlap;
-  ModelRaycastNearestHitEaxEdxCf9 raycastHit;
+  ModelRaycastResult raycastHit;
   
   g_ModelRaycastOriginX = originXQ12;
   g_ModelRaycastOriginY = originYQ12;
@@ -285,13 +285,13 @@ ModelRuntime_RaycastCandidateListNearestCf
       raycastHit = ModelNodeRuntime_RaycastHierarchyNearestCf(modelNodeRuntime);
       if (raycastHit.nearestDistanceQ12 <= bestDistanceQ12) {
         bestDistanceQ12 = raycastHit.nearestDistanceQ12;
-        nearestModelNode = raycastHit.edxCarrier.nearestModelNode;
+        nearestModelNode = raycastHit.nearestNodeOrScratch.nearestModelNode;
       }
     }
   }
-  raycastHit.edxCarrier.nearestModelNode = nearestModelNode;
+  raycastHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
   raycastHit.nearestDistanceQ12 = bestDistanceQ12;
-  raycastHit.carry = bestDistanceQ12 != 0x7fffffff;
+  raycastHit.hit = bestDistanceQ12 != 0x7fffffff;
   return raycastHit;
 }
 
@@ -376,17 +376,17 @@ ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix10
    Purpose: Allocates and zeroes the exact 0x400000-byte model runtime pool, equal to 8192 ModelRuntimeSlot
    records.
 */
-StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
+StatusResult __cdecl ModelRuntimePool_Init(void)
 
 {
   ModelRuntimeSlot *modelRuntimeStorageCursor;
   int allocationDwordsRemaining;
-  ArenaAllocEaxCf5 allocResult;
-  StatusValueEaxCf5 statusResult;
+  ArenaAllocResult allocResult;
+  StatusResult statusResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x400000);
-  modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.eax;
-  if (!allocResult.carry) {
+  modelRuntimeStorageCursor = (ModelRuntimeSlot *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     g_ModelRuntimeRebaseDelta = (int)&modelRuntimeStorageCursor[-1].attachments140[5].reserved1C + 3
     ;
     g_ModelRuntimeSlots = modelRuntimeStorageCursor;
@@ -397,11 +397,11 @@ StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
       modelRuntimeStorageCursor =
            (ModelRuntimeSlot *)&modelRuntimeStorageCursor->rootModelNodeOrSavedOffset;
     }
-    allocResult.eax = 0;
-    allocResult.carry = false;
+    allocResult.payloadOrError = 0;
+    allocResult.failed = false;
   }
-  statusResult.valueOrError = allocResult.eax;
-  statusResult.carry = allocResult.carry;
+  statusResult.valueOrError = allocResult.payloadOrError;
+  statusResult.failed = allocResult.failed;
   return statusResult;
 }
 
@@ -786,7 +786,7 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
    ModelNodeRuntime_RecomputeSubtreeBoundingRadius [world/model/hierarchy],
    ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_CreateInstanceByDefinitionIdCf
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
@@ -803,12 +803,12 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
   int registryRemaining;
   ModelDefinitionRecordPrefix **registryEntry;
   ModelRuntimeSlot *modelRuntime;
-  ModelNodeCreateEaxCf5 failureResult;
-  ModelNodeCreateEaxCf5 createResult;
+  ModelNodeCreateResult failureResult;
+  ModelNodeCreateResult createResult;
   ModelDefinitionRuntimeSemanticView280 *definitionView;
 
   /* first free slot (no root node); error 0x14 when the pool is missing or full */
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.modelNode = (ModelRuntimeNode *)0x14;
   modelRuntime = g_ModelRuntimeSlots;
   if (modelRuntime == (ModelRuntimeSlot *)0x0) {
@@ -906,7 +906,7 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
                            (MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64,
                            worldRuntime);
         modelNodeRuntime = createResult.modelNode;
-        if (createResult.carry) {
+        if (createResult.failed) {
           failureResult.modelNode = modelNodeRuntime; /* the hierarchy's error code */
           return failureResult;
         }
@@ -920,7 +920,7 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.modelClassInitialize
         [(modelRuntime->definitionOrSavedId).definition[6].flags])
                 ((modelRuntime->definitionOrSavedId).definition,modelRuntime);
-      createResult.carry = false;
+      createResult.failed = false;
       createResult.modelNode = (ModelRuntimeNode *)modelRuntime;
       return createResult;
     }

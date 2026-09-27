@@ -22,7 +22,7 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
 void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD820 */
-GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x004AD860 */
@@ -37,7 +37,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD8F0 */
-GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD920 */
@@ -45,7 +45,7 @@ GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx
 GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AE7E0 */
-GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset);

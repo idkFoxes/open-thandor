@@ -17,15 +17,15 @@
    returns error 0x48 with CF set. The stock corpus contains 140 unique EffectDefinition ids; serialized ids remain
    distinct from relocated EffectDefinition pointers and consumer-specific union facets.
 */
-EffectDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *registryDefinition;
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
-  EffectDefinitionLookupEaxCf5 failureResult;
-  EffectDefinitionLookupEaxCf5 foundResult;
+  EffectDefinitionResult failureResult;
+  EffectDefinitionResult foundResult;
   EffectDefinition *candidateDefinition;
   
   registryCursor = g_EffectDefinitionRegistry;
@@ -37,12 +37,12 @@ EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
-      failureResult.carry = true;
+      failureResult.notFound = true;
       failureResult.definitionOrError = (EffectDefinition *)0x48;
       return failureResult;
     }
   }
-  foundResult.carry = false;
+  foundResult.notFound = false;
   foundResult.definitionOrError = registryDefinition;
   return foundResult;
 }
@@ -54,28 +54,28 @@ EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
    [movie/runtime/playback].
 */
-StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
+StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
 {
   EffectRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
-  ArenaAllocEaxCf5 loadOrAllocResult;
-  StatusValueEaxCf5 statusResult;
+  ArenaAllocResult loadOrAllocResult;
+  StatusResult statusResult;
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadOrAllocResult = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
-  if (!loadOrAllocResult.carry) {
+  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
+  if (!loadOrAllocResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.eax;
+    g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.payloadOrError;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    loadOrAllocResult = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
-    if (!loadOrAllocResult.carry) {
+    loadOrAllocResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
+    if (!loadOrAllocResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_EffectPalette = (GraphicsPaletteAsset *)loadOrAllocResult.eax;
+      g_EffectPalette = (GraphicsPaletteAsset *)loadOrAllocResult.payloadOrError;
       loadOrAllocResult = (*g_MemoryApi.alloc)(0x40000);
-      runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.eax;
-      if (!loadOrAllocResult.carry) {
+      runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.payloadOrError;
+      if (!loadOrAllocResult.failed) {
         g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3)
         ;
         g_EffectRuntimeSlots = runtimeSlotCursor;
@@ -84,13 +84,13 @@ StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
           (runtimeSlotCursor->definitionOrSavedId).definition = (EffectDefinition *)0x0;
           runtimeSlotCursor = (EffectRuntimeSlot *)&runtimeSlotCursor->modelNodeOrSavedOffset;
         }
-        loadOrAllocResult.eax = 0;
-        loadOrAllocResult.carry = false;
+        loadOrAllocResult.payloadOrError = 0;
+        loadOrAllocResult.failed = false;
       }
     }
   }
-  statusResult.valueOrError = loadOrAllocResult.eax;
-  statusResult.carry = loadOrAllocResult.carry;
+  statusResult.valueOrError = loadOrAllocResult.payloadOrError;
+  statusResult.failed = loadOrAllocResult.failed;
   return statusResult;
 }
 
@@ -216,7 +216,7 @@ void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void
    GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading],
    TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy].
 */
-EffectRuntimeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+EffectCreateResult __thandor_eax_cf_preserve_ecx_edx
 EffectRuntimePool_CreateInstanceFromDefinitionCf
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
@@ -242,11 +242,11 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   GraphicsPaletteAsset *chosenPalette;
   EffectRuntimeSlot *effectRuntimeCursor;
   bool projectedCellMasked;
-  WorldObjectRecordEaxCf5 recordAlloc;
-  ModelLookupEntryEaxCf5 lookupEntry;
-  GraphicsShadingRuntimeRecordEaxCf5 shadingAlloc;
-  EffectRuntimeCreateEaxCf5 successResult;
-  EffectRuntimeCreateEaxCf5 failureResult;
+  WorldObjectAllocResult recordAlloc;
+  ModelLookupEntryResult lookupEntry;
+  ShadingRecordResult shadingAlloc;
+  EffectCreateResult successResult;
+  EffectCreateResult failureResult;
   ModelLocalPointRegs12 localPoint;
   TerrainOccupancyResolvedMasksRegs12 occupancyMasks;
   char runtimeClassIndex;
@@ -256,11 +256,11 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   effectRuntimeCursor = g_EffectRuntimeSlots;
   if (effectDefinition == (EffectDefinition *)0x0) {
     /* the original returns CF clear with EAX = the pool base */
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.effectRuntime = effectRuntimeCursor;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   if (effectRuntimeCursor == (EffectRuntimeSlot *)0x0) {
     failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
     return failureResult;
@@ -270,7 +270,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
     if ((effectRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
       recordAlloc = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
       effectModelNode = (EffectModelRuntimeNodeClassView100 *)recordAlloc.recordOrError;
-      if (!recordAlloc.carry) {
+      if (!recordAlloc.failed) {
         WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)effectModelNode);
         (effectRuntimeCursor->modelNodeOrSavedOffset).modelNode =
              (ModelRuntimeNode *)effectModelNode;
@@ -327,7 +327,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
         effectRuntimeCursor->effectAgeTicks = 0;
         if (shadingStartTicks == 0) {
           lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
-          if (!lookupEntry.carry) {
+          if (!lookupEntry.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
             shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
@@ -377,7 +377,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
           }
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)effectModelNode);
-        successResult.carry = false;
+        successResult.failed = false;
         successResult.effectRuntime = effectRuntimeCursor;
         return successResult;
       }

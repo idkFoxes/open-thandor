@@ -23,13 +23,13 @@ Keyboard_CompareAsciiCaseInsensitiveFlags
 void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void);
 
 /* 0x00417240 */
-KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void);
+KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void);
 
 /* 0x004172D0 */
 uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
 /* 0x00576CF0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void);
 
 /* 0x00576F20 */
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_RefreshDeviceIfIdle(void);
@@ -41,7 +41,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void);
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(void);
 
 /* 0x005772F0 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 DirectInputMouse_DisplayModeHookCf
           (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth);

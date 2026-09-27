@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00546BD0 */
-FrontendMainLoopEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FrontendMainLoopResult __thandor_eax_cf_preserve_ecx_edx
 Frontend_MainLoop(RomRecordId frontendEntryRecordId);
 
 /* 0x0050C380 */
@@ -183,7 +183,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
 void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void);
 
 /* 0x00546700 */
-FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId);
+FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId);
 
 /* 0x00547630 */
 void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void);

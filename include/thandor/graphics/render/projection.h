@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00486B00 */
-GraphicsOffscreenAllocationEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsOffscreen_RenderModelListToTextureSourceCf
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputWidth,

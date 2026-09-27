@@ -35,7 +35,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl);
 
 /* 0x0055C990 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot);
 
 /* 0x00563BD0 */

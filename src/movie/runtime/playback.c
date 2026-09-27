@@ -63,7 +63,7 @@ static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
    Purpose: Handles movie encode flm buffer from frame provider carry-flag result.
    Local calls: Movie_EncodeFrame4x4Keyframe, Movie_EncodeFrame4x4Delta.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Movie_EncodeFlmBufferFromFrameProviderCf
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
           uint32_t *outputBuffer,MovieFrameProviderCfProc *frameProvider)
@@ -76,9 +76,9 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   uint32_t frameCount;
   uint32_t *sourcePixels;
   uint32_t *outputCursor;
-  MovieFrameProviderEaxCf5 providerResult;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  FrameProviderResult providerResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   void *firstFrame;
   
   outputCursor = outputBuffer;
@@ -107,7 +107,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   outputCursor[-0x51] = 0;
   providerResult = (*frameProvider)((void *)0x0);
   frameToReleaseOrNull = providerResult.frameOrError;
-  if (!providerResult.carry) {
+  if (!providerResult.noFrame) {
     frameCount = 1;
     sourcePixels = (uint32_t *)((int)frameToReleaseOrNull +
                            *(int *)((int)frameToReleaseOrNull +
@@ -118,7 +118,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
     while( true ) {
       providerResult = (*frameProvider)((void *)0x0);
       frameToReleaseOrNull = providerResult.frameOrError;
-      if (providerResult.carry) break;
+      if (providerResult.noFrame) break;
       frameCount = frameCount + 1;
       byteCount = Movie_EncodeFrame4x4Delta
                         (frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels,
@@ -136,12 +136,12 @@ Movie_EncodeFlmBufferFromFrameProviderCf
     outputBuffer[0x30] = byteCount;
     if (frameToReleaseOrNull == (void *)0xffffffff) {
       outputBuffer[0x30] = outputBuffer[0x30] - 0x200;
-      successResult.carry = false;
+      successResult.failed = false;
       successResult.valueOrError = byteCount;
       return successResult;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)frameToReleaseOrNull;
   return failureResult;
 }
@@ -184,7 +184,7 @@ void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndT
    follow the whole video stream. CF clear returns the voice set in valueOrError (0 when the header has no
    usable track); CF set returns the error of the failing seek/alloc/read/voice-set call. The loaded sample is
    freed on both the success and the failure path, as in the original. */
-static StatusValueEaxCf5
+static StatusResult
 Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle)
 
 {
@@ -194,13 +194,13 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
   uint32_t trackOffset;
   uint32_t trackBytes;
   void *audioSample;
-  FileSystemSeekEaxCf5 seekResult;
-  ArenaAllocEaxCf5 allocResult;
-  FileSystemReadEaxCf5 readResult;
-  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
-  StatusValueEaxCf5 result;
+  FileSystemSeekResult seekResult;
+  ArenaAllocResult allocResult;
+  FileSystemReadResult readResult;
+  SampleVoiceSetResult voiceSetResult;
+  StatusResult result;
 
-  result.carry = false;
+  result.failed = false;
   result.valueOrError = 0;
   audioTrackCount = header->audioTrackCount;
   if ((audioTrackCount == 0) || (0xe < audioTrackCount)) {
@@ -219,25 +219,25 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
     return result;
   }
   seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
-  result.carry = seekResult.carry;
-  result.valueOrError = seekResult.eax;
-  if (seekResult.carry) {
+  result.failed = seekResult.failed;
+  result.valueOrError = seekResult.positionOrError;
+  if (seekResult.failed) {
     return result;
   }
   allocResult = (*g_MemoryApi.alloc)(trackBytes);
-  result.carry = allocResult.carry;
-  result.valueOrError = allocResult.eax;
-  if (allocResult.carry) {
+  result.failed = allocResult.failed;
+  result.valueOrError = allocResult.payloadOrError;
+  if (allocResult.failed) {
     return result;
   }
-  audioSample = (void *)allocResult.eax;
+  audioSample = (void *)allocResult.payloadOrError;
   readResult = (*g_FileSystemReadExactCf)(trackBytes,audioSample,handle);
-  result.carry = readResult.carry;
-  result.valueOrError = readResult.eax;
-  if (!readResult.carry) {
+  result.failed = readResult.failed;
+  result.valueOrError = readResult.valueOrError;
+  if (!readResult.failed) {
     voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)audioSample);
-    result.carry = voiceSetResult.carry;
-    result.valueOrError = (uint32_t)voiceSetResult.eax;
+    result.failed = voiceSetResult.failed;
+    result.valueOrError = (uint32_t)voiceSetResult.voiceSet;
   }
   (*g_MemoryApi.free)(audioSample);
   return result;
@@ -252,7 +252,7 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
    Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], Package_FindEntryAcrossMounts
    [assets/package/runtime], Random_NextPrimary [core/math/random].
 */
-MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
+MovieOpenResult __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
 
 {
   MovieFileHeader *header;
@@ -269,14 +269,14 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   uint32_t initialVideoBytes;
   uint32_t status;
   bool looseFileOpened;
-  FileSystemOpenEaxCf5 openResult;
-  FileSystemSeekEaxCf5 seekResult;
-  FileSystemReadEaxCf5 readResult;
-  ArenaAllocEaxCf5 allocResult;
-  StatusValueEaxCf5 audioResult;
-  MovieOpenEaxCf5 successResult;
-  MovieOpenEaxCf5 failureResult;
-  PackageFindEntryEaxEbxCf9 packageEntry;
+  FileSystemOpenResult openResult;
+  FileSystemSeekResult seekResult;
+  FileSystemReadResult readResult;
+  ArenaAllocResult allocResult;
+  StatusResult audioResult;
+  MovieOpenResult successResult;
+  MovieOpenResult failureResult;
+  PackageEntryLookupResult packageEntry;
   MovieStreamByteCount remainingByteCount;
   uint8_t *loadedEnd;
   MovieStreamFileOffset streamPosition;
@@ -288,39 +288,39 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
     openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (void *)openResult.eax;
-    looseFileOpened = !openResult.carry;
+    handle = (void *)openResult.handleOrError;
+    looseFileOpened = !openResult.failed;
   }
   if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
     packageEntry = Package_FindEntryAcrossMounts(path);
-    if ((!packageEntry.carry) &&
+    if ((!packageEntry.notFound) &&
        (seekResult = (*g_FileSystemSeekCf)
-                           (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.eax + 0x1ec) + 0x200,
-                            (void *)packageEntry.ebx), !seekResult.carry)) {
+                           (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.entry + 0x1ec) + 0x200,
+                            (void *)packageEntry.fileHandle), !seekResult.failed)) {
       isSharedPackageHandle = isSharedPackageHandle + 1;
-      handle = (void *)packageEntry.ebx;
+      handle = (void *)packageEntry.fileHandle;
     }
     else {
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (uint16_t *)&g_ExecutableDirectoryUtf16);
       openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-      if (openResult.carry) {
+      if (openResult.failed) {
         openResult = (*g_FileSystemOpenCf)(0,path);
-        if (openResult.carry) {
+        if (openResult.failed) {
           /* Nothing is open yet: no close. */
-          failureResult.carry = true;
-          failureResult.eax = openResult.eax;
+          failureResult.failed = true;
+          failureResult.frameCountOrError = openResult.handleOrError;
           return failureResult;
         }
       }
-      handle = (void *)openResult.eax;
+      handle = (void *)openResult.handleOrError;
     }
   }
   readResult = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
-  status = readResult.eax;
-  if (!readResult.carry) {
+  status = readResult.valueOrError;
+  if (!readResult.failed) {
     header = (MovieFileHeader *)g_PackageScratchBuffer;
     status = 0x30;
     if ((header->common.magic == ASSET_MAGIC_FLM) && ((uint32_t)header->common.converterVersion == 0x20001)) {
@@ -329,16 +329,16 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
         sizeOrValue = 0x3c0000;
       }
       allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
-      status = allocResult.eax;
-      if (!allocResult.carry) {
+      status = allocResult.payloadOrError;
+      if (!allocResult.failed) {
         copySource = (uint32_t *)g_PackageScratchBuffer;
-        copyDestination = (uint32_t *)allocResult.eax;
+        copyDestination = (uint32_t *)allocResult.payloadOrError;
         for (copyCount = 0x80; copyCount != 0; copyCount = copyCount + -1) {
           *copyDestination = *copySource;
           copySource = copySource + 1;
           copyDestination = copyDestination + 1;
         }
-        header = (MovieFileHeader *)allocResult.eax;
+        header = (MovieFileHeader *)allocResult.payloadOrError;
         initialVideoBytes = header->videoStreamBytes;
         if ((0x3a2000 < initialVideoBytes) && (movieOpenFlags != 0)) {
           initialVideoBytes = 0x3a2000;
@@ -346,19 +346,19 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
         remainingByteCount = header->videoStreamBytes - initialVideoBytes;
         loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
         readResult = (*g_FileSystemReadExactCf)(initialVideoBytes,header + 1,handle);
-        status = readResult.eax;
-        if (!readResult.carry) {
+        status = readResult.valueOrError;
+        if (!readResult.failed) {
           /* The original also fails on CF of g_FileSystemGetPositionCf (JC 0x004a89f1), but
              FileSystemGetPositionCfProc has no CF result (it returns 0 on failure). */
           streamPosition = (*g_FileSystemGetPositionCf)(handle);
           audioResult = Movie_OpenLoadRandomAudioTrackCf(header,remainingByteCount,handle);
           status = audioResult.valueOrError;
-          if (!audioResult.carry) {
+          if (!audioResult.failed) {
             sizeOrValue = header->widthPixels * header->heightPixels * 4 + 0x220;
             allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
-            status = allocResult.eax;
-            if (!allocResult.carry) {
-              movie = (MovieRuntime *)allocResult.eax;
+            status = allocResult.payloadOrError;
+            if (!allocResult.failed) {
+              movie = (MovieRuntime *)allocResult.payloadOrError;
               g_ActiveMovie = movie;
               if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
                 (*g_FileSystemClose)(handle);
@@ -424,9 +424,9 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
                   CloseHandle(semaphoreOrThread);
                 }
               }
-              successResult.carry = false;
-              successResult.eax = header->frameCount;
-              successResult.playbackRateHzEcx = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
+              successResult.failed = false;
+              successResult.frameCountOrError = header->frameCount;
+              successResult.playbackRateHz = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
               return successResult;
             }
           }
@@ -438,8 +438,8 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   if (isSharedPackageHandle == 0) {
     (*g_FileSystemClose)(handle);
   }
-  failureResult.carry = true;
-  failureResult.eax = status;
+  failureResult.failed = true;
+  failureResult.frameCountOrError = status;
   return failureResult;
 }
 
@@ -491,7 +491,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
   void *handle;
   MovieRuntime *movie;
   uint32_t byteCount;
-  FileSystemReadEaxCf5 readResult;
+  FileSystemReadResult readResult;
   
   /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
      and at the exit. */
@@ -511,7 +511,7 @@ uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
       }
       (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
       readResult = (*g_FileSystemReadExactCf)(byteCount,movie->loadedVideoEnd,handle);
-      if (readResult.carry) {
+      if (readResult.failed) {
         if (movie->streamState != MOVIE_STREAM_SHUTDOWN) {
           movie->streamState = MOVIE_STREAM_READ_FAILED;
         }
@@ -661,23 +661,23 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
   }
   switch (target) {
   case 0x5658f0: { /* screenshot */
-    GraphicsFramebufferCaptureEaxCf5 capture =
+    FramebufferCaptureResult capture =
          (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
-    PcxEncodeEaxEcxCf9 pcx;
+    PcxEncodeResult pcx;
     uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
     uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
-    if (capture.carry) {
+    if (capture.failed) {
       break;
     }
-    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.eax);
-    if (pcx.carry) {
-      (*g_MemoryApi.free)(capture.eax);
+    pcx = (*g_PcxFunctionExport3)(g_PcxFunctionModule,capture.capture);
+    if (pcx.failed) {
+      (*g_MemoryApi.free)(capture.capture);
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     (*g_MemoryApi.free)(pcx.encodedBytesOrError);
-    (*g_MemoryApi.free)(capture.eax);
+    (*g_MemoryApi.free)(capture.capture);
     *digitLow = *digitLow + 1;
     if (*digitLow > 0x39) {
       *digitHigh = *digitHigh + 1;
@@ -1744,7 +1744,7 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
   }
 }
 
-MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
+MovieFrameResult __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(void)
 
 {
   MovieFileHeader *flmHeader;
@@ -1756,10 +1756,10 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
   uint32_t *copySource;
   uint32_t *copyDestination;
   uint8_t *streamCursor;
-  SoundPlayVoiceEaxCf5 playResult;
-  MovieAdvanceFrameEaxCf5 successResult;
-  MovieAdvanceFrameEaxCf5 bufferingResult;
-  MovieAdvanceFrameEaxCf5 failureResult;
+  SoundPlayResult playResult;
+  MovieFrameResult successResult;
+  MovieFrameResult bufferingResult;
+  MovieFrameResult failureResult;
   
   movie = g_ActiveMovie;
   byteCountOrStatus = 0x30;
@@ -1790,7 +1790,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
       if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
         playResult = (*g_SoundPlayOneShot)
                           (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
-        movie->activeAudioBuffer = playResult.eax;
+        movie->activeAudioBuffer = playResult.soundBuffer;
       }
       nextFrameOrLoadedSize = previousFrameIndex + 1;
       byteCountOrStatus = (int)movie->loadedVideoEnd - (int)streamCursor;
@@ -1800,8 +1800,8 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
              here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
              0x004A8B48. Callers keep EAX as the movie only after the first-frame call, which cannot
              get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
-          bufferingResult.carry = false;
-          bufferingResult.eax = (uint32_t)((uint8_t *)movie - 0x220);
+          bufferingResult.ended = false;
+          bufferingResult.movieOrError = (uint32_t)((uint8_t *)movie - 0x220);
           return bufferingResult;
         }
         consumedBytes = Movie_DecodeFrame4x4Delta
@@ -1824,14 +1824,14 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
             }
           }
         }
-        successResult.carry = false;
-        successResult.eax = (uint32_t)movie;
+        successResult.ended = false;
+        successResult.movieOrError = (uint32_t)movie;
         return successResult;
       }
     }
   }
-  failureResult.carry = true;
-  failureResult.eax = byteCountOrStatus;
+  failureResult.ended = true;
+  failureResult.movieOrError = byteCountOrStatus;
   return failureResult;
 }
 
@@ -1851,14 +1851,14 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
   uint32_t frameIndex;
-  MovieAdvanceFrameEaxCf5 advanceResult;
+  MovieFrameResult advanceResult;
   
   frameIndex = g_MoviePlaybackCurrentFrame;
   if (g_MoviePlaybackCurrentFrame < targetFrame) {
     do {
       frameIndex = frameIndex + 1;
       advanceResult = Movie_AdvanceFrame();
-      if (advanceResult.carry) {
+      if (advanceResult.ended) {
         return;
       }
     } while (frameIndex < targetFrame);

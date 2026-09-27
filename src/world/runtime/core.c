@@ -399,7 +399,7 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel
 
 {
   Q12 interpolatedHeightQ12;
-  FieldGridHeightEaxCf5 heightResult;
+  HeightSampleResult heightResult;
   
   interpolatedHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
@@ -420,7 +420,7 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
 
 {
   Q12 waterSurfaceHeightQ12;
-  FieldGridHeightEaxCf5 heightResult;
+  HeightSampleResult heightResult;
   
   waterSurfaceHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
@@ -442,7 +442,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
 
 {
   uint32_t topSurfaceHeightQ12;
-  FieldGridHeightEaxCf5 heightResult;
+  HeightSampleResult heightResult;
   
   topSurfaceHeightQ12 = 0x7ffff000;
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
@@ -687,13 +687,13 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
    Ownership: world/runtime/core.
    Purpose: Returns the dword at context offset 0xCC in EAX and explicitly clears CF.
 */
-WorldRuntimeFlagsEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
 WorldRuntime_GetFlagsCf(WorldRuntimeContext *world)
 
 {
-  WorldRuntimeFlagsEaxCf5 flagsResult;
+  WorldFlagsResult flagsResult;
   
-  flagsResult.carry = false;
+  flagsResult.failed = false;
   flagsResult.flags = world->runtimeControlFlags;
   return flagsResult;
 }
@@ -770,20 +770,20 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
    Purpose: Scans the attached fixed-size 0x100-byte object records for a slot without allocation bit 0x40000000,
    marks the selected slot, stores its owning world runtime, and reports exhaustion or success through carry.
 */
-WorldObjectRecordEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
 WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime)
 
 {
   WorldObjectRecordCount recordsRemaining;
   WorldObjectRecord *recordCursor;
-  WorldObjectRecordEaxCf5 exhaustedResult;
-  WorldObjectRecordEaxCf5 allocatedResult;
+  WorldObjectAllocResult exhaustedResult;
+  WorldObjectAllocResult allocatedResult;
   
   recordsRemaining = worldRuntime->objectCount;
   recordCursor = worldRuntime->objectArray;
   while( true ) {
     if (recordsRemaining == 0) {
-      exhaustedResult.carry = true;
+      exhaustedResult.failed = true;
       exhaustedResult.recordOrError = (WorldObjectRecord *)0x14;
       return exhaustedResult;
     }
@@ -793,7 +793,7 @@ WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime)
   }
   (recordCursor->common).allocationFlags = 0x40000000;
   (recordCursor->common).ownerWorld = worldRuntime;
-  allocatedResult.carry = false;
+  allocatedResult.failed = false;
   allocatedResult.recordOrError = recordCursor;
   return allocatedResult;
 }
@@ -979,14 +979,14 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
   int modelOverlayBase;
   ModelDefinitionRecordPrefix *definitionRecord;
   WorldOwnerListNode100 *ownerNode;
-  ModelDefinitionLookupEaxCf5 definitionLookup;
+  ModelDefinitionResult definitionLookup;
   uint32_t overlayExtent;
   
   if (sourceRuntime != (void *)0x0) {
     definitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
                       (*(PckModelDefinitionIdCatalog *)(*(int *)((int)sourceRuntime + 0xc) + 0x20));
     definitionRecord = definitionLookup.modelDefinition;
-    if (!definitionLookup.carry) {
+    if (!definitionLookup.notFound) {
       overlayExtent = 0xffffffff;
       ownerNode = worldRuntime->ownerListHead;
       overlayBaseOffset = definitionRecord[0x23].flags;
@@ -1185,8 +1185,8 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
   uint32_t endpointDistanceQ12;
   int rayLengthOrOffsetY;
   FixedSinCosEdxEax8 groundOffsetXY;
-  FieldGridRaycastEaxEdxCf9 raycastResult;
-  FieldGridRaycastEaxEdxCf9 secondaryRaycastResult;
+  TerrainRaycastResult raycastResult;
+  TerrainRaycastResult secondaryRaycastResult;
   FixedDirectionXyzRegs12 endpointOffset;
   
   if ((worldRuntime->runtimeFlags & 0x1000000) == 0) {
@@ -1196,13 +1196,13 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
     scale = raycastResult.distanceQ12;
-    if (raycastResult.carry) {
+    if (raycastResult.hit) {
       /* terrain hit: a nearer secondary-surface hit wins */
       secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistanceCf
                         ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                          (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                          (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
-      if ((secondaryRaycastResult.carry) && (secondaryRaycastResult.distanceQ12 < (int)scale)) {
+      if ((secondaryRaycastResult.hit) && (secondaryRaycastResult.distanceQ12 < (int)scale)) {
         scale = secondaryRaycastResult.distanceQ12;
       }
     }
@@ -1215,7 +1215,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
     scale = raycastResult.distanceQ12;
   }
-  if (!raycastResult.carry) {
+  if (!raycastResult.hit) {
     /* no hit: intersect the view ray with the ground plane z = 0 */
     currentPitchAngle = (worldRuntime->motion).pitchAngle;
     groundOffsetXY = FixedMath_SinCosScaled

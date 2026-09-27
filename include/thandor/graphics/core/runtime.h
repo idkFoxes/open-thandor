@@ -18,7 +18,7 @@
 void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer(void);
 
 /* 0x004168B0 */
-GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex);
 
 /* 0x004168E0 */
@@ -97,7 +97,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphicsObjectAddress);
 
 /* 0x00578560 */
-StatusValueEaxCf5 __cdecl Graphics_Init(void);
+StatusResult __cdecl Graphics_Init(void);
 
 /* 0x005794E0 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsBackend_RefreshActiveAdapterIfReady(void);

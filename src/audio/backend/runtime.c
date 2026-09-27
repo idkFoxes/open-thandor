@@ -41,14 +41,14 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_Shutdown(void)
    Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes one
    SoundSampleAsset argument.
 */
-SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
   /* Returned through SoundCreateSampleVoiceSetProc, so it must use that {EAX, CF} result type. */
-  SoundCreateSampleVoiceSetEaxCf5 result;
-  result.eax = (DirectSoundVoiceSet *)0xffffffff;
-  result.carry = false;
+  SampleVoiceSetResult result;
+  result.voiceSet = (DirectSoundVoiceSet *)0xffffffff;
+  result.failed = false;
   return result;
 }
 
@@ -70,16 +70,16 @@ SoundBackendDisabled_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    Purpose: Disabled-backend placeholder. Returns pointer value 0xFFFFFFFF with CF clear and consumes the five raw-
    PCM arguments.
 */
-SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
           void *pcmData)
 
 {
-  SoundCreatePcmVoiceSetEaxCf5 result; /* slot type SoundCreatePcmVoiceSetProc */
-  result.eax = (DirectSoundVoiceSet *)0xffffffff;
-  result.carry = false;
+  PcmVoiceSetResult result; /* slot type SoundCreatePcmVoiceSetProc */
+  result.voiceSet = (DirectSoundVoiceSet *)0xffffffff;
+  result.failed = false;
   return result;
 }
 
@@ -100,13 +100,13 @@ SoundBackendDisabled_ReleasePcmVoiceSet(DirectSoundVoiceSet *voiceSet)
    Ownership: audio/backend/runtime.
    Purpose: Disabled-backend one-shot placeholder. It only clears CF and leaves EAX unchanged.
 */
-SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
-  SoundPlayVoiceEaxCf5 result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
+  SoundPlayResult result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
   memset(&result, 0, sizeof result);
   return result;
 }
@@ -116,13 +116,13 @@ SoundBackendDisabled_PlayOneShot
    Ownership: audio/backend/runtime.
    Purpose: Disabled-backend looping placeholder. It only clears CF and leaves EAX unchanged.
 */
-SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 SoundBackendDisabled_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
 
 {
-  SoundPlayVoiceEaxCf5 result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
+  SoundPlayResult result; /* slot type SoundPlayVoiceProc; EAX is left unchanged */
   memset(&result, 0, sizeof result);
   return result;
 }
@@ -181,26 +181,26 @@ SoundBackendDisabled_SetVoiceGains
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
    Memory_ZeroDwords [core/memory/allocator], CosineDerivedLookupTables_InitCf [core/math/fixed].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
 
 {
   HINSTANCE module;
   TH_LEGACY_HRESULT directSoundResult;
   int remainingCount;
   DirectSoundVoiceSet **registryCursor;
-  DynDllLoadEaxCf5 dllLoadResult;
-  DynApiResolveEaxCf5 resolveResult;
-  ArenaAllocEaxCf5 registryAlloc;
+  DllLoadResult dllLoadResult;
+  DynApiResolveResult resolveResult;
+  ArenaAllocResult registryAlloc;
   int32_t failedStage;
   
   failedStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_4);
   module = dllLoadResult.moduleOrError;
-  if ((((!dllLoadResult.carry) &&
-       (resolveResult = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20), !resolveResult.carry)) &&
-      (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.carry)) &&
-     ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.carry &&
-      (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.carry)))) {
+  if ((((!dllLoadResult.failed) &&
+       (resolveResult = DynAPI_Resolve(&pDirectSoundCreate,module,dynapi_20), !resolveResult.failed)) &&
+      (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.failed)) &&
+     ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.failed &&
+      (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.failed)))) {
     directSoundResult = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
@@ -244,9 +244,9 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
                   directSoundResult = (*g_PrimarySoundBuffer->lpVtbl->Play)(g_PrimarySoundBuffer,0,0,1);
                   if (directSoundResult == 0) {
                     registryAlloc = (*g_MemoryApi.alloc)(0x400);
-                    if (!registryAlloc.carry) {
-                      registryCursor = (DirectSoundVoiceSet **)registryAlloc.eax;
-                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.eax;
+                    if (!registryAlloc.failed) {
+                      registryCursor = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
+                      g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
                       for (remainingCount = 0x100; remainingCount != 0; remainingCount = remainingCount + -1) {
                         *registryCursor = (DirectSoundVoiceSet *)0x0;
                         registryCursor = registryCursor + 1;
@@ -265,7 +265,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
                       CosineDerivedLookupTables_InitCf();
                       return StatusValue_Ok(0);
                     }
-                    return StatusValue_Fail(registryAlloc.eax);
+                    return StatusValue_Fail(registryAlloc.payloadOrError);
                   }
                 }
               }
@@ -279,7 +279,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
     return StatusValue_Fail(0x29); /* DirectSound failed at stage <g_PackageLastErrorPath> */
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  return StatusValue_Fail(dllLoadResult.carry ? (uint32_t)dllLoadResult.moduleOrError
+  return StatusValue_Fail(dllLoadResult.failed ? (uint32_t)dllLoadResult.moduleOrError
                                               : (uint32_t)resolveResult.procedureOrError);
 }
 
@@ -293,7 +293,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator], SoundSample_DecodePackedCoefficientBlock
    [audio/codec/sam], SoundSample_DecodeCoefficientBlockToPcmMmx [audio/codec/sam].
 */
-SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SampleVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
@@ -307,9 +307,9 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
   SoundSampleAsset *encodedBlock;
   short *outputStereoPcm;
   DirectSoundVoiceSet **registryCursor;
-  ArenaAllocEaxCf5 voiceSetAlloc;
-  SoundCreateSampleVoiceSetEaxCf5 successResult;
-  SoundCreateSampleVoiceSetEaxCf5 failureResult;
+  ArenaAllocResult voiceSetAlloc;
+  SampleVoiceSetResult successResult;
+  SampleVoiceSetResult failureResult;
   int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
@@ -357,8 +357,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
         voiceSetOrErrorCode = (IDirectSoundBuffer **)0x29;
         if (directSoundResult == 0) {
           voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
-          voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.eax;
-          if (!voiceSetAlloc.carry) {
+          voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
+          if (!voiceSetAlloc.failed) {
             remainingCount = 8;
             voiceCursor = voiceSetOrErrorCode;
             do {
@@ -378,8 +378,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
                 registryCursor = registryCursor + 1;
               }
             }
-            successResult.carry = false;
-            successResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+            successResult.failed = false;
+            successResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
             return successResult;
           }
         }
@@ -390,8 +390,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
     (*soundBuffer->lpVtbl->Release)(soundBuffer);
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  failureResult.carry = true;
-  failureResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+  failureResult.failed = true;
+  failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
   return failureResult;
 }
 
@@ -446,7 +446,7 @@ DirectSound_ReleaseSampleVoiceSet(DirectSoundVoiceSet *voiceSet)
    Purpose: CF clear returns the set pointer in EAX; CF set returns an error code.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PcmVoiceSetResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
@@ -462,9 +462,9 @@ DirectSound_CreatePcmVoiceSet
   IDirectSoundBuffer **voiceCursor;
   uint32_t *destCursor;
   DirectSoundVoiceSet **registryCursor;
-  ArenaAllocEaxCf5 voiceSetAlloc;
-  SoundCreatePcmVoiceSetEaxCf5 successResult;
-  SoundCreatePcmVoiceSetEaxCf5 failureResult;
+  ArenaAllocResult voiceSetAlloc;
+  PcmVoiceSetResult successResult;
+  PcmVoiceSetResult failureResult;
   int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
@@ -509,9 +509,9 @@ DirectSound_CreatePcmVoiceSet
       pendingStage = 0x66;
       if (directSoundResult == 0) {
         voiceSetAlloc = (*g_MemoryApi.alloc)(0x20);
-        voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.eax;
+        voiceSetOrErrorCode = (IDirectSoundBuffer **)voiceSetAlloc.payloadOrError;
         pendingStage = failedStage;
-        if (!voiceSetAlloc.carry) {
+        if (!voiceSetAlloc.failed) {
           remainingCount = 8;
           voiceCursor = voiceSetOrErrorCode;
           do {
@@ -531,8 +531,8 @@ DirectSound_CreatePcmVoiceSet
               registryCursor = registryCursor + 1;
             }
           }
-          successResult.carry = false;
-          successResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+          successResult.failed = false;
+          successResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
           return successResult;
         }
       }
@@ -543,8 +543,8 @@ DirectSound_CreatePcmVoiceSet
     (*soundBuffer->lpVtbl->Release)(soundBuffer);
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-  failureResult.carry = true;
-  failureResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+  failureResult.failed = true;
+  failureResult.voiceSet = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
   return failureResult;
 }
 
@@ -613,17 +613,17 @@ static void DirectSound_ApplyChannelGains
 /* Shared body of PlayOneShot/PlayLooping (0x00583930 / 0x00583A70), rewritten from the assembly:
    the first idle voice of the set plays; an empty slot is filled with DuplicateSoundBuffer of
    voice 0 rewound to position 0; with all eight voices busy CF is set. */
-static SoundPlayVoiceEaxCf5 DirectSound_PlayVoiceSet
+static SoundPlayResult DirectSound_PlayVoiceSet
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet,TH_LEGACY_DWORD playFlags)
 {
-  SoundPlayVoiceEaxCf5 result;
+  SoundPlayResult result;
   IDirectSoundBuffer *voice;
   TH_LEGACY_DWORD status;
   int slot;
 
-  result.eax = (IDirectSoundBuffer *)0x0;
-  result.carry = true;
+  result.soundBuffer = (IDirectSoundBuffer *)0x0;
+  result.failed = true;
   if (voiceSet == (DirectSoundVoiceSet *)0x0) {
     return result;
   }
@@ -649,8 +649,8 @@ static SoundPlayVoiceEaxCf5 DirectSound_PlayVoiceSet
   }
   (*voice->lpVtbl->Play)(voice,0,0,playFlags);
   DirectSound_ApplyChannelGains(leftChannelGainQ15,rightChannelGainQ15,voice);
-  result.eax = voice;
-  result.carry = false;
+  result.soundBuffer = voice;
+  result.failed = false;
   return result;
 }
 
@@ -662,7 +662,7 @@ static SoundPlayVoiceEaxCf5 DirectSound_PlayVoiceSet
    overall volume plus signed pan. CF clear returns the selected IDirectSoundBuffer in EAX; CF set returns zero
    when all eight voices are busy or duplication fails.
 */
-SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_PlayOneShot
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)
@@ -677,7 +677,7 @@ DirectSound_PlayOneShot
    Purpose: Finds a non-playing voice or duplicates voices[0], starts playback with DSBPLAY_LOOPING, and applies
    the same gain-to-volume/pan conversion as the one-shot path. CF clear returns the selected IDirectSoundBuffer.
 */
-SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoundPlayResult __thandor_eax_cf_preserve_ecx_edx
 DirectSound_PlayLooping
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           DirectSoundVoiceSet *voiceSet)

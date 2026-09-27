@@ -214,9 +214,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   FactionRuntimeIndex ownerFactionIndex;
   ShotRuntimeSlot *shotRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  ModelLookupEntryEaxCf5 emitterLookup;
-  ModelRaycastNearestHitEaxEdxCf9 armyRaycast;
-  FieldGridRaycastEaxEdxCf9 surfaceRaycast;
+  ModelLookupEntryResult emitterLookup;
+  ModelRaycastResult armyRaycast;
+  TerrainRaycastResult surfaceRaycast;
   FixedMathVectorAnglesRegs8 targetAngles;
   ModelLocalPointRegs12 emitterWorldPoint;
   FixedLengthAnglesEaxEcxEdx12 ballisticAngles;
@@ -264,7 +264,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       (shotRuntime->ownerAndTrajectory).secondaryEffectCountdownTicks =
            shotDefinition->secondaryEffectIntervalTicks;
       emitterLookup = ModelLookupTable_ContainsPackedKeyCf(1,3,shotDefinition->ownedNestedResource);
-      if (!emitterLookup.carry) {
+      if (!emitterLookup.notFound) {
         effectDefinition = shotDefinition->secondaryEffectDefinition;
         effectWorldRuntime = worldRuntime;
         emitterWorldPoint = ModelNodeRuntime_TransformLocalPointRegs
@@ -291,9 +291,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                           ownerModelNode,worldRuntime);
-      nearestArmyHit = armyRaycast.edxCarrier;
+      nearestArmyHit = armyRaycast.nearestNodeOrScratch;
       frameAccumulatorOrDistance = armyRaycast.nearestDistanceQ12;
-      if ((armyRaycast.carry) &&
+      if ((armyRaycast.hit) &&
          (targetClassIndex = *(int *)(((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
                                definitionOrSavedId).savedIdOrOffset + 0x5c),
          ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
@@ -309,7 +309,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       terrainMaterialIndex = surfaceRaycast.materialOrCellIndex;
       terrainHitDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.carry) &&
+      if ((surfaceRaycast.hit) &&
          (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31[terrainMaterialIndex]
           == (EffectDefinition *)0x0)) {
         terrainHitDistance = 0x7fffffff;
@@ -322,7 +322,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       secondaryHitDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.carry) &&
+      if ((surfaceRaycast.hit) &&
          (((shotRuntime->definitionOrSavedId).definition)->primaryEffectDefinition ==
           (EffectDefinition *)0x0)) {
         secondaryHitDistance = 0x7fffffff;
@@ -433,9 +433,9 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,WORLD_OWNER_RUNTIME_MODEL,
                           ownerModelNode,worldRuntime);
-      nearestArmyHit = armyRaycast.edxCarrier;
+      nearestArmyHit = armyRaycast.nearestNodeOrScratch;
       frameCountDistanceOrAge = armyRaycast.nearestDistanceQ12;
-      if ((armyRaycast.carry) &&
+      if ((armyRaycast.hit) &&
          (targetClassIndex = *(int *)(((((nearestArmyHit.nearestModelNode)->runtimePayload).modelRuntime)->
                                definitionOrSavedId).savedIdOrOffset + 0x5c),
          ((shotRuntime->definitionOrSavedId).definition)->targetClassImpactEffectDefinitions8
@@ -451,7 +451,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       terrainMaterialIndex = surfaceRaycast.materialOrCellIndex;
       mixedScalarOrPointerCarrier = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.carry) &&
+      if ((surfaceRaycast.hit) &&
          (((shotRuntime->definitionOrSavedId).definition)->terrainImpactEffectDefinitions31[terrainMaterialIndex]
           == (EffectDefinition *)0x0)) {
         mixedScalarOrPointerCarrier = 0x7fffffff;
@@ -464,7 +464,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                           (modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
       frameAccumulatorOrDistance = surfaceRaycast.distanceQ12;
-      if ((surfaceRaycast.carry) &&
+      if ((surfaceRaycast.hit) &&
          (((shotRuntime->definitionOrSavedId).definition)->primaryEffectDefinition ==
           (EffectDefinition *)0x0)) {
         frameAccumulatorOrDistance = 0x7fffffff;

@@ -26,7 +26,7 @@ CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
 Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x0041BAA0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x00586DA0 */

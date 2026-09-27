@@ -45,8 +45,8 @@ ArmyRuntimeClass_UpdateArticulatedMovement
   int component0;
   ArmyRuntimeCoordinateCommandOrHistoryValue4 x;
   bool withinLinkRadius;
-  WorldPositionXYEaxEdxCf9 waypointResult;
-  WorldPositionEaxEcxEdxCf13 commandTargetPosition;
+  MovementStepResult waypointResult;
+  WorldPositionResult commandTargetPosition;
   FixedLengthAngleEaxEdx8 targetAngleLength;
   ArmyRuntimeSlot *entityRuntime1;
   ModelRuntimeNode *modelNode1;
@@ -143,11 +143,11 @@ ArmyRuntimeClass_UpdateArticulatedMovement
     modelNode1 = modelRuntime->rootModelNode;
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.carry) {
+    if (waypointResult.arrived) {
       commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPositionCf
                          ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
       x.signedValue = commandTargetPosition.worldZQ12;
-      if (!commandTargetPosition.carry) {
+      if (!commandTargetPosition.unresolved) {
         advanceOrHeading = FixedMath_Atan2Angle16
                           (commandTargetPosition.worldYQ12 - (modelNode1->worldTransform).translation.y,
                            commandTargetPosition.worldXQ12 - (modelNode1->worldTransform).translation.x);
@@ -175,7 +175,7 @@ ArmyArticulatedMovement_ClearContactTransitionAndAdvanceWaypoint:
                        (worldRuntime,(ArmyMovementRuntime *)entityRuntime1);
     x.signedValue = waypointResult.worldYQ12;
     steeringAngle16 = (ModelRuntimeNode *)waypointResult.worldXQ12;
-    if (!waypointResult.carry) {
+    if (!waypointResult.arrived) {
       ownerMovementFlags = &entityRuntime1->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -185,11 +185,11 @@ ArmyArticulatedMovement_ClearContactTransitionAndAdvanceWaypoint:
     if ((modelRuntime->runtimeFlags & 8) == 0) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-      if (waypointResult.carry) {
+      if (waypointResult.arrived) {
         commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPositionCf
                            ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
         x.signedValue = commandTargetPosition.worldZQ12;
-        if (commandTargetPosition.carry) goto ArmyArticulatedMovement_SharedContinuation;
+        if (commandTargetPosition.unresolved) goto ArmyArticulatedMovement_SharedContinuation;
         targetAngleLength.angle =
              FixedMath_Atan2Angle16
                        (commandTargetPosition.worldYQ12 - (modelNode1->worldTransform).translation.y,
@@ -441,9 +441,9 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
   bool followingHandled;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
-  ModelSmoothEaxCf5 smoothResult;
-  WorldPositionXYEaxEdxCf9 waypointResult;
-  WorldPositionEaxEcxEdxCf13 aimPoint;
+  AimSmoothResult smoothResult;
+  MovementStepResult waypointResult;
+  WorldPositionResult aimPoint;
   GameEntityRuntime *entityRuntime1;
   ModelRuntimeNode *modelNode2;
   
@@ -491,10 +491,10 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
     point0X = aimPoint.worldZQ12;
     point0Y = aimPoint.worldYQ12;
     point0Z = aimPoint.worldXQ12;
-    if (aimPoint.carry) {
+    if (aimPoint.unresolved) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)entityRuntime1);
-      if (((!waypointResult.carry) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
+      if (((!waypointResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         modelNode2 = modelRuntime->rootModelNode;
         ModelNodeRuntime_SmoothYawTowardTarget(modelNode2,modelRuntime,0);
@@ -513,13 +513,13 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
       smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
                          (modelNode2,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.carry) {
+      if (smoothResult.outsideTolerance) {
         ModelNodeRuntime_SmoothPitchTowardTarget(modelNodeRuntime,modelRuntime,targetPitchAngle16);
       }
       else {
         smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
                            (modelNodeRuntime,modelRuntime,targetPitchAngle16);
-        if ((smoothResult.eax == targetPitchAngle16) &&
+        if ((smoothResult.value == targetPitchAngle16) &&
            (weaponDefinition = modelRuntime->modelDefinition,
            modelRuntime->attachmentReloadCountdownTicks24 == 0)) {
           followingHandled = ArmyRuntimeCommand_UpdateTargetFollowingState
@@ -596,9 +596,9 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
   bool followingHandled;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
-  ModelSmoothEaxCf5 smoothResult;
-  WorldPositionXYEaxEdxCf9 waypointResult;
-  WorldPositionEaxEcxEdxCf13 aimPoint;
+  AimSmoothResult smoothResult;
+  MovementStepResult waypointResult;
+  WorldPositionResult aimPoint;
   GameEntityRuntime *entityRuntime1;
   ModelRuntimeNode *modelNode2;
   
@@ -661,10 +661,10 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
     point0X = aimPoint.worldZQ12;
     point0Y = aimPoint.worldYQ12;
     point0Z = aimPoint.worldXQ12;
-    if (aimPoint.carry) {
+    if (aimPoint.unresolved) {
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)entityRuntime1);
-      if (((!waypointResult.carry) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
+      if (((!waypointResult.arrived) || (modelRuntime->pitchTurnVelocityAngle16 != 0)) ||
          (modelRuntime->yawTurnVelocityAngle16 != 0)) {
         modelNode2 = modelRuntime->rootModelNode;
         ModelNodeRuntime_SmoothYawTowardTarget(modelNode2,modelRuntime,0);
@@ -683,13 +683,13 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
       targetPitchAngle16 = relativeAngles.relativePitchAngle;
       smoothResult = ModelNodeRuntime_SmoothYawTowardTarget
                          (modelNode2,modelRuntime,relativeAngles.relativeYawAngle);
-      if (smoothResult.carry) {
+      if (smoothResult.outsideTolerance) {
         ModelNodeRuntime_SmoothPitchTowardTarget(modelNodeRuntime,modelRuntime,targetPitchAngle16);
       }
       else {
         smoothResult = ModelNodeRuntime_SmoothPitchTowardTarget
                            (modelNodeRuntime,modelRuntime,targetPitchAngle16);
-        if ((smoothResult.eax == targetPitchAngle16) &&
+        if ((smoothResult.value == targetPitchAngle16) &&
            (weaponDefinition = modelRuntime->modelDefinition,
            modelRuntime->attachmentReloadCountdownTicks24 == 0)) {
           followingHandled = ArmyRuntimeCommand_UpdateTargetFollowingState
@@ -779,8 +779,8 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   FixedLengthAngleEaxEdx8 angleAndLength;
   FixedPlanarPointEdxEax8 nextPosition;
   FixedSinCosEdxEax8 sinCosOffset;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
@@ -813,7 +813,7 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   if (((modelRuntime->classState).classStateEC & 8) == 0) {
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.carry) goto ArmyGroundMovementCollision_StopMovementAndTurn;
+    if (waypointResult.arrived) goto ArmyGroundMovementCollision_StopMovementAndTurn;
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
@@ -900,11 +900,11 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    if (blockingCollision.carry) {
+    if (blockingCollision.blocked) {
       modelNode1 = modelRuntime->rootModelNode;
       ArmyRuntime_HandleCollisionPartner
                 ((ArmyRuntimeSlot *)modelRuntime,(modelNode1->worldTransform).translation.y,
-                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
+                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.blockingArmy,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
       THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
@@ -1065,8 +1065,8 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   ModelRuntimeNode *modelNode2;
   bool testResult;
   FixedPlanarPointEdxEax8 nextPosition;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
@@ -1134,7 +1134,7 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
     armyOrWaypointY = (ArmyRuntimeSlot *)waypointResult.worldYQ12;
     waypointWorldX = waypointResult.worldXQ12;
-    if (waypointResult.carry) goto ArmyMovementBanking_ProcessStoppedMovementPlacementAndDamageState;
+    if (waypointResult.arrived) goto ArmyMovementBanking_ProcessStoppedMovementPlacementAndDamageState;
     if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
        (armyOrWaypointY != (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime)) {
       (modelRuntime->classLinkState).classState68 = waypointWorldX;
@@ -1220,11 +1220,11 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    if (blockingCollision.carry) {
+    if (blockingCollision.blocked) {
       modelNode1 = modelRuntime->rootModelNode;
       ArmyRuntime_HandleCollisionPartner
                 ((ArmyRuntimeSlot *)modelRuntime,(modelNode1->worldTransform).translation.y,
-                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
+                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.blockingArmy,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
       THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
@@ -1430,7 +1430,7 @@ ArmyRuntime_StartMoveCommandWithAuxiliaryValues
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   movementRuntime->movementStateFlags = movementRuntime->movementStateFlags | 0x24b;
@@ -1513,7 +1513,7 @@ ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   uint32_t contactY;
   int lateralOffsetY;
   FixedSinCosEdxEax8 lateralOffset;
-  FieldGridHeightEaxCf5 terrainHeightResult;
+  HeightSampleResult terrainHeightResult;
   Q12 worldXQ12;
   Q12 worldYQ12;
   ArmyArticulatedRuntimeSlotView *articulatedRuntime;
@@ -1587,7 +1587,7 @@ ArmyRuntime_QueueOrStartMoveCommandVariantA
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               0x18) != 0) {
@@ -1633,7 +1633,7 @@ ArmyRuntime_QueueOrStartMoveCommandVariantB
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   if (*(int *)((int)(movementRuntime->entityRuntime->common).ownership.definitionOrClassRecord +
               0x18) != 0) {
@@ -1702,8 +1702,8 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   bool withinLinkRadius;
   FixedLengthAngleEaxEdx8 angleAndLength;
   FixedPlanarPointEdxEax8 nextPosition;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
@@ -1736,7 +1736,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   if (((modelRuntime->classState).classStateEC & 8) == 0) {
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.carry) goto ArmyGroundMovementVariantA_StopMovementAndTurn;
+    if (waypointResult.arrived) goto ArmyGroundMovementVariantA_StopMovementAndTurn;
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
@@ -1823,11 +1823,11 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    if (blockingCollision.carry) {
+    if (blockingCollision.blocked) {
       modelNode1 = modelRuntime->rootModelNode;
       ArmyRuntime_HandleCollisionPartner
                 ((ArmyRuntimeSlot *)modelRuntime,(modelNode1->worldTransform).translation.y,
-                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
+                 (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.blockingArmy,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
       THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
@@ -1927,9 +1927,9 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
   uint32_t contactY;
   FixedSinCosEdxEax8 lateralSinCos;
   FixedSinCosEdxEax8 headingSinCos;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
+  HeightNormalSampleResult terrainSample;
   UQ12 contactRadius;
   ModelRuntimeNode *modelNode1;
   
@@ -1968,7 +1968,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
   }
   terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                      ((int)(lateralSinCos >> 0x20) + contactY,(int)lateralSinCos + contactCoordOrLength,activeFieldGrid);
-  if (!terrainSample.carry) {
+  if (!terrainSample.failed) {
     armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
     armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
     contactCoordOrLength = armyRuntime->runtimeState98;
@@ -1976,7 +1976,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        (contactCoordOrLength,armyRuntime->runtimeState90,(RuntimeCollisionQueryViewF4 *)armyRuntime
                         ,worldRuntime);
-    if (!blockingCollision.carry) {
+    if (!blockingCollision.blocked) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & 0xffffff7f;
       goto ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact;
@@ -1985,7 +1985,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
               ((ArmyRuntimeSlot *)armyRuntime,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
-               (ArmyRuntimeSlot *)blockingCollision.eax,worldRuntime);
+               (ArmyRuntimeSlot *)blockingCollision.blockingArmy,worldRuntime);
   }
   reachOrAngle = headingAngle16 + 0x4000 & 0xffff;
   lateralSinCos = FixedMath_SinCosScaled(reachOrAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
@@ -1998,7 +1998,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
   lateralSinCos = FixedMath_SinCosScaled(reachOrAngle,contactRadius);
   terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                      ((int)(lateralSinCos >> 0x20) + contactY,(int)lateralSinCos + contactCoordOrLength,activeFieldGrid);
-  if (terrainSample.carry) {
+  if (terrainSample.failed) {
     return;
   }
   armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
@@ -2057,9 +2057,9 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
   int contactYOrStep;
   FixedSinCosEdxEax8 lateralSinCos;
   FixedSinCosEdxEax8 headingSinCos;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
+  HeightNormalSampleResult terrainSample;
   UQ12 contactRadius;
   ModelRuntimeNode *modelNode1;
   
@@ -2098,7 +2098,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
   }
   terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                      ((int)(lateralSinCos >> 0x20) + contactYOrStep,(int)lateralSinCos + contactCoordOrLength,activeFieldGrid);
-  if (!terrainSample.carry) {
+  if (!terrainSample.failed) {
     armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
     armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
     contactCoordOrDistance = armyRuntime->articulatedCoordinateOrState9C;
@@ -2106,7 +2106,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        (contactCoordOrDistance,armyRuntime->runtimeState94,(RuntimeCollisionQueryViewF4 *)armyRuntime
                         ,worldRuntime);
-    if (!blockingCollision.carry) {
+    if (!blockingCollision.blocked) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & 0xffffff7f;
       goto ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact;
@@ -2115,7 +2115,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
               ((ArmyRuntimeSlot *)armyRuntime,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
-               (ArmyRuntimeSlot *)blockingCollision.eax,worldRuntime);
+               (ArmyRuntimeSlot *)blockingCollision.blockingArmy,worldRuntime);
   }
   reachOrAngle = headingAngle16 - 0x4000 & 0xffff;
   lateralSinCos = FixedMath_SinCosScaled(reachOrAngle,(armyRuntime->articulatedContact).lateralOffsetQ12);
@@ -2128,7 +2128,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
   lateralSinCos = FixedMath_SinCosScaled(reachOrAngle,contactRadius);
   terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                      ((int)(lateralSinCos >> 0x20) + contactCoordOrDistance,(int)lateralSinCos + contactCoordOrLength,activeFieldGrid);
-  if (terrainSample.carry) {
+  if (terrainSample.failed) {
     return;
   }
   armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
@@ -2195,8 +2195,8 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   bool withinLinkRadius;
   FixedLengthAngleEaxEdx8 angleAndLength;
   FixedPlanarPointEdxEax8 nextPosition;
-  ArmyCollisionFindEaxCf5 blockingCollision;
-  WorldPositionXYEaxEdxCf9 waypointResult;
+  ArmyCollisionResult blockingCollision;
+  MovementStepResult waypointResult;
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
@@ -2223,7 +2223,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   if (((modelRuntime->classState).classStateEC & 8) == 0) {
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
-    if (waypointResult.carry) goto ArmyGroundMovementVariantB_StopMovementAndTurn;
+    if (waypointResult.arrived) goto ArmyGroundMovementVariantB_StopMovementAndTurn;
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
@@ -2310,7 +2310,7 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    if (blockingCollision.carry) {
+    if (blockingCollision.blocked) {
       modelNode1 = modelRuntime->rootModelNode;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
       THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
@@ -2398,7 +2398,7 @@ ArmyRuntime_StartClampedMoveCommand
   InGameRuntimeRootImageC3E4 *inGameRoot;
   FixedLengthAngleEaxEdx8 offsetAngleLength;
   FixedSinCosEdxEax8 clampedOffset;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   inGameRoot = g_InGameRuntimeRoot;
   if (((movementRuntime->movementStateFlags & 3) == 0) && (movementRuntime->retryCountdown == 0)) {
@@ -2442,7 +2442,7 @@ ArmyRuntime_StartDirectMoveCommand
   GraphicsWorldCoordinateQ12 currentWorldX;
   GraphicsWorldCoordinateQ12 currentWorldY;
   WorldRuntimeContext *worldRuntime;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   if ((movementRuntime->movementStateFlags & 2) == 0) {
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
@@ -2914,7 +2914,7 @@ ArmyArticulatedRuntime_InitializeLeftTerrainContact
   uint32_t contactLength;
   uint32_t angle;
   FixedSinCosEdxEax8 offsetSinCos;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  HeightNormalSampleResult terrainSample;
   
   armyRuntime->ownerValue64 = headingAngle16;
   (armyRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.signedValue =
@@ -2931,7 +2931,7 @@ ArmyArticulatedRuntime_InitializeLeftTerrainContact
     terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                       ((int)(offsetSinCos >> 0x20) + armyRuntime->runtimeState98,
                        (int)offsetSinCos + armyRuntime->runtimeState90,worldRuntime->fieldGrid);
-    if (!terrainSample.carry) {
+    if (!terrainSample.failed) {
       armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
       armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
       definitionAsset = armyRuntime->definitionOrAsset;
@@ -2976,7 +2976,7 @@ ArmyArticulatedRuntime_InitializeRightTerrainContact
   uint32_t contactLength;
   uint32_t angle;
   FixedSinCosEdxEax8 offsetSinCos;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  HeightNormalSampleResult terrainSample;
   
   armyRuntime->ownerValue64 = headingAngle16;
   (armyRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue =
@@ -2993,7 +2993,7 @@ ArmyArticulatedRuntime_InitializeRightTerrainContact
     terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                       ((int)(offsetSinCos >> 0x20) + armyRuntime->articulatedCoordinateOrState9C,
                        (int)offsetSinCos + armyRuntime->runtimeState94,worldRuntime->fieldGrid);
-    if (!terrainSample.carry) {
+    if (!terrainSample.failed) {
       armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
       armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
       definitionAsset = armyRuntime->definitionOrAsset;
@@ -3041,7 +3041,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
   uint32_t scaledLateralOffset;
   int contactYOrStep;
   FixedSinCosEdxEax8 offsetSinCos;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  HeightNormalSampleResult terrainSample;
   FieldGridAsset *fieldGrid1;
   ModelRuntimeNode *modelNode1;
   
@@ -3076,7 +3076,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
       terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                          ((int)(offsetSinCos >> 0x20) + armyRuntime->runtimeState98,
                           (int)offsetSinCos + armyRuntime->runtimeState90,fieldGrid1);
-      if (!terrainSample.carry) {
+      if (!terrainSample.failed) {
         armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
         armyRuntime->fallbackWorldYQ12 = terrainSample.packedNormalAngles;
       }
@@ -3133,7 +3133,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
       terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                          ((int)(offsetSinCos >> 0x20) + armyRuntime->articulatedCoordinateOrState9C,
                           (int)offsetSinCos + armyRuntime->runtimeState94,fieldGrid1);
-      if (!terrainSample.carry) {
+      if (!terrainSample.failed) {
         armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
         armyRuntime->fallbackWorldXQ12 = terrainSample.packedNormalAngles;
       }
@@ -3265,7 +3265,7 @@ ArmyRuntime_StartMoveCommandWithFallbackWaypoints
   WorldRuntimeContext *worldRuntime;
   Q12 *fallbackCoordinateRead;
   Q12 *waypointCoordinateWrite;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  PathingDestinationResult resolvedDestination;
   
   if (((movementRuntime->movementStateFlags & 0x202) == 0) && (movementRuntime->retryCountdown == 0)
      ) {
@@ -3371,7 +3371,7 @@ ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementR
    Local calls: ArmyRuntime_QueueOrStartMoveCommandVariantB, ArmyRuntime_StartDirectMoveCommand.
    Cross-module calls: EntityPathing_ResolveDestinationAndRebuildRoutes [world/pathing/grid].
 */
-WorldPositionXYEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+MovementStepResult __thandor_eax_edx_cf_preserve_ecx
 ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime)
 
@@ -3389,11 +3389,11 @@ ArmyRuntime_UpdateMovementAndWaypoints
   Q12 *queuedCoordinateRead;
   Q12 *queuedCoordinateWrite;
   bool belowThreshold;
-  WorldPositionXYEaxEdxCf9 storedPosition;
-  WorldPositionXYEaxEdxCf9 resolvedPosition;
-  WorldPositionXYEaxEdxCf9 arrivedPosition;
-  WorldPositionXYEaxEdxCf9 directMoveResult;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
+  MovementStepResult storedPosition;
+  MovementStepResult resolvedPosition;
+  MovementStepResult arrivedPosition;
+  MovementStepResult directMoveResult;
+  PathingDestinationResult resolvedDestination;
   Q12 queuedWorldYQ12;
   Q12 queuedWorldXQ12;
   ModelRuntimeNode *modelNode1;
@@ -3405,7 +3405,7 @@ ArmyRuntime_UpdateMovementAndWaypoints
       movementWorldY = movementRuntime->movementWorldYQ12;
       storedPosition.worldYQ12 = movementWorldY;
       storedPosition.worldXQ12 = movementWorldX;
-      storedPosition.carry = false;
+      storedPosition.arrived = false;
       return storedPosition;
     }
   }
@@ -3449,7 +3449,7 @@ ArmyRuntime_UpdateMovementAndWaypoints
         /* Still waiting at the same spot: keep the stored movement position. */
         storedPosition.worldYQ12 = movementRuntime->movementWorldYQ12;
         storedPosition.worldXQ12 = movementRuntime->movementWorldXQ12;
-        storedPosition.carry = false;
+        storedPosition.arrived = false;
         return storedPosition;
       }
       movementRuntime->retryCountdown = 0x40;
@@ -3459,12 +3459,12 @@ ArmyRuntime_UpdateMovementAndWaypoints
                          ((movementRuntime->fallbackPosition).worldYQ12,
                           (movementRuntime->fallbackPosition).worldXQ12,
                           movementRuntime->entityRuntime,worldRuntime);
-      if (!resolvedDestination.carry) {
+      if (!resolvedDestination.failed) {
         movementRuntime->movementWorldXQ12 = resolvedDestination.primaryWorldXQ12;
         movementRuntime->movementWorldYQ12 = resolvedDestination.primaryWorldYQ12;
         (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
         (movementRuntime->fallbackPosition).worldYQ12 = resolvedDestination.fallbackWorldYQ12;
-        resolvedPosition.carry = false;
+        resolvedPosition.arrived = false;
         resolvedPosition.worldXQ12 = (int)THANDOR_PART(uint64_t, resolvedDestination, 0);
         resolvedPosition.worldYQ12 = (int)(THANDOR_PART(uint64_t, resolvedDestination, 0) >> 0x20);
         return resolvedPosition;
@@ -3486,7 +3486,7 @@ ArmyRuntime_UpdateMovementAndWaypoints
     currentWorldY = (modelNode1->worldTransform).translation.y;
     arrivedPosition.worldYQ12 = currentWorldY;
     arrivedPosition.worldXQ12 = currentWorldX;
-    arrivedPosition.carry = true;
+    arrivedPosition.arrived = true;
     return arrivedPosition;
   }
   belowThreshold = exceededDistance < 0x1000;
@@ -3495,7 +3495,7 @@ ArmyRuntime_UpdateMovementAndWaypoints
              movementRuntime);
   directMoveResult.worldYQ12 = distanceY;
   directMoveResult.worldXQ12 = distanceX;
-  directMoveResult.carry = belowThreshold;
+  directMoveResult.arrived = belowThreshold;
   return directMoveResult;
 }
 

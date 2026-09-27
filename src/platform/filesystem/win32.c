@@ -15,7 +15,7 @@
    Ownership: platform/filesystem/win32.
    Purpose: Builds the file-enumeration string table with the recovered carry/error result.
 */
-FileSystemStringTableEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+EnumerationStringTableResult __thandor_eax_ecx_cf_preserve_edx
 FileSystem_BuildEnumerationStringTableCf
           (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText)
 
@@ -32,17 +32,17 @@ FileSystem_BuildEnumerationStringTableCf
   uint8_t *sourceRecord;
   uint8_t *stringCursor;
   bool capacityCheck;
-  ArenaShrinkEaxCf5 shrinkResult;
-  ArenaFreeEaxCf5 freeResult;
-  ArenaLargestAllocationEaxEcxCf9 largestBlock;
-  FileSystemEnumerationEaxEcxCf9 enumerationResult;
-  FileSystemStringTableEaxEcxCf9 successResult;
-  FileSystemStringTableEaxEcxCf9 failureResult;
+  ArenaShrinkResult shrinkResult;
+  ArenaFreeResult freeResult;
+  ArenaLargestAllocResult largestBlock;
+  DirectoryEnumerationResult enumerationResult;
+  EnumerationStringTableResult successResult;
+  EnumerationStringTableResult failureResult;
   
   largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
   outputCapacityBytes = largestBlock.blockSizeOrSentinel;
   outputRecords = (uint8_t *)largestBlock.allocationOrError;
-  if (!largestBlock.carry) {
+  if (!largestBlock.failed) {
     enumerationResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                        (enumerationMode,reserved,outputCapacityBytes,outputRecords,pathOrVolumeText)
     ;
@@ -50,22 +50,22 @@ FileSystem_BuildEnumerationStringTableCf
     recordStride = (uint8_t *)enumerationResult.recordSizeBytes;
     memory = recordStride;
     outputCapacityBytes = foundEntryCount;
-    if (!enumerationResult.carry) {
+    if (!enumerationResult.failed) {
       if (foundEntryCount == 0) {
         (*g_MemoryApi.free)(outputRecords);
         successResult.tableOrError = 0;
         successResult.entryCountOrScratch = 0;
-        successResult.carry = false;
+        successResult.failed = false;
         return successResult;
       }
       outputCapacityBytes = foundEntryCount * (int)recordStride;
       shrinkResult = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
       memory = (uint8_t *)shrinkResult.scratchOrError;
-      if (!shrinkResult.carry) {
+      if (!shrinkResult.failed) {
         largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
         outputCapacityBytes = largestBlock.blockSizeOrSentinel;
         memory = (uint8_t *)largestBlock.allocationOrError;
-        if (!largestBlock.carry) {
+        if (!largestBlock.failed) {
           stringCursor = memory + foundEntryCount * 4;
           capacityCheck = foundEntryCount * 4 <= outputCapacityBytes;
           outputCapacityBytes = outputCapacityBytes + foundEntryCount * -4;
@@ -93,14 +93,14 @@ FileSystem_BuildEnumerationStringTableCf
                 (*g_MemoryApi.free)(outputRecords);
                 successResult.entryCountOrScratch = foundEntryCount;
                 successResult.tableOrError = (uint32_t)memory;
-                successResult.carry = false;
+                successResult.failed = false;
                 return successResult;
               }
             } while( true );
           }
 FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
           freeResult = (*g_MemoryApi.free)(memory);
-          memory = (uint8_t *)freeResult.eax;
+          memory = (uint8_t *)freeResult.valueOrError;
         }
       }
     }
@@ -109,7 +109,7 @@ FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
   }
   failureResult.entryCountOrScratch = outputCapacityBytes;
   failureResult.tableOrError = (uint32_t)outputRecords;
-  failureResult.carry = true;
+  failureResult.failed = true;
   return failureResult;
 }
 
@@ -132,11 +132,11 @@ uint32_t __cdecl FileSystem_Init(void)
   int clearCount;
   ArenaPayloadByteCount bytes;
   uint16_t *labelCursor;
-  ArenaAllocEaxCf5 allocResult;
-  Win32FileOpenEaxCf5 openResult;
-  Win32FileSizeEaxCf5 sizeResult;
-  Win32FileReadEaxCf5 readResult;
-  StatusValueEaxCf5 mountResult;
+  ArenaAllocResult allocResult;
+  Win32FileOpenResult openResult;
+  Win32FileSizeResult sizeResult;
+  Win32FileReadResult readResult;
+  StatusResult mountResult;
   
   /* open-thandor: the original took the executable path from the first command-line token, which
      is only a bare "thandor.exe" when started from a shell or batch file; the executable
@@ -183,29 +183,29 @@ uint32_t __cdecl FileSystem_Init(void)
     Text_CopyNarrowToUtf16Cf(0x40,g_DefaultComputerLabelUtf16,g_Win32PathScratchA);
   }
   allocResult = ArenaHeap_Alloc(0x800000);
-  if (allocResult.carry) {
+  if (allocResult.failed) {
                     // WARNING: Subroutine does not return
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
-  g_PackageScratchBuffer = (uint8_t *)allocResult.eax;
+  g_PackageScratchBuffer = (uint8_t *)allocResult.payloadOrError;
   openResult = Win32File_OpenCf(0,(uint16_t *)u_THANDOR_cfg_0040e23d);
-  handle = (void *)openResult.eax;
-  if (openResult.carry) {
+  handle = (void *)openResult.handleOrError;
+  if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,(uint16_t *)u_THANDOR_cfg_0040e23d,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = Win32File_OpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (void *)openResult.eax;
-    if (openResult.carry) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
+    handle = (void *)openResult.handleOrError;
+    if (openResult.failed) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
   }
   sizeResult = Win32File_GetSizeCf(handle);
-  bytes = sizeResult.eax;
-  if ((!sizeResult.carry) && (bytes != 0)) {
+  bytes = sizeResult.sizeOrError;
+  if ((!sizeResult.failed) && (bytes != 0)) {
     allocResult = ArenaHeap_Alloc(bytes);
-    configCursor = (uint8_t *)allocResult.eax;
-    if (!allocResult.carry) {
+    configCursor = (uint8_t *)allocResult.payloadOrError;
+    if (!allocResult.failed) {
       readResult = Win32File_ReadExactCf(bytes,configCursor,handle);
-      if (readResult.carry) {
+      if (readResult.failed) {
         ArenaHeap_Free(configCursor);
       }
       else {
@@ -241,7 +241,7 @@ uint32_t __cdecl FileSystem_Init(void)
 FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
   Win32File_GetCurrentDirectoryCf(g_InitialWorkingDirectory.codeUnits);
   mountResult = Package_MountLowPriority((uint16_t *)u_engine_pck_0040e255);
-  if (!mountResult.carry) {
+  if (!mountResult.failed) {
     g_EnginePackageLowPriorityMountHandle = mountResult.valueOrError;
   }
   return mountResult.valueOrError;
@@ -254,18 +254,18 @@ FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
    date with CF clear.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDateCf(uint16_t *path)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDateCf(uint16_t *path)
 
 {
   BOOL fileTimeQuerySucceeded;
   HANDLE hFile;
-  Win32FileOpenEaxCf5 openResult;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  Win32FileOpenResult openResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   openResult = Win32File_OpenCf(0,path);
-  hFile = (HANDLE)openResult.eax;
-  if ((!openResult.carry) && (hFile != (HANDLE)0xffffffff)) {
+  hFile = (HANDLE)openResult.handleOrError;
+  if ((!openResult.failed) && (hFile != (HANDLE)0xffffffff)) {
     fileTimeQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)0x0,(LPFILETIME)0x0,
                      (LPFILETIME)&g_Win32FileLastWriteTimeScratch);
@@ -276,12 +276,12 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDat
                 ((FILETIME *)&g_Win32FileLastWriteTimeScratch,
                  (LPWORD)((int)&g_Win32FileCreationTimeOrDosDateScratch + 2),
                  (LPWORD)&g_Win32FileCreationTimeOrDosDateScratch);
-      successResult.carry = false;
+      successResult.failed = false;
       successResult.valueOrError = g_Win32FileCreationTimeOrDosDateScratch;
       return successResult;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)hFile;
   return failureResult;
 }
@@ -293,30 +293,30 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDat
    failure.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHighCf(uint16_t *path)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHighCf(uint16_t *path)
 
 {
   BOOL fileTimeQuerySucceeded;
   HANDLE hFile;
-  Win32FileOpenEaxCf5 openResult;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  Win32FileOpenResult openResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   openResult = Win32File_OpenCf(0,path);
-  hFile = (HANDLE)openResult.eax;
-  if (!openResult.carry) {
+  hFile = (HANDLE)openResult.handleOrError;
+  if (!openResult.failed) {
     fileTimeQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)0x0,(LPFILETIME)0x0,
                      (LPFILETIME)&g_Win32FileLastWriteTimeScratch);
     Win32File_Close(hFile);
     hFile = (HANDLE)0x1;
     if (fileTimeQuerySucceeded != 0) {
-      successResult.carry = false;
+      successResult.failed = false;
       successResult.valueOrError = g_Win32FileLastWriteTimeHighScratch;
       return successResult;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)hFile;
   return failureResult;
 }
@@ -334,11 +334,11 @@ uint32_t Win32Drive_GetVolumeSerialNumberCf(uint8_t *outputLabel,char *path)
   BOOL volumeInformationQuerySucceeded;
   HANDLE hFile;
   uint32_t volumeSerialNumber;
-  Win32FileOpenEaxCf5 openResult;
+  Win32FileOpenResult openResult;
   
   openResult = Win32File_OpenCf(0,(uint16_t *)path);
-  hFile = (HANDLE)openResult.eax;
-  if (!openResult.carry) {
+  hFile = (HANDLE)openResult.handleOrError;
+  if (!openResult.failed) {
     volumeInformationQuerySucceeded =
          GetFileTime(hFile,(LPFILETIME)&g_Win32FileCreationTimeOrDosDateScratch,
                      (LPFILETIME)&g_Win32FileLastAccessTimeScratch,
@@ -395,53 +395,53 @@ Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
    Ownership: platform/filesystem/win32.
    Purpose: Loads a whole file through the recovered file-system path and returns the carry/error contract.
 */
-FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(uint16_t *pathUtf16)
+FileLoadResult __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(uint16_t *pathUtf16)
 
 {
   void *handle;
   void *bytes;
-  FileSystemOpenEaxCf5 openResult;
-  FileSystemSizeEaxCf5 sizeResult;
-  ArenaAllocEaxCf5 allocResult;
-  FileSystemReadEaxCf5 readResult;
-  FileBufferEaxCf5 failureResult;
+  FileSystemOpenResult openResult;
+  FileSystemSizeResult sizeResult;
+  ArenaAllocResult allocResult;
+  FileSystemReadResult readResult;
+  FileLoadResult failureResult;
   
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-  handle = (void *)openResult.eax;
-  if (openResult.carry) {
+  handle = (void *)openResult.handleOrError;
+  if (openResult.failed) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
-    handle = (void *)openResult.eax;
-    if (openResult.carry) {
-      failureResult.carry = true;
+    handle = (void *)openResult.handleOrError;
+    if (openResult.failed) {
+      failureResult.failed = true;
       failureResult.bufferOrError = handle; /* the open error code */
       return failureResult;
     }
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
-  bytes = (void *)sizeResult.eax;
-  if (!sizeResult.carry) {
+  bytes = (void *)sizeResult.sizeOrError;
+  if (!sizeResult.failed) {
     allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
-    if (allocResult.carry) {
+    if (allocResult.failed) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
-      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.eax,handle);
-      bytes = (void *)readResult.eax;
-      if (!readResult.carry) {
+      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
+      bytes = (void *)readResult.valueOrError;
+      if (!readResult.failed) {
         (*g_FileSystemClose)(handle);
-        return THANDOR_BITCAST(uint64_t, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
-      (*g_MemoryApi.free)((void *)allocResult.eax);
+      (*g_MemoryApi.free)((void *)allocResult.payloadOrError);
     }
   }
   (*g_FileSystemClose)(handle);
   handle = bytes;
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.bufferOrError = handle;
   return failureResult;
 }
@@ -450,54 +450,54 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(ui
    Ownership: platform/filesystem/win32.
    Purpose: Loads a whole file through the alternate recovered path and returns the carry/error contract.
 */
-FileBufferEaxCf5 __thandor_eax_cf_preserve_edx
+FileLoadResult __thandor_eax_cf_preserve_edx
 FileSystem_LoadWholeFileAlternatePathCf(uint16_t *pathUtf16)
 
 {
   void *handle;
   void *bytes;
-  FileSystemOpenEaxCf5 openResult;
-  FileSystemSizeEaxCf5 sizeResult;
-  ArenaAllocEaxCf5 allocResult;
-  FileSystemReadEaxCf5 readResult;
-  FileBufferEaxCf5 failureResult;
+  FileSystemOpenResult openResult;
+  FileSystemSizeResult sizeResult;
+  ArenaAllocResult allocResult;
+  FileSystemReadResult readResult;
+  FileLoadResult failureResult;
   
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
   openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-  handle = (void *)openResult.eax;
-  if (openResult.carry) {
+  handle = (void *)openResult.handleOrError;
+  if (openResult.failed) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
-    handle = (void *)openResult.eax;
-    if (openResult.carry) {
-      failureResult.carry = true;
+    handle = (void *)openResult.handleOrError;
+    if (openResult.failed) {
+      failureResult.failed = true;
       failureResult.bufferOrError = handle; /* the open error code */
       return failureResult;
     }
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
-  bytes = (void *)sizeResult.eax;
-  if (!sizeResult.carry) {
+  bytes = (void *)sizeResult.sizeOrError;
+  if (!sizeResult.failed) {
     allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
-    if (allocResult.carry) {
+    if (allocResult.failed) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
-      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.eax,handle);
-      bytes = (void *)readResult.eax;
-      if (!readResult.carry) {
+      readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,(void *)allocResult.payloadOrError,handle);
+      bytes = (void *)readResult.valueOrError;
+      if (!readResult.failed) {
         (*g_FileSystemClose)(handle);
-        return THANDOR_BITCAST(uint64_t, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileLoadResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
-      (*g_MemoryApi.free)((void *)allocResult.eax);
+      (*g_MemoryApi.free)((void *)allocResult.payloadOrError);
     }
   }
   (*g_FileSystemClose)(handle);
   handle = bytes;
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.bufferOrError = handle;
   return failureResult;
 }
@@ -507,33 +507,33 @@ FileSystem_LoadWholeFileAlternatePathCf(uint16_t *pathUtf16)
    Purpose: Opens a UTF-16 path with engine mode 3, writes exactly byteCount bytes, and closes the handle. On write
    failure it closes and deletes the partial file. CF clear returns EAX zero; CF set preserves the backend error.
 */
-StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,uint16_t *path)
+StatusResult FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,uint16_t *path)
 
 {
   void *handle;
   void *writeFailureStatusCode;
-  FileSystemOpenEaxCf5 openResult;
-  FileSystemWriteEaxCf5 writeResult;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  FileSystemOpenResult openResult;
+  FileSystemWriteResult writeResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   openResult = (*g_FileSystemOpenCf)
                     (FILESYSTEM_OPEN_EXCLUSIVE_SHARE|FILESYSTEM_OPEN_CREATE_OR_TRUNCATE,path);
-  handle = (void *)openResult.eax;
-  if (!openResult.carry) {
+  handle = (void *)openResult.handleOrError;
+  if (!openResult.failed) {
     writeResult = (*g_FileSystemWriteExactOrFlushCf)(byteCount,source,handle);
-    writeFailureStatusCode = (void *)writeResult.eax;
-    if (!writeResult.carry) {
+    writeFailureStatusCode = (void *)writeResult.valueOrError;
+    if (!writeResult.failed) {
       (*g_FileSystemClose)(handle);
       successResult.valueOrError = 0;
-      successResult.carry = false;
+      successResult.failed = false;
       return successResult;
     }
     (*g_FileSystemClose)(handle);
     handle = writeFailureStatusCode;
     (*g_FileSystemDeleteCf)(1,path);
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)handle;
   return failureResult;
 }
@@ -544,22 +544,22 @@ StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void 
    Purpose: Writes exactly byteCount bytes, or flushes the handle when byteCount is zero. CF set returns engine
    error 7 or 8.
 */
-Win32FileWriteEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32FileWriteResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handle)
 
 {
   BOOL operationSucceeded;
   uint32_t writeCompletionStatusCode;
   BOOL setEndOfFileSucceeded;
-  Win32FileWriteEaxCf5 successResult;
-  Win32FileWriteEaxCf5 flushResult;
-  Win32FileWriteEaxCf5 failureResult;
+  Win32FileWriteResult successResult;
+  Win32FileWriteResult flushResult;
+  Win32FileWriteResult failureResult;
   
   g_Win32FileBytesTransferred = 0;
   if (byteCount == 0) {
     setEndOfFileSucceeded = SetEndOfFile(handle);
-    flushResult.carry = false;
-    flushResult.eax = setEndOfFileSucceeded;
+    flushResult.failed = false;
+    flushResult.valueOrError = setEndOfFileSucceeded;
     return flushResult;
   }
   operationSucceeded =
@@ -567,12 +567,12 @@ Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handl
   writeCompletionStatusCode = 8;
   if ((operationSucceeded != 0) &&
      (writeCompletionStatusCode = 7, byteCount == g_Win32FileBytesTransferred)) {
-    successResult.eax = 7;
-    successResult.carry = false;
+    successResult.valueOrError = 7;
+    successResult.failed = false;
     return successResult;
   }
-  failureResult.carry = true;
-  failureResult.eax = writeCompletionStatusCode;
+  failureResult.failed = true;
+  failureResult.valueOrError = writeCompletionStatusCode;
   return failureResult;
 }
 
@@ -599,22 +599,22 @@ uint32_t Win32File_GetPositionCf(void *handle)
    distance→FileSystemFilePosition_V331. Calling convention, exact VariableStorage serialization, function body
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-Win32FileSeekEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32FileSeekResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_SeekCf(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance,void *handle)
 
 {
   DWORD newFilePosition;
-  Win32FileSeekEaxCf5 successResult;
-  Win32FileSeekEaxCf5 failureResult;
+  Win32FileSeekResult successResult;
+  Win32FileSeekResult failureResult;
   
   newFilePosition = SetFilePointer(handle,distance,(PLONG)0x0,moveMethod);
   if (newFilePosition != 0xffffffff) {
-    successResult.carry = false;
-    successResult.eax = newFilePosition;
+    successResult.failed = false;
+    successResult.positionOrError = newFilePosition;
     return successResult;
   }
-  failureResult.carry = true;
-  failureResult.eax = 9;
+  failureResult.failed = true;
+  failureResult.positionOrError = 9;
   return failureResult;
 }
 
@@ -646,24 +646,24 @@ uint32_t Win32File_DeleteCf(uint32_t unusedFlags,uint16_t *path)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_MoveCf(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL operationSucceeded;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   Package_SetLastErrorPath(sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchB,destinationPath);
   operationSucceeded = MoveFileA((LPCSTR)g_Win32PathScratchA,(LPCSTR)g_Win32PathScratchB);
   if (operationSucceeded != 0) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.valueOrError = operationSucceeded;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = 1;
   return failureResult;
 }
@@ -676,24 +676,24 @@ Win32File_MoveCf(uint16_t *destinationPath,uint16_t *sourcePath)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_CopyCf(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL operationSucceeded;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   Package_SetLastErrorPath(sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,sourcePath);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchB,destinationPath);
   operationSucceeded = CopyFileA((LPCSTR)g_Win32PathScratchA,(LPCSTR)g_Win32PathScratchB,1);
   if (operationSucceeded != 0) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.valueOrError = operationSucceeded;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = 1;
   return failureResult;
 }
@@ -709,13 +709,13 @@ Win32File_CopyCf(uint16_t *destinationPath,uint16_t *sourcePath)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext], WidePath_SplitParentAndLeaf [core/text/path].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,uint16_t *path)
 
 {
   uint32_t createSucceeded;
-  StatusValueEaxCf5 parentOrSuccessResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult parentOrSuccessResult;
+  StatusResult failureResult;
   uint16_t parentPath [256];
   uint16_t leafName [248];
 
@@ -726,23 +726,23 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,uint16
     if ((flags & FILESYSTEM_CREATE_DIRECTORY_RECURSIVE) != 0) {
       WidePath_SplitParentAndLeaf(leafName,parentPath,path);
       parentOrSuccessResult = Win32File_CreateDirectoryRecursiveCf(flags,parentPath);
-      if (!parentOrSuccessResult.carry) {
+      if (!parentOrSuccessResult.failed) {
         RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
         createSucceeded = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
         if (createSucceeded != 0) {
           /* created after its parents */
-          parentOrSuccessResult.carry = false;
+          parentOrSuccessResult.failed = false;
           parentOrSuccessResult.valueOrError = createSucceeded;
           return parentOrSuccessResult;
         }
       }
     }
     Package_SetLastErrorPath(path);
-    failureResult.carry = true;
+    failureResult.failed = true;
     failureResult.valueOrError = 8;
     return failureResult;
   }
-  parentOrSuccessResult.carry = false;
+  parentOrSuccessResult.failed = false;
   parentOrSuccessResult.valueOrError = createSucceeded;
   return parentOrSuccessResult;
 }
@@ -753,21 +753,21 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,uint16
    Purpose: Converts one UTF-16 path and calls RemoveDirectoryA. Error 11 is returned with CF set.
    Cross-module calls: RichTextCommandStream_CopyToNarrowCf [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectoryCf(uint16_t *path)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectoryCf(uint16_t *path)
 
 {
   BOOL operationSucceeded;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
   operationSucceeded = RemoveDirectoryA((LPCSTR)g_Win32PathScratchA);
   if (operationSucceeded != 0) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.valueOrError = operationSucceeded;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = 0xb;
   return failureResult;
 }
@@ -1004,7 +1004,7 @@ Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi
    [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf [assets/text/richtext],
    Utf16String_CompareAsciiCaseInsensitiveFlags [core/text/string].
 */
-FileSystemEnumerationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+DirectoryEnumerationResult __thandor_eax_ecx_cf_preserve_edx
 Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
           (FileSystemEnumerationMode mode,uint32_t reserved,
           FileSystemOutputCapacityBytes outputCapacityBytes,uint8_t *outputRecords,
@@ -1021,8 +1021,8 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
   uint16_t *destination;
   uint32_t *leftRecordDwords;
   uint32_t *copyDestination;
-  FileSystemEnumerationEaxEcxCf9 enumerationResult;
-  FileSystemEnumerationEaxEcxCf9 volumeResult;
+  DirectoryEnumerationResult enumerationResult;
+  DirectoryEnumerationResult volumeResult;
   CompareFlagsCfZf2 compareFlags;
   int passesRemaining;
   
@@ -1034,7 +1034,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     if (apiSucceeded == 0) {
       enumerationResult.recordSizeBytes = 0x200;
       enumerationResult.entryCount = 0;
-      enumerationResult.carry = false;
+      enumerationResult.failed = false;
       return enumerationResult;
     }
     recordCount = 0;
@@ -1042,7 +1042,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
       Text_CopyNarrowToUtf16Cf(0x200,(uint16_t *)outputRecords,g_Win32PathScratchA);
       volumeResult.entryCount = 1;
       volumeResult.recordSizeBytes = 0x200;
-      volumeResult.carry = false;
+      volumeResult.failed = false;
       return volumeResult;
     }
   }
@@ -1054,7 +1054,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     if (hFindFile == (HANDLE)0xffffffff) {
       enumerationResult.recordSizeBytes = 0x200;
       enumerationResult.entryCount = 0;
-      enumerationResult.carry = false;
+      enumerationResult.failed = false;
       return enumerationResult;
     }
     recordCount = 0;
@@ -1123,7 +1123,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
   }
   enumerationResult.entryCount = recordCount;
   enumerationResult.recordSizeBytes = 0x200;
-  enumerationResult.carry = false;
+  enumerationResult.failed = false;
   return enumerationResult;
 }
 
@@ -1133,22 +1133,22 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
    Purpose: Reads exactly byteCount bytes. CF clear means the requested count was transferred; CF set returns
    engine error 6.
 */
-Win32FileReadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32FileReadResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_ReadExactCf(FileIoByteCount byteCount,void *destination,void *handle)
 
 {
-  Win32FileReadEaxCf5 successResult;
-  Win32FileReadEaxCf5 failureResult;
+  Win32FileReadResult successResult;
+  Win32FileReadResult failureResult;
   
   g_Win32FileBytesTransferred = 0;
   ReadFile(handle,destination,byteCount,&g_Win32FileBytesTransferred,(LPOVERLAPPED)0x0);
   if (g_Win32FileBytesTransferred == byteCount) {
-    successResult.carry = false;
-    successResult.eax = g_Win32FileBytesTransferred;
+    successResult.failed = false;
+    successResult.valueOrError = g_Win32FileBytesTransferred;
     return successResult;
   }
-  failureResult.carry = true;
-  failureResult.eax = 6;
+  failureResult.failed = true;
+  failureResult.valueOrError = 6;
   return failureResult;
 }
 
@@ -1157,21 +1157,21 @@ Win32File_ReadExactCf(FileIoByteCount byteCount,void *destination,void *handle)
    Ownership: platform/filesystem/win32.
    Purpose: Returns the low 32-bit file size with CF clear. GetFileSize failure returns zero with CF set.
 */
-Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetSizeCf(void *handle)
+Win32FileSizeResult __thandor_eax_cf_preserve_ecx_edx Win32File_GetSizeCf(void *handle)
 
 {
   DWORD fileSize;
-  Win32FileSizeEaxCf5 successResult;
-  Win32FileSizeEaxCf5 failureResult;
+  Win32FileSizeResult successResult;
+  Win32FileSizeResult failureResult;
   
   fileSize = GetFileSize(handle,(LPDWORD)0x0);
   if (fileSize != 0xffffffff) {
-    successResult.carry = false;
-    successResult.eax = fileSize;
+    successResult.failed = false;
+    successResult.sizeOrError = fileSize;
     return successResult;
   }
-  failureResult.eax = 0;
-  failureResult.carry = true;
+  failureResult.sizeOrError = 0;
+  failureResult.failed = true;
   return failureResult;
 }
 
@@ -1182,23 +1182,23 @@ Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetSizeCf(void *
    failure.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_GetCurrentDirectoryCf(uint16_t *destination)
 
 {
   DWORD narrowPathLength;
   int copiedPathByteLength;
-  StatusValueEaxCf5 copyResult;
+  StatusResult copyResult;
   
   narrowPathLength = GetCurrentDirectoryA(0xff,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
     copyResult = Text_CopyNarrowToUtf16Cf(0x200,destination,g_Win32PathScratchA);
-    return THANDOR_BITCAST(uint64_t, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, uint64_t, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+    return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(StatusResult, uint64_t, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   destination[0] = 0;
   destination[1] = 0;
   copyResult.valueOrError = 0;
-  copyResult.carry = true;
+  copyResult.failed = true;
   return copyResult;
 }
 
@@ -1209,22 +1209,22 @@ Win32File_GetCurrentDirectoryCf(uint16_t *destination)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectoryCf(uint16_t *path)
+StatusResult __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectoryCf(uint16_t *path)
 
 {
   BOOL operationSucceeded;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
+  StatusResult successResult;
+  StatusResult failureResult;
   
   Package_SetLastErrorPath(path);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
   operationSucceeded = SetCurrentDirectoryA((LPCSTR)g_Win32PathScratchA);
   if (operationSucceeded != 0) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.valueOrError = operationSucceeded;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = 10;
   return failureResult;
 }
@@ -1268,13 +1268,13 @@ Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-Win32FileOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+Win32FileOpenResult __thandor_eax_cf_preserve_ecx_edx
 Win32File_OpenCf(FileSystemOpenFlags openFlags,uint16_t *path)
 
 {
   HANDLE fileHandle;
-  Win32FileOpenEaxCf5 successResult;
-  Win32FileOpenEaxCf5 failureResult;
+  Win32FileOpenResult successResult;
+  Win32FileOpenResult failureResult;
   DWORD dwDesiredAccess;
   DWORD dwShareMode;
   DWORD dwCreationDisposition;
@@ -1312,12 +1312,12 @@ Win32File_OpenCf(FileSystemOpenFlags openFlags,uint16_t *path)
   fileHandle = CreateFileA((LPCSTR)g_Win32PathScratchA,dwDesiredAccess,dwShareMode,
                            (LPSECURITY_ATTRIBUTES)0x0,dwCreationDisposition,0x80000080,(HANDLE)0x0);
   if (fileHandle != (HANDLE)0xffffffff) {
-    successResult.carry = false;
-    successResult.eax = (uint32_t)fileHandle;
+    successResult.failed = false;
+    successResult.handleOrError = (uint32_t)fileHandle;
     return successResult;
   }
-  failureResult.carry = true;
-  failureResult.eax = 1;
+  failureResult.failed = true;
+  failureResult.handleOrError = 1;
   return failureResult;
 }
 

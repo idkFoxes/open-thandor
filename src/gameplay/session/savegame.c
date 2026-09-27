@@ -31,9 +31,9 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
   UiListRowIndex selectedIndex;
   UiNodeBase *firstNode;
   UiListRowIndex lastRowIndex;
-  UiListRowIndexEaxCf5 selectionResult;
-  TextResourceResolveEaxCf5 descriptionText;
-  TextResourceResolveEaxCf5 fieldText;
+  ListSelectionResult selectionResult;
+  TextResolveResult descriptionText;
+  TextResolveResult fieldText;
   
   saveNameEntryStack =
        (UiPageStackControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveNameEntryStack);
@@ -44,7 +44,7 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
   selectionResult = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
   selectedIndex = selectionResult.rowIndex;
   selectedRowRecord = rowSlotArray[selectedIndex];
-  if (selectionResult.carry) {
+  if (selectionResult.confirmed) {
     UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
     if (selectedIndex != lastRowIndex) {
       InGameSaveGame_SaveSelectedOrTypedName
@@ -59,16 +59,16 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
         descriptionText = TextResource_Resolve(resourceId);
-        *descriptionText.eax = 0x8000;
+        *descriptionText.text = 0x8000;
         descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(0x215e);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x70));
-        *fieldText.eax = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,descriptionText.eax);
+        *fieldText.text = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,descriptionText.text);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,descriptionText.eax);
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,descriptionText.text);
         descriptionBox->text = (uint16_t *)0x215e;
       }
       firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
@@ -108,7 +108,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
   int rowOrdinal;
   uint32_t errorOrValue;
   bool carryIn;
-  UiListRowIndexEaxCf5 selectionResult;
+  ListSelectionResult selectionResult;
   
   (*g_GraphicsCursorSetFrame)(6);
   selectionResult = UiPointerList_GetSelectedIndexVariantBCf
@@ -162,12 +162,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
   uint16_t *leaf;
   ScenarioCatalogByteOffset *destination;
   ScenarioCatalogByteOffset *clearCursor;
-  ArenaAllocEaxCf5 allocResult;
-  FileSystemOpenEaxCf5 openResult;
-  TextResourceResolveEaxCf5 resolvedText;
-  UiListRowIndexEaxCf5 selectionResult;
-  TextResourceResolveEaxCf5 fieldText;
-  FileSystemEnumerationEaxEcxCf9 enumResult;
+  ArenaAllocResult allocResult;
+  FileSystemOpenResult openResult;
+  TextResolveResult resolvedText;
+  ListSelectionResult selectionResult;
+  TextResolveResult fieldText;
+  DirectoryEnumerationResult enumResult;
   void *closeHandle;
   uint32_t rowCount;
   
@@ -178,14 +178,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   remainingCount = enumResult.entryCount;
-  if (enumResult.carry) {
+  if (enumResult.failed) {
     remainingCount = 0;
   }
   (*g_MemoryApi.free)(g_ScenarioCatalog);
   g_ScenarioCatalog = (ScenarioCatalogHeader *)0x0;
   allocResult = (*g_MemoryApi.alloc)((remainingCount + 1) * 0x104);
-  rowPointerCursor = (ScenarioCatalogHeader *)allocResult.eax;
-  if (!allocResult.carry) {
+  rowPointerCursor = (ScenarioCatalogHeader *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     destination = &rowPointerCursor->campaignRecordsOffset + remainingCount;
     g_ScenarioCatalog = rowPointerCursor;
     rowCount = remainingCount;
@@ -201,8 +201,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       openResult = (*g_FileSystemOpenCf)
                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      handle = (void *)openResult.eax;
-      if (!openResult.carry) {
+      handle = (void *)openResult.handleOrError;
+      if (!openResult.failed) {
         closeHandle = handle;
         (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
         (*g_FileSystemReadExactCf)(0x100,destination,handle);
@@ -221,7 +221,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       clearCursor = clearCursor + 1;
     }
     resolvedText = TextResource_Resolve(0x2151);
-    RichTextCommandStream_CopyExpandedCf(0x100,(uint16_t *)destination,resolvedText.eax);
+    RichTextCommandStream_CopyExpandedCf(0x100,(uint16_t *)destination,resolvedText.text);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
@@ -252,16 +252,16 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = selectedRecord->localizedStringId70;
         resolvedText = TextResource_Resolve(resourceId);
-        *resolvedText.eax = 0x8000;
+        *resolvedText.text = 0x8000;
         descriptionText->text = (uint16_t *)resourceId;
       }
       else {
         resolvedText = TextResource_Resolve(0x215e);
         fieldText = TextResource_Resolve(selectedRecord->localizedStringId70);
-        *fieldText.eax = 0x8000;
-        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,resolvedText.eax);
+        *fieldText.text = 0x8000;
+        RichTextCommandStream_PatchPayloadBySelector(1,fieldText.text,resolvedText.text);
         fieldText = TextResource_Resolve(selectedRecord->optionalLocalizedStringId90);
-        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,resolvedText.eax);
+        RichTextCommandStream_PatchPayloadBySelector(0,fieldText.text,resolvedText.text);
         descriptionText->text = (uint16_t *)0x215e;
       }
     }
@@ -286,7 +286,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   uint32_t errorOrValue;
   uint16_t *leaf;
   uint8_t saveStatus;
-  UiListRowIndexEaxCf5 selectionResult;
+  ListSelectionResult selectionResult;
   uint32_t saveCarry;
   
   (*g_GraphicsCursorSetFrame)(6);

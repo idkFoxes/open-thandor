@@ -61,7 +61,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime);
 
 /* 0x00514900 */
-FactionRuntimeGroupIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
 GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeEntry);
 
 /* 0x0051B800 */
@@ -74,7 +74,7 @@ void __thandor_void_preserve_eax_ecx
 GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRuntime *entityRuntime);
 
 /* 0x0051C680 */
-WorldPositionEaxEcxEdxCf13
+WorldPositionResult
 GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState);
 
 /* 0x0052A4D0 */

@@ -156,7 +156,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStateFromCurrentPosition(ArmyMovementRuntime *movementRuntime);
 
 /* 0x0051CEE0 */
-WorldPositionXYEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+MovementStepResult __thandor_eax_edx_cf_preserve_ecx
 ArmyRuntime_UpdateMovementAndWaypoints
           (WorldRuntimeContext *worldRuntime,ArmyMovementRuntime *movementRuntime);
 

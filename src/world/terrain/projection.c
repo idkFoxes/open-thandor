@@ -1765,7 +1765,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
   PackedArgb32 vertex2Color;
   uint64_t litProduct2;
   TriangleBarycentricWeightsQ12 barycentricWeights;
-  GraphicsPrimitivePacketEaxCf5 queuedPacket;
+  PrimitivePacketResult queuedPacket;
   TerrainProjectedVertexWorkRecord *vertex2Projected;
   TerrainProjectedVertexWorkRecord *vertex1Projected;
   TerrainProjectedVertexWorkRecord *vertex0Projected;
@@ -1860,7 +1860,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                           ,(GraphicsProjectedVertexSource *)vertex2,
                           (GraphicsProjectedVertexSource *)vertex1,
                           (GraphicsProjectedVertexSource *)vertex0,renderContext);
-      if (!queuedPacket.carry) {
+      if (!queuedPacket.noPacket) {
         if (materialOffset0 == materialOffset1) {
           if (materialOffset0 != yOrTableIndexC) {
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
@@ -1868,7 +1868,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-            if (!queuedPacket.carry) {
+            if (!queuedPacket.noPacket) {
               packetRenderFlags = &(queuedPacket.packet)->renderFlags;
               *packetRenderFlags = *packetRenderFlags | 0x10020000;
             }
@@ -1880,7 +1880,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.carry) {
+          if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
             *packetRenderFlags = *packetRenderFlags | 0x10020000;
           }
@@ -1891,7 +1891,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.carry) {
+          if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
             *packetRenderFlags = *packetRenderFlags | 0x10020000;
           }
@@ -1902,7 +1902,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-          if (!queuedPacket.carry) {
+          if (!queuedPacket.noPacket) {
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
             *packetRenderFlags = *packetRenderFlags | 0x10020000;
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
@@ -1910,7 +1910,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
-            if (!queuedPacket.carry) {
+            if (!queuedPacket.noPacket) {
               packetRenderFlags = &(queuedPacket.packet)->renderFlags;
               *packetRenderFlags = *packetRenderFlags | 0x20020000;
             }

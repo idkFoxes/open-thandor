@@ -37,8 +37,8 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitT
   uint32_t *receivedChunkDestinationDwords;
   uint32_t *chunkPayloadCursor;
   bool lockBusy;
-  NetworkBackendReceiveEaxCf5 receiveResult;
-  ArenaAllocEaxCf5 allocResult;
+  NetworkReceiveResult receiveResult;
+  ArenaAllocResult allocResult;
   
   g_UiTransferMailboxTickCounter = g_UiTransferMailboxTickCounter + 1;
   lockBusy = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
@@ -52,7 +52,7 @@ UiTransferMailbox_ReceiveNextRecord:
                        ((WinSockAddress *)
                         (g_UiRuntimeRecordWriteIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000),0x100,
                         (uint8_t *)ringRecord);
-    if (!receiveResult.carry) {
+    if (!receiveResult.failed) {
       UiTransferBlock_Transform64BitBlocksWithRoundKeys16
                 ((uint32_t *)&g_UiTransferRoundKeys16,ringRecord,0x100,ringRecord);
       LOCK();
@@ -80,9 +80,9 @@ UiTransferMailbox_ReceiveNextRecord:
             if (g_UiTransferMailbox.receivedAllocation != (void *)0x0) {
               if (g_UiTransferMailbox.receivedAllocation == (void *)0xffffffff) {
                 allocResult = (*g_MemoryApi.alloc)(slotIndexOrByteCount);
-                if (allocResult.carry) goto UiTransferMailbox_ReceiveNextRecord;
+                if (allocResult.failed) goto UiTransferMailbox_ReceiveNextRecord;
                 counterOrOffset = 0;
-                g_UiTransferMailbox.receivedAllocation = (void *)allocResult.eax;
+                g_UiTransferMailbox.receivedAllocation = (void *)allocResult.payloadOrError;
                 g_UiTransferMailbox.receivedByteCount = slotIndexOrByteCount;
                 g_UiTransferMailbox.receivedRemainingBytes = slotIndexOrByteCount;
               }
@@ -366,7 +366,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
   uint32_t *previewSourceCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   uint8_t *chunkDestinationCursor;
-  TextResourceResolveEaxCf5 resolvedText;
+  TextResolveResult resolvedText;
   
   expectedBlockCount = g_FrontendExpectedPlayerRuntimeBlockCount;
   if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & 0xffff) == 0x10) &&
@@ -421,8 +421,8 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
     do {
       if ((packet->packet10000Handshake).protocolMagic2931 == playerRecord->playerRuntimeId) {
         resolvedText = TextResource_Resolve(0xff00);
-        RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.eax);
-        FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.eax);
+        RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.text);
+        FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
         if (playersRemaining - 1 != 0) {
           nextPlayerCursor = playerRecord + 1;
           for (copyCount = (playersRemaining - 1) * 0x4ec; copyCount != 0; copyCount = copyCount + -1) {
@@ -459,8 +459,8 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
     }
     resolvedText = TextResource_Resolve(0xff03);
     RichTextCommandStream_PatchPayloadBySelector
-              (0,(packet->packet10000Handshake).reserved14_1F + 4,resolvedText.eax);
-    FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.eax);
+              (0,(packet->packet10000Handshake).reserved14_1F + 4,resolvedText.text);
+    FrontendRecentTextHistory_InsertAndRebuild5(resolvedText.text);
     return false;
   }
   if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount == FRONTEND_PACKET_10009) &&
@@ -640,7 +640,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   uint32_t *joiningPlayerRecordDwordCursor;
   FrontendCommandPacketRecord *commandRecordCursor;
   FrontendCommandPacketRecord *batchCursor;
-  TextResourceResolveEaxCf5 textResolveResult;
+  TextResolveResult textResolveResult;
   
   rootNodeOrCount = g_FrontendRootNode;
   if ((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
@@ -652,17 +652,17 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
       g_FrontendPacket50001Buffer.joinAvailableFlag = UI_TRANSFER_JOIN_AVAILABLE;
     }
     textResolveResult = TextResource_Resolve(0x211a);
-    RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),textResolveResult.eax);
+    RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),textResolveResult.text);
     RichTextCommandStream_CopyExpandedCf
-              (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.eax);
+              (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
     textResolveResult = TextResource_Resolve(0x211b);
-    resolvedText = textResolveResult.eax;
+    resolvedText = textResolveResult.text;
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)(rootNodeOrCount + 0x50c0),resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
     RichTextCommandStream_CopyExpandedCf
               (0x58,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
     textResolveResult = TextResource_Resolve(0x211c);
-    resolvedText = textResolveResult.eax;
+    resolvedText = textResolveResult.text;
     RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
     RichTextCommandStream_CopyExpandedCf(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);
@@ -1119,26 +1119,26 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(vo
    Purpose: If receivedAllocation is neither null nor 0xFFFFFFFF and receiveBusy is zero, returns allocation in EAX
    and byte count in ECX with CF clear. Otherwise CF is set.
 */
-UiTransferMailboxReceivedEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
 UiTransferMailbox_GetReceivedBufferCf(void)
 
 {
-  UiTransferMailboxReceivedEaxEcxCf9 receivedResult;
-  UiTransferMailboxReceivedEaxEcxCf9 unavailableResult;
+  MailboxReceiveResult receivedResult;
+  MailboxReceiveResult unavailableResult;
   
   if (((g_UiTransferMailbox.receivedAllocation != (void *)0xffffffff) &&
       (g_UiTransferMailbox.receivedAllocation != (void *)0x0)) &&
      (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
-    receivedResult.ecx = g_UiTransferMailbox.receivedByteCount;
-    receivedResult.eax = (uint32_t)g_UiTransferMailbox.receivedAllocation;
-    receivedResult.carry = false;
+    receivedResult.byteCount = g_UiTransferMailbox.receivedByteCount;
+    receivedResult.buffer = (uint32_t)g_UiTransferMailbox.receivedAllocation;
+    receivedResult.unavailable = false;
     return receivedResult;
   }
   /* Unavailable (CF set): the asm leaves the caller's EAX/ECX untouched; every caller reads them only with
      CF clear. */
-  unavailableResult.ecx = 0;
-  unavailableResult.eax = 0;
-  unavailableResult.carry = true;
+  unavailableResult.byteCount = 0;
+  unavailableResult.buffer = 0;
+  unavailableResult.unavailable = true;
   return unavailableResult;
 }
 
@@ -1628,7 +1628,7 @@ UiTransfer_StagePacketAndSendCf
   uint32_t *outputBlocks;
   UiTransferPacketHeader *checksumCursor;
   uint32_t *endpointDestinationDwordCursor;
-  NetworkBackendSendEaxCf5 sendResult;
+  NetworkSendResult sendResult;
   
   currentSenderContext = g_UiTransferSenderContext;
   currentSequenceToken = g_UiTransferSequenceToken;
@@ -1670,6 +1670,6 @@ UiTransfer_StagePacketAndSendCf
   }
   sendResult = (*g_NetworkBackendSlot5)
                      ((WinSockAddress *)(endpointBufferBase + endpointOffset + -8),byteCount,(uint8_t *)outputBlocks);
-  return sendResult.carry;
+  return sendResult.failed;
 }
 

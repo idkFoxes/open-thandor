@@ -56,7 +56,7 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
           (WorldRuntimeContext *worldRuntime,WorldOwnerListNode100 *ownerNode);
 
 /* 0x0051D6B0 */
-ArmyRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArmyRuntimeInitResult __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBasePath);
 
 /* 0x00528330 */
@@ -82,7 +82,7 @@ ArmyRuntime_ApplyTargetPositionCommand
           (Q12 coordinateA,Q12 coordinateB,Q12 coordinateC,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051C720 */
-WorldPositionEaxEcxEdxCf13
+WorldPositionResult
 ArmyRuntime_ResolveShotAimPointCf
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState);
@@ -171,7 +171,7 @@ ArmyRuntime_HandleCollisionPartner
           ArmyRuntimeSlot *collisionPartnerArmyRuntime,WorldRuntimeContext *worldRuntime);
 
 /* 0x0051BC00 */
-ArmyPreviewTextureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArmyPreviewTextureResult __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_RenderPreviewTextureCf
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
@@ -256,7 +256,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntime_TestWorldPointAllowedDefaultCf(uint32_t arg0,uint32_t arg1,uint32_t arg2);
 
 /* 0x0051B8F0 */
-ArmyRuntimeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArmyRuntimeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_CreateInstanceFromAssetCf
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
           Q12 worldYQ12,FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,

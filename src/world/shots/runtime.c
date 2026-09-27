@@ -143,28 +143,28 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
    [movie/runtime/playback].
 */
-StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
+StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
 {
   ShotRuntimeSlot *runtimeSlotCursor;
   int runtimeSlotsRemaining;
-  ArenaAllocEaxCf5 loadResult;
-  StatusValueEaxCf5 initResult;
+  ArenaAllocResult loadResult;
+  StatusResult initResult;
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadResult = THANDOR_BITCAST(GraphicsTextureSetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
-  if (!loadResult.carry) {
+  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, (*g_GraphicsTextureSetLoadPackageCf)(mutableBasePath));
+  if (!loadResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
-    g_ShotTextureSet = (GraphicsTextureSet *)loadResult.eax;
+    g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
     WidePath_SetExtensionCode(0x6c6170,mutableBasePath);
-    loadResult = THANDOR_BITCAST(GraphicsPaletteAssetEaxCf5, ArenaAllocEaxCf5, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
-    if (!loadResult.carry) {
+    loadResult = THANDOR_BITCAST(PaletteAssetResult, ArenaAllocResult, (*g_GraphicsPaletteAssetLoadPackage)(mutableBasePath));
+    if (!loadResult.failed) {
       MoviePlayback_AdvanceScheduledFrameAndTick();
-      g_ShotPalette = (GraphicsPaletteAsset *)loadResult.eax;
+      g_ShotPalette = (GraphicsPaletteAsset *)loadResult.payloadOrError;
       loadResult = (*g_MemoryApi.alloc)(0x40000);
-      runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.eax;
-      if (!loadResult.carry) {
+      runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.payloadOrError;
+      if (!loadResult.failed) {
         g_ShotRuntimeRebaseBaseMinusOne =
              (uint8_t *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
                      3);
@@ -174,13 +174,13 @@ StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
           (runtimeSlotCursor->definitionOrSavedId).definition = (ShotDefinition *)0x0;
           runtimeSlotCursor = (ShotRuntimeSlot *)&runtimeSlotCursor->launchSpeedQ12;
         }
-        loadResult.eax = 0;
-        loadResult.carry = false;
+        loadResult.payloadOrError = 0;
+        loadResult.failed = false;
       }
     }
   }
-  initResult.valueOrError = loadResult.eax;
-  initResult.carry = loadResult.carry;
+  initResult.valueOrError = loadResult.payloadOrError;
+  initResult.failed = loadResult.failed;
   return initResult;
 }
 
@@ -231,15 +231,15 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
    CF set. The stock corpus contains 170 records and 136 unique ids across five shot banks; duplicate ids are
    aliases/variants, not permission to invent distinct gameplay meanings.
 */
-ShotDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registryDefinition;
   int registrySlotsRemaining;
   ShotDefinition **registryCursor;
-  ShotDefinitionLookupEaxCf5 failureResult;
-  ShotDefinitionLookupEaxCf5 successResult;
+  ShotDefinitionResult failureResult;
+  ShotDefinitionResult successResult;
   ShotDefinition *candidateDefinition;
   
   registryCursor = g_ShotDefinitionRegistry;
@@ -251,12 +251,12 @@ ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
-      failureResult.carry = true;
+      failureResult.notFound = true;
       failureResult.definitionOrError = (ShotDefinition *)0x44;
       return failureResult;
     }
   }
-  successResult.carry = false;
+  successResult.notFound = false;
   successResult.definitionOrError = registryDefinition;
   return successResult;
 }
@@ -368,9 +368,9 @@ ShotRuntimePool_CreateProjectileFromDefinition
   ShotRuntimeSlot *shotRuntimeCursor;
   uint64_t tintProduct;
   ShotLaunchAnglesEaxEdx8 launchAngles;
-  WorldObjectRecordEaxCf5 allocatedRecord;
-  ModelLookupEntryEaxCf5 lookupEntry;
-  GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
+  WorldObjectAllocResult allocatedRecord;
+  ModelLookupEntryResult lookupEntry;
+  ShadingRecordResult shadingAllocation;
   FixedDirectionXyzRegs12 launchDirection;
   ModelLocalPointRegs12 localPoint;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
@@ -391,7 +391,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   }
   allocatedRecord = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
   shotModelNode = (ShotModelRuntimeNodeClassView100 *)allocatedRecord.recordOrError;
-  if (allocatedRecord.carry) {
+  if (allocatedRecord.failed) {
     return;
   }
   WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)shotModelNode);
@@ -447,7 +447,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
   lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,shotDefinition->ownedNestedResource);
-  if (lookupEntry.carry) {
+  if (lookupEntry.notFound) {
     shotModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
   }
   else {
@@ -477,7 +477,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,3,shotDefinition->ownedNestedResource);
-  if (!lookupEntry.carry) {
+  if (!lookupEntry.notFound) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     worldXQ12 = localPoint.ecx;

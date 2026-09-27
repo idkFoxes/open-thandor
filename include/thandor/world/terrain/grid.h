@@ -93,7 +93,7 @@ FieldGridNearestPointRegsCf13
 FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEB10 */
-FieldGridSurfacePointEaxEcxEdxCf13
+SurfacePointResult
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEBA0 */
@@ -101,7 +101,7 @@ int32_t __thandor_eax_preserve_ecx_edx
 FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEC10 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FED50 */
@@ -109,29 +109,29 @@ int32_t __thandor_eax_preserve_ecx_edx
 FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEE90 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FEFF0 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF1A0 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FF3D0 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF600 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FF830 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid);
@@ -164,19 +164,19 @@ FieldGrid_ClassifyCellFlagsToRuntimeByte
 void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuildVectors(void);
 
 /* 0x00504B10 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainSurfaceDistanceCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504CA0 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastSecondarySurfaceDistanceCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504E60 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
@@ -207,7 +207,7 @@ void __thandor_void_preserve_eax_ecx
 FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGrid);
 
 /* 0x00532B60 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords);
 
 /* 0x00561050 */

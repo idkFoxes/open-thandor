@@ -89,9 +89,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   uint64_t shadedC;
   uint64_t tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
-  FieldGridHeightEaxCf5 surfaceHeight;
-  GraphicsProjectedBlockEaxCf5 reservedBlocks;
-  FieldGridRaycastEaxEdxCf9 terrainRay;
+  HeightSampleResult surfaceHeight;
+  ProjectedBlockReserveResult reservedBlocks;
+  TerrainRaycastResult terrainRay;
   FixedDirectionXyzRegs12 direction;
   
   if (g_GraphicsShadingGeneratedTextureCompletedTraversalCount == 0) {
@@ -460,7 +460,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -501,7 +501,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -555,7 +555,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -588,7 +588,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -629,7 +629,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -683,7 +683,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -716,7 +716,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -757,7 +757,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -811,7 +811,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -844,7 +844,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -885,7 +885,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -939,7 +939,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -972,7 +972,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1013,7 +1013,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1067,7 +1067,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1100,7 +1100,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1141,7 +1141,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1195,7 +1195,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1228,7 +1228,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1269,7 +1269,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1323,7 +1323,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1356,7 +1356,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1397,7 +1397,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1451,7 +1451,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1484,7 +1484,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1525,7 +1525,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1579,7 +1579,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1612,7 +1612,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 =
                    terrainRay.distanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1653,7 +1653,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1707,7 +1707,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1740,7 +1740,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = terrainRay.distanceQ12
               ;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1781,7 +1781,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1835,7 +1835,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1868,7 +1868,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                 g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                                 g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                 renderContext->fieldGrid);
-            if (terrainRay.carry) {
+            if (terrainRay.hit) {
               g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 =
                    terrainRay.distanceQ12;
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1909,7 +1909,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                   renderContext->fieldGrid);
               surfaceDistanceQ12 = terrainRay.distanceQ12;
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1963,7 +1963,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.x,
                                   renderContext->fieldGrid);
-              if (!terrainRay.carry) {
+              if (!terrainRay.hit) {
                 return;
               }
               direction = FixedMath_DirectionFromAnglesScaledRegs
@@ -1984,7 +1984,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           reservedBlocks = GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
                              (renderContext);
           projectedBlocks = reservedBlocks.firstBlock;
-          if (!reservedBlocks.carry) {
+          if (!reservedBlocks.poolFull) {
             FixedTransform_ApplyPoint
                       ((GraphicsFixedVec3 *)(projectedBlocks + 0x65),
                        &g_GeneratedTextureScratchRuntime.samples[0].worldPoint,
@@ -2480,7 +2480,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
    Purpose: Allocates and aligns a 256 by 256 byte lookup table and fills each entry with the first input clamped
    to within plus or minus 0x15 of the second input. Carry reports allocation failure.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
 
 {
   int rowsRemaining;
@@ -2488,12 +2488,12 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
   uint32_t inputValue;
   int referenceValue;
   char *tableCursor;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x20000);
-  if (!allocResult.carry) {
+  if (!allocResult.failed) {
     inputValue = 0;
-    tableCursor = (char *)(allocResult.eax + 0xffff & 0xffff0000);
+    tableCursor = (char *)(allocResult.payloadOrError + 0xffff & 0xffff0000);
     rowsRemaining = 0x100;
     referenceValue = 0;
     g_GraphicsIntensityClampTableBase = (uint32_t)tableCursor;
@@ -2522,7 +2522,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
     } while (rowsRemaining != 0);
     return StatusValue_Ok(0);
   }
-  return StatusValue_Fail(allocResult.eax);
+  return StatusValue_Fail(allocResult.payloadOrError);
 }
 
 
@@ -2591,7 +2591,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
    Purpose: Allocates one free GraphicsShadingRuntimeRecord. transitionDurationTicks controls radius interpolation;
    EAX and CF remain the nonstandard pointer/status result channels.
 */
-GraphicsShadingRuntimeRecordEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ShadingRecordResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_AllocateRecordRegs
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
@@ -2600,8 +2600,8 @@ GraphicsShadingRuntime_AllocateRecordRegs
 {
   int recordsRemaining;
   GraphicsShadingRuntimeRecord *recordCursor;
-  GraphicsShadingRuntimeRecordEaxCf5 failureResult;
-  GraphicsShadingRuntimeRecordEaxCf5 successResult;
+  ShadingRecordResult failureResult;
+  ShadingRecordResult successResult;
   
   if (packedColorRgb != 0) {
     recordCursor = g_GraphicsShadingRuntimeRecords;
@@ -2623,7 +2623,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
         recordCursor->worldXQ12 = worldXQ12;
         recordCursor->worldYQ12 = worldYQ12;
         recordCursor->worldZQ12 = worldZQ12;
-        successResult.carry = false;
+        successResult.failed = false;
         successResult.record = recordCursor;
         return successResult;
       }
@@ -2632,7 +2632,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
     } while (recordsRemaining != 0);
   }
   failureResult.record = (GraphicsShadingRuntimeRecord *)0x0;
-  failureResult.carry = true;
+  failureResult.failed = true;
   return failureResult;
 }
 
@@ -2760,7 +2760,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
    bytes, control flow, globals, locals, and executable data remain unchanged. Typed parameters: p1
    gridHalfSize→GraphicsPixelDimension_V302, p2 textureDimension→GraphicsPixelDimension_V302.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_InitializeGeneratedTextureCf
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension)
@@ -2773,14 +2773,14 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
   int counterOrGridOrigin;
   AssetRelativeOffset pixelDataOffset;
   GraphicsGeneratedTextureAssetOrEntryView200 *entryCursor;
-  ArenaAllocEaxCf5 allocResult;
-  GraphicsTextureSetEaxCf5 textureSetResult;
-  StatusValueEaxCf5 failureStatus;
+  ArenaAllocResult allocResult;
+  TextureSetResult textureSetResult;
+  StatusResult failureStatus;
   
   allocationSize = gridHalfSize * 2 * gridHalfSize * 2;
   allocResult = (*g_MemoryApi.alloc)(allocationSize);
-  allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.eax;
-  if (!allocResult.carry) {
+  allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     allocationSize = allocationSize >> 2;
     g_GraphicsShadingGridScratchInterior = (pointer)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
     g_GraphicsShadingGridScratch = allocationCursor;
@@ -2791,8 +2791,8 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
     }
     allocationSize = (textureDimension * textureDimension + 0x20) * subresourceCount + 0xa00;
     allocResult = (*g_MemoryApi.alloc)(allocationSize);
-    allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.eax;
-    if (!allocResult.carry) {
+    allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.payloadOrError;
+    if (!allocResult.failed) {
       entryCursor = allocationCursor;
       g_GraphicsShadingGeneratedAsset = (GraphicsTextureSourceAsset *)allocationCursor;
       for (dwordsRemaining = allocationSize >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
@@ -2842,14 +2842,14 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
       g_GraphicsShadingGridStepQ20Current = g_GraphicsShadingGridStepQ20;
       textureSetResult = (*g_GraphicsCreateTextureSet)(g_GraphicsShadingGeneratedAsset);
       allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)textureSetResult.textureSet;
-      if (!textureSetResult.carry) {
+      if (!textureSetResult.failed) {
         g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
-        return THANDOR_BITCAST(uint64_t, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, uint64_t, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(TextureSetResult, uint64_t, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
     }
   }
-  failureStatus.carry = true;
+  failureStatus.failed = true;
   failureStatus.valueOrError = (uint32_t)allocationCursor;
   return failureStatus;
 }
@@ -3559,15 +3559,15 @@ GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *mode
    Ownership: graphics/render/shading.
    Purpose: Handles graphics shading generated texture reserve fourteen projected point blocks.
 */
-GraphicsProjectedBlockEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ProjectedBlockReserveResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext)
 
 {
   uint32_t *blockPool;
   uint32_t usedBlockCount;
-  GraphicsProjectedBlockEaxCf5 reservedResult;
-  GraphicsProjectedBlockEaxCf5 newCountOrFailure;
+  ProjectedBlockReserveResult reservedResult;
+  ProjectedBlockReserveResult newCountOrFailure;
   
   blockPool = renderContext->projectedPointBlockPool;
   usedBlockCount = blockPool[1];
@@ -3591,10 +3591,10 @@ GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
     blockPool[usedBlockCount * 4 + 0x3d] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x680);
     ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xc].projectedX = 0;
     ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xd].projectedX = 0x11000;
-    reservedResult.carry = false;
+    reservedResult.poolFull = false;
     return reservedResult;
   }
-  newCountOrFailure.carry = true;
+  newCountOrFailure.poolFull = true;
   return newCountOrFailure;
 }
 

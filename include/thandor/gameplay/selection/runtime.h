@@ -104,7 +104,7 @@ SelectionPlayerRuntime_AdvancePrimarySelectionCycle
           (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta);
 
 /* 0x0052CEE0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots);
 
 /* 0x0052D0F0 */
@@ -115,7 +115,7 @@ void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target);
 
 /* 0x0052FB70 */
-WorldPositionEaxEcxEdxCf13 __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void);
+WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void);
 
 /* 0x0052FD60 */
 void __thandor_void_preserve_eax_ecx_edx

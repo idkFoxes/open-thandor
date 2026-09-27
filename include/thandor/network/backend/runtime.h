@@ -39,7 +39,7 @@ uint32_t __cdecl Network_Init(void);
 void __thandor_preserve_eax Network_Shutdown(void);
 
 /* 0x00584E50 */
-NetworkBackendSetSessionEaxCf5 __thandor_this_eax_cf_preserve_ecx_edx
+NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
 NetworkBackend_SetSessionContextCf(void *this,NetworkBackendSessionReturnValue32 returnValue);
 
 /* 0x00585210 */

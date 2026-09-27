@@ -32,7 +32,7 @@ static void Win32_AutoShotTick(void)
   static unsigned last;
   static unsigned number;
   unsigned now;
-  GraphicsFramebufferCaptureEaxCf5 capture;
+  FramebufferCaptureResult capture;
   if (interval < 0) {
     const char *value = getenv("OPEN_THANDOR_AUTOSHOT");
     interval = (value != NULL) ? atoi(value) : 0;
@@ -50,9 +50,9 @@ static void Win32_AutoShotTick(void)
   }
   last = now;
   capture = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
-  if (!capture.carry && capture.eax != NULL) {
-    GraphicsTextureSourceEntry *entry = &capture.eax->sourceEntry;
-    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.eax + entry->dataOffset);
+  if (!capture.failed && capture.capture != NULL) {
+    GraphicsTextureSourceEntry *entry = &capture.capture->sourceEntry;
+    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.capture + entry->dataOffset);
     uint32_t width = entry->pixelWidth;
     uint32_t height = entry->pixelHeight;
     char name[64];
@@ -76,7 +76,7 @@ static void Win32_AutoShotTick(void)
       fclose(file);
       Thandor_Log("autoshot %s (%ux%u)", name, width, height);
     }
-    (*g_MemoryApi.free)(capture.eax);
+    (*g_MemoryApi.free)(capture.capture);
   }
 }
 

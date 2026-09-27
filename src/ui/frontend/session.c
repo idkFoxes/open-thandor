@@ -349,7 +349,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
 {
   InGameRuntimeRootImageC3E4 *inGameRoot;
   bool callResult;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 discardedRecord;
+  RecordRingDiscardResult discardedRecord;
   
   callResult = (*g_SpinLockTryAcquire)(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
@@ -368,10 +368,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
                g_SessionNetworkTickInterval) {
         while( true ) {
           discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-          if (discardedRecord.carryEmpty) break;
+          if (discardedRecord.empty) break;
           FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)discardedRecord.edxEndpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex);
+                    ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
         }
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
@@ -387,10 +387,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
       if (!callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
       do {
         discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-        if (discardedRecord.carryEmpty) break;
+        if (discardedRecord.empty) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
-                          ((NetworkSessionContext *)discardedRecord.edxEndpointOrReadIndex,
-                           (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex);
+                          ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
+                           (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlagCf();
       if (callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
@@ -434,7 +434,7 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
   UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *destinationPlayer;
   FrontendPlayerRuntimeRecord *nextDestinationPlayer;
-  TextResourceResolveEaxCf5 timeoutText;
+  TextResolveResult timeoutText;
   FrontendCommandPacketRecord *removedIdOrCommandCursor;
   FrontendPlayerRemovalPacket10007 *destinationCommandOrPacket;
   FrontendCommandPacketRecord *sourceCommandRecord;
@@ -461,8 +461,8 @@ FrontendClientSession_RemoveExpiredPlayer:
         *heartbeatTicks = *heartbeatTicks - 1;
         if (*heartbeatTicks == 0) {
           timeoutText = TextResource_Resolve(0xff00);
-          RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.eax);
-          InGameRecentTextHistory_InsertAndRebuild8(timeoutText.eax);
+          RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.text);
+          InGameRecentTextHistory_InsertAndRebuild8(timeoutText.text);
           goto FrontendClientSession_RemoveExpiredPlayer;
         }
         nextSourcePlayer = sourcePlayer + 1;
@@ -529,7 +529,7 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
   InGameRuntimeRootImageC3E4 *inGameRoot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResourceResolveEaxCf5 shutdownText;
+  TextResolveResult shutdownText;
   
   inGameRoot = g_InGameRuntimeRoot;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -539,8 +539,8 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
     (*g_NetworkBackendSlot3)();
     (*g_NetworkBackendSlot1)();
     shutdownText = TextResource_Resolve(0xff01);
-    RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.eax);
-    InGameRecentTextHistory_InsertAndRebuild8(shutdownText.eax);
+    RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,shutdownText.text);
+    InGameRecentTextHistory_InsertAndRebuild8(shutdownText.text);
     firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
     previousLocalPlayerId = g_LocalPlayerRuntimeId;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;

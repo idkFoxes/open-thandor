@@ -153,7 +153,7 @@ GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
    Cross-module calls: Glide3_Framebuffer_CaptureRegion [graphics/backend/glide], Memory_ZeroDwords
    [core/memory/allocator].
 */
-GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
@@ -170,8 +170,8 @@ GraphicsFramebuffer_CaptureRegion16Bit
   uint16_t *sourcePixel;
   GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *destinationPixel;
-  ArenaAllocEaxCf5 allocResult;
-  GraphicsFramebufferCaptureEaxCf5 captureResult;
+  ArenaAllocResult allocResult;
+  FramebufferCaptureResult captureResult;
   uint16_t *sourceRowStart;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
@@ -180,8 +180,8 @@ GraphicsFramebuffer_CaptureRegion16Bit
   }
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
   allocResult = (*g_MemoryApi.alloc)(allocationSizeOrPixel);
-  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.eax;
-  if (!allocResult.carry) {
+  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     clearCursor = capturedAsset;
     for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
       (clearCursor->common).magic = 0;
@@ -259,15 +259,15 @@ GraphicsFramebuffer_CaptureRegion16Bit
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(capturedAsset);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,100,g_PackageLastErrorPath);
     capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
   }
-  captureResult.carry = true;
-  captureResult.eax = capturedAsset;
+  captureResult.failed = true;
+  captureResult.capture = capturedAsset;
   return captureResult;
 }
 
@@ -280,7 +280,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
    to the capture dimensions. ABI: CF clear means success. CF set means failure.
    Cross-module calls: Memory_ZeroDwords [core/memory/allocator].
 */
-GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
@@ -298,14 +298,14 @@ GraphicsFramebuffer_CaptureRegion32Bit
   GraphicsCapturedTextureSourceAsset *clearCursor;
   uint32_t *destinationPair;
   uint32_t *destinationPixel;
-  ArenaAllocEaxCf5 allocResult;
-  GraphicsFramebufferCaptureEaxCf5 captureResult;
+  ArenaAllocResult allocResult;
+  FramebufferCaptureResult captureResult;
   uint32_t *sourceRowStart;
   
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
   allocResult = (*g_MemoryApi.alloc)(allocationSizeOrPixel);
-  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.eax;
-  if (!allocResult.carry) {
+  capturedAsset = (GraphicsCapturedTextureSourceAsset *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     clearCursor = capturedAsset;
     for (remainingDwords = allocationSizeOrPixel >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
       (clearCursor->common).magic = 0;
@@ -375,15 +375,15 @@ GraphicsFramebuffer_CaptureRegion32Bit
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(uint64_t, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FramebufferCaptureResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(capturedAsset);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x65,g_PackageLastErrorPath);
     capturedAsset = (GraphicsCapturedTextureSourceAsset *)&k_LowAddressLiteral0000001B;
   }
-  captureResult.carry = true;
-  captureResult.eax = capturedAsset;
+  captureResult.failed = true;
+  captureResult.capture = capturedAsset;
   return captureResult;
 }
 

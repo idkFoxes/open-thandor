@@ -47,7 +47,7 @@ ArmyRegistryIdEaxCf5_571d40 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x0051B5E0 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
+StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
 
 /* 0x0051B740 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -82,7 +82,7 @@ ArmyRegistryIdEaxCf5_571cf0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId);
 
 /* 0x0051B4A0 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
+StatusResult __thandor_void_preserve_ecx_edx
 ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase);
 

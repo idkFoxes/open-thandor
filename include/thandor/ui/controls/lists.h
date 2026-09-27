@@ -110,11 +110,11 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl *control);
 
 /* 0x004B2D30 */
-UiSelectableNodeEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...);
 
 /* 0x004B2D70 */
-UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
+SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...);
 
 /* 0x004B2DA0 */
@@ -130,7 +130,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *control);
 
 /* 0x004B4920 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack);
 
 /* 0x004B7970 */
@@ -244,7 +244,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *control);
 
 /* 0x004BB540 */
-UiListRowIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
 UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control);
 
 /* 0x004B9460 */
@@ -270,11 +270,11 @@ UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
 UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x0040FFE0 */
-Recovered0040FFE0EaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
 UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16);
 
 /* 0x00410380 */
-UiTimedListDirectoryHierarchyEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
 UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16);
 
 /* 0x004104B0 */

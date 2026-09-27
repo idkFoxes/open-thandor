@@ -49,12 +49,12 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
   EffectRuntimeSlot **ownedEffectCursor;
   EffectRuntimeSlot **commandTargetEffectCursor;
   bool checkResult;
-  ArmyRuntimeCreateEaxCf5 createdArmy;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
-  EffectDefinitionLookupEaxCf5 markerDefinition;
-  FieldGridHeightEaxCf5 surfaceHeight;
-  EffectRuntimeCreateEaxCf5 createdEffect;
-  EffectDefinitionLookupEaxCf5 targetDefinition;
+  ArmyRuntimeCreateResult createdArmy;
+  PlacementDispatchResult dispatchResult;
+  EffectDefinitionResult markerDefinition;
+  HeightSampleResult surfaceHeight;
+  EffectCreateResult createdEffect;
+  EffectDefinitionResult targetDefinition;
   PckArmyAssetIdCatalog armyAssetId;
   WorldRuntimeContext *worldRuntimeCopy;
   GameEntityRuntime *commandTargetEntity;
@@ -83,9 +83,9 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
                               g_InGameCommandPreviewWorldYQ12,
                               worldRuntime->activeFactionRuntimeIndex,
                               g_InGameCommandPreviewArmyAssetId,worldRuntime);
-          if (!createdArmy.carry) {
-            currentModelNode = (((GameEntityRuntime *)createdArmy.eax)->common).ownership.modelNode;
-            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy.eax;
+          if (!createdArmy.failed) {
+            currentModelNode = (((GameEntityRuntime *)createdArmy.armyRuntimeOrError)->common).ownership.modelNode;
+            g_InGameCommandPreviewArmyRuntime = (GameEntityRuntime *)createdArmy.armyRuntimeOrError;
             currentModelNode->tintArgb = 0xcfffffff;
             ModelNodeRuntime_RebuildTransformsFromRoot(currentModelNode);
           }
@@ -124,15 +124,15 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
                          (1,0,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           *(PckArmyAssetIdCatalog *)(pendingPlacementAsset + 8),
                           worldRuntime->activeFactionRuntimeIndex,(UiRootNode *)worldRuntime);
-      if ((dispatchResult.carry) && (g_ArmyPlacementAcceptedCandidateCount < 2)) {
+      if ((dispatchResult.failed) && (g_ArmyPlacementAcceptedCandidateCount < 2)) {
         previewTint = previewTint & 0xff707070;
       }
       g_ArmyPlacementAcceptedCandidateCount = 0;
       createdArmy = ArmyRuntime_CreateInstanceFromAssetCf
                          (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy);
-      entityRuntime = (GameEntityRuntime *)createdArmy.eax;
-      if (!createdArmy.carry) {
+      entityRuntime = (GameEntityRuntime *)createdArmy.armyRuntimeOrError;
+      if (!createdArmy.failed) {
         currentModelNode = (entityRuntime->common).ownership.modelNode;
         classRecord = (entityRuntime->common).ownership.definitionOrClassRecord;
         g_InGamePlacementPreviewArmyRuntime = entityRuntime;
@@ -154,7 +154,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
 InGameWorldOverlay_RefreshTransientEffectMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
     markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0143_EGATH0);
-    if (!markerDefinition.carry) {
+    if (!markerDefinition.notFound) {
       modelNodeCursor = (ModelRuntimeNode *)worldRuntime->ownerListHead;
       indexOrCount = 0;
       if (modelNodeCursor == (ModelRuntimeNode *)0x0) {
@@ -174,7 +174,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
                              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                               0x4000,0,surfaceHeight.heightQ12,armySlot->movementTarget1Q12,
                               armySlot->movementTarget0Q12,markerDefinition.definitionOrError,worldRuntime);
-          if (!createdEffect.carry) {
+          if (!createdEffect.failed) {
             g_InGameOwnedEntityTransientEffectMarkers[indexOrCount] = createdEffect.effectRuntime;
             indexOrCount = indexOrCount + 1;
             (((createdEffect.effectRuntime)->modelNodeOrSavedOffset).modelNode)->tintArgb = 0xffffffff;
@@ -187,9 +187,9 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
       } while (modelNodeCursor != (ModelRuntimeNode *)0x0);
     }
     markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0148_EWAYP0);
-    if (!markerDefinition.carry) {
+    if (!markerDefinition.notFound) {
       targetDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0149_ETARG0);
-      if (!targetDefinition.carry) {
+      if (!targetDefinition.notFound) {
         recordOrCount = 0x20;
         selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
         do {
@@ -388,7 +388,7 @@ SelectionOverlay_DrawBoundsFrame
   UiPixelCoordinate originalCoordinate1B;
   uint32_t cornerWidth;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 cornerSize;
+  TextureSizeResult cornerSize;
   
   originalCoordinate1B = frameCoordinate1B;
   originalCoordinate0B = frameCoordinate0B;
@@ -463,7 +463,7 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
   int screenY;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  TextureSizeResult markerSize;
   FieldGridNearestPointRegsCf13 terrainPoint;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
@@ -529,8 +529,8 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
   uint32_t pointZ;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
-  FieldGridSurfacePointEaxEcxEdxCf13 topSurfacePoint;
+  TextureSizeResult markerSize;
+  SurfacePointResult topSurfacePoint;
   FieldGridNearestPointRegsCf13 terrainPoint;
   
   if (useTopSurface == 0) {
@@ -547,7 +547,7 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
     pointZ = topSurfacePoint.worldZQ12;
     pointY = topSurfacePoint.worldYQ12;
     pointX = topSurfacePoint.worldXQ12;
-    if (topSurfacePoint.carry) {
+    if (topSurfacePoint.outOfBounds) {
       return;
     }
   }
@@ -592,7 +592,7 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
   uint8_t *vertexCursor;
   int coordinateOffset;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  TextureSizeResult markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
@@ -655,7 +655,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  TextureSizeResult markerSize;
   uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
   SoftwareFramebufferAccess *receiverFramebuffer;
@@ -737,7 +737,7 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
   FieldGridCell *cellCursor;
   FieldCellPackedFlagsAndMaterial markerFlagMask;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  TextureSizeResult markerSize;
   uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
   SoftwareFramebufferAccess *flaggedFramebuffer;
@@ -819,7 +819,7 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
   FieldGridDimension rowsRemaining;
   FieldGridCell *cellCursor;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 markerSize;
+  TextureSizeResult markerSize;
   uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
@@ -992,8 +992,8 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
   int markerSlotIndex;
   int remainingMarkers;
   int *markerCursor;
-  FieldGridHeightEaxCf5 surfaceHeight;
-  EffectRuntimeCreateEaxCf5 createdEffect;
+  HeightSampleResult surfaceHeight;
+  EffectCreateResult createdEffect;
   
   markerSlotIndex = g_InGameCommandTargetTransientEffectMarkerCount;
   if ((worldXQ12 != *(int *)((int)sourceWorldNode + 0x94)) ||

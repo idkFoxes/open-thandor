@@ -34,8 +34,8 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
   uint8_t *rowTextIdBytes;
   uint32_t assignableCountOrOffset;
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResourceResolveEaxCf5 titleText;
-  TextResourceResolveEaxCf5 templateText;
+  TextResolveResult titleText;
+  TextResolveResult templateText;
   FrontendPlayerRuntimeBlockCount remainingPlayerRecords;
   
   UiPageStack_SetActiveIndex(0xb,&frontendRootPage->primaryPageStack);
@@ -244,9 +244,9 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
   loadedLevel = g_FrontendLoadedLevelAsset;
   (*rootVtable->layout)(&frontendRootPage->rootNode);
   titleText = TextResource_Resolve((loadedLevel->header).titleTextResourceIndex + 0x2230);
-  *titleText.eax = 0x8000;
+  *titleText.text = 0x8000;
   templateText = TextResource_Resolve(0x218c);
-  RichTextCommandStream_PatchPayloadBySelector(0,titleText.eax,templateText.eax);
+  RichTextCommandStream_PatchPayloadBySelector(0,titleText.text,templateText.text);
   return;
 }
 
@@ -319,8 +319,8 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   uint32_t selectedBitsPerPixel;
   int colorBitsCounterOrParentLink;
   GraphicsTextureSourceAsset **fontTextureSource;
-  DisplayModeEaxCf5 selectedModeResult;
-  DisplayModeEaxCf5 restoredModeResult;
+  DisplayModeResult selectedModeResult;
+  DisplayModeResult restoredModeResult;
   
   selectedBitsPerPixel = g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
              bitsPerPixel;
@@ -345,11 +345,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.width);
-  if (selectedModeResult.carry) {
+  if (selectedModeResult.failed) {
     restoredModeResult = (*g_GraphicsDisplayModeHook)(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
-    (*g_FatalErrorPrimaryDispatchCf)(restoredModeResult.eax,restoredModeResult.carry);
+    (*g_FatalErrorPrimaryDispatchCf)(restoredModeResult.valueOrError,restoredModeResult.failed);
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-    (*g_FatalErrorRuntimeDispatchCf)(selectedModeResult.eax,true);
+    (*g_FatalErrorRuntimeDispatchCf)(selectedModeResult.valueOrError,true);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
     adapterIndex = PersistentSettings_ReadDword(1,0);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
@@ -1094,9 +1094,9 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   uint32_t musicEnabledBit;
   uint32_t newAudioFlags;
   bool isSelected;
-  SoundCreateSampleVoiceSetEaxCf5 createVoiceResult;
-  SoundPlayVoiceEaxCf5 playResult;
-  ResourceLoadEaxEcxCf9 loadResult;
+  SampleVoiceSetResult createVoiceResult;
+  SoundPlayResult playResult;
+  ResourceLoadResult loadResult;
   
   musicEnabledBit = 0;
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
@@ -1104,12 +1104,12 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     musicEnabledBit = 2;
     (*g_GraphicsCursorSetFrame)(6);
     loadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
-    musicSample = (SoundSampleAsset *)loadResult.eax;
+    musicSample = (SoundSampleAsset *)loadResult.bufferOrError;
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
-    if (!loadResult.carry) {
+    if (!loadResult.failed) {
       createVoiceResult = (*g_SoundCreateSampleVoiceSet)(musicSample);
-      musicVoiceSet = createVoiceResult.eax;
-      if (createVoiceResult.carry) {
+      musicVoiceSet = createVoiceResult.voiceSet;
+      if (createVoiceResult.failed) {
         Resource_Release(musicSample);
         activeMusicBuffer = g_FrontendMusicActiveBuffer;
       }
@@ -1118,8 +1118,8 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
         Resource_Release(musicSample);
         gainOrAudioFlags = PersistentSettings_ReadDword(0x8000,0x2c);
         playResult = (*g_SoundPlayLooping)(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
-        activeMusicBuffer = playResult.eax;
-        if (playResult.carry) {
+        activeMusicBuffer = playResult.soundBuffer;
+        if (playResult.failed) {
           (*g_SoundReleaseSampleVoiceSet)(musicVoiceSet);
           g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
           activeMusicBuffer = g_FrontendMusicActiveBuffer;

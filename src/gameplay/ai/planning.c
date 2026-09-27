@@ -417,7 +417,7 @@ AiConstructionPlanner_ProcessPendingAssetRequests
   AiRuntimeWorkspaceEntry *requestEntry;
   bool hasUnassignedEntry;
   ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
-  ModelDefinitionLookupEaxCf5 linkedDefinitionLookup;
+  ModelDefinitionResult linkedDefinitionLookup;
   
   g_AiConstructionPendingAssetConsumedCount = 0;
   remainingRequests = g_AiWorkspace04Count;
@@ -549,8 +549,8 @@ AiConstructionPlanner_PlaceDerivedAsset14D
   int remaining14AEntries;
   int remaining14CEntries;
   bool siteRejected;
-  ArmyRuntimeCreateEaxCf5 createdInstance;
-  AiWorkspace09AnchorEcxEdxCf9 anchorResult;
+  ArmyRuntimeCreateResult createdInstance;
+  AiAnchorResult anchorResult;
   
   site14AEntry = g_AiWorkspaceBuffer08_Size0200;
   remaining14AEntries = g_AiWorkspace08Count;
@@ -563,12 +563,12 @@ AiConstructionPlanner_PlaceDerivedAsset14D
         if (!siteRejected) {
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
-          if (!anchorResult.carry) {
+          if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
                               (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
                                worldRuntime);
-            armyRuntime = (ArmyRuntimeSlot **)createdInstance.eax;
-            if (createdInstance.carry) {
+            armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
+            if (createdInstance.failed) {
               return;
             }
             createdModelNode = armyRuntime[1];
@@ -604,12 +604,12 @@ AiConstructionPlanner_PlaceDerivedAsset14D
         if (!siteRejected) {
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
-          if (!anchorResult.carry) {
+          if (!anchorResult.notFound) {
             createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
                               (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
                                worldRuntime);
-            armyRuntime = (ArmyRuntimeSlot **)createdInstance.eax;
-            if (createdInstance.carry) {
+            armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
+            if (createdInstance.failed) {
               return;
             }
             createdModelNode = armyRuntime[1];
@@ -839,8 +839,8 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   int remainingCells;
   int anchorDistanceX;
   FieldGridCell **gridCellCursor;
-  ArmyPlacementDispatchEaxCf5 placementResult;
-  ArmyRuntimeCreateEaxCf5 createdInstance;
+  PlacementDispatchResult placementResult;
+  ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
@@ -888,7 +888,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
              (placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
                                 (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                                  candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                                 (UiRootNode *)worldRuntime), !placementResult.carry)) {
+                                 (UiRootNode *)worldRuntime), !placementResult.failed)) {
             bestCell = candidateCell;
             bestScore = workspaceDistanceOrScore;
           }
@@ -901,8 +901,8 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
       createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
                         (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                          bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
-      createdSlots = (ArmyRuntimeSlot **)createdInstance.eax;
-      if (!createdInstance.carry) {
+      createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
+      if (!createdInstance.failed) {
         modelNodeRuntime = createdSlots[1];
         createdArmySlot = *createdSlots;
         modelNodeRuntime->movementPosition0Q12 = 0;
@@ -1662,9 +1662,9 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   FieldGridCell **gridCellCursor;
   bool regionUnreachable;
   ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
-  ModelDefinitionLookupEaxCf5 modelDefinitionLookup;
-  ArmyPlacementDispatchEaxCf5 placementResult;
-  ArmyRuntimeCreateEaxCf5 createdInstance;
+  ModelDefinitionResult modelDefinitionLookup;
+  PlacementDispatchResult placementResult;
+  ArmyRuntimeCreateResult createdInstance;
   FieldGridCell *bestCell;
   int bestScore;
   
@@ -1674,7 +1674,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
     modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
                        (*(PckModelDefinitionIdCatalog *)
                          ((armyAssetLookup.eax)->rootNodeOffsetOrPointer + 0x20));
-    if (!modelDefinitionLookup.carry) {
+    if (!modelDefinitionLookup.notFound) {
       radiusMetric = modelDefinitionLookup.modelDefinition[0x12].flags;
       if (g_AiWorkspace10Count != 0) {
         bestScore = 0x7fffffff;
@@ -1702,7 +1702,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
             placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
                                (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                                 candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
-            if (!placementResult.carry) {
+            if (!placementResult.failed) {
               regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
                                 (radiusMetric,candidateCell->worldY,candidateCell->worldX);
               if (!regionUnreachable) {
@@ -1718,8 +1718,8 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
                              (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                               bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
-          createdSlots = (ArmyRuntimeSlot **)createdInstance.eax;
-          if (!createdInstance.carry) {
+          createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
+          if (!createdInstance.failed) {
             modelNodeRuntime = createdSlots[1];
             createdArmySlot = *createdSlots;
             modelNodeRuntime->movementPosition0Q12 = 0;
@@ -1841,7 +1841,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
   ModelDefinitionResolvePhaseView280 *selectedChildModelDefinition1;
   uint32_t childCountOrWeightedDamage;
   int weightedDefinitionScore;
-  ModelDefinitionLookupEaxCf5 definitionLookup;
+  ModelDefinitionResult definitionLookup;
   AiLinkedDefinitionListView *linkedDefinitionList;
   int secondChildScaleDivisor30;
   ShotDefinition *selectedShotDefinition;
@@ -1852,7 +1852,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
   definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                     (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
   selectedModelDefinition = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
-  if (definitionLookup.carry) {
+  if (definitionLookup.notFound) {
     return 0;
   }
   weightedDefinitionScore = scoreWeights->baseScore;
@@ -1873,7 +1873,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
     definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                       (factionIndex,linkedDefinitionList->childList0Address);
     selectedChildModelDefinition0 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
-    if (definitionLookup.carry) {
+    if (definitionLookup.notFound) {
       return 0;
     }
     if (selectedChildModelDefinition0->runtimeValue30 != 0) {
@@ -1960,7 +1960,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
       definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                         (factionIndex,linkedDefinitionList->childList1Address);
       selectedChildModelDefinition1 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
-      if (definitionLookup.carry) {
+      if (definitionLookup.notFound) {
         return 0;
       }
       if (selectedChildModelDefinition1->runtimeValue30 != 0) {

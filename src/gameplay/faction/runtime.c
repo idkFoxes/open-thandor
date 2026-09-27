@@ -620,7 +620,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
    Purpose: Scans the selected faction's eight fixed runtime groups, each containing up to 32 pointers, and returns
    the one-based group index with carry clear or the original runtime pointer with carry set.
 */
-FactionRuntimeGroupIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
 GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
@@ -629,8 +629,8 @@ GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeE
   ArmyRuntimeSlot **slotCursor;
   ArmyRuntimeSlot **nextSlotCursor;
   bool found;
-  FactionRuntimeGroupIndexEaxCf5 notFoundResult;
-  FactionRuntimeGroupIndexEaxCf5 foundResult;
+  RuntimeGroupIndexResult notFoundResult;
+  RuntimeGroupIndexResult foundResult;
   
   groupNumber = 0;
   nextSlotCursor = g_GameFactionRuntimeImage.records[runtimeEntry->factionIndex].runtimeGroupMembers8x32;
@@ -648,12 +648,12 @@ GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeE
       slotCursor = nextSlotCursor;
     } while (!found);
     if (found) {
-      foundResult.carry = false;
+      foundResult.notFound = false;
       foundResult.runtimeGroupIndex = groupNumber;
       return foundResult;
     }
     if (7 < groupNumber) {
-      notFoundResult.carry = true;
+      notFoundResult.notFound = true;
       notFoundResult.runtimeGroupIndex = (uint32_t)runtimeEntry;
       return notFoundResult;
     }
@@ -742,7 +742,7 @@ GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRunt
    Purpose: Resolves the active command target to EAX/ECX/EDX Q12 coordinates and reports failure through CF. The
    ordinary return remains void because the three-register result is not a C scalar return.
 */
-WorldPositionEaxEcxEdxCf13
+WorldPositionResult
 GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
 
 {
@@ -750,7 +750,7 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
   uint32_t visibilityMask;
   int *targetDefinitionRecord;
   ModelRuntimeNode *targetModelNode;
-  WorldPositionEaxEcxEdxCf13 position;
+  WorldPositionResult position;
 
   /* On failure (CF set) the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
      partial visibility mask / owner shift / definition pointer). Both callers ignore the coordinates when CF is
@@ -758,13 +758,13 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
   position.worldXQ12 = 0;
   position.worldYQ12 = 0;
   position.worldZQ12 = 0;
-  position.carry = true;
+  position.unresolved = true;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
       position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
       position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
       position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
-      position.carry = false;
+      position.unresolved = false;
     }
   }
   else {
@@ -781,7 +781,7 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
         position.worldYQ12 = (targetModelNode->worldTransform).translation.y;
         position.worldZQ12 =
              (targetModelNode->worldTransform).translation.z + *(int *)(*targetDefinitionRecord + 0x50);
-        position.carry = false;
+        position.unresolved = false;
         return position;
       }
       (targetState->common).commandTarget.targetEntity = (GameEntityRuntime *)0x0;
@@ -1246,14 +1246,14 @@ PlayerRuntime_ResolveAndStoreState8094
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  ArmyRuntimeCreateEaxCf5 createdRuntime;
+  ArmyRuntimeCreateResult createdRuntime;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   createdRuntime = ArmyRuntime_CreateInstanceFromAssetCf
                     (4,0,lookupValue0,lookupValue1,playerBlock->constructionLookupState8090,lookupToken,
                      &g_InGameRuntimeRoot->worldRuntime0A30);
-  if (!createdRuntime.carry) {
-    playerBlock->primarySelectionEntityOffset8094 = createdRuntime.eax - (int)g_ArmyRuntimeRebaseBaseMinusOne;
+  if (!createdRuntime.failed) {
+    playerBlock->primarySelectionEntityOffset8094 = createdRuntime.armyRuntimeOrError - (int)g_ArmyRuntimeRebaseBaseMinusOne;
     return;
   }
   playerBlock->primarySelectionEntityOffset8094 = 0;

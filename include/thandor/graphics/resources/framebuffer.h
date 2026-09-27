@@ -25,13 +25,13 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer);
 
 /* 0x005798A0 */
-GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion16Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);
 
 /* 0x00579B50 */
-GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FramebufferCaptureResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsFramebuffer_CaptureRegion32Bit
           (GraphicsPixelDimension captureHeight,GraphicsPixelDimension captureWidth,
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX);

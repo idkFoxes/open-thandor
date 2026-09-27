@@ -196,7 +196,7 @@ void __thandor_preserve_eax ArenaHeap_Shutdown(void)
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
 */
-ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
+ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes)
 
 {
   ArenaBlockHeader *followingBlock;
@@ -204,10 +204,10 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
   ArenaBlockHeader *splitBlock;
   uint32_t largestFreeOrOriginalSize;
   ArenaBlockHeader *blockCursor;
-  ArenaAllocEaxCf5 outOfMemoryResult;
-  ArenaAllocEaxCf5 corruptHeapResult;
-  ArenaAllocEaxCf5 exactFitResult;
-  ArenaAllocEaxCf5 splitResult;
+  ArenaAllocResult outOfMemoryResult;
+  ArenaAllocResult corruptHeapResult;
+  ArenaAllocResult exactFitResult;
+  ArenaAllocResult splitResult;
   
   largestFreeOrOriginalSize = 1;
   alignedBytes = bytes + 0x1f & 0xffffffe0;
@@ -215,8 +215,8 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
   do {
     if (blockCursor->stateMagic != ARENA_BLOCK_ALLOCATED) {
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
-        corruptHeapResult.carry = true;
-        corruptHeapResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+        corruptHeapResult.failed = true;
+        corruptHeapResult.payloadOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
         return corruptHeapResult;
       }
       if (largestFreeOrOriginalSize < blockCursor->payloadSize) {
@@ -225,8 +225,8 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
       if (alignedBytes <= blockCursor->payloadSize) {
         blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
         if (blockCursor->payloadSize <= alignedBytes + 0x40) {
-          exactFitResult.carry = false;
-          exactFitResult.eax = (uint32_t)(blockCursor + 1);
+          exactFitResult.failed = false;
+          exactFitResult.payloadOrError = (uint32_t)(blockCursor + 1);
           return exactFitResult;
         }
         largestFreeOrOriginalSize = blockCursor->payloadSize;
@@ -242,16 +242,16 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
         if (followingBlock != (ArenaBlockHeader *)0xffffffff) {
           followingBlock->previous = splitBlock;
         }
-        splitResult.carry = false;
-        splitResult.eax = (uint32_t)(blockCursor + 1);
+        splitResult.failed = false;
+        splitResult.payloadOrError = (uint32_t)(blockCursor + 1);
         return splitResult;
       }
     }
     blockCursor = blockCursor->next;
     if (blockCursor == (ArenaBlockHeader *)0xffffffff) {
       (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,largestFreeOrOriginalSize,g_PackageLastErrorPath);
-      outOfMemoryResult.carry = true;
-      outOfMemoryResult.eax = 0x12;
+      outOfMemoryResult.failed = true;
+      outOfMemoryResult.payloadOrError = 0x12;
       return outOfMemoryResult;
     }
   } while( true );
@@ -287,13 +287,13 @@ uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
    Ownership: core/memory/allocator.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
 */
-ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
+ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
 
 {
   int mergedNextBlockAddress;
   int *freedBlockHeader;
-  ArenaFreeEaxCf5 successResult;
-  ArenaFreeEaxCf5 corruptBlockResult;
+  ArenaFreeResult successResult;
+  ArenaFreeResult corruptBlockResult;
   int *adjacentFreeBlock;
   int nextBlockAddress;
   int *previousAdjacentBlockHeader;
@@ -301,8 +301,8 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
   if (memory != (void *)0x0) {
     freedBlockHeader = (int *)((int)memory + -0x20);
     if (*(int *)((int)memory + -0x1c) != 0x5a5a5a5a) {
-      corruptBlockResult.carry = true;
-      corruptBlockResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
+      corruptBlockResult.failed = true;
+      corruptBlockResult.valueOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
       return corruptBlockResult;
     }
     *(uint32_t *)((int)memory + -0x1c) = 0xa5a5a5a5;
@@ -327,8 +327,8 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
     }
   }
   /* The original returns with EAX unchanged on success; callers only test CF. */
-  successResult.carry = false;
-  successResult.eax = 0;
+  successResult.failed = false;
+  successResult.valueOrError = 0;
   return successResult;
 }
 
@@ -338,16 +338,16 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Marks the largest
    free block allocated and returns its payload pointer in EAX.
 */
-ArenaLargestAllocationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+ArenaLargestAllocResult __thandor_eax_ecx_cf_preserve_edx
 ArenaHeap_AllocLargestFreeBlock(void)
 
 {
   uint32_t largestFreePayloadBytes;
   ArenaBlockHeader *blockCursor;
   ArenaBlockHeader *largestFreeBlock;
-  ArenaLargestAllocationEaxEcxCf9 outOfMemoryResult;
-  ArenaLargestAllocationEaxEcxCf9 corruptHeapResult;
-  ArenaLargestAllocationEaxEcxCf9 successResult;
+  ArenaLargestAllocResult outOfMemoryResult;
+  ArenaLargestAllocResult corruptHeapResult;
+  ArenaLargestAllocResult successResult;
   
   largestFreePayloadBytes = 0;
   blockCursor = g_Arena.firstBlock;
@@ -356,7 +356,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
       if (blockCursor->stateMagic != ARENA_BLOCK_FREE) {
         corruptHeapResult.blockSizeOrSentinel = 0xffffffff;
         corruptHeapResult.allocationOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
-        corruptHeapResult.carry = true;
+        corruptHeapResult.failed = true;
         return corruptHeapResult;
       }
       if (largestFreePayloadBytes < blockCursor->payloadSize) {
@@ -368,7 +368,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
   } while (blockCursor != (ArenaBlockHeader *)0xffffffff);
   if (largestFreePayloadBytes == 0) {
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0,g_PackageLastErrorPath);
-    outOfMemoryResult.carry = true;
+    outOfMemoryResult.failed = true;
     outOfMemoryResult.allocationOrError = 0x12;
     outOfMemoryResult.blockSizeOrSentinel = 0;
     return outOfMemoryResult;
@@ -376,7 +376,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
   largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
   successResult.blockSizeOrSentinel = largestFreePayloadBytes;
   successResult.allocationOrError = (uint32_t)(largestFreeBlock + 1);
-  successResult.carry = false;
+  successResult.failed = false;
   return successResult;
 }
 
@@ -386,7 +386,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
    Purpose: Arguments are (newSize, memory). EAX has no stable success value. ABI: CF clear means success. CF set
    means failure and EAX contains an engine error code. Typed parameters: p0 newSize→ArenaPayloadByteCount_V331.
 */
-ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaShrinkResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
@@ -398,8 +398,8 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
   int *thresholdOrSplitBlock;
   int splitPayloadSize;
   uint32_t *blockHeader;
-  ArenaShrinkEaxCf5 successResult;
-  ArenaShrinkEaxCf5 failureResult;
+  ArenaShrinkResult successResult;
+  ArenaShrinkResult failureResult;
   
   blockHeader = (uint32_t *)((int)memory + -0x20);
   alignedBytes = newSize + 0x1f & 0xffffffe0;
@@ -426,11 +426,11 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
         }
       }
     }
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.scratchOrError = (uint32_t)thresholdOrSplitBlock;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.scratchOrError = ARENA_HEAP_FAILURE_SENTINEL_0x13;
   return failureResult;
 }
@@ -443,23 +443,23 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
    complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
    remain unchanged.
 */
-ArenaLinearReserveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaReserveResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
   uint8_t *previousLinearCursor;
   uint8_t *reservedLinearBase;
-  ArenaLinearReserveEaxCf5 successResult;
-  ArenaLinearReserveEaxCf5 failureResult;
+  ArenaReserveResult successResult;
+  ArenaReserveResult failureResult;
   
   previousLinearCursor = g_Arena.linearCursor;
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.baseOrError = (uint32_t)previousLinearCursor;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.baseOrError = 0x14;
   return failureResult;
 }

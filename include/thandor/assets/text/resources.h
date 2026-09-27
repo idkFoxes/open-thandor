@@ -29,11 +29,11 @@ AssetRecordCount __thandor_eax_cf_preserve_ecx_edx
 TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset);
 
 /* 0x0041CEB0 */
-FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource);
 
 /* 0x0041CEF0 */
-FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource);
 
@@ -44,7 +44,7 @@ uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinat
 uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,int32_t drawX);
 
 /* 0x0041CA50 */
-TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextPageLoadResult __thandor_eax_cf_preserve_ecx_edx
 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path);
 
 /* 0x0041CCF0 */
@@ -52,7 +52,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
 /* 0x0041CDE0 */
-TextResourceResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextResolveResult __thandor_eax_cf_preserve_ecx_edx
 TextResource_Resolve(TextResourceId resourceId);
 
 #endif /* THANDOR_ASSETS_TEXT_RESOURCES_H */

@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */
-InGameRuntimeRunEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SessionRunResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
           (LevelAssetRuntimeImagePrefix370 *levelAsset,
           FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16);
@@ -41,11 +41,11 @@ InGameHotkeys_DispatchCommandByFlagsCf
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotificationTimer(void);
 
 /* 0x005641D0 */
-InGameRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+NewSessionInitResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath);
 
 /* 0x00564920 */
-InGameRuntimeLoadedInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+LoadedSessionInitResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath);
 
 /* 0x005651D0 */

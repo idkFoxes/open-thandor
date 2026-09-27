@@ -160,10 +160,10 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
   uint64_t modulatedLanes;
-  ModelLookupEntryEaxCf5 lookupResult;
-  GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
-  ArmyRuntimeCreateEaxCf5 armyCreateResult;
-  FieldGridHeightNormalEaxEdxCf9 terrainSample;
+  ModelLookupEntryResult lookupResult;
+  ShadingRecordResult shadingAllocation;
+  ArmyRuntimeCreateResult armyCreateResult;
+  HeightNormalSampleResult terrainSample;
   ModelLocalPointRegs12 localPoint;
   FixedDirectionXyzRegs12 scaledDirection;
   GraphicsFixedVec3 terrainNormalDirection;
@@ -203,7 +203,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       *shadingCountdownPtr = *shadingCountdownPtr - 1;
       if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == (GraphicsShadingRuntimeRecord *)0x0)) {
         lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
-        if (!lookupResult.carry) {
+        if (!lookupResult.notFound) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
                              (lookupResult.entry,(ModelRuntimeNode *)modelNode);
           shadingAllocation = GraphicsShadingRuntime_AllocateRecordRegs
@@ -274,7 +274,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     if (*periodicCountdownPtr == 0) {
       effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
       lookupResult = ModelLookupTable_ContainsPackedKeyCf(1,3,effectDefinition->ownedNestedResource);
-      if (!lookupResult.carry) {
+      if (!lookupResult.notFound) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
         spawnWorldRuntime = worldRuntime;
         localPoint = ModelNodeRuntime_TransformLocalPointRegs
@@ -294,7 +294,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         *linkedCountdownPtr = *linkedCountdownPtr - 1;
         if (*linkedCountdownPtr == 0) {
           lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
-          if (!lookupResult.carry) {
+          if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
@@ -318,7 +318,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 + 1;
           lookupResult = ModelLookupTable_ContainsPackedKeyCf
                              (keyIndex,2,effectDefinition->ownedNestedResource);
-          if (!lookupResult.carry) {
+          if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             ShotRuntimePool_CreateProjectileFromDefinition
@@ -336,7 +336,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         *linkedCountdownPtr = *linkedCountdownPtr - 1;
         if (*linkedCountdownPtr == 0) {
           lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
-          if (!lookupResult.carry) {
+          if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
             EffectRuntimePool_CreateInstanceFromDefinitionCf
@@ -374,10 +374,10 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                                       (ownerModelNode->worldTransform).translation.x,
                                       (spawnArmyCompletionEntity->common).ownership.ownerIndex,
                                       *(PckArmyAssetIdCatalog *)(frameAdvancedOrScratch + 0xc0),worldRuntime);
-                  if (!armyCreateResult.carry) {
-                    (*(int **)armyCreateResult.eax)[0xf] =
+                  if (!armyCreateResult.failed) {
+                    (*(int **)armyCreateResult.armyRuntimeOrError)[0xf] =
                          (int)(((int64_t)ownerClassRecord[0xf] *
-                               (int64_t)*(int *)(**(int **)armyCreateResult.eax + 0x60)) /
+                               (int64_t)*(int *)(**(int **)armyCreateResult.armyRuntimeOrError + 0x60)) /
                               (int64_t)*(int *)(frameAdvancedOrScratch + 0x60));
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
@@ -418,7 +418,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
       terrainSample = FieldGrid_InterpolateTerrainHeightAndNormal
                          ((modelNode->worldTransform).translation.y,
                           (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
-      if (!terrainSample.carry) {
+      if (!terrainSample.failed) {
         /* Both register-returned directions are spilled to the stack in the binary; Ghidra showed
            them as &stack0xffffffd4 / &stack0xffffffc8. The dot product is symmetric. */
         scaledDirection = FixedMath_DirectionFromAnglesScaledRegs

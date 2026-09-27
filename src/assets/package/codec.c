@@ -17,7 +17,7 @@
    back to the 0x10-byte on-disk record (+0x54,+0x48,+0x4C,+0x50) then Huffman.
    Local calls: PckCodec_EncodeHuffmanRle.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeFieldGrid
           (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
@@ -31,16 +31,16 @@ PckCodec_EncodeFieldGrid
   uint32_t bytes;
   PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
-  ArenaAllocEaxCf5 allocResult;
-  PckCodecEaxCf5 encodeResult;
-  PckCodecEaxCf5 successResult;
+  ArenaAllocResult allocResult;
+  PckCodecResult encodeResult;
+  PckCodecResult successResult;
   AssetMagic persistedCellDword;
   
   cellCount = sourceGrid->gridWidth * sourceGrid->gridHeight;
   bytes = cellCount * 0x10 + 0x200;
   allocResult = (*g_MemoryApi.alloc)(bytes);
-  compactFieldImageBase = (AssetMagic *)allocResult.eax;
-  if (!allocResult.carry) {
+  compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     compactWriteCursor = compactFieldImageBase;
     for (headerDwordCount = 0x80; headerDwordCount != 0; headerDwordCount = headerDwordCount - 1) {
       *compactWriteCursor = (sourceGrid->common).magic;
@@ -66,18 +66,18 @@ PckCodec_EncodeFieldGrid
     encodeResult = PckCodec_EncodeHuffmanRle
                       (destinationCapacityBytes - 0x10,destination + 0x10,bytes,
                        (uint8_t *)compactFieldImageBase);
-    encodedSizeOrError = (AssetMagic *)encodeResult.eax;
-    if (!encodeResult.carry) {
+    encodedSizeOrError = (AssetMagic *)encodeResult.byteCountOrError;
+    if (!encodeResult.failed) {
       (*g_MemoryApi.free)(compactFieldImageBase);
-      successResult.eax = (uint32_t)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
-      successResult.carry = false;
+      successResult.byteCountOrError = (uint32_t)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
+      successResult.failed = false;
       return successResult;
     }
     (*g_MemoryApi.free)(compactFieldImageBase);
     compactFieldImageBase = encodedSizeOrError;
   }
-  encodeResult.carry = true;
-  encodeResult.eax = (uint32_t)compactFieldImageBase;
+  encodeResult.failed = true;
+  encodeResult.byteCountOrError = (uint32_t)compactFieldImageBase;
   return encodeResult;
 }
 
@@ -91,7 +91,7 @@ PckCodec_EncodeFieldGrid
    col*0x901 + row*0x480, worldY = -1999*row (triangle lattice 2305/1152/1999; inverse of the T4 sampler).
    Local calls: PckCodec_DecodeHuffmanRle.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeFieldGrid
           (PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
           PckStoredByteCount sourceSizeBytes,uint8_t *source)
@@ -109,18 +109,18 @@ PckCodec_DecodeFieldGrid
   FieldGridCell *currentWorldCoordinateCell;
   FieldGridAsset *expandedZeroCursor;
   FieldGridAsset *expandedWriteCursor;
-  ArenaAllocEaxCf5 allocResult;
-  PckCodecEaxCf5 decodeResult;
-  ArenaFreeEaxCf5 freeResult;
+  ArenaAllocResult allocResult;
+  PckCodecResult decodeResult;
+  ArenaFreeResult freeResult;
   FieldGridDimension gridWidth;
   
   bytes = *(uint32_t *)source;
   allocResult = (*g_MemoryApi.alloc)(bytes);
-  compactFieldImageBase = (AssetMagic *)allocResult.eax;
-  if (!allocResult.carry) {
+  compactFieldImageBase = (AssetMagic *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     decodeResult = PckCodec_DecodeHuffmanRle
                       (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
-    if (!decodeResult.carry) {
+    if (!decodeResult.failed) {
       cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
       expandedWriteCursor = destinationGrid;
@@ -173,15 +173,15 @@ PckCodec_DecodeFieldGrid
       } while (rowsRemaining != 0);
       freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
       /* EAX is whatever the free left in it (callers only test CF), CF clear. */
-      decodeResult.carry = false;
-      decodeResult.eax = (uint32_t)freeResult.eax;
+      decodeResult.failed = false;
+      decodeResult.byteCountOrError = (uint32_t)freeResult.valueOrError;
       return decodeResult;
     }
     freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
-    compactFieldImageBase = (AssetMagic *)freeResult.eax;
+    compactFieldImageBase = (AssetMagic *)freeResult.valueOrError;
   }
-  decodeResult.carry = true;
-  decodeResult.eax = (uint32_t)compactFieldImageBase;
+  decodeResult.failed = true;
+  decodeResult.byteCountOrError = (uint32_t)compactFieldImageBase;
   return decodeResult;
 }
 
@@ -191,15 +191,15 @@ PckCodec_DecodeFieldGrid
    Purpose: Copies sourceSize bytes when destinationCapacity is large enough and returns the four-byte-aligned
    size. This is PCK compression method 1. Method 1 writer: plain dword-tail-safe copy.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeStored
           (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source)
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecEaxCf5 successResult;
-  PckCodecEaxCf5 errorResult;
+  PckCodecResult successResult;
+  PckCodecResult errorResult;
   
   if (sourceSizeBytes <= destinationCapacityBytes) {
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
@@ -208,12 +208,12 @@ PckCodec_EncodeStored
       source = source + 4;
       destination = destination + 4;
     }
-    successResult.eax = sourceSizeBytes + 3 & 0xfffffffc;
-    successResult.carry = false;
+    successResult.byteCountOrError = sourceSizeBytes + 3 & 0xfffffffc;
+    successResult.failed = false;
     return successResult;
   }
-  errorResult.carry = true;
-  errorResult.eax = 0x14;
+  errorResult.failed = true;
+  errorResult.byteCountOrError = 0x14;
   return errorResult;
 }
 
@@ -223,14 +223,14 @@ PckCodec_EncodeStored
    Purpose: Copies sourceSize bytes directly to the destination. This is PCK compression method 1. Method 1 reader:
    stored copy.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeStored
           (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckStoredByteCount sourceSizeBytes,uint8_t *source)
 
 {
   PckDwordCopyCount dwordCopyCount;
-  PckCodecEaxCf5 copyResult;
+  PckCodecResult copyResult;
   
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
       dwordCopyCount = dwordCopyCount - 1) {
@@ -238,9 +238,9 @@ PckCodec_DecodeStored
     source = source + 4;
     destination = destination + 4;
   }
-  copyResult.carry = (sourceSizeBytes >> 1 & 1) != 0;
+  copyResult.failed = (sourceSizeBytes >> 1 & 1) != 0;
   /* EAX is untouched; in Package_DecodeEntryInto it still holds the read size (packedSize). */
-  copyResult.eax = sourceSizeBytes;
+  copyResult.byteCountOrError = sourceSizeBytes;
   return copyResult;
 }
 
@@ -251,7 +251,7 @@ PckCodec_DecodeStored
    3-to-18-byte repeated runs. Returns the aligned packed size with CF clear; returns error 0x14 with CF set on
    failure. PCK compressionMethod 0 writer: order-0 Huffman over literal/RLE symbols.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeHuffmanRle
           (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceSizeBytes,uint8_t *source)
@@ -273,8 +273,8 @@ PckCodec_EncodeHuffmanRle
   PckHuffmanNodePtr currentLeafNode;
   uint32_t *outputClearCursor;
   uint32_t *outputWriteCursor;
-  PckCodecEaxCf5 successResult;
-  PckCodecEaxCf5 errorResult;
+  PckCodecResult successResult;
+  PckCodecResult errorResult;
   PckHuffmanNodePtr nextInternalNode;
   uint8_t currentSymbolByte;
   PckHuffmanNodePtr parentNode;
@@ -436,14 +436,14 @@ PckCodec_EncodeHuffmanRle_FinalizeBitstreamAndReturnAlignedSizeWithCarryClear:
       if (outputBitOffset != 0) {
         weightIndexOrSize = weightIndexOrSize + 1;
       }
-      successResult.eax = weightIndexOrSize & 0xfffffff0;
-      successResult.carry = false;
+      successResult.byteCountOrError = weightIndexOrSize & 0xfffffff0;
+      successResult.failed = false;
       return successResult;
     }
   }
 PckCodec_EncodeHuffmanRle_ReturnCapacityError:
-  errorResult.carry = true;
-  errorResult.eax = 0x14;
+  errorResult.failed = true;
+  errorResult.byteCountOrError = 0x14;
   return errorResult;
 }
 
@@ -453,7 +453,7 @@ PckCodec_EncodeHuffmanRle_ReturnCapacityError:
    Purpose: Rebuilds the package Huffman tree from the first 256 source bytes and decodes literal or repeated-run
    tokens until outputSize bytes have been produced. CF reports success or failure. PCK compressionMethod 0 reader.
 */
-PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PckCodecResult __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeHuffmanRle
           (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
           uint8_t *source)
@@ -474,7 +474,7 @@ PckCodec_DecodeHuffmanRle
   uint32_t *inputCursor;
   PckHuffmanSymbolState *symbolStateCursor;
   PckHuffmanNode *leafOrSecondLowestNode;
-  PckCodecEaxCf5 huffmanResult;
+  PckCodecResult huffmanResult;
   PckHuffmanNodePtr nextInternalNode;
   
   symbolStateCursor = g_PckHuffmanSymbolWorkspace256;
@@ -533,8 +533,8 @@ PckCodec_DecodeHuffmanRle
     /* The original compares with the next function (PckCodec_EncodeHuffmanRle), whose code starts
        where the internal node workspace ends. */
     if (g_PckHuffmanInternalNodeWorkspace256 + 256 <= nextInternalNode) {
-      huffmanResult.carry = true;
-      huffmanResult.eax = 0x14;
+      huffmanResult.failed = true;
+      huffmanResult.byteCountOrError = 0x14;
       return huffmanResult;
     }
   }
@@ -590,8 +590,8 @@ PckCodec_DecodeHuffmanRle
       runLength = runLength - 1;
     } while (runLength != 0);
   } while (outputSizeBytes != 0);
-  huffmanResult.carry = false;
-  huffmanResult.eax = runLength;
+  huffmanResult.failed = false;
+  huffmanResult.byteCountOrError = runLength;
   return huffmanResult;
 }
 

@@ -215,27 +215,27 @@ void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
    higher-level meanings remain unresolved. ABI: CF clear means success. CF set means loading or validation failed.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
   GraphicsPaletteAsset *validatedPaletteAsset;
-  PackageLoadEntryEaxCf5 loadResult;
-  GraphicsPaletteAssetEaxCf5 validateResult;
+  PackageLoadResult loadResult;
+  PaletteAssetResult validateResult;
   
   loadResult = Package_LoadEntry(pathUtf16);
   loadedPaletteAsset = loadResult.bufferOrError;
-  if (!loadResult.carry) {
+  if (!loadResult.failed) {
     validateResult = (*g_GraphicsPaletteAssetValidate)(loadedPaletteAsset);
     validatedPaletteAsset = validateResult.paletteAsset;
-    if (!validateResult.carry) {
+    if (!validateResult.failed) {
       return validateResult;
     }
     Resource_Release(loadedPaletteAsset);
     loadedPaletteAsset = validatedPaletteAsset;
   }
-  validateResult.carry = true;
+  validateResult.failed = true;
   validateResult.paletteAsset = loadedPaletteAsset;
   return validateResult;
 }
@@ -272,14 +272,14 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
   GraphicsPaletteAsset *clonedAsset;
   uint32_t sizeOrDwordCount;
   GraphicsPaletteAsset *destinationCursor;
-  ArenaAllocEaxCf5 allocResult;
-  GraphicsPaletteAssetEaxCf5 validateResult;
-  ArenaFreeEaxCf5 freeResult;
+  ArenaAllocResult allocResult;
+  PaletteAssetResult validateResult;
+  ArenaFreeResult freeResult;
   
   sizeOrDwordCount = paletteAsset->allocationSizeBytes;
   allocResult = (*g_MemoryApi.alloc)(sizeOrDwordCount);
-  clonedAsset = (GraphicsPaletteAsset *)allocResult.eax;
-  if (!allocResult.carry) {
+  clonedAsset = (GraphicsPaletteAsset *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     destinationCursor = clonedAsset;
     for (sizeOrDwordCount = sizeOrDwordCount >> 2; sizeOrDwordCount != 0; sizeOrDwordCount = sizeOrDwordCount - 1) {
       destinationCursor->magic = paletteAsset->magic;
@@ -287,11 +287,11 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
       destinationCursor = (GraphicsPaletteAsset *)&destinationCursor->allocationSizeBytes;
     }
     validateResult = (*g_GraphicsPaletteAssetValidate)(clonedAsset);
-    if (!validateResult.carry) {
+    if (!validateResult.failed) {
       return validateResult.paletteAsset;
     }
     freeResult = (*g_MemoryApi.free)(clonedAsset);
-    clonedAsset = (GraphicsPaletteAsset *)freeResult.eax;
+    clonedAsset = (GraphicsPaletteAsset *)freeResult.valueOrError;
   }
   return clonedAsset;
 }
@@ -320,19 +320,19 @@ GraphicsPaletteAsset_ReleaseClone(GraphicsPaletteAsset *paletteAsset)
    Purpose: Validates magic == 0x006C6170. On success returns the input pointer with CF clear. On failure returns
    engine error code 0x35 in EAX with CF set.
 */
-GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteAssetResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteAsset_Validate(GraphicsPaletteAsset *paletteAsset)
 
 {
-  GraphicsPaletteAssetEaxCf5 successResult;
-  GraphicsPaletteAssetEaxCf5 failureResult;
+  PaletteAssetResult successResult;
+  PaletteAssetResult failureResult;
   
   if (paletteAsset->magic == ASSET_MAGIC_PAL) {
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.paletteAsset = paletteAsset;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.paletteAsset = (GraphicsPaletteAsset *)0x35;
   return failureResult;
 }
@@ -355,7 +355,7 @@ GraphicsPaletteAsset_ResolveAllocationBase(GraphicsPaletteAsset *paletteAsset)
    Ownership: graphics/resources/palette.
    Purpose: Handles graphics palette texture source combine assets and rebase offsets.
 */
-GraphicsPaletteTextureSourceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PaletteTextureSourceResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
           (GraphicsPaletteTextureSourceAsset *appendedAsset,
           GraphicsPaletteTextureSourceAsset *baseAsset)
@@ -374,14 +374,14 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
   GraphicsTexturePaletteEntry *paletteEntryCursor;
   uint8_t *byteSourceCursor;
   GraphicsPaletteTextureSourceAsset *destinationCursor;
-  ArenaAllocEaxCf5 allocResult;
-  GraphicsPaletteTextureSourceEaxCf5 result;
+  ArenaAllocResult allocResult;
+  PaletteTextureSourceResult result;
   
   bytes = (baseAsset->allocationSizeBytes + appendedAsset->allocationSizeBytes) - 0x200;
   allocResult = (*g_MemoryApi.alloc)(bytes);
-  result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.eax;
-  if (allocResult.carry) {
-    result.carry = true;
+  result.paletteSource = (GraphicsPaletteTextureSourceAsset *)allocResult.payloadOrError;
+  if (allocResult.failed) {
+    result.failed = true;
     return result;
   }
   sourceCursor = baseAsset;
@@ -462,7 +462,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
     byteSourceCursor = byteSourceCursor + 4;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  return THANDOR_BITCAST(uint64_t, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+  return THANDOR_BITCAST(uint64_t, PaletteTextureSourceResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
 }
 
 

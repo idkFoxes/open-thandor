@@ -33,7 +33,7 @@ int __stdcall DirectDraw_EnumAdapterCallback (TH_LEGACY_GUID *adapterGuid,char *
 int32_t __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex);
 
 /* 0x00578920 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width);

@@ -115,7 +115,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   WorldRuntimeContext *node;
   ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
-  FatalErrorEaxCf5 checkedAssetLookup;
+  FatalErrorCheckResult checkedAssetLookup;
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(3,source);
   node = &runtimeRoot->worldRuntime0A30;
@@ -128,7 +128,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   UiCommandModeG_ClearNodeFlag02000000(node);
   armyAssetLookup = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
   checkedAssetLookup = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)armyAssetLookup.eax,armyAssetLookup.carry);
-  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.eax;
+  g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
   InGameSelectionDetailPanel_Rebuild();
   return;
 }
@@ -559,7 +559,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
   SelectionPlayerRuntimeBlock *worldXQ12;
   WorldRuntimeContext *worldRuntime;
   bool placementRejected;
-  ArmyRuntimeCreateEaxCf5 createResult;
+  ArmyRuntimeCreateResult createResult;
   
   runtimeRoot = g_InGameRuntimeRoot;
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerId];
@@ -581,8 +581,8 @@ InGameCommand_ExecuteLocalPlacementFromSelection
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->primaryEntityOrFactionToken8080,
                          *(PckArmyAssetIdCatalog *)(pendingEntryOrFactionToken + 8),worldRuntime);
-      createdArmySlots = (ArmyRuntimeSlot **)createResult.eax;
-      if (!createResult.carry) {
+      createdArmySlots = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
+      if (!createResult.failed) {
         pendingEntryOrFactionToken = playerBlock->primaryEntityOrFactionToken8080;
         modelNodeRuntime = createdArmySlots[1];
         armySlot = *createdArmySlots;
@@ -1109,7 +1109,7 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
   UiNodeBase *parentCursor;
   UiSelectableControl *root;
   UiNodeVtable *selectedIndexValue;
-  UiSelectableNodeEaxEcxCf9 selectionResult;
+  SelectableGroupNodeResult selectionResult;
   
   parentCursor = (source->base).parent;
   root = source;
@@ -1582,7 +1582,7 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
-  TextResourceResolveEaxCf5 departureText;
+  TextResolveResult departureText;
   WorldOwnerListNode100 *ownerNode;
   
   runtimeRoot = g_InGameRuntimeRoot;
@@ -1621,8 +1621,8 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
             return;
           }
           departureText = TextResource_Resolve(0xff08);
-          RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,departureText.eax);
-          InGameRecentTextHistory_InsertAndRebuild8(departureText.eax);
+          RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,departureText.text);
+          InGameRecentTextHistory_InsertAndRebuild8(departureText.text);
           return;
         }
         remainingPlayers = remainingPlayers - 1;

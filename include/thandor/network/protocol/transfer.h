@@ -69,7 +69,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchReques
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(void);
 
 /* 0x004AF170 */
-UiTransferMailboxReceivedEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
 UiTransferMailbox_GetReceivedBufferCf(void);
 
 /* 0x004AF1C0 */

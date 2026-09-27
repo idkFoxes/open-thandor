@@ -40,9 +40,9 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
   uint8_t *optionTextCursor;
   uint32_t *localPlayerRecordDwordCursor;
   bool endpointParseFailed;
-  NetworkBackendSetSessionEaxCf5 setSessionResult;
-  NetworkBackendOpenBindEaxCf5 openBindResult;
-  CommandLineFindOptionEbxCf5 findOptionResult;
+  NetworkSetSessionResult setSessionResult;
+  NetworkOpenBindResult openBindResult;
+  CommandLineOptionResult findOptionResult;
   UiListRowIndex selectedBackendIndex;
   uint32_t sequenceTokenOrBackendIndex;
   
@@ -127,9 +127,9 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
                           ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
   selectedBackendIndex = backendIndex;
   setSessionResult = (*g_NetworkBackendSlot0)(backendIndex);
-  if (!setSessionResult.carry) {
+  if (!setSessionResult.failed) {
     openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
-    if (!openBindResult.carry) {
+    if (!openBindResult.failed) {
 FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       UiPointerList_SelectIndexVariantA
                 (backendIndex,(UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
@@ -141,8 +141,8 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         endpointDestinationDwordCursor = endpointDestinationDwordCursor + 1;
       }
       findOptionResult = (*g_CommandLineFindOption)(6,s_NAME__CLIENT__KARTE___00545e91);
-      commandLineOptionBytes = findOptionResult.ebx;
-      if (!findOptionResult.carry) {
+      commandLineOptionBytes = findOptionResult.option;
+      if (!findOptionResult.notFound) {
         optionTextCursor = commandLineOptionBytes + 6;
         remainingOrRootNode = 0x13;
         /* NAME="...": find the closing quote within 0x13 characters (stop at control characters). */
@@ -186,10 +186,10 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
       UiTransfer_SendPacketType10000Value2931Cf();
       findOptionResult = (*g_CommandLineFindOption)(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
-      if (findOptionResult.carry) {
+      if (findOptionResult.notFound) {
         findOptionResult = (*g_CommandLineFindOption)(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
-        secondaryCommandLineOptionBytes = findOptionResult.ebx;
-        if (!findOptionResult.carry) {
+        secondaryCommandLineOptionBytes = findOptionResult.option;
+        if (!findOptionResult.notFound) {
           remainingOrRootNode = 0x7fffff;
           optionTextCursor = secondaryCommandLineOptionBytes + 8;
           while( true ) {
@@ -233,7 +233,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
         }
       }
       else {
-        *findOptionResult.ebx = 0x68;
+        *findOptionResult.option = 0x68;
         FrontendNetworkSetupPage_InitializeFromCommandLine
                   (FRONTEND_UI(frontendUi,networkGameHostButton));
       }
@@ -245,11 +245,11 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
   do {
     sequenceTokenOrBackendIndex = backendIndex;
     setSessionResult = (*g_NetworkBackendSlot0)(backendIndex);
-    errorOrValue = setSessionResult.eax;
-    if (!setSessionResult.carry) {
+    errorOrValue = setSessionResult.valueOrError;
+    if (!setSessionResult.failed) {
       openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
-      errorOrValue = openBindResult.eax;
-      if (!openBindResult.carry) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
+      errorOrValue = openBindResult.valueOrError;
+      if (!openBindResult.failed) goto FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage;
       (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed a stale register */
     }
     backendIndex = backendIndex + 1;
@@ -383,13 +383,13 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   int appliedOptionMask;
   uint8_t *optionText;
   uint8_t *optionTextCursor;
-  TextResourceResolveEaxCf5 resolvedText;
-  CommandLineFindOptionEbxCf5 findOptionResult;
+  TextResolveResult resolvedText;
+  CommandLineOptionResult findOptionResult;
   
   appliedOptionMask = 0;
   findOptionResult = (*g_CommandLineFindOption)(9,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72);
-  optionText = findOptionResult.ebx;
-  if ((((!findOptionResult.carry) && (optionText[10] == 0x22)) &&
+  optionText = findOptionResult.option;
+  if ((((!findOptionResult.notFound) && (optionText[10] == 0x22)) &&
       (parsedCountOrTickSetting = optionText[9] - 0x30, 0x2f < optionText[9] && parsedCountOrTickSetting != 0)) &&
      (((optionText[0xb] == 0 && (parsedCountOrTickSetting < 9)) && (1 < parsedCountOrTickSetting)))) {
     *optionText = 0x73;
@@ -398,8 +398,8 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
          parsedCountOrTickSetting;
   }
   findOptionResult = (*g_CommandLineFindOption)(7,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 9);
-  optionText = findOptionResult.ebx;
-  if (!findOptionResult.carry) {
+  optionText = findOptionResult.option;
+  if (!findOptionResult.notFound) {
     optionTextCursor = optionText + 7;
     remainingChars = 0x13;
     /* Find the closing quote within 0x13 characters (stop at control characters). */
@@ -423,8 +423,8 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
     }
   }
   findOptionResult = (*g_CommandLineFindOption)(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
-  optionText = findOptionResult.ebx;
-  if (((((!findOptionResult.carry) && (optionText[0xb] == 0x22)) &&
+  optionText = findOptionResult.option;
+  if (((((!findOptionResult.notFound) && (optionText[0xb] == 0x22)) &&
        (parsedCountOrTickSetting = optionText[10] - 0x30, 0x2f < optionText[10] && parsedCountOrTickSetting != 0)) &&
       ((optionText[0xc] == 0 && (parsedCountOrTickSetting < 8)))) && (parsedCountOrTickSetting != 0)) {
     *optionText = 0x6e;
@@ -448,7 +448,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = parsedCountOrTickSetting;
   resolvedText = TextResource_Resolve(parsedCountOrTickSetting + 0x210d);
   RichTextCommandStream_CopyExpandedCf
-            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,resolvedText.eax);
+            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,resolvedText.text);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   if (appliedOptionMask == 7) {

@@ -404,11 +404,11 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
   int entriesRemaining;
   uint32_t angleIndex16;
   uint32_t secondAngleIndex16;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x40000);
-  outputCursor = (short *)allocResult.eax;
-  if (!allocResult.carry) {
+  outputCursor = (short *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     g_CosineDerivedLookupAllocation = outputCursor;
     for (entriesRemainingInRow = 0x80; entriesRemainingInRow != 0;
         entriesRemainingInRow = entriesRemainingInRow + -1) {

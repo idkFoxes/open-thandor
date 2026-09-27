@@ -289,14 +289,14 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
    Local calls: ArmyAssetRecord_RegisterAndRelocate.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
+StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
 {
   uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ArmyAssetHeader *record;
-  StatusValueEaxCf5 registrationStatus;
-  StatusValueEaxCf5 failureStatus;
+  StatusResult registrationStatus;
+  StatusResult failureStatus;
   
   registrationStatusCode = 0x40;
   if (((asset->recordCountHeader).common.magic == ASSET_MAGIC_ARM) &&
@@ -305,13 +305,13 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyA
     record = asset + 1;
     while( true ) {
       if (recordsRemaining == 0) {
-        registrationStatus.carry = false;
+        registrationStatus.failed = false;
         registrationStatus.valueOrError = registrationStatusCode;
         return registrationStatus;
       }
       registrationStatus = ArmyAssetRecord_RegisterAndRelocate((ArmyAssetRuntimeSemanticView80 *)record,asset);
       registrationStatusCode = registrationStatus.valueOrError;
-      if (registrationStatus.carry) break;
+      if (registrationStatus.failed) break;
       record = (ArmyAssetHeader *)
                ((int)(record->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                ((record->recordCountHeader).common.magic - 0x28));
@@ -321,7 +321,7 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyA
   else {
     Package_SetLastErrorPath((uint16_t *)asset);
   }
-  failureStatus.carry = true;
+  failureStatus.failed = true;
   failureStatus.valueOrError = registrationStatusCode;
   return failureStatus;
 }
@@ -431,7 +431,7 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedAr
 
 static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
-  ModelDefinitionLookupEaxCf5 selected;
+  ModelDefinitionResult selected;
   uint32_t sum;
   uint32_t i;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
@@ -469,7 +469,7 @@ ArmyAssetHierarchy_SumFactionUnlockedArmour
 
 static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
-  ModelDefinitionLookupEaxCf5 selected;
+  ModelDefinitionResult selected;
   EnergyDemandQ4 sum;
   uint32_t childCount;
   uint32_t i;
@@ -590,14 +590,14 @@ ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
 static uint32_t ArmyAssetRecord_RelocateModelTree
           (ArmyAssetRuntimeSemanticView80 *record,uint8_t *assetBase,uint8_t *node)
 {
-  ModelBuildMetricEaxEcxEdxCf13 metrics;
+  BuildMetricResult metrics;
   uint32_t childCount;
   uint32_t childIndex;
   uint32_t error = 0;
   uint32_t childError;
 
   metrics = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(*(PckModelDefinitionIdCatalog *)(node + 0x20));
-  if (metrics.carry) {
+  if (metrics.notFound) {
     error = (uint32_t)metrics.metric0;
   }
   else {
@@ -617,7 +617,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   return error;
 }
 
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
+StatusResult __thandor_void_preserve_ecx_edx
 ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase)
 
@@ -627,13 +627,13 @@ ArmyAssetRecord_RegisterAndRelocate
   ArmyAssetRecordPrefix **slot;
   int slotsRemaining;
   ArmyRegistryEaxCf5_51b6d0 existing;
-  StatusValueEaxCf5 status;
+  StatusResult status;
 
   existing = ArmyAssetRegistry_FindByIdCf(record->registryId);
   if (!existing.carry) {
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
-    status.carry = true;
+    status.failed = true;
     status.valueOrError = 0x4c;
     return status;
   }
@@ -647,14 +647,14 @@ ArmyAssetRecord_RegisterAndRelocate
         error = ArmyAssetRecord_RelocateModelTree
                           (record,(uint8_t *)assetBase,(uint8_t *)(uintptr_t)record->rootNodeOffsetOrPointer);
       }
-      status.carry = error != 0;
+      status.failed = error != 0;
       status.valueOrError = error;
       return status;
     }
     slot = slot + 1;
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
-  status.carry = true;
+  status.failed = true;
   status.valueOrError = 0x42;
   return status;
 }
@@ -672,7 +672,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetReg
   ArmyAssetRecordPrefix *registeredRecord;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
-  ArmyPreviewTextureEaxCf5 renderResult;
+  ArmyPreviewTextureResult renderResult;
   FactionRuntimeIndex factionIndex;
   
   registryCursor = g_ArmyAssetRecordRegistry;
@@ -694,7 +694,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetReg
                       (*(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
-    if (renderResult.carry) {
+    if (renderResult.failed) {
       return 0;
     }
     registeredRecord[2].byteSize = (AssetRecordByteCount)renderResult.previewTexture;

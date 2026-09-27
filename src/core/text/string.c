@@ -192,14 +192,14 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
    capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage serialization, function
    body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint32_t remainingCapacityBytes;
   bool capacityExhausted;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 overflowResult;
+  StatusResult successResult;
+  StatusResult overflowResult;
   uint8_t sourceByte;
   
   remainingCapacityBytes = capacityBytes;
@@ -209,7 +209,7 @@ Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destina
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
-      overflowResult.carry = true;
+      overflowResult.failed = true;
       overflowResult.valueOrError = 0x14;
       return overflowResult;
     }
@@ -218,7 +218,7 @@ Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destina
     destination = destination + 1;
   } while (sourceByte != 0);
   successResult.valueOrError = capacityBytes - remainingCapacityBytes;
-  successResult.carry = false;
+  successResult.failed = false;
   return successResult;
 }
 

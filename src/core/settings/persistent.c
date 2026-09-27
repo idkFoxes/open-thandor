@@ -51,17 +51,17 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
   int dwordsRemaining;
   uint32_t byteCount;
   PersistentSettingsImage *destination;
-  ArenaAllocEaxCf5 allocResult;
-  FileSystemOpenEaxCf5 openResult;
-  RichTextCopyExpandedEaxCf5 pathCopyResult;
-  FileSystemSizeEaxCf5 sizeResult;
-  FileSystemReadEaxCf5 readResult;
+  ArenaAllocResult allocResult;
+  FileSystemOpenResult openResult;
+  RichTextCopyResult pathCopyResult;
+  FileSystemSizeResult sizeResult;
+  FileSystemReadResult readResult;
   
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
   allocResult = (*g_MemoryApi.alloc)(200);
-  settingsClearCursor = (uint32_t *)allocResult.eax;
-  if (allocResult.carry) {
+  settingsClearCursor = (uint32_t *)allocResult.payloadOrError;
+  if (allocResult.failed) {
     return;
   }
   for (dwordsRemaining = 0x32; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
@@ -70,13 +70,13 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
   }
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
   openResult = (*g_FileSystemOpenCf)(0,g_PersistentSettings.path);
-  handle = (void *)openResult.eax;
-  if (openResult.carry) {
+  handle = (void *)openResult.handleOrError;
+  if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    if (openResult.carry) {
+    if (openResult.failed) {
       (*g_MemoryApi.free)(destination);
       return;
     }
@@ -85,16 +85,16 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     pathCopyResult = RichTextCommandStream_CopyExpandedCf
                       (0x200,g_PersistentSettings.path,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16
                       );
-    handle = (void *)pathCopyResult.eax;
+    handle = (void *)pathCopyResult.bytesWritten;
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
-  if (!sizeResult.carry) {
+  if (!sizeResult.failed) {
     byteCount = 200;
-    if (sizeResult.eax < 200) {
-      byteCount = sizeResult.eax;
+    if (sizeResult.sizeOrError < 200) {
+      byteCount = sizeResult.sizeOrError;
     }
     readResult = (*g_FileSystemReadExactCf)(byteCount,destination,handle);
-    if (!readResult.carry) {
+    if (!readResult.failed) {
       (*g_FileSystemClose)(handle);
       if (byteCount < 0x3c) {
         g_PersistentSettings.image = destination;

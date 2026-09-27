@@ -376,7 +376,7 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
    Graphics_ProjectViewPoint [graphics/core/runtime], GraphicsProjectedPoint_IsInsideTriangleCf
    [graphics/render/projection], FixedMath_Length3 [core/math/fixed].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context)
@@ -385,15 +385,15 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   ModelResourceHitTestAndRenderView210 *resourceView;
   GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
-  StatusValueEaxCf5 missResult;
+  StatusResult missResult;
   uint8_t clippedCornerMask;
   GraphicsFixedMatrix3x4 *transformA;
   uint32_t childrenRemaining;
   int childByteOffset;
   bool cornerVisibleOrHit;
   GraphicsProjectedPointPair projectedCorner;
-  StatusValueEaxCf5 boundsCenterHit;
-  StatusValueEaxCf5 hitOrChildResult;
+  StatusResult boundsCenterHit;
+  StatusResult hitOrChildResult;
   
   resourceView = (modelNode->modelPayload).modelResource;
   transformA = &modelNode->worldTransform;
@@ -577,7 +577,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                                ((resourceView->localBoundsX0Q12 + resourceView->localBoundsX1Q12 >> 1) +
                                (modelNode->worldTransform).translation.x) -
                                context->hitReferenceWorldXQ12);
-        boundsCenterHit.carry = false;
+        boundsCenterHit.failed = false;
         return boundsCenterHit;
       }
       hitOrChildResult.valueOrError =
@@ -587,7 +587,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                              context->hitReferenceWorldYQ12,
                              (modelNode->worldTransform).translation.x -
                              context->hitReferenceWorldXQ12);
-      hitOrChildResult.carry = false;
+      hitOrChildResult.failed = false;
       return hitOrChildResult;
     }
   }
@@ -595,7 +595,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   childByteOffset = 0;
   do {
     if (childrenRemaining == 0) {
-      missResult.carry = true;
+      missResult.failed = true;
       missResult.valueOrError = (uint32_t)transformA;
       return missResult;
     }
@@ -604,7 +604,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
       hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                          (pointerY,pointerX,childNode,context);
       transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.valueOrError;
-      if (!hitOrChildResult.carry) {
+      if (!hitOrChildResult.failed) {
         return hitOrChildResult;
       }
     }
@@ -621,7 +621,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
    Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_ApplyPoint
    [core/math/fixed], ModelMesh_IntersectTriangleRayDistanceCf [assets/model/definitions].
 */
-ModelRaycastNearestHitEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
 
 {
@@ -642,9 +642,9 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
   ModelMeshGroupRelativeOffset *meshGroupCursor;
   ModelRaycastTriangleDescriptor *triangle;
   ModelRuntimeNode *nearestModelNode;
-  TerrainDistanceEaxCf5 triangleHit;
-  ModelRaycastNearestHitEaxEdxCf9 childOrNearestHit;
-  ModelRaycastNearestHitEaxEdxCf9 missResult;
+  TerrainRayTriangleResult triangleHit;
+  ModelRaycastResult childOrNearestHit;
+  ModelRaycastResult missResult;
   
   deltaXOrNodeY = (modelNodeRuntime->worldTransform).translation.x - g_ModelRaycastOriginX;
   deltaYOrNodeZ = (modelNodeRuntime->worldTransform).translation.y - g_ModelRaycastOriginY;
@@ -711,7 +711,7 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
           for (trianglesRemaining = *triangleCountField; trianglesRemaining != (GraphicsFixedVec3 *)0x0;
               trianglesRemaining = (GraphicsFixedVec3 *)((int)&trianglesRemaining[-1].z + 3)) {
             triangleHit = ModelMesh_IntersectTriangleRayDistanceCf(triangle);
-            if ((triangleHit.carry) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
+            if ((triangleHit.missed) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
               radiusNodeXOrNearest = triangleHit.distanceQ12;
             }
             triangle = triangle + 1;
@@ -723,25 +723,25 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
           if (modelNodeRuntime->childNodes[childrenRemaining - 1] != (ModelRuntimeNode *)0x0) {
             childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearestCf
                                (modelNodeRuntime->childNodes[childrenRemaining - 1]);
-            edxCarrier = childOrNearestHit.edxCarrier;
-            if ((childOrNearestHit.carry) && (childOrNearestHit.nearestDistanceQ12 < radiusNodeXOrNearest)) {
+            edxCarrier = childOrNearestHit.nearestNodeOrScratch;
+            if ((childOrNearestHit.hit) && (childOrNearestHit.nearestDistanceQ12 < radiusNodeXOrNearest)) {
               radiusNodeXOrNearest = childOrNearestHit.nearestDistanceQ12;
               nearestModelNode = edxCarrier.nearestModelNode;
             }
           }
         }
         if (radiusNodeXOrNearest != 0x7fffffff) {
-          childOrNearestHit.edxCarrier.nearestModelNode = nearestModelNode;
+          childOrNearestHit.nearestNodeOrScratch.nearestModelNode = nearestModelNode;
           childOrNearestHit.nearestDistanceQ12 = radiusNodeXOrNearest;
-          childOrNearestHit.carry = true;
+          childOrNearestHit.hit = true;
           return childOrNearestHit;
         }
       }
     }
   }
-  missResult.edxCarrier.nearestModelNode = edxCarrier.nearestModelNode;
+  missResult.nearestNodeOrScratch.nearestModelNode = edxCarrier.nearestModelNode;
   missResult.nearestDistanceQ12 = 0x7fffffff;
-  missResult.carry = false;
+  missResult.hit = false;
   return missResult;
 }
 
@@ -770,7 +770,7 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
   ModelRuntimeAttachmentIndex childSlotIndex;
   ModelRuntimeAttachmentIndex attachmentIndex;
   bool childFailed;
-  ModelNodeCreateEaxCf5 repairResult;
+  ModelNodeCreateResult repairResult;
   
   linksRemaining = *(int *)(definitionNode + 8);
   if (linksRemaining != 0) {
@@ -783,7 +783,7 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
       repairResult = ModelRuntimePool_RepairDeferredChild
                         (paletteAsset,textureSet,childSlotIndex,childDefinitionId,
                          modelRuntimeSlot,worldRuntime);
-      if (repairResult.carry) {
+      if (repairResult.failed) {
         return true;
       }
       childFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
@@ -990,7 +990,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
    ModelRuntimePool_CreateInstanceByDefinitionIdCf.
    Cross-module calls: WorldObjectArray_AllocateFreeRecordCf [world/runtime/core].
 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelNodeRuntime_CreateHierarchyRecursiveCf
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
@@ -1011,20 +1011,20 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
   uint32_t definitionOrChildrenRemaining;
   uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransform;
-  WorldObjectRecordEaxCf5 allocationResult;
-  ModelNodeCreateEaxCf5 childResult;
-  ModelNodeCreateEaxCf5 failureResult;
+  WorldObjectAllocResult allocationResult;
+  ModelNodeCreateResult childResult;
+  ModelNodeCreateResult failureResult;
   
   if ((definitionNode->nodeFlags & 0xf) != 0) {
     childResult.modelNode = (ModelRuntimeNode *)0x0;
-    childResult.carry = false;
+    childResult.failed = false;
     return childResult;
   }
   allocationResult = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
   newNode = (ModelRuntimeNode *)allocationResult.recordOrError;
   childOrFailedNode = newNode;
-  if (allocationResult.carry) {
-    failureResult.carry = true;
+  if (allocationResult.failed) {
+    failureResult.failed = true;
     failureResult.modelNode = childOrFailedNode;
     return failureResult;
   }
@@ -1085,8 +1085,8 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
                             (MdlSerializedNodeHeader38 *)
                             definitionNode->childSerializedOffsets[childIndex],worldRuntime);
         childOrFailedNode = childResult.modelNode;
-        if (childResult.carry) {
-          failureResult.carry = true;
+        if (childResult.failed) {
+          failureResult.failed = true;
           failureResult.modelNode = childOrFailedNode;
           return failureResult;
         }
@@ -1127,7 +1127,7 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
     }
     childIndex = childIndex + 1;
   }
-  childResult.carry = false;
+  childResult.failed = false;
   childResult.modelNode = newNode;
   return childResult;
 }
@@ -1320,7 +1320,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
    deceleration, then marks the transform dirty.
 */
 
-ModelSmoothEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+AimSmoothResult __thandor_eax_cf_preserve_ecx_edx
 ModelNodeRuntime_SmoothYawTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
           AngleTurn32 targetYawAngle16)
@@ -1334,8 +1334,8 @@ ModelNodeRuntime_SmoothYawTowardTarget
   int acceleratedVelocity;
   uint32_t yawDelta;
   bool snapToTarget;
-  ModelSmoothEaxCf5 smoothResult;
-  ModelSmoothEaxCf5 settledResult;
+  AimSmoothResult smoothResult;
+  AimSmoothResult settledResult;
   
   yawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
   aimDefinition = smoothingState->modelDefinition;
@@ -1381,7 +1381,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
     /* the target is reached within this step */
     currentYawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
     smoothingState->yawTurnVelocityAngle16 = 0;
-    smoothResult.eax = targetYawAngle16;
+    smoothResult.value = targetYawAngle16;
     if (targetYawAngle16 != currentYawAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
       (modelNodeRuntime->modelPayload).localRotationAngle2 = targetYawAngle16;
@@ -1390,14 +1390,14 @@ ModelNodeRuntime_SmoothYawTowardTarget
   else {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     (modelNodeRuntime->modelPayload).localRotationAngle2 = yawAngle & 0xffff;
-    smoothResult.eax = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
-    if ((0x3ff < smoothResult.eax) && (smoothResult.eax < 0xfc01)) {
-      smoothResult.carry = true; /* still outside the aim tolerance */
+    smoothResult.value = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
+    if ((0x3ff < smoothResult.value) && (smoothResult.value < 0xfc01)) {
+      smoothResult.outsideTolerance = true; /* still outside the aim tolerance */
       return smoothResult;
     }
   }
-  settledResult.carry = false;
-  settledResult.eax = smoothResult.eax;
+  settledResult.outsideTolerance = false;
+  settledResult.value = smoothResult.value;
   return settledResult;
 }
 
@@ -1408,7 +1408,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
    bounded acceleration and deceleration, then marks the transform dirty.
 */
 
-ModelSmoothEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+AimSmoothResult __thandor_eax_cf_preserve_ecx_edx
 ModelNodeRuntime_SmoothPitchTowardTarget
           (ModelRuntimeNode *modelNodeRuntime,ModelRuntimeWeaponAimStateView200 *smoothingState,
           AngleTurn32 targetPitchAngle16)
@@ -1419,28 +1419,28 @@ ModelNodeRuntime_SmoothPitchTowardTarget
   int pitchStepOrRateLimit;
   int acceleratedVelocity;
   bool snapToTarget;
-  ModelSmoothEaxCf5 clampedTargetResult;
-  ModelSmoothEaxCf5 settledResult;
+  AimSmoothResult clampedTargetResult;
+  AimSmoothResult settledResult;
   
   pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
   aimDefinition = smoothingState->modelDefinition;
-  clampedTargetResult.eax = targetPitchAngle16;
+  clampedTargetResult.value = targetPitchAngle16;
   if ((int)aimDefinition->maximumPitchAngle28 < (int)targetPitchAngle16) {
-    clampedTargetResult.eax = aimDefinition->maximumPitchAngle28;
+    clampedTargetResult.value = aimDefinition->maximumPitchAngle28;
   }
-  if ((int)clampedTargetResult.eax < (int)aimDefinition->minimumPitchAngle24) {
-    clampedTargetResult.eax = aimDefinition->minimumPitchAngle24;
+  if ((int)clampedTargetResult.value < (int)aimDefinition->minimumPitchAngle24) {
+    clampedTargetResult.value = aimDefinition->minimumPitchAngle24;
   }
   pitchStepOrRateLimit = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
   snapToTarget = true; /* already there, or reached within this step */
-  if (clampedTargetResult.eax != pitchAngle) {
-    if ((int)pitchAngle <= (int)clampedTargetResult.eax) {
+  if (clampedTargetResult.value != pitchAngle) {
+    if ((int)pitchAngle <= (int)clampedTargetResult.value) {
       /* target above */
       if (pitchStepOrRateLimit < 0) {
         smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
         snapToTarget = false;
       }
-      else if (pitchStepOrRateLimit < (int)(clampedTargetResult.eax - pitchAngle)) {
+      else if (pitchStepOrRateLimit < (int)(clampedTargetResult.value - pitchAngle)) {
         pitchAngle = pitchAngle + pitchStepOrRateLimit;
         pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
         acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 +
@@ -1456,7 +1456,7 @@ ModelNodeRuntime_SmoothPitchTowardTarget
       smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
       snapToTarget = false;
     }
-    else if ((int)(clampedTargetResult.eax - pitchAngle) < pitchStepOrRateLimit) {
+    else if ((int)(clampedTargetResult.value - pitchAngle) < pitchStepOrRateLimit) {
       pitchAngle = pitchAngle + pitchStepOrRateLimit;
       pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
       acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 -
@@ -1471,22 +1471,22 @@ ModelNodeRuntime_SmoothPitchTowardTarget
   if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
     (modelNodeRuntime->modelPayload).localRotationAngle1 = pitchAngle;
-    clampedTargetResult.eax = pitchAngle - clampedTargetResult.eax & 0xffff;
-    if ((0x3ff < clampedTargetResult.eax) && (clampedTargetResult.eax < 0xfc01)) {
-      clampedTargetResult.carry = true; /* still outside the aim tolerance */
+    clampedTargetResult.value = pitchAngle - clampedTargetResult.value & 0xffff;
+    if ((0x3ff < clampedTargetResult.value) && (clampedTargetResult.value < 0xfc01)) {
+      clampedTargetResult.outsideTolerance = true; /* still outside the aim tolerance */
       return clampedTargetResult;
     }
   }
   else {
     pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
     smoothingState->pitchTurnVelocityAngle16 = 0;
-    if (clampedTargetResult.eax != pitchAngle) {
+    if (clampedTargetResult.value != pitchAngle) {
       modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      (modelNodeRuntime->modelPayload).localRotationAngle1 = clampedTargetResult.eax;
+      (modelNodeRuntime->modelPayload).localRotationAngle1 = clampedTargetResult.value;
     }
   }
-  settledResult.carry = false;
-  settledResult.eax = clampedTargetResult.eax;
+  settledResult.outsideTolerance = false;
+  settledResult.value = clampedTargetResult.value;
   return settledResult;
 }
 
@@ -1598,7 +1598,7 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
   int variantsRemaining;
   int variantCursorOrRemaining;
   bool isUnlocked;
-  ModelDefinitionLookupEaxCf5 lookupResult;
+  ModelDefinitionResult lookupResult;
   
   variantCursorOrRemaining = *modelRuntime;
   variantsRemaining = 6;

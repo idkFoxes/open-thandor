@@ -18,10 +18,10 @@
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root)
 
 {
-  ArenaFreeEaxCf5 freeResult;
+  ArenaFreeResult freeResult;
   
   freeResult = (*g_MemoryApi.free)(root);
-  return freeResult.carry;
+  return freeResult.failed;
 }
 
 
@@ -86,12 +86,12 @@ UiRuntime_OpenFourValueDialogCf
   int remainingDwords;
   uint32_t *templateCursor;
   UiRootNode *copyCursor;
-  ArenaAllocEaxCf5 allocResult;
-  TextResourceResolveEaxCf5 resolvedText;
+  ArenaAllocResult allocResult;
+  TextResolveResult resolvedText;
   
   allocResult = (*g_MemoryApi.alloc)(0x1a4);
-  root = (UiRootNode *)allocResult.eax;
-  if (!allocResult.carry) {
+  root = (UiRootNode *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     templateCursor = g_UiFourValueDialogTemplateImage;
     copyCursor = root;
     for (remainingDwords = 0x69; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -101,7 +101,7 @@ UiRuntime_OpenFourValueDialogCf
     }
     valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
     resolvedText = TextResource_Resolve(0x109);
-    RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.eax);
+    RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.text);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,int32_t),
                (uint16_t *)valueTextBuffer);
@@ -122,34 +122,34 @@ UiRuntime_OpenFourValueDialogCf
    Purpose: Acquires the UI runtime-ring lock and advances the 256-entry read index. CF clear means one record was
    discarded; CF set means the ring was empty.
 */
-UiRuntimeRecordRingDiscardEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
 UiRuntimeRecordRing_DiscardOldestCf(void)
 
 {
   uint32_t nextReadIndex;
   uint32_t readIndex;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 discardedResult;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 emptyResult;
+  RecordRingDiscardResult discardedResult;
+  RecordRingDiscardResult emptyResult;
   
   (*g_SpinLockAcquire)(&g_UiRuntimeRecordRingLock);
   readIndex = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
-    discardedResult.eaxPayloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
-    discardedResult.edxEndpointOrReadIndex =
+    discardedResult.payloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
+    discardedResult.endpointOrReadIndex =
          g_UiRuntimeRecordReadIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000;
     g_UiRuntimeRecordReadIndex = nextReadIndex;
     if (0xff < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
     }
     (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-    discardedResult.carryEmpty = false;
+    discardedResult.empty = false;
     return discardedResult;
   }
   (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-  emptyResult.edxEndpointOrReadIndex = readIndex;
-  emptyResult.eaxPayloadOrReadIndex = readIndex;
-  emptyResult.carryEmpty = true;
+  emptyResult.endpointOrReadIndex = readIndex;
+  emptyResult.payloadOrReadIndex = readIndex;
+  emptyResult.empty = true;
   return emptyResult;
 }
 
@@ -247,33 +247,33 @@ UiRuntime_SetSynchronizationHooks
 void __thandor_preserve_eax UiRuntime_Initialize(void)
 
 {
-  ArenaAllocEaxCf5 allocResult;
-  FatalErrorEaxCf5 checkedResult;
+  ArenaAllocResult allocResult;
+  FatalErrorCheckResult checkedResult;
   
   (*g_TimerRegisterPeriodic)(0x14,UiRuntime_IncrementPeriodicTickCounter);
   g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + 1;
   FontRuntime_Init();
   UiWindowResources_Init();
   allocResult = (*g_MemoryApi.alloc)(0x600);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.valueOrError;
   allocResult = (*g_MemoryApi.alloc)(0x80);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.valueOrError;
   ErrorRuntime_InstallUiHandlerAndAllocateState();
   (*g_TimerRegisterPeriodic)(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
   allocResult = (*g_MemoryApi.alloc)(0x8000);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.valueOrError;
   allocResult = (*g_MemoryApi.alloc)(0x10000);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.valueOrError;
   allocResult = (*g_MemoryApi.alloc)(0x1000);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.valueOrError;
   allocResult = (*g_MemoryApi.alloc)(0x2000);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiTransferDataBuffer = (uint8_t *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+  g_UiTransferDataBuffer = (uint8_t *)checkedResult.valueOrError;
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;

@@ -218,7 +218,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   uint32_t *categoryReciprocalCursor;
   TechnologyCategoryMasks *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
-  ModelDefinitionLookupEaxCf5 modelLookup;
+  ModelDefinitionResult modelLookup;
   ArmyAssetRecordPrefix *armyAssetRecord;
   
   g_TechnologyCategoryMaximum0 = 1;
@@ -240,7 +240,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
       definitionRecord = modelLookup.modelDefinition;
-      if (!modelLookup.carry) {
+      if (!modelLookup.notFound) {
         if ((int)(&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] < (int)definitionRecord[8].byteSize)
         {
           (&g_TechnologyCategoryMaximum0)[definitionRecord[7].definitionId] = definitionRecord[8].byteSize;

@@ -25,7 +25,7 @@ SpriteAssetHeader * __thandor_eax_preserve_ecx_edx
 SpriteAssetRegistry_FindById(SpriteAssetId registryId);
 
 /* 0x004BE4D0 */
-SpriteRegisterRelocateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SpriteRegisterResult __thandor_eax_cf_preserve_ecx_edx
 SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset);
 
 

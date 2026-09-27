@@ -94,7 +94,7 @@ AiWorkspace12Score_DefaultZero
           WorldRuntimeContext *worldRuntime);
 
 /* 0x0053C6C0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void);
 
 /* 0x00537F80 */
 void __thandor_void_preserve_ecx_edx

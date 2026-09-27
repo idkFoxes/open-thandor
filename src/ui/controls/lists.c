@@ -298,7 +298,7 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
 
 {
   UiNodeBase *parentNode;
-  UiListRowIndexEaxCf5 selectedIndex;
+  ListSelectionResult selectedIndex;
   UiNodeVtable *parentVtable;
   
   parentNode = (control->base).parent;
@@ -329,7 +329,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
   int localY;
   int localXOrTrackBottom;
   bool horizontalBarHit;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
 
   localXOrTrackBottom = pointerX - (control->base).left;
   localY = pointerY - (control->base).top;
@@ -523,7 +523,7 @@ UiScrollableControl_UpdatePrimaryScrollDrag
   int arrowEnd;
   bool inArrowBar;
   bool arrowHovered;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
 
   if ((control->scrollStateFlags &
       (UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE|UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE|
@@ -1141,7 +1141,7 @@ UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *
    Ownership: ui/controls/lists.
    Purpose: Builds a timed-list directory record block and exposes the recovered carry/error contract.
 */
-Recovered0040FFE0EaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
 UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
 
 {
@@ -1165,18 +1165,18 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
   uint32_t *nextScanPointer;
   bool mediaCheckResult;
   bool closeLabelEmpty;
-  ArenaShrinkEaxCf5 shrinkResult;
-  Recovered0040FFE0EaxCf5 result;
-  Recovered0040FFE0EaxCf5 failureResult;
-  ArenaAllocEaxCf5 allocResult;
-  ArenaLargestAllocationEaxEcxCf9 largestBlock;
-  FileSystemEnumerationEaxEcxCf9 enumResult;
+  ArenaShrinkResult shrinkResult;
+  DirectoryRecordBlockResult result;
+  DirectoryRecordBlockResult failureResult;
+  ArenaAllocResult allocResult;
+  ArenaLargestAllocResult largestBlock;
+  DirectoryEnumerationResult enumResult;
   DriveLetterEnumerationEaxEcx8 driveEnum;
   
   if (*pathUtf16 == 0) {
     allocResult = (*g_MemoryApi.alloc)(0x220);
-    outputRecords = (uint32_t *)allocResult.eax;
-    if (!allocResult.carry) {
+    outputRecords = (uint32_t *)allocResult.payloadOrError;
+    if (!allocResult.failed) {
       *outputRecords = 1;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
@@ -1186,15 +1186,15 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
       outputRecords[6] = 0;
       outputRecords[7] = 1;
       (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputRecords + 8));
-      return THANDOR_BITCAST(uint64_t, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
     driveEnum = (*g_FileSystemEnumerateDriveLetters)((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
     allocResult = (*g_MemoryApi.alloc)(driveEnum.driveCountMirror * 0x210 + 0x10);
-    outputRecords = (uint32_t *)allocResult.eax;
-    if (!allocResult.carry) {
+    outputRecords = (uint32_t *)allocResult.payloadOrError;
+    if (!allocResult.failed) {
       result.recordBlockOrError = outputRecords + 4;
       *outputRecords = directoryEntryCount;
       outputRecords[1] = 0;
@@ -1224,7 +1224,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
           enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                              (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
                               (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
-          closeLabelEmpty = enumResult.carry;
+          closeLabelEmpty = enumResult.failed;
           if (!closeLabelEmpty) {
             if (enumResult.entryCount == 0) {
               ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
@@ -1248,7 +1248,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                 (uint8_t *)u________0040ff58);
-            closeLabelEmpty = enumResult.carry;
+            closeLabelEmpty = enumResult.failed;
             if ((!closeLabelEmpty) && (enumResult.entryCount != 0)) {
               ((uint32_t *)result.recordBlockOrError)[3] = ((uint32_t *)result.recordBlockOrError)[3] | 1;
             }
@@ -1263,7 +1263,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
         driveLetterCursor = driveLetterCursor + 1;
         directoryEntryCount = directoryEntryCount - 1;
         if (directoryEntryCount == 0) {
-          return THANDOR_BITCAST(uint64_t, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+          return THANDOR_BITCAST(uint64_t, DirectoryRecordBlockResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       } while( true );
     }
@@ -1277,20 +1277,20 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                g_UiTimedListCombinedPathScratch.codeUnits);
     largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
     outputRecords = (uint32_t *)largestBlock.allocationOrError;
-    if (!largestBlock.carry) {
+    if (!largestBlock.failed) {
       enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                          (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
       entryStride = (uint32_t *)enumResult.recordSizeBytes;
       result.recordBlockOrError = entryStride;
-      if (!enumResult.carry) {
+      if (!enumResult.failed) {
         shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)entryStride * directoryEntryCount,outputRecords);
         result.recordBlockOrError = (uint32_t *)shrinkResult.scratchOrError;
-        if (!shrinkResult.carry) {
+        if (!shrinkResult.failed) {
           largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
           result.recordBlockOrError = (uint32_t *)largestBlock.allocationOrError;
-          if (!largestBlock.carry) {
+          if (!largestBlock.failed) {
             scanRemaining = directoryEntryCount + 1;
             scanCursor = (uint32_t *)0x14;
             remainingBytes = (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -0x10);
@@ -1317,7 +1317,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
-                if ((!enumResult.carry) && (enumResult.entryCount != 0)) {
+                if ((!enumResult.failed) && (enumResult.entryCount != 0)) {
                   recordCursor[7] = recordCursor[7] | 1;
                 }
                 scanRemaining = 0x100;
@@ -1348,9 +1348,9 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                                    ((int)labelWriteCursor + (0x200 - (int)result.recordBlockOrError),
                                     result.recordBlockOrError);
                 scanCursor = (uint32_t *)shrinkResult.scratchOrError;
-                if (!shrinkResult.carry) {
+                if (!shrinkResult.failed) {
                   (*g_MemoryApi.free)(outputRecords);
-                  result.carry = false;
+                  result.failed = false;
                   return result;
                 }
               }
@@ -1364,7 +1364,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
       outputRecords = result.recordBlockOrError;
     }
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.recordBlockOrError = outputRecords;
   return failureResult;
 }
@@ -1373,7 +1373,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
    Ownership: ui/controls/lists.
    Purpose: Builds the timed-list directory hierarchy.
 */
-UiTimedListDirectoryHierarchyEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
 UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
 
 {
@@ -1390,8 +1390,8 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
   UiTimedListTreeRecord16 *levelBlock;
   UiTimedListTreeRecord16 *parentBlock;
   UiTimedListTreeRecord16 *recordCursor;
-  Recovered0040FFE0EaxCf5 builtBlock;
-  UiTimedListDirectoryHierarchyEaxEdxCf9 result;
+  DirectoryRecordBlockResult builtBlock;
+  DirectoryHierarchyResult result;
 
   levelCount = 0;
   levelStackTop = 0;
@@ -1412,7 +1412,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
     }
     builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf
                        (g_UiTimedListHierarchyPathScratch.codeUnits);
-    if (builtBlock.carry) goto fail;
+    if (builtBlock.failed) goto fail;
     WidePath_SplitParentAndLeaf
               (g_UiTimedListRecordPathScratch.codeUnits,
                g_UiTimedListHierarchyParentPathScratch.codeUnits,
@@ -1426,7 +1426,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
-  if (builtBlock.carry) goto fail;
+  if (builtBlock.failed) goto fail;
   levelBlock = builtBlock.recordBlockOrError;
   recordsRemaining = levelBlock->recordCountOrRowPayload00;
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
@@ -1444,7 +1444,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
   levelCount = levelCount + 1;
   g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
-  if (builtBlock.carry) goto fail;
+  if (builtBlock.failed) goto fail;
   /* Link each level block to its parent block and to the parent record that opens it,
      from the drive list down to the selected path. */
   parentBlock = builtBlock.recordBlockOrError;
@@ -1466,7 +1466,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
   } while (levelCount != 0);
   result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
   result.selectedRecordOrNull = recordCursor;
-  result.carry = false;
+  result.failed = false;
   return result;
 fail:
   /* As in the original: one pop per level (not per pair), so this frees the top blocks and
@@ -1476,7 +1476,7 @@ fail:
   }
   result.selectedRecordOrNull = (UiTimedListTreeRecord16 *)0x0;
   result.rootRecordBlockOrError = builtBlock.recordBlockOrError;
-  result.carry = true;
+  result.failed = true;
   return result;
 }
 
@@ -1531,7 +1531,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
   uint32_t *combinedPathSourceDwords;
   uint32_t *recordPathScratchDestDwords;
   uint32_t *combinedPathScratchDestDwords;
-  Recovered0040FFE0EaxCf5 builtBlock;
+  DirectoryRecordBlockResult builtBlock;
   
   recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
   recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
@@ -1590,7 +1590,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf
                     (g_UiTimedListHierarchyParentPathScratch.codeUnits);
   linkedRecord = builtBlock.recordBlockOrError;
-  if (builtBlock.carry) {
+  if (builtBlock.failed) {
     return true;
   }
   record->nestedRecordBlockOrParentLink08 = linkedRecord;
@@ -1872,15 +1872,15 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
    controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged.
 */
-UiSelectableNodeEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
 
 {
   int controlAddress;
   uint32_t controlIndex;
   int controlPointerByteOffset;
-  UiSelectableNodeEaxEcxCf9 noneSelectedResult;
-  UiSelectableNodeEaxEcxCf9 selectedResult;
+  SelectableGroupNodeResult noneSelectedResult;
+  SelectableGroupNodeResult selectedResult;
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
@@ -1890,13 +1890,13 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
       noneSelectedResult.node = (UiNodeBase *)controlAddress;
-      noneSelectedResult.carry = true;
+      noneSelectedResult.noneSelected = true;
       return noneSelectedResult;
     }
   }
   selectedResult.controlIndexOrCount = controlIndex;
   selectedResult.node = (UiNodeBase *)controlAddress;
-  selectedResult.carry = false;
+  selectedResult.noneSelected = false;
   return selectedResult;
 }
 
@@ -1908,27 +1908,27 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
    p0 controlCount→UiControlCount_V338. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged.
 */
-UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
+SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...)
 
 {
   uint32_t controlIndex;
   int controlPointerByteOffset;
-  UiSelectableGroupIndexEcxCf5 noneSelectedResult;
-  UiSelectableGroupIndexEcxCf5 selectedResult;
+  SelectableGroupIndexResult noneSelectedResult;
+  SelectableGroupIndexResult selectedResult;
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
     if ((*(uint32_t *)(*(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & 2) != 0) {
-      selectedResult.carryNoneSelected = false;
+      selectedResult.noneSelected = false;
       selectedResult.selectedIndexOrCount = controlIndex;
       return selectedResult;
     }
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
-  noneSelectedResult.carryNoneSelected = true;
+  noneSelectedResult.noneSelected = true;
   return noneSelectedResult;
 }
 
@@ -2008,13 +2008,13 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
    Ownership: ui/controls/lists.
    Purpose: CF=0 when base.firstChild matches an entry in the page array; CF=1 when the active child is absent.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
 
 {
   uint32_t pageIndex;
   bool notFound;
-  StatusValueEaxCf5 result;
+  StatusResult result;
   
   /* Page 0 is always compared, even when pageCount is 0 (do/while as in the original). */
   pageIndex = 0;
@@ -2023,7 +2023,7 @@ UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
     if (!notFound) break;
     pageIndex = pageIndex + 1;
   } while (pageIndex < stack->pageCount);
-  result.carry = notFound;
+  result.failed = notFound;
   result.valueOrError = pageIndex;
   return result;
 }
@@ -2080,7 +2080,7 @@ UiScrollableControl_DrawFrameContentAndScrollbars
   int contentRight;
   int trackEnd;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   uint32_t capSize;
   
   accessFailed = (*g_GraphicsFramebufferBeginAccess)();
@@ -2407,7 +2407,7 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
   int verticalExtent;
   UiPixelExtent availableWidth;
   int horizontalExtent;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   contentChild = (control->base).firstChild;
   availableWidth = (control->base).right - (control->base).left;
@@ -2787,7 +2787,7 @@ UiListControl_DrawRowsAndSelection
   uint16_t *commandStream;
   bool accessFailed;
   RichTextExtentRegs textExtent;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   if (control->rowCount != 0) {
     rowTop = (clipBottom - (control->base).top) / (int)control->rowHeight;
@@ -2941,7 +2941,7 @@ UiPointerList_InitializeColumnLayout
   UiPixelExtent computedRowHeight;
   int totalWidth;
   UiListColumn *column;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
+  GlyphSizeResult glyphSize;
 
   glyphSize = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
   computedRowHeight = glyphSize.lineHeight + 1;
@@ -3073,7 +3073,7 @@ UiTimedListControl_DrawRowsAndSelection
              RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & 4) != 0) {
-          GraphicsTextureSizeEaxEdxCf9 cap =
+          TextureSizeResult cap =
                (*g_GraphicsTextureSourceGetLogicalSize)(0x83,g_UiWindowTextureSource);
           int capWidth = (int)cap.logicalWidthPixels;
           int endX = width - capWidth + x;
@@ -3536,21 +3536,21 @@ UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *con
    Ownership: ui/controls/lists.
    Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04 exactly.
 */
-UiListRowIndexEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
 UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
-  UiListRowIndexEaxCf5 unconfirmedResult;
-  UiListRowIndexEaxCf5 confirmedResult;
+  ListSelectionResult unconfirmedResult;
+  ListSelectionResult confirmedResult;
   
   selectedRowIndex = (int)control->selectedRowSlot - (int)control->rowSlots >> 2;
   if ((control->listStateFlags & UI_LIST_SELECTION_CONFIRMED) == 0) {
-    unconfirmedResult.carry = false;
+    unconfirmedResult.confirmed = false;
     unconfirmedResult.rowIndex = selectedRowIndex;
     return unconfirmedResult;
   }
-  confirmedResult.carry = true;
+  confirmedResult.confirmed = true;
   confirmedResult.rowIndex = selectedRowIndex;
   return confirmedResult;
 }
@@ -3595,7 +3595,7 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
   uint32_t savedRemaining[TREE_DEPTH_LIMIT];
   UiTimedListTreeRecord16 *record;
   UiNodeBase *parent;
-  FontGlyphSizeEaxEdxCf9 glyph;
+  GlyphSizeResult glyph;
   uint32_t remaining;
   uint32_t widest;
   uint32_t width;
@@ -3707,7 +3707,7 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
   UiPixelOffset offsetY;
   int horizontalExtent;
   int verticalExtent;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   contentChild = (control->base).firstChild;
   if (contentChild != (UiNodeBase *)0xffffffff) {

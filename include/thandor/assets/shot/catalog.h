@@ -15,14 +15,14 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0052B4D0 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset);
+StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset);
 
 /* 0x0052B7E0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ShotDefinitions_ValidateTerrainMaterialReferences(void);
 
 /* 0x0052B860 */
-ShotDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ShotDefinitionRegistry_FindByIdWithErrorCf(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B8C0 */
@@ -35,7 +35,7 @@ ShotDefinition_ComputeLaunchAnglesRegs
 uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
 
 /* 0x0052BD50 */
-ShotModeRangeLimitEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
+ShotRangeLimitResult __thandor_ebx_cf_preserve_eax_ecx_edx
 ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition);
 
 /* 0x0052BD80 */
@@ -43,7 +43,7 @@ uint32_t __thandor_eax_preserve_ecx_edx
 ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition);
 
 /* 0x0052B350 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition);
 
 #endif /* THANDOR_ASSETS_SHOT_CATALOG_H */

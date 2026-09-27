@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050B5D0 */
-StatusValueEaxCf5 SpatialSoundPool_Init(void);
+StatusResult SpatialSoundPool_Init(void);
 
 /* 0x0050B600 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -36,7 +36,7 @@ SpatialSound_UpdateDesiredPositionedGains
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot);
 
 /* 0x0050B8C0 */
-SpatialSoundSlotEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SpatialSoundSlotResult __thandor_eax_cf_preserve_ecx_edx
 SpatialSoundSlot_CreateFromSampleAsset(SoundSampleAsset *sampleAsset);
 
 /* 0x0050B940 */

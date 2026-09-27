@@ -101,7 +101,7 @@ WorldVector0EaxEcxEdx12 WorldRuntime_GetVector0Regs(WorldRuntimeContext *world);
 WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
-WorldRuntimeFlagsEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
 WorldRuntime_GetFlagsCf(WorldRuntimeContext *world);
 
 /* 0x0050D6A0 */
@@ -122,7 +122,7 @@ WorldRuntime_AttachAndClearDwordArray
 uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 
 /* 0x0050D7D0 */
-WorldObjectRecordEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
 WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D830 */

@@ -20,14 +20,14 @@
 void __cdecl ErrorSystem_Init(void)
 
 {
-  TextResourceLoadEaxCf5 loadResult;
+  TextPageLoadResult loadResult;
   
   g_FatalErrorPrimaryDispatchCf = FatalError_Exit;
   g_FatalErrorRuntimeDispatchCf = FatalError_Exit;
   g_FatalErrorExitFallbackDispatchCf = FatalError_Exit;
   loadResult = TextResourcePage_Load(0,(uint16_t *)u_texte_error_str_00407d20);
                     // WARNING: Subroutine does not return
-  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.carry);
+  FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.failed);
 }
 
 
@@ -77,7 +77,7 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
    [ui/controls/layout], UiFrame_FlushInputAndResetPendingTicks [ui/controls/layout], UiRootStack_InvalidateAll
    [ui/controls/layout].
 */
-FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
+FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
 FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
 
 {
@@ -88,23 +88,23 @@ FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
   uint32_t *templateImageCursor;
   UiRootNode *templateCopyCursor;
   RichTextExtentRegs wrappedExtent;
-  FatalErrorEaxCf5 passThroughResult;
-  FatalErrorEaxCf5 dispatchResult;
-  TextResourceResolveEaxCf5 resolvedText;
+  FatalErrorCheckResult passThroughResult;
+  FatalErrorCheckResult dispatchResult;
+  TextResolveResult resolvedText;
   
   if (!carryIn) {
-    passThroughResult.carry = false;
-    passThroughResult.eax = errorOrValue;
+    passThroughResult.failed = false;
+    passThroughResult.valueOrError = errorOrValue;
     return passThroughResult;
   }
   if (g_FatalErrorUiRootTemplate == (UiRootNode *)0x0) {
     dispatchResult = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
-    errorOrValue = dispatchResult.eax;
+    errorOrValue = dispatchResult.valueOrError;
   }
   stream = (uint16_t *)errorOrValue;
   if ((errorOrValue & 0xffffff00) == 0) {
     resolvedText = TextResource_Resolve(errorOrValue);
-    stream = resolvedText.eax;
+    stream = resolvedText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,stream);
     RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,stream);
@@ -134,8 +134,8 @@ FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
     UiRootStack_InvalidateAll();
     UiFrame_ProcessAndPresentWithLockTransition();
   } while (g_FatalErrorDialogDismissed == 0);
-  dispatchResult.carry = true;
-  dispatchResult.eax = errorOrValue;
+  dispatchResult.failed = true;
+  dispatchResult.valueOrError = errorOrValue;
   return dispatchResult;
 }
 
@@ -149,11 +149,11 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
 
 {
   void *allocatedFatalErrorUiRootTemplate;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x110);
-  allocatedFatalErrorUiRootTemplate = (void *)allocResult.eax;
-  if (!allocResult.carry) {
+  allocatedFatalErrorUiRootTemplate = (void *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     g_FatalErrorRuntimeDispatchCf = FatalErrorRuntime_DispatchPendingErrorCf;
     g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
   }
@@ -165,15 +165,15 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
    Ownership: core/error/runtime.
    Purpose: EXACT_DUPLICATE_FATAL_DIALOG_NARROW_TO_UTF16_TWIN.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint8_t sourceByte;
   TextOutputCapacityBytes remainingCapacityBytes;
   bool capacityExhausted;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 overflowResult;
+  StatusResult successResult;
+  StatusResult overflowResult;
   
   remainingCapacityBytes = capacityBytes;
   do {
@@ -182,7 +182,7 @@ FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *d
     remainingCapacityBytes = remainingCapacityBytes - 2;
     if (capacityExhausted || remainingCapacityBytes == 0) {
       destination[-1] = 0;
-      overflowResult.carry = true;
+      overflowResult.failed = true;
       overflowResult.valueOrError = 0x14;
       return overflowResult;
     }
@@ -191,7 +191,7 @@ FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *d
     destination = destination + 1;
   } while (sourceByte != 0);
   successResult.valueOrError = capacityBytes - remainingCapacityBytes;
-  successResult.carry = false;
+  successResult.failed = false;
   return successResult;
 }
 
@@ -203,16 +203,16 @@ FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *d
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], Runtime_Shutdown [core/memory/synchronization].
 */
-FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
+FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
 FatalError_Exit(uint32_t errorOrValue,bool carryIn)
 
 {
-  FatalErrorEaxCf5 passThroughResult;
-  TextResourceResolveEaxCf5 resolvedText;
+  FatalErrorCheckResult passThroughResult;
+  TextResolveResult resolvedText;
   
   if (!carryIn) {
-    passThroughResult.carry = false;
-    passThroughResult.eax = errorOrValue;
+    passThroughResult.failed = false;
+    passThroughResult.valueOrError = errorOrValue;
     return passThroughResult;
   }
   /* open-thandor diagnostics: fatal error code, last package path and the calling stack */
@@ -220,7 +220,7 @@ FatalError_Exit(uint32_t errorOrValue,bool carryIn)
   Thandor_LogStack("fatal error stack", errorOrValue);
   if ((errorOrValue & 0xffffff00) == 0) {
     resolvedText = TextResource_Resolve(errorOrValue);
-    errorOrValue = (uint32_t)resolvedText.eax;
+    errorOrValue = (uint32_t)resolvedText.text;
   }
   RichTextCommandStream_PatchPayloadBySelector(0,g_PackageLastErrorPath,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(uint16_t *)errorOrValue);

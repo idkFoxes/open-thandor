@@ -17,7 +17,7 @@
    Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32], Package_Mount
    [assets/package/runtime].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ResourceRegistration_OpenSourceCf(void *packagePath)
 
 {
@@ -25,7 +25,7 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   uint32_t packedTimeOrDate;
   int clearDwordsRemaining;
   uint8_t *clearCursor;
-  StatusValueEaxCf5 mountResult;
+  StatusResult mountResult;
   
   source = g_PackageScratchBuffer;
   clearCursor = g_PackageScratchBuffer;
@@ -80,7 +80,7 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
    Cross-module calls: Package_FindEntryAcrossMounts [assets/package/runtime], WidePath_CombineDirectoryAndLeaf
    [core/text/path], Package_DecodeEntryInto [assets/package/runtime].
 */
-ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path)
+ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path)
 
 {
   PckEntryHeader *entry;
@@ -89,78 +89,78 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *
   /* ECX on failure: the file size once it is known, else the caller's ECX (zero stands in for it). It is only
      meaningful on success (byte count); callers test CF. */
   uint32_t failureByteCount = 0;
-  ArenaAllocEaxCf5 allocResult;
-  PackageDecodeEaxCf5 decodeResult;
-  FileSystemOpenEaxCf5 openResult;
-  FileSystemSizeEaxCf5 sizeResult;
-  FileSystemReadEaxCf5 readResult;
-  PackageFindEntryEaxEbxCf9 findResult;
-  ResourceLoadEaxEcxCf9 fileOrPackageResult;
-  ResourceLoadEaxEcxCf9 fileLoadResult;
-  ResourceLoadEaxEcxCf9 failureResult;
+  ArenaAllocResult allocResult;
+  PackageDecodeResult decodeResult;
+  FileSystemOpenResult openResult;
+  FileSystemSizeResult sizeResult;
+  FileSystemReadResult readResult;
+  PackageEntryLookupResult findResult;
+  ResourceLoadResult fileOrPackageResult;
+  ResourceLoadResult fileLoadResult;
+  ResourceLoadResult failureResult;
   
   findResult = Package_FindEntryAcrossMounts(path);
-  entry = (PckEntryHeader *)findResult.eax;
-  if (findResult.carry) {
+  entry = (PckEntryHeader *)findResult.entry;
+  if (findResult.notFound) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    fileOrPackageResult.eax = (uint8_t *)openResult.eax;
-    if (openResult.carry) {
+    fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
+    if (openResult.failed) {
       openResult = (*g_FileSystemOpenCf)(0,path);
-      fileOrPackageResult.eax = (uint8_t *)openResult.eax;
-      if (openResult.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
+      fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
+      if (openResult.failed) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    sizeResult = (*g_FileSystemGetSizeCf)(fileOrPackageResult.eax);
-    bytes = (uint8_t *)sizeResult.eax;
+    sizeResult = (*g_FileSystemGetSizeCf)(fileOrPackageResult.bufferOrError);
+    bytes = (uint8_t *)sizeResult.sizeOrError;
     sizeOrFailureCode = bytes;
-    if (!sizeResult.carry) {
+    if (!sizeResult.failed) {
       allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
-      fileLoadResult.eax = (void *)allocResult.eax;
+      fileLoadResult.bufferOrError = (void *)allocResult.payloadOrError;
       failureByteCount = (uint32_t)bytes;
-      if (allocResult.carry) {
+      if (allocResult.failed) {
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
         sizeOrFailureCode = (uint8_t *)0x5;
       }
       else {
-        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,fileLoadResult.eax,fileOrPackageResult.eax);
-        sizeOrFailureCode = (uint8_t *)readResult.eax;
-        if (!readResult.carry) {
-          (*g_FileSystemClose)(fileOrPackageResult.eax);
-          fileLoadResult.ecx = (uint32_t)bytes;
-          fileLoadResult.carry = false;
+        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
+        sizeOrFailureCode = (uint8_t *)readResult.valueOrError;
+        if (!readResult.failed) {
+          (*g_FileSystemClose)(fileOrPackageResult.bufferOrError);
+          fileLoadResult.byteCount = (uint32_t)bytes;
+          fileLoadResult.failed = false;
           return fileLoadResult;
         }
-        (*g_MemoryApi.free)(fileLoadResult.eax);
+        (*g_MemoryApi.free)(fileLoadResult.bufferOrError);
       }
     }
-    (*g_FileSystemClose)(fileOrPackageResult.eax);
-    fileOrPackageResult.eax = sizeOrFailureCode;
+    (*g_FileSystemClose)(fileOrPackageResult.bufferOrError);
+    fileOrPackageResult.bufferOrError = sizeOrFailureCode;
   }
   else {
-    fileOrPackageResult.eax = (uint8_t *)0x5;
+    fileOrPackageResult.bufferOrError = (uint8_t *)0x5;
     if (entry->packedSize < 0x800001) {
       allocResult = (*g_MemoryApi.alloc)(entry->unpackedSize);
-      fileOrPackageResult.eax = (uint8_t *)allocResult.eax;
-      if (!allocResult.carry) {
-        decodeResult = Package_DecodeEntryInto(fileOrPackageResult.eax,entry,findResult.ebx);
-        if (!decodeResult.carry) {
-          fileOrPackageResult.ecx = entry->unpackedSize;
-          fileOrPackageResult.carry = false;
+      fileOrPackageResult.bufferOrError = (uint8_t *)allocResult.payloadOrError;
+      if (!allocResult.failed) {
+        decodeResult = Package_DecodeEntryInto(fileOrPackageResult.bufferOrError,entry,findResult.fileHandle);
+        if (!decodeResult.failed) {
+          fileOrPackageResult.byteCount = entry->unpackedSize;
+          fileOrPackageResult.failed = false;
           return fileOrPackageResult;
         }
-        sizeOrFailureCode = (uint8_t *)decodeResult.eax;
-        (*g_MemoryApi.free)(fileOrPackageResult.eax);
-        fileOrPackageResult.eax = sizeOrFailureCode;
+        sizeOrFailureCode = (uint8_t *)decodeResult.valueOrError;
+        (*g_MemoryApi.free)(fileOrPackageResult.bufferOrError);
+        fileOrPackageResult.bufferOrError = sizeOrFailureCode;
       }
     }
   }
 Resource_Load_ReturnOpenAllocationOrDecodeResult:
-  failureResult.ecx = failureByteCount;
-  failureResult.eax = (uint32_t)fileOrPackageResult.eax;
-  failureResult.carry = true;
+  failureResult.byteCount = failureByteCount;
+  failureResult.bufferOrError = (uint32_t)fileOrPackageResult.bufferOrError;
+  failureResult.failed = true;
   return failureResult;
 }
 

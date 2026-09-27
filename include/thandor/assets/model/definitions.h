@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0051B3C0 */
-ModelDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
@@ -30,26 +30,26 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
 /* 0x00528950 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset);
+StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset);
 
 /* 0x004BE670 */
-ModelLookupPayloadEaxEcxEdxCf13
+ModelLookupPayloadResult
 ModelLookupTable_FindPackedKeyEntryRegsCf
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition);
 
 /* 0x004BE6F0 */
-ModelLookupEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
 ModelLookupTable_ContainsPackedKeyCf
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition);
 
 /* 0x0050AEA0 */
-TerrainDistanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangle);
 
 /* 0x005289C0 */
-ModelBuildMetricEaxEcxEdxCf13
+BuildMetricResult
 ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(PckModelDefinitionIdCatalog definitionId);
 
 /* 0x0053BA00 */
@@ -61,7 +61,7 @@ ModelDefinition_SelectFactionUnlockedLinkedIdCf
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList);
 
 /* 0x00528600 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinition_RegisterAndResolveReferencesCf
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset);
 
@@ -76,7 +76,7 @@ ModelDefinition_IsFactionTechnologyUnlockedCf
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x00528E20 */
-ModelDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
 ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definitionId);
 
 #endif /* THANDOR_ASSETS_MODEL_DEFINITIONS_H */

@@ -418,7 +418,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
   GameEntityRuntime *firstSelectedEntity;
   uint32_t doubledTechnologyId;
   CommandPayloadDword04 modelOffset;
-  UiSelectableNodeEaxEcxCf9 selectedArea;
+  SelectableGroupNodeResult selectedArea;
   
   parentLink = *(int *)((int)source + 8);
   while (parentLink != -1) {
@@ -441,7 +441,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
       INGAME_UI(source,technologyAreaTab3),
       INGAME_UI(source,technologyAreaTab2),
       INGAME_UI(source,technologyAreaTab1));
-    if (!selectedArea.carry) {
+    if (!selectedArea.noneSelected) {
       /* the dword 8 bytes before the selected area tab (see InGameTechnologyPanel_Rebuild) */
       doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t) - 0x300000;
     }
@@ -494,10 +494,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
   int areaIndex;
   bool isAvailable;
   RichTextExtentRegs textExtent;
-  TextResourceResolveEaxCf5 resolvedText;
-  TextResourceResolveEaxCf5 resolvedName;
+  TextResolveResult resolvedText;
+  TextResolveResult resolvedName;
   ArmyRegistryEaxCf5_51b6d0 armyRecord;
-  UiSelectableNodeEaxEcxCf9 selectedArea;
+  SelectableGroupNodeResult selectedArea;
   uint16_t *formatBuffer;
   uint16_t *formattedText;
   uint16_t *stream;
@@ -518,7 +518,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     }
     resolvedText = TextResource_Resolve(0x217c);
     resolvedName = TextResource_Resolve(*(int *)(definitionOrEnergyCost + 4) + 0x18004f);
-    RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.eax,resolvedText.eax);
+    RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
     armyRecord = ArmyAssetRegistry_FindByIdCf((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
          (GraphicsTextureSourceAsset *)armyRecord.eax[1].rootNodeOffsetOrPointer;
@@ -548,13 +548,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,int) = technologyId * 2 + 0x300000;
         firstNode = inGameRoot;
         resolvedText = TextResource_Resolve(0x2181);
-        labelText = resolvedText.eax;
+        labelText = resolvedText.text;
         formatBuffer = labelText;
         formattedText = labelText;
         stream = labelText;
         source = labelText;
         resolvedText = TextResource_Resolve(THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,TextResourceId));
-        RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.eax,labelText);
+        RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.text,labelText);
         labelText = THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -4,uint16_t *);
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
@@ -578,7 +578,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       INGAME_UI(inGameRoot,technologyAreaTab3),
       INGAME_UI(inGameRoot,technologyAreaTab2),
       INGAME_UI(inGameRoot,technologyAreaTab1));
-    if (selectedArea.carry) {
+    if (selectedArea.noneSelected) {
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
@@ -627,7 +627,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
                  g_InGameTechnologyResearchTimeTextUtf16);
       resolvedText = TextResource_Resolve((TextResourceId)resourceId);
-      labelText = resolvedText.eax;
+      labelText = resolvedText.text;
       RichTextCommandStream_PatchPayloadBySelector(0,&g_InGameTechnologyCostRichTextScratch,labelText);
       RichTextCommandStream_PatchPayloadBySelector(1,g_InGameTechnologyEnergyCostTextUtf16,labelText);
       RichTextCommandStream_PatchPayloadBySelector(2,g_InGameTechnologyResearchTimeTextUtf16,labelText)

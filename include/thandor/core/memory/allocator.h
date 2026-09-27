@@ -34,24 +34,24 @@ void * __cdecl ArenaHeap_Init(void);
 void __thandor_preserve_eax ArenaHeap_Shutdown(void);
 
 /* 0x005864A0 */
-ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes);
+ArenaAllocResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes);
 
 /* 0x00586570 */
 uint32_t __cdecl ArenaHeap_QueryFreeBytes(void);
 
 /* 0x005865B0 */
-ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory);
+ArenaFreeResult __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory);
 
 /* 0x00586640 */
-ArenaLargestAllocationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
+ArenaLargestAllocResult __thandor_eax_ecx_cf_preserve_edx
 ArenaHeap_AllocLargestFreeBlock(void);
 
 /* 0x005866B0 */
-ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaShrinkResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory);
 
 /* 0x00586750 */
-ArenaLinearReserveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArenaReserveResult __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes);
 
 /* 0x005873A0 */

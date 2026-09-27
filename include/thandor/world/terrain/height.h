@@ -51,7 +51,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00504520 */
-TerrainDistanceEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
 TerrainTriangle_IntersectRayDistanceCf
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,

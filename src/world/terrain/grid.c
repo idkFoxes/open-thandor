@@ -924,7 +924,7 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    Purpose: Nearest-cell companion that returns worldX in EAX, worldY in ECX, and terrainHeight + waterSurfaceDelta
    in EDX. CF reports bounds success.
 */
-FieldGridSurfacePointEaxEcxEdxCf13
+SurfacePointResult
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
@@ -932,7 +932,7 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   uint32_t gridHalfRowCoordinateQ12;
   int gridRowIndex;
   bool outOfBounds;
-  FieldGridSurfacePointEaxEcxEdxCf13 nearestPoint;
+  SurfacePointResult nearestPoint;
   
   gridHalfRowCoordinateQ12 =
        (int)((uint64_t)((int64_t)worldY * -0x20c8cc) >> 0x20) << 0xb |
@@ -955,7 +955,7 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   }
   nearestPoint.worldYQ12 = worldY;
   nearestPoint.worldXQ12 = worldX;
-  nearestPoint.carry = outOfBounds;
+  nearestPoint.outOfBounds = outOfBounds;
   nearestPoint.worldZQ12 = columnCellOrSurfaceZ;
   return nearestPoint;
 }
@@ -997,7 +997,7 @@ FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    indirect caller carries ModelRuntimeClassId through the call. Five-entry field-grid interpolation table
    callback; EAX is Q12 and CF reports failure.
 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -1010,7 +1010,7 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
   int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
   bool sampleFailed;
-  FieldGridHeightEaxCf5 sampleResult;
+  HeightSampleResult sampleResult;
   FieldGridDimension gridWidth;
   int64_t weightedHeightAccumulator;
   
@@ -1061,7 +1061,7 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
           columnFractionOrHeightQ12 = (uint32_t)upperTriangleAccumulator >> 0xc | (int)((uint64_t)upperTriangleAccumulator >> 0x20) << 0x14;
           sampleFailed = false;
         }
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         sampleResult.heightQ12 = columnFractionOrHeightQ12;
         return sampleResult;
       }
@@ -1069,7 +1069,7 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
   }
   columnFractionOrHeightQ12 = 0;
   sampleFailed = true;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   sampleResult.heightQ12 = columnFractionOrHeightQ12;
   return sampleResult;
 }
@@ -1154,7 +1154,7 @@ FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field)
    cell has flagsAndMaterial & 0x88006000; interpolates (terrainHeight + waterSurfaceDelta) over the triangle half
    selected by fx + fy < 0x1000.
 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -1167,7 +1167,7 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
   int rowIndexOrRowOffsetBytes;
   Q12 upperTriangleWeightQ12;
   bool sampleFailed;
-  FieldGridHeightEaxCf5 sampleResult;
+  HeightSampleResult sampleResult;
   int64_t upperTriangleWeightedHeightAccumulator;
   FieldGridDimension gridWidth;
   int64_t weightedHeightAccumulator;
@@ -1229,7 +1229,7 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
                   (int)((uint64_t)upperTriangleWeightedHeightAccumulator >> 0x20) << 0x14;
           sampleFailed = false;
         }
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         sampleResult.heightQ12 = surfaceHeightQ12;
         return sampleResult;
       }
@@ -1237,7 +1237,7 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
   }
   surfaceHeightQ12 = 0;
   sampleFailed = true;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   sampleResult.heightQ12 = surfaceHeightQ12;
   return sampleResult;
 }
@@ -1249,7 +1249,7 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
    indirect caller carries ModelRuntimeClassId through the call. Five-entry field-grid interpolation table
    callback; EAX is Q12 and CF reports failure.
 */
-FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+HeightSampleResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
 {
@@ -1263,7 +1263,7 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
   int rowIndexOrRowOffsetBytes;
   int triangleDiagonalWeightQ12;
   bool sampleFailed;
-  FieldGridHeightEaxCf5 sampleResult;
+  HeightSampleResult sampleResult;
   FieldGridDimension gridWidth;
   int64_t weightedSurfaceAccumulator;
   
@@ -1341,7 +1341,7 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
           }
           sampleFailed = false;
         }
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         sampleResult.heightQ12 = terrainHeightQ12;
         return sampleResult;
       }
@@ -1349,7 +1349,7 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
   }
   terrainHeightQ12 = 0;
   sampleFailed = true;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   sampleResult.heightQ12 = terrainHeightQ12;
   return sampleResult;
 }
@@ -1364,7 +1364,7 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset *field)
 
 {
@@ -1382,7 +1382,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
-  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  HeightNormalSampleResult sampleResult;
   FixedMathVectorAnglesRegs8 blendedNormalAngles;
   FixedDirectionXyzRegs12 scaledNormal;
   
@@ -1465,7 +1465,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
         sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         return sampleResult;
       }
     }
@@ -1474,7 +1474,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
   sampleFailed = true;
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   return sampleResult;
 }
 
@@ -1485,7 +1485,7 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -1504,7 +1504,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
-  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  HeightNormalSampleResult sampleResult;
   FixedMathVectorAnglesRegs8 blendedNormalAngles;
   FixedDirectionXyzRegs12 scaledNormal;
   
@@ -1587,7 +1587,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
         sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         return sampleResult;
       }
     }
@@ -1596,7 +1596,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
   sampleFailed = true;
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   return sampleResult;
 }
 
@@ -1607,7 +1607,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           (Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -1625,7 +1625,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
   int rowOffsetBytes;
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
-  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  HeightNormalSampleResult sampleResult;
   FixedMathVectorAnglesRegs8 blendedNormalAngles;
   FixedDirectionXyzRegs12 scaledNormal;
   int normalSumEcx;
@@ -1708,7 +1708,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
         sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         return sampleResult;
       }
     }
@@ -1717,7 +1717,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
   sampleFailed = true;
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   return sampleResult;
 }
 
@@ -1729,7 +1729,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FixedMath_VectorToAngles3Regs
    [core/math/fixed].
 */
-FieldGridHeightNormalEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid)
@@ -1751,7 +1751,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
   int cellOffsetOrNormalSum;
   int diagonalWeightOrNormalSum;
   bool sampleFailed;
-  FieldGridHeightNormalEaxEdxCf9 sampleResult;
+  HeightNormalSampleResult sampleResult;
   FixedMathVectorAnglesRegs8 blendedNormalAngles;
   FixedDirectionXyzRegs12 scaledNormal;
   
@@ -1887,7 +1887,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
         }
         sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
         sampleResult.heightQ12 = interpolatedHeightQ12;
-        sampleResult.carry = sampleFailed;
+        sampleResult.failed = sampleFailed;
         return sampleResult;
       }
     }
@@ -1896,7 +1896,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
   sampleFailed = true;
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
-  sampleResult.carry = sampleFailed;
+  sampleResult.failed = sampleFailed;
   return sampleResult;
 }
 
@@ -2190,7 +2190,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainSurfaceDistanceCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
@@ -2212,9 +2212,9 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
   int cellLocalCoord1Q12;
   int stepsRemaining;
   bool traversalDone;
-  TerrainDistanceEaxCf5 triangleHit;
-  FieldGridRaycastEaxEdxCf9 missResult;
-  FieldGridRaycastEaxEdxCf9 hitResult;
+  TerrainRayTriangleResult triangleHit;
+  TerrainRaycastResult missResult;
+  TerrainRaycastResult hitResult;
   FixedDirectionXyzRegs12 rayDirection;
   
   boundsGridWidth = fieldGrid->gridWidth;
@@ -2251,8 +2251,8 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
                           currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
                           currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
                           ,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
-      if (!triangleHit.carry) {
-        hitResult.carry = true;
+      if (!triangleHit.missed) {
+        hitResult.hit = true;
         hitResult.distanceQ12 = triangleHit.distanceQ12;
         hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
         return hitResult;
@@ -2269,7 +2269,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
   } while (!traversalDone);
   missResult.materialOrCellIndex = currentGridCoord0Q12;
   missResult.distanceQ12 = 0x7fffffff;
-  missResult.carry = false;
+  missResult.hit = false;
   return missResult;
 }
 
@@ -2285,7 +2285,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastSecondarySurfaceDistanceCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
@@ -2307,9 +2307,9 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
   int cellLocalCoord1Q12;
   int stepsRemaining;
   bool traversalDone;
-  TerrainDistanceEaxCf5 triangleHit;
-  FieldGridRaycastEaxEdxCf9 missResult;
-  FieldGridRaycastEaxEdxCf9 hitResult;
+  TerrainRayTriangleResult triangleHit;
+  TerrainRaycastResult missResult;
+  TerrainRaycastResult hitResult;
   FixedDirectionXyzRegs12 rayDirection;
   
   boundsGridWidth = fieldGrid->gridWidth;
@@ -2349,8 +2349,8 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
                           currentCell[1].terrainHeight + currentCell[1].waterSurfaceDelta,
                           currentCell->waterSurfaceDelta + currentCell->terrainHeight,
                           cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
-      if (!triangleHit.carry) {
-        hitResult.carry = true;
+      if (!triangleHit.missed) {
+        hitResult.hit = true;
         hitResult.distanceQ12 = triangleHit.distanceQ12;
         hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
         return hitResult;
@@ -2367,7 +2367,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
   } while (!traversalDone);
   missResult.materialOrCellIndex = currentGridCoord0Q12;
   missResult.distanceQ12 = 0x7fffffff;
-  missResult.carry = false;
+  missResult.hit = false;
   return missResult;
 }
 
@@ -2379,7 +2379,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
    TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
    [world/terrain/height].
 */
-FieldGridRaycastEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
 FieldGrid_RaycastTerrainTrianglesAlongDirection
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 rayScaleQ12,
           Q12 rayOriginZQ12,Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
@@ -2405,9 +2405,9 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldGridCell *sampleCell;
   int rowStrideBytes;
   bool traversalDone;
-  TerrainDistanceEaxCf5 triangleHit;
-  FieldGridRaycastEaxEdxCf9 hitResult;
-  FieldGridRaycastEaxEdxCf9 missResult;
+  TerrainRayTriangleResult triangleHit;
+  TerrainRaycastResult hitResult;
+  TerrainRaycastResult missResult;
   FixedDirectionXyzRegs12 rayDirection;
   FieldCellPersistedAux cornerHeight0Q12;
   FieldCellPersistedAux cornerHeight1Q12;
@@ -2513,8 +2513,8 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
                        (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
                         cornerHeight3Q12,cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
-    if (!triangleHit.carry) {
-      hitResult.carry = true;
+    if (!triangleHit.missed) {
+      hitResult.hit = true;
       hitResult.distanceQ12 = triangleHit.distanceQ12;
       hitResult.materialOrCellIndex = sampleCell->flagsAndMaterial & 0xff; /* low byte: material */
       return hitResult;
@@ -2528,7 +2528,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   } while (!traversalDone);
   missResult.materialOrCellIndex = currentGridCoord0Q12;
   missResult.distanceQ12 = 0x7fffffff;
-  missResult.carry = false;
+  missResult.hit = false;
   return missResult;
 }
 
@@ -2730,7 +2730,7 @@ FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGr
    with carry semantics outside the C prototype.
    Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
 
 {
@@ -2742,14 +2742,14 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
   uint32_t *copyDestinationDwords;
   FieldGridCellSaveImageView80 *fieldGridCellSaveView;
   uint8_t *occupancyBytes;
-  ArenaAllocEaxCf5 allocResult;
-  StatusValueEaxCf5 writeStatus;
-  ArenaFreeEaxCf5 freeResult;
+  ArenaAllocResult allocResult;
+  StatusResult writeStatus;
+  ArenaFreeResult freeResult;
   
   imageSizeOrDwordsLeft = sourceImageDwords[1];
   allocResult = (*g_MemoryApi.alloc)(imageSizeOrDwordsLeft);
-  fieldGridImageCopy = (FieldGridAsset *)allocResult.eax;
-  if (!allocResult.carry) {
+  fieldGridImageCopy = (FieldGridAsset *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     copyDestinationDwords = (uint32_t *)fieldGridImageCopy;
     for (imageSizeOrDwordsLeft = imageSizeOrDwordsLeft >> 2; imageSizeOrDwordsLeft != 0; imageSizeOrDwordsLeft = imageSizeOrDwordsLeft - 1) {
       *copyDestinationDwords = *sourceImageDwords;
@@ -2794,15 +2794,15 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
     writeStatus = FileSystem_WriteBufferToPathCf
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (uint16_t *)&g_LevelResourcePathScratchUtf16);
-    if (!writeStatus.carry) {
+    if (!writeStatus.failed) {
       freeResult = (*g_MemoryApi.free)(fieldGridImageCopy);
-      return THANDOR_BITCAST(uint64_t, StatusValueEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      return THANDOR_BITCAST(uint64_t, StatusResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
     writeErrorValue = (FieldGridAsset *)writeStatus.valueOrError;
     (*g_MemoryApi.free)(fieldGridImageCopy);
     fieldGridImageCopy = writeErrorValue;
   }
-  writeStatus.carry = true;
+  writeStatus.failed = true;
   writeStatus.valueOrError = (uint32_t)fieldGridImageCopy;
   return writeStatus;
 }

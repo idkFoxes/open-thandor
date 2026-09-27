@@ -569,7 +569,7 @@ UiConditionalActionControl_DrawClipped
   int innerWidthOrRight;
   bool accessFailed;
   RichTextExtentRegs textExtent;
-  GraphicsTextureSizeEaxEdxCf9 cornerSize;
+  TextureSizeResult cornerSize;
   GraphicsSubresourceIndex backgroundSubresource;
   
   if ((control->lineCount != 0) &&

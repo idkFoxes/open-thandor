@@ -54,12 +54,12 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
    was returned; CF set means the ring was empty. The qword return type models the preserved register pair, not a
    source-level 64-bit API.
 */
-KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
+KeyboardEventResult __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
 {
   uint32_t nextReadIndex;
-  KeyboardEventEaxEdxCf9 readEvent;
-  KeyboardEventEaxEdxCf9 emptyResult;
+  KeyboardEventResult readEvent;
+  KeyboardEventResult emptyResult;
   KeyboardInputEvent *eventRecord;
   
   nextReadIndex = g_KeyboardReadIndex + 1;
@@ -70,14 +70,14 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
     eventRecord = g_KeyboardEvents + g_KeyboardReadIndex;
     g_KeyboardReadIndex = nextReadIndex;
     /* EAX = key code, EDX = state mask; the decompiled version filled an unused local instead. */
-    readEvent.carry = false;
+    readEvent.queueEmpty = false;
     readEvent.eventCode = eventRecord->keyCode00;
     readEvent.eventData = eventRecord->stateMask04;
     return readEvent;
   }
   emptyResult.eventData = nextReadIndex;
   emptyResult.eventCode = 0; /* EAX unchanged in the original; all callers read it only with CF clear */
-  emptyResult.carry = true;
+  emptyResult.queueEmpty = true;
   return emptyResult;
 }
 
@@ -106,7 +106,7 @@ uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterC
    TimerSystem_RegisterPeriodic [platform/system/time_locale], Package_LoadEntry [assets/package/runtime],
    Resource_Load [assets/resource/runtime].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
 
 {
   GraphicsSubresourceIndex frameTimestampValue;
@@ -117,21 +117,21 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   uint32_t subresourceIndex;
   uint32_t maxHeight;
   uint32_t maxWidth;
-  DynDllLoadEaxCf5 dllLoadResult;
-  FatalErrorEaxCf5 fatalCheckResult;
-  DynApiResolveEaxCf5 procResolveResult;
-  PackageLoadEntryEaxCf5 packageLoadResult;
-  StatusValueEaxCf5 successResult;
-  StatusValueEaxCf5 failureResult;
-  ResourceLoadEaxEcxCf9 resourceLoadResult;
-  GraphicsTextureSizeEaxEdxCf9 logicalSize;
+  DllLoadResult dllLoadResult;
+  FatalErrorCheckResult fatalCheckResult;
+  DynApiResolveResult procResolveResult;
+  PackageLoadResult packageLoadResult;
+  StatusResult successResult;
+  StatusResult failureResult;
+  ResourceLoadResult resourceLoadResult;
+  TextureSizeResult logicalSize;
   int32_t initStage;
   
   initStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_3);
-  fatalCheckResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.carry);
-  procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.eax,dynapi_19);
-  (*g_FatalErrorPrimaryDispatchCf)((uint32_t)procResolveResult.procedureOrError,procResolveResult.carry);
+  fatalCheckResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
+  procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
+  (*g_FatalErrorPrimaryDispatchCf)((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
   SetCursor((HCURSOR)0x0);
   directInputResult = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
   if (directInputResult == 0) {
@@ -161,7 +161,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
             g_PointerSetPosition = DirectInputMouse_SetPosition;
             packageLoadResult = Package_LoadEntry((uint16_t *)u_engine_mouse_gfx_00416864);
             cursorDataOrError = packageLoadResult.bufferOrError;
-            if (!packageLoadResult.carry) {
+            if (!packageLoadResult.failed) {
               maxWidth = 0;
               maxHeight = 0;
               subresourceIndex = 0;
@@ -179,9 +179,9 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
               g_CursorMaxWidth = maxWidth;
               g_CursorMaxHeight = maxHeight;
               resourceLoadResult = Resource_Load((uint16_t *)u_engine_mouse_dat_00416886);
-              cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.eax;
-              if (!resourceLoadResult.carry) {
-                remainingFrames = resourceLoadResult.ecx >> 5;
+              cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.bufferOrError;
+              if (!resourceLoadResult.failed) {
+                remainingFrames = resourceLoadResult.byteCount >> 5;
                 g_CursorFrameRecords = (GraphicsCursorFrameRecord *)cursorDataOrError;
                 g_CursorFrameCount = remainingFrames;
                 do {
@@ -205,12 +205,12 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
                 if ((successResult.valueOrError & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
                 }
-                successResult.carry = false;
+                successResult.failed = false;
                 return successResult;
               }
             }
             /* cursor asset load failed: its error code */
-            failureResult.carry = true;
+            failureResult.failed = true;
             failureResult.valueOrError = (uint32_t)cursorDataOrError;
             return failureResult;
           }
@@ -220,7 +220,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
   cursorDataOrError = (GraphicsTextureSourceAsset *)0x25;
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)cursorDataOrError;
   return failureResult;
 }
@@ -464,7 +464,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
    semantic domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged.
 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 DirectInputMouse_DisplayModeHookCf
           (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
@@ -473,8 +473,8 @@ DirectInputMouse_DisplayModeHookCf
   SoftwareFramebufferAccess *primaryFramebuffer;
   SoftwareFramebufferAccess *newCursorFramebuffer;
   SoftwareFramebufferAccess *newCompositeFramebuffer;
-  DisplayModeEaxCf5 previousHookResult;
-  DisplayModeEaxCf5 successResult;
+  DisplayModeResult previousHookResult;
+  DisplayModeResult successResult;
   bool previousHookFailed;
   
   g_GraphicsBackendAccessState = -1;
@@ -487,8 +487,8 @@ DirectInputMouse_DisplayModeHookCf
   previousHookResult = (*g_DirectInputMousePreviousDisplayModeHookCf)
                     (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
   primaryFramebuffer = g_FramebufferAccess;
-  previousHookFailed = previousHookResult.carry;
-  newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.eax;
+  previousHookFailed = previousHookResult.failed;
+  newCursorFramebuffer = (SoftwareFramebufferAccess *)previousHookResult.valueOrError;
   if (!previousHookFailed) {
     newCursorFramebuffer =
          (*g_SoftwareFramebufferCreate)
@@ -511,16 +511,16 @@ DirectInputMouse_DisplayModeHookCf
           g_CursorOverrideY = framebufferHeight >> 1;
           g_MouseX = g_CursorOverrideX;
           g_MouseY = g_CursorOverrideY;
-          successResult.eax = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
+          successResult.valueOrError = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
           g_GraphicsBackendAccessState = 0;
-          successResult.carry = false;
+          successResult.failed = false;
           return successResult;
         }
       }
     }
   }
-  previousHookResult.carry = true;
-  previousHookResult.eax = (uint32_t)newCursorFramebuffer;
+  previousHookResult.failed = true;
+  previousHookResult.valueOrError = (uint32_t)newCursorFramebuffer;
   return previousHookResult;
 }
 

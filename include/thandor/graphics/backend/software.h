@@ -58,13 +58,13 @@ void SoftwareGraphicsDispatch_SuccessNoOp(void);
 void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void);
 
 /* 0x004A8F80 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 SoftwarePixelFormat_BaseDisplayModeHook
           (uint32_t modeArg0,uint32_t modeArg1,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width);
 
 /* 0x004A9110 */
-SoftwareFramebufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SoftwareFramebufferResult __thandor_eax_cf_preserve_ecx_edx
 SoftwareFramebuffer_Create
           (SoftwareFramebufferPixelSize bytesPerPixel,GraphicsPixelDimension height,
           GraphicsPixelDimension width);
@@ -432,13 +432,13 @@ void SoftwareRasterAux_Mode10 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenC
 void SoftwareRasterAux_Mode12 (GraphicsScreenCoordinate clipMaxY,GraphicsScreenCoordinate clipMaxX, GraphicsScreenCoordinate clipMinY,GraphicsScreenCoordinate clipMinX, GraphicsPrimitivePacket *packet);
 
 /* 0x004FE620 */
-DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
 SoftwareRenderer_DisplayModeHook
           (DisplayModeHookArgument0 modeArg0,DisplayModeHookArgument1 modeArg1,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
 /* 0x004FE7D0 */
-StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
+StatusResult __cdecl SoftwareRenderer_InstallDisplayModeHook(void);
 
 /* 0x00518CE0 */
 void __thandor_void_preserve_eax_ecx_edx

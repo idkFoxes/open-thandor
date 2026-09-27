@@ -65,7 +65,7 @@ SpriteAssetRegistry_FindById(SpriteAssetId registryId)
    serialized image. CF clear returns the asset; CF set returns error 0x36 in EAX. Role: Registers one SPR image
    and converts serialized offsets into runtime pointers.
 */
-SpriteRegisterRelocateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+SpriteRegisterResult __thandor_eax_cf_preserve_ecx_edx
 SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
 
 {
@@ -74,8 +74,8 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
   SprGroupRelocationHeader20 *groupRelocationCursor;
   SprRelocationBlockHeader20 *relocationBlockCursor;
   SprPointerRelocationRecord40 *pointerRelocationCursor;
-  SpriteRegisterRelocateEaxCf5 successResult;
-  SpriteRegisterRelocateEaxCf5 errorResult;
+  SpriteRegisterResult successResult;
+  SpriteRegisterResult errorResult;
   AssetRecordCount groupsRemaining;
   SpriteAssetHeader *previousRegistryHead;
   
@@ -123,11 +123,11 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
         groupsRemaining = groupsRemaining - 1;
       } while (groupsRemaining != 0);
     }
-    successResult.carry = false;
+    successResult.failed = false;
     successResult.assetOrError = asset;
     return successResult;
   }
-  errorResult.carry = true;
+  errorResult.failed = true;
   errorResult.assetOrError = (SpriteAssetHeader *)0x36;
   return errorResult;
 }

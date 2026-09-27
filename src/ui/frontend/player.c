@@ -231,7 +231,7 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
   UiTransferEndpointDescriptor *endpoint;
   FrontendPlayerRuntimeRecord *destBlock;
   FrontendPlayerRuntimeRecord *nextDestBlock;
-  TextResourceResolveEaxCf5 removalText;
+  TextResolveResult removalText;
   FrontendCommandPacketRecord *removedTokenOrCommandDest;
   FrontendPlayerRemovalPacket10007 *commandDestOrPacket;
   FrontendCommandPacketRecord *commandCursor;
@@ -250,8 +250,8 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       if (*heartbeatTicks == 0) {
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
         removalText = TextResource_Resolve(0xff00);
-        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.eax);
-        FrontendRecentTextHistory_InsertAndRebuild5(removalText.eax);
+        RichTextCommandStream_PatchPayloadBySelector(0,&sourceBlock->playerName,removalText.text);
+        FrontendRecentTextHistory_InsertAndRebuild5(removalText.text);
         removedTokenOrCommandDest = (FrontendCommandPacketRecord *)sourceBlock->playerRuntimeId;
         removedCount = removedCount + 1;
         nextSourceBlock = sourceBlock + 1;
@@ -682,13 +682,13 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
 void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
 
 {
-  TextResourceResolveEaxCf5 labelText;
+  TextResolveResult labelText;
   
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve
                     ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
   RichTextCommandStream_CopyExpandedCf
-            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.eax);
+            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.text);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
   return;
 }
@@ -1029,7 +1029,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
   SelectionPlayerRuntimeBlock *nextScanCursor;
   SelectionPlayerRuntimeBlock *destCursor;
   bool foundEmpty;
-  WorldPositionEaxEcxEdxCf13 averagePosition;
+  WorldPositionResult averagePosition;
   
   groupOrScanCursor = (SelectionPlayerRuntimeBlock *)
            (selectionGroupIndex * 0x80 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x2e0) + factionIndex * 0x740);
@@ -1110,7 +1110,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & 4) != 0) {
       averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
-      if (!averagePosition.carry) {
+      if (!averagePosition.unresolved) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((node->worldRuntime0A30).motion.pitchAngle,
                    (node->worldRuntime0A30).motion.headingAngle,
@@ -1227,7 +1227,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
 {
   SelectionPlayerRuntimeBlock *playerBlock;
   uint16_t *stream;
-  TextResourceResolveEaxCf5 messageText;
+  TextResolveResult messageText;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((((playerBlock->packedSelectionState809C &
@@ -1241,7 +1241,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
     Text_CopyNarrowToUtf16Cf
               (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
     messageText = TextResource_Resolve(0xff07);
-    stream = messageText.eax;
+    stream = messageText.text;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->reserved80B0_8117 + 0x40,stream);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
     InGameRecentTextHistory_InsertAndRebuild8(stream);
@@ -1520,7 +1520,7 @@ FrontendPlayerMessageBuffer_PublishTextById
   FrontendPlayerRuntimeRecord *playerBlock;
   int messageBuffer;
   uint16_t *stream;
-  TextResourceResolveEaxCf5 messageText;
+  TextResolveResult messageText;
   
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   messageBuffer = g_FrontendPlayerMessageBuffers;
@@ -1539,7 +1539,7 @@ FrontendPlayerMessageBuffer_PublishTextById
   }
   Text_CopyNarrowToUtf16Cf(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,(uint8_t *)(messageBuffer + 4));
   messageText = TextResource_Resolve(0xff07);
-  stream = messageText.eax;
+  stream = messageText.text;
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
   RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendPlayerMessageScratchUtf16,stream);
   FrontendRecentTextHistory_InsertAndRebuild5(stream);

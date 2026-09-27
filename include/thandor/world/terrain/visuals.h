@@ -15,18 +15,18 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0053D370 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Create(void);
 
 /* 0x00503B10 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initialize(void);
 
 /* 0x00503F30 */
-StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
+StatusResult __thandor_void_preserve_ecx_edx
 TerrainVisualResources_LoadPrimary
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
 
 /* 0x005041C0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 TerrainVisualResources_LoadAndClearCellOverlayFlags
           (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
 

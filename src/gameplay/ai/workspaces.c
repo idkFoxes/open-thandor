@@ -1044,7 +1044,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
   int recordsRemaining;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool placementRejected;
-  ArmyRuntimeCreateEaxCf5 createResult;
+  ArmyRuntimeCreateResult createResult;
   
   recordsRemaining = g_AiWorkspace08Count;
   terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
@@ -1061,8 +1061,8 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                           (4,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                            workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                            worldRuntime);
-        createdSlotPair = (ArmyRuntimeSlot **)createResult.eax;
-        if (createResult.carry) {
+        createdSlotPair = (ArmyRuntimeSlot **)createResult.armyRuntimeOrError;
+        if (createResult.failed) {
           return;
         }
         modelNodeRuntime = createdSlotPair[1];
@@ -1115,66 +1115,66 @@ AiWorkspace12Score_DefaultZero
    exit on any failure.
    Cross-module calls: Package_LoadEntry [assets/package/runtime].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
 
 {
   uint8_t *workspaceAllocation;
   AiTechnologyPlanningCandidate *technologyCandidateWorkspaceAllocation;
   AiKnowledgeDataImage *knowledgeDataImage;
-  PackageLoadEntryEaxCf5 loadResult;
-  StatusValueEaxCf5 initStatus;
+  PackageLoadResult loadResult;
+  StatusResult initStatus;
   
-  loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
+  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
   workspaceAllocation = loadResult.bufferOrError;
-  if (!loadResult.carry) {
+  if (!loadResult.failed) {
     g_AiWorkspaceBuffer00_Size0400 = (AiWorkspace00EntryView8 *)workspaceAllocation;
-    loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
-    if (!loadResult.carry) {
+    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+    if (!loadResult.failed) {
       g_AiWorkspaceBuffer01_Size0200 = loadResult.bufferOrError;
-      loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
-      if (!loadResult.carry) {
+      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+      if (!loadResult.failed) {
         g_AiWorkspaceBuffer02_Size0400 = loadResult.bufferOrError;
-        loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
-        if (!loadResult.carry) {
+        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+        if (!loadResult.failed) {
           g_AiWorkspaceBuffer03_Size1000 = loadResult.bufferOrError;
-          loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x40));
-          if (!loadResult.carry) {
+          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x40));
+          if (!loadResult.failed) {
             g_AiWorkspaceBuffer04_Size0040 = loadResult.bufferOrError;
-            loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
-            if (!loadResult.carry) {
+            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+            if (!loadResult.failed) {
               g_AiWorkspaceBuffer05_Size0200 = loadResult.bufferOrError;
-              loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
-              if (!loadResult.carry) {
+              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+              if (!loadResult.failed) {
                 g_AiWorkspaceBuffer06_Size0400 = loadResult.bufferOrError;
-                loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
-                if (!loadResult.carry) {
+                loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                if (!loadResult.failed) {
                   g_AiWorkspaceBuffer07_Size0400 = loadResult.bufferOrError;
-                  loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
-                  if (!loadResult.carry) {
+                  loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
+                  if (!loadResult.failed) {
                     g_AiWorkspaceBuffer08_Size0200 = loadResult.bufferOrError;
-                    loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
-                    if (!loadResult.carry) {
+                    loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+                    if (!loadResult.failed) {
                       g_AiWorkspaceBuffer09_Size1000 = loadResult.bufferOrError;
-                      loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
-                      if (!loadResult.carry) {
+                      loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                      if (!loadResult.failed) {
                         g_AiWorkspaceBuffer10_Size0400 = loadResult.bufferOrError;
-                        loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x1000));
-                        if (!loadResult.carry) {
+                        loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x1000));
+                        if (!loadResult.failed) {
                           g_AiWorkspaceBuffer11_Size1000 = loadResult.bufferOrError;
-                          loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x200));
+                          loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x200));
                           technologyCandidateWorkspaceAllocation = loadResult.bufferOrError;
-                          if (!loadResult.carry) {
+                          if (!loadResult.failed) {
                             g_AiWorkspaceBuffer12_Size0200 = technologyCandidateWorkspaceAllocation;
-                            loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x400));
-                            if (!loadResult.carry) {
+                            loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x400));
+                            if (!loadResult.failed) {
                               g_AiWorkspaceBuffer13_Size0400 = loadResult.bufferOrError;
-                              loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x100));
-                              if (!loadResult.carry) {
+                              loadResult = THANDOR_BITCAST(ArenaAllocResult, PackageLoadResult, (*g_MemoryApi.alloc)(0x100));
+                              if (!loadResult.failed) {
                                 g_AiWorkspaceBuffer14_Size0100 = loadResult.bufferOrError;
                                 loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
                                 knowledgeDataImage = loadResult.bufferOrError;
-                                if (!loadResult.carry) {
-                                  loadResult = THANDOR_BITCAST(uint64_t, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(PackageLoadEntryEaxCf5, uint64_t, loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+                                if (!loadResult.failed) {
+                                  loadResult = THANDOR_BITCAST(uint64_t, PackageLoadResult, ((THANDOR_BITCAST(PackageLoadResult, uint64_t, loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
                                   g_AiKnowledgeData = knowledgeDataImage;
                                 }
                               }
@@ -1193,7 +1193,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void
     }
   }
   initStatus.valueOrError = (uint32_t)loadResult.bufferOrError;
-  initStatus.carry = loadResult.carry;
+  initStatus.failed = loadResult.failed;
   return initStatus;
 }
 

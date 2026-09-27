@@ -26,7 +26,7 @@
    FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_SinCosScaled [core/math/fixed].
 */
 
-ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
+PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -39,18 +39,18 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
   bool blocked;
   FixedLengthAngleEaxEdx8 offsetLengthAngle;
   FixedSinCosEdxEax8 rotatedOffset;
-  ArmyPlacementCandidateEaxCf5 clearanceResult;
-  ModelLookupEntryEaxCf5 anchorLookup;
-  TerrainPlacementTestEaxCf5 terrainTest;
+  PlacementCandidateResult clearanceResult;
+  ModelLookupEntryResult anchorLookup;
+  TerrainPlacementResult terrainTest;
   
-  ArmyPlacementCandidateEaxCf5 result;
+  PlacementCandidateResult result;
 
   /* The table dispatch reads EAX and CF; the decompiled int return lost CF. */
   clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldXQ12,worldYQ12,modelDefinition,dispatchArg7,worldRuntime);
-  eaxOrOffsetYQ12 = clearanceResult.eax;
-  if (!clearanceResult.carry) {
+  eaxOrOffsetYQ12 = clearanceResult.value;
+  if (!clearanceResult.rejected) {
     anchorLookup = ModelLookupTable_ContainsPackedKeyCf
                       (1,5,*(ModelResourceHitTestAndRenderView210 **)
                             (modelDefinition->serializedNodeOffsetOrPointer64 + 0x30));
@@ -62,19 +62,19 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestOffsetClearanceCf
     blocked = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
                       (dispatchArg0,0xc00,offsetWorldXQ12,worldYQ12 + eaxOrOffsetYQ12,worldRuntime);
     if (!blocked) {
-      terrainTest.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
+      terrainTest.rejected = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
                 [modelDefinition->placementContactKindIndex278])
                         (0xc00,dispatchArg3,offsetWorldXQ12,worldYQ12 + eaxOrOffsetYQ12,worldRuntime->fieldGrid);
-      if (!terrainTest.carry) {
-        result.eax = clearanceResult.eax;
-        result.carry = false;
+      if (!terrainTest.rejected) {
+        result.value = clearanceResult.value;
+        result.rejected = false;
         return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  result.eax = eaxOrOffsetYQ12;
-  result.carry = true;
+  result.value = eaxOrOffsetYQ12;
+  result.rejected = true;
   return result;
 }
 
@@ -101,7 +101,7 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
   Q12 worldXQ12;
   int referenceHeightQ12;
   bool blocked;
-  ModelLookupEntryEaxCf5 anchorLookup;
+  ModelLookupEntryResult anchorLookup;
   ModelLocalPointRegs12 anchorWorldPoint;
   
   modelNodeRuntime = modelRuntime->rootModelNode;
@@ -110,7 +110,7 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
     placementDefinition = modelRuntime->modelDefinition;
     anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
     ;
-    if (!anchorLookup.carry) {
+    if (!anchorLookup.notFound) {
       anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
       worldXQ12 = anchorWorldPoint.ecx;
       worldYQ12 = anchorWorldPoint.eax;
@@ -166,7 +166,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
      decompiler dropped. Callers read it from g_ArmyPlacementValidatedWorldX/YQ12. */
   static const int cornerDx[4] = {0,0x240,0x240,0};
   static const int cornerDy[4] = {0,0,0x240,0x240};
-  ArmyPlacementDispatchEaxCf5 dispatched;
+  PlacementDispatchResult dispatched;
   int corner;
 
   g_ArmyPlacementValidatedWorldXQ12 = worldXQ12;
@@ -174,7 +174,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
   dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
                          (placementMode,0,armyAssetId,worldYQ12,worldXQ12,placementContext,
                           ownerFactionId,inGameRuntime);
-  if (!dispatched.carry) {
+  if (!dispatched.failed) {
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
@@ -183,7 +183,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
     dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
                            (placementMode,0,armyAssetId,y,x,placementContext,ownerFactionId,
                             inGameRuntime);
-    if (!dispatched.carry) {
+    if (!dispatched.failed) {
       g_ArmyPlacementValidatedWorldXQ12 = x;
       g_ArmyPlacementValidatedWorldYQ12 = y;
       return false;
@@ -206,7 +206,7 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: ArmyPlacementCollision_TestCandidateAndClearanceCf.
 */
-ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
+PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancyCf
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -217,19 +217,19 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
   int clearanceEax;
   int cellColumn;
   int eaxOrCellColumn;
-  ArmyPlacementCandidateEaxCf5 result;
+  PlacementCandidateResult result;
   uint32_t projectedRowTerm;
   int cellRow;
-  ArmyPlacementCandidateEaxCf5 clearanceResult;
+  PlacementCandidateResult clearanceResult;
   FieldGridAsset *activeFieldGrid;
   
   clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldYQ12,worldXQ12,(ModelDefinitionRuntimeSemanticView280 *)modelDefinition,
                      dispatchArg7,worldRuntime);
-  clearanceEax = clearanceResult.eax;
+  clearanceEax = clearanceResult.value;
   eaxOrCellColumn = clearanceEax;
-  if (!clearanceResult.carry) {
+  if (!clearanceResult.rejected) {
     activeFieldGrid = worldRuntime->fieldGrid;
     projectedRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
             (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
@@ -241,15 +241,15 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
       eaxOrCellColumn = clearanceEax;
       if ((activeFieldGrid->cells[activeFieldGrid->gridWidth * cellRow + cellColumn].flagsAndMaterial &
           0x800 << ((uint8_t)modelDefinition[0x10].byteSize & 0x1f)) != 0) {
-        result.eax = clearanceEax;
-        result.carry = false;
+        result.value = clearanceEax;
+        result.rejected = false;
         return result;
       }
     }
     g_ArmyPlacementAcceptedCandidateCount = g_ArmyPlacementAcceptedCandidateCount + 1;
   }
-  result.eax = eaxOrCellColumn;
-  result.carry = true;
+  result.value = eaxOrCellColumn;
+  result.rejected = true;
   return result;
 }
 
@@ -317,7 +317,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
 
 {
   bool blocked;
-  ArmyCollisionFindEaxCf5 blockingRuntime;
+  ArmyCollisionResult blockingRuntime;
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
@@ -331,7 +331,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
                       ((modelNode->worldTransform).translation.y,
                        (modelNode->worldTransform).translation.x,
                        (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
-    blocked = blockingRuntime.carry;
+    blocked = blockingRuntime.blocked;
     if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
       blocked = FieldGrid_TestWorldPointBlockedCf
                         (modelRuntime->ownerArmyRuntime->factionIndex,
@@ -354,7 +354,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
    Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
    FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
 */
-ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
+PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPointCf
                (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
@@ -374,10 +374,10 @@ ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
     }
   }
   {
-    ArmyPlacementCandidateEaxCf5 result;
+    PlacementCandidateResult result;
 
-    result.eax = 0;
-    result.carry = blocked;
+    result.value = 0;
+    result.rejected = blocked;
     return result;
   }
 }
@@ -395,12 +395,12 @@ ArmyPlacementContact_ApplyTerrainHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 surfaceHeight;
+  HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
     surfaceHeight = FieldGrid_InterpolateTerrainHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
-    if (!surfaceHeight.carry) {
+    if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z =
            surfaceHeightQ12 + heightOffsetQ12 +
            ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
@@ -426,12 +426,12 @@ ArmyPlacementContact_ApplyWaterSurfaceHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 surfaceHeight;
+  HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
     surfaceHeight = FieldGrid_InterpolateWaterSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
-    if (!surfaceHeight.carry) {
+    if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldYQ12;
       (modelNode->worldTransform).translation.y = worldXQ12;
@@ -455,12 +455,12 @@ ArmyPlacementContact_ApplyTerrainHeightAndNormal
 
 {
   int resourceHeightOffsetQ12;
-  FieldGridHeightNormalEaxEdxCf9 surfaceHeightNormal;
+  HeightNormalSampleResult surfaceHeightNormal;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
     surfaceHeightNormal = FieldGrid_InterpolateTerrainHeightAndNormal(worldXQ12,worldYQ12,worldRuntime->fieldGrid)
     ;
-    if (!surfaceHeightNormal.carry) {
+    if (!surfaceHeightNormal.failed) {
       resourceHeightOffsetQ12 = ((modelNode->modelPayload).modelResource)->placementHeightOffsetQ12;
       (modelNode->modelPayload).worldRotationAngle0 = surfaceHeightNormal.packedNormalAngles & 0xffff;
       (modelNode->modelPayload).worldRotationAngle1 = (int)surfaceHeightNormal.packedNormalAngles >> 0x10;
@@ -486,12 +486,12 @@ ArmyPlacementContact_ApplyTopSurfaceHeight
 
 {
   Q12 surfaceHeightQ12;
-  FieldGridHeightEaxCf5 surfaceHeight;
+  HeightSampleResult surfaceHeight;
   
   if (worldRuntime->fieldGrid != (FieldGridAsset *)0x0) {
     surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight(worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     surfaceHeightQ12 = surfaceHeight.heightQ12;
-    if (!surfaceHeight.carry) {
+    if (!surfaceHeight.failed) {
       (modelNode->worldTransform).translation.z = surfaceHeightQ12 + heightOffsetQ12;
       (modelNode->worldTransform).translation.x = worldYQ12;
       (modelNode->worldTransform).translation.y = worldXQ12;
@@ -671,16 +671,16 @@ ArmyPlacement_ReleaseClassStateReservation
    army placement asset-class dispatch contract; CF carries acceptance and the first four class-specific dwords
    remain deliberately generic.
 */
-ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
+PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
                (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
                uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
-  ArmyPlacementCandidateEaxCf5 result;
+  PlacementCandidateResult result;
 
-  result.eax = 0;
-  result.carry = false;
+  result.value = 0;
+  result.rejected = false;
   return result;
 }
 
@@ -740,7 +740,7 @@ ArmyCollision_TestPointAgainstRuntimeListCf
    Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf.
    Cross-module calls: DepthBinMasks_OverlapCf [graphics/render/primitives].
 */
-ArmyCollisionFindEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ArmyCollisionResult __thandor_eax_cf_preserve_ecx_edx
 ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryViewF4 *currentRuntime,
           WorldRuntimeContext *worldRuntime)
@@ -751,8 +751,8 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
   ArmyRuntimeSlot *armyRuntime;
   Q12 queryRadiusQ12;
   bool hit;
-  ArmyCollisionFindEaxCf5 notFound;
-  ArmyCollisionFindEaxCf5 found;
+  ArmyCollisionResult notFound;
+  ArmyCollisionResult found;
   ModelRuntimeNode *candidateModelNode;
   
   currentModelNode = currentRuntime->modelNodeRuntime;
@@ -774,14 +774,14 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
             ((ArmyRuntimeSlot *)currentRuntime != armyRuntime->linkedArmyRuntime)))))) &&
          (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
                             (clearanceRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)) {
-        found.carry = true;
-        found.eax = (uint32_t)armyRuntime;
+        found.blocked = true;
+        found.blockingArmy = (uint32_t)armyRuntime;
         return found;
       }
     }
   }
-  notFound.eax = 0;
-  notFound.carry = false;
+  notFound.blockingArmy = 0;
+  notFound.blocked = false;
   return notFound;
 }
 
@@ -795,7 +795,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
    Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog],
    ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions].
 */
-ArmyPlacementDispatchEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PlacementDispatchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyPlacement_DispatchAssetAtFieldPoint
           (ArmyPlacementMode placementMode,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
@@ -807,12 +807,12 @@ ArmyPlacement_DispatchAssetAtFieldPoint
   uint32_t assetClassIndex;
   ArmyAssetRecordPrefix *modelDefinition;
   ArmyRegistryEaxCf5_51b6d0 lookupResult;
-  FieldGridHeightEaxCf5 terrainHeight;
-  ArmyPlacementDispatchEaxCf5 dispatchResult;
+  HeightSampleResult terrainHeight;
+  PlacementDispatchResult dispatchResult;
   
   lookupResult = ArmyAssetRegistry_FindByIdCf(armyAssetId);
   if (!lookupResult.carry) {
-    lookupResult = THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
+    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyRegistryEaxCf5_51b6d0, ModelDefinitionRegistry_FindByIdWithErrorCf
                       (*(PckModelDefinitionIdCatalog *)((lookupResult.eax)->rootNodeOffsetOrPointer + 0x20)
                       ));
     modelDefinition = lookupResult.eax;
@@ -820,14 +820,14 @@ ArmyPlacement_DispatchAssetAtFieldPoint
       assetClassIndex = modelDefinition[4].rootNodeOffsetOrPointer;
       terrainHeight = (*g_FieldGridInterpolationCallbacks5.callbacks[modelDefinition[0x27].registryId])
                         (worldYQ12,worldXQ12,(FieldGridAsset *)inGameRoot->previousRoot);
-      lookupResult = THANDOR_BITCAST(ArmyPlacementDispatchEaxCf5, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
+      lookupResult = THANDOR_BITCAST(PlacementDispatchResult, ArmyRegistryEaxCf5_51b6d0, (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementAssetClassDispatch[assetClassIndex]
               )(placementMode,placementClearancePaddingQ12,ownerFactionIndex,terrainHeight.heightQ12,
                 worldYQ12,worldXQ12,(ModelDefinitionRecordPrefix *)modelDefinition,placementContext,
                 (WorldRuntimeContext *)inGameRoot));
     }
   }
-  dispatchResult.eax = (uint32_t)lookupResult.eax;
-  dispatchResult.carry = lookupResult.carry;
+  dispatchResult.value = (uint32_t)lookupResult.eax;
+  dispatchResult.failed = lookupResult.carry;
   return dispatchResult;
 }
 
@@ -1060,7 +1060,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
    [core/math/fixed].
 */
 
-ArmyPlacementCandidateEaxCf5
+PlacementCandidateResult
 ArmyPlacementCollision_TestCandidateAndClearanceCf
           (ArmyPlacementDispatchArg0 dispatchArg0,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t dispatchArg2,
@@ -1078,9 +1078,9 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
   uint32_t nearestDistanceQ12;
   WorldOwnerListNode100 *ownerNode;
   bool blocked;
-  TerrainPlacementTestEaxCf5 terrainTest;
-  ArmyPlacementCandidateEaxCf5 accepted;
-  ArmyPlacementCandidateEaxCf5 rejected;
+  TerrainPlacementResult terrainTest;
+  PlacementCandidateResult accepted;
+  PlacementCandidateResult rejected;
   int nearestClearanceQ12;
   UInt64Half32 nearestDistanceLow;
   UInt64Half32 nearestDistanceHigh;
@@ -1094,12 +1094,12 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
                     (dispatchArg0,modelDefinition->placementRadiusOrClearanceDC,worldXQ12,worldYQ12,
                      worldRuntime);
   if (!blocked) {
-    terrainTest.eax = 0;
-    terrainTest.carry = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex])
+    terrainTest.value = 0;
+    terrainTest.rejected = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests[contactKindIndex])
                       (modelDefinition->placementRadiusOrClearanceDC,dispatchArg3,worldXQ12,
                        worldYQ12,worldRuntime->fieldGrid);
-    eaxContinuity = terrainTest.eax;
-    if (!terrainTest.carry) {
+    eaxContinuity = terrainTest.value;
+    if (!terrainTest.rejected) {
       if ((g_UiCommandRuntimeFlags & 4) == 0) {
         ownerNode = worldRuntime->ownerListHead;
         blocked = FieldGrid_TestWorldPointBlockedCf
@@ -1158,14 +1158,14 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
         }
       }
 ArmyPlacementCollision_TestCandidateAndClearance_Accept:
-      accepted.carry = false;
-      accepted.eax = eaxContinuity;
+      accepted.rejected = false;
+      accepted.value = eaxContinuity;
       return accepted;
     }
   }
 ArmyPlacementCollision_TestCandidateAndClearance_Reject:
-  rejected.carry = true;
-  rejected.eax = eaxContinuity;
+  rejected.rejected = true;
+  rejected.value = eaxContinuity;
   return rejected;
 }
 
@@ -1183,12 +1183,12 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
 {
   ModelRuntimeNode *modelNodeRuntime;
   uint32_t anchorDistanceQ12;
-  ModelLookupEntryEaxCf5 anchorLookup;
+  ModelLookupEntryResult anchorLookup;
   ModelLocalPointRegs12 anchorWorldPoint;
   
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
   anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
-  if (!anchorLookup.carry) {
+  if (!anchorLookup.notFound) {
     anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
     anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.ecx - targetWorldXQ12,anchorWorldPoint.eax - targetWorldYQ12);
     if ((int)anchorDistanceQ12 <= queryRadiusQ12 + 0xc00) {

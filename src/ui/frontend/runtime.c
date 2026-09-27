@@ -20,7 +20,7 @@
    [ui/controls/layout], UiFrame_ProcessAndPresent [ui/controls/layout], UiFrame_FlushInputAndResetPendingTicks
    [ui/controls/layout].
 */
-FrontendMainLoopEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+FrontendMainLoopResult __thandor_eax_cf_preserve_ecx_edx
 Frontend_MainLoop(RomRecordId frontendEntryRecordId)
 
 {
@@ -47,28 +47,28 @@ Frontend_MainLoop(RomRecordId frontendEntryRecordId)
   FrontendPlayerRuntimeRecord *roleScanBlock;
   FrontendSnapshotTransferFlags *receivedFlagsCursor;
   uint32_t *transferDwordCursor;
-  FrontendInitEaxCf5 initResult;
-  FrontendMainLoopEaxCf5 exitResult;
-  FrontendMainLoopEaxCf5 failureResult;
-  InGameRuntimeRunEaxCf5 sessionRunResult;
-  PackageLoadEntryEaxCf5 packageLoadResult;
-  FatalErrorEaxCf5 checkedResult;
-  PckCodecEaxCf5 encodeResult;
-  ArenaAllocEaxCf5 allocResult;
-  UiTransferMailboxReceivedEaxEcxCf9 receivedBuffer;
-  CommandLineFindOptionEbxCf5 commandLineOption;
+  FrontendInitResult initResult;
+  FrontendMainLoopResult exitResult;
+  FrontendMainLoopResult failureResult;
+  SessionRunResult sessionRunResult;
+  PackageLoadResult packageLoadResult;
+  FatalErrorCheckResult checkedResult;
+  PckCodecResult encodeResult;
+  ArenaAllocResult allocResult;
+  MailboxReceiveResult receivedBuffer;
+  CommandLineOptionResult commandLineOption;
   FieldGridAsset *savedFieldGrid;
   
   g_FrontendNetworkState = 0;
   initResult = Frontend_Init(frontendEntryRecordId);
   statusOrByteCount = initResult.frontendRootOrError;
-  if (!initResult.carry) {
+  if (!initResult.failed) {
     commandLineOption = (*g_CommandLineFindOption)(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
-    if (commandLineOption.carry) {
+    if (commandLineOption.notFound) {
       commandLineOption = (*g_CommandLineFindOption)(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
-      if (commandLineOption.carry) {
+      if (commandLineOption.notFound) {
         commandLineOption = (*g_CommandLineFindOption)(7,s_NAME__CLIENT__KARTE___00545e91 + 0xe);
-        if (!commandLineOption.carry) {
+        if (!commandLineOption.notFound) {
           FrontendRomActionTable_ExecuteRecord(0,0,1,0);
           FrontendRomTransition_RequestStop();
         }
@@ -96,7 +96,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
             if (g_FrontendPendingPageAction != 0) break;
             if (g_UiRootNode == (UiRootNode *)0xffffffff) {
               FrontendRuntime_ShutdownAndReleaseResourcesRegs();
-              exitResult.carry = false;
+              exitResult.failed = false;
               /* The asm returns with CLC and EAX left over from UiFrame_ProcessAndPresent (the shutdown helper
                  preserves EAX); the only caller hands it to the fatal-error dispatcher, which ignores it with CF
                  clear. */
@@ -125,10 +125,10 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
               receivedBuffer = UiTransferMailbox_GetReceivedBufferCf();
-              if (!receivedBuffer.carry) {
+              if (!receivedBuffer.unavailable) {
                 PckCodec_DecodeHuffmanRle
-                          (*(PckDecodedByteCount *)receivedBuffer.eax,g_PackageScratchBuffer,receivedBuffer.ecx - 4,
-                           (uint8_t *)((PckDecodedByteCount *)receivedBuffer.eax + 1));
+                          (*(PckDecodedByteCount *)receivedBuffer.buffer,g_PackageScratchBuffer,receivedBuffer.byteCount - 4,
+                           (uint8_t *)((PckDecodedByteCount *)receivedBuffer.buffer + 1));
                 remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
                 receivedFlagsCursor = (FrontendSnapshotTransferFlags *)g_PackageScratchBuffer;
                 playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -179,8 +179,8 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
                   *(uint32_t *)(encodeCursorOrSize + -4) = g_ScenarioCatalogUsedBytes;
                   encodeResult = PckCodec_EncodeHuffmanRle
                                      (destinationCapacityBytes,encodeCursorOrSize,statusOrByteCount,(uint8_t *)source);
-                  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
-                  UiTransferMailbox_SetOutgoingBuffer(checkedResult.eax + 4,encodeCursorOrSize + -4);
+                  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+                  UiTransferMailbox_SetOutgoingBuffer(checkedResult.valueOrError + 4,encodeCursorOrSize + -4);
                 }
               }
               else {
@@ -248,7 +248,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
             sessionRunResult = InGameRuntime_RunSessionUntilExit
                                ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,0,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.carry);
+            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -301,7 +301,7 @@ FrontendMainLoop_AdvanceCampaignAfterSession:
             sessionRunResult = InGameRuntime_RunSessionUntilExit
                                ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,1,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.carry);
+            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -326,7 +326,7 @@ FrontendMainLoop_AdvanceCampaignAfterSession:
   }
 FrontendMainLoop_ShutdownAndReturn:
   FrontendRuntime_ShutdownAndReleaseResourcesRegs();
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.errorOrValue = statusOrByteCount;
   return failureResult;
 FrontendScenario_UseResolvedPathOrFallbackPage:
@@ -339,7 +339,7 @@ FrontendScenario_InitializeSelectedLevel:
   {
     initResult = Frontend_Init(10);
     statusOrByteCount = initResult.frontendRootOrError;
-    if (initResult.carry) goto FrontendMainLoop_ShutdownAndReturn;
+    if (initResult.failed) goto FrontendMainLoop_ShutdownAndReturn;
     g_FrontendScenarioInitializationCount = g_FrontendScenarioInitializationCount + 1;
     g_FrontendPendingPageAction = 8;
     roleStateFlagsPtr = &(g_FrontendPlayerRuntimeBlocks->factionAssignment).roleStateFlags;
@@ -354,8 +354,8 @@ FrontendScenario_InitializeSelectedLevel:
       Resource_Release(g_FrontendLoadedLevelAsset);
       g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
       packageLoadResult = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.carry);
-      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.eax;
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
+      g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
       encodeCursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
                 assetRelativeAddressAnchor28 +
                 ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
@@ -378,25 +378,25 @@ FrontendScenario_InitializeSelectedLevel:
         encodeResult = PckCodec_EncodeHuffmanRle
                            (0x7fffe8,encodeCursorOrSize,(loadedLevelAsset->header).common.allocationSizeBytes,
                             (uint8_t *)loadedLevelAsset);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
-        statusOrByteCount = checkedResult.eax;
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+        statusOrByteCount = checkedResult.valueOrError;
         *(uint32_t *)(transferSourceBytes + 8) = statusOrByteCount;
         encodeResult = PckCodec_EncodeFieldGrid
                            (0x7fffe8 - statusOrByteCount,encodeCursorOrSize + statusOrByteCount,
                             (sourceGrid->common).allocationSizeBytes,sourceGrid);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.eax,encodeResult.carry);
-        *(uint32_t *)(transferSourceBytes + 0xc) = checkedResult.eax;
-        encodeCursorOrSize = encodeCursorOrSize + statusOrByteCount + (checkedResult.eax - (int)transferSourceBytes);
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+        *(uint32_t *)(transferSourceBytes + 0xc) = checkedResult.valueOrError;
+        encodeCursorOrSize = encodeCursorOrSize + statusOrByteCount + (checkedResult.valueOrError - (int)transferSourceBytes);
         allocResult = (*g_MemoryApi.alloc)((uint32_t)encodeCursorOrSize);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-        transferDwordCursor = (uint32_t *)checkedResult.eax;
+        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+        transferDwordCursor = (uint32_t *)checkedResult.valueOrError;
         for (remainingDwords = (uint32_t)encodeCursorOrSize >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
           *transferDwordCursor = *(uint32_t *)transferSourceBytes;
           transferSourceBytes = transferSourceBytes + 4;
           transferDwordCursor = transferDwordCursor + 1;
         }
         sourceGrid = savedFieldGrid;
-        UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)encodeCursorOrSize,(uint32_t *)checkedResult.eax)
+        UiTransferMailbox_SetOutgoingBuffer((UiTransferPayloadByteCount)encodeCursorOrSize,(uint32_t *)checkedResult.valueOrError)
         ;
       }
       (loadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid;
@@ -412,7 +412,7 @@ FrontendMainLoop_InitializeRequestedPage:
   initResult = Frontend_Init(initialRomRecordId);
   statusOrByteCount = initResult.frontendRootOrError;
   g_FrontendPendingPageAction = countOrSelectedId;
-  if (!initResult.carry) goto FrontendMainLoop_ProcessFrameAndPendingPageAction;
+  if (!initResult.failed) goto FrontendMainLoop_ProcessFrameAndPendingPageAction;
   goto FrontendMainLoop_ShutdownAndReturn;
 }
 
@@ -805,7 +805,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
   UiPixelCoordinate overlayClipBottom;
   UiPixelCoordinate overlayClipRight;
   bool entryFound;
-  GraphicsPrimitiveQueueEaxCf5 queueResult;
+  PrimitiveQueueResult queueResult;
 
   if ((control->contextFlags & 0x2000) != 0) {
     return;
@@ -864,7 +864,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
   queueResult = GraphicsPrimitiveQueue_ResetGlobal();
   overlayClipRight = clipTop;
   overlayClipBottom = clipBottom;
-  if (!queueResult.carry) {
+  if (!queueResult.failed) {
     Graphics_SetActivePrimitiveQueue(queueResult.queue);
     control->activePrimitiveQueue = queueResult.queue;
     if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
@@ -897,7 +897,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     overlayClipBottom = 0; /* EDI: the model loop ran to its NULL terminator */
     if (((control->contextFlags & 0x4000) != 0) && (control->fieldGrid != (FieldGridAsset *)0x0)) {
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-      if (queueResult.carry) goto EndSceneAndDrawOverlays;
+      if (queueResult.failed) goto EndSceneAndDrawOverlays;
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
       TerrainProjectedGrid_TransformShadeAndQueue(control->fieldGrid,control);
@@ -914,7 +914,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
       modelNode = control->candidateModelListHead;
       overlayClipBottom = (UiPixelCoordinate)(uintptr_t)modelNode; /* EDI */
       queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-      if (queueResult.carry) goto EndSceneAndDrawOverlays;
+      if (queueResult.failed) goto EndSceneAndDrawOverlays;
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
       if (modelNode != (ModelRuntimeNode *)0x0) {
@@ -940,7 +940,7 @@ FrontendModelPointerContext_RenderWorldViewQueuesClipped
     (*g_SpinLockReleaseAndInvoke)(control->renderSpinLockReleaseCallback,control->renderSpinLock);
     (*g_SpinLockAcquire)(control->renderSpinLock);
     queueResult = GraphicsPrimitiveQueue_ResetGlobal();
-    if (!queueResult.carry) {
+    if (!queueResult.failed) {
       Graphics_SetActivePrimitiveQueue(queueResult.queue);
       control->activePrimitiveQueue = queueResult.queue;
       if (control->renderPhaseCallback15C != (InGameWorldOverlayPhaseCallbackProc *)0x0) {
@@ -1483,7 +1483,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
     break;
   case 0x548190: {
     FrontendPlayerRuntimeRecord *player;
-    TextResourceResolveEaxCf5 text;
+    TextResolveResult text;
     if ((g_SessionNetworkRoleFlags & 3) == 0) {
       if ((g_FrontendLoadedCampaignAsset == 0) && (g_FrontendScenarioInitializationCount == 0)) {
         UiActionQueue_Enqueue(0,root);
@@ -1521,8 +1521,8 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
       FrontendRomTransition_ActivateRecordByIdCf
                 (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       text = TextResource_Resolve(wasHost ? 0xff02 : 0xff04);
-      RichTextCommandStream_PatchPayloadBySelector(0,(uint8_t *)player + 0x18,text.eax);
-      FrontendRecentTextHistory_InsertAndRebuild5(text.eax);
+      RichTextCommandStream_PatchPayloadBySelector(0,(uint8_t *)player + 0x18,text.text);
+      FrontendRecentTextHistory_InsertAndRebuild5(text.text);
       if (!wasHost) {
         g_FrontendPlayerRuntimeBlockCount = 1;
         g_LocalPlayerRuntimeId = 0;
@@ -1598,9 +1598,9 @@ FrontendRuntime_UpdatePointerContextAndSceneViewCf
   int keyframeChannel5;
   int channel4OrHalfHeight;
   RichTextExtentRegs textExtent;
-  StatusValueEaxCf5 pageStackStatus;
-  TextResourceResolveEaxCf5 hintTextResult;
-  GraphicsTextureSizeEaxEdxCf9 windowTextureSize;
+  StatusResult pageStackStatus;
+  TextResolveResult hintTextResult;
+  TextureSizeResult windowTextureSize;
   
   resultCode = 0;
   channel3OrHintValue = 0;
@@ -1666,7 +1666,7 @@ FrontendRuntime_UpdatePointerContextAndSceneViewCf
   }
   previousCommandStream = (frontendRuntime->hintControl4390).commandStream54;
   hintTextResult = TextResource_Resolve(channel3OrHintValue + 0x2000);
-  commandStream = hintTextResult.eax;
+  commandStream = hintTextResult.text;
   if (commandStream != previousCommandStream) {
     (frontendRuntime->hintControl4390).commandStream54 = commandStream;
     textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,commandStream);
@@ -1999,7 +1999,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   uint32_t displacedValueB;
   GraphicsDisplayModeCount remainingModes;
   GraphicsDisplayMode *displayMode;
-  TextResourceResolveEaxCf5 fallbackNameResult;
+  TextResolveResult fallbackNameResult;
   
   UiPageStack_SetActiveIndex
             (6,(UiPageStackControl *)(source[-3].resolutionRows.rows[9].reserved0008_0067 + 0x48));
@@ -2081,7 +2081,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
   ;
   if ((adapters->deviceGuid).Data1 == 0) {
     fallbackNameResult = TextResource_Resolve(0x212d);
-    deviceNameText = fallbackNameResult.eax;
+    deviceNameText = fallbackNameResult.text;
   }
   else {
     deviceNameText = adapters->deviceNameUtf16;
@@ -2093,7 +2093,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
          g_GraphicsAdapters[1].driverDescriptionUtf16;
     if (adapters[1].deviceGuid.Data1 == 0) {
       fallbackNameResult = TextResource_Resolve(0x212d);
-      deviceNameText = fallbackNameResult.eax;
+      deviceNameText = fallbackNameResult.text;
     }
     else {
       deviceNameText = adapters[1].deviceNameUtf16;
@@ -2106,7 +2106,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
          g_GraphicsAdapters[2].driverDescriptionUtf16;
     if (adapters[2].deviceGuid.Data1 == 0) {
       fallbackNameResult = TextResource_Resolve(0x212d);
-      deviceNameText = fallbackNameResult.eax;
+      deviceNameText = fallbackNameResult.text;
     }
     else {
       deviceNameText = adapters[2].deviceNameUtf16;
@@ -2119,7 +2119,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
          g_GraphicsAdapters[3].driverDescriptionUtf16;
     if (adapters[3].deviceGuid.Data1 == 0) {
       fallbackNameResult = TextResource_Resolve(0x212d);
-      deviceNameText = fallbackNameResult.eax;
+      deviceNameText = fallbackNameResult.text;
     }
     else {
       deviceNameText = adapters[3].deviceNameUtf16;
@@ -2132,7 +2132,7 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
          g_GraphicsAdapters[4].driverDescriptionUtf16;
     if (adapters[4].deviceGuid.Data1 == 0) {
       fallbackNameResult = TextResource_Resolve(0x212d);
-      deviceNameText = fallbackNameResult.eax;
+      deviceNameText = fallbackNameResult.text;
     }
     else {
       deviceNameText = adapters[4].deviceNameUtf16;
@@ -2457,9 +2457,9 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   int remainingDwords;
   uint32_t *endpointSourceDwordCursor;
   uint32_t *endpointDestinationDwordCursor;
-  NetworkBackendSetSessionEaxCf5 setSessionResult;
-  FatalErrorEaxCf5 fatalCheckResult;
-  NetworkBackendOpenBindEaxCf5 openBindResult;
+  NetworkSetSessionResult setSessionResult;
+  FatalErrorCheckResult fatalCheckResult;
+  NetworkOpenBindResult openBindResult;
   NetworkSessionContext *staleSessionContext;
   UiListRowIndex staleBackendIndex;
   
@@ -2472,11 +2472,11 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   (*g_NetworkBackendSlot1)();
   staleBackendIndex = selectedBackendIndex;
   setSessionResult = (*g_NetworkBackendSlot0)(selectedBackendIndex);
-  fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(setSessionResult.eax,setSessionResult.carry);
-  if (!fatalCheckResult.carry) {
+  fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(setSessionResult.valueOrError,setSessionResult.failed);
+  if (!fatalCheckResult.failed) {
     openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
-    fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(openBindResult.eax,openBindResult.carry);
-    if (!fatalCheckResult.carry) {
+    fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(openBindResult.valueOrError,openBindResult.failed);
+    if (!fatalCheckResult.failed) {
       endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
       for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -2496,9 +2496,9 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
     (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale staleBackendIndex */
   }
   setSessionResult = (*g_NetworkBackendSlot0)(selectedBackendIndex);
-  if (!setSessionResult.carry) {
+  if (!setSessionResult.failed) {
     openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
-    if (!openBindResult.carry) {
+    if (!openBindResult.failed) {
       return;
     }
     (*g_NetworkBackendSlot1)(); /* cleanup takes no arguments; Ghidra passed stale staleSessionContext */
@@ -2543,10 +2543,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
   FrontendPlayerRuntimeRecord *playerBlock;
   uint8_t *copyDestination;
   bool framebufferAccessFailed;
-  MovieOpenEaxCf5 movieOpenResult;
-  MovieAdvanceFrameEaxCf5 frameAdvanceResult;
-  TextResourceResolveEaxCf5 resultsTextResult;
-  TextResourceResolveEaxCf5 levelTitleResult;
+  MovieOpenResult movieOpenResult;
+  MovieFrameResult frameAdvanceResult;
+  TextResolveResult resultsTextResult;
+  TextResolveResult levelTitleResult;
   
   runtimeRoot = g_InGameRuntimeRoot;
   (*g_GraphicsCursorSetFrame)(0);
@@ -2595,23 +2595,23 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
     }
     movieOpenResult = Movie_Open(1,g_EndMoviePath);
     runtimeRoot = g_InGameRuntimeRoot;
-    if (!movieOpenResult.carry) {
+    if (!movieOpenResult.failed) {
       g_EndMoviePendingTicks = 0;
-      playbackRateHz = movieOpenResult.playbackRateHzEcx; /* ECX left by Movie_Open */
+      playbackRateHz = movieOpenResult.playbackRateHz; /* ECX left by Movie_Open */
       (*g_TimerRegisterPeriodic)(playbackRateHz,FrontendSession_PeriodicTick);
       /* EDX = g_InGameRuntimeRoot + 0x17C in the original; the decompiler lost it. */
       stack = (UiPageStackControl *)INGAME_UI(runtimeRoot,primaryPageStack);
       UiPageStack_SetActiveIndex(1,stack);
       frameAdvanceResult = Movie_AdvanceFrame();
-      if (!frameAdvanceResult.carry) {
-        runtimeRoot->activeEndMovieRuntime022C = (MovieRuntime *)frameAdvanceResult.eax;
+      if (!frameAdvanceResult.ended) {
+        runtimeRoot->activeEndMovieRuntime022C = (MovieRuntime *)frameAdvanceResult.movieOrError;
         runtimeRoot->endMoviePlaybackState0230 = 0;
         g_EndMoviePendingTicks = 0;
         do {
           if (g_EndMoviePendingTicks != 0) {
             g_EndMoviePendingTicks = g_EndMoviePendingTicks - 1;
             frameAdvanceResult = Movie_AdvanceFrame();
-            if (frameAdvanceResult.carry) {
+            if (frameAdvanceResult.ended) {
               g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xfffff7ff;
             }
           }
@@ -2645,10 +2645,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
                    (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
         resultsTextResult = TextResource_Resolve(0x21c0);
         resourceId = g_InGameLevelTitleTextResourceIndex + 0x2230;
-        RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsTextResult.eax)
+        RichTextCommandStream_PatchPayloadBySelector(1,&g_EndGameElapsedTimeScratchUtf16,resultsTextResult.text)
         ;
         levelTitleResult = TextResource_Resolve(resourceId);
-        RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult.eax,resultsTextResult.eax);
+        RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult.text,resultsTextResult.text);
         UiNodeList_UnsuppressActionId(0x101b,(UiNodeBase *)runtimeRoot);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -2718,7 +2718,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
    [assets/text/richtext], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
 
-FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId)
+FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId initialRomRecordId)
 
 {
   SessionNetworkRoleFlags pendingBlockCountOrRoleMask;
@@ -2742,17 +2742,17 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   uint32_t *playerNameDestDwords;
   uint32_t *settingsCopyDestDwordsB;
   bool callFailed;
-  GraphicsTextureSetEaxCf5 textureSetResult;
-  GraphicsPaletteAssetEaxCf5 paletteResult;
-  TextResourceResolveEaxCf5 endpointTextResult;
-  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
-  PackageLoadEntryEaxCf5 romLoadResult;
-  StatusValueEaxCf5 statusResult;
-  ArenaAllocEaxCf5 allocResult;
-  SoundPlayVoiceEaxCf5 playResult;
-  FrontendInitEaxCf5 successResult;
-  FrontendInitEaxCf5 failureResult;
-  ResourceLoadEaxEcxCf9 sampleLoadResult;
+  TextureSetResult textureSetResult;
+  PaletteAssetResult paletteResult;
+  TextResolveResult endpointTextResult;
+  SampleVoiceSetResult voiceSetResult;
+  PackageLoadResult romLoadResult;
+  StatusResult statusResult;
+  ArenaAllocResult allocResult;
+  SoundPlayResult playResult;
+  FrontendInitResult successResult;
+  FrontendInitResult failureResult;
+  ResourceLoadResult sampleLoadResult;
   WorldRuntimeContext *worldRuntime;
   FrontendModelPointerContextRuntimeState17C *pointerContext;
   typedef uint32_t FrontendModelPointerResolvedActionProc
@@ -2789,14 +2789,14 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
   textureSetResult = (*g_GraphicsTextureSetLoadPackageCf)((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc);
   fillCursorOrResult = (FrontendRootResourceSlots5954 *)textureSetResult.textureSet;
-  if (!textureSetResult.carry) {
+  if (!textureSetResult.failed) {
     g_FrontendCentralTextureSet = (FrontendRootResourceSlots5954 *)textureSetResult.textureSet;
     paletteResult = (*g_GraphicsPaletteAssetLoadPackage)((uint16_t *)u_gfx_texturen_zentrale_pal_00545b00);
     fillCursorOrResult = (FrontendRootResourceSlots5954 *)paletteResult.paletteAsset;
-    if (!paletteResult.carry) {
+    if (!paletteResult.failed) {
       g_FrontendCentralPaletteAsset = (FrontendRootResourceSlots5954 *)paletteResult.paletteAsset;
       endpointTextResult = TextResource_Resolve(0x2104);
-      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult.eax)
+      RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkEndpointTextUtf16,endpointTextResult.text)
       ;
       u_sound_menue01_sam_00545b54[0xb] = L'0';
       u_sound_menue01_sam_00545b54[0xc] = L'1';
@@ -2804,11 +2804,11 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
       do {
         do {
           sampleLoadResult = Resource_Load((uint16_t *)u_sound_menue01_sam_00545b54);
-          loadedSample = (SoundSampleAsset *)sampleLoadResult.eax;
-          if (sampleLoadResult.carry) goto Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization;
+          loadedSample = (SoundSampleAsset *)sampleLoadResult.bufferOrError;
+          if (sampleLoadResult.failed) goto Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization;
           voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedSample);
-          fillCursorOrResult = (FrontendRootResourceSlots5954 *)voiceSetResult.eax;
-          if (voiceSetResult.carry) {
+          fillCursorOrResult = (FrontendRootResourceSlots5954 *)voiceSetResult.voiceSet;
+          if (voiceSetResult.failed) {
             LOCK();
             UNLOCK();
             Resource_Release(loadedSample);
@@ -2825,14 +2825,14 @@ FrontendInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
 Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
       romLoadResult = Package_LoadEntry((uint16_t *)u_engine_zentrale_rom_00545aa4);
       fillCursorOrResult = romLoadResult.bufferOrError;
-      if (!romLoadResult.carry) {
+      if (!romLoadResult.failed) {
         g_FrontendCentralRomAsset = fillCursorOrResult;
         statusResult = RomAsset_PrepareRecords((RomAssetHeader *)fillCursorOrResult);
         fillCursorOrResult = (FrontendRootResourceSlots5954 *)statusResult.valueOrError;
-        if (!statusResult.carry) {
+        if (!statusResult.failed) {
           allocResult = (*g_MemoryApi.alloc)(0x10000);
-          fillCursorOrResult = (FrontendRootResourceSlots5954 *)allocResult.eax;
-          if (!allocResult.carry) {
+          fillCursorOrResult = (FrontendRootResourceSlots5954 *)allocResult.payloadOrError;
+          if (!allocResult.failed) {
             g_FrontendWorldObjectRecords = (WorldObjectRecord *)fillCursorOrResult;
             for (remainingDwords = 0x4000; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
               fillCursorOrResult->opaqueGap0000_05DF[0] = 0;
@@ -2842,9 +2842,9 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
               fillCursorOrResult = (FrontendRootResourceSlots5954 *)(fillCursorOrResult->opaqueGap0000_05DF + 4);
             }
             allocResult = (*g_MemoryApi.alloc)(0x5954);
-            frontendUiState = (FrontendRootResourceSlots5954 *)allocResult.eax;
+            frontendUiState = (FrontendRootResourceSlots5954 *)allocResult.payloadOrError;
             fillCursorOrResult = frontendUiState;
-            if (!allocResult.carry) {
+            if (!allocResult.failed) {
               worldRuntime = (WorldRuntimeContext *)(frontendUiState->opaqueGap0000_05DF + 0x368);
               frontendInitTemplateDwords = (uint32_t *)&g_FrontendRootInitializationTemplate;
               g_FrontendRootNode = frontendUiState;
@@ -2859,12 +2859,12 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
               musicBuffer = g_FrontendMusicActiveBuffer;
               if ((settingValue & 2) != 0) {
                 sampleLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
-                loadedSample = (SoundSampleAsset *)sampleLoadResult.eax;
+                loadedSample = (SoundSampleAsset *)sampleLoadResult.bufferOrError;
                 musicBuffer = g_FrontendMusicActiveBuffer;
-                if (!sampleLoadResult.carry) {
+                if (!sampleLoadResult.failed) {
                   voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedSample);
-                  musicVoiceSet = voiceSetResult.eax;
-                  if (voiceSetResult.carry) {
+                  musicVoiceSet = voiceSetResult.voiceSet;
+                  if (voiceSetResult.failed) {
                     Resource_Release(loadedSample);
                     musicBuffer = g_FrontendMusicActiveBuffer;
                   }
@@ -2873,8 +2873,8 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                     Resource_Release(loadedSample);
                     settingValue = PersistentSettings_ReadDword(0x8000,0x2c);
                     playResult = (*g_SoundPlayLooping)(settingValue,settingValue,musicVoiceSet);
-                    musicBuffer = playResult.eax;
-                    if (playResult.carry) {
+                    musicBuffer = playResult.soundBuffer;
+                    if (playResult.failed) {
                       (*g_SoundReleaseSampleVoiceSet)(musicVoiceSet);
                       g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
                       musicBuffer = g_FrontendMusicActiveBuffer;
@@ -2934,7 +2934,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                 statusResult = FrontendRomTransition_ActivateRecordByIdCf(initialRomRecordId,worldRuntime)
                 ;
                 fillCursorOrResult = (FrontendRootResourceSlots5954 *)statusResult.valueOrError;
-                if (!statusResult.carry) {
+                if (!statusResult.failed) {
                   nameSlotOrSourceDwords = PersistentSettings_GetRegionOrFallback
                                      (0x28,g_FrontendLocalPlayerNameUtf16,0x60);
                   settingsCopySourceDwordsA = nameSlotOrSourceDwords;
@@ -2983,7 +2983,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                   } while ((g_FrontendRuntimeFlags & 0x10) != 0);
                   (*g_GraphicsCursorSetFrame)(0);
                   UiFrame_FlushInputAndResetPendingTicks();
-                  successResult.carry = false;
+                  successResult.failed = false;
                   successResult.frontendRootOrError = (uint32_t)frontendUiState;
                   return successResult;
                 }
@@ -2995,7 +2995,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
     }
   }
 Frontend_Init_ReturnInitializationFailure:
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.frontendRootOrError = (uint32_t)fillCursorOrResult;
   return failureResult;
 }
@@ -3017,7 +3017,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
   uint32_t unusedDispatchArg;
   uint32_t previousTickCounter;
   bool callResult;
-  UiRuntimeRecordRingDiscardEaxEdxCf9 discardedRecord;
+  RecordRingDiscardResult discardedRecord;
   
   callResult = (*g_SpinLockTryAcquire)(&g_FrontendStateTickSpinLock);
   previousTickCounter = g_FrontendNetworkTickCounter;
@@ -3041,10 +3041,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
       }
       while( true ) {
         discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-        if (discardedRecord.carryEmpty) break;
+        if (discardedRecord.empty) break;
         FrontendTransfer_HandleSessionListAndJoinAckPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.edxEndpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex,unusedDispatchArg);
+                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3056,10 +3056,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
       while( true ) {
         discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-        if (discardedRecord.carryEmpty) break;
+        if (discardedRecord.empty) break;
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.edxEndpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex,unusedDispatchArg);
+                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3073,10 +3073,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
       }
       while( true ) {
         discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-        if (discardedRecord.carryEmpty) break;
+        if (discardedRecord.empty) break;
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
-                  ((UiTransferEndpointDescriptor *)discardedRecord.edxEndpointOrReadIndex,
-                   (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex,unusedDispatchArg);
+                  ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
+                   (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
       }
       FrontendDebugOverlay_RefreshCountersAndWorldCoordinates();
     }
@@ -3087,10 +3087,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
     g_FrontendTimerCountdownTicks = 4;
     while( true ) {
       discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-      if (discardedRecord.carryEmpty) break;
+      if (discardedRecord.empty) break;
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
-                ((UiTransferEndpointDescriptor *)discardedRecord.edxEndpointOrReadIndex,
-                 (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex,unusedDispatchArg);
+                ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
+                 (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,unusedDispatchArg);
     }
     callResult = FrontendNetwork_HostTickCommandAndSnapshotTransfer(unusedDispatchArg);
     if (callResult) {
@@ -3104,10 +3104,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
     g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
     do {
       discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
-      if (discardedRecord.carryEmpty) break;
+      if (discardedRecord.empty) break;
       callResult = FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
-                        ((UiTransferEndpointDescriptor *)discardedRecord.edxEndpointOrReadIndex,
-                         (FrontendTransferPacketUnion *)discardedRecord.eaxPayloadOrReadIndex,
+                        ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
+                         (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,
                          unusedDispatchArg);
     } while (!callResult);
     callResult = FrontendTransfer_ConsumeProcessedFlagFrontendCf();
@@ -3136,11 +3136,11 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
   DirectSoundVoiceSet *buttonVoiceSet5;
   GraphicsTextureSourceAsset *menuTexture;
   int controlIndex;
-  GraphicsTextureSourceLoadEaxCf5 textureLoadResult;
+  TextureSourceLoadResult textureLoadResult;
   
   textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_menue_gfx_00545b78);
-  menuTexture = textureLoadResult.eax;
-  if (!textureLoadResult.carry) {
+  menuTexture = textureLoadResult.textureSource;
+  if (!textureLoadResult.failed) {
     g_FrontendMenuTextureSource = menuTexture;
     frontendUiState->menuTextureSource_485C = menuTexture;
     frontendUiState->menuTextureSource_4F30 = menuTexture;
@@ -3572,7 +3572,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
   ModelRuntimeNode *modelNode;
   uint32_t bestHitMetric;
   ModelRuntimeNode *bestModelNode;
-  StatusValueEaxCf5 hitTestResult;
+  StatusResult hitTestResult;
   int candidatePriority;
   int bestPriority;
 
@@ -3586,7 +3586,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
               ((modelNode->runtimeFlags & 0x20) != 0)))) {
       hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
                         (pointerY,pointerX,modelNode,context);
-      if (hitTestResult.carry) continue;
+      if (hitTestResult.failed) continue;
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {
         if ((int)bestHitMetric <= (int)hitTestResult.valueOrError) continue;
       }

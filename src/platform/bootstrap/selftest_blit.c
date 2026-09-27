@@ -226,9 +226,9 @@ static void BlitSetPixelConstants(int layout555)
 static uint32_t s_BlitMaskWidth;
 static uint32_t s_BlitMaskHeight;
 
-static GraphicsTextureSizeEaxEdxCf9 BlitMaskSizeForC(uint32_t reserved, GraphicsTextureSourceAsset *asset)
+static TextureSizeResult BlitMaskSizeForC(uint32_t reserved, GraphicsTextureSourceAsset *asset)
 {
-    GraphicsTextureSizeEaxEdxCf9 size;
+    TextureSizeResult size;
     (void)reserved;
     (void)asset;
     size.logicalWidthPixels = s_BlitMaskWidth;

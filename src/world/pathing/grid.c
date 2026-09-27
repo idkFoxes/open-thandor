@@ -21,7 +21,7 @@
    GridPathCost_BacktrackBestHexRoute.
 */
 
-EntityPathingDestinationEaxEdxEbxEcxCf17
+PathingDestinationResult
 EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime)
@@ -47,10 +47,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   GridScratchCell *routeScratchCell;
   bool segmentClear;
   WorldPositionXYEaxEdx8 primaryWorldPosition;
-  GridPathNearestCellEaxEbxCf9 nearestCell;
+  NearestCellResult nearestCell;
   GridPathMarkedRegionCellRegisterResult reachableRegionCell;
-  EntityPathingDestinationEaxEdxEbxEcxCf17 resolvedDestination;
-  GridPathBacktrackEaxEbxEcxCf13 backtrackResult;
+  PathingDestinationResult resolvedDestination;
+  PathBacktrackResult backtrackResult;
   ModelDefinitionRuntimeSemanticView280 *modelDefinition;
   ArmyRuntimeSlot *armyRuntime;
   GameEntityRuntime *overlappedEntity;
@@ -122,7 +122,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
        0x100 << (gridClassShift & 0x1f) | 0x1000000 << ((uint8_t)modelDefinition->gridClassification264 & 0x1f);
   nearestCell = GridPathCost_FindNearestUnblockedCell(gridY,startColumnOrScratch);
   columnLimitOrWidth = g_GridScratchWidth;
-  if (nearestCell.carry) {
+  if (nearestCell.relocated) {
     if ((nearestCell.selectedColumn == startColumnOrScratch) && (nearestCell.selectedRow == gridY)) {
       entityTranslation = &(((routeEntityRuntime->common).ownership.modelNode)->worldTransform).translation;
       fallbackWorldPosition.worldXQ12 = entityTranslation->x;
@@ -180,7 +180,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       backtrackResult = GridPathCost_BacktrackBestHexRoute
                          (callerBlockingMask,gridY,startColumnOrScratch,
                           (GridScratchCell *)((int)&routeScratchCell->stateMask + cellCoordOrStrideBytes));
-      if (!backtrackResult.carry) {
+      if (!backtrackResult.reachedTarget) {
         if (backtrackResult.routeStateMask == 0) {
           startColumnOrScratch = backtrackResult.selectedRow * 0x400 + -0x600;
           wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
@@ -223,7 +223,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn:
   resolvedDestination.primaryWorldXQ12 = primaryWorldPosition.worldXQ12;
   resolvedDestination.primaryWorldYQ12 = primaryWorldPosition.worldYQ12;
   resolvedDestination.fallbackWorldYQ12 = targetWorldYQ12;
-  resolvedDestination.carry = false;
+  resolvedDestination.failed = false;
   return resolvedDestination;
 }
 
@@ -666,7 +666,7 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
    record: scratchWidth*scratchHeight*8. Primary and secondary buffers therefore hold GridScratchCell_V419 records.
    The fixed 0x180000-byte auxiliary allocation is the pointer queue now named g_GridPathCostQueueBegin..End.
 */
-GridScratchAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
 GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
 
 {
@@ -677,9 +677,9 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
   void *newAuxiliaryBuffer;
   uint32_t bytes;
   bool allocationSizeOverflow;
-  ArenaAllocEaxCf5 allocResult;
-  ArenaFreeEaxCf5 freeResult;
-  GridScratchAllocEaxCf5 failureResult;
+  ArenaAllocResult allocResult;
+  ArenaFreeResult freeResult;
+  GridScratchAllocResult failureResult;
   int64_t scratchAllocationByteCountProduct;
   GridScratchCell *previousScratchBuffer;
   
@@ -688,35 +688,35 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
   bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight;
   allocResult = (*g_MemoryApi.alloc)(bytes);
   previousScratchBuffer = g_GridScratchPrimary;
-  newScratchBuffer = (uint32_t *)allocResult.eax;
-  if (!allocResult.carry) {
+  newScratchBuffer = (uint32_t *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     LOCK();
     UNLOCK();
     g_GridScratchPrimary = (GridScratchCell *)newScratchBuffer;
     (*g_MemoryApi.free)(previousScratchBuffer);
     allocResult = (*g_MemoryApi.alloc)(bytes);
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
-    newSecondaryScratchBuffer = (uint32_t *)allocResult.eax;
+    newSecondaryScratchBuffer = (uint32_t *)allocResult.payloadOrError;
     newScratchBuffer = newSecondaryScratchBuffer;
-    if (!allocResult.carry) {
+    if (!allocResult.failed) {
       LOCK();
       UNLOCK();
       g_GridScratchSecondary = (GridScratchCell *)newSecondaryScratchBuffer;
       (*g_MemoryApi.free)(previousSecondaryScratchBuffer);
       allocResult = (*g_MemoryApi.alloc)(0x180000);
       previousCostQueueBuffer = g_GridPathCostQueueBegin;
-      newAuxiliaryBuffer = (void *)allocResult.eax;
+      newAuxiliaryBuffer = (void *)allocResult.payloadOrError;
       newScratchBuffer = newAuxiliaryBuffer;
-      if (!allocResult.carry) {
+      if (!allocResult.failed) {
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + 0x180000);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
         freeResult = (*g_MemoryApi.free)(previousCostQueueBuffer);
-        return THANDOR_BITCAST(uint64_t, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, GridScratchAllocResult, ((THANDOR_BITCAST(ArenaFreeResult, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
-  failureResult.carry = true;
-  failureResult.eax = (uint32_t)newScratchBuffer;
+  failureResult.failed = true;
+  failureResult.valueOrError = (uint32_t)newScratchBuffer;
   return failureResult;
 }
 
@@ -1200,7 +1200,7 @@ EntityPathing_UpdateRouteSegment
   UQ12 entityWorldYOrMidpoint;
   bool segmentClear;
   WorldPositionXYEaxEdx8 resolvedTarget;
-  GridPathNearestCellEaxEbxCf9 nearestCell;
+  NearestCellResult nearestCell;
   GraphicsWorldCoordinateQ12 entityWorldX;
   UQ12 segmentWorldYQ12;
   ModelRuntimeNode *entityModelNode;
@@ -1264,7 +1264,7 @@ EntityPathing_UpdateRouteSegment
   nearestCell = GridPathCost_FindNearestUnblockedCell(startRowOrDeltaY,startColumnOrDeltaX);
   targetColumn = nearestCell.selectedColumn;
   targetRow = nearestCell.selectedRow;
-  if ((nearestCell.carry) ||
+  if ((nearestCell.relocated) ||
      (segmentClear = GridPathLine_TestHexSegmentClearCf
                          (0,startRowOrDeltaY,startColumnOrDeltaX,g_GridScratchPrimary + startRowOrDeltaY * g_GridScratchWidth + startColumnOrDeltaX,
                           g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
@@ -1402,7 +1402,7 @@ GridScratch_TestWorldPointReachabilityCf
    globals, locals, and executable data remain unchanged. Typed parameters: p2 param_3→FieldGridRegionMask.
    Local calls: GridPathLine_TestHexSegmentClearCf.
 */
-GridPathBacktrackEaxEbxEcxCf13 __thandor_eax_cf_preserve_edx
+PathBacktrackResult __thandor_eax_cf_preserve_edx
 GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate targetRow,
           FieldGridCellCoordinate targetColumn,GridScratchCell *startCell)
@@ -1415,8 +1415,8 @@ GridPathCost_BacktrackBestHexRoute
   GridScratchCell *rowAboveCell;
   GridScratchCell *bestNeighborCell;
   bool segmentClear;
-  GridPathBacktrackEaxEbxEcxCf13 selectedCell;
-  GridPathBacktrackEaxEbxEcxCf13 terminalResult;
+  PathBacktrackResult selectedCell;
+  PathBacktrackResult terminalResult;
   
   scratchWidth = g_GridScratchWidth;
   terminalResult.selectedRow = g_GridScratchWidth * 8;
@@ -1469,11 +1469,11 @@ GridPathCost_BacktrackBestHexRoute
     selectedCell.selectedRow = selectedCellIndex / g_GridScratchWidth;
     selectedCell.selectedColumn = selectedCellIndex % g_GridScratchWidth;
     selectedCell.routeStateMask = callerBlockingMask;
-    selectedCell.carry = false;
+    selectedCell.reachedTarget = false;
     return selectedCell;
   }
   terminalResult.selectedColumn = (FieldGridCellCoordinate)currentCell;
-  terminalResult.carry = true;
+  terminalResult.reachedTarget = true;
   terminalResult.routeStateMask = callerBlockingMask;
   return terminalResult;
 }
@@ -2208,7 +2208,7 @@ GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchC
    p3 gridX→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-GridPathNearestCellEaxEbxCf9 __thandor_eax_cf_preserve_ecx_edx
+NearestCellResult __thandor_eax_cf_preserve_ecx_edx
 GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX)
 
 {
@@ -2224,9 +2224,9 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
   int searchRow;
   int rowDelta;
   GridScratchCell *scanCell;
-  GridPathNearestCellEaxEbxCf9 openCellResult;
-  GridPathNearestCellEaxEbxCf9 nearestResult;
-  GridPathNearestCellEaxEbxCf9 fallbackResult;
+  NearestCellResult openCellResult;
+  NearestCellResult nearestResult;
+  NearestCellResult fallbackResult;
   GridScratchCell *rowStartCell;
   int rowsRemaining;
   int bestRow;
@@ -2245,7 +2245,7 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
     /* open cell: the original leaves EBX unchanged; both callers (EntityPathing_ResolveDestinationAndRebuildRoutes,
        EntityPathing_UpdateRouteSegment) read EAX/EBX only when CF is set */
     openCellResult.selectedRow = 0;
-    openCellResult.carry = false;
+    openCellResult.relocated = false;
     return openCellResult;
   }
   cellIndexOrMinColumn = gridX + -0x10;
@@ -2318,14 +2318,14 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
       if (bestHexDistance < 0x7fffffff) {
         nearestResult.selectedRow = bestRow;
         nearestResult.selectedColumn = bestColumn;
-        nearestResult.carry = true;
+        nearestResult.relocated = true;
         return nearestResult;
       }
     }
   }
   fallbackResult.selectedRow = gridY;
   fallbackResult.selectedColumn = gridX;
-  fallbackResult.carry = true;
+  fallbackResult.relocated = true;
   return fallbackResult;
 }
 

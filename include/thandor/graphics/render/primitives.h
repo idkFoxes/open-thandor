@@ -20,10 +20,10 @@ GraphicsPrimitiveQueue_RadixSortForRendering
           (GraphicsBooleanState halveVertexRgb,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A10 */
-StatusValueEaxCf5 GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
+StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity);
 
 /* 0x004D0A40 */
-GraphicsPrimitiveQueueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitiveQueueResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_ResetGlobal(void);
 
 /* 0x004D0A70 */
@@ -33,11 +33,11 @@ void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *
 uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AA0 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AE0 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0B20 */
@@ -66,7 +66,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
           GraphicsPrimitiveTextureCoordinateFixed deltaU,GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0DA0 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
@@ -76,7 +76,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
           FrontendModelPointerContextRuntimeState17C *renderContext);
 
 /* 0x004D0F20 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,

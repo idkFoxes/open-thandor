@@ -76,21 +76,21 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
    Purpose: Sets g_CursorFrameIndex when frameIndex is below g_CursorFrameCount. EAX is the engine code 0x2D on
    both paths. CF clear means success; CF set means the index was out of range.
 */
-GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+CursorFrameResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsCursor_SetFrameIndex(UiNumericCursorFrameIndex frameIndex)
 
 {
-  GraphicsCursorFrameEaxCf5 successResult;
-  GraphicsCursorFrameEaxCf5 failureResult;
+  CursorFrameResult successResult;
+  CursorFrameResult failureResult;
   
   if (frameIndex < g_CursorFrameCount) {
     g_CursorFrameIndex = frameIndex;
-    successResult.eax = 0x2d;
-    successResult.carry = false;
+    successResult.errorCode = 0x2d;
+    successResult.failed = false;
     return successResult;
   }
-  failureResult.carry = true;
-  failureResult.eax = 0x2d;
+  failureResult.failed = true;
+  failureResult.errorCode = 0x2d;
   return failureResult;
 }
 
@@ -577,7 +577,7 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
    Cross-module calls: CommandLine_FindOption [platform/bootstrap/runtime], Glide3_InitAndEnumerate
    [graphics/backend/glide], DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime].
 */
-StatusValueEaxCf5 __cdecl Graphics_Init(void)
+StatusResult __cdecl Graphics_Init(void)
 
 {
   TH_LEGACY_HRESULT hresult;
@@ -587,57 +587,57 @@ StatusValueEaxCf5 __cdecl Graphics_Init(void)
   GraphicsAdapterRecord *cursorOrResult;
   uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
-  StatusValueEaxCf5 glideResult;
-  ArenaAllocEaxCf5 allocResult;
-  DynDllLoadEaxCf5 moduleLoad;
-  DynApiResolveEaxCf5 procResolve;
-  CommandLineFindOptionEbxCf5 optionResult;
+  StatusResult glideResult;
+  ArenaAllocResult allocResult;
+  DllLoadResult moduleLoad;
+  DynApiResolveResult procResolve;
+  CommandLineOptionResult optionResult;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
   
   allocResult = (*g_MemoryApi.alloc)(0x4000);
-  cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
-  if (!allocResult.carry) {
+  cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
+  if (!allocResult.failed) {
     g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
     for (remainingDwords = 0x1000; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
       (cursorOrResult->adapterGuid).Data1 = 0;
       cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
     }
     allocResult = (*g_MemoryApi.alloc)(0x400);
-    cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
-    if (!allocResult.carry) {
+    cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
+    if (!allocResult.failed) {
       g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
       for (remainingDwords = 0x100; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
         (cursorOrResult->adapterGuid).Data1 = 0;
         cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
       }
       optionResult = CommandLine_FindOption(7,s_D3DALL_00578078);
-      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.carry;
+      g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
       allocResult = (*g_MemoryApi.alloc)(0x800);
-      cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
-      if (!allocResult.carry) {
+      cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
+      if (!allocResult.failed) {
         g_GraphicsAdapterCount = 0;
-        g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.eax;
+        g_GraphicsAdapters = (GraphicsAdapterRecord *)allocResult.payloadOrError;
         allocResult = (*g_MemoryApi.alloc)(0x1000);
-        cursorOrResult = (GraphicsAdapterRecord *)allocResult.eax;
-        if (!allocResult.carry) {
+        cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
+        if (!allocResult.failed) {
           g_GraphicsDisplayModeCount = 0;
-          g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.eax;
+          g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.payloadOrError;
           /* Glide is optional, unless -GLIDE asks for it */
           glideResult = Glide3_InitAndEnumerate();
-          if ((glideResult.carry) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.carry)) {
+          if ((glideResult.failed) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.notFound)) {
             (*g_FatalErrorPrimaryDispatchCf)(glideResult.valueOrError,true);
           }
           moduleLoad = DynDLL_Load(dynapi_2);
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;
           cursorOrResult = adapterOrModule;
-          if (!moduleLoad.carry) {
+          if (!moduleLoad.failed) {
             procResolve = DynAPI_Resolve(&pDirectDrawCreate,(HINSTANCE)adapterOrModule,dynapi_17);
             cursorOrResult = procResolve.procedureOrError;
-            if (!procResolve.carry) {
+            if (!procResolve.failed) {
               procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,dynapi_18);
               cursorOrResult = procResolve.procedureOrError;
-              if (!procResolve.carry) {
+              if (!procResolve.failed) {
                 hresult = (*pDirectDrawEnumerateA)
                                   (DirectDraw_EnumAdapterCallback,(TH_LEGACY_LPVOID)0x0);
                 cursorOrResult = (GraphicsAdapterRecord *)&k_LowAddressLiteral00000017;
@@ -965,7 +965,7 @@ Graphics_DrawPrimitiveQueue
 
 {
   GraphicsPrimitivePacket *currentPacket;
-  GraphicsPrimitivePacketEaxCf5 packetResult;
+  PrimitivePacketResult packetResult;
   TH_LEGACY_DWORD graphicsBackendSelector;
   
   graphicsBackendSelector = g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1;
@@ -976,7 +976,7 @@ Graphics_DrawPrimitiveQueue
   }
   if (graphicsBackendSelector != 1) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
-    while (!packetResult.carry) {
+    while (!packetResult.noPacket) {
       (*g_GraphicsDispatchTable.primitive[((packetResult.packet)->renderFlags & 0x3f000) >> 12])
                 (packetResult.packet);
       (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)

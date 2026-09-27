@@ -18,23 +18,23 @@
 void __cdecl ProcessEntry(void);
 
 /* 0x00512E70 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void);
 
 /* 0x00512F60 */
 bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void);
 
 /* 0x00573BC0 */
-DynApiResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+DynApiResolveResult __thandor_eax_cf_preserve_ecx_edx
 DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 
 /* 0x00573C50 */
-DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName);
+DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName);
 
 /* 0x00573CD0 */
 uint32_t DynDLL_Unload(char *moduleName);
 
 /* 0x00573D40 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 BootstrapApi_ResolveBindingByDestination(void **destination);
 
 /* 0x00573EB0 */
@@ -50,7 +50,7 @@ uint32_t __cdecl CPU_DetectFeatures(void);
 void __cdecl Game_Run(void);
 
 /* 0x0050BB10 */
-StatusValueEaxCf5 __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
+StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
 
 /* 0x00573140 */
 uint32_t __cdecl Game_LoadCoreAssets(void);
@@ -59,10 +59,10 @@ uint32_t __cdecl Game_LoadCoreAssets(void);
 bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
 
 /* 0x00573DB0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void);
 
 /* 0x00586110 */
-CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
+CommandLineOptionResult __thandor_ebx_cf_preserve_eax_ecx_edx
 CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option);
 
 /* 0x00586170 */

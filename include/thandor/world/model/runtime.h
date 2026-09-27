@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00529360 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_RepairDeferredChild
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeAttachmentIndex attachmentIndex,PckModelDefinitionIdCatalog childDefinitionId,
@@ -30,7 +30,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
 
 /* 0x0050B440 */
-ModelRaycastNearestHitEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
 ModelRuntime_RaycastCandidateListNearestCf
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
@@ -53,7 +53,7 @@ ModelRuntimeActiveTotalMetricRegisterPair
 ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs(RuntimeModelFactionPrefix10 *runtimeEntry);
 
 /* 0x00528A40 */
-StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void);
+StatusResult __cdecl ModelRuntimePool_Init(void);
 
 /* 0x00528A70 */
 void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefinitions(void);
@@ -77,7 +77,7 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
           MdlSerializedNodeHeader38 *definitionNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529140 */
-ModelNodeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_CreateInstanceByDefinitionIdCf
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,

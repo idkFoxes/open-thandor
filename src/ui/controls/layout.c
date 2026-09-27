@@ -28,7 +28,7 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   int bottomEdgeY;
   int rightEdgeX;
   bool beginAccessFailed;
-  GraphicsTextureSizeEaxEdxCf9 cornerSize;
+  TextureSizeResult cornerSize;
   
   if ((control->root.rootFlags & 3) != 0) {
     beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
@@ -123,9 +123,9 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
   int edgeOffset;
   int rightEdgeX;
   bool beginAccessFailed;
-  TextResourceResolveEaxCf5 titleText;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
-  GraphicsTextureSizeEaxEdxCf9 rightCapSize;
+  TextResolveResult titleText;
+  TextureSizeResult textureSize;
+  TextureSizeResult rightCapSize;
   
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!beginAccessFailed) {
@@ -181,7 +181,7 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
                  control);
       titleText = TextResource_Resolve(control->titleTextResourceId);
       RichTextCommandStream_DrawSingleLine
-                (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,titleText.eax,
+                (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,titleText.text,
                  g_UiResizableWindowTitleTextTopOffset + control->root.base.top,
                  (control->root.base.layoutWidth >> 1) + control->root.base.left);
     }
@@ -243,8 +243,8 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
   int rightEdgeOrCursorX;
   bool beginAccessFailed;
   RichTextExtentRegs titleExtent;
-  TextResourceResolveEaxCf5 titleText;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextResolveResult titleText;
+  TextureSizeResult textureSize;
   int savedRightEdgeX;
   
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
@@ -278,7 +278,7 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
     UiWindow_BlitTiledHorizontalEdge
               (clipTop,clipLeft,clipBottom,clipRight,0x3d,rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
     titleText = TextResource_Resolve(control->titleTextResourceId);
-    commandStream = titleText.eax;
+    commandStream = titleText.text;
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     titleCapX = cornerWidth;
     if ((control->titleFlags & 1) != 0) {
@@ -647,11 +647,11 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control
   uint32_t topInset;
   uint32_t bottomInset;
   RichTextExtentRegs titleExtent;
-  TextResourceResolveEaxCf5 titleText;
-  GraphicsTextureSizeEaxEdxCf9 cornerSize;
+  TextResolveResult titleText;
+  TextureSizeResult cornerSize;
   
   titleText = TextResource_Resolve(control->titleTextResourceId);
-  titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText.eax);
+  titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText.text);
   titleHeightOrRightInset = titleExtent.heightPixels;
   cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
   leftInset = cornerSize.logicalWidthPixels;
@@ -722,7 +722,7 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
   uint32_t divisionRemainder;
   uint16_t *commandStream;
   bool beginAccessFailed;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!beginAccessFailed) {
@@ -982,7 +982,7 @@ UiResizableWindowControl_UpdateMoveOrResize
   int offsetYOrEdge;
   int newTopOrOldRight;
   bool overButton;
-  GraphicsTextureSizeEaxEdxCf9 buttonSize;
+  TextureSizeResult buttonSize;
   
   offsetXOrEdge = pointerX - control->root.base.left;
   offsetYOrEdge = pointerY - control->root.base.top;
@@ -1250,18 +1250,18 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
 void __thandor_preserve_eax UiWindowResources_Init(void)
 
 {
-  GraphicsTextureSourceLoadEaxCf5 loadResult;
-  FatalErrorEaxCf5 checkedResult;
-  TextResourceLoadEaxCf5 pageLoadResult;
+  TextureSourceLoadResult loadResult;
+  FatalErrorCheckResult checkedResult;
+  TextPageLoadResult pageLoadResult;
   
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_engine_win_gfx_004b0f06);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.eax,loadResult.carry);
-  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.textureSource,loadResult.failed);
+  g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)(u_engine_winclass_gfx_004b0eb8);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.eax,loadResult.carry);
-  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.textureSource,loadResult.failed);
+  g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   pageLoadResult = TextResourcePage_Load(1,(uint16_t *)u_texte_winclass_str_004b0ee0);
-  (*g_FatalErrorPrimaryDispatchCf)(pageLoadResult.errorOrValue,pageLoadResult.carry);
+  (*g_FatalErrorPrimaryDispatchCf)(pageLoadResult.errorOrValue,pageLoadResult.failed);
   UiActionHandlers_SetPageCf(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = (UiRootNode *)0xffffffff;
   return;
@@ -1364,7 +1364,7 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
   uint32_t resizeFlags;
   int extentLimit;
   bool hitOpaque;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   localX = pointerX - control->root.base.left;
   localY = pointerY - control->root.base.top;
@@ -1440,7 +1440,7 @@ UiResizableWindowControl_QueryResizeCursorCode
   int bottomBorderY;
   int localY;
   int localX;
-  GraphicsTextureSizeEaxEdxCf9 cornerSize;
+  TextureSizeResult cornerSize;
   
   cursorFrame = 0;
   if (((control->root.rootFlags & 0x40) != 0) && ((control->root.rootFlags & 0x80) == 0))
@@ -1647,7 +1647,7 @@ UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *contr
 
 {
   uint32_t headerHeight;
-  GraphicsTextureSizeEaxEdxCf9 headerSize;
+  TextureSizeResult headerSize;
   
   if ((control->root.rootFlags & 4) == 0) {
     UiContainer_LayoutChildren((UiNodeBase *)control);

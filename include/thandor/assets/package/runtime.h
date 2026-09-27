@@ -18,30 +18,30 @@
 bool __thandor_cf_preserve_eax_ecx_edx LevelPackage_ValidateAndMount(uint16_t *levelPathUtf16);
 
 /* 0x0040E840 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount unpackedSize,
                    uint32_t *sourceData,uint16_t *path,EngineFileHandle fileHandle);
 
 /* 0x0040ED00 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_LoadEntryIntoBuffer
           (PckLoadCapacityFlags bufferCapacityAndLoadFlags,uint8_t *destination,uint16_t *path);
 
 /* 0x0040E450 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t *path);
+StatusResult __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(uint16_t *path);
 
 /* 0x0040E6F0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_DeleteEntry(uint16_t *path,EngineFileHandle fileHandle);
 
 /* 0x0040EE30 */
-PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *path);
+PackageLoadResult __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(uint16_t *path);
 
 /* 0x0040E3A0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path);
+StatusResult __thandor_eax_cf_preserve_ecx_edx Package_Mount(uint16_t *path);
 
 /* 0x0040EB70 */
-PackageFindEntryEaxEcxCf9 __thandor_eax_cf_preserve_edx
+PackageFindResult __thandor_eax_cf_preserve_edx
 Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *outputEntries,
                  uint16_t *pattern,EngineFileHandle fileHandle);
 
@@ -52,22 +52,22 @@ void __thandor_preserve_eax_edx Package_Unmount(EngineFileHandle fileHandle);
 bool __thandor_cf_preserve_eax_ecx_edx Package_WildcardPathMatches(uint16_t *pattern,uint16_t *candidate);
 
 /* 0x0040EAF0 */
-PackageDecodeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PackageDecodeResult __thandor_eax_cf_preserve_ecx_edx
 Package_DecodeEntryInto(uint8_t *destination,PckEntryHeader *entry,EngineFileHandle fileHandle);
 
 /* 0x0040E2B0 */
 void __thandor_void_preserve_eax_ecx_edx Package_SetLastErrorPath(uint16_t *path);
 
 /* 0x0040E640 */
-PackageEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PackageMountEntryResult __thandor_eax_cf_preserve_ecx_edx
 Package_FindEntryInMount(uint16_t *path,EngineFileHandle fileHandle);
 
 /* 0x0040EA20 */
-PackageFindEntryEaxEbxCf9 __thandor_eax_ebx_cf_preserve_ecx_edx
+PackageEntryLookupResult __thandor_eax_ebx_cf_preserve_ecx_edx
 Package_FindEntryAcrossMounts(uint16_t *path);
 
 /* 0x0040E570 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 Package_ReadDirectory(EngineFileHandle fileHandle);
 
 #endif /* THANDOR_ASSETS_PACKAGE_RUNTIME_H */

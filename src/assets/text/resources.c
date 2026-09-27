@@ -24,28 +24,28 @@ TextResourcePage_LoadCompatibilityAliases(uint32_t aliasAddressBase,uint16_t *pa
   uint16_t *resolvedText;
   int aliasIndex;
   bool failed;
-  TextResourceLoadEaxCf5 pageLoadResult;
-  TextResourceResolveEaxCf5 resolveResult;
+  TextPageLoadResult pageLoadResult;
+  TextResolveResult resolveResult;
   
   pageLoadResult = TextResourcePage_Load(0x30,path);
-  failed = pageLoadResult.carry;
+  failed = pageLoadResult.failed;
   if (!failed) {
     resolveResult = TextResource_Resolve(0x3000);
-    failed = resolveResult.carry;
-    resolvedText = resolveResult.eax;
+    failed = resolveResult.notFound;
+    resolvedText = resolveResult.text;
     if (!failed) {
       TextResourceOverride_Register(aliasAddressBase + 0x2230,resolvedText);
       resolveResult = TextResource_Resolve(0x3001);
-      failed = resolveResult.carry;
+      failed = resolveResult.notFound;
       if (!failed) {
         aliasIndex = 0xd;
-        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,resolveResult.eax);
+        TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230010,resolveResult.text);
         do {
           resolveResult = TextResource_Resolve(aliasIndex + 0x3002);
-          if (resolveResult.carry) {
+          if (resolveResult.notFound) {
             return true;
           }
-          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,resolveResult.eax);
+          TextResourceOverride_Register(aliasAddressBase * 0x10 + 0x230011 + aliasIndex,resolveResult.text);
           aliasIndex = aliasIndex + -1;
         } while (-1 < aliasIndex);
         failed = false;
@@ -72,9 +72,9 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
   wchar_t *pathUtf16;
   wchar_t *pathCursor;
   TextResourceOverrideTable *overrideSlot;
-  GraphicsTextureSourceLoadEaxCf5 textureLoadResult;
-  FatalErrorEaxCf5 checkedResult;
-  ArenaAllocEaxCf5 allocResult;
+  TextureSourceLoadResult textureLoadResult;
+  FatalErrorCheckResult checkedResult;
+  ArenaAllocResult allocResult;
   
   pathUtf16 = u_engine_font_gfx_0041b030;
   textureSourceSlot = g_FontTextureSources;
@@ -82,8 +82,8 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
   scanLimitOrSlotCount = 0x21;
   do {
     textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)pathUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)textureLoadResult.eax,textureLoadResult.carry);
-    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.eax;
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
+    *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
     pathCursor = pathUtf16;
     do {
       pathUtf16 = pathCursor;
@@ -97,11 +97,11 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
     remainingSources = remainingSources + -1;
     if (remainingSources == 0) {
       allocResult = (*g_MemoryApi.alloc)(0x4000);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-      g_FontRuntimeBuffer = (uint8_t *)checkedResult.eax;
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+      g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
       allocResult = (*g_MemoryApi.alloc)(0x8000);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-      g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.eax;
+      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+      g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
       overrideSlot = g_TextResourceOverrides;
       for (scanLimitOrSlotCount = 0x2000; scanLimitOrSlotCount != 0; scanLimitOrSlotCount = scanLimitOrSlotCount + -1) {
         overrideSlot->resourceIds[0] = 0xffffffff;
@@ -151,26 +151,26 @@ TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
    parameters: p0 glyphSubresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control
    flow, and executable data remain unchanged.
 */
-FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
 
 {
   uint32_t glyphWidth;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
+  TextureSizeResult textureSize;
+  GlyphSizeResult glyphSize;
   uint32_t fontIndex;
   
   fontIndex = g_ActiveFontIndex;
   textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
                     (glyphSubresource,g_FontTextureSources[g_ActiveFontIndex]);
   glyphWidth = textureSize.logicalWidthPixels;
-  if (textureSize.carry) {
+  if (textureSize.failed) {
     glyphWidth = 0;
   }
   textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
   glyphSize.lineHeight = textureSize.logicalHeightPixels;
   glyphSize.width = glyphWidth;
-  glyphSize.carry = false;
+  glyphSize.failed = false;
   return glyphSize;
 }
 
@@ -182,27 +182,27 @@ FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
    glyphSubresource→GraphicsSubresourceIndex_V338. Calling convention, storage, body bytes, control flow, and
    executable data remain unchanged. Typed parameters: p0 packedStyle→UiPackedTextStyle_V301.
 */
-FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
+GlyphSizeResult __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
 
 {
   uint32_t glyphWidth;
   uint32_t fontIndex;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
-  FontGlyphSizeEaxEdxCf9 glyphSize;
+  TextureSizeResult textureSize;
+  GlyphSizeResult glyphSize;
   
   fontIndex = packedStyle >> 0x18 & 7;
   textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(glyphSubresource,g_FontTextureSources[fontIndex])
   ;
   glyphWidth = textureSize.logicalWidthPixels;
-  if (textureSize.carry) {
+  if (textureSize.failed) {
     glyphWidth = 0;
   }
   textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,g_FontTextureSources[fontIndex]);
   glyphSize.lineHeight = textureSize.logicalHeightPixels;
   glyphSize.width = glyphWidth;
-  glyphSize.carry = false;
+  glyphSize.failed = false;
   return glyphSize;
 }
 
@@ -222,7 +222,7 @@ uint32_t FontGlyph_DrawBottomAligned
 
 {
   int drawY;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
@@ -263,7 +263,7 @@ uint32_t FontGlyph_DrawVerticallyCentered
 
 {
   int drawY;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
@@ -297,7 +297,7 @@ uint32_t FontGlyph_DrawVerticallyCentered
    package or format error in EAX.
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
-TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextPageLoadResult __thandor_eax_cf_preserve_ecx_edx
 TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
 
 {
@@ -311,18 +311,18 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
   uint16_t *recordStart;
   uint16_t *textCursor;
   int stringIndex;
-  PackageLoadEntryEaxCf5 loadResult;
-  TextResourceLoadEaxCf5 failureResult;
-  TextResourceLoadEaxCf5 successResult;
+  PackageLoadResult loadResult;
+  TextPageLoadResult failureResult;
+  TextPageLoadResult successResult;
   
   loadResult = Package_LoadEntry(path);
-  if (loadResult.carry) {
+  if (loadResult.failed) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
                 (uint32_t)loadResult.bufferOrError);
   }
   allocation = loadResult.bufferOrError;
   localeBlockOrError = allocation;
-  if (!loadResult.carry) {
+  if (!loadResult.failed) {
     localeBlockOrError = (TextResourceAssetHeader *)0x33;
     if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
       remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
@@ -403,13 +403,13 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
         }
         stringIndex = stringIndex + 1;
       }
-      successResult.carry = false;
+      successResult.failed = false;
       successResult.errorOrValue = (uint32_t)localeBlockOrError;
       return successResult;
     }
     Resource_Release(allocation);
   }
-  failureResult.carry = true;
+  failureResult.failed = true;
   failureResult.errorOrValue = (uint32_t)localeBlockOrError;
   return failureResult;
 }
@@ -457,7 +457,7 @@ TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
    binding. Compact IDs use an 8-bit page and 8-bit index; extended IDs use an 8-bit page and 16-bit index.
    Identifier 0xFFFFFFFF returns the shared empty string. Missing resources return error 0x33 with CF set.
 */
-TextResourceResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+TextResolveResult __thandor_eax_cf_preserve_ecx_edx
 TextResource_Resolve(TextResourceId resourceId)
 
 {
@@ -466,15 +466,15 @@ TextResource_Resolve(TextResourceId resourceId)
   TextResourceOverrideTable *scanCursor;
   TextResourceOverrideTable *cursorAfterScan;
   bool overrideFound;
-  TextResourceResolveEaxCf5 overrideResult;
-  TextResourceResolveEaxCf5 compactResult;
-  TextResourceResolveEaxCf5 extendedResult;
-  TextResourceResolveEaxCf5 emptyResult;
-  TextResourceResolveEaxCf5 missingResult;
+  TextResolveResult overrideResult;
+  TextResolveResult compactResult;
+  TextResolveResult extendedResult;
+  TextResolveResult emptyResult;
+  TextResolveResult missingResult;
   
   if (resourceId == 0xffffffff) {
-    emptyResult.eax = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
-    emptyResult.carry = false;
+    emptyResult.text = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    emptyResult.notFound = false;
     return emptyResult;
   }
   remainingSlots = 0x1000;
@@ -490,8 +490,8 @@ TextResource_Resolve(TextResourceId resourceId)
       scanCursor = cursorAfterScan;
     } while (!overrideFound);
     if (overrideFound) {
-      overrideResult.carry = false;
-      overrideResult.eax = (uint16_t *)cursorAfterScan->resourceIds[0xfff];
+      overrideResult.notFound = false;
+      overrideResult.text = (uint16_t *)cursorAfterScan->resourceIds[0xfff];
       return overrideResult;
     }
   }
@@ -499,8 +499,8 @@ TextResource_Resolve(TextResourceId resourceId)
     localeBlock = g_TextResourcePageBindings[resourceId >> 8].selectedLocaleBlock;
     if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
        ((resourceId & 0xff) < localeBlock->stringCount)) {
-      compactResult.eax = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xff];
-      compactResult.carry = false;
+      compactResult.text = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xff];
+      compactResult.notFound = false;
       return compactResult;
     }
   }
@@ -508,15 +508,15 @@ TextResource_Resolve(TextResourceId resourceId)
     localeBlock = g_TextResourcePageBindings[resourceId >> 0x10].selectedLocaleBlock;
     if ((localeBlock != (TextResourceLocaleBlockPrefix *)0x0) &&
        ((resourceId & 0xffff) < localeBlock->stringCount)) {
-      extendedResult.eax = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xffff];
-      extendedResult.carry = false;
+      extendedResult.text = (int)&localeBlock->blockSizeBytes + (&localeBlock[1].blockSizeBytes)[resourceId & 0xffff];
+      extendedResult.notFound = false;
       return extendedResult;
     }
   }
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
               g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 0x10].selectedLocaleBlock);
-  missingResult.carry = true;
-  missingResult.eax = (uint16_t *)&k_LowAddressLiteral00000033;
+  missingResult.notFound = true;
+  missingResult.text = (uint16_t *)&k_LowAddressLiteral00000033;
   return missingResult;
 }
 

@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005349D0 */
-EntityPathingDestinationEaxEdxEbxEcxCf17
+PathingDestinationResult
 EntityPathing_ResolveDestinationAndRebuildRoutes
           (UQ12 targetWorldYQ12,UQ12 targetWorldXQ12,GameEntityRuntime *routeEntityRuntime,
           WorldRuntimeContext *worldRuntime);
@@ -35,7 +35,7 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair);
 
 /* 0x005332C0 */
-GridScratchAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
 GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid);
 
 /* 0x00533360 */
@@ -75,7 +75,7 @@ GridScratch_TestWorldPointReachabilityCf
           GraphicsWorldCoordinateQ12 targetWorldXQ12);
 
 /* 0x00534660 */
-GridPathBacktrackEaxEbxEcxCf13 __thandor_eax_cf_preserve_edx
+PathBacktrackResult __thandor_eax_cf_preserve_edx
 GridPathCost_BacktrackBestHexRoute
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate targetRow,
           FieldGridCellCoordinate targetColumn,GridScratchCell *startCell);
@@ -135,7 +135,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell);
 
 /* 0x005342F0 */
-GridPathNearestCellEaxEbxCf9 __thandor_eax_cf_preserve_ecx_edx
+NearestCellResult __thandor_eax_cf_preserve_ecx_edx
 GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCellCoordinate gridX);
 
 /* 0x005344B0 */

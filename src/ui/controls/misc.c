@@ -124,7 +124,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
 {
   int64_t scaledAnchor;
   UiRootNode *root;
-  DisplayModeEaxCf5 modeResult;
+  DisplayModeResult modeResult;
   uint32_t adapterIndex;
   uint32_t bitsPerPixel;
   uint32_t modeHeight;
@@ -139,7 +139,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
   modeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
-  (*g_FatalErrorPrimaryDispatchCf)(modeResult.eax,modeResult.carry);
+  (*g_FatalErrorPrimaryDispatchCf)(modeResult.valueOrError,modeResult.failed);
   root = g_UiRootNode;
   do {
     scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
@@ -284,8 +284,8 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   uint32_t pendingModeWidth;
   uint32_t pendingModeHeight;
   uint32_t currentBitsPerPixel;
-  DisplayModeEaxCf5 pendingModeResult;
-  DisplayModeEaxCf5 restoreModeResult;
+  DisplayModeResult pendingModeResult;
+  DisplayModeResult restoreModeResult;
   uint32_t currentAdapterIndex;
   uint32_t pendingWidthOrCurrentHeight;
   uint32_t pendingHeightOrCurrentWidth;
@@ -310,11 +310,11 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     pendingWidthOrCurrentHeight = g_FramebufferHeight;
     pendingHeightOrCurrentWidth = g_FramebufferWidth;
     pendingModeResult = (*g_GraphicsDisplayModeHook)(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
-    if (pendingModeResult.carry) {
+    if (pendingModeResult.failed) {
       restoreModeResult = (*g_GraphicsDisplayModeHook)(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
-      (*g_FatalErrorPrimaryDispatchCf)(restoreModeResult.eax,restoreModeResult.carry);
+      (*g_FatalErrorPrimaryDispatchCf)(restoreModeResult.valueOrError,restoreModeResult.failed);
       g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-      (*g_FatalErrorRuntimeDispatchCf)(pendingModeResult.eax,true);
+      (*g_FatalErrorRuntimeDispatchCf)(pendingModeResult.valueOrError,true);
       return;
     }
     UiRootStack_Relayout();
@@ -400,7 +400,7 @@ UiRangeSliderControl_DrawTrackAndThumb
   int edgeLength;
   uint32_t valueOffsetOrRange;
   bool accessFailed;
-  GraphicsTextureSizeEaxEdxCf9 textureSize;
+  TextureSizeResult textureSize;
   
   accessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!accessFailed) {
@@ -497,7 +497,7 @@ UiRangeSliderControl_BeginThumbDrag
 {
   int localX;
   int localY;
-  GraphicsTextureSizeEaxEdxCf9 thumbSize;
+  TextureSizeResult thumbSize;
   
   if (((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
        (localX = pointerX - control->base.left, control->base.left <= pointerX)) &&
@@ -837,12 +837,12 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
   uint32_t lowWordValue;
   uint32_t *templateCursor;
   GraphicsDisplayMode *displayMode;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   if (1 < g_GraphicsDisplayModeCount) {
     allocResult = (*g_MemoryApi.alloc)(0xbd4);
-    root = (UiRootNode *)allocResult.eax;
-    if (allocResult.carry) {
+    root = (UiRootNode *)allocResult.payloadOrError;
+    if (allocResult.failed) {
       return;
     }
     templateCursor = (uint32_t *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);

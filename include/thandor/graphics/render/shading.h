@@ -20,7 +20,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004BCF70 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void);
 
 /* 0x004CCA90 */
 MmxPackedValue64 __thandor_void_preserve_ecx_edx_mm1
@@ -28,7 +28,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
           (GraphicsFixedVec3 *worldPointQ12,MmxPackedValue64 packedLightAccumulatorMmx);
 
 /* 0x004CCB40 */
-GraphicsShadingRuntimeRecordEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ShadingRecordResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_AllocateRecordRegs
           (GraphicsTransitionTickCount transitionDurationTicks,GraphicsRadiusQ12 radiusQ12,
           PackedRgb24 packedColorRgb,GraphicsWorldCoordinateQ12 worldZQ12,
@@ -47,7 +47,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
           GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12);
 
 /* 0x004CCFF0 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+StatusResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingRuntime_InitializeGeneratedTextureCf
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension);
@@ -109,7 +109,7 @@ bool __thandor_void_preserve_eax_ecx
 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode);
 
 /* 0x004D1060 */
-GraphicsProjectedBlockEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+ProjectedBlockReserveResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext);
 

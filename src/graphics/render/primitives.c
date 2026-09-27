@@ -272,21 +272,21 @@ GraphicsPrimitiveQueue_RadixSortForRendering
    Purpose: Allocates 0x20 + capacity * 0xA0 bytes for the global primitive queue pool. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-StatusValueEaxCf5 GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
+StatusResult GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQueueCapacity packetCapacity)
 
 {
   GraphicsPrimitiveQueue *allocatedQueueStorage;
   bool allocationSizeOverflow;
-  ArenaAllocEaxCf5 allocResult;
+  ArenaAllocResult allocResult;
   
   g_PrimitiveQueuePoolCapacity = packetCapacity;
   allocResult = (*g_MemoryApi.alloc)(packetCapacity * 0xa0 + 0x20);
-  allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.eax;
-  if (allocResult.carry) {
-    return StatusValue_Fail(allocResult.eax);
+  allocatedQueueStorage = (GraphicsPrimitiveQueue *)allocResult.payloadOrError;
+  if (allocResult.failed) {
+    return StatusValue_Fail(allocResult.payloadOrError);
   }
   g_PrimitiveQueueStorage = allocatedQueueStorage;
-  return StatusValue_Ok(allocResult.eax);
+  return StatusValue_Ok(allocResult.payloadOrError);
 }
 
 
@@ -295,12 +295,12 @@ StatusValueEaxCf5 GraphicsPrimitiveQueue_AllocateGlobalPool(GraphicsPrimitiveQue
    Purpose: Initializes the global variable-length queue: primaryNodes follow the 0x20-byte header,
    radixScratchPool follows primaryNodes, and packetPool follows the scratch nodes.
 */
-GraphicsPrimitiveQueueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitiveQueueResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_ResetGlobal(void)
 
 {
   GraphicsPrimitiveQueue *globalQueue;
-  GraphicsPrimitiveQueueEaxCf5 resetResult;
+  PrimitiveQueueResult resetResult;
   GraphicsPrimitiveQueue *queueStorage;
   uint32_t poolCapacity;
   
@@ -311,7 +311,7 @@ GraphicsPrimitiveQueue_ResetGlobal(void)
   globalQueue->radixScratchPool = globalQueue->primaryNodes + poolCapacity;
   globalQueue->packetPool =
        (GraphicsPrimitivePacket *)(globalQueue->primaryNodes + poolCapacity + poolCapacity);
-  resetResult.carry = false;
+  resetResult.failed = false;
   resetResult.queue = globalQueue;
   return resetResult;
 }
@@ -345,22 +345,22 @@ uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(Graphics
    Purpose: Returns traversalCursor->packet and advances traversalCursor to node->next. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacketEaxCf5 successResult;
-  GraphicsPrimitivePacketEaxCf5 failureResult;
+  PrimitivePacketResult successResult;
+  PrimitivePacketResult failureResult;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
   if (queue->count != 0) {
     currentTraversalPacket = queue->traversalCursor->packet;
     queue->traversalCursor = queue->traversalCursor->next;
-    successResult.carry = false;
+    successResult.noPacket = false;
     successResult.packet = currentTraversalPacket;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.noPacket = true;
   /* Empty queue: the original leaves EAX untouched; every caller stops on CF without reading it. */
   failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
@@ -372,12 +372,12 @@ GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
    Purpose: Returns traversalCursor->packet and advances until the 0xFFFFFFFF sentinel. ABI: CF clear means
    success. CF set means failure or end of iteration.
 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacketEaxCf5 successResult;
-  GraphicsPrimitivePacketEaxCf5 failureResult;
+  PrimitivePacketResult successResult;
+  PrimitivePacketResult failureResult;
   GraphicsPrimitiveQueueNode *currentTraversalNode;
   GraphicsPrimitivePacket *currentTraversalPacket;
   
@@ -385,11 +385,11 @@ GraphicsPrimitiveQueue_Next(GraphicsPrimitiveQueue *queue)
   if (currentTraversalNode != (GraphicsPrimitiveQueueNode *)0xffffffff) {
     currentTraversalPacket = currentTraversalNode->packet;
     queue->traversalCursor = currentTraversalNode->next;
-    successResult.carry = false;
+    successResult.noPacket = false;
     successResult.packet = currentTraversalPacket;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.noPacket = true;
   failureResult.packet = (GraphicsPrimitivePacket *)0xffffffff;
   return failureResult;
 }
@@ -561,7 +561,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
    Ownership: graphics/render/primitives.
    Purpose: Handles graphics primitive queue append terrain textured triangle.
 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
@@ -581,8 +581,8 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
   GraphicsTextureSet *terrainTextureSet;
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
-  GraphicsPrimitivePacketEaxCf5 successResult;
-  GraphicsPrimitivePacketEaxCf5 failureResult;
+  PrimitivePacketResult successResult;
+  PrimitivePacketResult failureResult;
   
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndexOrCoordinate = primitiveQueue->count;
@@ -650,11 +650,11 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
       newPacket->renderFlags = newPacket->renderFlags | 0x10000;
       newPacket->textureEntry = terrainTextureSet->entries + textureEntryIndex;
     }
-    successResult.carry = false;
+    successResult.noPacket = false;
     successResult.packet = newPacket;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.noPacket = true;
   /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
   failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
@@ -671,7 +671,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
    Typed parameters: p6 vertex2Projected→GraphicsProjectedVertexSource *, p7
    vertex1Projected→GraphicsProjectedVertexSource *, p8 vertex0Projected→GraphicsProjectedVertexSource *.
 */
-GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
+PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
@@ -687,8 +687,8 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   GraphicsTextureSet *materialTextureSet;
   PackedArgb32 paletteModulationColor;
   uint32_t *vertexFieldWriteCursor;
-  GraphicsPrimitivePacketEaxCf5 successResult;
-  GraphicsPrimitivePacketEaxCf5 failureResult;
+  PrimitivePacketResult successResult;
+  PrimitivePacketResult failureResult;
   
   primitiveQueue = renderContext->activePrimitiveQueue;
   packetIndexOrAttribute = primitiveQueue->count;
@@ -742,11 +742,11 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
     materialTextureSet = g_TerrainMaterialTextureSets[textureAndMaterialIndices[6]];
     vertexFieldWriteCursor[0x1a] = g_UiCommandModeGColorVariantFlags;
     vertexFieldWriteCursor[0x19] = (uint32_t)materialTextureSet->entries;
-    successResult.carry = false;
+    successResult.noPacket = false;
     successResult.packet = (GraphicsPrimitivePacket *)vertexFieldWriteCursor;
     return successResult;
   }
-  failureResult.carry = true;
+  failureResult.noPacket = true;
   /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
   failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
