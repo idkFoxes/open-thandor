@@ -133,7 +133,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_ReleaseNode(UiNodeBase 
 /* Address: 0x004AF3D0.
    Ownership: ui/controls/input.
    Purpose: Drains keyboard events under the UI lock, offers each event to the focused node through
-   keyboardEventCf, traverses alternate focusable nodes when CF requests it, and falls back to the active root
+   keyboardEvent, traverses alternate focusable nodes when CF requests it, and falls back to the active root
    handler.
    Local calls: UiKeyboardFocus_Set.
 */
@@ -161,7 +161,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
     if (control != (UiNodeBase *)0xffffffff) {
       dispatchToRoot = false;
       wrappedOnce = false;
-      passToNext = control->vtable->keyboardEventCf(keyboardStateMask,keyCode,control);
+      passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
       /* CF set: offer the event to the following focus targets in pre-order, wrapping around once
          through the topmost ancestor; the first one that takes it gets the keyboard focus. */
       while (passToNext) {
@@ -190,7 +190,7 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
           break;
         }
         if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) continue;
-        passToNext = control->vtable->keyboardEventCf(keyboardStateMask,keyCode,control);
+        passToNext = control->vtable->keyboardEvent(keyboardStateMask,keyCode,control);
         if (!passToNext) {
           UiKeyboardFocus_Set(control);
         }
@@ -353,7 +353,7 @@ UiSingleLineTextControl_ForwardKeyboardEventToChild
     return eventResult;
   }
   if (childControl != (UiNodeBase *)0x0) {
-    eventResult = childControl->vtable->keyboardEventCf(keyboardStateMask,keyCode,childControl);
+    eventResult = childControl->vtable->keyboardEvent(keyboardStateMask,keyCode,childControl);
     if (!eventResult) {
       UiNode_InvalidateRoot(&control->base);
       return false;

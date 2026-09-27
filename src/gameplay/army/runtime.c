@@ -2010,7 +2010,7 @@ ArmyRuntimeNode_DispatchTypedCallback
 {
   bool accepted;
   
-  accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidationCf
+  accepted = (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.placementValidation
             [((ModelRuntimePlacementValidationView200 *)*modelRuntimeHolder)->modelDefinition->
              runtimeClassId4C])
                     (worldRuntime,(ModelRuntimePlacementValidationView200 *)*modelRuntimeHolder);

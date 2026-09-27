@@ -5260,7 +5260,7 @@ struct UiNodeVtable {
     void (*rightDrag)(UiPointerWheelDelta, UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
     GraphicsCursorFrameIndex (*pointerMove)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
     UiNodeBase * (*hitTest)(UiPixelCoordinate, UiPixelCoordinate, struct UiNodeBase *); 
-    bool (*keyboardEventCf)(UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *);
+    bool (*keyboardEvent)(UiKeyboardStateMask, UiKeyboardEventCode, struct UiNodeBase *);
     void (*applyFlags)(UiNodeFlagMask, UiNodeFlagMask, struct UiNodeBase *); 
     void (*suppressActionId)(UiActionId, struct UiNodeBase *); 
     void (*unsuppressActionId)(UiActionId, struct UiNodeBase *); 
@@ -6912,7 +6912,7 @@ struct MovieRuntime {
 };
 
 struct UiRootCallbacks {
-    bool (*closeCf)(struct UiRootNode *); // Optional close/pop callback. CF set vetoes removal of the root; CF clear permits the pop.
+    bool (*vetoClose)(struct UiRootNode *); // Optional close/pop callback. CF set vetoes removal of the root; CF clear permits the pop.
     void (*frameUpdate)(struct UiRootNode *); // Optional per-frame callback invoked by UiFrame_Update while this root is active.
     bool (*method08)(struct UiRootNode *); // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
     bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. CF conveys handling/traversal state.
@@ -11046,7 +11046,7 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*modelRebaseOrLoadRepair[24])(struct ModelRuntimeSlot *);
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
-    bool (*placementValidationCf[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView200 *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
+    bool (*placementValidation[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView200 *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
     PlacementDispatchResult (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
     void (*classCommand[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);

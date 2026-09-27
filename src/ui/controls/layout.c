@@ -566,7 +566,7 @@ UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 
 /* Address: 0x004B1110.
    Ownership: ui/controls/layout.
-   Purpose: Finds the containing root and invokes callbacks->closeCf when present. CF set vetoes removal and
+   Purpose: Finds the containing root and invokes callbacks->vetoClose when present. CF set vetoes removal and
    invalidates the previous root; CF clear restores the previous root, focus, capture state, and redraw state.
    Local calls: UiRootStack_InvalidateAll.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiKeyboardFocus_SelectInitial [ui/controls/input].
@@ -585,8 +585,8 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
   }
   node = root->previousRoot;
   closeCallbackVetoed = false;
-  if (root->callbacks->closeCf != (UiRootCloseCallback *)0x0) {
-    closeCallbackVetoed = root->callbacks->closeCf(root);
+  if (root->callbacks->vetoClose != (UiRootCloseCallback *)0x0) {
+    closeCallbackVetoed = root->callbacks->vetoClose(root);
   }
   if (closeCallbackVetoed) {
     UiNode_InvalidateRoot(&node->base);
