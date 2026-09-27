@@ -133,6 +133,7 @@ target_include_directories(thandor_curated PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 add_executable(thandor WIN32
     src/platform/bootstrap/main.c
     src/platform/bootstrap/image.c
+    src/platform/bootstrap/selftest_raster.c
     src/generated/function_map.c
     src/generated/image_data.c
 )
