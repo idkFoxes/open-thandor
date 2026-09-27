@@ -429,6 +429,9 @@ static void Thandor_SelfTestImageCompare(void)
                 blocks, bytes, pointerCount, pointerMismatches, mismatches, zeroedCode);
 }
 
+/* Program start (not part of the original): provides the original data image, computes the tables
+   the original executable carried precomputed, runs a self-test when OPEN_THANDOR_SELFTEST names one,
+   and otherwise enters the original entry point ProcessEntry. */
 int __stdcall WinMain(HINSTANCE instance, HINSTANCE previousInstance, char *commandLine, int showCommand)
 {
     (void)instance;

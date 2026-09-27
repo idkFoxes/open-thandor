@@ -15,70 +15,57 @@
 /* Implementation ownership: platform/bootstrap/runtime. */
 
 /* Address: 0x00585D40.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Process entry; terminates with ExitProcess.
-   Local calls: CommandLine_Parse, DynAPI_Bootstrap, CommandLine_FindOption, Game_Run.
-   Cross-module calls: ArenaHeap_Init [core/memory/allocator], FileSystem_Init [platform/filesystem/win32],
-   Locale_Init [platform/system/time_locale], ErrorSystem_Init [core/error/runtime], TimerSystem_Init
-   [platform/system/time_locale], Graphics_Init [graphics/core/runtime].
+   Process entry: raises the process to real-time priority, creates the full-screen main window (only
+   one instance may run), initialises every subsystem, sets the initial 640x480 display mode from the
+   saved adapter and colour depth, runs the game and shuts down. Any failed step ends in the
+   fatal-error dispatcher; a missing sound device is tolerated when -SOUND is not on the command line.
 */
 void __cdecl ProcessEntry(void)
 
 {
-  ATOM windowClassAtom;
   HANDLE processOrThreadHandle;
-  HWND windowHandle;
-  int nHeight;
-  int nWidth;
-  dword initResultOrBitDepth;
-  StatusValueEaxCf5 soundResult;
+  HINSTANCE windowInstance;
+  int screenHeight;
+  int screenWidth;
+  dword networkResult;
+  dword bitsPerPixel;
   dword adapterIndex;
-  bool carryOrSoundFailed;
-  bool carryIn;
   StatusValueEaxCf5 statusResult;
+  StatusValueEaxCf5 soundResult;
   FatalErrorEaxCf5 fatalResult;
   DisplayModeEaxCf5 displayModeResult;
   CommandLineFindOptionEbxCf5 soundOption;
-  HMENU hMenu;
-  HINSTANCE hInstance;
-  dword displayHeight;
-  LPVOID lpParam;
   dword displayWidth;
-  
-  g_hInstance = GetModuleHandleA((LPCSTR)0x0);
+  dword displayHeight;
+
+  g_hInstance = GetModuleHandleA(NULL);
   processOrThreadHandle = GetCurrentProcess();
-  SetPriorityClass(processOrThreadHandle,0x100);
+  SetPriorityClass(processOrThreadHandle,REALTIME_PRIORITY_CLASS);
   processOrThreadHandle = GetCurrentThread();
-  SetThreadPriority(processOrThreadHandle,0);
+  SetThreadPriority(processOrThreadHandle,THREAD_PRIORITY_NORMAL);
   CommandLine_Parse();
-  windowHandle = FindWindowA(sz_MainWindowClass,(LPCSTR)0x0);
-  if (windowHandle == (HWND)0x0) {
+  if (FindWindowA(sz_MainWindowClass,NULL) == NULL) {
     g_MainWindowClass.instance = g_hInstance;
-    g_MainWindowClass.icon = LoadIconA(g_hInstance,(LPCSTR)1);
-    g_MainWindowClass.cursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00); /* IDC_ARROW */
-    windowClassAtom = RegisterClassA((WNDCLASSA *)&g_MainWindowClass);
-    if (windowClassAtom != 0) { /* the original tests the 16-bit ATOM in AX */
-      lpParam = (LPVOID)0x0;
-      hMenu = (HMENU)0x0;
-      windowHandle = (HWND)0x0;
-      hInstance = g_hInstance;
-      nHeight = GetSystemMetrics(1);
-      nWidth = GetSystemMetrics(0);
-      g_MainWindow = CreateWindowExA(8,sz_MainWindowClass,sz_MainWindowTitle,0x80080000,0,0,nWidth,
-                                     nHeight,windowHandle,hMenu,hInstance,lpParam);
-      if (g_MainWindow != (HWND)0x0) {
-        ShowWindow(g_MainWindow,1);
+    g_MainWindowClass.icon = LoadIconA(g_hInstance,MAKEINTRESOURCEA(1));
+    g_MainWindowClass.cursor = LoadCursorA(NULL,IDC_ARROW);
+    if (RegisterClassA((WNDCLASSA *)&g_MainWindowClass) != 0) { /* the original tests the 16-bit ATOM in AX */
+      windowInstance = g_hInstance; /* read before the GetSystemMetrics calls, as in the original */
+      screenHeight = GetSystemMetrics(SM_CYSCREEN);
+      screenWidth = GetSystemMetrics(SM_CXSCREEN);
+      g_MainWindow = CreateWindowExA(WS_EX_TOPMOST,sz_MainWindowClass,sz_MainWindowTitle,WS_POPUP | WS_SYSMENU,
+                                     0,0,screenWidth,screenHeight,NULL,NULL,windowInstance,NULL);
+      if (g_MainWindow != NULL) {
+        ShowWindow(g_MainWindow,SW_SHOWNORMAL);
         UpdateWindow(g_MainWindow);
         ArenaHeap_Init();
         FileSystem_Init();
         Locale_Init();
         ErrorSystem_Init();
         if (g_CpuFeatureFlags == 0) {
-          (*g_FatalErrorPrimaryDispatchCf)(0x51,true);
+          (*g_FatalErrorPrimaryDispatchCf)(FATAL_ERROR_CPU_WITHOUT_MMX,true);
         }
         statusResult = DynAPI_Bootstrap();
         fatalResult = (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
-        carryOrSoundFailed = fatalResult.carry;
         /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
         fatalResult = (*g_FatalErrorPrimaryDispatchCf)(fatalResult.eax,false);
@@ -87,30 +74,28 @@ void __cdecl ProcessEntry(void)
         statusResult = DirectInputMouse_Init();
         (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.carry);
         soundResult = DirectSound_Init();
-        carryOrSoundFailed = soundResult.carry;
-        Thandor_Log("DirectSound_Init: %s", carryOrSoundFailed ? "failed (continuing without sound)" : "ok");
-        carryIn = false;
-        if (carryOrSoundFailed) {
-          soundOption = CommandLine_FindOption(6,s_SOUND_00582f28);
-          carryIn = soundOption.carry;
-          if (!carryIn) {
-            fatalResult = (*g_FatalErrorPrimaryDispatchCf)(soundResult.valueOrError,true);
-            carryIn = fatalResult.carry;
+        Thandor_Log("DirectSound_Init: %s", soundResult.carry ? "failed (continuing without sound)" : "ok");
+        if (soundResult.carry) {
+          /* without a sound device the game only stops when -SOUND demands sound */
+          soundOption = CommandLine_FindOption(sizeof s_SOUND_00582f28,s_SOUND_00582f28);
+          if (!soundOption.carry) {
+            (*g_FatalErrorPrimaryDispatchCf)(soundResult.valueOrError,true);
           }
         }
-        initResultOrBitDepth = Network_Init();
+        networkResult = Network_Init();
         /* Network_Init returns 0 with CF clear (xor eax,eax) on success and an error code with CF
            set otherwise; Ghidra dropped its CF and passed the stale carry of the sound block. */
-        (*g_FatalErrorPrimaryDispatchCf)(initResultOrBitDepth,initResultOrBitDepth != 0);
+        (*g_FatalErrorPrimaryDispatchCf)(networkResult,networkResult != 0);
         PersistentSettings_Load();
-        displayWidth = 0x280;
-        displayHeight = 0x1e0;
-        initResultOrBitDepth = PersistentSettings_ReadDword(0x10,0xc);
-        adapterIndex = PersistentSettings_ReadDword(0,0);
+        displayWidth = 640;
+        displayHeight = 480;
+        bitsPerPixel = PersistentSettings_ReadDword(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
+        adapterIndex = PersistentSettings_ReadDword(0,PERSISTENT_SETTING_ADAPTER_INDEX);
         if (g_GraphicsAdapterCount <= adapterIndex) {
           adapterIndex = 0;
         }
-        displayModeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,initResultOrBitDepth,displayHeight,displayWidth);
+        displayModeResult =
+             (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,displayHeight,displayWidth);
         (*g_FatalErrorPrimaryDispatchCf)(displayModeResult.eax,displayModeResult.carry);
         UiRuntime_Initialize();
         Game_Run();
@@ -119,7 +104,6 @@ void __cdecl ProcessEntry(void)
       }
     }
   }
-                    // WARNING: Subroutine does not return
   ExitProcess(0);
 }
 

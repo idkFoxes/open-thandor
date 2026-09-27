@@ -12,5 +12,6 @@
 #include <thandor/platform/filesystem.h>
 #include <thandor/platform/input.h>
 #include <thandor/platform/system.h>
+#include <thandor/platform/win32_constants.h>
 
 #endif /* THANDOR_PLATFORM_H */

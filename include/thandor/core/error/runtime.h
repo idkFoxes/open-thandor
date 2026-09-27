@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/error/runtime. */
+
+/* Error codes handed to the fatal-error dispatcher (g_FatalErrorPrimaryDispatchCf); the code selects
+   the message text. Named as they are found. */
+#define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00575890 */

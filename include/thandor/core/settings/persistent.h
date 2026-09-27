@@ -12,6 +12,13 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/settings/persistent. */
+/* Byte offsets of the dwords in the persistent settings file (PersistentSettings_ReadDword/WriteDwords).
+   Named as they are found. */
+#define PERSISTENT_SETTING_ADAPTER_INDEX 0x00 /* graphics adapter chosen in the display settings */
+#define PERSISTENT_SETTING_DISPLAY_WIDTH 0x04
+#define PERSISTENT_SETTING_DISPLAY_HEIGHT 0x08
+#define PERSISTENT_SETTING_BITS_PER_PIXEL 0x0C
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00402C00 */
