@@ -810,4 +810,94 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
     return 1;
 }
 
+/* ---- B3: integer-scaled blit ---------------------------------------------------------------- */
+/*
+SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32 do not clip the source. They walk the whole
+image, replicate every texel scale x scale times, and test each written pixel against the clip
+rectangle, which is first clamped to [0, framebuffer size) (signed compares). The original's
+destination pointer walks the unclipped image; a pixel at (x, y) is at pixels + (y * width + x) *
+pixelBytes, which is what BlitScaled_Pixel computes, and only for pixels that pass the clip test.
+*/
+typedef struct BlitScaledImage {
+    const byte *texels;  /* first texel of the subresource */
+    int texelBytes;      /* 1 (palette index) or 4 (ARGB) */
+    const byte *palette; /* palette bank of a paletted image, else NULL */
+    dword width;         /* source size in texels (the original's loop counters; 0 would mean 2^32) */
+    dword height;
+    int left;            /* framebuffer position of the scaled image: draw + origin * scale */
+    int top;
+    int clipMinX;        /* clip rectangle clamped to the framebuffer */
+    int clipMinY;
+    int clipMaxX;
+    int clipMaxY;
+} BlitScaledImage;
+
+/* Validates and places an integer-scaled subresource. Differences to Blit_SetupSubresource: any
+   negative paletteIndex (TEST + JS), not only -1, means ARGB texels, and the origin is scaled. */
+static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAsset,
+                                     GraphicsSubresourceIndex subresourceIndex,
+                                     const SoftwareFramebufferAccess *framebuffer, int pixelBytes, dword scale,
+                                     int drawX, int drawY, int clipMaxY, int clipMaxX, int clipMinY, int clipMinX,
+                                     BlitScaledImage *image)
+{
+    const byte *asset = (const byte *)sourceAsset;
+    const GraphicsTextureSourceEntry *entry;
+
+    if (sourceAsset->common.magic != ASSET_MAGIC_GFX ||
+        subresourceIndex >= sourceAsset->tableDescriptor.subresourceCount ||
+        (int)framebuffer->bytesPerPixel != pixelBytes) {
+        return 0;
+    }
+    entry = (const GraphicsTextureSourceEntry *)(asset + sourceAsset->tableDescriptor.subresourceTableOffset) +
+            subresourceIndex;
+    if (entry->paletteIndex < 0) {
+        image->texelBytes = 4;
+        image->palette = NULL;
+    }
+    else if ((dword)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
+        image->texelBytes = 1;
+        image->palette = asset + 0x200 + (dword)entry->paletteIndex * 0x800;
+    }
+    else {
+        return 0;
+    }
+    image->texels = asset + entry->dataOffset;
+    image->width = entry->pixelWidth;
+    image->height = entry->pixelHeight;
+    image->left = (int)((dword)drawX + (dword)entry->originX * scale);
+    image->top = (int)((dword)drawY + (dword)entry->originY * scale);
+    image->clipMinX = clipMinX < 0 ? 0 : clipMinX;
+    image->clipMinY = clipMinY < 0 ? 0 : clipMinY;
+    image->clipMaxX = clipMaxX > (int)framebuffer->width ? (int)framebuffer->width : clipMaxX;
+    image->clipMaxY = clipMaxY > (int)framebuffer->height ? (int)framebuffer->height : clipMaxY;
+    return 1;
+}
+
+static __inline int BlitScaled_RowVisible(const BlitScaledImage *image, int y)
+{
+    return y >= image->clipMinY && y < image->clipMaxY;
+}
+
+static __inline int BlitScaled_ColumnVisible(const BlitScaledImage *image, int x)
+{
+    return x >= image->clipMinX && x < image->clipMaxX;
+}
+
+/* The texel's alpha-test colour and blend colour. A paletted texel tests the entry's converted pixel
+   (+4) and blends the entry's ARGB colour (+0), in both depths; a direct texel is both. */
+static __inline dword BlitScaled_TexelColor(const BlitScaledImage *image, const byte *texel, dword *blendColor)
+{
+    if (image->palette != NULL) {
+        *blendColor = *(const dword *)(image->palette + *texel * 8u);
+        return *(const dword *)(image->palette + *texel * 8u + 4u);
+    }
+    *blendColor = *(const dword *)texel;
+    return *blendColor;
+}
+
+static __inline byte *BlitScaled_Pixel(const SoftwareFramebufferAccess *framebuffer, int pixelBytes, int x, int y)
+{
+    return framebuffer->pixels + (y * (int)framebuffer->width + x) * pixelBytes;
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
