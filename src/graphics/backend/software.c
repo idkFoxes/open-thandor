@@ -816,11 +816,14 @@ SoftwareTextureSource_StretchDirectColorBilinear32
 
 /* Address: 0x004AA630.
    Ownership: graphics/backend/software.
-   Purpose: Nearest-neighbor integer-scale source-alpha compositor for a two-byte framebuffer. Every source pixel
-   is replicated integerScale times horizontally and every source row is replicated integerScale times vertically.
-   The source entry originX and originY are multiplied by integerScale before being added to drawX and drawY. Both
-   indexed palette entries and direct ARGB8888 entries are supported. For indexed entries, the active palette bank
-   comes from sourceEntry.paletteIndex and framebufferPixel is read at palette-entry offset +4.
+   Purpose: Draws one source subresource into a two-byte framebuffer at an integer scale (see
+   docs/software_raster.md "Blits"). Every texel becomes an integerScale x integerScale block, and the entry's
+   origin is scaled too. Nothing is clipped at the source: the whole scaled image is walked and each pixel is
+   tested against the clip rectangle, which is clamped to the framebuffer. Alpha 0 is skipped, alpha 0xFF is
+   written, anything else is blended. A paletted texel tests the alpha of the entry's converted pixel (+4) and
+   writes its low word, but blends the entry's ARGB colour (+0), as in BlitSourceAlpha16. Quirks kept: every
+   negative paletteIndex means ARGB texels, and the counters are do-while loops, so a scale or image size of 0
+   runs them 2^32 times. ABI: all registers are preserved and CF is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
@@ -831,286 +834,64 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
-  int destLeft;
-  short destPixel16;
-  uint paletteBankOrColor;
-  GraphicsPixelDimension pitchPixels;
-  int sourceWidth;
-  uint paletteColor;
-  dword packedBlue;
-  undefined4 packedGreen;
-  undefined4 packedRed;
-  int entryOffsetOrColumnsLeft;
-  int destX;
-  byte *sourceCursor;
-  byte *sourceRow;
-  byte *destCursor;
-  byte *destRow;
-  ulonglong destLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue1ByteLane3;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue1ByteLane2;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
-  int sourceRowsLeft;
-  GraphicsIntegerScale scaleRowsLeft;
-  GraphicsIntegerScale scaleColumnsLeft;
-  
-  if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-     (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    entryOffsetOrColumnsLeft = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-    if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-      destLeft = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x18) * integerScale;
-      drawY = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x14) * integerScale;
-      if (clipMinX < 0) {
-        clipMinX = 0;
-      }
-      if (clipMinY < 0) {
-        clipMinY = 0;
-      }
-      if ((int)framebuffer->width < clipMaxX) {
-        clipMaxX = framebuffer->width;
-      }
-      paletteBankOrColor = *(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       entryOffsetOrColumnsLeft + -0x20);
-      if ((int)framebuffer->height < clipMaxY) {
-        clipMaxY = framebuffer->height;
-      }
-      if ((int)paletteBankOrColor < 0) {
-        pitchPixels = framebuffer->width;
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x10);
-        sourceRowsLeft = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            entryOffsetOrColumnsLeft + -0xc);
-        destRow = framebuffer->pixels + (pitchPixels * drawY + destLeft) * 2;
-        sourceRow = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x1c) + -0x28;
-        scaleRowsLeft = integerScale;
-        do {
-          do {
-            if ((clipMinY <= drawY) &&
-               (entryOffsetOrColumnsLeft = sourceWidth, destX = destLeft, sourceCursor = sourceRow, destCursor = destRow,
-               drawY < clipMaxY)) {
-              do {
-                scaleColumnsLeft = integerScale;
-                paletteBankOrColor = *(uint *)sourceCursor;
-                if (paletteBankOrColor < 0x1000000) {
-                  destX = destX + integerScale;
-                  destCursor = destCursor + integerScale * 2;
-                }
-                else if (paletteBankOrColor < 0xff000000) {
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      destPixel16 = *(short *)destCursor;
-                      mm1PackedValue1ByteLane3 = (byte)(paletteBankOrColor >> 0x18);
-                      mm1PackedValue1ByteLane2 = (byte)(paletteBankOrColor >> 0x10);
-                      mm1PackedValue1ByteLane1 = (byte)(paletteBankOrColor >> 8);
-                      destLanes = CONCAT44(CONCAT22(destPixel16,destPixel16),CONCAT22(destPixel16,destPixel16)) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                      mm1PackedValue1 =
-                           pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,
-                                                    mm1PackedValue1ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,paletteBankOrColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteBankOrColor,
-                                                                              (char)paletteBankOrColor) >> 2))),
-                                  g_SoftwareBlendAlphaFactors[paletteBankOrColor >> 0x18]);
-                      mm0PackedValue2 =
-                           pmulhw(CONCAT26((ushort)((short)(destLanes >> 0x30) *
-                                                   g_SoftwarePixelMmxConstants.unpackScales.zero) >>
-                                           2,CONCAT24((ushort)((short)(destLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.red) >> 2,
-                                                      CONCAT22((ushort)((short)(destLanes >> 0x10) *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.green) >> 2,
-                                                               (ushort)((short)destLanes *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.blue) >> 2))),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteBankOrColor >> 0x18]);
-                      mm0PackedValue3 =
-                           pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                            (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                            CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                     (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                     CONCAT22((short)((ulonglong)mm0PackedValue2 >>
-                                                                     0x10) +
-                                                              (short)((ulonglong)mm1PackedValue1 >>
-                                                                     0x10),
-                                                              (short)mm0PackedValue2 +
-                                                              (short)mm1PackedValue1))) &
-                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
-                                   g_SoftwarePixelMmxConstants.packWeights);
-                      *(short *)destCursor =
-                           (short)((ulonglong)mm0PackedValue3 >> 8) +
-                           (short)((ulonglong)mm0PackedValue3 >> 0x28);
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 2;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                else {
-                  packedBlue = g_SoftwarePixelPackTables->blue[paletteBankOrColor & 0xff];
-                  packedGreen = *(undefined4 *)
-                           ((int)g_SoftwarePixelPackTables->green + ((paletteBankOrColor & 0xff00) >> 6));
-                  packedRed = *(undefined4 *)
-                           ((int)g_SoftwarePixelPackTables->red + ((paletteBankOrColor & 0xff0000) >> 0xe));
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      *(short *)destCursor = (short)packedBlue + (short)packedGreen + (short)packedRed;
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 2;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-                sourceCursor = sourceCursor + 4;
-              } while (entryOffsetOrColumnsLeft != 0);
-            }
-            drawY = drawY + 1;
-            destRow = destRow + pitchPixels * 2;
-            scaleRowsLeft = scaleRowsLeft - 1;
-          } while (scaleRowsLeft != 0);
-          sourceRow = sourceRow + sourceWidth * 4;
-          scaleRowsLeft = integerScale;
-          sourceRowsLeft = sourceRowsLeft + -1;
-        } while (sourceRowsLeft != 0);
-        return;
-      }
-      if (paletteBankOrColor < (sourceAsset->tableDescriptor).paletteBankCount) {
-        pitchPixels = framebuffer->width;
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x10);
-        sourceRowsLeft = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            entryOffsetOrColumnsLeft + -0xc);
-        destRow = framebuffer->pixels + (pitchPixels * drawY + destLeft) * 2;
-        sourceRow = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x1c) + -0x28;
-        scaleRowsLeft = integerScale;
-        do {
-          do {
-            if ((clipMinY <= drawY) &&
-               (entryOffsetOrColumnsLeft = sourceWidth, destX = destLeft, sourceCursor = sourceRow, destCursor = destRow,
-               drawY < clipMaxY)) {
-              do {
-                scaleColumnsLeft = integerScale;
-                paletteColor = *(uint *)(sourceAsset[paletteBankOrColor * 4 + 1].common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + (uint)*sourceCursor * 8 + -0x24);
-                if (paletteColor < 0x1000000) {
-                  destX = destX + integerScale;
-                  destCursor = destCursor + integerScale * 2;
-                }
-                else if (paletteColor < 0xff000000) {
-                  paletteColor = *(uint *)(sourceAsset[paletteBankOrColor * 4 + 1].common.buildMetadata.
-                                    assetRelativeAddressAnchor28 + (uint)*sourceCursor * 8 + -0x28);
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      destPixel16 = *(short *)destCursor;
-                      mm1PackedValue0ByteLane3 = (byte)(paletteColor >> 0x18);
-                      mm1PackedValue0ByteLane2 = (byte)(paletteColor >> 0x10);
-                      mm1PackedValue0ByteLane1 = (byte)(paletteColor >> 8);
-                      destLanes = CONCAT44(CONCAT22(destPixel16,destPixel16),CONCAT22(destPixel16,destPixel16)) &
-                               THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
-                      mm1PackedValue0 =
-                           pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,
-                                                    mm1PackedValue0ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,paletteColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteColor,
-                                                                              (char)paletteColor) >> 2))),
-                                  g_SoftwareBlendAlphaFactors[paletteColor >> 0x18]);
-                      mm0PackedValue0 =
-                           pmulhw(CONCAT26((ushort)((short)(destLanes >> 0x30) *
-                                                   g_SoftwarePixelMmxConstants.unpackScales.zero) >>
-                                           2,CONCAT24((ushort)((short)(destLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.red) >> 2,
-                                                      CONCAT22((ushort)((short)(destLanes >> 0x10) *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.green) >> 2,
-                                                               (ushort)((short)destLanes *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.blue) >> 2))),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteColor >> 0x18]);
-                      mm0PackedValue1 =
-                           pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                            (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                            CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                     (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                     CONCAT22((short)((ulonglong)mm0PackedValue0 >>
-                                                                     0x10) +
-                                                              (short)((ulonglong)mm1PackedValue0 >>
-                                                                     0x10),
-                                                              (short)mm0PackedValue0 +
-                                                              (short)mm1PackedValue0))) &
-                                   THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
-                                   g_SoftwarePixelMmxConstants.packWeights);
-                      *(short *)destCursor =
-                           (short)((ulonglong)mm0PackedValue1 >> 8) +
-                           (short)((ulonglong)mm0PackedValue1 >> 0x28);
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 2;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                else {
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      *(short *)destCursor = (short)paletteColor;
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 2;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-                sourceCursor = sourceCursor + 1;
-              } while (entryOffsetOrColumnsLeft != 0);
-            }
-            drawY = drawY + 1;
-            destRow = destRow + pitchPixels * 2;
-            scaleRowsLeft = scaleRowsLeft - 1;
-          } while (scaleRowsLeft != 0);
-          sourceRow = sourceRow + sourceWidth;
-          scaleRowsLeft = integerScale;
-          sourceRowsLeft = sourceRowsLeft + -1;
-        } while (sourceRowsLeft != 0);
-      }
-    }
+  BlitScaledImage image;
+  const byte *sourceRow;
+  dword sourceRowsLeft;
+  int y;
+
+  if (!Blit_SetupScaled(sourceAsset, subresourceIndex, framebuffer, 2, integerScale, drawX, drawY, clipMaxY,
+                        clipMaxX, clipMinY, clipMinX, &image)) {
+    return;
   }
-  return;
+  sourceRow = image.texels;
+  y = image.top;
+  sourceRowsLeft = image.height;
+  do {
+    dword repeatRowsLeft = integerScale;
+    do {
+      if (BlitScaled_RowVisible(&image, y)) {
+        const byte *texel = sourceRow;
+        dword columnsLeft = image.width;
+        int x = image.left;
+        do {
+          dword blendColor;
+          dword color = BlitScaled_TexelColor(&image, texel, &blendColor);
+          if (Blit_IsTransparent(color)) {
+            x += (int)integerScale;
+          }
+          else {
+            dword repeatColumnsLeft = integerScale;
+            do {
+              if (BlitScaled_ColumnVisible(&image, x)) {
+                word *pixel = (word *)BlitScaled_Pixel(framebuffer, 2, x, y);
+                if (!Blit_IsOpaque(color)) {
+                  *pixel = Blit_BlendArgb16(blendColor, *pixel);
+                }
+                else {
+                  *pixel = image.palette != NULL ? (word)color : (word)Blit_ConvertArgb(color);
+                }
+              }
+              x++;
+            } while (--repeatColumnsLeft != 0);
+          }
+          texel += image.texelBytes;
+        } while (--columnsLeft != 0);
+      }
+      y++;
+    } while (--repeatRowsLeft != 0);
+    sourceRow += image.width * image.texelBytes;
+  } while (--sourceRowsLeft != 0);
 }
 
 
 /* Address: 0x004AAA40.
    Ownership: graphics/backend/software.
-   Purpose: Nearest-neighbor integer-scale source-alpha compositor for a four-byte framebuffer. Every source pixel
-   and row is replicated by the same integer scale. The source entry originX and originY are multiplied by
-   integerScale before being added to drawX and drawY. Both indexed palette entries and direct ARGB8888 entries are
-   supported. For indexed entries, the active palette bank comes from sourceEntry.paletteIndex and framebufferPixel
-   is read at palette-entry offset +4.
+   Purpose: Four-byte framebuffer version of SoftwareTextureSource_BlitIntegerScaledSourceAlpha16 (integer-scaled,
+   per-pixel clip test, alpha 0 skipped, 0xFF written, anything else blended in 8-bit lanes). Unlike
+   BlitSourceAlpha32, a paletted texel here uses the 16-bit layout: it tests the alpha of the converted pixel
+   (+4), blends the ARGB colour (+0), and writes +4 as it is (not converted again) when opaque. A direct texel is
+   converted through g_SoftwarePixelPackTables when opaque. Same quirks as the 16-bit version. ABI: all registers
+   are preserved and CF is cleared.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
@@ -1121,278 +902,53 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
           GraphicsTextureSourceAsset *sourceAsset,SoftwareFramebufferAccess *framebuffer)
 
 {
-  int destLeft;
-  uint paletteBankOrColor;
-  GraphicsPixelDimension pitchPixels;
-  int sourceWidth;
-  uint paletteColor;
-  uint destPixel;
-  dword packedBlue;
-  int destPixelOrPackedGreen;
-  int packedRed;
-  byte mm0PackedValue0ByteLane2;
-  byte mm0PackedValue1ByteLane2;
-  byte mm0PackedValue0ByteLane3;
-  ushort alphaPairOrBlueSum;
-  byte mm0PackedValue1ByteLane1;
-  ushort greenSum;
-  byte mm0PackedValue1ByteLane3;
-  int entryOffsetOrColumnsLeft;
-  int destX;
-  byte *sourceRowOrCursor;
-  byte *destRowOrSourceRow;
-  byte *sourceCursor;
-  uint *destRow32;
-  uint *destCursor32;
-  byte *destCursor;
-  undefined1 alphaOrGreenByte;
-  ushort redSum;
-  undefined8 mm0PackedValue0;
-  ushort alphaSum;
-  undefined8 mm0PackedValue1;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue1ByteLane2;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
-  int sourceRowsLeft;
-  GraphicsIntegerScale scaleRowsLeft;
-  GraphicsIntegerScale scaleColumnsLeft;
-  
-  if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
-     (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
-    entryOffsetOrColumnsLeft = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
-    if (framebuffer->bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_32BIT) {
-      destLeft = drawX + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x18) * integerScale;
-      drawY = drawY + *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              entryOffsetOrColumnsLeft + -0x14) * integerScale;
-      if (clipMinX < 0) {
-        clipMinX = 0;
-      }
-      if (clipMinY < 0) {
-        clipMinY = 0;
-      }
-      if ((int)framebuffer->width < clipMaxX) {
-        clipMaxX = framebuffer->width;
-      }
-      paletteBankOrColor = *(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       entryOffsetOrColumnsLeft + -0x20);
-      if ((int)framebuffer->height < clipMaxY) {
-        clipMaxY = framebuffer->height;
-      }
-      if ((int)paletteBankOrColor < 0) {
-        pitchPixels = framebuffer->width;
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x10);
-        sourceRowsLeft = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            entryOffsetOrColumnsLeft + -0xc);
-        destRowOrSourceRow = framebuffer->pixels + (pitchPixels * drawY + destLeft) * 4;
-        sourceRowOrCursor = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x1c) + -0x28;
-        scaleRowsLeft = integerScale;
-        do {
-          do {
-            if ((clipMinY <= drawY) &&
-               (entryOffsetOrColumnsLeft = sourceWidth, destX = destLeft, sourceCursor = sourceRowOrCursor, destCursor = destRowOrSourceRow,
-               drawY < clipMaxY)) {
-              do {
-                scaleColumnsLeft = integerScale;
-                paletteBankOrColor = *(uint *)sourceCursor;
-                if (paletteBankOrColor < 0x1000000) {
-                  destX = destX + integerScale;
-                  destCursor = destCursor + integerScale * 4;
-                }
-                else if (paletteBankOrColor < 0xff000000) {
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      destPixelOrPackedGreen = *(int *)destCursor;
-                      alphaOrGreenByte = (undefined1)(paletteBankOrColor >> 0x18);
-                      alphaPairOrBlueSum = CONCAT11(alphaOrGreenByte,alphaOrGreenByte);
-                      mm1PackedValue1ByteLane2 = (byte)(paletteBankOrColor >> 0x10);
-                      mm1PackedValue1ByteLane1 = (byte)(paletteBankOrColor >> 8);
-                      mm0PackedValue1ByteLane3 = (byte)((uint)destPixelOrPackedGreen >> 0x18);
-                      mm0PackedValue1ByteLane2 = (byte)((uint)destPixelOrPackedGreen >> 0x10);
-                      mm0PackedValue1ByteLane1 = (byte)((uint)destPixelOrPackedGreen >> 8);
-                      mm1PackedValue1 =
-                           pmulhw(CONCAT26(alphaPairOrBlueSum >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPairOrBlueSum,
-                                                  mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,paletteBankOrColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteBankOrColor,
-                                                                              (char)paletteBankOrColor) >> 2))),
-                                  g_SoftwareBlendAlphaFactors[paletteBankOrColor >> 0x18]);
-                      mm0PackedValue1 =
-                           pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,
-                                                    mm0PackedValue1ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3)
-                                                  ,mm0PackedValue1ByteLane2),
-                                                  CONCAT14(mm0PackedValue1ByteLane2,destPixelOrPackedGreen)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
-                                                                         mm0PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)destPixelOrPackedGreen,
-                                                                              (char)destPixelOrPackedGreen) >> 2))),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteBankOrColor >> 0x18]);
-                      alphaPairOrBlueSum = (ushort)((short)mm0PackedValue1 + (short)mm1PackedValue1) >> 4;
-                      greenSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                                       (short)((ulonglong)mm1PackedValue1 >> 0x10)) >> 4;
-                      redSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                                       (short)((ulonglong)mm1PackedValue1 >> 0x20)) >> 4;
-                      alphaSum = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) +
-                                       (short)((ulonglong)mm1PackedValue1 >> 0x30)) >> 4;
-                      *(int *)destCursor =
-                           CONCAT13((alphaSum != 0) * (alphaSum < 0x100) * (char)alphaSum -
-                                    (0xff < alphaSum),
-                                    CONCAT12((redSum != 0) * (redSum < 0x100) * (char)redSum -
-                                             (0xff < redSum),
-                                             CONCAT11((greenSum != 0) * (greenSum < 0x100) *
-                                                      (char)greenSum - (0xff < greenSum),
-                                                      (alphaPairOrBlueSum != 0) * (alphaPairOrBlueSum < 0x100) *
-                                                      (char)alphaPairOrBlueSum - (0xff < alphaPairOrBlueSum))));
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 4;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                else {
-                  packedBlue = g_SoftwarePixelPackTables->blue[paletteBankOrColor & 0xff];
-                  destPixelOrPackedGreen = *(int *)((int)g_SoftwarePixelPackTables->green + ((paletteBankOrColor & 0xff00) >> 6));
-                  packedRed = *(int *)((int)g_SoftwarePixelPackTables->red + ((paletteBankOrColor & 0xff0000) >> 0xe)
-                                  );
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      *(dword *)destCursor = packedBlue + (paletteBankOrColor & 0xff000000) + destPixelOrPackedGreen + packedRed;
-                    }
-                    destX = destX + 1;
-                    destCursor = destCursor + 4;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-                sourceCursor = sourceCursor + 4;
-              } while (entryOffsetOrColumnsLeft != 0);
-            }
-            drawY = drawY + 1;
-            destRowOrSourceRow = destRowOrSourceRow + pitchPixels * 4;
-            scaleRowsLeft = scaleRowsLeft - 1;
-          } while (scaleRowsLeft != 0);
-          sourceRowOrCursor = sourceRowOrCursor + sourceWidth * 4;
-          scaleRowsLeft = integerScale;
-          sourceRowsLeft = sourceRowsLeft + -1;
-        } while (sourceRowsLeft != 0);
-        return;
-      }
-      if (paletteBankOrColor < (sourceAsset->tableDescriptor).paletteBankCount) {
-        pitchPixels = framebuffer->width;
-        sourceWidth = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                        entryOffsetOrColumnsLeft + -0x10);
-        sourceRowsLeft = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                            entryOffsetOrColumnsLeft + -0xc);
-        destRow32 = (uint *)(framebuffer->pixels + (pitchPixels * drawY + destLeft) * 4);
-        destRowOrSourceRow = (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                  *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
-                          entryOffsetOrColumnsLeft + -0x1c) + -0x28;
-        scaleRowsLeft = integerScale;
-        do {
-          do {
-            if ((clipMinY <= drawY) &&
-               (entryOffsetOrColumnsLeft = sourceWidth, destX = destLeft, sourceRowOrCursor = destRowOrSourceRow, destCursor32 = destRow32,
-               drawY < clipMaxY)) {
-              do {
-                scaleColumnsLeft = integerScale;
-                paletteColor = *(uint *)(sourceAsset[paletteBankOrColor * 4 + 1].common.buildMetadata.
-                                  assetRelativeAddressAnchor28 + (uint)*sourceRowOrCursor * 8 + -0x24);
-                if (paletteColor < 0x1000000) {
-                  destX = destX + integerScale;
-                  destCursor32 = destCursor32 + integerScale;
-                }
-                else if (paletteColor < 0xff000000) {
-                  paletteColor = *(uint *)(sourceAsset[paletteBankOrColor * 4 + 1].common.buildMetadata.
-                                    assetRelativeAddressAnchor28 + (uint)*sourceRowOrCursor * 8 + -0x28);
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      destPixel = *destCursor32;
-                      alphaOrGreenByte = (undefined1)(paletteColor >> 0x18);
-                      alphaPairOrBlueSum = CONCAT11(alphaOrGreenByte,alphaOrGreenByte);
-                      mm1PackedValue0ByteLane2 = (byte)(paletteColor >> 0x10);
-                      mm1PackedValue0ByteLane1 = (byte)(paletteColor >> 8);
-                      mm0PackedValue0ByteLane3 = (byte)(destPixel >> 0x18);
-                      mm0PackedValue0ByteLane2 = (byte)(destPixel >> 0x10);
-                      alphaOrGreenByte = (undefined1)(destPixel >> 8);
-                      mm1PackedValue0 =
-                           pmulhw(CONCAT26(alphaPairOrBlueSum >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(alphaPairOrBlueSum,
-                                                  mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,paletteColor)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteColor,
-                                                                              (char)paletteColor) >> 2))),
-                                  g_SoftwareBlendAlphaFactors[paletteColor >> 0x18]);
-                      mm0PackedValue0 =
-                           pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,
-                                                    mm0PackedValue0ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3)
-                                                  ,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,destPixel)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(alphaOrGreenByte,alphaOrGreenByte) >> 2,
-                                                                CONCAT11((char)destPixel,(char)destPixel) >>
-                                                                2))),
-                                  g_SoftwareBlendInverseAlphaFactors[paletteColor >> 0x18]);
-                      alphaPairOrBlueSum = (ushort)((short)mm0PackedValue0 + (short)mm1PackedValue0) >> 4;
-                      greenSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                       (short)((ulonglong)mm1PackedValue0 >> 0x10)) >> 4;
-                      redSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                       (short)((ulonglong)mm1PackedValue0 >> 0x20)) >> 4;
-                      alphaSum = (ushort)((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                       (short)((ulonglong)mm1PackedValue0 >> 0x30)) >> 4;
-                      *destCursor32 = CONCAT13((alphaSum != 0) * (alphaSum < 0x100) * (char)alphaSum -
-                                          (0xff < alphaSum),
-                                          CONCAT12((redSum != 0) * (redSum < 0x100) * (char)redSum -
-                                                   (0xff < redSum),
-                                                   CONCAT11((greenSum != 0) * (greenSum < 0x100) *
-                                                            (char)greenSum - (0xff < greenSum),
-                                                            (alphaPairOrBlueSum != 0) * (alphaPairOrBlueSum < 0x100) *
-                                                            (char)alphaPairOrBlueSum - (0xff < alphaPairOrBlueSum))));
-                    }
-                    destX = destX + 1;
-                    destCursor32 = destCursor32 + 1;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                else {
-                  do {
-                    if ((clipMinX <= destX) && (destX < clipMaxX)) {
-                      *destCursor32 = paletteColor;
-                    }
-                    destX = destX + 1;
-                    destCursor32 = destCursor32 + 1;
-                    scaleColumnsLeft = scaleColumnsLeft - 1;
-                  } while (scaleColumnsLeft != 0);
-                }
-                entryOffsetOrColumnsLeft = entryOffsetOrColumnsLeft + -1;
-                sourceRowOrCursor = sourceRowOrCursor + 1;
-              } while (entryOffsetOrColumnsLeft != 0);
-            }
-            drawY = drawY + 1;
-            destRow32 = destRow32 + pitchPixels;
-            scaleRowsLeft = scaleRowsLeft - 1;
-          } while (scaleRowsLeft != 0);
-          destRowOrSourceRow = destRowOrSourceRow + sourceWidth;
-          scaleRowsLeft = integerScale;
-          sourceRowsLeft = sourceRowsLeft + -1;
-        } while (sourceRowsLeft != 0);
-      }
-    }
+  BlitScaledImage image;
+  const byte *sourceRow;
+  dword sourceRowsLeft;
+  int y;
+
+  if (!Blit_SetupScaled(sourceAsset, subresourceIndex, framebuffer, 4, integerScale, drawX, drawY, clipMaxY,
+                        clipMaxX, clipMinY, clipMinX, &image)) {
+    return;
   }
-  return;
+  sourceRow = image.texels;
+  y = image.top;
+  sourceRowsLeft = image.height;
+  do {
+    dword repeatRowsLeft = integerScale;
+    do {
+      if (BlitScaled_RowVisible(&image, y)) {
+        const byte *texel = sourceRow;
+        dword columnsLeft = image.width;
+        int x = image.left;
+        do {
+          dword blendColor;
+          dword color = BlitScaled_TexelColor(&image, texel, &blendColor);
+          if (Blit_IsTransparent(color)) {
+            x += (int)integerScale;
+          }
+          else {
+            dword repeatColumnsLeft = integerScale;
+            do {
+              if (BlitScaled_ColumnVisible(&image, x)) {
+                dword *pixel = (dword *)BlitScaled_Pixel(framebuffer, 4, x, y);
+                if (!Blit_IsOpaque(color)) {
+                  *pixel = Blit_BlendArgb32(blendColor, *pixel);
+                }
+                else {
+                  *pixel = image.palette != NULL ? color : Blit_ConvertArgb(color);
+                }
+              }
+              x++;
+            } while (--repeatColumnsLeft != 0);
+          }
+          texel += image.texelBytes;
+        } while (--columnsLeft != 0);
+      }
+      y++;
+    } while (--repeatRowsLeft != 0);
+    sourceRow += image.width * image.texelBytes;
+  } while (--sourceRowsLeft != 0);
 }
 
 
@@ -3735,93 +3291,35 @@ SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 /* Address: 0x00519270.
    Ownership: graphics/backend/software.
-   Purpose: Advances every nonzero software-mask pixel by one and saturates values at 31 using the runtime texture
-   dimensions.
+   Purpose: Adds 0x1F to every nonzero byte of the software mask, saturating at 0xFF (PCMPEQB / PAND / PXOR /
+   PADDUSB); zero bytes stay zero. The mask size is taken from g_GraphicsTextureSourceGetLogicalSize, and the
+   buffer is processed in 32-byte blocks, width * height >> 5 of them (the remainder is left alone). Quirk kept:
+   the block counter is a do-while loop, so fewer than 32 pixels means 2^32 blocks. Nothing happens when
+   maskPixels is NULL. ABI: all registers are preserved.
 */
 void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  undefined8 evenMaskQword;
-  undefined8 oddMaskQword;
-  byte *maskCursor;
-  uint blocksRemaining;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
+  byte *mask;
+  dword blocksLeft;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
-  
-  maskCursor = maskRuntime->maskPixels;
-  if (maskCursor != (byte *)0x0) {
-    logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
-    blocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 5;
-    do {
-      evenMaskQword = *(undefined8 *)maskCursor;
-      oddMaskQword = *(undefined8 *)(maskCursor + 8);
-      mm0PackedValue0 =
-           paddusb(CONCAT17(-((char)((ulonglong)evenMaskQword >> 0x38) == '\0'),
-                            CONCAT16(-((char)((ulonglong)evenMaskQword >> 0x30) == '\0'),
-                                     CONCAT15(-((char)((ulonglong)evenMaskQword >> 0x28) == '\0'),
-                                              CONCAT14(-((char)((ulonglong)evenMaskQword >> 0x20) == '\0'),
-                                                       CONCAT13(-((char)((ulonglong)evenMaskQword >> 0x18)
-                                                                 == '\0'),
-                                                                CONCAT12(-((char)((ulonglong)evenMaskQword
-                                                                                 >> 0x10) == '\0'),
-                                                                         CONCAT11(-((char)((
-                                                  ulonglong)evenMaskQword >> 8) == '\0'),
-                                                  -((char)evenMaskQword == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
-                   ^ 0x1f1f1f1f1f1f1f1f,evenMaskQword);
-      mm1PackedValue0 =
-           paddusb(CONCAT17(-((char)((ulonglong)oddMaskQword >> 0x38) == '\0'),
-                            CONCAT16(-((char)((ulonglong)oddMaskQword >> 0x30) == '\0'),
-                                     CONCAT15(-((char)((ulonglong)oddMaskQword >> 0x28) == '\0'),
-                                              CONCAT14(-((char)((ulonglong)oddMaskQword >> 0x20) == '\0'),
-                                                       CONCAT13(-((char)((ulonglong)oddMaskQword >> 0x18)
-                                                                 == '\0'),
-                                                                CONCAT12(-((char)((ulonglong)oddMaskQword
-                                                                                 >> 0x10) == '\0'),
-                                                                         CONCAT11(-((char)((
-                                                  ulonglong)oddMaskQword >> 8) == '\0'),
-                                                  -((char)oddMaskQword == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
-                   ^ 0x1f1f1f1f1f1f1f1f,oddMaskQword);
-      *(undefined8 *)maskCursor = mm0PackedValue0;
-      *(undefined8 *)(maskCursor + 8) = mm1PackedValue0;
-      evenMaskQword = *(undefined8 *)(maskCursor + 0x10);
-      oddMaskQword = *(undefined8 *)(maskCursor + 0x18);
-      mm0PackedValue1 =
-           paddusb(CONCAT17(-((char)((ulonglong)evenMaskQword >> 0x38) == '\0'),
-                            CONCAT16(-((char)((ulonglong)evenMaskQword >> 0x30) == '\0'),
-                                     CONCAT15(-((char)((ulonglong)evenMaskQword >> 0x28) == '\0'),
-                                              CONCAT14(-((char)((ulonglong)evenMaskQword >> 0x20) == '\0'),
-                                                       CONCAT13(-((char)((ulonglong)evenMaskQword >> 0x18)
-                                                                 == '\0'),
-                                                                CONCAT12(-((char)((ulonglong)evenMaskQword
-                                                                                 >> 0x10) == '\0'),
-                                                                         CONCAT11(-((char)((
-                                                  ulonglong)evenMaskQword >> 8) == '\0'),
-                                                  -((char)evenMaskQword == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
-                   ^ 0x1f1f1f1f1f1f1f1f,evenMaskQword);
-      mm1PackedValue1 =
-           paddusb(CONCAT17(-((char)((ulonglong)oddMaskQword >> 0x38) == '\0'),
-                            CONCAT16(-((char)((ulonglong)oddMaskQword >> 0x30) == '\0'),
-                                     CONCAT15(-((char)((ulonglong)oddMaskQword >> 0x28) == '\0'),
-                                              CONCAT14(-((char)((ulonglong)oddMaskQword >> 0x20) == '\0'),
-                                                       CONCAT13(-((char)((ulonglong)oddMaskQword >> 0x18)
-                                                                 == '\0'),
-                                                                CONCAT12(-((char)((ulonglong)oddMaskQword
-                                                                                 >> 0x10) == '\0'),
-                                                                         CONCAT11(-((char)((
-                                                  ulonglong)oddMaskQword >> 8) == '\0'),
-                                                  -((char)oddMaskQword == '\0')))))))) & 0x1f1f1f1f1f1f1f1f
-                   ^ 0x1f1f1f1f1f1f1f1f,oddMaskQword);
-      *(undefined8 *)(maskCursor + 0x10) = mm0PackedValue1;
-      *(undefined8 *)(maskCursor + 0x18) = mm1PackedValue1;
-      maskCursor = maskCursor + 0x20;
-      blocksRemaining = blocksRemaining - 1;
-    } while (blocksRemaining != 0);
+  int i;
+
+  mask = maskRuntime->maskPixels;
+  if (mask == NULL) {
+    return;
   }
-  return;
+  logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
+  blocksLeft = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 5;
+  do {
+    for (i = 0; i < 32; i++) {
+      if (mask[i] != 0) {
+        mask[i] = (byte)(mask[i] < 0xff - 0x1f ? mask[i] + 0x1f : 0xff);
+      }
+    }
+    mask += 32;
+  } while (--blocksLeft != 0);
 }
 
 
