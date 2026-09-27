@@ -83,9 +83,9 @@ void __cdecl ProcessEntry(void)
           }
         }
         networkResult = Network_Init();
-        /* Network_Init returns 0 with CF clear (xor eax,eax) on success and an error code with CF
-           set otherwise; Ghidra dropped its CF and passed the stale carry of the sound block. */
-        FatalError_ExitIfFailed(networkResult,networkResult != 0);
+        /* Network_Init leaves with CF clear on every path, failures included (CLC at 0x00584DD6 and
+           0x00584DE0), so a missing WinSock is never fatal: the check below always passes. */
+        FatalError_ExitIfFailed(networkResult,false);
         PersistentSettings_Load();
         displayWidth = 640;
         displayHeight = 480;
@@ -536,57 +536,54 @@ uint32_t __cdecl CPU_DetectFeatures(void)
 }
 
 /* Address: 0x00573070.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Handles game run.
-   Local calls: GameRuntime_InitializeSpatialAudioAndRendering, Game_LoadCoreAssets, Game_PlayIntroMovies.
-   Cross-module calls: PersistentSettings_Load [core/settings/persistent], PersistentSettings_ReadDword
-   [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent], Frontend_MainLoop
-   [ui/frontend/runtime].
+   Runs the game once the subsystems are up: shows the first cursor frame, initialises spatial audio and
+   rendering, loads the core assets and plays the intro movies (each failure is fatal). It then switches
+   from the 640x480x16 start mode to the saved display mode if that differs, runs the frontend main loop and
+   finally closes and cleans up the network backend.
 */
 void __cdecl Game_Run(void)
 
 {
   StatusResult renderingInitResult;
-  uint32_t loadResultOrWidth;
+  uint32_t loadResultOrWidth; /* Game_LoadCoreAssets result, later the saved display width */
   uint32_t displayHeight;
-  uint32_t bitDepth;
+  uint32_t bitsPerPixel;
   uint32_t adapterIndex;
-  bool dispatchCarry;
+  bool introMoviesFailed;
   CursorFrameResult cursorFrameResult;
   FatalErrorCheckResult fatalResult;
   DisplayModeResult displayModeResult;
   FrontendMainLoopResult mainLoopResult;
-  
+
   cursorFrameResult = g_GraphicsCursorSetFrame(0);
-  fatalResult = FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
-  dispatchCarry = fatalResult.failed;
+  FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
   renderingInitResult = GameRuntime_InitializeSpatialAudioAndRendering();
-  fatalResult = FatalError_ExitIfFailed(renderingInitResult.valueOrError,renderingInitResult.failed);
-  dispatchCarry = fatalResult.failed;
+  FatalError_ExitIfFailed(renderingInitResult.valueOrError,renderingInitResult.failed);
   loadResultOrWidth = Game_LoadCoreAssets();
   Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
   /* 0 with CF clear on success, an error code with CF set otherwise */
   fatalResult = FatalError_ExitIfFailed(loadResultOrWidth,loadResultOrWidth != 0);
   /* keeps EAX: a movie that cannot start is reported with the previous value */
-  dispatchCarry = Game_PlayIntroMovies();
-  FatalError_ExitIfFailed(fatalResult.valueOrError,dispatchCarry);
+  introMoviesFailed = Game_PlayIntroMovies();
+  FatalError_ExitIfFailed(fatalResult.valueOrError,introMoviesFailed);
   PersistentSettings_Load();
-  loadResultOrWidth = PersistentSettings_Read(0x280,4);
-  displayHeight = PersistentSettings_Read(0x1e0,8);
-  bitDepth = PersistentSettings_Read(0x10,0xc);
-  if (((loadResultOrWidth != 0x280) || (displayHeight != 0x1e0)) || (bitDepth != 0x10)) {
-    adapterIndex = PersistentSettings_Read(0,0);
+  /* ProcessEntry started in 640x480x16; switch only when the saved mode differs */
+  loadResultOrWidth = PersistentSettings_Read(640,PERSISTENT_SETTING_DISPLAY_WIDTH);
+  displayHeight = PersistentSettings_Read(480,PERSISTENT_SETTING_DISPLAY_HEIGHT);
+  bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
+  if (((loadResultOrWidth != 640) || (displayHeight != 480)) || (bitsPerPixel != 16)) {
+    adapterIndex = PersistentSettings_Read(0,PERSISTENT_SETTING_ADAPTER_INDEX);
     if (g_GraphicsAdapterCount <= adapterIndex) {
       adapterIndex = 0;
     }
-    displayModeResult = g_GraphicsSetDisplayMode(adapterIndex,bitDepth,displayHeight,loadResultOrWidth);
+    displayModeResult = g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,displayHeight,loadResultOrWidth);
     FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
-    PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,0);
+    PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,PERSISTENT_SETTING_ADAPTER_INDEX);
   }
   mainLoopResult = Frontend_MainLoop(1);
   FatalError_ExitIfFailed(mainLoopResult.errorOrValue,mainLoopResult.failed);
-  g_NetworkBackendSlot3();
-  g_NetworkBackendSlot1();
+  g_NetworkBackendSlot3(); /* close */
+  g_NetworkBackendSlot1(); /* cleanup */
   return;
 }
 
@@ -1534,213 +1531,216 @@ GameIntroMovies_StopCurrentPlayback:
 
 
 /* Address: 0x00573DB0.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Resolves the
-   bootstrap API table.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Binds the bootstrap API table: every entry starts out holding a procedure name and its DLL name and
+   has the name replaced by the resolved procedure address. DLLs that are not mapped yet are loaded with
+   the table's first entry (LoadLibraryA, resolved first) and recorded in g_DynamicModules. On failure the
+   DLL/procedure name is stored for the fatal-error message and a FATAL_ERROR_* code is returned with CF set.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
 
 {
   /* EAX at the table end: the last resolved procedure (the table is never empty; incoming EAX otherwise) */
-  void **resolvedProcedure = (void **)0x0;
-  HINSTANCE hModule;
+  void **resolvedProcedure = NULL;
+  HINSTANCE module;
   DynamicApiBinding *bindingCursor;
   StatusResult successResult;
   StatusResult loadFailedResult;
   StatusResult moduleUnavailableResult;
   StatusResult procedureMissingResult;
-  void **lpProcName;
+  void **procedureName; /* the unresolved destination slot still holds the procedure name */
   char *moduleName;
   uint32_t moduleSlotIndex;
-  
+
   bindingCursor = g_BootstrapApiBindings;
   do {
-    if (bindingCursor->destination == (void **)0x0) {
+    if (bindingCursor->destination == NULL) {
       successResult.failed = false;
       successResult.valueOrError = (uint32_t)resolvedProcedure;
       return successResult;
     }
-    lpProcName = bindingCursor->destination;
-    hModule = GetModuleHandleA(bindingCursor->moduleName);
-    if (hModule == (HMODULE)0x0) {
+    procedureName = bindingCursor->destination;
+    module = GetModuleHandleA(bindingCursor->moduleName);
+    if (module == NULL) {
+      /* dynapi_9 is the string "LoadLibraryA": without its module nothing can be loaded */
       if (bindingCursor->destination == (void **)dynapi_9) {
         Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         moduleUnavailableResult.failed = true;
-        moduleUnavailableResult.valueOrError = 0xf;
+        moduleUnavailableResult.valueOrError = FATAL_ERROR_LOADER_MODULE_MISSING;
         return moduleUnavailableResult;
       }
-      hModule = (HINSTANCE)
-                ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
+      module = ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
-      if (hModule == (HINSTANCE)0x0) {
+      if (module == NULL) {
         Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         loadFailedResult.failed = true;
-        loadFailedResult.valueOrError = 0x11;
+        loadFailedResult.valueOrError = FATAL_ERROR_DLL_LOAD_FAILED;
         return loadFailedResult;
       }
-      g_DynamicModuleCount = g_DynamicModuleCount + 1;
+      g_DynamicModuleCount++;
       moduleName = bindingCursor->moduleName;
-      g_DynamicModules[moduleSlotIndex].module = hModule;
+      g_DynamicModules[moduleSlotIndex].module = module;
       g_DynamicModules[moduleSlotIndex].name = moduleName;
-      lpProcName = bindingCursor->destination;
+      procedureName = bindingCursor->destination;
     }
-    resolvedProcedure = (void **)GetProcAddress(hModule,(LPCSTR)lpProcName);
-    if (resolvedProcedure == (void **)0x0) {
+    resolvedProcedure = (void **)GetProcAddress(module,(LPCSTR)procedureName);
+    if (resolvedProcedure == NULL) {
       Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
       Text_CopyNarrowToUtf16(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
       procedureMissingResult.failed = true;
-      procedureMissingResult.valueOrError = 0x10;
+      procedureMissingResult.valueOrError = FATAL_ERROR_DLL_PROCEDURE_MISSING;
       return procedureMissingResult;
     }
     bindingCursor->destination = resolvedProcedure;
-    bindingCursor = bindingCursor + 1;
+    bindingCursor++;
   } while( true );
 }
 
 
 /* Address: 0x00586110.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Scans CommandLineState.optionBuffer as consecutive NUL-terminated strings, bounded by the 0x100-byte
-   buffer end. Compares exactly length bytes, so the match is a case-sensitive prefix and does not require the
-   stored entry to end at length. CF clear means found and EBX points to the matching stored option. CF set means
-   not found. EAX is preserved and is not a scalar result.
+   Looks up a command-line option (stored uppercased without its '/' or '-' by CommandLine_Parse) in
+   g_CommandLine.optionBuffer, a list of NUL-terminated strings ending with an empty one. Only the first
+   length bytes are compared (case-sensitive): a length including the NUL asks for an exact match, a shorter
+   one for a prefix such as an option name followed by its value. Returns CF clear and the stored option in
+   EBX when found, CF set otherwise; EAX is preserved.
 */
 CommandLineOptionResult __thandor_ebx_cf_preserve_eax_ecx_edx
 CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 
 {
   uint32_t compareBytesRemaining;
-  int optionBufferCapacityRemaining;
-  char *compareOrScanCursor;
-  char *optionBufferCursor;
+  int bytesToBufferEnd;
+  char *compareOrScanCursor; /* the REPE CMPSB source, then the REPNE SCASB cursor */
+  char *storedOption;
   char *storedOptionCompareCursor;
   bool comparedBytesEqual;
   CommandLineOptionResult foundResult;
   CommandLineOptionResult notFoundResult;
-  char currentOptionBufferByte;
-  
-  optionBufferCursor = g_CommandLine.optionBuffer;
+  char scannedByte;
+
+  storedOption = g_CommandLine.optionBuffer;
   do {
-    if (*optionBufferCursor == '\0') {
+    if (*storedOption == '\0') {
       notFoundResult.notFound = true;
-      notFoundResult.option = (uint8_t *)0; /* EBX not written; all callers read it only with CF clear */
+      notFoundResult.option = NULL; /* EBX not written; all callers read it only with CF clear */
       return notFoundResult;
     }
+    /* REPE CMPSB: with length 0 ZF stays as left by the compare with 0 above, i.e. clear */
     comparedBytesEqual = false;
     compareBytesRemaining = length;
     compareOrScanCursor = option;
-    storedOptionCompareCursor = optionBufferCursor;
+    storedOptionCompareCursor = storedOption;
     do {
       if (compareBytesRemaining == 0) break;
-      compareBytesRemaining = compareBytesRemaining - 1;
+      compareBytesRemaining--;
       comparedBytesEqual = *compareOrScanCursor == *storedOptionCompareCursor;
-      compareOrScanCursor = compareOrScanCursor + 1;
-      storedOptionCompareCursor = storedOptionCompareCursor + 1;
+      compareOrScanCursor++;
+      storedOptionCompareCursor++;
     } while (comparedBytesEqual);
     if (comparedBytesEqual) {
       foundResult.notFound = false;
-      foundResult.option = (uint8_t *)optionBufferCursor;
+      foundResult.option = (uint8_t *)storedOption;
       return foundResult;
     }
-    optionBufferCapacityRemaining = (int)sz_MainWindowTitle - (int)optionBufferCursor;
-    compareOrScanCursor = optionBufferCursor;
+    /* REPNE SCASB to the byte after the NUL; sz_MainWindowTitle directly follows optionBuffer and so
+       marks the end of the buffer */
+    bytesToBufferEnd = (int)sz_MainWindowTitle - (int)storedOption;
+    compareOrScanCursor = storedOption;
     do {
-      optionBufferCursor = compareOrScanCursor;
-      if (optionBufferCapacityRemaining == 0) break;
-      optionBufferCapacityRemaining = optionBufferCapacityRemaining + -1;
-      optionBufferCursor = compareOrScanCursor + 1;
-      currentOptionBufferByte = *compareOrScanCursor;
-      compareOrScanCursor = optionBufferCursor;
-    } while (currentOptionBufferByte != '\0');
+      storedOption = compareOrScanCursor;
+      if (bytesToBufferEnd == 0) break;
+      bytesToBufferEnd--;
+      storedOption = compareOrScanCursor + 1;
+      scannedByte = *compareOrScanCursor;
+      compareOrScanCursor = storedOption;
+    } while (scannedByte != '\0');
   } while( true );
 }
 
 
 /* Address: 0x00586170.
-   Ownership: platform/bootstrap/runtime.
-   Purpose: Installs CommandLine_FindOption, reads GetCommandLineA, stores a quote-stripped executable path, up to
-   three positional arguments, and slash/dash options. Positional text and unquoted option text are uppercased only
-   for ASCII a-z. Quoted positional delimiters are removed; quoted segments inside options are retained and copied
-   verbatim. Extra positional arguments are skipped. The fixed 256-byte buffers have no explicit bounds checks.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
+   Splits the process command line (GetCommandLineA) into g_CommandLine and installs CommandLine_FindOption
+   as the lookup hook: the executable path without quotes, up to three positional arguments (quotes
+   removed, further ones skipped) and every '/' or '-' option without its prefix, NUL-separated in
+   optionBuffer (quoted parts kept verbatim with their quotes). Everything else is uppercased (ASCII a-z
+   only). The 256-byte buffers are not bounds-checked. The arguments are also stored as UTF-16.
 */
 void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
 
 {
   uint8_t *commandLineNext;
-  CommandLineArgumentMirrorState500 *pathWriteNext;
+  char *pathWriteNext;
   uint8_t currentChar;
   uint8_t *commandLineCursor;
   char *textWriteCursor;
   char *optionWriteNext;
-  CommandLineArgumentMirrorState500 *pathWriteCursor;
+  char *pathWriteCursor;
   char *argumentWriteCursor;
-  
+
   g_CommandLineFindOption = CommandLine_FindOption;
   commandLineCursor = (uint8_t *)GetCommandLineA();
-  pathWriteNext = &g_CommandLine;
-  if (*commandLineCursor == 0x22) {
-    commandLineCursor = commandLineCursor + 1;
+  pathWriteNext = g_CommandLine.executablePath;
+  if (*commandLineCursor == '"') {
+    commandLineCursor++;
     do {
       pathWriteCursor = pathWriteNext;
       currentChar = *commandLineCursor;
-      pathWriteCursor->executablePath[0] = currentChar;
-      commandLineCursor = commandLineCursor + 1;
-      if (currentChar == 0) {
+      *pathWriteCursor = currentChar;
+      commandLineCursor++;
+      if (currentChar == '\0') {
+        /* no closing quote: the path is discarded */
         g_CommandLine.executablePath[0] = '\0';
         goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
       }
-      pathWriteNext = (CommandLineArgumentMirrorState500 *)(pathWriteCursor->executablePath + 1);
-    } while (currentChar != 0x22);
-    pathWriteCursor->executablePath[0] = '\0';
+      pathWriteNext = pathWriteCursor + 1;
+    } while (currentChar != '"');
+    *pathWriteCursor = '\0';
     optionWriteNext = g_CommandLine.optionBuffer;
   }
   else {
     do {
       pathWriteCursor = pathWriteNext;
       currentChar = *commandLineCursor;
-      pathWriteCursor->executablePath[0] = currentChar;
-      commandLineCursor = commandLineCursor + 1;
-      if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-      pathWriteNext = (CommandLineArgumentMirrorState500 *)(pathWriteCursor->executablePath + 1);
-    } while (currentChar != 0x20);
-    pathWriteCursor->executablePath[0] = '\0';
+      *pathWriteCursor = currentChar;
+      commandLineCursor++;
+      if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      pathWriteNext = pathWriteCursor + 1;
+    } while (currentChar != ' ');
+    *pathWriteCursor = '\0';
     optionWriteNext = g_CommandLine.optionBuffer;
   }
   /* options and positional arguments, until the terminating NUL */
   for (;;) {
     currentChar = *commandLineCursor;
-    commandLineCursor = commandLineCursor + 1;
-    if ((currentChar == 0x2f) || (currentChar == 0x2d)) {
-      /* '/' or '-' option: copied uppercased up to the next space; quoted parts verbatim */
+    commandLineCursor++;
+    if ((currentChar == '/') || (currentChar == '-')) {
+      /* option: copied uppercased up to the next space; quoted parts verbatim */
       do {
         while( true ) {
           textWriteCursor = optionWriteNext;
           currentChar = *commandLineCursor;
-          if ((0x60 < currentChar) && (currentChar < 0x7b)) {
-            currentChar = currentChar - 0x20;
+          if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
+            currentChar = currentChar - ('a' - 'A');
           }
           *textWriteCursor = currentChar;
-          commandLineCursor = commandLineCursor + 1;
+          commandLineCursor++;
           optionWriteNext = textWriteCursor + 1;
-          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-          if (currentChar != 0x22) break;
+          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          if (currentChar != '"') break;
           do {
             currentChar = *commandLineCursor;
             *optionWriteNext = currentChar;
-            commandLineCursor = commandLineCursor + 1;
-            optionWriteNext = optionWriteNext + 1;
-            if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-          } while (currentChar != 0x22);
+            commandLineCursor++;
+            optionWriteNext++;
+            if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          } while (currentChar != '"');
         }
-      } while (currentChar != 0x20);
-      *textWriteCursor = 0;
+      } while (currentChar != ' ');
+      *textWriteCursor = '\0';
       continue;
     }
-    if (currentChar == 0) break;
-    if (currentChar == 0x20) continue;
-    if (currentChar == 0x22) {
+    if (currentChar == '\0') break;
+    if (currentChar == ' ') continue;
+    if (currentChar == '"') {
       /* quoted positional argument: into the first free slot, or skipped when all three are used */
       commandLineNext = commandLineCursor;
       if (g_CommandLine.argument1[0] == '\0') {
@@ -1755,29 +1755,29 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
       else {
         do {
           currentChar = *commandLineCursor;
-          commandLineCursor = commandLineCursor + 1;
-          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-        } while (currentChar != 0x22);
+          commandLineCursor++;
+          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        } while (currentChar != '"');
         continue;
       }
       do {
         argumentWriteCursor = textWriteCursor;
         commandLineCursor = commandLineNext;
         currentChar = *commandLineCursor;
-        if ((0x60 < currentChar) && (currentChar < 0x7b)) {
-          currentChar = currentChar - 0x20;
+        if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
+          currentChar = currentChar - ('a' - 'A');
         }
         *argumentWriteCursor = currentChar;
-        if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
         commandLineNext = commandLineCursor + 1;
         textWriteCursor = argumentWriteCursor + 1;
-      } while (currentChar != 0x22);
-      *argumentWriteCursor = 0;
+      } while (currentChar != '"');
+      *argumentWriteCursor = '\0';
       continue;
     }
     /* unquoted positional argument */
-    if ((0x60 < currentChar) && (currentChar < 0x7b)) {
-      currentChar = currentChar - 0x20;
+    if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
+      currentChar = currentChar - ('a' - 'A');
     }
     commandLineNext = commandLineCursor;
     if (g_CommandLine.argument1[0] == '\0') {
@@ -1792,9 +1792,9 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
       if (g_CommandLine.argument3[0] != '\0') {
         do {
           currentChar = *commandLineCursor;
-          commandLineCursor = commandLineCursor + 1;
-          if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-        } while (currentChar != 0x20);
+          commandLineCursor++;
+          if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        } while (currentChar != ' ');
         continue;
       }
       textWriteCursor = g_CommandLine.argument3 + 1;
@@ -1804,23 +1804,26 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
       argumentWriteCursor = textWriteCursor;
       commandLineCursor = commandLineNext;
       currentChar = *commandLineCursor;
-      if ((0x60 < currentChar) && (currentChar < 0x7b)) {
-        currentChar = currentChar - 0x20;
+      if (('a' - 1 < currentChar) && (currentChar < 'z' + 1)) {
+        currentChar = currentChar - ('a' - 'A');
       }
       *argumentWriteCursor = currentChar;
-      if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+      if (currentChar == '\0') goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
       commandLineNext = commandLineCursor + 1;
       textWriteCursor = argumentWriteCursor + 1;
-    } while (currentChar != 0x20);
-    *argumentWriteCursor = 0;
+    } while (currentChar != ' ');
+    *argumentWriteCursor = '\0';
   }
 CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
   Text_CopyNarrowToUtf16
-            (0x200,g_CommandLineWideArguments.argument1,(uint8_t *)g_CommandLine.argument1);
+            (sizeof g_CommandLineWideArguments.argument1,g_CommandLineWideArguments.argument1,
+             (uint8_t *)g_CommandLine.argument1);
   Text_CopyNarrowToUtf16
-            (0x200,g_CommandLineWideArguments.argument2,(uint8_t *)g_CommandLine.argument2);
+            (sizeof g_CommandLineWideArguments.argument2,g_CommandLineWideArguments.argument2,
+             (uint8_t *)g_CommandLine.argument2);
   Text_CopyNarrowToUtf16
-            (0x200,g_CommandLineWideArguments.argument3,(uint8_t *)g_CommandLine.argument3);
+            (sizeof g_CommandLineWideArguments.argument3,g_CommandLineWideArguments.argument3,
+             (uint8_t *)g_CommandLine.argument3);
   return;
 }
 

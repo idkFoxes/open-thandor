@@ -12,21 +12,19 @@
 /* Implementation ownership: core/error/runtime. */
 
 /* Address: 0x00575890.
-   Ownership: core/error/runtime.
-   Purpose: Handles error system init.
-   Local calls: FatalError_Exit.
-   Cross-module calls: TextResourcePage_Load [assets/text/resources].
+   Points all three fatal-error handlers at FatalError_Exit (the UI dialog handler is installed later) and
+   loads the error texts (texte\error.str) as text page 0. If they cannot be loaded the game exits with
+   the built-in I/O error message; otherwise FatalError_Exit returns at once because the failure flag is clear.
 */
 void __cdecl ErrorSystem_Init(void)
 
 {
   TextPageLoadResult loadResult;
-  
+
   g_FatalErrorExitHandler = FatalError_Exit;
   g_FatalErrorReportHandler = FatalError_Exit;
   g_FatalErrorFallbackHandler = FatalError_Exit;
-  loadResult = TextResourcePage_Load(0,(uint16_t *)u_texte_error_str_00407d20);
-                    // WARNING: Subroutine does not return
+  loadResult = TextResourcePage_Load(0,u_texte_error_str_00407d20);
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),loadResult.failed);
 }
 

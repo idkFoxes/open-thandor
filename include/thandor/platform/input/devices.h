@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: platform/input/devices. */
+
+/* Lock-key bits of g_KeyboardStateMask, seeded from GetKeyState (DirectInputMouse_Init at startup
+   and again on WM_ACTIVATEAPP in MainWindowProc). */
+#define KEYBOARD_STATE_NUM_LOCK 0x10000
+#define KEYBOARD_STATE_SCROLL_LOCK 0x20000
+#define KEYBOARD_STATE_CAPS_LOCK 0x40000
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00417280 */

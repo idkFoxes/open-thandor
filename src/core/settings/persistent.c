@@ -11,116 +11,103 @@
 /* Implementation ownership: core/settings/persistent. */
 
 /* Address: 0x00402C00.
-   Ownership: core/settings/persistent.
-   Purpose: When an image exists, first mirrors g_LocaleCountryCodeOverride into image offset 0x38 through
-   PersistentSettings_WriteDword. If dirtyWriteCount is nonzero, writes exactly 200 bytes to runtime.path and then
-   resets dirtyWriteCount to zero without checking the save result.
-   Local calls: PersistentSettings_WriteDword.
-   Cross-module calls: FileSystem_WriteBufferToPath [platform/filesystem/win32].
+   Saves the settings: mirrors g_LocaleCountryCodeOverride into the image and, when anything changed since the
+   last load or save, writes the 200-byte image back to the settings file. The save result is not checked.
 */
 void __thandor_preserve_eax PersistentSettings_Flush(void)
 
 {
-  if (g_PersistentSettings.image != (PersistentSettingsImage *)0x0) {
-    PersistentSettings_Write(g_LocaleCountryCodeOverride,0x38);
+  if (g_PersistentSettings.image != NULL) {
+    PersistentSettings_Write(g_LocaleCountryCodeOverride,PERSISTENT_SETTING_LOCALE_COUNTRY_CODE);
     if (g_PersistentSettings.dirtyWriteCount != 0) {
-      FileSystem_WriteBufferToPath(200,g_PersistentSettings.image,g_PersistentSettings.path);
+      FileSystem_WriteBufferToPath(PERSISTENT_SETTINGS_IMAGE_BYTES,g_PersistentSettings.image,
+                                   g_PersistentSettings.path);
       g_PersistentSettings.dirtyWriteCount = 0;
     }
   }
-  return;
 }
 
 
 /* Address: 0x00402B00.
-   Ownership: core/settings/persistent.
-   Purpose: Releases the previous image, allocates and zeroes a fixed 200-byte replacement, and tries to open the
-   current UTF-16 path in mode zero. If the direct open fails, an existing path resolver builds an alternate path,
-   that path is retried, and the resolved path is copied back into the 0x200-byte runtime path buffer. The function
-   reads min(fileSize,200), closes the file, publishes image/loadedByteCount/dirtyWriteCount, and adopts image
-   offset 0x38 as g_LocaleCountryCodeOverride only when at least 0x3C bytes were loaded. Read, size, open, or
-   allocation failure frees the new allocation and leaves image null. No stable scalar return is defined.
-   Cross-module calls: Resource_Release [assets/resource/runtime], WidePath_CombineDirectoryAndLeaf
-   [core/text/path], RichTextCommandStream_CopyExpanded [assets/text/richtext].
+   Loads the settings file into a fresh zeroed 200-byte image; a shorter file leaves the rest zero, so every
+   PersistentSettings_Read beyond the loaded bytes falls back to its default. When the file is not found at
+   its path it is looked up in the executable directory. Any failure leaves the image null (all defaults).
 */
 void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
 
 {
-  uint32_t *settingsClearCursor;
-  void *handle;
+  uint32_t *clearCursor;
+  void *fileHandle;
   int dwordsRemaining;
   uint32_t byteCount;
-  PersistentSettingsImage *destination;
+  PersistentSettingsImage *image;
   ArenaAllocResult allocResult;
   FileSystemOpenResult openResult;
   RichTextCopyResult pathCopyResult;
   FileSystemSizeResult sizeResult;
   FileSystemReadResult readResult;
-  
+
   Resource_Release(g_PersistentSettings.image);
-  g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
-  allocResult = g_MemoryApi.alloc(200);
-  settingsClearCursor = (uint32_t *)allocResult.payloadOrError;
+  g_PersistentSettings.image = NULL;
+  allocResult = g_MemoryApi.alloc(PERSISTENT_SETTINGS_IMAGE_BYTES);
+  clearCursor = (uint32_t *)allocResult.payloadOrError;
   if (allocResult.failed) {
     return;
   }
-  for (dwordsRemaining = 0x32; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-    *settingsClearCursor = 0;
-    settingsClearCursor = settingsClearCursor + 1;
+  for (dwordsRemaining = PERSISTENT_SETTINGS_IMAGE_BYTES / 4; dwordsRemaining != 0; dwordsRemaining--) {
+    *clearCursor = 0;
+    clearCursor++;
   }
-  destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
+  image = (PersistentSettingsImage *)(clearCursor - PERSISTENT_SETTINGS_IMAGE_BYTES / 4);
   openResult = g_FileSystemOpen(0,g_PersistentSettings.path);
-  handle = (void *)openResult.handleOrError;
+  fileHandle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     if (openResult.failed) {
-      g_MemoryApi.free(destination);
+      g_MemoryApi.free(image);
       return;
     }
     /* The original also continues with EAX = the byte count returned by the path copy below as the
        file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
     pathCopyResult = RichTextCommandStream_CopyExpanded
-                      (0x200,g_PersistentSettings.path,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16
-                      );
-    handle = (void *)pathCopyResult.bytesWritten;
+                      (sizeof g_PersistentSettings.path,g_PersistentSettings.path,
+                       (uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    fileHandle = (void *)pathCopyResult.bytesWritten;
   }
-  sizeResult = g_FileSystemGetSize(handle);
+  sizeResult = g_FileSystemGetSize(fileHandle);
   if (!sizeResult.failed) {
-    byteCount = 200;
-    if (sizeResult.sizeOrError < 200) {
+    byteCount = PERSISTENT_SETTINGS_IMAGE_BYTES;
+    if (sizeResult.sizeOrError < PERSISTENT_SETTINGS_IMAGE_BYTES) {
       byteCount = sizeResult.sizeOrError;
     }
-    readResult = g_FileSystemReadExact(byteCount,destination,handle);
+    readResult = g_FileSystemReadExact(byteCount,image,fileHandle);
     if (!readResult.failed) {
-      g_FileSystemClose(handle);
-      if (byteCount < 0x3c) {
-        g_PersistentSettings.image = destination;
+      g_FileSystemClose(fileHandle);
+      if (byteCount < PERSISTENT_SETTING_LOCALE_COUNTRY_CODE + 4) {
+        g_PersistentSettings.image = image;
         g_PersistentSettings.loadedByteCount = byteCount;
         g_PersistentSettings.dirtyWriteCount = 0;
         return;
       }
-      g_LocaleCountryCodeOverride = settingsClearCursor[-0x24];
-      g_PersistentSettings.image = destination;
+      /* the country code override is only taken over when the file contains it */
+      g_LocaleCountryCodeOverride = image->localeCountryCodeOverride;
+      g_PersistentSettings.image = image;
       g_PersistentSettings.loadedByteCount = byteCount;
       g_PersistentSettings.dirtyWriteCount = 0;
       return;
     }
   }
-  g_FileSystemClose(handle);
-  g_MemoryApi.free(destination);
-  return;
+  g_FileSystemClose(fileHandle);
+  g_MemoryApi.free(image);
 }
 
 
 /* Address: 0x00402C50.
-   Ownership: core/settings/persistent.
-   Purpose: Returns the dword at image+offset only when image is non-null and unsigned offset+4 is no greater than
-   loadedByteCount. Otherwise returns defaultValue. No alignment check is performed. Typed parameters: p0
-   defaultValue→PersistentSettingsDwordValue_V342. Calling convention, exact VariableStorage serialization,
-   function body bytes, control flow, globals, locals, and executable data remain unchanged.
+   Returns the setting dword at settingsOffsetBytes, or defaultValue when no settings file was loaded or the
+   file was too short to contain it.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 PersistentSettings_Read
@@ -128,19 +115,17 @@ PersistentSettings_Read
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
+  if ((g_PersistentSettings.image != NULL) &&
      (settingsOffsetBytes + 4 <= g_PersistentSettings.loadedByteCount)) {
-    defaultValue = *(PersistentSettingsValue *)
-                    ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
+    defaultValue = *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
   }
   return defaultValue;
 }
 
 
 /* Address: 0x00402CC0.
-   Ownership: core/settings/persistent.
-   Purpose: Returns image+offset only when image is non-null and unsigned offset+byteCount is no greater than
-   loadedByteCount. Otherwise returns fallback. The returned region is not copied and may be unaligned.
+   Returns a pointer into the settings image at settingsOffsetBytes (not a copy), or fallback when no settings
+   file was loaded or the file was too short to contain the whole region. Used for the stored names.
 */
 void * __thandor_eax_preserve_ecx_edx
 PersistentSettings_GetRegionOrFallback
@@ -148,19 +133,18 @@ PersistentSettings_GetRegionOrFallback
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
+  if ((g_PersistentSettings.image != NULL) &&
      (settingsOffsetBytes + regionByteCount <= g_PersistentSettings.loadedByteCount)) {
-    fallback = (g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50);
+    fallback = (uint8_t *)g_PersistentSettings.image + settingsOffsetBytes;
   }
   return fallback;
 }
 
 
 /* Address: 0x00402CF0.
-   Ownership: core/settings/persistent.
-   Purpose: When image is non-null and unsigned offset+byteCount is no greater than 200, copies floor(byteCount/4)
-   dwords forward from source to image+offset with rep movsd. Trailing one to three bytes are ignored. A nonempty
-   copy increments dirtyWriteCount once even when bytes are unchanged. loadedByteCount is not extended.
+   Copies a block (whole dwords only; trailing 1-3 bytes are dropped) into the settings image and marks it
+   dirty, even when nothing changed. The bound is the image capacity, not the loaded size, and the loaded
+   size is not extended, so a block past the end of a short file is saved but not read back until reload.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PersistentSettings_WriteBlock
@@ -169,47 +153,37 @@ PersistentSettings_WriteBlock
 
 {
   uint32_t dwordsRemaining;
-  uint32_t *destinationDwordCursor;
-  
-  if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
-     (settingsOffsetBytes + regionByteCount < 0xc9)) {
-    destinationDwordCursor =
-         (uint32_t *)((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
+  uint32_t *destination;
+
+  if ((g_PersistentSettings.image != NULL) &&
+     (settingsOffsetBytes + regionByteCount < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) {
+    destination = (uint32_t *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes);
     dwordsRemaining = regionByteCount >> 2;
     if (dwordsRemaining != 0) {
-      for (; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-        *destinationDwordCursor = *source;
-        source = source + 1;
-        destinationDwordCursor = destinationDwordCursor + 1;
+      for (; dwordsRemaining != 0; dwordsRemaining--) {
+        *destination = *source;
+        source++;
+        destination++;
       }
-      g_PersistentSettings.dirtyWriteCount = g_PersistentSettings.dirtyWriteCount + 1;
+      g_PersistentSettings.dirtyWriteCount++;
     }
   }
-  return;
 }
 
 
 /* Address: 0x00402C80.
-   Ownership: core/settings/persistent.
-   Purpose: When image is non-null and unsigned offset+4 is no greater than the fixed 200-byte capacity, writes
-   value only when it differs from the stored dword and increments dirtyWriteCount once. The check does not use
-   loadedByteCount and no alignment check is performed. Typed parameters: p0
-   value→PersistentSettingsDwordValue_V342. Calling convention, exact VariableStorage serialization, function body
-   bytes, control flow, globals, locals, and executable data remain unchanged.
+   Stores one setting dword in the image and marks it dirty, but only when the value actually changes. Like
+   WriteBlock it checks against the image capacity, not the loaded size.
 */
 void __thandor_void_preserve_eax_ecx_edx
 PersistentSettings_Write
           (PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  if (((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
-      (settingsOffsetBytes + 4 < 0xc9)) &&
-     (*(PersistentSettingsValue *)
-       ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50)) != value)) {
-    *(PersistentSettingsValue *)
-     ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50)) = value;
-    g_PersistentSettings.dirtyWriteCount = g_PersistentSettings.dirtyWriteCount + 1;
+  if (((g_PersistentSettings.image != NULL) &&
+      (settingsOffsetBytes + 4 < PERSISTENT_SETTINGS_IMAGE_BYTES + 1)) &&
+     (*(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) != value)) {
+    *(PersistentSettingsValue *)((uint8_t *)g_PersistentSettings.image + settingsOffsetBytes) = value;
+    g_PersistentSettings.dirtyWriteCount++;
   }
-  return;
 }
-

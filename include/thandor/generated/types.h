@@ -10083,8 +10083,8 @@ struct LocaleSystemState {
     uint32_t languageIdentifierDigits; 
     uint16_t decimalSeparator[16]; 
     uint16_t thousandsSeparator[16]; 
-    uint16_t numberGrouping[16]; 
-    uint32_t negativeNumberFormat; 
+    uint16_t negativeSign[16];
+    uint32_t digitGroupingSize;
     uint16_t dateSeparator[16]; 
     uint16_t timeSeparator[16]; 
     uint32_t longDateOrder; 

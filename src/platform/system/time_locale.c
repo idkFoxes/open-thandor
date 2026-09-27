@@ -35,12 +35,10 @@ void __thandor_preserve_eax TimerSystem_Shutdown(void)
 
 
 /* Address: 0x00586BA0.
-   Ownership: platform/system/time_locale.
-   Purpose: Detects CPU features, installs nine locale/system services, queries LOCALE_USER_DEFAULT fields through
-   GetLocaleInfoA, converts locale strings to UTF-16, and records date/time ordering flags.
-   Local calls: Locale_ParseUnsignedDecimalAscii.
-   Cross-module calls: CPU_DetectFeatures [platform/bootstrap/runtime], Text_CopyNarrowToUtf16
-   [core/text/string].
+   Detects the CPU features, installs the date/time/locale services in their function pointers and
+   caches the user's locale settings (language id, number separators, date/time separators and order,
+   AM/PM designators) in g_LocaleSystemState for the date and number formatters.
+   Numeric fields are parsed from the GetLocaleInfoA text; string fields are widened to UTF-16.
 */
 void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
 
@@ -55,30 +53,34 @@ void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
   g_LocaleGetDefaultTelephoneCountryCode = Locale_GetDefaultTelephoneCountryCode;
   g_LocaleCopyDefaultComputerLabelUtf16 = Locale_CopyDefaultComputerLabelUtf16;
   g_CPUDetectFeatures = CPU_DetectFeatures;
-  GetLocaleInfoA(0x400,1,(LPSTR)g_LocaleInfoScratch,0x10);
+  /* The string copies pass an output capacity of 0x10 bytes (8 UTF-16 units), although every
+     string field of g_LocaleSystemState holds 16 units. */
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_ILANGUAGE,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   g_LocaleSystemState.languageIdentifierDigits =
        Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0xe,(LPSTR)g_LocaleInfoScratch,0x10);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.decimalSeparator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0xf,(LPSTR)g_LocaleInfoScratch,0x10);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.thousandsSeparator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x10,(LPSTR)g_LocaleInfoScratch,0x10);
-  g_LocaleSystemState.negativeNumberFormat = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x51,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.numberGrouping,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x1d,(LPSTR)g_LocaleInfoScratch,0x10);
+  /* LOCALE_SGROUPING is text like "3;0"; only the leading group size is kept */
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SGROUPING,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
+  g_LocaleSystemState.digitGroupingSize = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SNEGATIVESIGN,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.negativeSign,g_LocaleInfoScratch);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_SDATE,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.dateSeparator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x1e,(LPSTR)g_LocaleInfoScratch,0x10);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_STIME,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.timeSeparator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x28,(LPSTR)g_LocaleInfoScratch,0x10);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_S1159,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.amDesignator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x29,(LPSTR)g_LocaleInfoScratch,0x10);
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_S2359,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.pmDesignator,g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x22,(LPSTR)g_LocaleInfoScratch,0x10);
+  /* 0 = month-day-year, 1 = day-month-year, 2 = year-month-day */
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_ILDATE,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   g_LocaleSystemState.longDateOrder = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
-  GetLocaleInfoA(0x400,0x23,(LPSTR)g_LocaleInfoScratch,0x10);
+  /* 0 = 12-hour clock with AM/PM, 1 = 24-hour clock */
+  GetLocaleInfoA(LOCALE_USER_DEFAULT,LOCALE_ITIME,(LPSTR)g_LocaleInfoScratch,sizeof g_LocaleInfoScratch);
   g_LocaleSystemState.timeFormat24Hour = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
-  return;
 }
 
 
@@ -135,9 +137,8 @@ Locale_MapTelephoneCountryCodeToRegionTagPacked(LocaleTelephoneCountryCode count
 
 
 /* Address: 0x00586790.
-   Ownership: platform/system/time_locale.
-   Purpose: Installs TimerSystem_RegisterPeriodic, TimerSystem_UnregisterPeriodic, and Win32_PumpMessages into the
-   three fixed runtime service slots. CF is cleared.
+   Installs the WinMM periodic-timer services and the Win32 message pump in their function pointers.
+   It cannot fail: the original returns with CF clear, which ProcessEntry relies on.
 */
 void __cdecl TimerSystem_Init(void)
 
@@ -145,7 +146,6 @@ void __cdecl TimerSystem_Init(void)
   g_TimerRegisterPeriodic = (TimerRegisterPeriodicProc *)TimerSystem_RegisterPeriodic;
   g_TimerUnregisterPeriodic = (TimerUnregisterPeriodicProc *)TimerSystem_UnregisterPeriodic;
   g_Win32PumpMessages = Win32_PumpMessages;
-  return;
 }
 
 /* Address: 0x005867E0.

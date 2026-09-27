@@ -100,16 +100,17 @@ uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterC
 
 
 /* Address: 0x00576CF0.
-   Ownership: platform/input/devices.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
-   TimerSystem_RegisterPeriodic [platform/system/time_locale], Package_LoadEntry [assets/package/runtime],
-   Resource_Load [assets/resource/runtime].
+   Starts the mouse: binds DirectInputCreateA from the DLL, hides the Windows cursor, creates an exclusive
+   foreground buffered DirectInput mouse, hooks display-mode changes, starts the cursor-animation (20 Hz)
+   and mouse-poll (64 Hz) timers, loads the cursor images (engine\mouse.gfx) and frame table
+   (engine\mouse.dat), and seeds the lock-key bits of g_KeyboardStateMask.
+   CF clear on success; on failure EAX is FATAL_ERROR_DIRECTINPUT_SETUP (failed stage in
+   g_PackageLastErrorPath) or the cursor asset load error.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
 
 {
-  GraphicsSubresourceIndex frameTimestampValue;
+  GraphicsSubresourceIndex copiedFrameField;
   uint16_t keyState;
   TH_LEGACY_HRESULT directInputResult;
   GraphicsTextureSourceAsset *cursorDataOrError;
@@ -132,34 +133,35 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   fatalCheckResult = FatalError_ExitIfFailed((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
   procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
   FatalError_ExitIfFailed((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
-  SetCursor((HCURSOR)0x0);
-  directInputResult = pDirectInputCreateA(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
+  SetCursor(NULL);
+  directInputResult = pDirectInputCreateA(g_hInstance,DIRECTINPUT_VERSION,&g_DirectInput,NULL);
   if (directInputResult == 0) {
     initStage = 1;
     directInputResult = g_DirectInput->lpVtbl->CreateDevice
-                      (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,(TH_LEGACY_LPVOID)0x0);
+                      (g_DirectInput,&GUID_SysMouse_Local,&g_MouseDevice,NULL);
     if (directInputResult == 0) {
       initStage = 2;
       directInputResult = g_MouseDevice->lpVtbl->SetDataFormat(g_MouseDevice,&MouseDataFormat);
       if (directInputResult == 0) {
         initStage = 3;
-        directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel(g_MouseDevice,g_MainWindow,5);
+        directInputResult = g_MouseDevice->lpVtbl->SetCooperativeLevel
+                          (g_MouseDevice,g_MainWindow,DISCL_EXCLUSIVE | DISCL_FOREGROUND);
         if (directInputResult == 0) {
           initStage = 4;
           directInputResult = g_MouseDevice->lpVtbl->SetProperty
-                            (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
+                            (g_MouseDevice,DIPROP_BUFFERSIZE,&MouseBufferProperty.diph);
           if (directInputResult == 0) {
             g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
+            /* chain in front of the graphics display-mode switch (XCHG in the original) */
             g_DirectInputMouseChainedSetDisplayMode = g_GraphicsSetDisplayMode;
             LOCK();
             g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
             UNLOCK();
-            TimerSystem_RegisterPeriodic(0x14,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer)
-            ;
-            TimerSystem_RegisterPeriodic(0x40,DirectInputMouse_PollBufferedEvents);
+            TimerSystem_RegisterPeriodic(20,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer);
+            TimerSystem_RegisterPeriodic(64,DirectInputMouse_PollBufferedEvents);
             g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
             g_PointerSetPosition = DirectInputMouse_SetPosition;
-            packageLoadResult = Package_LoadEntry((uint16_t *)u_engine_mouse_gfx_00416864);
+            packageLoadResult = Package_LoadEntry(u_engine_mouse_gfx_00416864);
             cursorDataOrError = packageLoadResult.bufferOrError;
             if (!packageLoadResult.failed) {
               maxWidth = 0;
@@ -168,7 +170,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
               g_CursorSourceAsset = cursorDataOrError;
               do {
                 logicalSize = g_GraphicsTextureSourceGetLogicalSize(subresourceIndex,cursorDataOrError);
-                subresourceIndex = subresourceIndex + 1;
+                subresourceIndex++;
                 if ((int)maxWidth < (int)logicalSize.logicalWidthPixels) {
                   maxWidth = logicalSize.logicalWidthPixels;
                 }
@@ -178,32 +180,36 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
               } while (subresourceIndex < (cursorDataOrError->tableDescriptor).subresourceCount);
               g_CursorMaxWidth = maxWidth;
               g_CursorMaxHeight = maxHeight;
-              resourceLoadResult = Resource_Load((uint16_t *)u_engine_mouse_dat_00416886);
+              resourceLoadResult = Resource_Load(u_engine_mouse_dat_00416886);
               cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.bufferOrError;
               if (!resourceLoadResult.failed) {
-                remainingFrames = resourceLoadResult.byteCount >> 5;
+                remainingFrames = resourceLoadResult.byteCount >> 5; /* 32-byte GraphicsCursorFrameRecord */
                 g_CursorFrameRecords = (GraphicsCursorFrameRecord *)cursorDataOrError;
                 g_CursorFrameCount = remainingFrames;
+                /* Ghidra typed the frame cursor as GraphicsTextureSourceAsset; the accesses are the
+                   frame-record offsets: idleSubresourceIndex (+0x18) = idleAnimationFirstSubresourceIndex
+                   (+0x08) and activeSubresourceIndex (+0x1C) = activeAnimationFirstSubresourceIndex (+0x10),
+                   so every cursor starts on the first frame of its animations. */
                 do {
-                  frameTimestampValue = (cursorDataOrError->common).buildMetadata.timestamps.dateValue0;
+                  copiedFrameField = (cursorDataOrError->common).buildMetadata.timestamps.dateValue0;
                   (cursorDataOrError->common).buildMetadata.timestamps.dateValue1 = (cursorDataOrError->common).formatVersion;
-                  (cursorDataOrError->common).buildMetadata.timestamps.timeValue1 = frameTimestampValue;
+                  (cursorDataOrError->common).buildMetadata.timestamps.timeValue1 = copiedFrameField;
                   cursorDataOrError = (GraphicsTextureSourceAsset *)
                          &(cursorDataOrError->common).buildMetadata.timestamps.dateValue2;
-                  remainingFrames = remainingFrames - 1;
+                  remainingFrames--;
                 } while (remainingFrames != 0);
-                keyState = GetKeyState(0x90);
+                keyState = GetKeyState(VK_NUMLOCK);
                 if ((keyState & 1) != 0) {
-                  g_KeyboardStateMask = g_KeyboardStateMask | 0x10000;
+                  g_KeyboardStateMask |= KEYBOARD_STATE_NUM_LOCK;
                 }
-                keyState = GetKeyState(0x91);
+                keyState = GetKeyState(VK_SCROLL);
                 if ((keyState & 1) != 0) {
-                  g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
+                  g_KeyboardStateMask |= KEYBOARD_STATE_SCROLL_LOCK;
                 }
                 /* EAX on success is the Caps Lock GetKeyState result */
-                successResult.valueOrError = (uint32_t)(int)GetKeyState(0x14);
+                successResult.valueOrError = (uint32_t)(int)GetKeyState(VK_CAPITAL);
                 if ((successResult.valueOrError & 1) != 0) {
-                  g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
+                  g_KeyboardStateMask |= KEYBOARD_STATE_CAPS_LOCK;
                 }
                 successResult.failed = false;
                 return successResult;
@@ -219,7 +225,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
     }
   }
   g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
-  cursorDataOrError = (GraphicsTextureSourceAsset *)0x25;
+  cursorDataOrError = (GraphicsTextureSourceAsset *)FATAL_ERROR_DIRECTINPUT_SETUP;
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)cursorDataOrError;
   return failureResult;

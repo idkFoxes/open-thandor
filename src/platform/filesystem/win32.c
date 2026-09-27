@@ -114,38 +114,36 @@ FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
 }
 
 /* Address: 0x00575CB0.
-   Ownership: platform/filesystem/win32.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Local calls: Win32File_Open, Win32File_GetSize, Win32File_ReadExact, Win32File_Close,
-   Win32File_GetCurrentDirectory.
-   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], WidePath_SplitParentAndLeaf [core/text/path],
-   ArenaHeap_Alloc [core/memory/allocator], FatalError_Exit [core/error/runtime], WidePath_CombineDirectoryAndLeaf
-   [core/text/path], ArenaHeap_Free [core/memory/allocator].
+   Starts the file layer: records the executable directory, installs the Win32 implementations of the
+   g_FileSystem* function table, replaces the default L"Computer" label with the machine name, allocates the
+   8 MiB package scratch buffer, loads THANDOR.cfg (current directory first, then the executable
+   directory) and normalizes it in place, remembers the working directory and mounts engine.pck.
+   The original always returns with CF clear; EAX is the result of the engine.pck mount.
 */
 uint32_t __cdecl FileSystem_Init(void)
 
 {
   uint8_t configByte;
   uint8_t *configCursor;
-  BOOL computerNameFound;
-  void *handle;
+  BOOL gotComputerName;
+  void *configFile;
   int clearCount;
-  ArenaPayloadByteCount bytes;
+  ArenaPayloadByteCount configBytesLeft;
   uint16_t *labelCursor;
   ArenaAllocResult allocResult;
   Win32FileOpenResult openResult;
   Win32FileSizeResult sizeResult;
   Win32FileReadResult readResult;
   StatusResult mountResult;
-  
+
   /* open-thandor: the original took the executable path from the first command-line token, which
      is only a bare "thandor.exe" when started from a shell or batch file; the executable
      directory then came out empty. Use the module path instead. */
   Thandor_GetExecutablePathA((char *)g_Win32PathScratchA,sizeof g_Win32PathScratchA);
-  Text_CopyNarrowToUtf16(0x200,g_PackageLastErrorPath,g_Win32PathScratchA);
+  Text_CopyNarrowToUtf16(sizeof g_PackageLastErrorPath,g_PackageLastErrorPath,g_Win32PathScratchA);
+  /* the leaf (the executable name) lands in the path scratch buffer, which is reused as UTF-16 */
   WidePath_SplitParentAndLeaf
-            ((uint16_t *)g_Win32PathScratchA,(uint16_t *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath)
-  ;
+            ((uint16_t *)g_Win32PathScratchA,(uint16_t *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath);
   g_FileSystemOpen = Win32File_Open;
   g_FileSystemClose = Win32File_Close;
   g_FileSystemReadExact = Win32File_ReadExact;
@@ -170,77 +168,77 @@ uint32_t __cdecl FileSystem_Init(void)
   g_FileSystemEnumerateDirectoryOrVolumeEntries =
        Win32FileSystem_EnumerateDirectoryOrVolumeEntries;
   g_FileSystemValidateDos83Path = Win32Path_ValidateDos83;
-  g_FileSystemInitComputerNameCapacityOrConfigCursor = (pointer)0x100; /* GetComputerNameA size in/out */
-  computerNameFound = GetComputerNameA((LPSTR)g_Win32PathScratchA,
-                           (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
-  if (computerNameFound != 0) {
+  /* GetComputerNameA size in/out; the same global later holds the THANDOR.cfg text */
+  g_FileSystemInitComputerNameCapacityOrConfigCursor = (pointer)sizeof g_Win32PathScratchA;
+  gotComputerName = GetComputerNameA((LPSTR)g_Win32PathScratchA,
+                                     (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
+  if (gotComputerName != 0) {
     labelCursor = g_DefaultComputerLabelUtf16;
-    for (clearCount = 0x10; clearCount != 0; clearCount = clearCount + -1) {
+    for (clearCount = 0x10; clearCount != 0; clearCount--) {
       labelCursor[0] = 0;
       labelCursor[1] = 0;
-      labelCursor = labelCursor + 2;
+      labelCursor += 2;
     }
-    Text_CopyNarrowToUtf16(0x40,g_DefaultComputerLabelUtf16,g_Win32PathScratchA);
+    Text_CopyNarrowToUtf16(sizeof g_DefaultComputerLabelUtf16,g_DefaultComputerLabelUtf16,g_Win32PathScratchA);
   }
-  allocResult = ArenaHeap_Alloc(0x800000);
+  allocResult = ArenaHeap_Alloc(PACKAGE_SCRATCH_BUFFER_BYTES);
   if (allocResult.failed) {
-                    // WARNING: Subroutine does not return
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
   g_PackageScratchBuffer = (uint8_t *)allocResult.payloadOrError;
-  openResult = Win32File_Open(0,(uint16_t *)u_THANDOR_cfg_0040e23d);
-  handle = (void *)openResult.handleOrError;
+  openResult = Win32File_Open(0,u_THANDOR_cfg_0040e23d);
+  configFile = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
-              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,(uint16_t *)u_THANDOR_cfg_0040e23d,
+              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,u_THANDOR_cfg_0040e23d,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
     openResult = Win32File_Open(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (void *)openResult.handleOrError;
+    configFile = (void *)openResult.handleOrError;
     if (openResult.failed) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
   }
-  sizeResult = Win32File_GetSize(handle);
-  bytes = sizeResult.sizeOrError;
-  if ((!sizeResult.failed) && (bytes != 0)) {
-    allocResult = ArenaHeap_Alloc(bytes);
+  sizeResult = Win32File_GetSize(configFile);
+  configBytesLeft = sizeResult.sizeOrError;
+  if ((!sizeResult.failed) && (configBytesLeft != 0)) {
+    allocResult = ArenaHeap_Alloc(configBytesLeft);
     configCursor = (uint8_t *)allocResult.payloadOrError;
     if (!allocResult.failed) {
-      readResult = Win32File_ReadExact(bytes,configCursor,handle);
+      readResult = Win32File_ReadExact(configBytesLeft,configCursor,configFile);
       if (readResult.failed) {
         ArenaHeap_Free(configCursor);
       }
       else {
         g_FileSystemInitComputerNameCapacityOrConfigCursor = configCursor;
-        g_FileSystemConfigRemainingBytes = bytes;
-        /* Normalize the text in place: separators (<= 0x20) and [comments] become NUL, other
+        g_FileSystemConfigRemainingBytes = configBytesLeft;
+        /* Normalize the text in place: separators (<= ' ') and [comments] become NUL, other
            characters go through the normalization map. */
         do {
           configByte = *configCursor;
-          if (configByte == 0x5b) {
+          if (configByte == '[') {
             /* blank the comment up to its closing ']', which is then blanked as a separator */
             do {
               *configCursor = 0;
-              configCursor = configCursor + 1;
-              bytes = bytes - 1;
-            } while ((bytes != 0) && (*configCursor != 0x5d));
-            if (bytes == 0) break;
+              configCursor++;
+              configBytesLeft--;
+            } while ((configBytesLeft != 0) && (*configCursor != ']'));
+            if (configBytesLeft == 0) break;
             configByte = 0;
           }
-          if (configByte <= 0x20) {
+          if (configByte <= ' ') {
             *configCursor = 0;
           }
           else {
             *configCursor = (&g_FileSystemConfigCharacterNormalizationMap)[configByte];
           }
-          configCursor = configCursor + 1;
-          bytes = bytes - 1;
-        } while (bytes != 0);
+          configCursor++;
+          configBytesLeft--;
+        } while (configBytesLeft != 0);
       }
     }
   }
-  Win32File_Close(handle);
+  Win32File_Close(configFile);
 FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
   Win32File_GetCurrentDirectory(g_InitialWorkingDirectory.codeUnits);
-  mountResult = Package_MountLowPriority((uint16_t *)u_engine_pck_0040e255);
+  mountResult = Package_MountLowPriority(u_engine_pck_0040e255);
   if (!mountResult.failed) {
     g_EnginePackageLowPriorityMountHandle = mountResult.valueOrError;
   }

@@ -238,34 +238,34 @@ UiRuntime_SetSynchronizationHooks
 
 
 /* Address: 0x004AF210.
-   Ownership: ui/core/runtime.
-   Purpose: Registers UI timers, loads core UI assets, allocates the fixed 64-entry dirty-rectangle queue and
-   16-entry action queue, and allocates the remaining input/runtime buffers.
-   Cross-module calls: FontRuntime_Init [assets/text/resources], UiWindowResources_Init [ui/controls/layout],
-   ErrorRuntime_InstallUiHandlerAndAllocateState [core/error/runtime].
+   Sets up the UI runtime at startup: registers the 20 Hz frame-tick timer and the 125 Hz transfer-mailbox
+   timer (TimerSystem_RegisterPeriodic takes a frequency), loads fonts and window resources, installs the
+   in-game error handler and allocates the UI queues and the network transfer buffers. Every allocation
+   failure is fatal.
 */
 void __thandor_preserve_eax UiRuntime_Initialize(void)
 
 {
   ArenaAllocResult allocResult;
   FatalErrorCheckResult checkedResult;
-  
-  g_TimerRegisterPeriodic(0x14,UiRuntime_IncrementPeriodicTickCounter);
-  g_UiRuntimeInitializationCount = g_UiRuntimeInitializationCount + 1;
+
+  g_TimerRegisterPeriodic(20,UiRuntime_IncrementPeriodicTickCounter);
+  g_UiRuntimeInitializationCount++;
   FontRuntime_Init();
   UiWindowResources_Init();
-  allocResult = g_MemoryApi.alloc(0x600);
+  allocResult = g_MemoryApi.alloc(0x600); /* 64 dirty rectangles of 0x18 bytes */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiDirtyRectEntries = (UiDirtyRectEntry *)checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x80);
+  allocResult = g_MemoryApi.alloc(0x80); /* 16 queued actions of 8 bytes */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiActionQueueEntries = (UiActionQueueEntry *)checkedResult.valueOrError;
+  /* from here on FatalError_ReportIfFailed shows errors in an in-game dialog */
   ErrorRuntime_InstallUiHandlerAndAllocateState();
-  g_TimerRegisterPeriodic(0x7d,UiTransferMailbox_ServiceAndRetransmitTimer);
-  allocResult = g_MemoryApi.alloc(0x8000);
+  g_TimerRegisterPeriodic(125,UiTransferMailbox_ServiceAndRetransmitTimer);
+  allocResult = g_MemoryApi.alloc(0x8000); /* 256 auxiliary records of 0x80 bytes, parallel to the ring */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeAuxiliaryBuffer8000 = checkedResult.valueOrError;
-  allocResult = g_MemoryApi.alloc(0x10000);
+  allocResult = g_MemoryApi.alloc(0x10000); /* ring of 256 records of 0x100 bytes */
   checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
   g_UiRuntimeRecordRing = (UiRuntimeRecord *)checkedResult.valueOrError;
   allocResult = g_MemoryApi.alloc(0x1000);

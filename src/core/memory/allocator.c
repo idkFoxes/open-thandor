@@ -139,39 +139,39 @@ DwordBlock64Array_ContainsExactRecord
 
 
 /* Address: 0x005863C0.
-   Ownership: core/memory/allocator.
-   Purpose: Creates a 96 MiB custom arena on a private Win32 heap and returns the raw HeapAlloc pointer in EAX.
-   Cross-module calls: FatalError_Exit [core/error/runtime].
+   Creates the game's 96 MiB memory arena: allocates it in one piece from a private Win32 heap, installs the
+   ArenaHeap_* functions in g_MemoryApi and makes the whole arena one free block. Returns the raw HeapAlloc
+   pointer; if the heap cannot be created or allocated the game exits with the heap error message.
 */
 void * __cdecl ArenaHeap_Init(void)
 
 {
-  HANDLE hHeap;
+  HANDLE heap;
   LPVOID rawArenaAllocation;
   ArenaBlockHeader *alignedFirstBlock;
-  
-  hHeap = HeapCreate(0,0x6000040,0);
-  if (hHeap != (HANDLE)0x0) {
+
+  heap = HeapCreate(0,ARENA_HEAP_RESERVE_BYTES,0);
+  if (heap != NULL) {
     g_MemoryApi.alloc = ArenaHeap_Alloc;
     g_MemoryApi.free = ArenaHeap_Free;
     g_MemoryApi.allocLargestFreeBlock = ArenaHeap_AllocLargestFreeBlock;
     g_MemoryApi.shrinkInPlace = ArenaHeap_ShrinkInPlace;
     g_MemoryApi.queryFreeBytes = ArenaHeap_QueryFreeBytes;
     g_MemoryApi.reserveLinear = ArenaHeap_ReserveLinear;
-    g_Arena.processHeap = hHeap;
-    rawArenaAllocation = HeapAlloc(hHeap,0,0x6000040);
-    if (rawArenaAllocation != (LPVOID)0x0) {
-      alignedFirstBlock = (ArenaBlockHeader *)((int)rawArenaAllocation + 0x1fU & 0xffffffe0);
+    g_Arena.processHeap = heap;
+    rawArenaAllocation = HeapAlloc(heap,0,ARENA_HEAP_RESERVE_BYTES);
+    if (rawArenaAllocation != NULL) {
+      alignedFirstBlock = (ArenaBlockHeader *)
+          ((int)rawArenaAllocation + ARENA_BLOCK_ALIGNMENT_MASK & ~ARENA_BLOCK_ALIGNMENT_MASK);
       g_Arena.rawAllocation = rawArenaAllocation;
       g_Arena.firstBlock = alignedFirstBlock;
-      alignedFirstBlock->payloadSize = 0x6000000;
+      alignedFirstBlock->payloadSize = ARENA_HEAP_PAYLOAD_BYTES;
       alignedFirstBlock->stateMagic = ARENA_BLOCK_FREE;
-      alignedFirstBlock->next = (ArenaBlockHeader *)0xffffffff;
-      alignedFirstBlock->previous = (ArenaBlockHeader *)0xffffffff;
+      alignedFirstBlock->next = ARENA_BLOCK_LIST_END;
+      alignedFirstBlock->previous = ARENA_BLOCK_LIST_END;
       return rawArenaAllocation;
     }
   }
-                    // WARNING: Subroutine does not return
   FatalError_Exit(THANDOR_ADDR(g_ErrorTextHeapAllocationFailed,0),true);
 }
 

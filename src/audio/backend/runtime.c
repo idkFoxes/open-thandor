@@ -176,10 +176,10 @@ SoundBackendDisabled_SetVoiceGains
 
 
 /* Address: 0x00583140.
-   Ownership: audio/backend/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
-   Memory_ZeroDwords [core/memory/allocator], CosineDerivedLookupTables_Init [core/math/fixed].
+   Binds DSOUND.DLL, opens the default DirectSound device in exclusive mode and starts the looping primary
+   buffer as 22050 Hz 16-bit stereo, then allocates the 256-entry voice-set registry and switches the
+   g_Sound* backend slots from the silent stubs to DirectSound. Without a sound device it succeeds and
+   leaves the silent backend in place; a failing setup step reports FATAL_ERROR_DIRECTSOUND_SETUP.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
 
@@ -191,8 +191,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
   DllLoadResult dllLoadResult;
   DynApiResolveResult resolveResult;
   ArenaAllocResult registryAlloc;
-  int32_t failedStage;
-  
+  int32_t failedStage; /* number of setup steps passed, shown in the error message */
+
   failedStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_4);
   module = dllLoadResult.moduleOrError;
@@ -201,28 +201,28 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
       (resolveResult = DynAPI_Resolve(&pDirectSoundEnumerateA,module,dynapi_21), !resolveResult.failed)) &&
      ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.failed &&
       (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.failed)))) {
-    directSoundResult = pDirectSoundCreate((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
+    directSoundResult = pDirectSoundCreate(NULL,&g_DirectSound,NULL);
     Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
       /* no DirectSound device: not an error, the game runs silent */
       return StatusValue_Ok((uint32_t)directSoundResult);
     }
-    directSoundResult = g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,3);
+    directSoundResult = g_DirectSound->lpVtbl->SetCooperativeLevel(g_DirectSound,g_MainWindow,DSSCL_EXCLUSIVE);
     if (directSoundResult == 0) {
       failedStage = 1;
+      /* 0x14 bytes: the packed 18-byte WAVEFORMATEX and the two bytes behind it */
       Memory_ZeroDwords(0x14,&WaveFormat_PCM_22050_Stereo16);
-      Memory_ZeroDwords(0x14,&PrimarySoundBufferDesc);
+      Memory_ZeroDwords(sizeof PrimarySoundBufferDesc,&PrimarySoundBufferDesc);
       WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
       WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-      WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 0x5622;
-      WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4;
-      WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 0x15888;
-      WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;
-      PrimarySoundBufferDesc.dwSize = 0x14;
-      PrimarySoundBufferDesc.dwFlags = 0xc1;
+      WaveFormat_PCM_22050_Stereo16.nSamplesPerSec = 22050;
+      WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4; /* 2 channels * 2 bytes */
+      WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 88200; /* 22050 * 4 */
+      WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 16;
+      PrimarySoundBufferDesc.dwSize = sizeof PrimarySoundBufferDesc;
+      PrimarySoundBufferDesc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME;
       directSoundResult = g_DirectSound->lpVtbl->CreateSoundBuffer
-                        (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,
-                         (TH_LEGACY_LPVOID)0x0);
+                        (g_DirectSound,&PrimarySoundBufferDesc,&g_PrimarySoundBuffer,NULL);
       if (directSoundResult == 0) {
         failedStage = 2;
         directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetFormat
@@ -235,21 +235,21 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
             directSoundResult = g_PrimarySoundBuffer->lpVtbl->GetPan(g_PrimarySoundBuffer,&g_PrimaryPan);
             if (directSoundResult == 0) {
               failedStage = 5;
-              directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,0);
+              directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetVolume(g_PrimarySoundBuffer,DSBVOLUME_MAX);
               if (directSoundResult == 0) {
                 failedStage = 6;
-                directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,0);
+                directSoundResult = g_PrimarySoundBuffer->lpVtbl->SetPan(g_PrimarySoundBuffer,DSBPAN_CENTER);
                 if (directSoundResult == 0) {
                   failedStage = 7;
-                  directSoundResult = g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,1);
+                  directSoundResult = g_PrimarySoundBuffer->lpVtbl->Play(g_PrimarySoundBuffer,0,0,DSBPLAY_LOOPING);
                   if (directSoundResult == 0) {
-                    registryAlloc = g_MemoryApi.alloc(0x400);
+                    registryAlloc = g_MemoryApi.alloc(0x400); /* 256 voice-set pointers */
                     if (!registryAlloc.failed) {
                       registryCursor = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
                       g_DirectSoundVoiceSetRegistry = (DirectSoundVoiceSet **)registryAlloc.payloadOrError;
-                      for (remainingCount = 0x100; remainingCount != 0; remainingCount = remainingCount + -1) {
-                        *registryCursor = (DirectSoundVoiceSet *)0x0;
-                        registryCursor = registryCursor + 1;
+                      for (remainingCount = 256; remainingCount != 0; remainingCount--) {
+                        *registryCursor = NULL;
+                        registryCursor++;
                       }
                       g_SoundCreateSampleVoiceSet = DirectSound_CreateSampleVoiceSet;
                       g_SoundReleaseSampleVoiceSet = DirectSound_ReleaseSampleVoiceSet;
@@ -276,7 +276,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
     }
     Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (uint32_t)directSoundResult);
     g_WideNumberFormatUtf16(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
-    return StatusValue_Fail(0x29); /* DirectSound failed at stage <g_PackageLastErrorPath> */
+    return StatusValue_Fail(FATAL_ERROR_DIRECTSOUND_SETUP);
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
   return StatusValue_Fail(dllLoadResult.failed ? (uint32_t)dllLoadResult.moduleOrError

@@ -12,6 +12,11 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: graphics/core/runtime. */
+
+/* GraphicsAdapterRecord.adapterGuid.Data1 of the 3dfx Glide adapter (Glide3_InitAndEnumerate); DirectDraw
+   adapters carry their real GUID, the primary display driver an all-zero one (passed as NULL). */
+#define GRAPHICS_ADAPTER_GUID_GLIDE 1
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00576C30 */

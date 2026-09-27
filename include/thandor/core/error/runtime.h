@@ -26,6 +26,19 @@
 /* Error codes handed to the fatal-error dispatcher (FatalError_ExitIfFailed); the code selects
    the message text. Named as they are found. */
 #define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
+/* DLL binding (DynAPI_Bootstrap, DynAPI_Resolve, DynDLL_Load); the DLL/procedure name is left in
+   g_PackageLastErrorPath */
+#define FATAL_ERROR_LOADER_MODULE_MISSING 0x0F /* the module of LoadLibraryA itself is not mapped */
+#define FATAL_ERROR_DLL_PROCEDURE_MISSING 0x10 /* GetProcAddress failed */
+#define FATAL_ERROR_DLL_LOAD_FAILED 0x11 /* LoadLibraryA failed */
+/* Subsystem startup (Graphics_Init, DirectSound_Init); names follow the failing step */
+#define FATAL_ERROR_DIRECTDRAW_NO_ADAPTER 0x17 /* DirectDrawEnumerateA failed or listed no adapter */
+#define FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE 0x18 /* no adapter reported a usable display mode */
+#define FATAL_ERROR_DIRECTSOUND_SETUP 0x29 /* primary buffer setup failed; the stage number is left in
+                                              g_PackageLastErrorPath */
+#define FATAL_ERROR_DIRECTINPUT_SETUP 0x25 /* DirectInputMouse_Init: DirectInputCreateA or a mouse-device
+                                              setup call failed; the stage number (0..4) is left in
+                                              g_PackageLastErrorPath */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

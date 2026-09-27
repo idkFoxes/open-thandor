@@ -539,15 +539,17 @@ uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_0058
 }
 
 /* Address: 0x00584080.
-   Ownership: network/backend/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime].
+   Binds the 45 exports of wsock32.dll, starts WinSock 1.1 and installs the UDP fallback backend
+   (NetworkFallback_*) as the only network backend instance. Returns 0 on success, otherwise the
+   DynDLL/DynAPI error code or the WSAStartup error; the original returns with CF clear in every case,
+   so a missing WinSock is not fatal there. Its first instruction jumps over 0x0058408D..0x0058495F,
+   presumably the ws2_32 path that NETWORK_BACKEND_MODE_WS2_32 belongs to.
 */
 uint32_t __cdecl Network_Init(void)
 
 {
   HINSTANCE module;
-  HINSTANCE resultOrError;
+  HINSTANCE resultOrError; /* the module handle, then the error code of the last step */
   DllLoadResult loadResult;
   DynApiResolveResult resolveResult;
   
@@ -585,12 +587,10 @@ uint32_t __cdecl Network_Init(void)
                       resolveResult = DynAPI_Resolve(&g_WinSock_inet_addr,module,s_Wsock32Export_inet_addr);
                       resultOrError = resolveResult.procedureOrError;
                       if (!resolveResult.failed) {
-                        resolveResult = DynAPI_Resolve(&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa
-                                              );
+                        resolveResult = DynAPI_Resolve(&g_WinSock_inet_ntoa,module,s_Wsock32Export_inet_ntoa);
                         resultOrError = resolveResult.procedureOrError;
                         if (!resolveResult.failed) {
-                          resolveResult = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,
-                                                 s_Wsock32Export_ioctlsocket);
+                          resolveResult = DynAPI_Resolve(&g_WinSock_ioctlsocket,module,s_Wsock32Export_ioctlsocket);
                           resultOrError = resolveResult.procedureOrError;
                           if (!resolveResult.failed) {
                             resolveResult = DynAPI_Resolve(&g_WinSock_listen,module,s_Wsock32Export_listen);
@@ -599,179 +599,114 @@ uint32_t __cdecl Network_Init(void)
                               resolveResult = DynAPI_Resolve(&g_WinSock_ntohl,module,s_Wsock32Export_ntohl);
                               resultOrError = resolveResult.procedureOrError;
                               if (!resolveResult.failed) {
-                                resolveResult = DynAPI_Resolve(&g_WinSock_ntohs,module,s_Wsock32Export_ntohs
-                                                      );
+                                resolveResult = DynAPI_Resolve(&g_WinSock_ntohs,module,s_Wsock32Export_ntohs);
                                 resultOrError = resolveResult.procedureOrError;
                                 if (!resolveResult.failed) {
-                                  resolveResult = DynAPI_Resolve(&g_WinSock_recv,module,s_Wsock32Export_recv
-                                                        );
+                                  resolveResult = DynAPI_Resolve(&g_WinSock_recv,module,s_Wsock32Export_recv);
                                   resultOrError = resolveResult.procedureOrError;
                                   if (!resolveResult.failed) {
-                                    resolveResult = DynAPI_Resolve(&g_WinSock_recvfrom,module,
-                                                           s_Wsock32Export_recvfrom);
+                                    resolveResult = DynAPI_Resolve(&g_WinSock_recvfrom,module,s_Wsock32Export_recvfrom);
                                     resultOrError = resolveResult.procedureOrError;
                                     if (!resolveResult.failed) {
-                                      resolveResult = DynAPI_Resolve(&g_WinSock_select,module,
-                                                             s_Wsock32Export_select);
+                                      resolveResult = DynAPI_Resolve(&g_WinSock_select,module,s_Wsock32Export_select);
                                       resultOrError = resolveResult.procedureOrError;
                                       if (!resolveResult.failed) {
-                                        resolveResult = DynAPI_Resolve(&g_WinSock_send,module,
-                                                               s_Wsock32Export_send);
+                                        resolveResult = DynAPI_Resolve(&g_WinSock_send,module,s_Wsock32Export_send);
                                         resultOrError = resolveResult.procedureOrError;
                                         if (!resolveResult.failed) {
-                                          resolveResult = DynAPI_Resolve(&g_WinSock_sendto,module,
-                                                                 s_Wsock32Export_sendto);
+                                          resolveResult = DynAPI_Resolve(&g_WinSock_sendto,module,s_Wsock32Export_sendto);
                                           resultOrError = resolveResult.procedureOrError;
                                           if (!resolveResult.failed) {
-                                            resolveResult = DynAPI_Resolve(&g_WinSock_setsockopt,module,
-                                                                   s_Wsock32Export_setsockopt);
+                                            resolveResult = DynAPI_Resolve(&g_WinSock_setsockopt,module,s_Wsock32Export_setsockopt);
                                             resultOrError = resolveResult.procedureOrError;
                                             if (!resolveResult.failed) {
-                                              resolveResult = DynAPI_Resolve(&g_WinSock_shutdown,module,
-                                                                     s_Wsock32Export_shutdown);
+                                              resolveResult = DynAPI_Resolve(&g_WinSock_shutdown,module,s_Wsock32Export_shutdown);
                                               resultOrError = resolveResult.procedureOrError;
                                               if (!resolveResult.failed) {
-                                                resolveResult = DynAPI_Resolve(&g_WinSock_socket,module,
-                                                                       s_Wsock32Export_socket);
+                                                resolveResult = DynAPI_Resolve(&g_WinSock_socket,module,s_Wsock32Export_socket);
                                                 resultOrError = resolveResult.procedureOrError;
                                                 if (!resolveResult.failed) {
-                                                  resolveResult = DynAPI_Resolve(&g_WinSock_gethostbyaddr,
-                                                                         module,
-                                                  s_Wsock32Export_gethostbyaddr);
+                                                  /* deeper levels stay at this indentation */
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_gethostbyaddr,module,s_Wsock32Export_gethostbyaddr);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_gethostbyname,
-                                                                           module,
-                                                  s_Wsock32Export_gethostbyname);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_gethostbyname,module,s_Wsock32Export_gethostbyname);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_gethostname,
-                                                                           module,
-                                                  s_Wsock32Export_gethostname);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_gethostname,module,s_Wsock32Export_gethostname);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_getprotobyname
-                                                                           ,module,
-                                                  s_Wsock32Export_getprotobyname);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_getprotobyname,module,s_Wsock32Export_getprotobyname);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_getprotobynumber,module,
-                                                  s_Wsock32Export_getprotobynumber);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_getprotobynumber,module,s_Wsock32Export_getprotobynumber);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_getservbyname,
-                                                                           module,
-                                                  s_Wsock32Export_getservbyname);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_getservbyname,module,s_Wsock32Export_getservbyname);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_getservbyport,
-                                                                           module,
-                                                  s_Wsock32Export_getservbyport);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_getservbyport,module,s_Wsock32Export_getservbyport);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetHostByAddr,module,
-                                                  s_Wsock32Export_WSAAsyncGetHostByAddr);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetHostByAddr,module,s_Wsock32Export_WSAAsyncGetHostByAddr);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetHostByName,module,
-                                                  s_Wsock32Export_WSAAsyncGetHostByName);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetHostByName,module,s_Wsock32Export_WSAAsyncGetHostByName);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetProtoByName,module,
-                                                  s_Wsock32Export_WSAAsyncGetProtoByName);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetProtoByName,module,s_Wsock32Export_WSAAsyncGetProtoByName);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetProtoByNumber,module,
-                                                  s_Wsock32Export_WSAAsyncGetProtoByNumber);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetProtoByNumber,module,s_Wsock32Export_WSAAsyncGetProtoByNumber);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetServByName,module,
-                                                  s_Wsock32Export_WSAAsyncGetServByName);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetServByName,module,s_Wsock32Export_WSAAsyncGetServByName);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAAsyncGetServByPort,module,
-                                                  s_Wsock32Export_WSAAsyncGetServByPort);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncGetServByPort,module,s_Wsock32Export_WSAAsyncGetServByPort);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncSelect
-                                                                           ,module,
-                                                  s_Wsock32Export_WSAAsyncSelect);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAAsyncSelect,module,s_Wsock32Export_WSAAsyncSelect);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSACancelAsyncRequest,module,
-                                                  s_Wsock32Export_WSACancelAsyncRequest);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSACancelAsyncRequest,module,s_Wsock32Export_WSACancelAsyncRequest);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSACancelBlockingCall,module,
-                                                  s_Wsock32Export_WSACancelBlockingCall);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSACancelBlockingCall,module,s_Wsock32Export_WSACancelBlockingCall);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_WSACleanup,
-                                                                           module,
-                                                  s_Wsock32Export_WSACleanup);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSACleanup,module,s_Wsock32Export_WSACleanup);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAGetLastError,module,
-                                                  s_Wsock32Export_WSAGetLastError);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAGetLastError,module,s_Wsock32Export_WSAGetLastError);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_WSAIsBlocking,
-                                                                           module,
-                                                  s_Wsock32Export_WSAIsBlocking);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAIsBlocking,module,s_Wsock32Export_WSAIsBlocking);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSASetBlockingHook,module,
-                                                  s_Wsock32Export_WSASetBlockingHook);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSASetBlockingHook,module,s_Wsock32Export_WSASetBlockingHook);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&g_WinSock_WSAStartup,
-                                                                           module,
-                                                  s_Wsock32Export_WSAStartup);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAStartup,module,s_Wsock32Export_WSAStartup);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resolveResult = DynAPI_Resolve(&
-                                                  g_WinSock_WSAUnhookBlockingHook,module,
-                                                  s_Wsock32Export_WSAUnhookBlockingHook);
+                                                  resolveResult = DynAPI_Resolve(&g_WinSock_WSAUnhookBlockingHook,module,s_Wsock32Export_WSAUnhookBlockingHook);
                                                   resultOrError = resolveResult.procedureOrError;
                                                   if (!resolveResult.failed) {
-                                                    resultOrError = (HINSTANCE)
-                                                             g_WinSock_WSAStartup
-                                                                       (0x101,&g_WinSockStartupData)
-                                                    ;
-                                                    if (resultOrError == (HINSTANCE)0x0) {
-                                                      g_NetworkBackendMode = 1;
-                                                      g_NetworkBackendSlot0 =
-                                                           NetworkBackend_SetSessionContext;
-                                                      g_NetworkBackendSlot1 =
-                                                           NetworkFallback_NoOpBackendCleanup;
-                                                      g_NetworkBackendSlot2 =
-                                                           NetworkFallback_OpenAndBindUdpSocket;
-                                                      g_NetworkBackendSlot3 =
-                                                           NetworkFallback_CloseActiveSocket;
-                                                      g_NetworkBackendSlot4 =
-                                                           NetworkFallback_ReceiveDatagram;
-                                                      g_NetworkBackendSlot5 =
-                                                           NetworkFallback_SendDatagram;
-                                                      g_NetworkBackendSlot6 =
-                                                           NetworkFallback_ParsePeerEndpoint;
-                                                      g_NetworkBackendSlot7 =
-                                                           NetworkFallback_FormatPeerAddress;
-                                                      g_NetworkBackendInstanceTable =
-                                                           &
-                                                  NetworkBackendInstanceDescriptorPrefix_00584040;
-                                                  g_NetworkBackendInstanceCount = 1;
-                                                  return 0;
+                                                  resultOrError = (HINSTANCE)g_WinSock_WSAStartup(MAKEWORD(1,1),&g_WinSockStartupData);
+                                                  if (resultOrError == NULL) {
+                                                    g_NetworkBackendMode = NETWORK_BACKEND_MODE_WSOCK32;
+                                                    g_NetworkBackendSlot0 = NetworkBackend_SetSessionContext;
+                                                    g_NetworkBackendSlot1 = NetworkFallback_NoOpBackendCleanup;
+                                                    g_NetworkBackendSlot2 = NetworkFallback_OpenAndBindUdpSocket;
+                                                    g_NetworkBackendSlot3 = NetworkFallback_CloseActiveSocket;
+                                                    g_NetworkBackendSlot4 = NetworkFallback_ReceiveDatagram;
+                                                    g_NetworkBackendSlot5 = NetworkFallback_SendDatagram;
+                                                    g_NetworkBackendSlot6 = NetworkFallback_ParsePeerEndpoint;
+                                                    g_NetworkBackendSlot7 = NetworkFallback_FormatPeerAddress;
+                                                    g_NetworkBackendInstanceTable = &NetworkBackendInstanceDescriptorPrefix_00584040;
+                                                    g_NetworkBackendInstanceCount = 1;
+                                                    return 0;
                                                   }
                                                   }
                                                   }

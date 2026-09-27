@@ -89,18 +89,17 @@ SpinLock_ReleaseAndInvoke(SpinLockReleaseCallbackProc *callback,RuntimeSpinLockV
 
 
 /* Address: 0x00585F00.
-   Ownership: core/memory/synchronization.
-   Purpose: Central reverse-order subsystem shutdown.
-   Cross-module calls: PersistentSettings_Flush [core/settings/persistent], UiRuntime_Shutdown [ui/core/runtime],
-   DirectInputMouse_Shutdown [platform/input/devices], Graphics_Shutdown [graphics/core/runtime], Network_Shutdown
-   [network/backend/runtime], DirectSound_Shutdown [audio/backend/runtime].
+   Shuts the game down at the end of ProcessEntry: saves the settings, then closes the subsystems in
+   roughly the reverse order of their initialisation, frees the memory arena last and drops the process
+   back from real-time to normal priority.
 */
 void __thandor_preserve_eax Runtime_Shutdown(void)
 
 {
-  HANDLE hProcess;
-  
+  HANDLE process;
+
   PersistentSettings_Flush();
+  /* any nonzero state makes the Glide present/draw paths skip their work from now on */
   g_GraphicsBackendAccessState = -1;
   UiRuntime_Shutdown();
   DirectInputMouse_Shutdown();
@@ -111,8 +110,7 @@ void __thandor_preserve_eax Runtime_Shutdown(void)
   DynDLL_UnloadAll();
   Win32FileSystem_RestoreInitialDirectory();
   ArenaHeap_Shutdown();
-  hProcess = GetCurrentProcess();
-  SetPriorityClass(hProcess,0x20);
-  return;
+  process = GetCurrentProcess();
+  SetPriorityClass(process,NORMAL_PRIORITY_CLASS);
 }
 

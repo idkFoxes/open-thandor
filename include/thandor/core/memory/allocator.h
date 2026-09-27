@@ -12,6 +12,12 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: core/memory/allocator. */
+/* Arena heap layout (ArenaHeap_Init): one private Win32 heap block holding a 32-byte aligned chain of
+   ArenaBlockHeader blocks, ended by ARENA_BLOCK_LIST_END in next/previous. */
+#define ARENA_HEAP_PAYLOAD_BYTES 0x6000000 /* 96 MiB, payload of the initial single free block */
+#define ARENA_HEAP_RESERVE_BYTES (ARENA_HEAP_PAYLOAD_BYTES + 0x40) /* + header and alignment slack */
+#define ARENA_BLOCK_ALIGNMENT_MASK 0x1f /* blocks and payload sizes are 32-byte aligned */
+#define ARENA_BLOCK_LIST_END ((ArenaBlockHeader *)0xffffffff)
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005368E0 */

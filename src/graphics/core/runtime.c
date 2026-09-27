@@ -572,10 +572,10 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
 
 
 /* Address: 0x00578560.
-   Ownership: graphics/core/runtime.
-   Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: CommandLine_FindOption [platform/bootstrap/runtime], Glide3_InitAndEnumerate
-   [graphics/backend/glide], DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime].
+   Allocates the texture-slot, palette, adapter and display-mode tables, enumerates the adapters (Glide
+   first, which is optional unless -GLIDE is given, then DirectDraw with their Direct3D devices and display
+   modes) and installs the DirectDraw backend in the g_Graphics* slots. The display-mode hook installed
+   before (the software renderer's) is kept as g_GraphicsDisplayModeFinalize and returned in EAX.
 */
 StatusResult __cdecl Graphics_Init(void)
 
@@ -584,7 +584,7 @@ StatusResult __cdecl Graphics_Init(void)
   SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
   uint32_t remainingAdapters;
-  GraphicsAdapterRecord *cursorOrResult;
+  GraphicsAdapterRecord *cursorOrResult; /* also the fill cursor of the zeroing loops, and the error code */
   uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
   StatusResult glideResult;
@@ -594,26 +594,28 @@ StatusResult __cdecl Graphics_Init(void)
   CommandLineOptionResult optionResult;
   IDirect3D2 *direct3D2;
   IDirectDraw *directDraw;
-  
-  allocResult = g_MemoryApi.alloc(0x4000);
+
+  allocResult = g_MemoryApi.alloc(0x4000); /* 4096 texture-slot pointers */
   cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
   if (!allocResult.failed) {
     g_GraphicsTextureSlots = (GraphicsTextureResource **)cursorOrResult;
-    for (remainingDwords = 0x1000; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+    for (remainingDwords = 0x1000; remainingDwords != 0; remainingDwords--) {
       (cursorOrResult->adapterGuid).Data1 = 0;
       cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
     }
-    allocResult = g_MemoryApi.alloc(0x400);
+    allocResult = g_MemoryApi.alloc(0x400); /* 256 palette entries */
     cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
     if (!allocResult.failed) {
       g_TexturePaletteEntries = (DirectDrawPaletteEntry *)cursorOrResult;
-      for (remainingDwords = 0x100; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
+      for (remainingDwords = 0x100; remainingDwords != 0; remainingDwords--) {
         (cursorOrResult->adapterGuid).Data1 = 0;
         cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
       }
+      /* ADC of the not-found carry: the flag becomes nonzero without -D3DALL, and then
+         Direct3D_EnumDeviceCallback accepts only hardware devices with the required caps */
       optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll);
       g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
-      allocResult = g_MemoryApi.alloc(0x800);
+      allocResult = g_MemoryApi.alloc(0x800); /* 16 adapter records of 0x80 bytes */
       cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
       if (!allocResult.failed) {
         g_GraphicsAdapterCount = 0;
@@ -638,20 +640,19 @@ StatusResult __cdecl Graphics_Init(void)
               procResolve = DynAPI_Resolve(&pDirectDrawEnumerateA,(HINSTANCE)adapterOrModule,dynapi_18);
               cursorOrResult = procResolve.procedureOrError;
               if (!procResolve.failed) {
-                hresult = pDirectDrawEnumerateA
-                                  (DirectDraw_EnumAdapterCallback,(TH_LEGACY_LPVOID)0x0);
-                cursorOrResult = (GraphicsAdapterRecord *)&k_LowAddressLiteral00000017;
+                hresult = pDirectDrawEnumerateA(DirectDraw_EnumAdapterCallback,NULL);
+                cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_ADAPTER;
                 if ((hresult == 0) &&
                    (remainingAdapters = g_GraphicsAdapterCount, adapterOrModule = g_GraphicsAdapters,
                    g_GraphicsAdapterCount != 0)) {
+                  /* collect the Direct3D devices of every DirectDraw adapter */
                   do {
-                    if ((adapterOrModule->adapterGuid).Data1 != 1) {
+                    if ((adapterOrModule->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
                       cursorOrResult = adapterOrModule;
                       if ((adapterOrModule->adapterGuid).Data1 == 0) {
-                        cursorOrResult = (GraphicsAdapterRecord *)0x0;
+                        cursorOrResult = NULL; /* primary display driver: NULL GUID */
                       }
-                      hresult = pDirectDrawCreate
-                                        (&cursorOrResult->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
+                      hresult = pDirectDrawCreate(&cursorOrResult->adapterGuid,&directDraw,NULL);
                       if (hresult == 0) {
                         hresult = directDraw->lpVtbl->QueryInterface
                                           (directDraw,&IID_IDirect3D2_Local,&direct3D2);
@@ -663,33 +664,32 @@ StatusResult __cdecl Graphics_Init(void)
                         directDraw->lpVtbl->Release(directDraw);
                       }
                     }
-                    remainingAdapters = remainingAdapters - 1;
-                    adapterOrModule = adapterOrModule + 1;
+                    remainingAdapters--;
+                    adapterOrModule++;
                   } while (remainingAdapters != 0);
+                  /* collect the display modes, tagged with the adapter index */
                   displayAdapterIndex = 0;
                   remainingAdapters = g_GraphicsAdapterCount;
                   cursorOrResult = g_GraphicsAdapters;
                   do {
-                    if ((cursorOrResult->adapterGuid).Data1 != 1) {
+                    if ((cursorOrResult->adapterGuid).Data1 != GRAPHICS_ADAPTER_GUID_GLIDE) {
                       adapterOrModule = cursorOrResult;
                       if ((cursorOrResult->adapterGuid).Data1 == 0) {
-                        adapterOrModule = (GraphicsAdapterRecord *)0x0;
+                        adapterOrModule = NULL; /* primary display driver: NULL GUID */
                       }
-                      hresult = pDirectDrawCreate
-                                        (&adapterOrModule->adapterGuid,&directDraw,(TH_LEGACY_LPVOID)0x0);
+                      hresult = pDirectDrawCreate(&adapterOrModule->adapterGuid,&directDraw,NULL);
                       if (hresult == 0) {
                         directDraw->lpVtbl->EnumDisplayModes
-                                  (directDraw,0,(DDSURFACEDESC_DX6 *)0x0,displayAdapterIndex,
-                                   DirectDraw_EnumDisplayModeCallback);
+                                  (directDraw,0,NULL,displayAdapterIndex,DirectDraw_EnumDisplayModeCallback);
                         directDraw->lpVtbl->Release(directDraw);
                       }
                     }
                     displayModeHook = g_GraphicsSetDisplayMode;
-                    displayAdapterIndex = displayAdapterIndex + 1;
-                    cursorOrResult = cursorOrResult + 1;
-                    remainingAdapters = remainingAdapters - 1;
+                    displayAdapterIndex++;
+                    cursorOrResult++;
+                    remainingAdapters--;
                   } while (remainingAdapters != 0);
-                  cursorOrResult = (GraphicsAdapterRecord *)0x18;
+                  cursorOrResult = (GraphicsAdapterRecord *)FATAL_ERROR_DIRECTDRAW_NO_DISPLAY_MODE;
                   if (g_GraphicsDisplayModeCount != 0) {
                     g_GraphicsBackendRefreshActiveAdapter =
                          GraphicsBackend_RefreshActiveAdapterIfReady;
