@@ -52,23 +52,23 @@ static void Win32_AutoShotTick(void)
   capture = (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
   if (!capture.carry && capture.eax != NULL) {
     GraphicsTextureSourceEntry *entry = &capture.eax->sourceEntry;
-    const dword *pixels = (const dword *)((byte *)capture.eax + entry->dataOffset);
-    dword width = entry->pixelWidth;
-    dword height = entry->pixelHeight;
+    const uint32_t *pixels = (const uint32_t *)((uint8_t *)capture.eax + entry->dataOffset);
+    uint32_t width = entry->pixelWidth;
+    uint32_t height = entry->pixelHeight;
     char name[64];
     FILE *file;
     sprintf(name, "shots\\shot_%04u.bmp", number++);
     file = fopen(name, "wb");
     if (file != NULL) {
-      dword header[13];
-      dword imageBytes = width * height * 4;
+      uint32_t header[13];
+      uint32_t imageBytes = width * height * 4;
       memset(header, 0, sizeof header);
       fwrite("BM", 1, 2, file);
       header[0] = 54 + imageBytes;
       header[2] = 54;
       header[3] = 40;
       header[4] = width;
-      header[5] = (dword)-(int)height;
+      header[5] = (uint32_t)-(int)height;
       header[6] = 1 | (32 << 16);
       header[8] = imageBytes;
       fwrite(header, 4, 13, file);
@@ -94,10 +94,10 @@ static void Win32_AutoShotTick(void)
    <ms> counts from the first message pump. Pointer events go into the same ring DirectInput fills. */
 volatile unsigned g_TestAidInGameFrames;
 
-static void Win32_PushCursorEvent(GraphicsCursorEventType type, dword buttons, int x, int y)
+static void Win32_PushCursorEvent(GraphicsCursorEventType type, uint32_t buttons, int x, int y)
 {
-  dword index = g_CursorInputWriteIndex;
-  dword next = index + 1;
+  uint32_t index = g_CursorInputWriteIndex;
+  uint32_t next = index + 1;
   if (0xff < next) {
     next = 0;
   }
@@ -124,7 +124,7 @@ static void Win32_ScriptTick(void)
   static int y;
   static int hold;
   static int pendingRelease;
-  static dword releaseButton;
+  static uint32_t releaseButton;
   static unsigned releaseAt;
   static int releaseX;
   static int releaseY;
@@ -251,8 +251,8 @@ Win32_PumpMessages_ShutdownDestroyWindowAndExitAfterQuitOrDestroyRequest:
 bool __thandor_void_preserve_eax_ecx Win32_ShouldTranslateMessageFlags(Win32Message32 *message)
 
 {
-  uint messageCode;
-  uint virtualKeyCode;
+  uint32_t messageCode;
+  uint32_t virtualKeyCode;
   
   messageCode = message->message;
   virtualKeyCode = message->wParam;

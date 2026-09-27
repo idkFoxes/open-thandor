@@ -46,7 +46,7 @@ WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *wor
 /* 0x00561E30 */
 void __thandor_preserve_eax_edx
 WorldRuntime_AdjustFieldOriginWrappedClamped
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,Q12 deltaWorldY,Q12 deltaWorldX);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaWorldY,Q12 deltaWorldX);
 
 /* 0x004BE760 */
 Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
@@ -55,7 +55,7 @@ Q12 WorldRuntime_InterpolateTerrainHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12
 Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x004BE7C0 */
-dword WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
+uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x0050A610 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -108,18 +108,18 @@ WorldRuntime_GetFlagsCf(WorldRuntimeContext *world);
 FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world);
 
 /* 0x0050D6D0 */
-dword WorldRuntime_GetPendingToken(WorldRuntimeContext *world);
+uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world);
 
 /* 0x0050D6F0 */
-dword WorldRuntime_TakePendingToken(WorldRuntimeContext *world);
+uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world);
 
 /* 0x0050D710 */
 void __thandor_void_preserve_eax_ecx
 WorldRuntime_AttachAndClearDwordArray
-          (WorldWorkspaceElementCount count,dword *array,WorldRuntimeContext *world);
+          (WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world);
 
 /* 0x0050D740 */
-dword * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
+uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 
 /* 0x0050D7D0 */
 WorldObjectRecordEaxCf5 __thandor_eax_cf_preserve_ecx_edx
@@ -176,7 +176,7 @@ UnifiedRuntimeDefault_OneArgNoOpC(ModelRuntimeSlot *modelRuntime);
 void UnifiedRuntimeDefault_TwoArgNoOpB (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527BB0 */
-dword __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context);
+uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context);
 
 /* 0x00527BE0 */
 bool __thandor_cf_preserve_eax_ecx_edx

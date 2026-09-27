@@ -28,11 +28,11 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
           FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid)
 
 {
-  byte *centerMaskByte;
+  uint8_t *centerMaskByte;
   int rowStrideBytes;
-  uint cellColumn;
-  uint gridColumnCount;
-  uint cellRow;
+  uint32_t cellColumn;
+  uint32_t gridColumnCount;
+  uint32_t cellRow;
   int cellIndex;
   FieldGridCell *wedge0Or3Cell;
   FieldGridCell *wedge1Or4Cell;
@@ -40,7 +40,7 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
@@ -80,7 +80,7 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
 
 
 /* PCMPEQB: 0xFF in every byte lane where a and b are equal, 0 elsewhere. */
-static __inline qword TerrainOccupancy_Pcmpeqb(qword a,qword b)
+static __inline uint64_t TerrainOccupancy_Pcmpeqb(uint64_t a,uint64_t b)
 
 {
   ThandorMmx x;
@@ -106,24 +106,24 @@ static __inline qword TerrainOccupancy_Pcmpeqb(qword a,qword b)
    remain unchanged.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
-dword __thandor_void_preserve_eax_ecx
+uint32_t __thandor_void_preserve_eax_ecx
 TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           (Q12 neighborhoodRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
 
 {
-  uint radiusStepsOrGridWidth;
-  uint cellColumn;
+  uint32_t radiusStepsOrGridWidth;
+  uint32_t cellColumn;
   int runStepCount;
-  uint cellRow;
+  uint32_t cellRow;
   FieldGridCell *runCursorB;
   FieldGridCell *runCursorA;
   FieldGridCell *centerCell;
   int runRemainingA;
   int runRemainingB;
-  ulonglong combinedMask;
-  qword mm1PackedValue0;
-  ulonglong signBiasMatchBytes;
-  qword mm2PackedValue0;
+  uint64_t combinedMask;
+  uint64_t mm1PackedValue0;
+  uint64_t signBiasMatchBytes;
+  uint64_t mm2PackedValue0;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
@@ -151,18 +151,18 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
         runRemainingA = runStepCount;
         if (runStepCount != 0) {
           do {
-            combinedMask = combinedMask | *(ulonglong *)((int)(runCursorA + 1) + 0x70);
+            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorA + 1) + 0x70);
             runCursorB = centerCell;
             runRemainingB = runStepCount;
-            if ((*(uint *)((int)(runCursorA + 1) + 0x50) & 0x88006000) != 0) break;
+            if ((*(uint32_t *)((int)(runCursorA + 1) + 0x50) & 0x88006000) != 0) break;
             runRemainingA = runRemainingA + -1;
             runCursorA = runCursorA + 1;
           } while (runRemainingA != 0);
           do {
-            combinedMask = combinedMask | *(ulonglong *)((int)(runCursorB + -1) + 0x70);
+            combinedMask = combinedMask | *(uint64_t *)((int)(runCursorB + -1) + 0x70);
             runCursorA = centerCell;
             runRemainingA = runStepCount;
-            if ((*(uint *)((int)(runCursorB + -1) + 0x50) & 0x88006000) != 0) break;
+            if ((*(uint32_t *)((int)(runCursorB + -1) + 0x50) & 0x88006000) != 0) break;
             runRemainingB = runRemainingB + -1;
             runCursorB = runCursorB + -1;
           } while (runRemainingB != 0);
@@ -196,7 +196,7 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           } while (runStepCount != 0);
         }
         combinedMask = combinedMask & g_TerrainOccupancyMmxClearBits1And2Mask;
-        signBiasMatchBytes = TerrainOccupancy_Pcmpeqb((qword)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
+        signBiasMatchBytes = TerrainOccupancy_Pcmpeqb((uint64_t)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
         mm2PackedValue0 =
              pmaddwd(signBiasMatchBytes & g_TerrainOccupancyMmxPackedScale0280,
                      g_TerrainOccupancyMmxPackedWeights02_20);
@@ -204,8 +204,8 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
              pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^
                       g_TerrainOccupancyMmxAllBitsMask ^ signBiasMatchBytes) &
                      g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPackedWeights04_40);
-        return (int)((ulonglong)mm1PackedValue0 >> 0x20) + (int)((ulonglong)mm2PackedValue0 >> 0x20)
-               | (uint)((int)mm1PackedValue0 + (int)mm2PackedValue0) >> 8;
+        return (int)((uint64_t)mm1PackedValue0 >> 0x20) + (int)((uint64_t)mm2PackedValue0 >> 0x20)
+               | (uint32_t)((int)mm1PackedValue0 + (int)mm2PackedValue0) >> 8;
       }
     }
   }
@@ -228,8 +228,8 @@ TerrainOccupancyMask_ResolveRuntimeClassFlags
 
 {
   FieldGridRuntimeFlags resolvedClassFlags;
-  uint combinedOccupancyMask;
-  uint runtimeClassBit;
+  uint32_t combinedOccupancyMask;
+  uint32_t runtimeClassBit;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   
   resolvedMasks.secondaryOccupancyMask =
@@ -264,7 +264,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *diagonalMaskByte;
+  uint8_t *diagonalMaskByte;
   FieldGridCell *legStartCell;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -281,10 +281,10 @@ TerrainOccupancyBit2_MarkWedge0(TerrainDirectionalScanStep scanStep,FieldGridCel
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)legStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)legStartCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
-      diagonalMaskByte = (byte *)((int)legStartCell +
+      diagonalMaskByte = (uint8_t *)((int)legStartCell +
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
       *diagonalMaskByte = *diagonalMaskByte | 2;
       cell = (FieldGridCell *)((int)legStartCell + (0x80 - rowStrideBytes));
@@ -312,7 +312,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *diagonalMaskByte;
+  uint8_t *diagonalMaskByte;
   FieldGridCell *legStartCell;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -329,10 +329,10 @@ TerrainOccupancyBit2_MarkWedge1(TerrainDirectionalScanStep scanStep,FieldGridCel
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)cell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
-      diagonalMaskByte = (byte *)((int)cell +
+      diagonalMaskByte = (uint8_t *)((int)cell +
                        occupancyMarkByteIndex.occupancyMaskByteIndex + (0x70 - rowStrideBytes));
       *diagonalMaskByte = *diagonalMaskByte | 2;
       legStartCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
@@ -404,7 +404,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *centerMaskByte;
+  uint8_t *centerMaskByte;
   int currentRowStrideBytes;
   FieldGridCell *legStartCell;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
@@ -414,7 +414,7 @@ TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCel
        g_TerrainScanSharedSelectorValue.occupancyMaskByteIndex;
   if (scanStep < g_TerrainScanStepLimit) {
     while ((cell->flagsAndMaterial & 0x88006000) == 0) {
-      centerMaskByte = (byte *)((int)cell->runtime60_6B +
+      centerMaskByte = (uint8_t *)((int)cell->runtime60_6B +
                        occupancyMarkByteIndex.occupancyMaskByteIndex + 0x10);
       *centerMaskByte = *centerMaskByte | 2;
       currentRowStrideBytes = g_TerrainScanRowStrideBytes;
@@ -423,7 +423,7 @@ TerrainOccupancyBit2_MarkWedge3(TerrainDirectionalScanStep scanStep,FieldGridCel
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(legStartCell->runtime60_6B + currentRowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(legStartCell->runtime60_6B + currentRowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
       legStartCell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + currentRowStrideBytes + 0x10] =
@@ -454,7 +454,7 @@ void __thandor_void_preserve_eax_ecx_edx
 TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  byte *cellRuntimeBytes;
+  uint8_t *cellRuntimeBytes;
   int rowStrideBytes;
   TerrainScanSelectorUnion occupancyMarkByteIndex;
   
@@ -471,7 +471,7 @@ TerrainOccupancyBit2_MarkWedge4(TerrainDirectionalScanStep scanStep,FieldGridCel
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(cell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
       cell->runtime60_6B[occupancyMarkByteIndex.occupancyMaskByteIndex + rowStrideBytes + 0x10] =

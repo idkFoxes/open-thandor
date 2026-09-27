@@ -19,7 +19,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ResourceRegistration_OpenSourceCf(void *packagePath);
 
 /* 0x0040F000 */
-ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path);
+ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path);
 
 /* 0x0040F1D0 */
 void __thandor_void_preserve_eax_ecx_edx Resource_Release(void *allocation);

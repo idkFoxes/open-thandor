@@ -22,7 +22,7 @@
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset)
 
 {
-  dword registrationStatusCode;
+  uint32_t registrationStatusCode;
   AssetRecordCount entriesRemaining;
   ShotDefinition *definition;
   ShotDefinition *definitionCursor;
@@ -48,7 +48,7 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotA
     }
   }
   else {
-    Package_SetLastErrorPath((word *)asset);
+    Package_SetLastErrorPath((uint16_t *)asset);
   }
   failureResult.carry = true;
   failureResult.valueOrError = registrationStatusCode;
@@ -102,7 +102,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       successResult.carry = false;
-      successResult.valueOrError = (dword)materialIndex;
+      successResult.valueOrError = (uint32_t)materialIndex;
       return successResult;
     }
   } while( true );
@@ -161,12 +161,12 @@ ShotDefinition_ComputeLaunchAnglesRegs
           ShotDefinition *definition)
 
 {
-  longlong discriminant;
+  int64_t discriminant;
   int rangeTimesDivisor;
   int launchSpeedSquared;
   int deltaX;
-  dword computedElevation;
-  uint computedHeading;
+  uint32_t computedElevation;
+  uint32_t computedHeading;
   ShotLaunchAnglesEaxEdx8 clampedAngles;
   ShotLaunchAnglesEaxEdx8 fixedRangeAngles;
   FixedLengthAngleEaxEdx8 planarLengthAngle;
@@ -179,12 +179,12 @@ ShotDefinition_ComputeLaunchAnglesRegs
     computedHeading = planarLengthAngle.angle & 0xffff;
     launchSpeedSquared = definition->launchSpeedQ12 * definition->launchSpeedQ12;
     rangeTimesDivisor = planarLengthAngle.length * definition->ballisticDivisorQ12;
-    discriminant = (longlong)(launchSpeedSquared + definition->ballisticDivisorQ12 * deltaX * -2) * (longlong)launchSpeedSquared -
-            (longlong)rangeTimesDivisor * (longlong)rangeTimesDivisor;
+    discriminant = (int64_t)(launchSpeedSquared + definition->ballisticDivisorQ12 * deltaX * -2) * (int64_t)launchSpeedSquared -
+            (int64_t)rangeTimesDivisor * (int64_t)rangeTimesDivisor;
     if (discriminant < 0) {
       discriminant = 0;
     }
-    computedElevation = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)discriminant >> 0x20),(UInt64Half32)discriminant);
+    computedElevation = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
     if ((-0x1000 < deltaX) && (deltaX < 0x1000)) {
       computedElevation = -computedElevation;
     }
@@ -219,15 +219,15 @@ ShotDefinition_ComputeLaunchAnglesRegs
    ids across five shot banks; duplicate ids are aliases/variants, not permission to invent distinct gameplay
    meanings.
 */
-dword ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
+uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition)
 
 {
-  uint selectionRangeQ12;
+  uint32_t selectionRangeQ12;
   
   if (definition->trajectoryMode == SHOT_TRAJECTORY_BALLISTIC) {
     selectionRangeQ12 =
-         (uint)((int)(((longlong)definition->launchSpeedQ12 * (longlong)definition->launchSpeedQ12)
-                     / (longlong)definition->ballisticDivisorQ12) * 9) >> 3;
+         (uint32_t)((int)(((int64_t)definition->launchSpeedQ12 * (int64_t)definition->launchSpeedQ12)
+                     / (int64_t)definition->ballisticDivisorQ12) * 9) >> 3;
   }
   else if (definition->trajectoryMode == SHOT_TRAJECTORY_FIXED_RANGE) {
     selectionRangeQ12 = definition->mode2SelectionRangeQ12;
@@ -250,7 +250,7 @@ ShotModeRangeLimitEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
 ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
 
 {
-  uint rangeLimit;
+  uint32_t rangeLimit;
   ShotModeRangeLimitEbxCf5 limitResult;
   
   rangeLimit = 0x7fffffff;
@@ -269,11 +269,11 @@ ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition)
    Purpose: Returns zero except for trajectory mode 3 with the verified +0x290 flag clear; that path returns the
    unsigned scaled +0x270 value multiplied by 0xAB and shifted right eight.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
 
 {
-  uint leadAdjustmentQ12;
+  uint32_t leadAdjustmentQ12;
   
   leadAdjustmentQ12 = 0;
   if ((definition->trajectoryMode == SHOT_TRAJECTORY_LEAD_ADJUSTED) &&
@@ -380,7 +380,7 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
           referencesRemaining = referencesRemaining + -1;
         } while (referencesRemaining != 0);
         successResult.carry = false;
-        successResult.valueOrError = (dword)asset;
+        successResult.valueOrError = (uint32_t)asset;
         return successResult;
       }
       registrySlotCursor = registrySlotCursor + 1;
@@ -396,7 +396,7 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
   }
 ShotDefinition_ReturnReferenceResolutionResult:
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)asset;
+  failureResult.valueOrError = (uint32_t)asset;
   return failureResult;
 }
 

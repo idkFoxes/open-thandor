@@ -84,7 +84,7 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
 /* 0x0055F4A0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
-          (PlayerRuntimeId playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3);
+          (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x005604D0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -198,7 +198,7 @@ void UiCommandRuntime_CallbackNoOp(void);
 /* 0x0055F280 */
 void __thandor_void_preserve_eax_ecx
 InGameCommand150_HandlePlayerDepartureAndOwnership
-          (PlayerOrFactionRuntimeId32 playerOrFactionId,dword value1,dword value2,
+          (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,
           GameEntityCommandFlags flags);
 
 /* 0x0056D980 */

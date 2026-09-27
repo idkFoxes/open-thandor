@@ -281,7 +281,7 @@ UiRangeSliderControl_HandleKeyboardCf
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
 
 {
-  sdword adjustedSliderValue;
+  int32_t adjustedSliderValue;
   UiKeyboardEventCode decreaseKey;
   UiKeyboardEventCode increaseKey;
   bool delegatedResult;
@@ -423,10 +423,10 @@ UiRangeSliderControl_UpdateValueFromPointer
           UiRangeSliderControl *control)
 
 {
-  ulonglong scaledOffset;
-  uint pointerOffset;
-  sdword sliderValue;
-  uint trackLength;
+  uint64_t scaledOffset;
+  uint32_t pointerOffset;
+  int32_t sliderValue;
+  uint32_t trackLength;
   GraphicsTextureSizeEaxEdxCf9 thumbSize;
 
   if ((control->sliderFlags & 2) != 0) {
@@ -440,10 +440,10 @@ UiRangeSliderControl_UpdateValueFromPointer
       if ((int)pointerOffset < 0) {
         pointerOffset = 0;
       }
-      scaledOffset = (ulonglong)pointerOffset *
-              (ulonglong)(uint)(control->maximumValue - control->minimumValue);
+      scaledOffset = (uint64_t)pointerOffset *
+              (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
       sliderValue = control->minimumValue +
-               (uint)(trackLength < (uint)((int)(scaledOffset % (ulonglong)trackLength) * 2)) + (int)(scaledOffset / trackLength);
+               (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) + (int)(scaledOffset / trackLength);
       if (control->maximumValue < sliderValue) {
         sliderValue = control->maximumValue;
       }
@@ -464,10 +464,10 @@ UiRangeSliderControl_UpdateValueFromPointer
     if ((int)pointerOffset < 0) {
       pointerOffset = 0;
     }
-    scaledOffset = (ulonglong)pointerOffset *
-            (ulonglong)(uint)(control->maximumValue - control->minimumValue);
+    scaledOffset = (uint64_t)pointerOffset *
+            (uint64_t)(uint32_t)(control->maximumValue - control->minimumValue);
     sliderValue = control->minimumValue +
-             (uint)(trackLength < (uint)((int)(scaledOffset % (ulonglong)trackLength) * 2)) + (int)(scaledOffset / trackLength);
+             (uint32_t)(trackLength < (uint32_t)((int)(scaledOffset % (uint64_t)trackLength) * 2)) + (int)(scaledOffset / trackLength);
     if (control->maximumValue < sliderValue) {
       sliderValue = control->maximumValue;
     }
@@ -493,7 +493,7 @@ UiRangeSliderControl_HandlePointerWheel
           UiRangeSliderControl *control)
 
 {
-  sdword adjustedSliderValue;
+  int32_t adjustedSliderValue;
 
   if ((((control->sliderFlags & 2) == 0) && ((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0)
       ) && (wheelDelta != 0)) {
@@ -542,7 +542,7 @@ UiSingleLineTextControl_RelocateChild
          *childNodeFlagsField & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   if ((control->labelFlags & 0x20) != 0) {
-    control->text = (word *)((int)control->text + relocationDelta);
+    control->text = (uint16_t *)((int)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & 0xffffffdf;
   }
   return;
@@ -875,44 +875,44 @@ UiImageControl_PointerMove
 /* MMX lane helpers for the bilinear scaler below (lanes are little-endian 16-bit words). */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: byte i of pixel becomes word lane i = (byte * 0x101) >> shift. */
-static __inline ulonglong UiScaler_UnpackBytesToWordLanes(dword pixel,int shift)
+static __inline uint64_t UiScaler_UnpackBytesToWordLanes(uint32_t pixel,int shift)
 {
-  ulonglong lanes;
+  uint64_t lanes;
   int lane;
 
   lanes = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     lanes = lanes |
-            (ulonglong)(word)((word)(((pixel >> (lane * 8)) & 0xff) * 0x101) >> shift) << (lane * 16);
+            (uint64_t)(uint16_t)((uint16_t)(((pixel >> (lane * 8)) & 0xff) * 0x101) >> shift) << (lane * 16);
   }
   return lanes;
 }
 
 /* PADDW: lane-wise wrapping 16-bit add. */
-static __inline ulonglong UiScaler_AddWordLanes(ulonglong left,ulonglong right)
+static __inline uint64_t UiScaler_AddWordLanes(uint64_t left,uint64_t right)
 {
-  ulonglong sum;
+  uint64_t sum;
   int shift;
 
   sum = 0;
   for (shift = 0; shift < 64; shift = shift + 16) {
-    sum = sum | (ulonglong)(word)((word)(left >> shift) + (word)(right >> shift)) << shift;
+    sum = sum | (uint64_t)(uint16_t)((uint16_t)(left >> shift) + (uint16_t)(right >> shift)) << shift;
   }
   return sum;
 }
 
 /* PSRLW mm,shift then PACKUSWB (low dword): each lane shifted right, saturated to an unsigned
    byte. The logical shift leaves every lane non-negative, so only the 0xFF clamp applies. */
-static __inline dword UiScaler_ShiftAndPackWordLanes(ulonglong lanes,int shift)
+static __inline uint32_t UiScaler_ShiftAndPackWordLanes(uint64_t lanes,int shift)
 {
-  dword packed;
-  word laneValue;
+  uint32_t packed;
+  uint16_t laneValue;
   int lane;
 
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
-    laneValue = (word)(lanes >> (lane * 16)) >> shift;
-    packed = packed | (dword)(0xff < laneValue ? 0xff : laneValue) << (lane * 8);
+    laneValue = (uint16_t)(lanes >> (lane * 16)) >> shift;
+    packed = packed | (uint32_t)(0xff < laneValue ? 0xff : laneValue) << (lane * 8);
   }
   return packed;
 }
@@ -923,8 +923,8 @@ static __inline PackedArgb32 UiScaler_BlendBilinear
           (PackedArgb32 topLeft,PackedArgb32 topRight,PackedArgb32 bottomLeft,PackedArgb32 bottomRight,
           int columnWeight,int rowWeight)
 {
-  ulonglong topRow;
-  ulonglong bottomRow;
+  uint64_t topRow;
+  uint64_t bottomRow;
 
   topRow = UiScaler_AddWordLanes
                      (pmulhw(UiScaler_UnpackBytesToWordLanes(topLeft,2),
@@ -957,34 +957,34 @@ UiSelectionGeometryControl_DrawClipped
   int sourceWidth;
   int sourceHeight;
   int pixelDataOffset;
-  longlong rotationProductA;
-  longlong rotationProductB;
-  longlong rotationProductC;
+  int64_t rotationProductA;
+  int64_t rotationProductB;
+  int64_t rotationProductC;
   int sourceColumn;
-  uint sinTermOrSourceU;
-  uint stepTermOrRowStartU;
-  uint stepTermOrRowStartV;
+  uint32_t sinTermOrSourceU;
+  uint32_t stepTermOrRowStartU;
+  uint32_t stepTermOrRowStartV;
   int sourceRow;
   int clipHeightOrColumnTerm;
   int clipWidth;
   int texelIndexOrFraction;
-  byte *destPixel;
+  uint8_t *destPixel;
   bool framebufferUnavailable;
-  uint pixelStepU;
-  uint pixelStepV;
-  ulonglong rowStepU;
+  uint32_t pixelStepU;
+  uint32_t pixelStepV;
+  uint64_t rowStepU;
   int rowStepUHigh;
   int cosTermOrRowStepV;
-  ulonglong sourceStartU;
-  uint sourceV;
+  uint64_t sourceStartU;
+  uint32_t sourceV;
   PackedArgb32 sourcePixelSample0; /* texel (column, row) */
   PackedArgb32 sourcePixelSample1; /* texel (column + 1, row) */
   PackedArgb32 sourcePixelSample2; /* texel (column, row + 1) */
   PackedArgb32 sourcePixelSample3; /* texel (column + 1, row + 1) */
   PackedArgb32 blendedPixel;
-  ulonglong packedLanes;
+  uint64_t packedLanes;
   int remainingColumns;
-  byte *destRowStart;
+  uint8_t *destRowStart;
 
   if (clipRight < (control->base).left) {
     clipRight = (control->base).left;
@@ -1002,26 +1002,26 @@ UiSelectionGeometryControl_DrawClipped
   if (((clipWidth != 0 && clipRight <= clipLeft) &&
       (clipHeightOrColumnTerm = clipTop - clipBottom, clipHeightOrColumnTerm != 0 && clipBottom <= clipTop)) &&
      (control->textureSource != (GraphicsTextureSourceAsset *)0x0)) {
-    rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
-    cosTermOrRowStepV = -((int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c);
-    rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
-    sinTermOrSourceU = (int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c;
-    rotationProductA = (longlong)(int)sinTermOrSourceU * 0x1c6e9c;
-    rotationProductB = (longlong)cosTermOrRowStepV * -0x20c8cc;
-    stepTermOrRowStartU = (int)((ulonglong)rotationProductB >> 0x20) << 0xb | (uint)rotationProductB >> 0x15;
-    rotationProductB = (longlong)cosTermOrRowStepV * 0x1c6e9c;
-    rotationProductC = (longlong)(int)-sinTermOrSourceU * -0x20c8cc;
-    stepTermOrRowStartV = (int)((ulonglong)rotationProductC >> 0x20) << 0xb | (uint)rotationProductC >> 0x15;
-    sinTermOrSourceU = ((int)((ulonglong)rotationProductB >> 0x20) << 0xc | (uint)rotationProductB >> 0x14) - stepTermOrRowStartV;
+    rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
+    cosTermOrRowStepV = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
+    rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
+    sinTermOrSourceU = (int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c;
+    rotationProductA = (int64_t)(int)sinTermOrSourceU * 0x1c6e9c;
+    rotationProductB = (int64_t)cosTermOrRowStepV * -0x20c8cc;
+    stepTermOrRowStartU = (int)((uint64_t)rotationProductB >> 0x20) << 0xb | (uint32_t)rotationProductB >> 0x15;
+    rotationProductB = (int64_t)cosTermOrRowStepV * 0x1c6e9c;
+    rotationProductC = (int64_t)(int)-sinTermOrSourceU * -0x20c8cc;
+    stepTermOrRowStartV = (int)((uint64_t)rotationProductC >> 0x20) << 0xb | (uint32_t)rotationProductC >> 0x15;
+    sinTermOrSourceU = ((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - stepTermOrRowStartV;
     cosTermOrRowStepV = stepTermOrRowStartV * 2;
-    rowStepU = (ulonglong)sinTermOrSourceU;
-    sourceStartU = (ulonglong)
+    rowStepU = (uint64_t)sinTermOrSourceU;
+    sourceStartU = (uint64_t)
              (control->sourceOriginYQ12 -
              (sinTermOrSourceU * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
-             (((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermOrRowStartU) *
+             (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU) *
              (((control->base).left + (control->base).right >> 1) - clipRight)));
     /* Per-pixel texture step (MM0 low/high in the original); the decompiler lost both. */
-    pixelStepU = ((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermOrRowStartU;
+    pixelStepU = ((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermOrRowStartU;
     pixelStepV = stepTermOrRowStartU * 2;
     texelIndexOrFraction = control->sourceOriginXQ12 -
              (cosTermOrRowStepV * (((control->base).top + (control->base).bottom >> 1) - clipBottom) +
@@ -1038,7 +1038,7 @@ UiSelectionGeometryControl_DrawClipped
       framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
       if (!framebufferUnavailable) {
         rowStepUHigh = (int)(rowStepU >> 0x20);
-        sinTermOrSourceU = (uint)sourceStartU;
+        sinTermOrSourceU = (uint32_t)sourceStartU;
         sourceColumn = (int)(sourceStartU >> 0x20);
         clipTop = clipHeightOrColumnTerm;
         remainingColumns = clipWidth;
@@ -1096,7 +1096,7 @@ UiSelectionGeometryControl_DrawClipped
               /* 32-bit colour to 16-bit: PUNPCKLBW/PSRLW 4, PAND quantize masks, PMADDWD pack weights,
                  then (q >> 40) + (q >> 8) with PADDW; the low word is the pixel. */
               packedLanes = pmaddwd(UiScaler_UnpackBytesToWordLanes(blendedPixel,4) &
-                                    THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong,
+                                    THANDOR_BITCAST(SoftwareRgbWordLanes, uint64_t,
                                                     g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                     g_SoftwarePixelMmxConstants.packWeights);
               *(short *)destPixel = (short)(packedLanes >> 0x28) + (short)(packedLanes >> 8);
@@ -1204,31 +1204,31 @@ UiSelectionGeometryControl_ConvertPointerAndEnqueueAction
   int boundsRight;
   int boundsTop;
   int boundsBottom;
-  longlong rotationProductA;
-  longlong rotationProductB;
-  longlong rotationProductC;
-  uint sinTermOrStepY;
-  uint stepTermX;
+  int64_t rotationProductA;
+  int64_t rotationProductB;
+  int64_t rotationProductC;
+  uint32_t sinTermOrStepY;
+  uint32_t stepTermX;
   
-  rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedCosQ28[control->rotationAngle];
-  cosTermOrBoundsLeft = -((int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c);
-  rotationProductA = (longlong)control->sampleScaleQ12 * (longlong)g_FixedSinQ28[control->rotationAngle];
-  sinTermOrStepY = (int)((ulonglong)rotationProductA >> 0x20) << 4 | (uint)rotationProductA >> 0x1c;
-  rotationProductA = (longlong)(int)sinTermOrStepY * 0x1c6e9c;
-  rotationProductB = (longlong)cosTermOrBoundsLeft * -0x20c8cc;
-  stepTermX = (int)((ulonglong)rotationProductB >> 0x20) << 0xb | (uint)rotationProductB >> 0x15;
-  rotationProductB = (longlong)cosTermOrBoundsLeft * 0x1c6e9c;
-  rotationProductC = (longlong)(int)-sinTermOrStepY * -0x20c8cc;
-  sinTermOrStepY = (int)((ulonglong)rotationProductC >> 0x20) << 0xb | (uint)rotationProductC >> 0x15;
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedCosQ28[control->rotationAngle];
+  cosTermOrBoundsLeft = -((int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c);
+  rotationProductA = (int64_t)control->sampleScaleQ12 * (int64_t)g_FixedSinQ28[control->rotationAngle];
+  sinTermOrStepY = (int)((uint64_t)rotationProductA >> 0x20) << 4 | (uint32_t)rotationProductA >> 0x1c;
+  rotationProductA = (int64_t)(int)sinTermOrStepY * 0x1c6e9c;
+  rotationProductB = (int64_t)cosTermOrBoundsLeft * -0x20c8cc;
+  stepTermX = (int)((uint64_t)rotationProductB >> 0x20) << 0xb | (uint32_t)rotationProductB >> 0x15;
+  rotationProductB = (int64_t)cosTermOrBoundsLeft * 0x1c6e9c;
+  rotationProductC = (int64_t)(int)-sinTermOrStepY * -0x20c8cc;
+  sinTermOrStepY = (int)((uint64_t)rotationProductC >> 0x20) << 0xb | (uint32_t)rotationProductC >> 0x15;
   cosTermOrBoundsLeft = (control->base).left;
   boundsRight = (control->base).right;
   boundsTop = (control->base).top;
   boundsBottom = (control->base).bottom;
   control->selectedSourceYQ12 =
        control->sourceOriginYQ12 -
-       ((((int)((ulonglong)rotationProductB >> 0x20) << 0xc | (uint)rotationProductB >> 0x14) - sinTermOrStepY) *
+       ((((int)((uint64_t)rotationProductB >> 0x20) << 0xc | (uint32_t)rotationProductB >> 0x14) - sinTermOrStepY) *
         (((control->base).top + (control->base).bottom >> 1) - pointerY) +
-       (((int)((ulonglong)rotationProductA >> 0x20) << 0xc | (uint)rotationProductA >> 0x14) - stepTermX) *
+       (((int)((uint64_t)rotationProductA >> 0x20) << 0xc | (uint32_t)rotationProductA >> 0x14) - stepTermX) *
        (((control->base).left + (control->base).right >> 1) - pointerX));
   control->selectedSourceXQ12 =
        (control->sourceOriginXQ12 - stepTermX * 2 * ((cosTermOrBoundsLeft + boundsRight >> 1) - pointerX)) -

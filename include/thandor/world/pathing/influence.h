@@ -65,55 +65,55 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x00535260 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x005355E0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x005356B0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x00535B20 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x00535BF0 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x00535F70 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 /* 0x00536040 */
 int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell);
+          uint32_t *scratchCell);
 
 #endif /* THANDOR_WORLD_PATHING_INFLUENCE_H */

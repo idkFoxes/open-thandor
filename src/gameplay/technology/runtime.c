@@ -31,14 +31,14 @@ Technology_UnlockForFaction
   WorldOwnerListNode100 *ownerNode;
   ArmyRuntimeSlot *modelRuntimeHolder;
   InGameRuntimeRootImageC3E4 *node;
-  uint technologyBitMask;
-  uint *factionTechnologyMaskWord;
+  uint32_t technologyBitMask;
+  uint32_t *factionTechnologyMaskWord;
   TechnologyAsset *technologyAsset;
   
   node = g_InGameRuntimeRoot;
   technologyAsset = g_TechnologyAsset;
-  technologyBitMask = 1 << ((byte)technologyIndex & 0x1f);
-  factionTechnologyMaskWord = (uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4)
+  technologyBitMask = 1 << ((uint8_t)technologyIndex & 0x1f);
+  factionTechnologyMaskWord = (uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4)
   ;
   if ((*factionTechnologyMaskWord & technologyBitMask) == 0) {
     *factionTechnologyMaskWord = *factionTechnologyMaskWord | technologyBitMask;
@@ -86,8 +86,8 @@ Technology_IsUnlockedForFactionCf
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
-  if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
-      1 << ((byte)technologyIndex & 0x1f)) != 0) {
+  if ((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
+      1 << ((uint8_t)technologyIndex & 0x1f)) != 0) {
     return false;
   }
   return true;
@@ -111,8 +111,8 @@ Technology_IsAvailableForFactionCf
   WorldRuntimeNode *worldNodeCursor;
   ArmyRuntimeSlot *activeResearchArmyRuntime;
   
-  if (((((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
-         1 << ((byte)technologyIndex & 0x1f)) == 0) &&
+  if (((((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
+         1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
         g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0]) ==
         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0])) &&
@@ -172,9 +172,9 @@ void __thandor_void_preserve_eax_ecx_edx
 Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntityRuntime *entity)
 
 {
-  uint appliedEntityValue28;
-  dword recordEntityValue20;
-  dword recordEntityValue24;
+  uint32_t appliedEntityValue28;
+  uint32_t recordEntityValue20;
+  uint32_t recordEntityValue24;
   GameEntityRuntimeFlags *entityRuntimeFlags;
   
   if (((entity->common).runtimeFlags & 0xc0) == 0) {
@@ -211,11 +211,11 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
 
 {
   ModelDefinitionRecordPrefix *definitionRecord;
-  uint technologyBitMask;
+  uint32_t technologyBitMask;
   int remainingCount;
   int maskWordIndex;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  dword *categoryReciprocalCursor;
+  uint32_t *categoryReciprocalCursor;
   TechnologyCategoryMasks *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
   ModelDefinitionLookupEaxCf5 modelLookup;

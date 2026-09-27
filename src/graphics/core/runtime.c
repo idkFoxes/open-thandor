@@ -22,7 +22,7 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
 {
   GraphicsCursorFrameRecord *frameRecords;
   GraphicsCursorFrameIndex activeFrameIndex;
-  sdword previousAccessState;
+  int32_t previousAccessState;
   GraphicsSubresourceIndex nextIdleSubresource;
   GraphicsSubresourceIndex nextActiveSubresource;
   bool frameAdvanced;
@@ -106,14 +106,14 @@ GraphicsCursorInputEventRegsCf21 __thandor_input_event_regs_cf GraphicsCursor_Co
 
 {
   GraphicsCursorEventType consumedEventType;
-  uint nextReadIndex;
+  uint32_t nextReadIndex;
   GraphicsCursorInputEventRegsCf21 eventResult;
   GraphicsCursorInputEventRegsCf21 emptyResult;
   GraphicsCursorEventType eventType;
   GraphicsCursorClockValue eventClock;
-  dword eventIndex;
-  dword leftReleaseClock;
-  dword middleReleaseClock;
+  uint32_t eventIndex;
+  uint32_t leftReleaseClock;
+  uint32_t middleReleaseClock;
   
   eventIndex = g_CursorInputReadIndex;
   nextReadIndex = g_CursorInputReadIndex + 1;
@@ -170,19 +170,19 @@ Graphics_ProjectViewPoint(GraphicsFixedVec3 *viewPoint)
   int perspectiveScaleQ12;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsProjectedPointPair offscreenPoint;
-  longlong projectedXProduct;
-  longlong projectedYProduct;
+  int64_t projectedXProduct;
+  int64_t projectedYProduct;
   
   if (g_ProjectionNumerator.high < viewPoint->z) {
-    perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, longlong, g_ProjectionNumerator) / (longlong)viewPoint->z);
-    projectedXProduct = (longlong)viewPoint->x * (longlong)perspectiveScaleQ12;
-    projectedYProduct = (longlong)viewPoint->y * (longlong)perspectiveScaleQ12;
+    perspectiveScaleQ12 = (int)(THANDOR_BITCAST(GraphicsWideFixed, int64_t, g_ProjectionNumerator) / (int64_t)viewPoint->z);
+    projectedXProduct = (int64_t)viewPoint->x * (int64_t)perspectiveScaleQ12;
+    projectedYProduct = (int64_t)viewPoint->y * (int64_t)perspectiveScaleQ12;
     projectedPoint.projectedY =
-         ((int)((ulonglong)projectedYProduct >> 0x20) << 0x14 | (uint)projectedYProduct >> 0xc) +
+         ((int)((uint64_t)projectedYProduct >> 0x20) << 0x14 | (uint32_t)projectedYProduct >> 0xc) +
          g_ProjectionCenterFixed.component1;
     projectedPoint.projectedX =
          g_ProjectionCenterFixed.component0 +
-         ((int)((ulonglong)projectedXProduct >> 0x20) << 0x14 | (uint)projectedXProduct >> 0xc);
+         ((int)((uint64_t)projectedXProduct >> 0x20) << 0x14 | (uint32_t)projectedXProduct >> 0xc);
     return projectedPoint;
   }
   offscreenPoint.projectedX = 0;
@@ -228,7 +228,7 @@ Graphics_SetViewProjectionParameters
           GraphicsWorldCoordinateQ12 originX)
 
 {
-  dword projectionAngle16;
+  uint32_t projectionAngle16;
   
   g_ViewOriginFixed.x = originX;
   g_ViewOriginFixed.y = originY;
@@ -280,23 +280,23 @@ Graphics_SetProjectionViewport
 
 {
   int projectionShiftDelta;
-  longlong projectionScaleProduct;
-  byte rightShiftAmount;
+  int64_t projectionScaleProduct;
+  uint8_t rightShiftAmount;
   
   g_ProjectionCenterFixed.component0 = (bound3 + bound1) * 0x800;
   g_ProjectionCenterFixed.component1 = (bound2 + bound0) * 0x800;
   projectionShiftDelta = g_ProjectionShift - 1;
-  projectionScaleProduct = (longlong)(bound1 - bound3) * (longlong)(int)g_ProjectionScaleFixed;
-  g_ProjectionScaleProduct = (dword)projectionScaleProduct;
+  projectionScaleProduct = (int64_t)(bound1 - bound3) * (int64_t)(int)g_ProjectionScaleFixed;
+  g_ProjectionScaleProduct = (uint32_t)projectionScaleProduct;
   if (projectionShiftDelta != 0) {
     if (projectionShiftDelta < 0) {
-      rightShiftAmount = -(byte)projectionShiftDelta & 0x1f;
+      rightShiftAmount = -(uint8_t)projectionShiftDelta & 0x1f;
       g_ProjectionScaleProduct =
            g_ProjectionScaleProduct >> rightShiftAmount |
-           (int)((ulonglong)projectionScaleProduct >> 0x20) << 0x20 - rightShiftAmount;
+           (int)((uint64_t)projectionScaleProduct >> 0x20) << 0x20 - rightShiftAmount;
     }
     else {
-      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((byte)projectionShiftDelta & 0x1f);
+      g_ProjectionScaleProduct = g_ProjectionScaleProduct << ((uint8_t)projectionShiftDelta & 0x1f);
     }
   }
   g_ProjectionNumerator.low = g_ProjectionScaleProduct << 0xc;
@@ -377,16 +377,16 @@ Graphics_SetActivePrimitiveQueue(GraphicsPrimitiveQueue *queue)
 void __thandor_void_preserve_eax_ecx_edx Graphics_RebuildFrustumPlanes(void)
 
 {
-  dword forwardX;
-  dword forwardY;
-  dword forwardZ;
-  uint cornerAzimuthAngle16;
-  uint sideAzimuthAngle16;
+  uint32_t forwardX;
+  uint32_t forwardY;
+  uint32_t forwardZ;
+  uint32_t cornerAzimuthAngle16;
+  uint32_t sideAzimuthAngle16;
   int scale;
-  uint elevationAngle;
+  uint32_t elevationAngle;
   FixedDirectionXyzRegs12 viewDirection;
-  dword viewElevationAngle16;
-  dword viewAzimuthAngle16;
+  uint32_t viewElevationAngle16;
+  uint32_t viewAzimuthAngle16;
   
   viewElevationAngle16 = g_ViewAngle1;
   viewAzimuthAngle16 = g_ViewAngle0;
@@ -547,12 +547,12 @@ GraphicsObject_RebuildTransformHierarchyRecursive(GraphicsObjectAddress32 graphi
     output = (GraphicsFixedMatrix3x4 *)(graphicsObjectAddress + 0x10);
   }
   FixedTransform_BuildRotationBasis
-            (output,(int)*(uint *)(graphicsObjectAddress + 0x4c) >> 0x10,
-             *(uint *)(graphicsObjectAddress + 0x4c) & 0xffff,
+            (output,(int)*(uint32_t *)(graphicsObjectAddress + 0x4c) >> 0x10,
+             *(uint32_t *)(graphicsObjectAddress + 0x4c) & 0xffff,
              *(AngleTurn32 *)(graphicsObjectAddress + 0x48));
   translationDirection = FixedMath_DirectionFromAnglesScaledRegs
-                    ((int)*(uint *)(graphicsObjectAddress + 0x44) >> 0x10,
-                     *(uint *)(graphicsObjectAddress + 0x44) & 0xffff,
+                    ((int)*(uint32_t *)(graphicsObjectAddress + 0x44) >> 0x10,
+                     *(uint32_t *)(graphicsObjectAddress + 0x44) & 0xffff,
                      *(FixedMathScale32 *)(graphicsObjectAddress + 0x40));
   (output->translation).x = translationDirection.eax;
   (output->translation).y = translationDirection.ecx;
@@ -583,9 +583,9 @@ StatusValueEaxCf5 __cdecl Graphics_Init(void)
   TH_LEGACY_HRESULT hresult;
   SoftwareDisplayModeHookProc *displayModeHook;
   int remainingDwords;
-  dword remainingAdapters;
+  uint32_t remainingAdapters;
   GraphicsAdapterRecord *cursorOrResult;
-  dword displayAdapterIndex;
+  uint32_t displayAdapterIndex;
   GraphicsAdapterRecord *adapterOrModule;
   StatusValueEaxCf5 glideResult;
   ArenaAllocEaxCf5 allocResult;
@@ -707,7 +707,7 @@ StatusValueEaxCf5 __cdecl Graphics_Init(void)
                     g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
                     g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
                     g_GraphicsDisplayModeFinalizeCf = displayModeHook;
-                    return StatusValue_Ok((dword)displayModeHook);
+                    return StatusValue_Ok((uint32_t)displayModeHook);
                   }
                 }
               }
@@ -717,7 +717,7 @@ StatusValueEaxCf5 __cdecl Graphics_Init(void)
       }
     }
   }
-  return StatusValue_Fail((dword)cursorOrResult);
+  return StatusValue_Fail((uint32_t)cursorOrResult);
 }
 
 
@@ -1002,7 +1002,7 @@ GraphicsCursor_ComposeBeforePresent(IDirectDrawSurface3 *backSurface)
 
 {
   UiPixelCoordinate cursorX;
-  dword cursorSubresourceIndex;
+  uint32_t cursorSubresourceIndex;
   GraphicsCursorFrameRecord *cursorFrame;
   UiPixelCoordinate cursorY;
   int drawY;
@@ -1084,9 +1084,9 @@ GraphicsCursor_SaveSurfaceBackground
   int rowPixels;
   int copyWidth;
   int copyHeight;
-  byte *destination;
-  byte *source;
-  byte *surfacePixels;
+  uint8_t *destination;
+  uint8_t *source;
+  uint8_t *surfacePixels;
   TH_LEGACY_HRESULT result;
 
   bytesPerPixel = destinationBuffer->bytesPerPixel == 2 ? 2 : 4;
@@ -1128,7 +1128,7 @@ GraphicsCursor_SaveSurfaceBackground
   if (result != 0) {
     return;
   }
-  surfacePixels = (byte *)g_GraphicsCursorSurfacePixels;
+  surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
   source = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
   for (; copyHeight != 0; copyHeight = copyHeight - 1) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));
@@ -1159,9 +1159,9 @@ GraphicsCursor_RestoreSurfaceBackground
   int rowPixels;
   int copyWidth;
   int copyHeight;
-  byte *source;
-  byte *destination;
-  byte *surfacePixels;
+  uint8_t *source;
+  uint8_t *destination;
+  uint8_t *surfacePixels;
   TH_LEGACY_HRESULT result;
 
   bytesPerPixel = sourceBuffer->bytesPerPixel == 2 ? 2 : 4;
@@ -1203,7 +1203,7 @@ GraphicsCursor_RestoreSurfaceBackground
   if (result != 0) {
     return;
   }
-  surfacePixels = (byte *)g_GraphicsCursorSurfacePixels;
+  surfacePixels = (uint8_t *)g_GraphicsCursorSurfacePixels;
   destination = surfacePixels + drawY * (int)g_GraphicsCursorSurfacePitchBytes + drawX * bytesPerPixel;
   for (; copyHeight != 0; copyHeight = copyHeight - 1) {
     memcpy(destination,source,(size_t)(copyWidth * bytesPerPixel));

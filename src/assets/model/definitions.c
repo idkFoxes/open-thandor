@@ -52,14 +52,14 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
 }
 
 
-static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,byte *node)
+static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
-  dword i;
+  uint32_t i;
   ModelDefinition_UnlockLinkedTechnologyForFactionCf
             (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedIdCf
                                     (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
-  for (i = 0; i < *(dword *)(node + 8); i++) {
-    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(byte **)(node + 0xc + i * 4));
+  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
+    ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(node + 0xc + i * 4));
   }
 }
 
@@ -81,20 +81,20 @@ ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
+  ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
 }
 
 
 /* True (CF set) as soon as one node's technology reports CF from ModelDefinition_IsFactionTechnologyUnlockedCf. */
-static bool ModelDefinitionHierarchy_AnyTechnologyCfFrom(dword *technologyMasks,byte *node)
+static bool ModelDefinitionHierarchy_AnyTechnologyCfFrom(uint32_t *technologyMasks,uint8_t *node)
 {
-  dword i;
+  uint32_t i;
   if (ModelDefinition_IsFactionTechnologyUnlockedCf
                 (technologyMasks,*(PckModelDefinitionIdCatalog *)(node + 0x20))) {
     return true;
   }
-  for (i = 0; i < *(dword *)(node + 8); i++) {
-    if (ModelDefinitionHierarchy_AnyTechnologyCfFrom(technologyMasks,*(byte **)(node + 0xc + i * 4))) {
+  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
+    if (ModelDefinitionHierarchy_AnyTechnologyCfFrom(technologyMasks,*(uint8_t **)(node + 0xc + i * 4))) {
       return true;
     }
   }
@@ -120,7 +120,7 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
   return ModelDefinitionHierarchy_AnyTechnologyCfFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                    *(byte **)(uintptr_t)(definitionNode + 0xc));
+                    *(uint8_t **)(uintptr_t)(definitionNode + 0xc));
 }
 
 
@@ -135,7 +135,7 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 
 {
-  dword registrationStatusCode;
+  uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ModelDefinitionResolvePhaseView280 *definition;
   ModelDefinitionRecordPrefix *definitionCursor;
@@ -182,12 +182,12 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
 
 {
   int entriesRemaining;
-  uint *packedKeyEntryCursor;
+  uint32_t *packedKeyEntryCursor;
   ModelLookupPayloadEaxEcxEdxCf13 payloadResult;
   
   entriesRemaining = modelDefinition->packedLookupTableEntryCount;
   packedKeyEntryCursor =
-       (uint *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
+       (uint32_t *)(modelDefinition->reserved00_AF + modelDefinition->packedLookupTableRelativeOffset);
   while( true ) {
     if (entriesRemaining == 0) {
       /* not found: EAX, ECX and EDX zero, CF set (the decompiled 13-byte constant was cut to
@@ -264,22 +264,22 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
   GraphicsFixedVec3 *vertexA;
   GraphicsFixedVec3 *vertexB;
   GraphicsFixedVec3 *vertexC;
-  ulonglong planeOffsetDot;
-  longlong productScratch;
-  longlong edge2Dot;
-  longlong hitCrossXOrEdge2HitDot;
-  longlong hitCrossY;
-  longlong hitCrossZ;
+  uint64_t planeOffsetDot;
+  int64_t productScratch;
+  int64_t edge2Dot;
+  int64_t hitCrossXOrEdge2HitDot;
+  int64_t hitCrossY;
+  int64_t hitCrossZ;
   int normalX;
-  uint distanceOrCrossX;
+  uint32_t distanceOrCrossX;
   int normalY;
-  uint directionDotOrCrossY;
+  uint32_t directionDotOrCrossY;
   int normalZ;
   int scaledHighOrEdge1X;
   int hitRelativeX;
   int hitRelativeY;
   int hitRelativeZ;
-  uint offsetHighOrCrossZ;
+  uint32_t offsetHighOrCrossZ;
   int halfOffsetOrEdge1Y;
   TerrainDistanceEaxCf5 missResult;
   TerrainDistanceEaxCf5 hitResult;
@@ -291,51 +291,51 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
   vertexA = triangle->vertex0;
   vertexB = triangle->vertex1;
   vertexC = triangle->vertex2;
-  planeOffsetDot = (longlong)normalY *
-          (longlong)((vertexA->y * 2 + vertexB->y + vertexC->y >> 2) - g_ModelRaycastLocalOriginY) +
-          (longlong)((vertexA->x * 2 + vertexB->x + vertexC->x >> 2) - g_ModelRaycastLocalOriginX) *
-          (longlong)normalX +
-          (longlong)((vertexA->z * 2 + vertexB->z + vertexC->z >> 2) - g_ModelRaycastLocalOriginZ) *
-          (longlong)normalZ;
-  offsetHighOrCrossZ = (uint)(planeOffsetDot >> 0x20);
-  productScratch = (longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)normalY +
-          (longlong)(int)g_ModelRaycastLocalDirectionXQ28 * (longlong)normalX +
-          (longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)normalZ;
-  directionDotOrCrossY = (int)((ulonglong)productScratch >> 0x20) << 4 | (uint)productScratch >> 0x1c;
+  planeOffsetDot = (int64_t)normalY *
+          (int64_t)((vertexA->y * 2 + vertexB->y + vertexC->y >> 2) - g_ModelRaycastLocalOriginY) +
+          (int64_t)((vertexA->x * 2 + vertexB->x + vertexC->x >> 2) - g_ModelRaycastLocalOriginX) *
+          (int64_t)normalX +
+          (int64_t)((vertexA->z * 2 + vertexB->z + vertexC->z >> 2) - g_ModelRaycastLocalOriginZ) *
+          (int64_t)normalZ;
+  offsetHighOrCrossZ = (uint32_t)(planeOffsetDot >> 0x20);
+  productScratch = (int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)normalY +
+          (int64_t)(int)g_ModelRaycastLocalDirectionXQ28 * (int64_t)normalX +
+          (int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)normalZ;
+  directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
   distanceOrCrossX = g_ModelRaycastMaximumDistance;
   if (directionDotOrCrossY != 0) {
-    scaledHighOrEdge1X = (int)((ulonglong)((longlong)(int)g_ModelRaycastMaximumDistance * (longlong)(int)directionDotOrCrossY)
+    scaledHighOrEdge1X = (int)((uint64_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY)
                   >> 0x20);
-    distanceOrCrossX = (uint)((longlong)(int)g_ModelRaycastMaximumDistance * (longlong)(int)directionDotOrCrossY);
+    distanceOrCrossX = (uint32_t)((int64_t)(int)g_ModelRaycastMaximumDistance * (int64_t)(int)directionDotOrCrossY);
     halfOffsetOrEdge1Y = (int)offsetHighOrCrossZ >> 1;
-    if ((longlong)planeOffsetDot < 0) {
+    if ((int64_t)planeOffsetDot < 0) {
       if (((int)offsetHighOrCrossZ < scaledHighOrEdge1X) ||
-         ((halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && (distanceOrCrossX = (uint)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY))))
+         ((halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY))))
       goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
     }
     else if ((scaledHighOrEdge1X < (int)offsetHighOrCrossZ) ||
-            (((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (distanceOrCrossX = (uint)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y))))
+            (((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y))))
     goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
     hitResult.distanceQ12 =
-         (int)((longlong)planeOffsetDot / (longlong)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
+         (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
     negVertex0XOrEdge2X = -vertexA->x;
-    hitRelativeX = ((int)((ulonglong)
-                    ((longlong)hitResult.distanceQ12 * (longlong)(int)g_ModelRaycastLocalDirectionXQ28) >>
+    hitRelativeX = ((int)((uint64_t)
+                    ((int64_t)hitResult.distanceQ12 * (int64_t)(int)g_ModelRaycastLocalDirectionXQ28) >>
                    0x20) << 4 |
-             (uint)((longlong)hitResult.distanceQ12 * (longlong)(int)g_ModelRaycastLocalDirectionXQ28) >>
+             (uint32_t)((int64_t)hitResult.distanceQ12 * (int64_t)(int)g_ModelRaycastLocalDirectionXQ28) >>
              0x1c) + g_ModelRaycastLocalOriginX + negVertex0XOrEdge2X;
     negVertex0YOrEdge2Y = -vertexA->y;
-    hitRelativeY = ((int)((ulonglong)
-                    ((longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)hitResult.distanceQ12) >>
+    hitRelativeY = ((int)((uint64_t)
+                    ((int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)hitResult.distanceQ12) >>
                    0x20) << 4 |
-             (uint)((longlong)(int)g_ModelRaycastLocalDirectionYQ28 * (longlong)hitResult.distanceQ12) >>
+             (uint32_t)((int64_t)(int)g_ModelRaycastLocalDirectionYQ28 * (int64_t)hitResult.distanceQ12) >>
              0x1c) + g_ModelRaycastLocalOriginY + negVertex0YOrEdge2Y;
     negVertex0ZOrEdge2Z = -vertexA->z;
-    hitRelativeZ = ((int)((ulonglong)
-                    ((longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)hitResult.distanceQ12) >>
+    hitRelativeZ = ((int)((uint64_t)
+                    ((int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)hitResult.distanceQ12) >>
                    0x20) << 4 |
-             (uint)((longlong)(int)g_ModelRaycastLocalDirectionZQ28 * (longlong)hitResult.distanceQ12) >>
+             (uint32_t)((int64_t)(int)g_ModelRaycastLocalDirectionZQ28 * (int64_t)hitResult.distanceQ12) >>
              0x1c) + g_ModelRaycastLocalOriginZ + negVertex0ZOrEdge2Z;
     vertexA = triangle->vertex1;
     vertexB = triangle->vertex2;
@@ -345,39 +345,39 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
     negVertex0XOrEdge2X = negVertex0XOrEdge2X + vertexB->x;
     negVertex0YOrEdge2Y = negVertex0YOrEdge2Y + vertexB->y;
     negVertex0ZOrEdge2Z = negVertex0ZOrEdge2Z + vertexB->z;
-    productScratch = (longlong)normalY * (longlong)edge1Z - (longlong)normalZ * (longlong)halfOffsetOrEdge1Y;
-    distanceOrCrossX = (int)((ulonglong)productScratch >> 0x20) << 4 | (uint)productScratch >> 0x1c;
-    productScratch = (longlong)normalZ * (longlong)scaledHighOrEdge1X - (longlong)normalX * (longlong)edge1Z;
-    directionDotOrCrossY = (int)((ulonglong)productScratch >> 0x20) << 4 | (uint)productScratch >> 0x1c;
-    productScratch = (longlong)normalX * (longlong)halfOffsetOrEdge1Y - (longlong)normalY * (longlong)scaledHighOrEdge1X;
-    offsetHighOrCrossZ = (int)((ulonglong)productScratch >> 0x20) << 4 | (uint)productScratch >> 0x1c;
-    productScratch = (longlong)hitRelativeY * (longlong)(int)directionDotOrCrossY + (longlong)hitRelativeX * (longlong)(int)distanceOrCrossX +
-            (longlong)hitRelativeZ * (longlong)(int)offsetHighOrCrossZ;
-    edge2Dot = (longlong)negVertex0YOrEdge2Y * (longlong)(int)directionDotOrCrossY + (longlong)(int)distanceOrCrossX * (longlong)negVertex0XOrEdge2X +
-             (longlong)negVertex0ZOrEdge2Z * (longlong)(int)offsetHighOrCrossZ;
-    scaledHighOrEdge1X = (int)((ulonglong)edge2Dot >> 0x20);
-    hitCrossXOrEdge2HitDot = (longlong)normalY * (longlong)hitRelativeZ - (longlong)normalZ * (longlong)hitRelativeY;
-    hitCrossY = (longlong)normalZ * (longlong)hitRelativeX - (longlong)normalX * (longlong)hitRelativeZ;
-    hitCrossZ = (longlong)normalX * (longlong)hitRelativeY - (longlong)normalY * (longlong)hitRelativeX;
-    hitCrossXOrEdge2HitDot = (longlong)negVertex0YOrEdge2Y *
-             (longlong)(int)((int)((ulonglong)hitCrossY >> 0x20) << 4 | (uint)hitCrossY >> 0x1c) +
-             (longlong)negVertex0XOrEdge2X *
-             (longlong)(int)((int)((ulonglong)hitCrossXOrEdge2HitDot >> 0x20) << 4 | (uint)hitCrossXOrEdge2HitDot >> 0x1c) +
-             (longlong)negVertex0ZOrEdge2Z *
-             (longlong)(int)((int)((ulonglong)hitCrossZ >> 0x20) << 4 | (uint)hitCrossZ >> 0x1c);
-    distanceOrCrossX = (uint)hitCrossXOrEdge2HitDot;
+    productScratch = (int64_t)normalY * (int64_t)edge1Z - (int64_t)normalZ * (int64_t)halfOffsetOrEdge1Y;
+    distanceOrCrossX = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    productScratch = (int64_t)normalZ * (int64_t)scaledHighOrEdge1X - (int64_t)normalX * (int64_t)edge1Z;
+    directionDotOrCrossY = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    productScratch = (int64_t)normalX * (int64_t)halfOffsetOrEdge1Y - (int64_t)normalY * (int64_t)scaledHighOrEdge1X;
+    offsetHighOrCrossZ = (int)((uint64_t)productScratch >> 0x20) << 4 | (uint32_t)productScratch >> 0x1c;
+    productScratch = (int64_t)hitRelativeY * (int64_t)(int)directionDotOrCrossY + (int64_t)hitRelativeX * (int64_t)(int)distanceOrCrossX +
+            (int64_t)hitRelativeZ * (int64_t)(int)offsetHighOrCrossZ;
+    edge2Dot = (int64_t)negVertex0YOrEdge2Y * (int64_t)(int)directionDotOrCrossY + (int64_t)(int)distanceOrCrossX * (int64_t)negVertex0XOrEdge2X +
+             (int64_t)negVertex0ZOrEdge2Z * (int64_t)(int)offsetHighOrCrossZ;
+    scaledHighOrEdge1X = (int)((uint64_t)edge2Dot >> 0x20);
+    hitCrossXOrEdge2HitDot = (int64_t)normalY * (int64_t)hitRelativeZ - (int64_t)normalZ * (int64_t)hitRelativeY;
+    hitCrossY = (int64_t)normalZ * (int64_t)hitRelativeX - (int64_t)normalX * (int64_t)hitRelativeZ;
+    hitCrossZ = (int64_t)normalX * (int64_t)hitRelativeY - (int64_t)normalY * (int64_t)hitRelativeX;
+    hitCrossXOrEdge2HitDot = (int64_t)negVertex0YOrEdge2Y *
+             (int64_t)(int)((int)((uint64_t)hitCrossY >> 0x20) << 4 | (uint32_t)hitCrossY >> 0x1c) +
+             (int64_t)negVertex0XOrEdge2X *
+             (int64_t)(int)((int)((uint64_t)hitCrossXOrEdge2HitDot >> 0x20) << 4 | (uint32_t)hitCrossXOrEdge2HitDot >> 0x1c) +
+             (int64_t)negVertex0ZOrEdge2Z *
+             (int64_t)(int)((int)((uint64_t)hitCrossZ >> 0x20) << 4 | (uint32_t)hitCrossZ >> 0x1c);
+    distanceOrCrossX = (uint32_t)hitCrossXOrEdge2HitDot;
     /* Inside test: both barycentric dots and their sum's difference to edge2Dot carry edge2Dot's sign. */
     if (edge2Dot < 0) {
       hitFound = ((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
-         (distanceOrCrossX = (uint)(hitCrossXOrEdge2HitDot + productScratch),
-         (int)((scaledHighOrEdge1X - (int)((ulonglong)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) - (uint)((uint)edge2Dot < distanceOrCrossX)
+         (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
+         (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) - (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)
               ) < 0);
     }
     else {
       hitFound = ((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
-            (distanceOrCrossX = (uint)(hitCrossXOrEdge2HitDot + productScratch),
-            -1 < (int)((scaledHighOrEdge1X - (int)((ulonglong)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
-                      (uint)((uint)edge2Dot < distanceOrCrossX)));
+            (distanceOrCrossX = (uint32_t)(hitCrossXOrEdge2HitDot + productScratch),
+            -1 < (int)((scaledHighOrEdge1X - (int)((uint64_t)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
+                      (uint32_t)((uint32_t)edge2Dot < distanceOrCrossX)));
     }
     if (hitFound) {
       hitResult.carry = true;
@@ -500,17 +500,17 @@ ModelDefinition_SelectFactionUnlockedLinkedIdCf
 /* Serialized model node tree: flags +0x04 (low nibble 0 = has a sprite), sprite path +0x38, sprite
    asset +0x30, owned-copy count +0x34, child count +0x14, child offsets +0x18 + 4*i (relative to the
    asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
-static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node,byte *asset,dword *error)
+static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node,uint8_t *asset,uint32_t *error)
 {
-  dword i;
+  uint32_t i;
   if ((node->nodeFlags & 0xf) == 0) {
-    word *spritePath = (word *)(node + 1);
+    uint16_t *spritePath = (uint16_t *)(node + 1);
     PackageLoadEntryEaxCf5 loaded;
     SpriteAssetHeader *registered;
     WidePath_SetExtensionCode(0x727073,spritePath); /* ".spr" */
     loaded = Package_LoadEntry(spritePath);
     if (loaded.carry) {
-      *error = (dword)loaded.bufferOrError;
+      *error = (uint32_t)loaded.bufferOrError;
       return true;
     }
     registered = SpriteAssetRegistry_FindById
@@ -521,7 +521,7 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
       (node->spriteAssetReference).spriteAsset = (SpriteAssetHeader *)loaded.bufferOrError;
       relocated = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)loaded.bufferOrError);
       if (relocated.carry) {
-        *error = (dword)relocated.assetOrError;
+        *error = (uint32_t)relocated.assetOrError;
         return true;
       }
     }
@@ -530,7 +530,7 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
       Resource_Release(loaded.bufferOrError);
     }
   }
-  for (i = 0; i < (dword)node->childCount; i++) {
+  for (i = 0; i < (uint32_t)node->childCount; i++) {
     node->childSerializedOffsets[i] = node->childSerializedOffsets[i] + (int)(uintptr_t)asset;
     if (ModelDefinition_ResolveNodeSpritesCf
                   ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[i],asset,error)) {
@@ -560,10 +560,10 @@ ModelDefinition_RegisterAndResolveReferencesCf
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
 
 {
-  dword nodeOffsetOrGridClass;
+  uint32_t nodeOffsetOrGridClass;
   MdlChildCount nodeChildCount;
-  dword secondaryThreshold;
-  dword resolverStatusOrSentinel;
+  uint32_t secondaryThreshold;
+  uint32_t resolverStatusOrSentinel;
   SpriteAssetHeader *loadedSpriteAsset;
   SpriteAssetHeader *registeredSpriteAsset;
   ShotDefinition *resolvedShotDefinition;
@@ -571,7 +571,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
   EffectDefinition *resolvedEffectDefinition80ToB8;
   ShotDefinition *resolvedShotDefinition168;
   EffectDefinition *resolvedEffectDefinitionTail;
-  dword gridDerivedScalarCarrier;
+  uint32_t gridDerivedScalarCarrier;
   int slotsRemainingOrClassIndex;
   ModelDefinitionRecordPrefix **registrySlotCursor;
   MdlSerializedNodeHeader38 *serializedNodeCursor;
@@ -608,7 +608,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
   *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
   if (nodeOffsetOrGridClass != 0) {
     definition->serializedNodeOffsetOrPointer64 =
-         (dword)((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+         (uint32_t)((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                 (definition->serializedNodeOffsetOrPointer64 - 0x28));
     serializedNodeCursor =
          (MdlSerializedNodeHeader38 *)
@@ -616,63 +616,63 @@ ModelDefinition_RegisterAndResolveReferencesCf
          (nodeOffsetOrGridClass - 0x28));
     /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
        {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
-    if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(byte *)asset,&resolverStatusOrSentinel)) {
+    if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(uint8_t *)asset,&resolverStatusOrSentinel)) {
       goto ModelDefinition_ReturnReferenceResolutionResult;
     }
   }
   shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
   resolvedShotDefinition2C = shotLookup.definitionOrError;
-  resolverStatusOrSentinel = (dword)resolvedShotDefinition2C;
+  resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition2C;
   if (!shotLookup.carry) {
     definition->shotDefinitionReference2C = resolvedShotDefinition2C;
     effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                        ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
     resolvedEffectDefinition80ToB8 = effectLookup.definitionOrError;
-    resolverStatusOrSentinel = (dword)resolvedEffectDefinition80ToB8;
+    resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinition80ToB8;
     if (!effectLookup.carry) {
       definition->effectDefinitionReference80 = resolvedEffectDefinition80ToB8;
       effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                          ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
-      resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+      resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
       if (!effectLookup.carry) {
         definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                            ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
-        resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+        resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
         if (!effectLookup.carry) {
           definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
           effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                              ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98)
           ;
-          resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+          resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
           if (!effectLookup.carry) {
             definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
             effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                ((PckEffectDefinitionIdCatalog)
                                 definition->effectDefinitionReferenceA0);
-            resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+            resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
             if (!effectLookup.carry) {
               definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel
               ;
               effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                  ((PckEffectDefinitionIdCatalog)
                                   definition->effectDefinitionReferenceA8);
-              resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+              resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
               if (!effectLookup.carry) {
                 definition->effectDefinitionReferenceA8 =
                      (EffectDefinition *)resolverStatusOrSentinel;
                 effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                    ((PckEffectDefinitionIdCatalog)
                                     definition->effectDefinitionReferenceB0);
-                resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+                resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                 if (!effectLookup.carry) {
                   definition->effectDefinitionReferenceB0 =
                        (EffectDefinition *)resolverStatusOrSentinel;
                   effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                      ((PckEffectDefinitionIdCatalog)
                                       definition->effectDefinitionReferenceB8);
-                  resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+                  resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                   if (!effectLookup.carry) {
                     definition->effectDefinitionReferenceB8 =
                          (EffectDefinition *)resolverStatusOrSentinel;
@@ -681,7 +681,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                          ((PckShotDefinitionIdCatalog)
                                           definition->shotDefinitionReference168);
                       resolvedShotDefinition168 = shotLookup.definitionOrError;
-                      resolverStatusOrSentinel = (dword)resolvedShotDefinition168;
+                      resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition168;
                       if (shotLookup.carry) goto ModelDefinition_ReturnReferenceResolutionResult;
                       definition->shotDefinitionReference168 = resolvedShotDefinition168;
                     }
@@ -689,27 +689,27 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                        ((PckEffectDefinitionIdCatalog)
                                         definition->effectDefinitionReference174);
                     resolvedEffectDefinitionTail = effectLookup.definitionOrError;
-                    resolverStatusOrSentinel = (dword)resolvedEffectDefinitionTail;
+                    resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinitionTail;
                     if (!effectLookup.carry) {
                       definition->effectDefinitionReference174 = resolvedEffectDefinitionTail;
                       effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                          ((PckEffectDefinitionIdCatalog)
                                           definition->effectDefinitionReference58);
-                      resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+                      resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                       if (!effectLookup.carry) {
                         definition->effectDefinitionReference58 =
                              (EffectDefinition *)resolverStatusOrSentinel;
                         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                            ((PckEffectDefinitionIdCatalog)
                                             definition->effectDefinitionReference190);
-                        resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+                        resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                         if (!effectLookup.carry) {
                           definition->effectDefinitionReference190 =
                                (EffectDefinition *)resolverStatusOrSentinel;
                           effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                                              ((PckEffectDefinitionIdCatalog)
                                               definition->effectDefinitionReference254);
-                          resolverStatusOrSentinel = (dword)effectLookup.definitionOrError;
+                          resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                           if (!effectLookup.carry) {
                             definition->effectDefinitionReference254 =
                                  (EffectDefinition *)resolverStatusOrSentinel;
@@ -727,13 +727,13 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                      (&g_GridTerrainClassBit24MaxWaterSurfaceDelta)[nodeOffsetOrGridClass];
                                 nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
                                         [nodeOffsetOrGridClass];
-                                *(dword *)(definition->reserved0C0_0DB + 0xc) =
+                                *(uint32_t *)(definition->reserved0C0_0DB + 0xc) =
                                      resolverStatusOrSentinel;
                                 definition->runtimeValue24 = nodeOffsetOrGridClass;
                               }
                               else if (definition->placementContactKindIndex278 == 4) {
                                 resolverStatusOrSentinel =
-                                     *(dword *)(&g_ModelTraversalClass4SecondaryThresholdTable3 +
+                                     *(uint32_t *)(&g_ModelTraversalClass4SecondaryThresholdTable3 +
                                                (nodeOffsetOrGridClass - 1) * 4);
                                 definition->runtimeValue24 =
                                      (&g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16)
@@ -746,7 +746,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
                                      (&g_GridTerrainClassBit28MinWaterSurfaceDelta)[slotsRemainingOrClassIndex];
                                 nodeOffsetOrGridClass = (&g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16)
                                         [slotsRemainingOrClassIndex];
-                                secondaryThreshold = *(dword *)(&g_ModelTraversalFallbackSecondaryThresholdTable3
+                                secondaryThreshold = *(uint32_t *)(&g_ModelTraversalFallbackSecondaryThresholdTable3
                                                   + slotsRemainingOrClassIndex * 4);
                                 definition->runtimeValue198 = resolverStatusOrSentinel;
                                 definition->runtimeValue24 = nodeOffsetOrGridClass;
@@ -804,16 +804,16 @@ ModelDefinition_UnlockLinkedTechnologyForFactionCf
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelDefinition_IsFactionTechnologyUnlockedCf
-          (dword *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
+          (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
-  uint technologyBitIndex;
+  uint32_t technologyBitIndex;
   ModelDefinitionLookupEaxCf5 lookupResult;
   
   lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
   if ((!lookupResult.carry) &&
      (technologyBitIndex = lookupResult.modelDefinition[0x25].flags,
-     (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((byte)technologyBitIndex & 0x1f)) != 0)) {
+     (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
     return false;
   }
   return true;
@@ -844,7 +844,7 @@ ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definiti
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)registeredDefinition,g_PackageLastErrorPath);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registeredDefinition,g_PackageLastErrorPath);
       missResult.carry = true;
       missResult.modelDefinition = (ModelDefinitionRecordPrefix *)0x3e;
       return missResult;

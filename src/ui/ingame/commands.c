@@ -127,7 +127,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   UiCommandModeG_ApplyRawColorVariant(node);
   UiCommandModeG_ClearNodeFlag02000000(node);
   armyAssetLookup = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-  checkedAssetLookup = (*g_FatalErrorPrimaryDispatchCf)((dword)armyAssetLookup.eax,armyAssetLookup.carry);
+  checkedAssetLookup = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)armyAssetLookup.eax,armyAssetLookup.carry);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.eax;
   InGameSelectionDetailPanel_Rebuild();
   return;
@@ -485,9 +485,9 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
       (((((UiSingleLineTextControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
      (((((UiSingleLineTextControl *)control)->labelFlags & 0x1000) == 0 ||
       (drawOffsetAdjust = g_InGameSimulationStepTicks - 2, 1 < g_InGameSimulationStepTicks)))) {
-    ((UiSingleLineTextControl *)control)->text = (word *)((int)((UiSingleLineTextControl *)control)->text + drawOffsetAdjust);
+    ((UiSingleLineTextControl *)control)->text = (uint16_t *)((int)((UiSingleLineTextControl *)control)->text + drawOffsetAdjust);
     UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiSingleLineTextControl *)control);
-    ((UiSingleLineTextControl *)control)->text = (word *)((int)((UiSingleLineTextControl *)control)->text - drawOffsetAdjust);
+    ((UiSingleLineTextControl *)control)->text = (uint16_t *)((int)((UiSingleLineTextControl *)control)->text - drawOffsetAdjust);
   }
   return;
 }
@@ -499,7 +499,7 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
-          (PlayerRuntimeId playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3)
+          (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
   FrontendPlayerRuntimeBlockCount remainingPlayers;
@@ -548,7 +548,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
 
 {
   FactionRelationCounter *relationCounter;
-  dword pendingEntryOrFactionToken;
+  uint32_t pendingEntryOrFactionToken;
   SelectionPlayerRuntimeBlock *playerBlock;
   ArmyRuntimeSlot *modelNodeRuntime;
   ArmyRuntimeSlot *armySlot;
@@ -631,19 +631,19 @@ InGameCommand_ExecuteLocalPlacementFromSelection
 void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiNodeBase *node)
 
 {
-  uint *controlFlags;
+  uint32_t *controlFlags;
   UiNodeBase *parentCursor;
-  sdword *offsetTable;
+  int32_t *offsetTable;
   UiCommandRuntimeRecordPrefix *runtimeRecord;
-  dword columnCount;
+  uint32_t columnCount;
   GraphicsTextureSourceAsset *slotTexture;
   int countWidthOrOffset;
-  uint itemCount;
+  uint32_t itemCount;
   FactionArmyAssetCount remainingAssets;
   int panelHeight;
-  uint slotIndex;
+  uint32_t slotIndex;
   UiCommandRuntimeRecordPrefix **recordCursor;
-  dword *assetCursor;
+  uint32_t *assetCursor;
   UiGridDimensionsEdxEax8 gridDimensions;
   
   parentCursor = node->parent;
@@ -673,7 +673,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
     } while (remainingAssets != 0);
   }
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
-  columnCount = (dword)gridDimensions;
+  columnCount = (uint32_t)gridDimensions;
   if (4 < columnCount) {
     columnCount = 4;
   }
@@ -709,12 +709,12 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
     countWidthOrOffset = offsetTable[slotIndex];
     runtimeRecord = *recordCursor;
     if (slotIndex < itemCount) {
-      controlFlags = (uint *)((int)&node->nodeFlags + countWidthOrOffset);
+      controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
       *controlFlags = *controlFlags & 0xfffffff7;
       slotTexture = runtimeRecord->textureSource;
     }
     else {
-      controlFlags = (uint *)((int)&node->nodeFlags + countWidthOrOffset);
+      controlFlags = (uint32_t *)((int)&node->nodeFlags + countWidthOrOffset);
       *controlFlags = *controlFlags | 8;
       slotTexture = (GraphicsTextureSourceAsset *)0x0;
     }
@@ -946,7 +946,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *control)
 
 {
-  sdword *flagsField;
+  int32_t *flagsField;
   UiNodeBase *parentCursor;
   UiCommandSpriteButtonControl *root;
   UiCommandRuntimeRecordPrefix *runtimeRecord;
@@ -1126,11 +1126,11 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
   selectedIndexValue = (UiNodeVtable *)selectionResult.controlIndexOrCount;
   /* Mode 0/1 picks each chart's drawing path (modeFlags bit 0) and the results background image. */
   ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart1))->modeFlags =
-       (dword)selectedIndexValue;
+       (uint32_t)selectedIndexValue;
   ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart2))->modeFlags =
-       (dword)selectedIndexValue;
+       (uint32_t)selectedIndexValue;
   ((FrontendResultsColumnSequenceControl68 *)INGAME_UI(root,resultsChart3))->modeFlags =
-       (dword)selectedIndexValue;
+       (uint32_t)selectedIndexValue;
   ((UiImagePanelControl *)INGAME_UI(root,resultsScreenPanel))->subresource =
        (GraphicsSubresourceIndex)selectedIndexValue;
   return;
@@ -1572,12 +1572,12 @@ void UiCommandRuntime_CallbackNoOp(void)
 */
 void __thandor_void_preserve_eax_ecx
 InGameCommand150_HandlePlayerDepartureAndOwnership
-          (PlayerOrFactionRuntimeId32 playerOrFactionId,dword value1,dword value2,
+          (PlayerOrFactionRuntimeId32 playerOrFactionId,uint32_t value1,uint32_t value2,
           GameEntityCommandFlags flags)
 
 {
   WorldRuntimeContext *worldRuntime;
-  dword factionToken;
+  uint32_t factionToken;
   GameEntityRuntime *entityRuntime;
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
@@ -1661,9 +1661,9 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(
 
 {
   TerrainLighting_BuildColorRampAndSetBaseColor
-            (*(uint *)((int)visualState + 300) | 0xff000000,
-             *(uint *)((int)visualState + 0x124) & 0xffffff,
-             *(uint *)((int)visualState + 0x120) & 0xffffff);
+            (*(uint32_t *)((int)visualState + 300) | 0xff000000,
+             *(uint32_t *)((int)visualState + 0x124) & 0xffffff,
+             *(uint32_t *)((int)visualState + 0x120) & 0xffffff);
   FieldGrid_RecomputeInteriorDirectionalLighting
             (*(AngleTurn32 *)((int)visualState + 0x17c),*(AngleTurn32 *)((int)visualState + 0x178),
              *(FieldGridAsset **)((int)visualState + 0x54));
@@ -1701,8 +1701,8 @@ UiCommandMatrix_SelectIndex(UiCommandModeIndex absoluteIndex,UiNodeBase *root)
   GraphicsTextureSourceAsset *firstTexture;
   GraphicsTextureSourceAsset *secondTexture;
   int controlIndex;
-  uint pageEnd;
-  dword pageBase;
+  uint32_t pageEnd;
+  uint32_t pageBase;
   
   g_UiCommandAbsoluteSelectionIndex = absoluteIndex;
   ((UiImagePanelControl *)INGAME_UI(root,materialToolSelectedSwatch))->textureSource =

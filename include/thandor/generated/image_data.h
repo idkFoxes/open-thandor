@@ -16,7 +16,7 @@
 
 /* original 0x00401000-0x00402B00 */
 typedef struct ImageData_00401000 {
-    dword at_DAT_00401000[1024]; /* 00401000 DAT_00401000 */
+    uint32_t at_DAT_00401000[1024]; /* 00401000 DAT_00401000 */
     MemoryApiTable at_g_MemoryApi; /* 00402000 g_MemoryApi */
     TimerRegisterPeriodicProc * at_g_TimerRegisterPeriodic; /* 00402018 g_TimerRegisterPeriodic */
     TimerUnregisterPeriodicProc * at_g_TimerUnregisterPeriodic; /* 0040201C g_TimerUnregisterPeriodic */
@@ -36,83 +36,83 @@ typedef struct ImageData_00401000 {
     LocaleFormatCurrentTimeUtf16Proc * at_g_LocaleFormatCurrentTimeUtf16; /* 004027A4 g_LocaleFormatCurrentTimeUtf16 */
     LocaleGetPackedCurrentTimeProc * at_g_LocaleGetPackedCurrentTime; /* 004027A8 g_LocaleGetPackedCurrentTime */
     LocaleGetTelephoneCountryCodeProc * at_g_LocaleGetDefaultTelephoneCountryCode; /* 004027AC g_LocaleGetDefaultTelephoneCountryCode */
-    dword at_g_LocaleGetDefaultTelephoneCountryCode_rest[1]; /* beyond the declared type */
+    uint32_t at_g_LocaleGetDefaultTelephoneCountryCode_rest[1]; /* beyond the declared type */
     LocaleCopyDefaultComputerLabelUtf16Proc * at_g_LocaleCopyDefaultComputerLabelUtf16; /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     CpuDetectFeaturesProc * at_g_CPUDetectFeatures; /* 004027B8 g_CPUDetectFeatures */
     pointer at_g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
-    dword at_g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
-    dword at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
-    dword at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
-    undefined at_g_FileSystemConfigCharacterNormalizationMap; /* 004027D0 g_FileSystemConfigCharacterNormalizationMap */
-    dword at_g_FileSystemConfigCharacterNormalizationMap_rest[63]; /* beyond the declared type */
-    byte at_g_FileSystemConfigCharacterNormalizationMap_rest_tail[3];
+    uint32_t at_g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
+    uint32_t at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
+    uint32_t at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
+    uint8_t at_g_FileSystemConfigCharacterNormalizationMap; /* 004027D0 g_FileSystemConfigCharacterNormalizationMap */
+    uint32_t at_g_FileSystemConfigCharacterNormalizationMap_rest[63]; /* beyond the declared type */
+    uint8_t at_g_FileSystemConfigCharacterNormalizationMap_rest_tail[3];
     PersistentSettingsRuntime at_g_PersistentSettings; /* 004028D0 g_PersistentSettings */
-    dword at_g_PersistentSettings_rest[9]; /* beyond the declared type */
+    uint32_t at_g_PersistentSettings_rest[9]; /* beyond the declared type */
 } ImageData_00401000;
 extern ImageData_00401000 g_ImageData_00401000;
 
 /* original 0x00403080-0x004030B0 */
 typedef struct ImageData_00403080 {
-    byte at_gap_00403080[32]; /* 00403080 gap */
+    uint8_t at_gap_00403080[32]; /* 00403080 gap */
     RandomGeneratorState at_g_RandomGeneratorState; /* 004030A0 g_RandomGeneratorState */
-    dword at_g_RandomGeneratorState_rest[1]; /* beyond the declared type */
+    uint32_t at_g_RandomGeneratorState_rest[1]; /* beyond the declared type */
 } ImageData_00403080;
 extern ImageData_00403080 g_ImageData_00403080;
 
 /* original 0x00403158-0x00407160 */
 typedef struct ImageData_00403158 {
-    byte at_gap_00403158[8]; /* 00403158 gap */
-    undefined at_g_RandomPrimaryNibbleMixTable0; /* 00403160 g_RandomPrimaryNibbleMixTable0 */
-    dword at_g_RandomPrimaryNibbleMixTable0_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable0_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable1; /* 00403560 g_RandomPrimaryNibbleMixTable1 */
-    dword at_g_RandomPrimaryNibbleMixTable1_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable1_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable2; /* 00403960 g_RandomPrimaryNibbleMixTable2 */
-    dword at_g_RandomPrimaryNibbleMixTable2_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable2_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable3; /* 00403D60 g_RandomPrimaryNibbleMixTable3 */
-    dword at_g_RandomPrimaryNibbleMixTable3_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable3_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable4; /* 00404160 g_RandomPrimaryNibbleMixTable4 */
-    dword at_g_RandomPrimaryNibbleMixTable4_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable4_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable5; /* 00404560 g_RandomPrimaryNibbleMixTable5 */
-    dword at_g_RandomPrimaryNibbleMixTable5_rest[79]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable5_rest_tail[3];
-    undefined at_k_SpatialSoundStereoCosineSecondHalfBaseBias; /* 004046A0 k_SpatialSoundStereoCosineSecondHalfBaseBias */
-    dword at_k_SpatialSoundStereoCosineSecondHalfBaseBias_rest[175]; /* beyond the declared type */
-    byte at_k_SpatialSoundStereoCosineSecondHalfBaseBias_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable6; /* 00404960 g_RandomPrimaryNibbleMixTable6 */
-    dword at_g_RandomPrimaryNibbleMixTable6_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable6_rest_tail[3];
-    undefined at_g_RandomPrimaryNibbleMixTable7; /* 00404D60 g_RandomPrimaryNibbleMixTable7 */
-    dword at_g_RandomPrimaryNibbleMixTable7_rest[255]; /* beyond the declared type */
-    byte at_g_RandomPrimaryNibbleMixTable7_rest_tail[3];
-    dword at_g_UiTransferCipherSubstitution[8][16][16]; /* 00405160 g_UiTransferCipherSubstitution */
+    uint8_t at_gap_00403158[8]; /* 00403158 gap */
+    uint8_t at_g_RandomPrimaryNibbleMixTable0; /* 00403160 g_RandomPrimaryNibbleMixTable0 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable0_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable0_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable1; /* 00403560 g_RandomPrimaryNibbleMixTable1 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable1_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable1_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable2; /* 00403960 g_RandomPrimaryNibbleMixTable2 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable2_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable2_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable3; /* 00403D60 g_RandomPrimaryNibbleMixTable3 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable3_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable3_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable4; /* 00404160 g_RandomPrimaryNibbleMixTable4 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable4_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable4_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable5; /* 00404560 g_RandomPrimaryNibbleMixTable5 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable5_rest[79]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable5_rest_tail[3];
+    uint8_t at_k_SpatialSoundStereoCosineSecondHalfBaseBias; /* 004046A0 k_SpatialSoundStereoCosineSecondHalfBaseBias */
+    uint32_t at_k_SpatialSoundStereoCosineSecondHalfBaseBias_rest[175]; /* beyond the declared type */
+    uint8_t at_k_SpatialSoundStereoCosineSecondHalfBaseBias_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable6; /* 00404960 g_RandomPrimaryNibbleMixTable6 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable6_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable6_rest_tail[3];
+    uint8_t at_g_RandomPrimaryNibbleMixTable7; /* 00404D60 g_RandomPrimaryNibbleMixTable7 */
+    uint32_t at_g_RandomPrimaryNibbleMixTable7_rest[255]; /* beyond the declared type */
+    uint8_t at_g_RandomPrimaryNibbleMixTable7_rest_tail[3];
+    uint32_t at_g_UiTransferCipherSubstitution[8][16][16]; /* 00405160 g_UiTransferCipherSubstitution */
 } ImageData_00403158;
 extern ImageData_00403158 g_ImageData_00403158;
 
 /* original 0x00407510-0x00407F50 */
 typedef struct ImageData_00407510 {
-    byte at_gap_00407510[4]; /* 00407510 gap */
-    word at_g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
-    word at_g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
-    undefined at_g_FatalErrorDetail2Utf16; /* 00407914 g_FatalErrorDetail2Utf16 */
-    dword at_g_FatalErrorDetail2Utf16_rest[127]; /* beyond the declared type */
-    byte at_g_FatalErrorDetail2Utf16_rest_tail[3];
-    undefined at_g_FatalErrorDetail3Utf16; /* 00407B14 g_FatalErrorDetail3Utf16 */
-    dword at_g_FatalErrorDetail3Utf16_rest[127]; /* beyond the declared type */
-    byte at_g_FatalErrorDetail3Utf16_rest_tail[3];
+    uint8_t at_gap_00407510[4]; /* 00407510 gap */
+    uint16_t at_g_PackageLastErrorPath[256]; /* 00407514 g_PackageLastErrorPath */
+    uint16_t at_g_FatalErrorDetail1Utf16[256]; /* 00407714 g_FatalErrorDetail1Utf16 */
+    uint8_t at_g_FatalErrorDetail2Utf16; /* 00407914 g_FatalErrorDetail2Utf16 */
+    uint32_t at_g_FatalErrorDetail2Utf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_FatalErrorDetail2Utf16_rest_tail[3];
+    uint8_t at_g_FatalErrorDetail3Utf16; /* 00407B14 g_FatalErrorDetail3Utf16 */
+    uint32_t at_g_FatalErrorDetail3Utf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_FatalErrorDetail3Utf16_rest_tail[3];
     FatalErrorPassThroughProc * at_g_FatalErrorPrimaryDispatchCf; /* 00407D14 g_FatalErrorPrimaryDispatchCf */
     FatalErrorPassThroughProc * at_g_FatalErrorRuntimeDispatchCf; /* 00407D18 g_FatalErrorRuntimeDispatchCf */
     FatalErrorPassThroughProc * at_g_FatalErrorExitFallbackDispatchCf; /* 00407D1C g_FatalErrorExitFallbackDispatchCf */
-    word at_u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
-    word at_g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
-    word at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
-    byte at_g_ErrorTextHeapAllocationFailed_padding[14];
+    uint16_t at_u_texte_error_str_00407d20[16]; /* 00407D20 u_texte_error_str_00407d20 */
+    uint16_t at_g_ErrorTextIoInitializationFailed[34]; /* 00407D40 g_ErrorTextIoInitializationFailed */
+    uint16_t at_g_ErrorTextHeapAllocationFailed[71]; /* 00407D84 g_ErrorTextHeapAllocationFailed */
+    uint8_t at_g_ErrorTextHeapAllocationFailed_padding[14];
     UiRootNode * at_g_FatalErrorUiRootTemplate; /* 00407E20 g_FatalErrorUiRootTemplate */
-    undefined4 at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
+    uint32_t at_g_FatalErrorDialogDismissed; /* 00407E24 g_FatalErrorDialogDismissed */
     UiRootCallbacks at_g_UiRootCallbacks_00407E28; /* 00407E28 g_UiRootCallbacks_00407E28 */
     FatalErrorUiImage at_g_FatalErrorUiRootTemplateImage; /* 00407E3C g_FatalErrorUiRootTemplateImage */
 } ImageData_00407510;
@@ -120,7 +120,7 @@ extern ImageData_00407510 g_ImageData_00407510;
 
 /* original 0x004080B4-0x0040A4C0 */
 typedef struct ImageData_004080B4 {
-    byte at_gap_004080B4[12]; /* 004080B4 gap */
+    uint8_t at_gap_004080B4[12]; /* 004080B4 gap */
     PckHuffmanSymbolState at_g_PckHuffmanSymbolWorkspace256[256]; /* 004080C0 g_PckHuffmanSymbolWorkspace256 */
     PckHuffmanNode at_g_PckHuffmanLeafNodeWorkspace256[256]; /* 004084C0 g_PckHuffmanLeafNodeWorkspace256 */
     PckHuffmanNode at_g_PckHuffmanInternalNodeWorkspace256[256]; /* 004094C0 g_PckHuffmanInternalNodeWorkspace256 */
@@ -129,14 +129,14 @@ extern ImageData_004080B4 g_ImageData_004080B4;
 
 /* original 0x0040ABBC-0x0040E2B0 */
 typedef struct ImageData_0040ABBC {
-    byte at_gap_0040ABBC[4]; /* 0040ABBC gap */
+    uint8_t at_gap_0040ABBC[4]; /* 0040ABBC gap */
     WidePathBuffer256 at_g_InitialWorkingDirectory; /* 0040ABC0 g_InitialWorkingDirectory */
-    undefined at_g_FileSystemCombinedPathScratchUtf16; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
-    dword at_g_FileSystemCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_FileSystemCombinedPathScratchUtf16_rest_tail[3];
-    undefined at_g_ExecutableDirectoryUtf16; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
-    dword at_g_ExecutableDirectoryUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_ExecutableDirectoryUtf16_rest_tail[3];
+    uint8_t at_g_FileSystemCombinedPathScratchUtf16; /* 0040ADC0 g_FileSystemCombinedPathScratchUtf16 */
+    uint32_t at_g_FileSystemCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_FileSystemCombinedPathScratchUtf16_rest_tail[3];
+    uint8_t at_g_ExecutableDirectoryUtf16; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
+    uint32_t at_g_ExecutableDirectoryUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_ExecutableDirectoryUtf16_rest_tail[3];
     FileSystemOpenCfProc * at_g_FileSystemOpenCf; /* 0040B1C0 g_FileSystemOpenCf */
     FileSystemCloseProc * at_g_FileSystemClose; /* 0040B1C4 g_FileSystemClose */
     FileSystemReadExactCfProc * at_g_FileSystemReadExactCf; /* 0040B1C8 g_FileSystemReadExactCf */
@@ -160,97 +160,97 @@ typedef struct ImageData_0040ABBC {
     FileSystemCopyCfProc * at_g_FileSystemCopyCf; /* 0040B210 g_FileSystemCopyCf */
     FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * at_g_FileSystemEnumerateDirectoryOrVolumeEntriesCf; /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntriesCf */
     FileSystemValidateDos83CfProc * at_g_FileSystemValidateDos83Path; /* 0040B218 g_FileSystemValidateDos83Path */
-    byte * at_g_PackageScratchBuffer; /* 0040B21C g_PackageScratchBuffer */
-    dword at_g_EnginePackageLowPriorityMountHandle; /* 0040B220 g_EnginePackageLowPriorityMountHandle */
+    uint8_t * at_g_PackageScratchBuffer; /* 0040B21C g_PackageScratchBuffer */
+    uint32_t at_g_EnginePackageLowPriorityMountHandle; /* 0040B220 g_EnginePackageLowPriorityMountHandle */
     PckMountSlot at_g_PackageMountSlots[1024]; /* 0040B224 g_PackageMountSlots */
     PckCodecProc * at_g_PckEncoderTable[3]; /* 0040E224 g_PckEncoderTable */
     PckCodecProc * at_g_PckDecoderTable[3]; /* 0040E230 g_PckDecoderTable */
-    byte at_g_PckDecoderTable_rest_tail[1];
-    word at_u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
-    word at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
-    byte at_u_engine_pck_0040e255_padding[5];
-    word at_g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
+    uint8_t at_g_PckDecoderTable_rest_tail[1];
+    uint16_t at_u_THANDOR_cfg_0040e23d[12]; /* 0040E23D u_THANDOR_cfg_0040e23d */
+    uint16_t at_u_engine_pck_0040e255[11]; /* 0040E255 u_engine_pck_0040e255 */
+    uint8_t at_u_engine_pck_0040e255_padding[5];
+    uint16_t at_g_DefaultComputerLabelUtf16[32]; /* 0040E270 g_DefaultComputerLabelUtf16 */
 } ImageData_0040ABBC;
 extern ImageData_0040ABBC g_ImageData_0040ABBC;
 
 /* original 0x0040F524-0x0040FF70 */
 typedef struct ImageData_0040F524 {
-    byte at_gap_0040F524[12]; /* 0040F524 gap */
-    byte at_g_UiTimedListDriveLetters[32]; /* 0040F530 g_UiTimedListDriveLetters */
+    uint8_t at_gap_0040F524[12]; /* 0040F524 gap */
+    uint8_t at_g_UiTimedListDriveLetters[32]; /* 0040F530 g_UiTimedListDriveLetters */
     WidePathBuffer256 at_g_UiTimedListRecordPathScratch; /* 0040F550 g_UiTimedListRecordPathScratch */
     WidePathBuffer256 at_g_UiTimedListCombinedPathScratch; /* 0040F750 g_UiTimedListCombinedPathScratch */
     WidePathBuffer256 at_g_UiTimedListSecondaryPathScratch; /* 0040F950 g_UiTimedListSecondaryPathScratch */
     WidePathBuffer256 at_g_UiTimedListHierarchyPathScratch; /* 0040FB50 g_UiTimedListHierarchyPathScratch */
     WidePathBuffer256 at_g_UiTimedListHierarchyParentPathScratch; /* 0040FD50 g_UiTimedListHierarchyParentPathScratch */
-    word at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
-    word at_u________0040ff58[7]; /* 0040FF58 u________0040ff58 */
-    byte at_u________0040ff58_padding[10];
+    uint16_t at_g_WildcardAllFilesUtf16[4]; /* 0040FF50 g_WildcardAllFilesUtf16 */
+    uint16_t at_u________0040ff58[7]; /* 0040FF58 u________0040ff58 */
+    uint8_t at_u________0040ff58_padding[10];
 } ImageData_0040F524;
 extern ImageData_0040F524 g_ImageData_0040F524;
 
 /* original 0x004107E8-0x004168B0 */
 typedef struct ImageData_004107E8 {
-    byte at_gap_004107E8[8]; /* 004107E8 gap */
+    uint8_t at_gap_004107E8[8]; /* 004107E8 gap */
     GraphicsCursorInputEvent18 at_g_CursorInputEvents[256]; /* 004107F0 g_CursorInputEvents */
-    dword at_g_CursorInputEvents_rest[4608]; /* beyond the declared type */
-    dword at_g_CursorInputWriteIndex; /* 004167F0 g_CursorInputWriteIndex */
-    dword at_g_CursorInputReadIndex; /* 004167F4 g_CursorInputReadIndex */
-    dword at_g_CursorInputClockValue; /* 004167F8 g_CursorInputClockValue */
-    undefined4 at_g_GraphicsCursorAnimationCountdown; /* 004167FC g_GraphicsCursorAnimationCountdown */
-    dword at_g_CursorButtonReleaseClock[3]; /* 00416800 g_CursorButtonReleaseClock */
+    uint32_t at_g_CursorInputEvents_rest[4608]; /* beyond the declared type */
+    uint32_t at_g_CursorInputWriteIndex; /* 004167F0 g_CursorInputWriteIndex */
+    uint32_t at_g_CursorInputReadIndex; /* 004167F4 g_CursorInputReadIndex */
+    uint32_t at_g_CursorInputClockValue; /* 004167F8 g_CursorInputClockValue */
+    uint32_t at_g_GraphicsCursorAnimationCountdown; /* 004167FC g_GraphicsCursorAnimationCountdown */
+    uint32_t at_g_CursorButtonReleaseClock[3]; /* 00416800 g_CursorButtonReleaseClock */
     GraphicsTextureSourceAsset * at_g_CursorSourceAsset; /* 0041680C g_CursorSourceAsset */
     GraphicsCursorFrameRecord * at_g_CursorFrameRecords; /* 00416810 g_CursorFrameRecords */
     GraphicsCursorFrameIndex at_g_CursorFrameIndex; /* 00416814 g_CursorFrameIndex */
-    dword at_g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosition */
+    uint32_t at_g_CursorUseOverridePosition; /* 00416818 g_CursorUseOverridePosition */
     GraphicsCursorFrameCount at_g_CursorFrameCount; /* 0041681C g_CursorFrameCount */
-    dword at_g_CursorMaxWidth; /* 00416820 g_CursorMaxWidth */
-    dword at_g_CursorMaxHeight; /* 00416824 g_CursorMaxHeight */
+    uint32_t at_g_CursorMaxWidth; /* 00416820 g_CursorMaxWidth */
+    uint32_t at_g_CursorMaxHeight; /* 00416824 g_CursorMaxHeight */
     UiPixelCoordinate at_g_CursorOverrideX; /* 00416828 g_CursorOverrideX */
     UiPixelCoordinate at_g_CursorOverrideY; /* 0041682C g_CursorOverrideY */
     UiPointerWheelDelta at_g_CursorWheelDelta; /* 00416830 g_CursorWheelDelta */
-    sdword at_g_CursorVisibilityToken; /* 00416834 g_CursorVisibilityToken */
-    dword at_g_CursorButtonState; /* 00416838 g_CursorButtonState */
+    int32_t at_g_CursorVisibilityToken; /* 00416834 g_CursorVisibilityToken */
+    uint32_t at_g_CursorButtonState; /* 00416838 g_CursorButtonState */
     UiPixelCoordinate at_g_CursorLastClickX; /* 0041683C g_CursorLastClickX */
     UiPixelCoordinate at_g_CursorLastClickY; /* 00416840 g_CursorLastClickY */
     PointerFlushEventsProc * at_g_PointerFlushEvents; /* 00416844 g_PointerFlushEvents */
     GraphicsCursorSetFrameProc * at_g_GraphicsCursorSetFrame; /* 00416848 g_GraphicsCursorSetFrame */
     PointerSetPositionProc * at_g_PointerSetPosition; /* 0041684C g_PointerSetPosition */
     GraphicsCursorConsumeEventProc * at_g_GraphicsCursorConsumeEvent; /* 00416850 g_GraphicsCursorConsumeEvent */
-    dword at_g_CursorOverflowLeft; /* 00416854 g_CursorOverflowLeft */
-    dword at_g_CursorOverflowRight; /* 00416858 g_CursorOverflowRight */
-    dword at_g_CursorOverflowTop; /* 0041685C g_CursorOverflowTop */
-    dword at_g_CursorOverflowBottom; /* 00416860 g_CursorOverflowBottom */
-    word at_u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_00416864 */
-    word at_u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
-    byte at_u_engine_mouse_dat_00416886_padding[8];
+    uint32_t at_g_CursorOverflowLeft; /* 00416854 g_CursorOverflowLeft */
+    uint32_t at_g_CursorOverflowRight; /* 00416858 g_CursorOverflowRight */
+    uint32_t at_g_CursorOverflowTop; /* 0041685C g_CursorOverflowTop */
+    uint32_t at_g_CursorOverflowBottom; /* 00416860 g_CursorOverflowBottom */
+    uint16_t at_u_engine_mouse_gfx_00416864[17]; /* 00416864 u_engine_mouse_gfx_00416864 */
+    uint16_t at_u_engine_mouse_dat_00416886[17]; /* 00416886 u_engine_mouse_dat_00416886 */
+    uint8_t at_u_engine_mouse_dat_00416886_padding[8];
 } ImageData_004107E8;
 extern ImageData_004107E8 g_ImageData_004107E8;
 
 /* original 0x004169DC-0x00417230 */
 typedef struct ImageData_004169DC {
-    byte at_gap_004169DC[4]; /* 004169DC gap */
+    uint8_t at_gap_004169DC[4]; /* 004169DC gap */
     KeyboardInputEvent at_g_KeyboardEvents[64]; /* 004169E0 g_KeyboardEvents */
-    dword at_g_KeyboardEvents_rest[384]; /* beyond the declared type */
+    uint32_t at_g_KeyboardEvents_rest[384]; /* beyond the declared type */
     KeyboardEventRingIndex at_g_KeyboardWriteIndex; /* 004171E0 g_KeyboardWriteIndex */
     KeyboardEventRingIndex at_g_KeyboardReadIndex; /* 004171E4 g_KeyboardReadIndex */
-    dword at_g_KeyboardStateMask; /* 004171E8 g_KeyboardStateMask */
-    dword at_g_KeyboardToggleLatchMask; /* 004171EC g_KeyboardToggleLatchMask */
-    byte at_g_KeyboardSpecialKeyDown[32]; /* 004171F0 g_KeyboardSpecialKeyDown */
+    uint32_t at_g_KeyboardStateMask; /* 004171E8 g_KeyboardStateMask */
+    uint32_t at_g_KeyboardToggleLatchMask; /* 004171EC g_KeyboardToggleLatchMask */
+    uint8_t at_g_KeyboardSpecialKeyDown[32]; /* 004171F0 g_KeyboardSpecialKeyDown */
     KeyboardFlushEventsProc * at_g_KeyboardFlushEvents; /* 00417210 g_KeyboardFlushEvents */
     KeyboardReadEventProc * at_g_KeyboardReadEvent; /* 00417214 g_KeyboardReadEvent */
     KeyboardAsciiCaseTransformCallbackTable3 at_g_KeyboardAsciiCaseTransformCallbacks3; /* 00417218 g_KeyboardAsciiCaseTransformCallbacks3 */
-    dword at_g_KeyboardAsciiCaseTransformCallbacks3_rest[3]; /* beyond the declared type */
+    uint32_t at_g_KeyboardAsciiCaseTransformCallbacks3_rest[3]; /* beyond the declared type */
 } ImageData_004169DC;
 extern ImageData_004169DC g_ImageData_004169DC;
 
 /* original 0x004172E8-0x00417570 */
 typedef struct ImageData_004172E8 {
-    byte at_gap_004172E8[24]; /* 004172E8 gap */
-    qword at_g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
-    qword at_g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
-    qword at_g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
-    qword at_g_SoundDecodeMmxWordLaneMask3; /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
-    dword at_g_SoundDecodeMmxWordLaneMask3_rest[4]; /* beyond the declared type */
+    uint8_t at_gap_004172E8[24]; /* 004172E8 gap */
+    uint64_t at_g_SoundDecodeMmxWordLaneMask0; /* 00417300 g_SoundDecodeMmxWordLaneMask0 */
+    uint64_t at_g_SoundDecodeMmxWordLaneMask1; /* 00417308 g_SoundDecodeMmxWordLaneMask1 */
+    uint64_t at_g_SoundDecodeMmxWordLaneMask2; /* 00417310 g_SoundDecodeMmxWordLaneMask2 */
+    uint64_t at_g_SoundDecodeMmxWordLaneMask3; /* 00417318 g_SoundDecodeMmxWordLaneMask3 */
+    uint32_t at_g_SoundDecodeMmxWordLaneMask3_rest[4]; /* beyond the declared type */
     short * at_g_CosineDerivedLookupAllocation; /* 00417330 g_CosineDerivedLookupAllocation */
     short * at_g_CosineDerivedLookupSecondTable; /* 00417334 g_CosineDerivedLookupSecondTable */
     SoundCreateSampleVoiceSetProc * at_g_SoundCreateSampleVoiceSet; /* 00417338 g_SoundCreateSampleVoiceSet */
@@ -265,15 +265,15 @@ typedef struct ImageData_004172E8 {
     SoundQueryVoiceRegsProc * at_g_SoundQueryVoiceRegs; /* 0041735C g_SoundQueryVoiceRegs */
     SoundSetVoiceGainsProc * at_g_SoundSetVoiceGains; /* 00417360 g_SoundSetVoiceGains */
     short at_g_SoundSampleCoefficientBlock[256]; /* 00417364 g_SoundSampleCoefficientBlock */
-    dword at_g_SoundSampleCoefficientBlock_rest[3]; /* beyond the declared type */
+    uint32_t at_g_SoundSampleCoefficientBlock_rest[3]; /* beyond the declared type */
 } ImageData_004172E8;
 extern ImageData_004172E8 g_ImageData_004172E8;
 
 /* original 0x0041A53C-0x0041A580 */
 typedef struct ImageData_0041A53C {
-    byte at_gap_0041A53C[4]; /* 0041A53C gap */
+    uint8_t at_gap_0041A53C[4]; /* 0041A53C gap */
     NetworkBackendInstanceDescriptorPrefix * at_g_NetworkBackendInstanceTable; /* 0041A540 g_NetworkBackendInstanceTable */
-    dword at_g_NetworkBackendInstanceCount; /* 0041A544 g_NetworkBackendInstanceCount */
+    uint32_t at_g_NetworkBackendInstanceCount; /* 0041A544 g_NetworkBackendInstanceCount */
     NetworkSessionContext * at_g_NetworkBackendSessionContext; /* 0041A548 g_NetworkBackendSessionContext */
     NetworkBackendSetSessionCallback * at_g_NetworkBackendSlot0; /* 0041A54C g_NetworkBackendSlot0 */
     NetworkBackendCleanupCallback * at_g_NetworkBackendSlot1; /* 0041A550 g_NetworkBackendSlot1 */
@@ -284,249 +284,249 @@ typedef struct ImageData_0041A53C {
     NetworkBackendParseEndpointCallback * at_g_NetworkBackendSlot6; /* 0041A564 g_NetworkBackendSlot6 */
     NetworkBackendFormatAddressCallback * at_g_NetworkBackendSlot7; /* 0041A568 g_NetworkBackendSlot7 */
     UiTransferEndpointDescriptor at_g_NetworkLocalEndpointDescriptor16; /* 0041A56C g_NetworkLocalEndpointDescriptor16 */
-    dword at_g_NetworkLocalEndpointDescriptor16_rest[1]; /* beyond the declared type */
+    uint32_t at_g_NetworkLocalEndpointDescriptor16_rest[1]; /* beyond the declared type */
 } ImageData_0041A53C;
 extern ImageData_0041A53C g_ImageData_0041A53C;
 
 /* original 0x0041A740-0x0041B080 */
 typedef struct ImageData_0041A740 {
-    byte at_gap_0041A740[16]; /* 0041A740 gap */
-    undefined4 at_g_RichTextColorPalette0Argb; /* 0041A750 g_RichTextColorPalette0Argb */
-    undefined4 at_g_RichTextColorPalette1Argb; /* 0041A754 g_RichTextColorPalette1Argb */
-    undefined4 at_g_RichTextColorPalette2Argb; /* 0041A758 g_RichTextColorPalette2Argb */
-    undefined4 at_g_RichTextColorPalette3Argb; /* 0041A75C g_RichTextColorPalette3Argb */
-    dword at_g_RichTextColorPalette3Argb_rest[1]; /* beyond the declared type */
-    undefined4 at_g_RichTextInsufficientResourceColorArgb; /* 0041A764 g_RichTextInsufficientResourceColorArgb */
-    undefined4 at_g_RichTextShadowOffsetPalette0; /* 0041A768 g_RichTextShadowOffsetPalette0 */
-    undefined4 at_g_RichTextShadowOffsetPalette1; /* 0041A76C g_RichTextShadowOffsetPalette1 */
-    undefined4 at_g_RichTextShadowOffsetPalette2; /* 0041A770 g_RichTextShadowOffsetPalette2 */
-    undefined4 at_g_RichTextShadowOffsetPalette3; /* 0041A774 g_RichTextShadowOffsetPalette3 */
-    dword at_g_RichTextShadowOffsetPalette3_rest[2]; /* beyond the declared type */
-    dword at_g_ActiveFontIndex; /* 0041A780 g_ActiveFontIndex */
-    undefined4 at_g_RichTextCurrentColorArgb; /* 0041A784 g_RichTextCurrentColorArgb */
-    undefined4 at_g_RichTextCurrentShadowOffset; /* 0041A788 g_RichTextCurrentShadowOffset */
-    undefined4 at_g_RichTextSavedColorArgb; /* 0041A78C g_RichTextSavedColorArgb */
-    undefined4 at_g_RichTextSavedShadowOffset; /* 0041A790 g_RichTextSavedShadowOffset */
+    uint8_t at_gap_0041A740[16]; /* 0041A740 gap */
+    uint32_t at_g_RichTextColorPalette0Argb; /* 0041A750 g_RichTextColorPalette0Argb */
+    uint32_t at_g_RichTextColorPalette1Argb; /* 0041A754 g_RichTextColorPalette1Argb */
+    uint32_t at_g_RichTextColorPalette2Argb; /* 0041A758 g_RichTextColorPalette2Argb */
+    uint32_t at_g_RichTextColorPalette3Argb; /* 0041A75C g_RichTextColorPalette3Argb */
+    uint32_t at_g_RichTextColorPalette3Argb_rest[1]; /* beyond the declared type */
+    uint32_t at_g_RichTextInsufficientResourceColorArgb; /* 0041A764 g_RichTextInsufficientResourceColorArgb */
+    uint32_t at_g_RichTextShadowOffsetPalette0; /* 0041A768 g_RichTextShadowOffsetPalette0 */
+    uint32_t at_g_RichTextShadowOffsetPalette1; /* 0041A76C g_RichTextShadowOffsetPalette1 */
+    uint32_t at_g_RichTextShadowOffsetPalette2; /* 0041A770 g_RichTextShadowOffsetPalette2 */
+    uint32_t at_g_RichTextShadowOffsetPalette3; /* 0041A774 g_RichTextShadowOffsetPalette3 */
+    uint32_t at_g_RichTextShadowOffsetPalette3_rest[2]; /* beyond the declared type */
+    uint32_t at_g_ActiveFontIndex; /* 0041A780 g_ActiveFontIndex */
+    uint32_t at_g_RichTextCurrentColorArgb; /* 0041A784 g_RichTextCurrentColorArgb */
+    uint32_t at_g_RichTextCurrentShadowOffset; /* 0041A788 g_RichTextCurrentShadowOffset */
+    uint32_t at_g_RichTextSavedColorArgb; /* 0041A78C g_RichTextSavedColorArgb */
+    uint32_t at_g_RichTextSavedShadowOffset; /* 0041A790 g_RichTextSavedShadowOffset */
     TextResourcePageBinding at_g_TextResourcePageBindings[256]; /* 0041A794 g_TextResourcePageBindings */
     TextResourceOverrideTable * at_g_TextResourceOverrides; /* 0041AF94 g_TextResourceOverrides */
-    byte * at_g_FontRuntimeBuffer; /* 0041AF98 g_FontRuntimeBuffer */
-    undefined4 at_g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
-    dword at_g_RichTextRuntimeBufferUsedWords_rest[1]; /* beyond the declared type */
-    word at_g_EmptyTextResourceUtf16[2]; /* 0041AFA4 g_EmptyTextResourceUtf16 */
-    undefined at_g_MissingTextResourceFallbackStream; /* 0041AFA8 g_MissingTextResourceFallbackStream */
-    byte at_g_MissingTextResourceFallbackStream_rest_tail[3];
-    word at_u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
+    uint8_t * at_g_FontRuntimeBuffer; /* 0041AF98 g_FontRuntimeBuffer */
+    uint32_t at_g_RichTextRuntimeBufferUsedWords; /* 0041AF9C g_RichTextRuntimeBufferUsedWords */
+    uint32_t at_g_RichTextRuntimeBufferUsedWords_rest[1]; /* beyond the declared type */
+    uint16_t at_g_EmptyTextResourceUtf16[2]; /* 0041AFA4 g_EmptyTextResourceUtf16 */
+    uint8_t at_g_MissingTextResourceFallbackStream; /* 0041AFA8 g_MissingTextResourceFallbackStream */
+    uint8_t at_g_MissingTextResourceFallbackStream_rest_tail[3];
+    uint16_t at_u_error__TXT2STR__unknown_characte_0041afac[62]; /* 0041AFAC u_error__TXT2STR__unknown_characte_0041afac */
     GraphicsTextureSourceAsset * at_g_FontTextureSources[2]; /* 0041B028 g_FontTextureSources */
-    word at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
-    word at_str_0041B050[17]; /* 0041B050 str_0041B050 */
-    byte at_str_0041B050_padding[14];
+    uint16_t at_u_engine_font_gfx_0041b030[16]; /* 0041B030 u_engine_font_gfx_0041b030 */
+    uint16_t at_str_0041B050[17]; /* 0041B050 str_0041B050 */
+    uint8_t at_str_0041B050_padding[14];
 } ImageData_0041A740;
 extern ImageData_0041A740 g_ImageData_0041A740;
 
 /* original 0x0041B128-0x0041B1B0 */
 typedef struct ImageData_0041B128 {
-    byte at_gap_0041B128[8]; /* 0041B128 gap */
-    dword at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130[20]; /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B128[8]; /* 0041B128 gap */
+    uint32_t at_g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130[20]; /* 0041B130 g_RichTextCommandStream_PatchPayloadBySelector_SwitchTable_0041B130: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041B180[4]; /* 0041B180 g_SoundDispatchTable_0041B180: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041B190[8]; /* 0041B190 g_SoundDispatchTable_0041B190: jump table of the original code, not used by the C code */
 } ImageData_0041B128;
 extern ImageData_0041B128 g_ImageData_0041B128;
 
 /* original 0x0041B228-0x0041B2B0 */
 typedef struct ImageData_0041B228 {
-    byte at_gap_0041B228[8]; /* 0041B228 gap */
-    dword at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230[20]; /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B228[8]; /* 0041B228 gap */
+    uint32_t at_g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230[20]; /* 0041B230 g_RichTextCommandStream_BindTextureSource_SwitchTable_0041B230: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041B280[4]; /* 0041B280 g_SoundDispatchTable_0041B280: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041B290[8]; /* 0041B290 g_SoundDispatchTable_0041B290: jump table of the original code, not used by the C code */
 } ImageData_0041B228;
 extern ImageData_0041B228 g_ImageData_0041B228;
 
 /* original 0x0041B338-0x0041B3D0 */
 typedef struct ImageData_0041B338 {
-    byte at_gap_0041B338[8]; /* 0041B338 gap */
-    dword at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340[36]; /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B338[8]; /* 0041B338 gap */
+    uint32_t at_g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340[36]; /* 0041B340 g_RichTextCommandStream_FindNthCommandPayloadPair_SwitchTable_0041B340: jump table of the original code, not used by the C code */
 } ImageData_0041B338;
 extern ImageData_0041B338 g_ImageData_0041B338;
 
 /* original 0x0041B448-0x0041B4D0 */
 typedef struct ImageData_0041B448 {
-    byte at_gap_0041B448[8]; /* 0041B448 gap */
-    dword at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450[32]; /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B448[8]; /* 0041B448 gap */
+    uint32_t at_g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450[32]; /* 0041B450 g_RichTextCommandStream_FindNestedStreamPointer_SwitchTable_0041B450: jump table of the original code, not used by the C code */
 } ImageData_0041B448;
 extern ImageData_0041B448 g_ImageData_0041B448;
 
 /* original 0x0041B548-0x0041B5D0 */
 typedef struct ImageData_0041B548 {
-    byte at_gap_0041B548[8]; /* 0041B548 gap */
-    dword at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550[32]; /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B548[8]; /* 0041B548 gap */
+    uint32_t at_g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550[32]; /* 0041B550 g_RichTextCommandStream_FindOpcode1APayloadPair_SwitchTable_0041B550: jump table of the original code, not used by the C code */
 } ImageData_0041B548;
 extern ImageData_0041B548 g_ImageData_0041B548;
 
 /* original 0x0041B648-0x0041B6E0 */
 typedef struct ImageData_0041B648 {
-    byte at_gap_0041B648[8]; /* 0041B648 gap */
-    dword at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650[36]; /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B648[8]; /* 0041B648 gap */
+    uint32_t at_g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650[36]; /* 0041B650 g_RichTextCommandStream_FindInlinePayloadPair_SwitchTable_0041B650: jump table of the original code, not used by the C code */
 } ImageData_0041B648;
 extern ImageData_0041B648 g_ImageData_0041B648;
 
 /* original 0x0041B758-0x0041B7F0 */
 typedef struct ImageData_0041B758 {
-    byte at_gap_0041B758[8]; /* 0041B758 gap */
-    dword at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760[36]; /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B758[8]; /* 0041B758 gap */
+    uint32_t at_g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760[36]; /* 0041B760 g_RichTextCommandStream_FindNthCommandFlagsPair_SwitchTable_0041B760: jump table of the original code, not used by the C code */
 } ImageData_0041B758;
 extern ImageData_0041B758 g_ImageData_0041B758;
 
 /* original 0x0041B868-0x0041B900 */
 typedef struct ImageData_0041B868 {
-    byte at_gap_0041B868[8]; /* 0041B868 gap */
-    dword at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870[36]; /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B868[8]; /* 0041B868 gap */
+    uint32_t at_g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870[36]; /* 0041B870 g_RichTextCommandStream_QueryNthCommandFlags_SwitchTable_0041B870: jump table of the original code, not used by the C code */
 } ImageData_0041B868;
 extern ImageData_0041B868 g_ImageData_0041B868;
 
 /* original 0x0041B9C8-0x0041BA50 */
 typedef struct ImageData_0041B9C8 {
-    byte at_gap_0041B9C8[8]; /* 0041B9C8 gap */
-    dword at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0[20]; /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041B9C8[8]; /* 0041B9C8 gap */
+    uint32_t at_g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0[20]; /* 0041B9D0 g_RichTextCommandStream_CopyToNarrowCf_SwitchTable_0041B9D0: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041BA20[4]; /* 0041BA20 g_SoundDispatchTable_0041BA20: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041BA30[8]; /* 0041BA30 g_SoundDispatchTable_0041BA30: jump table of the original code, not used by the C code */
 } ImageData_0041B9C8;
 extern ImageData_0041B9C8 g_ImageData_0041B9C8;
 
 /* original 0x0041BB78-0x0041BC00 */
 typedef struct ImageData_0041BB78 {
-    byte at_gap_0041BB78[8]; /* 0041BB78 gap */
-    dword at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80[20]; /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041BB78[8]; /* 0041BB78 gap */
+    uint32_t at_g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80[20]; /* 0041BB80 g_FatalError_CopyRichTextToNarrowCf_SwitchTable_0041BB80: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041BBD0[4]; /* 0041BBD0 g_SoundDispatchTable_0041BBD0: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041BBE0[8]; /* 0041BBE0 g_SoundDispatchTable_0041BBE0: jump table of the original code, not used by the C code */
 } ImageData_0041BB78;
 extern ImageData_0041BB78 g_ImageData_0041BB78;
 
 /* original 0x0041BCEC-0x0041C0F0 */
 typedef struct ImageData_0041BCEC {
-    byte at_gap_0041BCEC[4]; /* 0041BCEC gap */
-    dword at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0[256]; /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041BCEC[4]; /* 0041BCEC gap */
+    uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0[256]; /* 0041BCF0 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041BCF0: jump table of the original code, not used by the C code */
 } ImageData_0041BCEC;
 extern ImageData_0041BCEC g_ImageData_0041BCEC;
 
 /* original 0x0041C15C-0x0041C560 */
 typedef struct ImageData_0041C15C {
-    byte at_gap_0041C15C[4]; /* 0041C15C gap */
-    dword at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160[48]; /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041C15C[4]; /* 0041C15C gap */
+    uint32_t at_g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160[48]; /* 0041C160 g_RichTextMarkup_ParseAndBuildStringAsset_SwitchTable_0041C160: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041C220[16]; /* 0041C220 g_SoundDispatchTable_0041C220: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041C260[192]; /* 0041C260 g_SoundDispatchTable_0041C260: jump table of the original code, not used by the C code */
 } ImageData_0041C15C;
 extern ImageData_0041C15C g_ImageData_0041C15C;
 
 /* original 0x0041C94C-0x0041C9D0 */
 typedef struct ImageData_0041C94C {
-    byte at_gap_0041C94C[4]; /* 0041C94C gap */
-    dword at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950[32]; /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041C94C[4]; /* 0041C94C gap */
+    uint32_t at_g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950[32]; /* 0041C950 g_RichTextCommandStream_CopyExpandedCf_SwitchTable_0041C950: jump table of the original code, not used by the C code */
 } ImageData_0041C94C;
 extern ImageData_0041C94C g_ImageData_0041C94C;
 
 /* original 0x0041CAFC-0x0041CB04 */
 typedef struct ImageData_0041CAFC {
-    byte at_gap_0041CAFC[8]; /* 0041CAFC gap */
+    uint8_t at_gap_0041CAFC[8]; /* 0041CAFC gap */
 } ImageData_0041CAFC;
 extern ImageData_0041CAFC g_ImageData_0041CAFC;
 
 /* original 0x0041CB68-0x0041CBF0 */
 typedef struct ImageData_0041CB68 {
-    byte at_gap_0041CB68[8]; /* 0041CB68 gap */
-    dword at_g_TextResourcePage_Load_SwitchTable_0041CB70[20]; /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041CB68[8]; /* 0041CB68 gap */
+    uint32_t at_g_TextResourcePage_Load_SwitchTable_0041CB70[20]; /* 0041CB70 g_TextResourcePage_Load_SwitchTable_0041CB70: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041CBC0[4]; /* 0041CBC0 g_SoundDispatchTable_0041CBC0: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041CBD0[8]; /* 0041CBD0 g_SoundDispatchTable_0041CBD0: jump table of the original code, not used by the C code */
 } ImageData_0041CB68;
 extern ImageData_0041CB68 g_ImageData_0041CB68;
 
 /* original 0x0041CF7C-0x0041D000 */
 typedef struct ImageData_0041CF7C {
-    byte at_gap_0041CF7C[4]; /* 0041CF7C gap */
-    dword at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80[8]; /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041CF7C[4]; /* 0041CF7C gap */
+    uint32_t at_g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80[8]; /* 0041CF80 g_RichTextCommandStream_MeasureRegs_SwitchTable_0041CF80: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041CFA0[12]; /* 0041CFA0 g_SoundDispatchTable_0041CFA0: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041CFD0[4]; /* 0041CFD0 g_SoundDispatchTable_0041CFD0: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041CFE0[8]; /* 0041CFE0 g_SoundDispatchTable_0041CFE0: jump table of the original code, not used by the C code */
 } ImageData_0041CF7C;
 extern ImageData_0041CF7C g_ImageData_0041CF7C;
 
 /* original 0x0041D07C-0x0041D090 */
 typedef struct ImageData_0041D07C {
-    byte at_gap_0041D07C[20]; /* 0041D07C gap */
+    uint8_t at_gap_0041D07C[20]; /* 0041D07C gap */
 } ImageData_0041D07C;
 extern ImageData_0041D07C g_ImageData_0041D07C;
 
 /* original 0x0041D144-0x0041D1D0 */
 typedef struct ImageData_0041D144 {
-    byte at_gap_0041D144[12]; /* 0041D144 gap */
-    dword at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150[8]; /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041D144[12]; /* 0041D144 gap */
+    uint32_t at_g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150[8]; /* 0041D150 g_RichTextCommandStream_MeasureNextWrappedLineCf_SwitchTable_0041D150: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041D170[24]; /* 0041D170 g_SoundDispatchTable_0041D170: jump table of the original code, not used by the C code */
 } ImageData_0041D144;
 extern ImageData_0041D144 g_ImageData_0041D144;
 
 /* original 0x0041D53C-0x0041D5C0 */
 typedef struct ImageData_0041D53C {
-    byte at_gap_0041D53C[4]; /* 0041D53C gap */
-    dword at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540[8]; /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041D53C[4]; /* 0041D53C gap */
+    uint32_t at_g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540[8]; /* 0041D540 g_RichTextCommandStream_DrawSingleLine_SwitchTable_0041D540: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041D560[12]; /* 0041D560 g_SoundDispatchTable_0041D560: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041D590[4]; /* 0041D590 g_SoundDispatchTable_0041D590: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041D5A0[8]; /* 0041D5A0 g_SoundDispatchTable_0041D5A0: jump table of the original code, not used by the C code */
 } ImageData_0041D53C;
 extern ImageData_0041D53C g_ImageData_0041D53C;
 
 /* original 0x0041D75C-0x0041D770 */
 typedef struct ImageData_0041D75C {
-    byte at_gap_0041D75C[20]; /* 0041D75C gap */
+    uint8_t at_gap_0041D75C[20]; /* 0041D75C gap */
 } ImageData_0041D75C;
 extern ImageData_0041D75C g_ImageData_0041D75C;
 
 /* original 0x0041D880-0x0041D910 */
 typedef struct ImageData_0041D880 {
-    byte at_gap_0041D880[16]; /* 0041D880 gap */
-    dword at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890[8]; /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
-    dword at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041D880[16]; /* 0041D880 gap */
+    uint32_t at_g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890[8]; /* 0041D890 g_RichTextCommandStream_FlattenNestedToRuntimeBuffer_SwitchTable_0041D890: jump table of the original code, not used by the C code */
+    uint32_t at_g_SoundDispatchTable_0041D8B0[24]; /* 0041D8B0 g_SoundDispatchTable_0041D8B0: jump table of the original code, not used by the C code */
 } ImageData_0041D880;
 extern ImageData_0041D880 g_ImageData_0041D880;
 
 /* original 0x0041DA44-0x0041DAD0 */
 typedef struct ImageData_0041DA44 {
-    byte at_gap_0041DA44[12]; /* 0041DA44 gap */
-    dword at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50[32]; /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041DA44[12]; /* 0041DA44 gap */
+    uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50[32]; /* 0041DA50 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DA50: jump table of the original code, not used by the C code */
 } ImageData_0041DA44;
 extern ImageData_0041DA44 g_ImageData_0041DA44;
 
 /* original 0x0041DBD4-0x0041DC60 */
 typedef struct ImageData_0041DBD4 {
-    byte at_gap_0041DBD4[12]; /* 0041DBD4 gap */
-    dword at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0[32]; /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0041DBD4[12]; /* 0041DBD4 gap */
+    uint32_t at_g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0[32]; /* 0041DBE0 g_RichTextCommandStream_DrawNextWrappedLineCf_SwitchTable_0041DBE0: jump table of the original code, not used by the C code */
 } ImageData_0041DBD4;
 extern ImageData_0041DBD4 g_ImageData_0041DBD4;
 
 /* original 0x0041DDFC-0x0041DE10 */
 typedef struct ImageData_0041DDFC {
-    byte at_gap_0041DDFC[20]; /* 0041DDFC gap */
+    uint8_t at_gap_0041DDFC[20]; /* 0041DDFC gap */
 } ImageData_0041DDFC;
 extern ImageData_0041DDFC g_ImageData_0041DDFC;
 
 /* original 0x0041DE7C-0x004227B0 */
 typedef struct ImageData_0041DE7C {
-    byte at_gap_0041DE7C[4]; /* 0041DE7C gap */
-    dword at_g_PackedLightingLookupTable[1024]; /* 0041DE80 g_PackedLightingLookupTable */
+    uint8_t at_gap_0041DE7C[4]; /* 0041DE7C gap */
+    uint32_t at_g_PackedLightingLookupTable[1024]; /* 0041DE80 g_PackedLightingLookupTable */
     SoftwareBgraWordLanes at_g_ShadingIntensityScaleMmx[256]; /* 0041EE80 g_ShadingIntensityScaleMmx */
-    qword at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
-    qword at_g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
-    undefined8 at_g_TerrainOccupancyMmxSignBiasBytes; /* 0041F690 g_TerrainOccupancyMmxSignBiasBytes */
-    qword at_g_TerrainOccupancyMmxClearBits1And2Mask; /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
-    qword at_g_TerrainOccupancyMmxAllBitsMask; /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
-    qword at_g_TerrainOccupancyMmxPackedScale0280; /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
-    qword at_g_TerrainOccupancyMmxPackedWeights02_20; /* 0041F6B0 g_TerrainOccupancyMmxPackedWeights02_20 */
-    qword at_g_TerrainOccupancyMmxPackedWeights04_40; /* 0041F6B8 g_TerrainOccupancyMmxPackedWeights04_40 */
-    qword at_g_FieldGridOccupancyMmxHighBitMask; /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
-    qword at_g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
-    dword at_g_GraphicsShadingMmxPacked3BitPerByteMask_rest[4]; /* beyond the declared type */
+    uint64_t at_g_GraphicsShadingRasterizeMmxPackedDwordOneZero; /* 0041F680 g_GraphicsShadingRasterizeMmxPackedDwordOneZero */
+    uint64_t at_g_SoftwareBilinearPackedByteClampMask; /* 0041F688 g_SoftwareBilinearPackedByteClampMask */
+    uint64_t at_g_TerrainOccupancyMmxSignBiasBytes; /* 0041F690 g_TerrainOccupancyMmxSignBiasBytes */
+    uint64_t at_g_TerrainOccupancyMmxClearBits1And2Mask; /* 0041F698 g_TerrainOccupancyMmxClearBits1And2Mask */
+    uint64_t at_g_TerrainOccupancyMmxAllBitsMask; /* 0041F6A0 g_TerrainOccupancyMmxAllBitsMask */
+    uint64_t at_g_TerrainOccupancyMmxPackedScale0280; /* 0041F6A8 g_TerrainOccupancyMmxPackedScale0280 */
+    uint64_t at_g_TerrainOccupancyMmxPackedWeights02_20; /* 0041F6B0 g_TerrainOccupancyMmxPackedWeights02_20 */
+    uint64_t at_g_TerrainOccupancyMmxPackedWeights04_40; /* 0041F6B8 g_TerrainOccupancyMmxPackedWeights04_40 */
+    uint64_t at_g_FieldGridOccupancyMmxHighBitMask; /* 0041F6C0 g_FieldGridOccupancyMmxHighBitMask */
+    uint64_t at_g_GraphicsShadingMmxPacked3BitPerByteMask; /* 0041F6C8 g_GraphicsShadingMmxPacked3BitPerByteMask */
+    uint32_t at_g_GraphicsShadingMmxPacked3BitPerByteMask_rest[4]; /* beyond the declared type */
     SoftwarePixelMmxConstants at_g_SoftwarePixelMmxConstants; /* 0041F6E0 g_SoftwarePixelMmxConstants */
-    qword at_g_VertexColorAlphaPreserveMaskMMX; /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
-    qword at_g_VertexColorRgbHalveMaskMMX; /* 0041F708 g_VertexColorRgbHalveMaskMMX */
-    dword at_g_VertexColorRgbHalveMaskMMX_rest[4]; /* beyond the declared type */
+    uint64_t at_g_VertexColorAlphaPreserveMaskMMX; /* 0041F700 g_VertexColorAlphaPreserveMaskMMX */
+    uint64_t at_g_VertexColorRgbHalveMaskMMX; /* 0041F708 g_VertexColorRgbHalveMaskMMX */
+    uint32_t at_g_VertexColorRgbHalveMaskMMX_rest[4]; /* beyond the declared type */
     SoftwareBgraWordLanes at_g_UiScalerSecondPixelWeights[256]; /* 0041F720 g_UiScalerSecondPixelWeights */
     SoftwareBgraWordLanes at_g_SoftwareBilinearForwardFactors[256]; /* 0041FF20 g_SoftwareBilinearForwardFactors */
     SoftwareBgraWordLanes at_g_UiScalerFirstPixelWeights[256]; /* 00420720 g_UiScalerFirstPixelWeights */
@@ -534,18 +534,18 @@ typedef struct ImageData_0041DE7C {
     SoftwareRgbWordLanes at_g_SoftwareBlendAlphaFactors[256]; /* 00421720 g_SoftwareBlendAlphaFactors */
     SoftwareRgbWordLanes at_g_SoftwareBlendInverseAlphaFactors[256]; /* 00421F20 g_SoftwareBlendInverseAlphaFactors */
     UiNodeVtable at_g_UiGraphicsAdapterTextButtonVtable; /* 00422720 g_UiGraphicsAdapterTextButtonVtable */
-    undefined at_g_GraphicsAdapterFormatScratch0Utf16; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
-    dword at_g_GraphicsAdapterFormatScratch0Utf16_rest[7]; /* beyond the declared type */
-    byte at_g_GraphicsAdapterFormatScratch0Utf16_rest_tail[3];
-    undefined at_g_GraphicsAdapterFormatScratch1Utf16; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
-    dword at_g_GraphicsAdapterFormatScratch1Utf16_rest[9]; /* beyond the declared type */
-    byte at_g_GraphicsAdapterFormatScratch1Utf16_rest_tail[3];
+    uint8_t at_g_GraphicsAdapterFormatScratch0Utf16; /* 00422768 g_GraphicsAdapterFormatScratch0Utf16 */
+    uint32_t at_g_GraphicsAdapterFormatScratch0Utf16_rest[7]; /* beyond the declared type */
+    uint8_t at_g_GraphicsAdapterFormatScratch0Utf16_rest_tail[3];
+    uint8_t at_g_GraphicsAdapterFormatScratch1Utf16; /* 00422788 g_GraphicsAdapterFormatScratch1Utf16 */
+    uint32_t at_g_GraphicsAdapterFormatScratch1Utf16_rest[9]; /* beyond the declared type */
+    uint8_t at_g_GraphicsAdapterFormatScratch1Utf16_rest_tail[3];
 } ImageData_0041DE7C;
 extern ImageData_0041DE7C g_ImageData_0041DE7C;
 
 /* original 0x00422978-0x00423600 */
 typedef struct ImageData_00422978 {
-    byte at_gap_00422978[40]; /* 00422978 gap */
+    uint8_t at_gap_00422978[40]; /* 00422978 gap */
     UiRootCallbacks at_g_UiDisplaySettingsRootCallbacks; /* 004229A0 g_UiDisplaySettingsRootCallbacks */
     DisplaySettingsUiImage at_g_UiDisplaySettingsRootTemplate; /* 004229B4 g_UiDisplaySettingsRootTemplate */
     UiDisplayModeSelectionActionHandlerTable20 at_g_UiDisplayModeSelectionActionHandlers20; /* 00423588 g_UiDisplayModeSelectionActionHandlers20 */
@@ -557,7 +557,7 @@ typedef struct ImageData_00422978 {
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch5; /* 004235EC g_UiDisplayModeDistinctValueScratch5 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch6; /* 004235F0 g_UiDisplayModeDistinctValueScratch6 */
     DisplayModeScratchWord at_g_UiDisplayModeDistinctValueScratch7; /* 004235F4 g_UiDisplayModeDistinctValueScratch7 */
-    dword at_g_UiDisplayModeDistinctValueScratch7_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiDisplayModeDistinctValueScratch7_rest[2]; /* beyond the declared type */
 } ImageData_00422978;
 extern ImageData_00422978 g_ImageData_00422978;
 
@@ -570,17 +570,17 @@ extern ImageData_00424324 g_ImageData_00424324;
 
 /* original 0x00424684-0x004846A0 */
 typedef struct ImageData_00424684 {
-    byte at_gap_00424684[28]; /* 00424684 gap */
-    dword at_g_FixedSinBeforeZeroQ28[16384]; /* 004246A0 g_FixedSinBeforeZeroQ28 */
-    dword at_g_FixedSinQ28[16384]; /* 004346A0 g_FixedSinQ28 */
-    dword at_g_FixedCosQ28[65536]; /* 004446A0 g_FixedCosQ28 */
+    uint8_t at_gap_00424684[28]; /* 00424684 gap */
+    uint32_t at_g_FixedSinBeforeZeroQ28[16384]; /* 004246A0 g_FixedSinBeforeZeroQ28 */
+    uint32_t at_g_FixedSinQ28[16384]; /* 004346A0 g_FixedSinQ28 */
+    uint32_t at_g_FixedCosQ28[65536]; /* 004446A0 g_FixedCosQ28 */
 } ImageData_00424684;
 extern ImageData_00424684 g_ImageData_00424684;
 
 /* original 0x00485808-0x00485E40 */
 typedef struct ImageData_00485808 {
-    byte at_gap_00485808[12]; /* 00485808 gap */
-    dword at_g_TextureDownsampleShift; /* 00485814 g_TextureDownsampleShift */
+    uint8_t at_gap_00485808[12]; /* 00485808 gap */
+    uint32_t at_g_TextureDownsampleShift; /* 00485814 g_TextureDownsampleShift */
     GraphicsSetViewportProc * at_g_GraphicsSetViewportAndClearDepth; /* 00485818 g_GraphicsSetViewportAndClearDepth */
     GraphicsDrawPrimitiveQueueProc * at_g_GraphicsDrawPrimitiveQueue; /* 0048581C g_GraphicsDrawPrimitiveQueue */
     GraphicsBeginScenePreserveAllProc * at_g_GraphicsBeginScene; /* 00485820 g_GraphicsBeginScene */
@@ -594,16 +594,16 @@ typedef struct ImageData_00485808 {
     GraphicsTextureSetRefreshProc * at_g_GraphicsRefreshTextureAlpha; /* 00485840 g_GraphicsRefreshTextureAlpha */
     GraphicsPrimitiveQueueRadixSortProc * at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844; /* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
     GraphicsOffscreenRenderModelListToTextureSourceProc * at_g_GraphicsOffscreenRenderModelListToTextureSourceCf; /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSourceCf */
-    undefined4 at_g_RenderedFrameCountSinceDebugRefresh; /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
+    uint32_t at_g_RenderedFrameCountSinceDebugRefresh; /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
     GraphicsDiagnosticCounter at_g_PrimitiveDrawCallCount; /* 00485850 g_PrimitiveDrawCallCount */
     GraphicsDiagnosticCounter at_g_TextureBindStateChangeCount; /* 00485854 g_TextureBindStateChangeCount */
     GraphicsDiagnosticCounter at_g_TextureDeviceReloadCount; /* 00485858 g_TextureDeviceReloadCount */
     GraphicsFixedVec3 at_g_ViewOriginFixed; /* 0048585C g_ViewOriginFixed */
-    sdword at_g_ProjectionScaleFixed; /* 00485868 g_ProjectionScaleFixed */
-    dword at_g_ViewAngle0; /* 0048586C g_ViewAngle0 */
-    dword at_g_ViewAngle1; /* 00485870 g_ViewAngle1 */
-    dword at_g_ProjectionShift; /* 00485874 g_ProjectionShift */
-    dword at_g_ProjectionScaleProduct; /* 00485878 g_ProjectionScaleProduct */
+    int32_t at_g_ProjectionScaleFixed; /* 00485868 g_ProjectionScaleFixed */
+    uint32_t at_g_ViewAngle0; /* 0048586C g_ViewAngle0 */
+    uint32_t at_g_ViewAngle1; /* 00485870 g_ViewAngle1 */
+    uint32_t at_g_ProjectionShift; /* 00485874 g_ProjectionShift */
+    uint32_t at_g_ProjectionScaleProduct; /* 00485878 g_ProjectionScaleProduct */
     GraphicsWideFixed at_g_ProjectionNumerator; /* 0048587C g_ProjectionNumerator */
     GraphicsFixedVec2 at_g_ProjectionCenterFixed; /* 00485884 g_ProjectionCenterFixed */
     GraphicsPrimitiveQueue * at_g_ActivePrimitiveQueue; /* 0048588C g_ActivePrimitiveQueue */
@@ -618,60 +618,60 @@ typedef struct ImageData_00485808 {
     GraphicsFixedVec3 at_g_FrustumPlaneNormalFixed_0[4]; /* 00485984 g_FrustumPlaneNormalFixed_0 */
     GraphicsFixedVec3 at_g_FrustumCornerRayFixed_0[4]; /* 004859B4 g_FrustumCornerRayFixed_0 */
     GraphicsSceneBounds8 at_g_SceneBoundsFixed; /* 004859E4 g_SceneBoundsFixed */
-    sdword at_g_ModelLodDepthThresholdQ8; /* 00485A04 g_ModelLodDepthThresholdQ8 */
-    dword at_g_ArmyPreviewViewOriginXQ12; /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
-    dword at_g_ArmyPreviewViewOriginYQ12; /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
-    dword at_g_ArmyPreviewViewOriginZQ12; /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
-    dword at_g_ArmyPreviewProjectionScaleQ12; /* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
-    dword at_g_ArmyPreviewViewAngle0; /* 00485A18 g_ArmyPreviewViewAngle0 */
-    dword at_g_ArmyPreviewViewAngle1; /* 00485A1C g_ArmyPreviewViewAngle1 */
-    dword at_g_ArmyPreviewProjectionShift; /* 00485A20 g_ArmyPreviewProjectionShift */
-    dword at_g_ArmyPreviewAuxiliaryOrientation0; /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
-    dword at_g_ArmyPreviewAuxiliaryOrientation1; /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
-    dword at_g_ArmyPreviewPrimaryColorArgb; /* 00485A2C g_ArmyPreviewPrimaryColorArgb */
-    dword at_g_ArmyPreviewSecondaryColorArgb; /* 00485A30 g_ArmyPreviewSecondaryColorArgb */
-    dword at_g_ArmyPreviewModelNodePointer; /* 00485A34 g_ArmyPreviewModelNodePointer */
-    dword at_g_ArmyPreviewModelNodePointer_rest[2]; /* beyond the declared type */
-    dword at_g_PrimitiveRadixBucketWords[256]; /* 00485A40 g_PrimitiveRadixBucketWords */
+    int32_t at_g_ModelLodDepthThresholdQ8; /* 00485A04 g_ModelLodDepthThresholdQ8 */
+    uint32_t at_g_ArmyPreviewViewOriginXQ12; /* 00485A08 g_ArmyPreviewViewOriginXQ12 */
+    uint32_t at_g_ArmyPreviewViewOriginYQ12; /* 00485A0C g_ArmyPreviewViewOriginYQ12 */
+    uint32_t at_g_ArmyPreviewViewOriginZQ12; /* 00485A10 g_ArmyPreviewViewOriginZQ12 */
+    uint32_t at_g_ArmyPreviewProjectionScaleQ12; /* 00485A14 g_ArmyPreviewProjectionScaleQ12 */
+    uint32_t at_g_ArmyPreviewViewAngle0; /* 00485A18 g_ArmyPreviewViewAngle0 */
+    uint32_t at_g_ArmyPreviewViewAngle1; /* 00485A1C g_ArmyPreviewViewAngle1 */
+    uint32_t at_g_ArmyPreviewProjectionShift; /* 00485A20 g_ArmyPreviewProjectionShift */
+    uint32_t at_g_ArmyPreviewAuxiliaryOrientation0; /* 00485A24 g_ArmyPreviewAuxiliaryOrientation0 */
+    uint32_t at_g_ArmyPreviewAuxiliaryOrientation1; /* 00485A28 g_ArmyPreviewAuxiliaryOrientation1 */
+    uint32_t at_g_ArmyPreviewPrimaryColorArgb; /* 00485A2C g_ArmyPreviewPrimaryColorArgb */
+    uint32_t at_g_ArmyPreviewSecondaryColorArgb; /* 00485A30 g_ArmyPreviewSecondaryColorArgb */
+    uint32_t at_g_ArmyPreviewModelNodePointer; /* 00485A34 g_ArmyPreviewModelNodePointer */
+    uint32_t at_g_ArmyPreviewModelNodePointer_rest[2]; /* beyond the declared type */
+    uint32_t at_g_PrimitiveRadixBucketWords[256]; /* 00485A40 g_PrimitiveRadixBucketWords */
 } ImageData_00485808;
 extern ImageData_00485808 g_ImageData_00485808;
 
 /* original 0x00486D8C-0x004A6FB0 */
 typedef struct ImageData_00486D8C {
-    byte at_gap_00486D8C[4]; /* 00486D8C gap */
-    dword at_g_MovieChromaLumaToArgb[32768]; /* 00486D90 g_MovieChromaLumaToArgb */
-    qword at_g_MovieDeltaRgbHighNibbleMask2Pixels; /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
+    uint8_t at_gap_00486D8C[4]; /* 00486D8C gap */
+    uint32_t at_g_MovieChromaLumaToArgb[32768]; /* 00486D90 g_MovieChromaLumaToArgb */
+    uint64_t at_g_MovieDeltaRgbHighNibbleMask2Pixels; /* 004A6D90 g_MovieDeltaRgbHighNibbleMask2Pixels */
     MovieRuntime * at_g_ActiveMovie; /* 004A6D98 g_ActiveMovie */
     MovieAudioGainQ15 at_g_MovieDefaultAudioGainQ15; /* 004A6D9C g_MovieDefaultAudioGainQ15 */
     MovieAudioGainQ15 at_g_MovieAlternateAudioGainQ15; /* 004A6DA0 g_MovieAlternateAudioGainQ15 */
     WidePathBuffer256 at_g_LooseMoviePathPrefix; /* 004A6DA4 g_LooseMoviePathPrefix */
-    dword at_g_LooseMoviePathPrefix_rest[3]; /* beyond the declared type */
+    uint32_t at_g_LooseMoviePathPrefix_rest[3]; /* beyond the declared type */
 } ImageData_00486D8C;
 extern ImageData_00486D8C g_ImageData_00486D8C;
 
 /* original 0x004A8E60-0x004A8F80 */
 typedef struct ImageData_004A8E60 {
-    byte at_gap_004A8E60[16]; /* 004A8E60 gap */
+    uint8_t at_gap_004A8E60[16]; /* 004A8E60 gap */
     SoftwareFramebufferAccess * at_g_FramebufferAccess; /* 004A8E70 g_FramebufferAccess */
     SoftwareFramebufferAccess * at_g_CursorSavedBackground; /* 004A8E74 g_CursorSavedBackground */
     SoftwareFramebufferAccess * at_g_CursorCompositeBuffer; /* 004A8E78 g_CursorCompositeBuffer */
     SoftwareFramebufferAccess * at_g_CursorAlternateSavedBackground; /* 004A8E7C g_CursorAlternateSavedBackground */
     SoftwarePixelPackTables * at_g_SoftwarePixelPackTables; /* 004A8E80 g_SoftwarePixelPackTables */
-    dword at_g_FramebufferRowStrideBytes; /* 004A8E84 g_FramebufferRowStrideBytes */
-    dword at_g_FramebufferWidth; /* 004A8E88 g_FramebufferWidth */
-    dword at_g_FramebufferHeight; /* 004A8E8C g_FramebufferHeight */
-    undefined4 at_g_ActiveGraphicsAdapterIndex; /* 004A8E90 g_ActiveGraphicsAdapterIndex */
-    sdword at_g_SoftwareColorScaleQ16; /* 004A8E94 g_SoftwareColorScaleQ16 */
-    sdword at_g_SoftwareColorBiasQ16; /* 004A8E98 g_SoftwareColorBiasQ16 */
+    uint32_t at_g_FramebufferRowStrideBytes; /* 004A8E84 g_FramebufferRowStrideBytes */
+    uint32_t at_g_FramebufferWidth; /* 004A8E88 g_FramebufferWidth */
+    uint32_t at_g_FramebufferHeight; /* 004A8E8C g_FramebufferHeight */
+    uint32_t at_g_ActiveGraphicsAdapterIndex; /* 004A8E90 g_ActiveGraphicsAdapterIndex */
+    int32_t at_g_SoftwareColorScaleQ16; /* 004A8E94 g_SoftwareColorScaleQ16 */
+    int32_t at_g_SoftwareColorBiasQ16; /* 004A8E98 g_SoftwareColorBiasQ16 */
     GraphicsDisplayMode * at_g_GraphicsDisplayModes; /* 004A8E9C g_GraphicsDisplayModes */
     GraphicsDisplayModeCount at_g_GraphicsDisplayModeCount; /* 004A8EA0 g_GraphicsDisplayModeCount */
     GraphicsAdapterRecord * at_g_GraphicsAdapters; /* 004A8EA4 g_GraphicsAdapters */
-    dword at_g_GraphicsAdapterCount; /* 004A8EA8 g_GraphicsAdapterCount */
+    uint32_t at_g_GraphicsAdapterCount; /* 004A8EA8 g_GraphicsAdapterCount */
     SoftwarePixelFormatConfig at_g_SoftwarePixelFormatConfig; /* 004A8EAC g_SoftwarePixelFormatConfig */
     SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeHook; /* 004A8ED0 g_GraphicsDisplayModeHook */
     GraphicsBackendRefreshActiveAdapterProc * at_g_GraphicsBackendRefreshActiveAdapterCf; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
     SoftwareFramebufferCreateProc * at_g_SoftwareFramebufferCreate; /* 004A8ED8 g_SoftwareFramebufferCreate */
-    dword at_g_SoftwareFramebufferDestroy[1]; /* 004A8EDC g_SoftwareFramebufferDestroy */
+    uint32_t at_g_SoftwareFramebufferDestroy[1]; /* 004A8EDC g_SoftwareFramebufferDestroy */
     GraphicsFramebufferPresentProc * at_g_GraphicsFramebufferPresent; /* 004A8EE0 g_GraphicsFramebufferPresent */
     GraphicsFramebufferCaptureRegionProc * at_g_GraphicsFramebufferCaptureRegion; /* 004A8EE4 g_GraphicsFramebufferCaptureRegion */
     SoftwareBuildPixelPackTablesProc * at_g_SoftwareBuildPixelPackTables; /* 004A8EE8 g_SoftwareBuildPixelPackTables */
@@ -688,13 +688,13 @@ typedef struct ImageData_004A8E60 {
     GraphicsTextureSourceBlitSourceAlphaPaletteBankProc * at_g_GraphicsTextureSourceBlitSourceAlphaPaletteBank; /* 004A8F14 g_GraphicsTextureSourceBlitSourceAlphaPaletteBank */
     GraphicsTextureSourceBlitModulatedSourceAlphaProc * at_g_GraphicsTextureSourceBlitModulatedSourceAlpha; /* 004A8F18 g_GraphicsTextureSourceBlitModulatedSourceAlpha */
     GraphicsTextureSourceSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitSaturatedAddRgb; /* 004A8F1C g_GraphicsTextureSourceBlitSaturatedAddRgb */
-    dword at_g_GraphicsTextureSourceBlitTiledSaturatedAddRgb[1]; /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb */
+    uint32_t at_g_GraphicsTextureSourceBlitTiledSaturatedAddRgb[1]; /* 004A8F20 g_GraphicsTextureSourceBlitTiledSaturatedAddRgb */
     GraphicsTextureSourceSaturatedAddRgbProc * at_g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd; /* 004A8F24 g_GraphicsTextureSourceBlitHalfRgbSaturatedAdd */
-    dword at_g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd[1]; /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd */
-    dword at_g_GraphicsTextureSourceDecomposeSubresourceRegionsCf[1]; /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf */
+    uint32_t at_g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd[1]; /* 004A8F28 g_GraphicsTextureSourceBlitTiledHalfRgbSaturatedAdd */
+    uint32_t at_g_GraphicsTextureSourceDecomposeSubresourceRegionsCf[1]; /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf */
     GraphicsFramebufferFillRectArgbProc * at_g_GraphicsFramebufferFillRectArgb; /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
-    dword at_g_GraphicsFramebufferCopyRegionToOrigin[1]; /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
-    dword at_g_GraphicsFramebufferCopyOriginToRegion[1]; /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion */
+    uint32_t at_g_GraphicsFramebufferCopyRegionToOrigin[1]; /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
+    uint32_t at_g_GraphicsFramebufferCopyOriginToRegion[1]; /* 004A8F38 g_GraphicsFramebufferCopyOriginToRegion */
     GraphicsTextureSourceLoadPackageAssetProc * at_g_GraphicsTextureSourceLoadPackageAsset; /* 004A8F3C g_GraphicsTextureSourceLoadPackageAsset */
     GraphicsTextureSourceLifecycleCallbackTable3 at_g_GraphicsTextureSourceLifecycleCallbacks3; /* 004A8F40 g_GraphicsTextureSourceLifecycleCallbacks3 */
     GraphicsTextureSourceConvertPaletteEntriesProc * at_g_GraphicsTextureSourceConvertPaletteEntries; /* 004A8F4C g_GraphicsTextureSourceConvertPaletteEntries */
@@ -703,86 +703,86 @@ typedef struct ImageData_004A8E60 {
     GraphicsPaletteAssetLifecycleCallbackTable3 at_g_GraphicsPaletteAssetLifecycleCallbacks3; /* 004A8F58 g_GraphicsPaletteAssetLifecycleCallbacks3 */
     GraphicsPaletteAssetValidateProc * at_g_GraphicsPaletteAssetValidate; /* 004A8F64 g_GraphicsPaletteAssetValidate */
     GraphicsPaletteAssetResolveAllocationBaseProc * at_g_GraphicsPaletteAssetResolveAllocationBase; /* 004A8F68 g_GraphicsPaletteAssetResolveAllocationBase */
-    dword at_g_GraphicsPaletteAssetResolveAllocationBase_rest[5]; /* beyond the declared type */
+    uint32_t at_g_GraphicsPaletteAssetResolveAllocationBase_rest[5]; /* beyond the declared type */
 } ImageData_004A8E60;
 extern ImageData_004A8E60 g_ImageData_004A8E60;
 
 /* original 0x004AD92C-0x004AE230 */
 typedef struct ImageData_004AD92C {
-    byte at_gap_004AD92C[4]; /* 004AD92C gap */
-    dword at_g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
-    byte at_g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
+    uint8_t at_gap_004AD92C[4]; /* 004AD92C gap */
+    uint32_t at_g_GraphicsPaletteBankSlots[512]; /* 004AD930 g_GraphicsPaletteBankSlots */
+    uint8_t at_g_GraphicsPaletteRemapBytes[256]; /* 004AE130 g_GraphicsPaletteRemapBytes */
 } ImageData_004AD92C;
 extern ImageData_004AD92C g_ImageData_004AD92C;
 
 /* original 0x004AE95C-0x004AEB10 */
 typedef struct ImageData_004AE95C {
-    byte at_gap_004AE95C[4]; /* 004AE95C gap */
+    uint8_t at_gap_004AE95C[4]; /* 004AE95C gap */
     UiRuntimeRecord * at_g_UiRuntimeRecordRing; /* 004AE960 g_UiRuntimeRecordRing */
-    undefined4 at_g_UiRuntimeAuxiliaryBuffer8000; /* 004AE964 g_UiRuntimeAuxiliaryBuffer8000 */
-    byte * at_g_UiTransferDataBuffer; /* 004AE968 g_UiTransferDataBuffer */
+    uint32_t at_g_UiRuntimeAuxiliaryBuffer8000; /* 004AE964 g_UiRuntimeAuxiliaryBuffer8000 */
+    uint8_t * at_g_UiTransferDataBuffer; /* 004AE968 g_UiTransferDataBuffer */
     UiTransferEndpointDescriptor * at_g_UiTransferEndpointBuffer; /* 004AE96C g_UiTransferEndpointBuffer */
-    dword at_g_UiRuntimeRecordReadIndex; /* 004AE970 g_UiRuntimeRecordReadIndex */
-    dword at_g_UiRuntimeRecordWriteIndex; /* 004AE974 g_UiRuntimeRecordWriteIndex */
-    dword at_g_UiTransferUnitCursor; /* 004AE978 g_UiTransferUnitCursor */
-    dword at_g_UiTransferSequenceToken; /* 004AE97C g_UiTransferSequenceToken */
-    dword at_g_UiTransferSenderContext; /* 004AE980 g_UiTransferSenderContext */
+    uint32_t at_g_UiRuntimeRecordReadIndex; /* 004AE970 g_UiRuntimeRecordReadIndex */
+    uint32_t at_g_UiRuntimeRecordWriteIndex; /* 004AE974 g_UiRuntimeRecordWriteIndex */
+    uint32_t at_g_UiTransferUnitCursor; /* 004AE978 g_UiTransferUnitCursor */
+    uint32_t at_g_UiTransferSequenceToken; /* 004AE97C g_UiTransferSequenceToken */
+    uint32_t at_g_UiTransferSenderContext; /* 004AE980 g_UiTransferSenderContext */
     RuntimeSpinLockValue * at_g_UiRuntimeFrameLock; /* 004AE984 g_UiRuntimeFrameLock */
     UiRuntimePostUnlockCallbackProc * at_g_UiRuntimePostUnlockCallback; /* 004AE988 g_UiRuntimePostUnlockCallback */
     RuntimeSpinLockValue at_g_UiRuntimeRecordRingLock; /* 004AE98C g_UiRuntimeRecordRingLock */
     UiTransferMailboxState at_g_UiTransferMailbox; /* 004AE990 g_UiTransferMailbox */
-    undefined at_g_UiTransferRoundKeys16; /* 004AE9A8 g_UiTransferRoundKeys16 */
-    dword at_g_UiTransferRoundKeys16_rest[11]; /* beyond the declared type */
-    byte at_g_UiTransferRoundKeys16_rest_tail[3];
+    uint8_t at_g_UiTransferRoundKeys16; /* 004AE9A8 g_UiTransferRoundKeys16 */
+    uint32_t at_g_UiTransferRoundKeys16_rest[11]; /* beyond the declared type */
+    uint8_t at_g_UiTransferRoundKeys16_rest_tail[3];
     char at_s_mohTG_sakere___e_004ae9d8[1]; /* 004AE9D8 s_mohTG_sakere___e_004ae9d8 */
-    dword at_s_mohTG_sakere___e_004ae9d8_rest[3]; /* beyond the declared type */
-    byte at_s_mohTG_sakere___e_004ae9d8_rest_tail[3];
-    dword at_s__004ae9d8_0x10[1]; /* 004AE9E8 s__004ae9d8+0x10 */
-    undefined4 at_g_UiTransferChunkPacketSequenceToken; /* 004AE9EC g_UiTransferChunkPacketSequenceToken */
-    dword at_g_UiTransferChunkPacketSequenceToken_rest[2]; /* beyond the declared type */
+    uint32_t at_s_mohTG_sakere___e_004ae9d8_rest[3]; /* beyond the declared type */
+    uint8_t at_s_mohTG_sakere___e_004ae9d8_rest_tail[3];
+    uint32_t at_s__004ae9d8_0x10[1]; /* 004AE9E8 s__004ae9d8+0x10 */
+    uint32_t at_g_UiTransferChunkPacketSequenceToken; /* 004AE9EC g_UiTransferChunkPacketSequenceToken */
+    uint32_t at_g_UiTransferChunkPacketSequenceToken_rest[2]; /* beyond the declared type */
     UiTransferMailboxByteOffset at_g_UiTransferMailboxChunkOffset; /* 004AE9F8 g_UiTransferMailboxChunkOffset */
     UiTransferMailboxByteCount at_g_UiTransferMailboxTransferByteCount; /* 004AE9FC g_UiTransferMailboxTransferByteCount */
-    dword at_g_UiTransferChunkPayload[58]; /* 004AEA00 g_UiTransferChunkPayload */
-    undefined4 at_g_UiTransferMailboxReplyPacket10033; /* 004AEAE8 g_UiTransferMailboxReplyPacket10033 */
-    undefined4 at_g_UiTransferMailboxReplyPacket10033SequenceToken; /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
-    dword at_g_UiTransferMailboxReplyPacket10033SequenceToken_rest[2]; /* beyond the declared type */
-    undefined4 at_g_UiTransferMailboxReplyPacket10033EchoedTick; /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
-    dword at_g_UiTransferMailboxReplyPacket10033EchoedTick_rest[3]; /* beyond the declared type */
+    uint32_t at_g_UiTransferChunkPayload[58]; /* 004AEA00 g_UiTransferChunkPayload */
+    uint32_t at_g_UiTransferMailboxReplyPacket10033; /* 004AEAE8 g_UiTransferMailboxReplyPacket10033 */
+    uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken; /* 004AEAEC g_UiTransferMailboxReplyPacket10033SequenceToken */
+    uint32_t at_g_UiTransferMailboxReplyPacket10033SequenceToken_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick; /* 004AEAF8 g_UiTransferMailboxReplyPacket10033EchoedTick */
+    uint32_t at_g_UiTransferMailboxReplyPacket10033EchoedTick_rest[3]; /* beyond the declared type */
     UiTransferMailboxTickCounter at_g_UiTransferMailboxTickCounter; /* 004AEB08 g_UiTransferMailboxTickCounter */
-    dword at_g_UiTransferMailboxTickCounter_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiTransferMailboxTickCounter_rest[1]; /* beyond the declared type */
 } ImageData_004AE95C;
 extern ImageData_004AE95C g_ImageData_004AE95C;
 
 /* original 0x004AF198-0x004AF1A0 */
 typedef struct ImageData_004AF198 {
-    byte at_gap_004AF198[8]; /* 004AF198 gap */
+    uint8_t at_gap_004AF198[8]; /* 004AF198 gap */
 } ImageData_004AF198;
 extern ImageData_004AF198 g_ImageData_004AF198;
 
 /* original 0x004AF1D4-0x004AF210 */
 typedef struct ImageData_004AF1D4 {
-    byte at_gap_004AF1D4[12]; /* 004AF1D4 gap */
+    uint8_t at_gap_004AF1D4[12]; /* 004AF1D4 gap */
     UiTooltipState at_g_UiTooltipState; /* 004AF1E0 g_UiTooltipState */
-    dword at_g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
+    uint32_t at_g_UiPendingFrameTicks; /* 004AF1F0 g_UiPendingFrameTicks */
     UiDirtyRectCount at_g_UiDirtyRectCount; /* 004AF1F4 g_UiDirtyRectCount */
     UiDirtyRectEntry * at_g_UiDirtyRectEntries; /* 004AF1F8 g_UiDirtyRectEntries */
     UiActionQueueUsedBytes at_g_UiActionQueueUsedBytes; /* 004AF1FC g_UiActionQueueUsedBytes */
     UiActionQueueEntry * at_g_UiActionQueueEntries; /* 004AF200 g_UiActionQueueEntries */
-    undefined4 at_g_UiRuntimeInitializationCount; /* 004AF204 g_UiRuntimeInitializationCount */
-    dword at_g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
-    dword at_g_UiInvalidationSuppressed_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiRuntimeInitializationCount; /* 004AF204 g_UiRuntimeInitializationCount */
+    uint32_t at_g_UiInvalidationSuppressed; /* 004AF208 g_UiInvalidationSuppressed */
+    uint32_t at_g_UiInvalidationSuppressed_rest[1]; /* beyond the declared type */
 } ImageData_004AF1D4;
 extern ImageData_004AF1D4 g_ImageData_004AF1D4;
 
 /* original 0x004AF39C-0x004AF3B0 */
 typedef struct ImageData_004AF39C {
-    byte at_gap_004AF39C[20]; /* 004AF39C gap */
+    uint8_t at_gap_004AF39C[20]; /* 004AF39C gap */
 } ImageData_004AF39C;
 extern ImageData_004AF39C g_ImageData_004AF39C;
 
 /* original 0x004B0A20-0x004B0F30 */
 typedef struct ImageData_004B0A20 {
-    byte at_gap_004B0A20[16]; /* 004B0A20 gap */
+    uint8_t at_gap_004B0A20[16]; /* 004B0A20 gap */
     UiActionHandlerPage * at_g_UiActionHandlerPages[256]; /* 004B0A30 g_UiActionHandlerPages */
     UiRootNode * at_g_UiRootNode; /* 004B0E30 g_UiRootNode */
     GraphicsTextureSourceAsset * at_g_UiWindowTextureSource; /* 004B0E34 g_UiWindowTextureSource */
@@ -791,335 +791,335 @@ typedef struct ImageData_004B0A20 {
     UiNodeBase * at_g_UiKeyboardFocusNode; /* 004B0E40 g_UiKeyboardFocusNode */
     AudioMixerGainQ15 at_g_UiSoundGainQ15; /* 004B0E44 g_UiSoundGainQ15 */
     UiFrameDelayFrames at_g_UiTooltipDelayFrames; /* 004B0E48 g_UiTooltipDelayFrames */
-    dword at_g_UiTooltipTextStyle; /* 004B0E4C g_UiTooltipTextStyle */
-    undefined4 at_g_UiScrollWheelDefaultStep; /* 004B0E50 g_UiScrollWheelDefaultStep */
-    undefined4 at_g_UiScrollWheelListStep; /* 004B0E54 g_UiScrollWheelListStep */
-    undefined4 at_g_UiRangeSliderDragScale; /* 004B0E58 g_UiRangeSliderDragScale */
+    uint32_t at_g_UiTooltipTextStyle; /* 004B0E4C g_UiTooltipTextStyle */
+    uint32_t at_g_UiScrollWheelDefaultStep; /* 004B0E50 g_UiScrollWheelDefaultStep */
+    uint32_t at_g_UiScrollWheelListStep; /* 004B0E54 g_UiScrollWheelListStep */
+    uint32_t at_g_UiRangeSliderDragScale; /* 004B0E58 g_UiRangeSliderDragScale */
     UiFrameDelayFrames at_g_UiTimedListActionDelayFrames; /* 004B0E5C g_UiTimedListActionDelayFrames */
-    undefined4 at_g_UiListActivationPulseFrames; /* 004B0E60 g_UiListActivationPulseFrames */
-    undefined4 at_g_UiResizableWindowTitleTextTopOffset; /* 004B0E64 g_UiResizableWindowTitleTextTopOffset */
-    undefined4 at_g_UiResizableWindowTitleTextStyle; /* 004B0E68 g_UiResizableWindowTitleTextStyle */
-    undefined4 at_g_UiWindowMoveHandleWidth; /* 004B0E6C g_UiWindowMoveHandleWidth */
-    sdword at_g_UiWindowResizeBorderThickness; /* 004B0E70 g_UiWindowResizeBorderThickness */
-    undefined4 at_g_UiTextStyleSelected; /* 004B0E74 g_UiTextStyleSelected */
-    undefined4 at_g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
-    undefined4 at_g_UiTextStyleDisabled; /* 004B0E7C g_UiTextStyleDisabled */
-    undefined4 at_g_UiTextStyleAlternate; /* 004B0E80 g_UiTextStyleAlternate */
-    dword at_g_UiTextStyleAlternate_rest[1]; /* beyond the declared type */
-    undefined4 at_g_UiWindowTitleTextStyle; /* 004B0E88 g_UiWindowTitleTextStyle */
-    sdword at_g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
-    undefined4 at_g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
-    dword at_g_UiListTextStyle_rest[1]; /* beyond the declared type */
-    undefined4 at_g_UiTextEditActiveTextStyle; /* 004B0E98 g_UiTextEditActiveTextStyle */
-    undefined4 at_g_UiTextEditInactiveTextStyle; /* 004B0E9C g_UiTextEditInactiveTextStyle */
-    undefined4 at_g_UiTextEditDisabledTextStyle; /* 004B0EA0 g_UiTextEditDisabledTextStyle */
-    undefined4 at_g_UiTextEditCaretBlinkPhaseStep; /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
-    undefined4 at_g_UiHorizontalGaugeLabelTopInset; /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
-    undefined4 at_g_UiHorizontalGaugeLabelTextStyle; /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
+    uint32_t at_g_UiListActivationPulseFrames; /* 004B0E60 g_UiListActivationPulseFrames */
+    uint32_t at_g_UiResizableWindowTitleTextTopOffset; /* 004B0E64 g_UiResizableWindowTitleTextTopOffset */
+    uint32_t at_g_UiResizableWindowTitleTextStyle; /* 004B0E68 g_UiResizableWindowTitleTextStyle */
+    uint32_t at_g_UiWindowMoveHandleWidth; /* 004B0E6C g_UiWindowMoveHandleWidth */
+    int32_t at_g_UiWindowResizeBorderThickness; /* 004B0E70 g_UiWindowResizeBorderThickness */
+    uint32_t at_g_UiTextStyleSelected; /* 004B0E74 g_UiTextStyleSelected */
+    uint32_t at_g_UiTextStyleNormal; /* 004B0E78 g_UiTextStyleNormal */
+    uint32_t at_g_UiTextStyleDisabled; /* 004B0E7C g_UiTextStyleDisabled */
+    uint32_t at_g_UiTextStyleAlternate; /* 004B0E80 g_UiTextStyleAlternate */
+    uint32_t at_g_UiTextStyleAlternate_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiWindowTitleTextStyle; /* 004B0E88 g_UiWindowTitleTextStyle */
+    int32_t at_g_UiWindowFrameInset; /* 004B0E8C g_UiWindowFrameInset */
+    uint32_t at_g_UiListTextStyle; /* 004B0E90 g_UiListTextStyle */
+    uint32_t at_g_UiListTextStyle_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiTextEditActiveTextStyle; /* 004B0E98 g_UiTextEditActiveTextStyle */
+    uint32_t at_g_UiTextEditInactiveTextStyle; /* 004B0E9C g_UiTextEditInactiveTextStyle */
+    uint32_t at_g_UiTextEditDisabledTextStyle; /* 004B0EA0 g_UiTextEditDisabledTextStyle */
+    uint32_t at_g_UiTextEditCaretBlinkPhaseStep; /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
+    uint32_t at_g_UiHorizontalGaugeLabelTopInset; /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
+    uint32_t at_g_UiHorizontalGaugeLabelTextStyle; /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
     UiRootStackActionHandlerPage2 at_g_UiRootStackActionHandlerPage; /* 004B0EB0 g_UiRootStackActionHandlerPage */
-    word at_u_engine_winclass_gfx_004b0eb8[20]; /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
-    word at_u_texte_winclass_str_004b0ee0[19]; /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
-    word at_u_engine_win_gfx_004b0f06[15]; /* 004B0F06 u_engine_win_gfx_004b0f06 */
+    uint16_t at_u_engine_winclass_gfx_004b0eb8[20]; /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
+    uint16_t at_u_texte_winclass_str_004b0ee0[19]; /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
+    uint16_t at_u_engine_win_gfx_004b0f06[15]; /* 004B0F06 u_engine_win_gfx_004b0f06 */
     UiPointerCaptureButton at_g_UiPointerCaptureButton; /* 004B0F24 g_UiPointerCaptureButton */
-    byte at_g_UiPointerCaptureButton_rest_tail[3];
+    uint8_t at_g_UiPointerCaptureButton_rest_tail[3];
     UiImageControl * at_g_UiImageControlHoverTarget; /* 004B0F28 g_UiImageControlHoverTarget */
-    dword at_g_UiImageControlHoverTarget_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiImageControlHoverTarget_rest[1]; /* beyond the declared type */
 } ImageData_004B0A20;
 extern ImageData_004B0A20 g_ImageData_004B0A20;
 
 /* original 0x004B1500-0x004B1510 */
 typedef struct ImageData_004B1500 {
-    byte at_gap_004B1500[16]; /* 004B1500 gap */
+    uint8_t at_gap_004B1500[16]; /* 004B1500 gap */
 } ImageData_004B1500;
 extern ImageData_004B1500 g_ImageData_004B1500;
 
 /* original 0x004B15C8-0x004B1620 */
 typedef struct ImageData_004B15C8 {
-    byte at_gap_004B15C8[8]; /* 004B15C8 gap */
+    uint8_t at_gap_004B15C8[8]; /* 004B15C8 gap */
     UiNodeVtable at_g_UiSpriteButtonControlVtable; /* 004B15D0 g_UiSpriteButtonControlVtable */
-    dword at_g_UiSpriteButtonControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiSpriteButtonControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B15C8;
 extern ImageData_004B15C8 g_ImageData_004B15C8;
 
 /* original 0x004B1D74-0x004B1DD0 */
 typedef struct ImageData_004B1D74 {
-    byte at_gap_004B1D74[12]; /* 004B1D74 gap */
+    uint8_t at_gap_004B1D74[12]; /* 004B1D74 gap */
     UiNodeVtable at_g_UiNodeVtable_004B1D80; /* 004B1D80 g_UiNodeVtable_004B1D80 */
-    dword at_g_UiNodeVtable_004B1D80_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_004B1D80_rest[2]; /* beyond the declared type */
 } ImageData_004B1D74;
 extern ImageData_004B1D74 g_ImageData_004B1D74;
 
 /* original 0x004B2734-0x004B2790 */
 typedef struct ImageData_004B2734 {
-    byte at_gap_004B2734[12]; /* 004B2734 gap */
+    uint8_t at_gap_004B2734[12]; /* 004B2734 gap */
     UiNodeVtable at_g_UiWindowControlVtable; /* 004B2740 g_UiWindowControlVtable */
-    dword at_g_UiWindowControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B2734;
 extern ImageData_004B2734 g_ImageData_004B2734;
 
 /* original 0x004B2CD8-0x004B2D30 */
 typedef struct ImageData_004B2CD8 {
-    byte at_gap_004B2CD8[8]; /* 004B2CD8 gap */
+    uint8_t at_gap_004B2CD8[8]; /* 004B2CD8 gap */
     UiNodeVtable at_g_UiNodeVtable_004B2CE0; /* 004B2CE0 g_UiNodeVtable_004B2CE0 */
-    dword at_g_UiNodeVtable_004B2CE0_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_004B2CE0_rest[2]; /* beyond the declared type */
 } ImageData_004B2CD8;
 extern ImageData_004B2CD8 g_ImageData_004B2CD8;
 
 /* original 0x004B33D0-0x004B3420 */
 typedef struct ImageData_004B33D0 {
     UiNodeVtable at_g_UiTitledWindowControlVtable; /* 004B33D0 g_UiTitledWindowControlVtable */
-    dword at_g_UiTitledWindowControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiTitledWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B33D0;
 extern ImageData_004B33D0 g_ImageData_004B33D0;
 
 /* original 0x004B3760-0x004B37C0 */
 typedef struct ImageData_004B3760 {
-    byte at_gap_004B3760[16]; /* 004B3760 gap */
+    uint8_t at_gap_004B3760[16]; /* 004B3760 gap */
     UiNodeVtable at_g_UiImagePanelControlVtable; /* 004B3770 g_UiImagePanelControlVtable */
-    dword at_g_UiImagePanelControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiImagePanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3760;
 extern ImageData_004B3760 g_ImageData_004B3760;
 
 /* original 0x004B3A48-0x004B3AA0 */
 typedef struct ImageData_004B3A48 {
-    byte at_gap_004B3A48[8]; /* 004B3A48 gap */
+    uint8_t at_gap_004B3A48[8]; /* 004B3A48 gap */
     UiNodeVtable at_g_UiFillPanelControlVtable; /* 004B3A50 g_UiFillPanelControlVtable */
-    dword at_g_UiFillPanelControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiFillPanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3A48;
 extern ImageData_004B3A48 g_ImageData_004B3A48;
 
 /* original 0x004B3C1C-0x004B3C80 */
 typedef struct ImageData_004B3C1C {
-    byte at_gap_004B3C1C[4]; /* 004B3C1C gap */
+    uint8_t at_gap_004B3C1C[4]; /* 004B3C1C gap */
     UiNodeVtable at_g_UiHorizontalGaugeControlVtable; /* 004B3C20 g_UiHorizontalGaugeControlVtable */
-    word at_g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
-    dword at_g_UiWindowPercentTextUtf16_rest[3]; /* beyond the declared type */
-    byte at_g_UiWindowPercentTextUtf16_rest_tail[2];
+    uint16_t at_g_UiWindowPercentTextUtf16[5]; /* 004B3C68 g_UiWindowPercentTextUtf16 */
+    uint32_t at_g_UiWindowPercentTextUtf16_rest[3]; /* beyond the declared type */
+    uint8_t at_g_UiWindowPercentTextUtf16_rest_tail[2];
 } ImageData_004B3C1C;
 extern ImageData_004B3C1C g_ImageData_004B3C1C;
 
 /* original 0x004B3EEC-0x004B3F40 */
 typedef struct ImageData_004B3EEC {
-    byte at_gap_004B3EEC[4]; /* 004B3EEC gap */
+    uint8_t at_gap_004B3EEC[4]; /* 004B3EEC gap */
     UiNodeVtable at_g_UiRangeSliderControlVtable; /* 004B3EF0 g_UiRangeSliderControlVtable */
-    dword at_g_UiRangeSliderControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiRangeSliderControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B3EEC;
 extern ImageData_004B3EEC g_ImageData_004B3EEC;
 
 /* original 0x004B4648-0x004B46A0 */
 typedef struct ImageData_004B4648 {
-    byte at_gap_004B4648[8]; /* 004B4648 gap */
+    uint8_t at_gap_004B4648[8]; /* 004B4648 gap */
     UiNodeVtable at_g_UiLayoutContainerControlVtable; /* 004B4650 g_UiLayoutContainerControlVtable */
-    dword at_g_UiLayoutContainerControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiLayoutContainerControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B4648;
 extern ImageData_004B4648 g_ImageData_004B4648;
 
 /* original 0x004B494C-0x004B49A0 */
 typedef struct ImageData_004B494C {
-    byte at_gap_004B494C[4]; /* 004B494C gap */
+    uint8_t at_gap_004B494C[4]; /* 004B494C gap */
     UiNodeVtable at_g_UiPanelControlVtable; /* 004B4950 g_UiPanelControlVtable */
-    dword at_g_UiPanelControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiPanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B494C;
 extern ImageData_004B494C g_ImageData_004B494C;
 
 /* original 0x004B4CB8-0x004B4D10 */
 typedef struct ImageData_004B4CB8 {
-    byte at_gap_004B4CB8[8]; /* 004B4CB8 gap */
+    uint8_t at_gap_004B4CB8[8]; /* 004B4CB8 gap */
     UiNodeVtable at_g_UiResizableWindowControlVtable; /* 004B4CC0 g_UiResizableWindowControlVtable */
-    dword at_g_UiResizableWindowControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiResizableWindowControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B4CB8;
 extern ImageData_004B4CB8 g_ImageData_004B4CB8;
 
 /* original 0x004B5890-0x004B58F0 */
 typedef struct ImageData_004B5890 {
-    byte at_gap_004B5890[16]; /* 004B5890 gap */
+    uint8_t at_gap_004B5890[16]; /* 004B5890 gap */
     UiNodeVtable at_g_UiNumericTextEditControlVtable; /* 004B58A0 g_UiNumericTextEditControlVtable */
-    dword at_g_UiNumericTextEditControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNumericTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B5890;
 extern ImageData_004B5890 g_ImageData_004B5890;
 
 /* original 0x004B67F4-0x004B6850 */
 typedef struct ImageData_004B67F4 {
-    byte at_gap_004B67F4[12]; /* 004B67F4 gap */
+    uint8_t at_gap_004B67F4[12]; /* 004B67F4 gap */
     UiNodeVtable at_g_UiPathTextEditControlVtable; /* 004B6800 g_UiPathTextEditControlVtable */
-    dword at_g_UiPathTextEditControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiPathTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B67F4;
 extern ImageData_004B67F4 g_ImageData_004B67F4;
 
 /* original 0x004B7048-0x004B70A0 */
 typedef struct ImageData_004B7048 {
-    byte at_gap_004B7048[8]; /* 004B7048 gap */
+    uint8_t at_gap_004B7048[8]; /* 004B7048 gap */
     UiNodeVtable at_g_UiRequiredTextEditControlVtable; /* 004B7050 g_UiRequiredTextEditControlVtable */
-    dword at_g_UiRequiredTextEditControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiRequiredTextEditControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B7048;
 extern ImageData_004B7048 g_ImageData_004B7048;
 
 /* original 0x004B7914-0x004B7970 */
 typedef struct ImageData_004B7914 {
-    byte at_gap_004B7914[12]; /* 004B7914 gap */
+    uint8_t at_gap_004B7914[12]; /* 004B7914 gap */
     UiNodeVtable at_g_UiScrollableControlVtable; /* 004B7920 g_UiScrollableControlVtable */
-    dword at_g_UiScrollableControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiScrollableControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B7914;
 extern ImageData_004B7914 g_ImageData_004B7914;
 
 /* original 0x004B9530-0x004B9580 */
 typedef struct ImageData_004B9530 {
     UiNodeVtable at_g_UiFocusProxyControlVtable; /* 004B9530 g_UiFocusProxyControlVtable */
-    dword at_g_UiFocusProxyControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiFocusProxyControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B9530;
 extern ImageData_004B9530 g_ImageData_004B9530;
 
 /* original 0x004B9E38-0x004B9E90 */
 typedef struct ImageData_004B9E38 {
-    byte at_gap_004B9E38[8]; /* 004B9E38 gap */
+    uint8_t at_gap_004B9E38[8]; /* 004B9E38 gap */
     UiNodeVtable at_g_UiTextListControlVtable; /* 004B9E40 g_UiTextListControlVtable */
-    dword at_g_UiTextListControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiTextListControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004B9E38;
 extern ImageData_004B9E38 g_ImageData_004B9E38;
 
 /* original 0x004BA58C-0x004BADE0 */
 typedef struct ImageData_004BA58C {
-    byte at_gap_004BA58C[4]; /* 004BA58C gap */
+    uint8_t at_gap_004BA58C[4]; /* 004BA58C gap */
     UiNodeVtable at_g_UiListControlVtable; /* 004BA590 g_UiListControlVtable */
-    undefined at_g_UiPointerListExpandedLeftTextUtf16; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
-    dword at_g_UiPointerListExpandedLeftTextUtf16_rest[255]; /* beyond the declared type */
-    byte at_g_UiPointerListExpandedLeftTextUtf16_rest_tail[3];
-    undefined at_g_UiPointerListExpandedRightTextUtf16; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16 */
-    dword at_g_UiPointerListExpandedRightTextUtf16_rest[257]; /* beyond the declared type */
-    byte at_g_UiPointerListExpandedRightTextUtf16_rest_tail[3];
+    uint8_t at_g_UiPointerListExpandedLeftTextUtf16; /* 004BA5D8 g_UiPointerListExpandedLeftTextUtf16 */
+    uint32_t at_g_UiPointerListExpandedLeftTextUtf16_rest[255]; /* beyond the declared type */
+    uint8_t at_g_UiPointerListExpandedLeftTextUtf16_rest_tail[3];
+    uint8_t at_g_UiPointerListExpandedRightTextUtf16; /* 004BA9D8 g_UiPointerListExpandedRightTextUtf16 */
+    uint32_t at_g_UiPointerListExpandedRightTextUtf16_rest[257]; /* beyond the declared type */
+    uint8_t at_g_UiPointerListExpandedRightTextUtf16_rest_tail[3];
 } ImageData_004BA58C;
 extern ImageData_004BA58C g_ImageData_004BA58C;
 
 /* original 0x004BB988-0x004BB9E0 */
 typedef struct ImageData_004BB988 {
-    byte at_gap_004BB988[8]; /* 004BB988 gap */
+    uint8_t at_gap_004BB988[8]; /* 004BB988 gap */
     UiNodeVtable at_g_UiTimedListControlVtable; /* 004BB990 g_UiTimedListControlVtable */
-    dword at_g_UiTimedListControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiTimedListControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004BB988;
 extern ImageData_004BB988 g_ImageData_004BB988;
 
 /* original 0x004BC404-0x004BC460 */
 typedef struct ImageData_004BC404 {
-    byte at_gap_004BC404[12]; /* 004BC404 gap */
+    uint8_t at_gap_004BC404[12]; /* 004BC404 gap */
     UiNodeVtable at_g_UiListOffsetControlVtable; /* 004BC410 g_UiListOffsetControlVtable */
-    dword at_g_UiListOffsetControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiListOffsetControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004BC404;
 extern ImageData_004BC404 g_ImageData_004BC404;
 
 /* original 0x004BC564-0x004BC5C0 */
 typedef struct ImageData_004BC564 {
-    byte at_gap_004BC564[12]; /* 004BC564 gap */
+    uint8_t at_gap_004BC564[12]; /* 004BC564 gap */
     UiNodeVtable at_g_UiNodeVtable_004BC570; /* 004BC570 g_UiNodeVtable_004BC570 */
-    dword at_g_UiNodeVtable_004BC570_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_004BC570_rest[2]; /* beyond the declared type */
 } ImageData_004BC564;
 extern ImageData_004BC564 g_ImageData_004BC564;
 
 /* original 0x004BCC20-0x004BCC80 */
 typedef struct ImageData_004BCC20 {
-    byte at_gap_004BCC20[16]; /* 004BCC20 gap */
+    uint8_t at_gap_004BCC20[16]; /* 004BCC20 gap */
     UiNodeVtable at_g_UiNineSlicePanelControlVtable; /* 004BCC30 g_UiNineSlicePanelControlVtable */
-    dword at_g_UiNineSlicePanelControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNineSlicePanelControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_004BCC20;
 extern ImageData_004BCC20 g_ImageData_004BCC20;
 
 /* original 0x004BCF14-0x004BCF70 */
 typedef struct ImageData_004BCF14 {
-    byte at_gap_004BCF14[12]; /* 004BCF14 gap */
+    uint8_t at_gap_004BCF14[12]; /* 004BCF14 gap */
     GraphicsFixedMatrix3x4 at_g_GraphicsDirectionInverseTransform; /* 004BCF20 g_GraphicsDirectionInverseTransform */
     GraphicsFixedVec3 at_g_GraphicsDirectionWorld; /* 004BCF50 g_GraphicsDirectionWorld */
     GraphicsFixedVec3 at_g_GraphicsDirectionLocal; /* 004BCF5C g_GraphicsDirectionLocal */
-    undefined4 at_g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
-    dword at_g_GraphicsIntensityClampTableBase_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GraphicsIntensityClampTableBase; /* 004BCF68 g_GraphicsIntensityClampTableBase */
+    uint32_t at_g_GraphicsIntensityClampTableBase_rest[1]; /* beyond the declared type */
 } ImageData_004BCF14;
 extern ImageData_004BCF14 g_ImageData_004BCF14;
 
 /* original 0x004BD2C4-0x004BD310 */
 typedef struct ImageData_004BD2C4 {
-    byte at_gap_004BD2C4[28]; /* 004BD2C4 gap */
-    sdword at_g_ModelBoundsMinimumX; /* 004BD2E0 g_ModelBoundsMinimumX */
-    sdword at_g_ModelBoundsMaximumX; /* 004BD2E4 g_ModelBoundsMaximumX */
-    sdword at_g_ModelBoundsMinimumY; /* 004BD2E8 g_ModelBoundsMinimumY */
-    sdword at_g_ModelBoundsMaximumY; /* 004BD2EC g_ModelBoundsMaximumY */
-    sdword at_g_ModelBoundsMinimumZ; /* 004BD2F0 g_ModelBoundsMinimumZ */
-    sdword at_g_ModelBoundsMaximumZ; /* 004BD2F4 g_ModelBoundsMaximumZ */
-    sdword at_g_ModelBoundsTransformedPointX; /* 004BD2F8 g_ModelBoundsTransformedPointX */
-    sdword at_g_ModelBoundsTransformedPointY; /* 004BD2FC g_ModelBoundsTransformedPointY */
-    sdword at_g_ModelBoundsTransformedPointZ; /* 004BD300 g_ModelBoundsTransformedPointZ */
-    dword at_g_ModelBoundsTransformedPointZ_rest[3]; /* beyond the declared type */
+    uint8_t at_gap_004BD2C4[28]; /* 004BD2C4 gap */
+    int32_t at_g_ModelBoundsMinimumX; /* 004BD2E0 g_ModelBoundsMinimumX */
+    int32_t at_g_ModelBoundsMaximumX; /* 004BD2E4 g_ModelBoundsMaximumX */
+    int32_t at_g_ModelBoundsMinimumY; /* 004BD2E8 g_ModelBoundsMinimumY */
+    int32_t at_g_ModelBoundsMaximumY; /* 004BD2EC g_ModelBoundsMaximumY */
+    int32_t at_g_ModelBoundsMinimumZ; /* 004BD2F0 g_ModelBoundsMinimumZ */
+    int32_t at_g_ModelBoundsMaximumZ; /* 004BD2F4 g_ModelBoundsMaximumZ */
+    int32_t at_g_ModelBoundsTransformedPointX; /* 004BD2F8 g_ModelBoundsTransformedPointX */
+    int32_t at_g_ModelBoundsTransformedPointY; /* 004BD2FC g_ModelBoundsTransformedPointY */
+    int32_t at_g_ModelBoundsTransformedPointZ; /* 004BD300 g_ModelBoundsTransformedPointZ */
+    uint32_t at_g_ModelBoundsTransformedPointZ_rest[3]; /* beyond the declared type */
 } ImageData_004BD2C4;
 extern ImageData_004BD2C4 g_ImageData_004BD2C4;
 
 /* original 0x004BD440-0x004BD4B0 */
 typedef struct ImageData_004BD440 {
-    byte at_gap_004BD440[16]; /* 004BD440 gap */
-    undefined at_g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
-    dword at_g_ModelViewCompositeTransform_rest[11]; /* beyond the declared type */
-    byte at_g_ModelViewCompositeTransform_rest_tail[3];
-    undefined at_g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
-    dword at_g_ModelViewDirectionLocal_rest[2]; /* beyond the declared type */
-    byte at_g_ModelViewDirectionLocal_rest_tail[3];
-    undefined at_g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
-    dword at_g_ModelViewDirectionWorld_rest[2]; /* beyond the declared type */
-    byte at_g_ModelViewDirectionWorld_rest_tail[3];
-    undefined at_g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
-    dword at_g_ModelAuxiliaryForwardDirectionLocal_rest[5]; /* beyond the declared type */
-    byte at_g_ModelAuxiliaryForwardDirectionLocal_rest_tail[3];
+    uint8_t at_gap_004BD440[16]; /* 004BD440 gap */
+    uint8_t at_g_ModelViewCompositeTransform; /* 004BD450 g_ModelViewCompositeTransform */
+    uint32_t at_g_ModelViewCompositeTransform_rest[11]; /* beyond the declared type */
+    uint8_t at_g_ModelViewCompositeTransform_rest_tail[3];
+    uint8_t at_g_ModelViewDirectionLocal; /* 004BD480 g_ModelViewDirectionLocal */
+    uint32_t at_g_ModelViewDirectionLocal_rest[2]; /* beyond the declared type */
+    uint8_t at_g_ModelViewDirectionLocal_rest_tail[3];
+    uint8_t at_g_ModelViewDirectionWorld; /* 004BD48C g_ModelViewDirectionWorld */
+    uint32_t at_g_ModelViewDirectionWorld_rest[2]; /* beyond the declared type */
+    uint8_t at_g_ModelViewDirectionWorld_rest_tail[3];
+    uint8_t at_g_ModelAuxiliaryForwardDirectionLocal; /* 004BD498 g_ModelAuxiliaryForwardDirectionLocal */
+    uint32_t at_g_ModelAuxiliaryForwardDirectionLocal_rest[5]; /* beyond the declared type */
+    uint8_t at_g_ModelAuxiliaryForwardDirectionLocal_rest_tail[3];
 } ImageData_004BD440;
 extern ImageData_004BD440 g_ImageData_004BD440;
 
 /* original 0x004BD880-0x004BD8D0 */
 typedef struct ImageData_004BD880 {
-    byte at_gap_004BD880[16]; /* 004BD880 gap */
+    uint8_t at_gap_004BD880[16]; /* 004BD880 gap */
     ArmyPlacementContactCallbackTable5 at_g_ArmyPlacementContactKindDispatchTable; /* 004BD890 g_ArmyPlacementContactKindDispatchTable */
-    dword at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
-    undefined4 at_g_ModelCullViewRelativeX; /* 004BD8B0 g_ModelCullViewRelativeX */
-    undefined4 at_g_ModelCullViewRelativeY; /* 004BD8B4 g_ModelCullViewRelativeY */
-    undefined4 at_g_ModelCullViewRelativeZ; /* 004BD8B8 g_ModelCullViewRelativeZ */
-    dword at_g_ModelCullViewRelativeZ_rest[3]; /* beyond the declared type */
+    uint32_t at_g_ArmyPlacementContactKindDispatchTable_rest[3]; /* beyond the declared type */
+    uint32_t at_g_ModelCullViewRelativeX; /* 004BD8B0 g_ModelCullViewRelativeX */
+    uint32_t at_g_ModelCullViewRelativeY; /* 004BD8B4 g_ModelCullViewRelativeY */
+    uint32_t at_g_ModelCullViewRelativeZ; /* 004BD8B8 g_ModelCullViewRelativeZ */
+    uint32_t at_g_ModelCullViewRelativeZ_rest[3]; /* beyond the declared type */
     SpriteAssetHeader * at_g_SpriteAssetRegistryHead; /* 004BD8C8 g_SpriteAssetRegistryHead */
-    dword at_g_SpriteAssetRegistryHead_rest[1]; /* beyond the declared type */
+    uint32_t at_g_SpriteAssetRegistryHead_rest[1]; /* beyond the declared type */
 } ImageData_004BD880;
 extern ImageData_004BD880 g_ImageData_004BD880;
 
 /* original 0x004BEA6C-0x004BEB20 */
 typedef struct ImageData_004BEA6C {
-    byte at_gap_004BEA6C[4]; /* 004BEA6C gap */
-    undefined at_g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
-    dword at_g_ModelTransformScratchMatrix_rest[8]; /* beyond the declared type */
-    byte at_g_ModelTransformScratchMatrix_rest_tail[3];
-    sdword at_g_ModelTransformTranslationX; /* 004BEA94 g_ModelTransformTranslationX */
-    sdword at_g_ModelTransformTranslationY; /* 004BEA98 g_ModelTransformTranslationY */
-    sdword at_g_ModelTransformTranslationZ; /* 004BEA9C g_ModelTransformTranslationZ */
-    undefined at_g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
-    dword at_g_FixedTransformInputRotationScratch_rest[11]; /* beyond the declared type */
-    byte at_g_FixedTransformInputRotationScratch_rest_tail[3];
-    undefined at_g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
-    dword at_g_FixedTransformComposedRotationScratch_rest[11]; /* beyond the declared type */
-    byte at_g_FixedTransformComposedRotationScratch_rest_tail[3];
-    sdword at_g_ModelTransformInputX; /* 004BEB00 g_ModelTransformInputX */
-    sdword at_g_ModelTransformInputY; /* 004BEB04 g_ModelTransformInputY */
-    sdword at_g_ModelTransformInputZ; /* 004BEB08 g_ModelTransformInputZ */
+    uint8_t at_gap_004BEA6C[4]; /* 004BEA6C gap */
+    uint8_t at_g_ModelTransformScratchMatrix; /* 004BEA70 g_ModelTransformScratchMatrix */
+    uint32_t at_g_ModelTransformScratchMatrix_rest[8]; /* beyond the declared type */
+    uint8_t at_g_ModelTransformScratchMatrix_rest_tail[3];
+    int32_t at_g_ModelTransformTranslationX; /* 004BEA94 g_ModelTransformTranslationX */
+    int32_t at_g_ModelTransformTranslationY; /* 004BEA98 g_ModelTransformTranslationY */
+    int32_t at_g_ModelTransformTranslationZ; /* 004BEA9C g_ModelTransformTranslationZ */
+    uint8_t at_g_FixedTransformInputRotationScratch; /* 004BEAA0 g_FixedTransformInputRotationScratch */
+    uint32_t at_g_FixedTransformInputRotationScratch_rest[11]; /* beyond the declared type */
+    uint8_t at_g_FixedTransformInputRotationScratch_rest_tail[3];
+    uint8_t at_g_FixedTransformComposedRotationScratch; /* 004BEAD0 g_FixedTransformComposedRotationScratch */
+    uint32_t at_g_FixedTransformComposedRotationScratch_rest[11]; /* beyond the declared type */
+    uint8_t at_g_FixedTransformComposedRotationScratch_rest_tail[3];
+    int32_t at_g_ModelTransformInputX; /* 004BEB00 g_ModelTransformInputX */
+    int32_t at_g_ModelTransformInputY; /* 004BEB04 g_ModelTransformInputY */
+    int32_t at_g_ModelTransformInputZ; /* 004BEB08 g_ModelTransformInputZ */
     Q12 at_g_ModelTransformOutputX; /* 004BEB0C g_ModelTransformOutputX */
     Q12 at_g_ModelTransformOutputY; /* 004BEB10 g_ModelTransformOutputY */
     Q12 at_g_ModelTransformOutputZ; /* 004BEB14 g_ModelTransformOutputZ */
-    dword at_g_ModelTransformOutputZ_rest[2]; /* beyond the declared type */
+    uint32_t at_g_ModelTransformOutputZ_rest[2]; /* beyond the declared type */
 } ImageData_004BEA6C;
 extern ImageData_004BEA6C g_ImageData_004BEA6C;
 
 /* original 0x004BED4C-0x004CC710 */
 typedef struct ImageData_004BED4C {
-    byte at_gap_004BED4C[3]; /* 004BED4C gap */
-    byte at_DAT_004bed4f[1]; /* 004BED4F DAT_004bed4f */
+    uint8_t at_gap_004BED4C[3]; /* 004BED4C gap */
+    uint8_t at_DAT_004bed4f[1]; /* 004BED4F DAT_004bed4f */
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingRuntimeRecords[256]; /* 004BED50 g_GraphicsShadingRuntimeRecords */
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingCompactRecords[256]; /* 004C2D50 g_GraphicsShadingCompactRecords */
     GraphicsShadingRecordCount at_g_GraphicsShadingCompactRecordCount; /* 004C6D50 g_GraphicsShadingCompactRecordCount */
     GraphicsShadingRuntimeRecord at_g_GraphicsShadingNearbyRecords[256]; /* 004C6D54 g_GraphicsShadingNearbyRecords */
     GraphicsShadingRecordCount at_g_GraphicsShadingNearbyRecordCount; /* 004CAD54 g_GraphicsShadingNearbyRecordCount */
-    dword at_g_GraphicsShadingNearbyRecordCount_rest[274]; /* beyond the declared type */
+    uint32_t at_g_GraphicsShadingNearbyRecordCount_rest[274]; /* beyond the declared type */
     SoftwareBgraWordLanes at_g_ModelDistanceAttenuationMmx[546]; /* 004CB1A0 g_ModelDistanceAttenuationMmx */
-    undefined at_g_ModelLightingScaleMmxMultiplierTable; /* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable */
-    dword at_g_ModelLightingScaleMmxMultiplierTable_rest[273]; /* beyond the declared type */
-    byte at_g_ModelLightingScaleMmxMultiplierTable_rest_tail[3];
+    uint8_t at_g_ModelLightingScaleMmxMultiplierTable; /* 004CC2B0 g_ModelLightingScaleMmxMultiplierTable */
+    uint32_t at_g_ModelLightingScaleMmxMultiplierTable_rest[273]; /* beyond the declared type */
+    uint8_t at_g_ModelLightingScaleMmxMultiplierTable_rest_tail[3];
     GraphicsFixedVec3 at_g_ModelLightingVertexToLightVectorScratch; /* 004CC6F8 g_ModelLightingVertexToLightVectorScratch */
     GraphicsFixedVec3 at_g_ModelLightingTransformedSurfaceNormalScratch; /* 004CC704 g_ModelLightingTransformedSurfaceNormalScratch */
 } ImageData_004BED4C;
@@ -1127,55 +1127,55 @@ extern ImageData_004BED4C g_ImageData_004BED4C;
 
 /* original 0x004CCDE8-0x004CCFF0 */
 typedef struct ImageData_004CCDE8 {
-    byte at_gap_004CCDE8[24]; /* 004CCDE8 gap */
-    dword at_g_GraphicsShadingTextureDimension; /* 004CCE00 g_GraphicsShadingTextureDimension */
-    undefined4 at_g_GraphicsShadingGridHalfSize; /* 004CCE04 g_GraphicsShadingGridHalfSize */
-    byte * at_g_GraphicsShadingGeneratedTexturePixelCursor; /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
-    dword at_g_GraphicsShadingGeneratedTextureTileX; /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
-    dword at_g_GraphicsShadingGeneratedTextureTileY; /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
+    uint8_t at_gap_004CCDE8[24]; /* 004CCDE8 gap */
+    uint32_t at_g_GraphicsShadingTextureDimension; /* 004CCE00 g_GraphicsShadingTextureDimension */
+    uint32_t at_g_GraphicsShadingGridHalfSize; /* 004CCE04 g_GraphicsShadingGridHalfSize */
+    uint8_t * at_g_GraphicsShadingGeneratedTexturePixelCursor; /* 004CCE08 g_GraphicsShadingGeneratedTexturePixelCursor */
+    uint32_t at_g_GraphicsShadingGeneratedTextureTileX; /* 004CCE0C g_GraphicsShadingGeneratedTextureTileX */
+    uint32_t at_g_GraphicsShadingGeneratedTextureTileY; /* 004CCE10 g_GraphicsShadingGeneratedTextureTileY */
     GraphicsSubresourceIndex at_g_GraphicsShadingGeneratedTextureSubresourceIndex; /* 004CCE14 g_GraphicsShadingGeneratedTextureSubresourceIndex */
-    dword at_g_GraphicsShadingSubresourceCount; /* 004CCE18 g_GraphicsShadingSubresourceCount */
-    dword at_g_GraphicsShadingGeneratedTextureTileXQ20; /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
-    dword at_g_GraphicsShadingGeneratedTextureTileYQ20; /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
-    dword at_g_GraphicsShadingGridStepQ20; /* 004CCE24 g_GraphicsShadingGridStepQ20 */
-    sdword at_g_GraphicsShadingGridStepQ20Current; /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
+    uint32_t at_g_GraphicsShadingSubresourceCount; /* 004CCE18 g_GraphicsShadingSubresourceCount */
+    uint32_t at_g_GraphicsShadingGeneratedTextureTileXQ20; /* 004CCE1C g_GraphicsShadingGeneratedTextureTileXQ20 */
+    uint32_t at_g_GraphicsShadingGeneratedTextureTileYQ20; /* 004CCE20 g_GraphicsShadingGeneratedTextureTileYQ20 */
+    uint32_t at_g_GraphicsShadingGridStepQ20; /* 004CCE24 g_GraphicsShadingGridStepQ20 */
+    int32_t at_g_GraphicsShadingGridStepQ20Current; /* 004CCE28 g_GraphicsShadingGridStepQ20Current */
     GraphicsTextureSourceAsset * at_g_GraphicsShadingGeneratedAsset; /* 004CCE2C g_GraphicsShadingGeneratedAsset */
     void * at_g_GraphicsShadingGridScratch; /* 004CCE30 g_GraphicsShadingGridScratch */
     pointer at_g_GraphicsShadingGridScratchInterior; /* 004CCE34 g_GraphicsShadingGridScratchInterior */
     GraphicsTextureSet * at_g_GraphicsShadingTextureSet; /* 004CCE38 g_GraphicsShadingTextureSet */
-    dword at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount; /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
-    sdword at_g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
-    sdword at_g_GraphicsShadingNegativeGridOriginQ12; /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
+    uint32_t at_g_GraphicsShadingGeneratedTextureCompletedTraversalCount; /* 004CCE3C g_GraphicsShadingGeneratedTextureCompletedTraversalCount */
+    int32_t at_g_GraphicsShadingPositiveGridOriginQ12; /* 004CCE40 g_GraphicsShadingPositiveGridOriginQ12 */
+    int32_t at_g_GraphicsShadingNegativeGridOriginQ12; /* 004CCE44 g_GraphicsShadingNegativeGridOriginQ12 */
     GeneratedTextureScratchRuntime1A8 at_g_GeneratedTextureScratchRuntime; /* 004CCE48 g_GeneratedTextureScratchRuntime */
 } ImageData_004CCDE8;
 extern ImageData_004CCDE8 g_ImageData_004CCDE8;
 
 /* original 0x004CD3C0-0x004CD3D0 */
 typedef struct ImageData_004CD3C0 {
-    byte at_gap_004CD3C0[16]; /* 004CD3C0 gap */
+    uint8_t at_gap_004CD3C0[16]; /* 004CD3C0 gap */
 } ImageData_004CD3C0;
 extern ImageData_004CD3C0 g_ImageData_004CD3C0;
 
 /* original 0x004D09F4-0x004D0A10 */
 typedef struct ImageData_004D09F4 {
-    byte at_gap_004D09F4[12]; /* 004D09F4 gap */
+    uint8_t at_gap_004D09F4[12]; /* 004D09F4 gap */
     GraphicsPrimitiveQueue * at_g_PrimitiveQueueStorage; /* 004D0A00 g_PrimitiveQueueStorage */
-    dword at_g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
-    dword at_g_PrimitiveQueuePoolCapacity_rest[2]; /* beyond the declared type */
+    uint32_t at_g_PrimitiveQueuePoolCapacity; /* 004D0A04 g_PrimitiveQueuePoolCapacity */
+    uint32_t at_g_PrimitiveQueuePoolCapacity_rest[2]; /* beyond the declared type */
 } ImageData_004D09F4;
 extern ImageData_004D09F4 g_ImageData_004D09F4;
 
 /* original 0x004D11B8-0x004D1560 */
 typedef struct ImageData_004D11B8 {
-    byte at_gap_004D11B8[8]; /* 004D11B8 gap */
+    uint8_t at_gap_004D11B8[8]; /* 004D11B8 gap */
     SoftwareRasterScanState at_g_SoftwareRasterScanState; /* 004D11C0 g_SoftwareRasterScanState */
-    dword at_g_SoftwareDepthRowStrideBytes; /* 004D1234 g_SoftwareDepthRowStrideBytes */
-    sdword * at_g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
+    uint32_t at_g_SoftwareDepthRowStrideBytes; /* 004D1234 g_SoftwareDepthRowStrideBytes */
+    int32_t * at_g_SoftwareDepthBuffer; /* 004D1238 g_SoftwareDepthBuffer */
     void * at_g_SoftwareAuxiliaryTargetBase; /* 004D123C g_SoftwareAuxiliaryTargetBase */
-    sdword at_g_SoftwareDepthEpoch; /* 004D1240 g_SoftwareDepthEpoch */
+    int32_t at_g_SoftwareDepthEpoch; /* 004D1240 g_SoftwareDepthEpoch */
     SoftwareDisplayModeHookProc * at_g_SoftwarePreviousDisplayModeHook; /* 004D1244 g_SoftwarePreviousDisplayModeHook */
     SoftwareDrawQueueProc * at_g_SoftwareDrawQueueProc; /* 004D1248 g_SoftwareDrawQueueProc */
-    dword at_g_SoftwareDrawQueueProc_rest[5]; /* beyond the declared type */
+    uint32_t at_g_SoftwareDrawQueueProc_rest[5]; /* beyond the declared type */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlers16Bit[64]; /* 004D1260 g_SoftwareRasterHandlers16Bit */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersNon16Bit[64]; /* 004D1360 g_SoftwareRasterHandlersNon16Bit */
     SoftwareRasterHandler * at_g_SoftwareRasterHandlersAuxiliary[64]; /* 004D1460 g_SoftwareRasterHandlersAuxiliary */
@@ -1184,120 +1184,120 @@ extern ImageData_004D11B8 g_ImageData_004D11B8;
 
 /* original 0x004FEA24-0x004FEA50 */
 typedef struct ImageData_004FEA24 {
-    byte at_gap_004FEA24[12]; /* 004FEA24 gap */
+    uint8_t at_gap_004FEA24[12]; /* 004FEA24 gap */
     FieldGridInterpolationCallbackTable5 at_g_FieldGridInterpolationCallbacks5; /* 004FEA30 g_FieldGridInterpolationCallbacks5 */
-    dword at_g_FieldGridInterpolationCallbacks5_rest[3]; /* beyond the declared type */
+    uint32_t at_g_FieldGridInterpolationCallbacks5_rest[3]; /* beyond the declared type */
 } ImageData_004FEA24;
 extern ImageData_004FEA24 g_ImageData_004FEA24;
 
 /* original 0x004FFC78-0x005004A0 */
 typedef struct ImageData_004FFC78 {
-    byte at_gap_004FFC78[8]; /* 004FFC78 gap */
+    uint8_t at_gap_004FFC78[8]; /* 004FFC78 gap */
     TerrainProjectedRowSpan at_g_TerrainProjectedRowSpans[260]; /* 004FFC80 g_TerrainProjectedRowSpans */
 } ImageData_004FFC78;
 extern ImageData_004FFC78 g_ImageData_004FFC78;
 
 /* original 0x00501184-0x00503B10 */
 typedef struct ImageData_00501184 {
-    byte at_gap_00501184[12]; /* 00501184 gap */
+    uint8_t at_gap_00501184[12]; /* 00501184 gap */
     PackedArgb32 at_g_TerrainLightingColorRampArgb256[256]; /* 00501190 g_TerrainLightingColorRampArgb256 */
     PackedArgb32 at_g_TerrainDirectionalLightColorLut[257]; /* 00501590 g_TerrainDirectionalLightColorLut */
-    undefined4 at_g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
-    undefined4 at_g_TerrainLightDirectionX; /* 00501998 g_TerrainLightDirectionX */
-    undefined4 at_g_TerrainLightDirectionY; /* 0050199C g_TerrainLightDirectionY */
-    undefined4 at_g_TerrainLightDirectionZ; /* 005019A0 g_TerrainLightDirectionZ */
-    byte * at_g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
+    uint32_t at_g_TerrainDirectionalLightSecondaryColor; /* 00501994 g_TerrainDirectionalLightSecondaryColor */
+    uint32_t at_g_TerrainLightDirectionX; /* 00501998 g_TerrainLightDirectionX */
+    uint32_t at_g_TerrainLightDirectionY; /* 0050199C g_TerrainLightDirectionY */
+    uint32_t at_g_TerrainLightDirectionZ; /* 005019A0 g_TerrainLightDirectionZ */
+    uint8_t * at_g_TerrainByteClampLookup; /* 005019A4 g_TerrainByteClampLookup */
     TerrainDirectionRecord at_g_TerrainDirectionRecordTable256[256]; /* 005019A8 g_TerrainDirectionRecordTable256 */
-    dword at_g_TerrainDirectionRecordTable256_rest[13]; /* beyond the declared type */
+    uint32_t at_g_TerrainDirectionRecordTable256_rest[13]; /* beyond the declared type */
     GraphicsTextureSet * at_g_TerrainMaterialTextureSets[26]; /* 005039DC g_TerrainMaterialTextureSets */
-    dword at_g_TerrainMaterialTextureSets_rest[12]; /* beyond the declared type */
+    uint32_t at_g_TerrainMaterialTextureSets_rest[12]; /* beyond the declared type */
     GraphicsTextureSet * at_g_TerrainPrimaryTextureSet; /* 00503A74 g_TerrainPrimaryTextureSet */
     void * at_g_TerrainSoilPacketTablePayload; /* 00503A78 g_TerrainSoilPacketTablePayload */
     void * at_g_TerrainSurfacePacketTablePayload; /* 00503A7C g_TerrainSurfacePacketTablePayload */
     GraphicsPaletteAsset * at_g_TerrainSecondaryPalette; /* 00503A80 g_TerrainSecondaryPalette */
     GraphicsPaletteAsset * at_g_TerrainPrimaryPalette; /* 00503A84 g_TerrainPrimaryPalette */
-    dword at_g_UiCommandModeGColorVariantFlags; /* 00503A88 g_UiCommandModeGColorVariantFlags */
-    dword at_g_UiCommandModeGColorVariantLimit; /* 00503A8C g_UiCommandModeGColorVariantLimit */
+    uint32_t at_g_UiCommandModeGColorVariantFlags; /* 00503A88 g_UiCommandModeGColorVariantFlags */
+    uint32_t at_g_UiCommandModeGColorVariantLimit; /* 00503A8C g_UiCommandModeGColorVariantLimit */
     TerrainMaterialSuffixEntry at_g_TerrainMaterialTextureSuffixLettersUtf16AtoZ[26]; /* 00503A90 g_TerrainMaterialTextureSuffixLettersUtf16AtoZ */
-    sdword at_g_TerrainHeightBandMaximumDelta; /* 00503AF8 g_TerrainHeightBandMaximumDelta */
-    sdword at_g_TerrainHeightBandMinimumDelta; /* 00503AFC g_TerrainHeightBandMinimumDelta */
-    sdword at_g_TerrainAuxHeightMinimum; /* 00503B00 g_TerrainAuxHeightMinimum */
-    dword at_g_TerrainAuxHeightMinimum_rest[3]; /* beyond the declared type */
+    int32_t at_g_TerrainHeightBandMaximumDelta; /* 00503AF8 g_TerrainHeightBandMaximumDelta */
+    int32_t at_g_TerrainHeightBandMinimumDelta; /* 00503AFC g_TerrainHeightBandMinimumDelta */
+    int32_t at_g_TerrainAuxHeightMinimum; /* 00503B00 g_TerrainAuxHeightMinimum */
+    uint32_t at_g_TerrainAuxHeightMinimum_rest[3]; /* beyond the declared type */
 } ImageData_00501184;
 extern ImageData_00501184 g_ImageData_00501184;
 
 /* original 0x00505F98-0x005063B0 */
 typedef struct ImageData_00505F98 {
-    byte at_gap_00505F98[8]; /* 00505F98 gap */
-    undefined at_g_TerrainHeightDeltaScaleByStepQ12; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
-    dword at_g_TerrainHeightDeltaScaleByStepQ12_rest[255]; /* beyond the declared type */
-    byte at_g_TerrainHeightDeltaScaleByStepQ12_rest_tail[3];
-    undefined4 at_g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
-    undefined4 at_g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
+    uint8_t at_gap_00505F98[8]; /* 00505F98 gap */
+    uint8_t at_g_TerrainHeightDeltaScaleByStepQ12; /* 00505FA0 g_TerrainHeightDeltaScaleByStepQ12 */
+    uint32_t at_g_TerrainHeightDeltaScaleByStepQ12_rest[255]; /* beyond the declared type */
+    uint8_t at_g_TerrainHeightDeltaScaleByStepQ12_rest_tail[3];
+    uint32_t at_g_TerrainScanRowStrideBytes; /* 005063A0 g_TerrainScanRowStrideBytes */
+    uint32_t at_g_TerrainScanStepLimit; /* 005063A4 g_TerrainScanStepLimit */
     TerrainScanSelectorUnion at_g_TerrainScanSharedSelectorValue; /* 005063A8 g_TerrainScanSharedSelectorValue */
-    undefined4 at_g_TerrainScanReferenceHeight; /* 005063AC g_TerrainScanReferenceHeight */
+    uint32_t at_g_TerrainScanReferenceHeight; /* 005063AC g_TerrainScanReferenceHeight */
 } ImageData_00505F98;
 extern ImageData_00505F98 g_ImageData_00505F98;
 
 /* original 0x0050A340-0x0050A430 */
 typedef struct ImageData_0050A340 {
-    byte at_gap_0050A340[16]; /* 0050A340 gap */
+    uint8_t at_gap_0050A340[16]; /* 0050A340 gap */
     GraphicsFixedMatrix3x4 at_g_GraphicsTransformScratchMatrix3x4; /* 0050A350 g_GraphicsTransformScratchMatrix3x4 */
     GraphicsFixedVec3 at_g_GraphicsTransformInputScratchVec3; /* 0050A380 g_GraphicsTransformInputScratchVec3 */
-    dword at_g_GraphicsTransformInputScratchVec3_rest[9]; /* beyond the declared type */
+    uint32_t at_g_GraphicsTransformInputScratchVec3_rest[9]; /* beyond the declared type */
     GraphicsFixedVec3 at_g_GraphicsTransformOutputScratchVec3; /* 0050A3B0 g_GraphicsTransformOutputScratchVec3 */
-    dword at_g_GraphicsTransformOutputScratchVec3_rest[9]; /* beyond the declared type */
+    uint32_t at_g_GraphicsTransformOutputScratchVec3_rest[9]; /* beyond the declared type */
     GraphicsFixedVec3 at_g_GraphicsProjectionScratchVec3; /* 0050A3E0 g_GraphicsProjectionScratchVec3 */
-    dword at_g_GraphicsProjectionScratchVec3_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GraphicsProjectionScratchVec3_rest[1]; /* beyond the declared type */
     GraphicsProjectedPoint2i at_g_ModelProjectedBoundsCornerScratch8[8]; /* 0050A3F0 g_ModelProjectedBoundsCornerScratch8 */
 } ImageData_0050A340;
 extern ImageData_0050A340 g_ImageData_0050A340;
 
 /* original 0x0050AE54-0x0050AEA0 */
 typedef struct ImageData_0050AE54 {
-    byte at_gap_0050AE54[12]; /* 0050AE54 gap */
-    sdword at_g_ModelRaycastMaximumDistance; /* 0050AE60 g_ModelRaycastMaximumDistance */
-    sdword at_g_ModelRaycastOriginX; /* 0050AE64 g_ModelRaycastOriginX */
-    sdword at_g_ModelRaycastOriginY; /* 0050AE68 g_ModelRaycastOriginY */
-    sdword at_g_ModelRaycastOriginZ; /* 0050AE6C g_ModelRaycastOriginZ */
-    sdword at_g_ModelRaycastLocalOriginX; /* 0050AE70 g_ModelRaycastLocalOriginX */
-    sdword at_g_ModelRaycastLocalOriginY; /* 0050AE74 g_ModelRaycastLocalOriginY */
-    sdword at_g_ModelRaycastLocalOriginZ; /* 0050AE78 g_ModelRaycastLocalOriginZ */
-    undefined4 at_g_ModelRaycastWorldDirectionXQ28; /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
-    undefined4 at_g_ModelRaycastWorldDirectionYQ28; /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
-    undefined4 at_g_ModelRaycastWorldDirectionZQ28; /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
-    undefined4 at_g_ModelRaycastLocalDirectionXQ28; /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
-    undefined4 at_g_ModelRaycastLocalDirectionYQ28; /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
-    undefined4 at_g_ModelRaycastLocalDirectionZQ28; /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
-    dword at_g_ModelRaycastLocalDirectionZQ28_rest[3]; /* beyond the declared type */
+    uint8_t at_gap_0050AE54[12]; /* 0050AE54 gap */
+    int32_t at_g_ModelRaycastMaximumDistance; /* 0050AE60 g_ModelRaycastMaximumDistance */
+    int32_t at_g_ModelRaycastOriginX; /* 0050AE64 g_ModelRaycastOriginX */
+    int32_t at_g_ModelRaycastOriginY; /* 0050AE68 g_ModelRaycastOriginY */
+    int32_t at_g_ModelRaycastOriginZ; /* 0050AE6C g_ModelRaycastOriginZ */
+    int32_t at_g_ModelRaycastLocalOriginX; /* 0050AE70 g_ModelRaycastLocalOriginX */
+    int32_t at_g_ModelRaycastLocalOriginY; /* 0050AE74 g_ModelRaycastLocalOriginY */
+    int32_t at_g_ModelRaycastLocalOriginZ; /* 0050AE78 g_ModelRaycastLocalOriginZ */
+    uint32_t at_g_ModelRaycastWorldDirectionXQ28; /* 0050AE7C g_ModelRaycastWorldDirectionXQ28 */
+    uint32_t at_g_ModelRaycastWorldDirectionYQ28; /* 0050AE80 g_ModelRaycastWorldDirectionYQ28 */
+    uint32_t at_g_ModelRaycastWorldDirectionZQ28; /* 0050AE84 g_ModelRaycastWorldDirectionZQ28 */
+    uint32_t at_g_ModelRaycastLocalDirectionXQ28; /* 0050AE88 g_ModelRaycastLocalDirectionXQ28 */
+    uint32_t at_g_ModelRaycastLocalDirectionYQ28; /* 0050AE8C g_ModelRaycastLocalDirectionYQ28 */
+    uint32_t at_g_ModelRaycastLocalDirectionZQ28; /* 0050AE90 g_ModelRaycastLocalDirectionZQ28 */
+    uint32_t at_g_ModelRaycastLocalDirectionZQ28_rest[3]; /* beyond the declared type */
 } ImageData_0050AE54;
 extern ImageData_0050AE54 g_ImageData_0050AE54;
 
 /* original 0x0050B510-0x0050B5D0 */
 typedef struct ImageData_0050B510 {
-    byte at_gap_0050B510[16]; /* 0050B510 gap */
-    undefined at_g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
-    dword at_g_SpatialSoundListenerTransform_rest[11]; /* beyond the declared type */
-    byte at_g_SpatialSoundListenerTransform_rest_tail[3];
+    uint8_t at_gap_0050B510[16]; /* 0050B510 gap */
+    uint8_t at_g_SpatialSoundListenerTransform; /* 0050B520 g_SpatialSoundListenerTransform */
+    uint32_t at_g_SpatialSoundListenerTransform_rest[11]; /* beyond the declared type */
+    uint8_t at_g_SpatialSoundListenerTransform_rest_tail[3];
     GraphicsFixedMatrix3x4 at_g_SpatialSoundListenerRotation; /* 0050B550 g_SpatialSoundListenerRotation */
     GraphicsFixedMatrix3x4 at_g_SpatialSoundListenerWorldToLocal; /* 0050B580 g_SpatialSoundListenerWorldToLocal */
-    undefined4 at_g_SpatialSoundRelativeX; /* 0050B5B0 g_SpatialSoundRelativeX */
-    undefined4 at_g_SpatialSoundRelativeY; /* 0050B5B4 g_SpatialSoundRelativeY */
-    undefined4 at_g_SpatialSoundRelativeZ; /* 0050B5B8 g_SpatialSoundRelativeZ */
+    uint32_t at_g_SpatialSoundRelativeX; /* 0050B5B0 g_SpatialSoundRelativeX */
+    uint32_t at_g_SpatialSoundRelativeY; /* 0050B5B4 g_SpatialSoundRelativeY */
+    uint32_t at_g_SpatialSoundRelativeZ; /* 0050B5B8 g_SpatialSoundRelativeZ */
     AudioMixerGainQ15 at_g_SoundEffectsGainQ15; /* 0050B5BC g_SoundEffectsGainQ15 */
-    sdword at_g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
+    int32_t at_g_ReverseStereoMask; /* 0050B5C0 g_ReverseStereoMask */
     SpatialSoundSlot * at_g_SpatialSoundSlots; /* 0050B5C4 g_SpatialSoundSlots */
-    dword at_g_SpatialSoundSlots_rest[2]; /* beyond the declared type */
+    uint32_t at_g_SpatialSoundSlots_rest[2]; /* beyond the declared type */
 } ImageData_0050B510;
 extern ImageData_0050B510 g_ImageData_0050B510;
 
 /* original 0x0050BADC-0x0050BB10 */
 typedef struct ImageData_0050BADC {
-    byte at_gap_0050BADC[2]; /* 0050BADC gap */
+    uint8_t at_gap_0050BADC[2]; /* 0050BADC gap */
     UQ12 at_g_WorldMotionTargetDistanceConvergenceStepQ12; /* 0050BADE g_WorldMotionTargetDistanceConvergenceStepQ12 */
     Q12 at_g_WorldMotionPositionMagnitudeInputScaleQ12; /* 0050BAE2 g_WorldMotionPositionMagnitudeInputScaleQ12 */
-    undefined at_k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
-    byte at_k_CameraScreenDeltaDistanceScaleQ16_rest_tail[3];
+    uint8_t at_k_CameraScreenDeltaDistanceScaleQ16; /* 0050BAE6 k_CameraScreenDeltaDistanceScaleQ16 */
+    uint8_t at_k_CameraScreenDeltaDistanceScaleQ16_rest_tail[3];
     Q12 at_g_WorldMotionDistanceInputScaleQ12; /* 0050BAEA g_WorldMotionDistanceInputScaleQ12 */
     AngleTurn32 at_g_WorldMotionHeadingInputScale; /* 0050BAEE g_WorldMotionHeadingInputScale */
     AngleTurn32 at_g_WorldMotionPitchInputScale; /* 0050BAF2 g_WorldMotionPitchInputScale */
@@ -1306,160 +1306,160 @@ typedef struct ImageData_0050BADC {
     AngleTurn32 at_g_WorldMotionAlternateMaximumPitchAngle; /* 0050BAFE g_WorldMotionAlternateMaximumPitchAngle */
     UQ12 at_g_WorldMotionAlternateMinimumDistanceQ12; /* 0050BB02 g_WorldMotionAlternateMinimumDistanceQ12 */
     UQ12 at_g_WorldMotionAlternateMaximumDistanceQ12; /* 0050BB06 g_WorldMotionAlternateMaximumDistanceQ12 */
-    dword at_g_WorldMotionAlternateMaximumDistanceQ12_rest[1]; /* beyond the declared type */
-    byte at_g_WorldMotionAlternateMaximumDistanceQ12_rest_tail[2];
+    uint32_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest[1]; /* beyond the declared type */
+    uint8_t at_g_WorldMotionAlternateMaximumDistanceQ12_rest_tail[2];
 } ImageData_0050BADC;
 extern ImageData_0050BADC g_ImageData_0050BADC;
 
 /* original 0x0050BB34-0x0050BB80 */
 typedef struct ImageData_0050BB34 {
-    byte at_gap_0050BB34[3]; /* 0050BB34 gap */
+    uint8_t at_gap_0050BB34[3]; /* 0050BB34 gap */
     UiNodeVtable at_g_FrontendModelPointerContextVtable; /* 0050BB37 g_FrontendModelPointerContextVtable */
-    byte at_g_FrontendModelPointerContextVtable_rest_tail[1];
+    uint8_t at_g_FrontendModelPointerContextVtable_rest_tail[1];
 } ImageData_0050BB34;
 extern ImageData_0050BB34 g_ImageData_0050BB34;
 
 /* original 0x0050D928-0x0050E0B0 */
 typedef struct ImageData_0050D928 {
-    byte at_gap_0050D928[8]; /* 0050D928 gap */
+    uint8_t at_gap_0050D928[8]; /* 0050D928 gap */
     TechnologyAsset * at_g_TechnologyAsset; /* 0050D930 g_TechnologyAsset */
-    dword at_g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
-    dword at_g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
-    dword at_g_LevelCameraBookmark1PositionZQ12; /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
-    dword at_g_LevelCameraBookmark1PositionMagnitudeQ12; /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16; /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark2PositionXQ12; /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
-    dword at_g_LevelCameraBookmark2PositionYQ12; /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
-    dword at_g_LevelCameraBookmark2PositionZQ12; /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
-    dword at_g_LevelCameraBookmark2PositionMagnitudeQ12; /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16; /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark3PositionXQ12; /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
-    dword at_g_LevelCameraBookmark3PositionYQ12; /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
-    dword at_g_LevelCameraBookmark3PositionZQ12; /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
-    dword at_g_LevelCameraBookmark3PositionMagnitudeQ12; /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16; /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark4PositionXQ12; /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
-    dword at_g_LevelCameraBookmark4PositionYQ12; /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
-    dword at_g_LevelCameraBookmark4PositionZQ12; /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
-    dword at_g_LevelCameraBookmark4PositionMagnitudeQ12; /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16; /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark5PositionXQ12; /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
-    dword at_g_LevelCameraBookmark5PositionYQ12; /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
-    dword at_g_LevelCameraBookmark5PositionZQ12; /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
-    dword at_g_LevelCameraBookmark5PositionMagnitudeQ12; /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16; /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark6PositionXQ12; /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
-    dword at_g_LevelCameraBookmark6PositionYQ12; /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
-    dword at_g_LevelCameraBookmark6PositionZQ12; /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
-    dword at_g_LevelCameraBookmark6PositionMagnitudeQ12; /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16; /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
-    dword at_g_LevelCameraBookmark7PositionXQ12; /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
-    dword at_g_LevelCameraBookmark7PositionYQ12; /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
-    dword at_g_LevelCameraBookmark7PositionZQ12; /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
-    dword at_g_LevelCameraBookmark7PositionMagnitudeQ12; /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
-    dword at_g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16; /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark1PositionXQ12; /* 0050D934 g_LevelCameraBookmark1PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark1PositionYQ12; /* 0050D938 g_LevelCameraBookmark1PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark1PositionZQ12; /* 0050D93C g_LevelCameraBookmark1PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark1PositionMagnitudeQ12; /* 0050D940 g_LevelCameraBookmark1PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16; /* 0050D944 g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark2PositionXQ12; /* 0050D948 g_LevelCameraBookmark2PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark2PositionYQ12; /* 0050D94C g_LevelCameraBookmark2PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark2PositionZQ12; /* 0050D950 g_LevelCameraBookmark2PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark2PositionMagnitudeQ12; /* 0050D954 g_LevelCameraBookmark2PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16; /* 0050D958 g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark3PositionXQ12; /* 0050D95C g_LevelCameraBookmark3PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark3PositionYQ12; /* 0050D960 g_LevelCameraBookmark3PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark3PositionZQ12; /* 0050D964 g_LevelCameraBookmark3PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark3PositionMagnitudeQ12; /* 0050D968 g_LevelCameraBookmark3PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16; /* 0050D96C g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark4PositionXQ12; /* 0050D970 g_LevelCameraBookmark4PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark4PositionYQ12; /* 0050D974 g_LevelCameraBookmark4PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark4PositionZQ12; /* 0050D978 g_LevelCameraBookmark4PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark4PositionMagnitudeQ12; /* 0050D97C g_LevelCameraBookmark4PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16; /* 0050D980 g_LevelCameraBookmark4PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark5PositionXQ12; /* 0050D984 g_LevelCameraBookmark5PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark5PositionYQ12; /* 0050D988 g_LevelCameraBookmark5PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark5PositionZQ12; /* 0050D98C g_LevelCameraBookmark5PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark5PositionMagnitudeQ12; /* 0050D990 g_LevelCameraBookmark5PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16; /* 0050D994 g_LevelCameraBookmark5PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark6PositionXQ12; /* 0050D998 g_LevelCameraBookmark6PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark6PositionYQ12; /* 0050D99C g_LevelCameraBookmark6PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark6PositionZQ12; /* 0050D9A0 g_LevelCameraBookmark6PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark6PositionMagnitudeQ12; /* 0050D9A4 g_LevelCameraBookmark6PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16; /* 0050D9A8 g_LevelCameraBookmark6PackedHeadingLow16PitchHigh16 */
+    uint32_t at_g_LevelCameraBookmark7PositionXQ12; /* 0050D9AC g_LevelCameraBookmark7PositionXQ12 */
+    uint32_t at_g_LevelCameraBookmark7PositionYQ12; /* 0050D9B0 g_LevelCameraBookmark7PositionYQ12 */
+    uint32_t at_g_LevelCameraBookmark7PositionZQ12; /* 0050D9B4 g_LevelCameraBookmark7PositionZQ12 */
+    uint32_t at_g_LevelCameraBookmark7PositionMagnitudeQ12; /* 0050D9B8 g_LevelCameraBookmark7PositionMagnitudeQ12 */
+    uint32_t at_g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16; /* 0050D9BC g_LevelCameraBookmark7PackedHeadingLow16PitchHigh16 */
     ScenarioCatalogHeader * at_g_ScenarioCatalog; /* 0050D9C0 g_ScenarioCatalog */
-    dword at_g_ScenarioCatalogUsedBytes; /* 0050D9C4 g_ScenarioCatalogUsedBytes */
-    word at_u_save___sve_0050d9c8[11]; /* 0050D9C8 u_save___sve_0050d9c8 */
-    dword at_str_0050D9DE[12]; /* 0050D9DE str_0050D9DE */
-    word at_u_level_level_dat_0050da0e[16]; /* 0050DA0E u_level_level_dat_0050da0e */
+    uint32_t at_g_ScenarioCatalogUsedBytes; /* 0050D9C4 g_ScenarioCatalogUsedBytes */
+    uint16_t at_u_save___sve_0050d9c8[11]; /* 0050D9C8 u_save___sve_0050d9c8 */
+    uint32_t at_str_0050D9DE[12]; /* 0050D9DE str_0050D9DE */
+    uint16_t at_u_level_level_dat_0050da0e[16]; /* 0050DA0E u_level_level_dat_0050da0e */
     ScenarioLevelDataPathTemplate24 at_g_ScenarioLevelDataPathTemplateUtf16; /* 0050DA2E g_ScenarioLevelDataPathTemplateUtf16 */
-    word at_u_level_campagne_dat_0050da52[19]; /* 0050DA52 u_level_campagne_dat_0050da52 */
+    uint16_t at_u_level_campagne_dat_0050da52[19]; /* 0050DA52 u_level_campagne_dat_0050da52 */
     ScenarioCampaignDataPathTemplate2A at_g_ScenarioCampaignDataPathTemplateUtf16; /* 0050DA78 g_ScenarioCampaignDataPathTemplateUtf16 */
-    word at_u_save_0050daa2[5]; /* 0050DAA2 u_save_0050daa2 */
-    word at_u_level_0050daac[6]; /* 0050DAAC u_level_0050daac */
-    word at_u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
-    undefined at_g_ScenarioCatalogPathScratchUtf16; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
-    dword at_g_ScenarioCatalogPathScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
-    word at_g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
-    word at_u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
-    word at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
-    word at_u_flm_ende0000_flm_0050df06[17]; /* 0050DF06 u_flm_ende0000_flm_0050df06 */
-    word at_u_flm_ende0001_flm_0050df28[17]; /* 0050DF28 u_flm_ende0001_flm_0050df28 */
-    word at_u_flm_ende0000_flm_0050df4a[17]; /* 0050DF4A u_flm_ende0000_flm_0050df4a */
-    word at_u_sound_level00_sam_0050df6c[18]; /* 0050DF6C u_sound_level00_sam_0050df6c */
-    word at_u_sound_music00_sam_0050df90[18]; /* 0050DF90 u_sound_music00_sam_0050df90 */
-    word at_u_army_hex_0050dfb4[9]; /* 0050DFB4 u_army_hex_0050dfb4 */
-    word at_u_effect_hex_0050dfc6[11]; /* 0050DFC6 u_effect_hex_0050dfc6 */
-    word at_u_shot_hex_0050dfdc[9]; /* 0050DFDC u_shot_hex_0050dfdc */
-    word at_u_modul_hex_0050dfee[10]; /* 0050DFEE u_modul_hex_0050dfee */
-    word at_u_field_hex_0050e002[10]; /* 0050E002 u_field_hex_0050e002 */
-    word at_u_light_hex_0050e016[10]; /* 0050E016 u_light_hex_0050e016 */
-    word at_u_widget_hex_0050e02a[11]; /* 0050E02A u_widget_hex_0050e02a */
-    word at_u_level_hex_0050e040[10]; /* 0050E040 u_level_hex_0050e040 */
-    word at_u_daten_hex_0050e054[10]; /* 0050E054 u_daten_hex_0050e054 */
-    word at_u_campagne_hex_0050e068[13]; /* 0050E068 u_campagne_hex_0050e068 */
-    word at_u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
-    word at_u_oldunit_hex_0050e094[12]; /* 0050E094 u_oldunit_hex_0050e094 */
-    undefined1 at_g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
-    byte at_g_InGameResourceRegistrationBusyCount_rest_tail[3];
+    uint16_t at_u_save_0050daa2[5]; /* 0050DAA2 u_save_0050daa2 */
+    uint16_t at_u_level_0050daac[6]; /* 0050DAAC u_level_0050daac */
+    uint16_t at_u_level_0050dab8[6]; /* 0050DAB8 u_level_0050dab8 */
+    uint8_t at_g_ScenarioCatalogPathScratchUtf16; /* 0050DAC4 g_ScenarioCatalogPathScratchUtf16 */
+    uint32_t at_g_ScenarioCatalogPathScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_ScenarioCatalogPathScratchUtf16_rest_tail[3];
+    uint16_t at_g_ResourceRegistrationDirectoryUtf16[256]; /* 0050DCC4 g_ResourceRegistrationDirectoryUtf16 */
+    uint16_t at_u_texte_techno_str_0050dec4[17]; /* 0050DEC4 u_texte_techno_str_0050dec4 */
+    uint16_t at_str_0050DEE6[16]; /* 0050DEE6 str_0050DEE6 */
+    uint16_t at_u_flm_ende0000_flm_0050df06[17]; /* 0050DF06 u_flm_ende0000_flm_0050df06 */
+    uint16_t at_u_flm_ende0001_flm_0050df28[17]; /* 0050DF28 u_flm_ende0001_flm_0050df28 */
+    uint16_t at_u_flm_ende0000_flm_0050df4a[17]; /* 0050DF4A u_flm_ende0000_flm_0050df4a */
+    uint16_t at_u_sound_level00_sam_0050df6c[18]; /* 0050DF6C u_sound_level00_sam_0050df6c */
+    uint16_t at_u_sound_music00_sam_0050df90[18]; /* 0050DF90 u_sound_music00_sam_0050df90 */
+    uint16_t at_u_army_hex_0050dfb4[9]; /* 0050DFB4 u_army_hex_0050dfb4 */
+    uint16_t at_u_effect_hex_0050dfc6[11]; /* 0050DFC6 u_effect_hex_0050dfc6 */
+    uint16_t at_u_shot_hex_0050dfdc[9]; /* 0050DFDC u_shot_hex_0050dfdc */
+    uint16_t at_u_modul_hex_0050dfee[10]; /* 0050DFEE u_modul_hex_0050dfee */
+    uint16_t at_u_field_hex_0050e002[10]; /* 0050E002 u_field_hex_0050e002 */
+    uint16_t at_u_light_hex_0050e016[10]; /* 0050E016 u_light_hex_0050e016 */
+    uint16_t at_u_widget_hex_0050e02a[11]; /* 0050E02A u_widget_hex_0050e02a */
+    uint16_t at_u_level_hex_0050e040[10]; /* 0050E040 u_level_hex_0050e040 */
+    uint16_t at_u_daten_hex_0050e054[10]; /* 0050E054 u_daten_hex_0050e054 */
+    uint16_t at_u_campagne_hex_0050e068[13]; /* 0050E068 u_campagne_hex_0050e068 */
+    uint16_t at_u_stat_hex_0050e082[9]; /* 0050E082 u_stat_hex_0050e082 */
+    uint16_t at_u_oldunit_hex_0050e094[12]; /* 0050E094 u_oldunit_hex_0050e094 */
+    uint8_t at_g_InGameResourceRegistrationBusyCount; /* 0050E0AC g_InGameResourceRegistrationBusyCount */
+    uint8_t at_g_InGameResourceRegistrationBusyCount_rest_tail[3];
 } ImageData_0050D928;
 extern ImageData_0050D928 g_ImageData_0050D928;
 
 /* original 0x0050E164-0x0050E1B0 */
 typedef struct ImageData_0050E164 {
-    byte at_gap_0050E164[12]; /* 0050E164 gap */
-    dword at_switchdataD_0050e170[16]; /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0050E164[12]; /* 0050E164 gap */
+    uint32_t at_switchdataD_0050e170[16]; /* 0050E170 switchdataD_0050e170: jump table of the original code, not used by the C code */
 } ImageData_0050E164;
 extern ImageData_0050E164 g_ImageData_0050E164;
 
 /* original 0x0050E21C-0x0050E230 */
 typedef struct ImageData_0050E21C {
-    byte at_gap_0050E21C[20]; /* 0050E21C gap */
+    uint8_t at_gap_0050E21C[20]; /* 0050E21C gap */
 } ImageData_0050E21C;
 extern ImageData_0050E21C g_ImageData_0050E21C;
 
 /* original 0x0050E95C-0x0050E970 */
 typedef struct ImageData_0050E95C {
-    byte at_gap_0050E95C[4]; /* 0050E95C gap */
-    dword at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0050E95C[4]; /* 0050E95C gap */
+    uint32_t at_g_ResourceRegistrationDomainPairCallbacks3[4]; /* 0050E960 g_ResourceRegistrationDomainPairCallbacks3: jump table of the original code, not used by the C code */
 } ImageData_0050E95C;
 extern ImageData_0050E95C g_ImageData_0050E95C;
 
 /* original 0x0050EB5C-0x0050EB70 */
 typedef struct ImageData_0050EB5C {
-    byte at_gap_0050EB5C[4]; /* 0050EB5C gap */
-    dword at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[4]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0050EB5C[4]; /* 0050EB5C gap */
+    uint32_t at_g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60[4]; /* 0050EB60 g_InGameConditionRuntime_RebaseLoadedRecords_SwitchTable_0050EB60: jump table of the original code, not used by the C code */
 } ImageData_0050EB5C;
 extern ImageData_0050EB5C g_ImageData_0050EB5C;
 
 /* original 0x0050F044-0x0050F130 */
 typedef struct ImageData_0050F044 {
-    byte at_gap_0050F044[12]; /* 0050F044 gap */
-    sdword at_g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
-    word at_g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
-    word at_g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16 */
-    dword at_g_GameVersionUtf16_rest[1]; /* beyond the declared type */
-    byte at_g_GameVersionUtf16_rest_tail[2];
+    uint8_t at_gap_0050F044[12]; /* 0050F044 gap */
+    int32_t at_g_FrontendPlayerRuntimeCount; /* 0050F050 g_FrontendPlayerRuntimeCount */
+    uint16_t at_g_FrontendLocalPlayerNameUtf16[20]; /* 0050F054 g_FrontendLocalPlayerNameUtf16 */
+    uint16_t at_g_GameVersionUtf16[7]; /* 0050F07C g_GameVersionUtf16 */
+    uint32_t at_g_GameVersionUtf16_rest[1]; /* beyond the declared type */
+    uint8_t at_g_GameVersionUtf16_rest_tail[2];
     UiTransferEndpointDescriptor at_g_FrontendSelectedNetworkEndpoint; /* 0050F090 g_FrontendSelectedNetworkEndpoint */
-    undefined4 at_g_FrontendSessionToken; /* 0050F0A0 g_FrontendSessionToken */
+    uint32_t at_g_FrontendSessionToken; /* 0050F0A0 g_FrontendSessionToken */
     SessionTransferTimeoutTicks at_g_SessionTransferTimeoutTicks; /* 0050F0A4 g_SessionTransferTimeoutTicks */
-    undefined4 at_g_FrontendTransferResponsePending; /* 0050F0A8 g_FrontendTransferResponsePending */
-    undefined4 at_g_LocalPlayerRuntimeId; /* 0050F0AC g_LocalPlayerRuntimeId */
-    dword at_g_LocalPlayerRuntimeId_rest[4]; /* beyond the declared type */
+    uint32_t at_g_FrontendTransferResponsePending; /* 0050F0A8 g_FrontendTransferResponsePending */
+    uint32_t at_g_LocalPlayerRuntimeId; /* 0050F0AC g_LocalPlayerRuntimeId */
+    uint32_t at_g_LocalPlayerRuntimeId_rest[4]; /* beyond the declared type */
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeBlocks; /* 0050F0C0 g_FrontendPlayerRuntimeBlocks */
     FrontendPlayerRuntimeBlockCount at_g_FrontendPlayerRuntimeBlockCount; /* 0050F0C4 g_FrontendPlayerRuntimeBlockCount */
     SessionNetworkRoleFlags at_g_SessionNetworkRoleFlags; /* 0050F0C8 g_SessionNetworkRoleFlags */
-    undefined4 at_g_FrontendSelectedPlayerToken; /* 0050F0CC g_FrontendSelectedPlayerToken */
+    uint32_t at_g_FrontendSelectedPlayerToken; /* 0050F0CC g_FrontendSelectedPlayerToken */
     RecentTextSerialCounter at_g_RecentTextSerialCounter; /* 0050F0D0 g_RecentTextSerialCounter */
-    undefined4 at_g_SessionNetworkTickInterval; /* 0050F0D4 g_SessionNetworkTickInterval */
-    undefined4 at_g_SessionNetworkTickCounter; /* 0050F0D8 g_SessionNetworkTickCounter */
-    undefined4 at_g_HostCommandBatchSyncSentThisInterval; /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
+    uint32_t at_g_SessionNetworkTickInterval; /* 0050F0D4 g_SessionNetworkTickInterval */
+    uint32_t at_g_SessionNetworkTickCounter; /* 0050F0D8 g_SessionNetworkTickCounter */
+    uint32_t at_g_HostCommandBatchSyncSentThisInterval; /* 0050F0DC g_HostCommandBatchSyncSentThisInterval */
     RecentTextHistorySlot * at_g_RecentTextSlotStorage; /* 0050F0E0 g_RecentTextSlotStorage */
-    dword at_g_RecentTextEntrySerials[8]; /* 0050F0E4 g_RecentTextEntrySerials */
-    word at_u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
-    byte at_u_texte_neterror_str_0050f104_padding[6];
+    uint32_t at_g_RecentTextEntrySerials[8]; /* 0050F0E4 g_RecentTextEntrySerials */
+    uint16_t at_u_texte_neterror_str_0050f104[19]; /* 0050F104 u_texte_neterror_str_0050f104 */
+    uint8_t at_u_texte_neterror_str_0050f104_padding[6];
 } ImageData_0050F044;
 extern ImageData_0050F044 g_ImageData_0050F044;
 
 /* original 0x0050F328-0x00512E70 */
 typedef struct ImageData_0050F328 {
-    byte at_gap_0050F328[24]; /* 0050F328 gap */
+    uint8_t at_gap_0050F328[24]; /* 0050F328 gap */
     GameFactionRuntimeImage at_g_GameFactionRuntimeImage; /* 0050F340 g_GameFactionRuntimeImage */
     TerrainRegionCollectionCount at_g_TerrainRegionCollectionStoredCount; /* 00512D60 g_TerrainRegionCollectionStoredCount */
     TerrainRegionCollectionCount at_g_TerrainRegionCollectionVisitedCount; /* 00512D64 g_TerrainRegionCollectionVisitedCount */
-    undefined4 at_g_TerrainRegionCollectionEntries; /* 00512D68 g_TerrainRegionCollectionEntries */
+    uint32_t at_g_TerrainRegionCollectionEntries; /* 00512D68 g_TerrainRegionCollectionEntries */
     void * at_g_GameStatTableImage; /* 00512D6C g_GameStatTableImage */
     GameDataAuxState at_g_GameDataAuxState; /* 00512D70 g_GameDataAuxState */
 } ImageData_0050F328;
@@ -1467,116 +1467,116 @@ extern ImageData_0050F328 g_ImageData_0050F328;
 
 /* original 0x00513DA4-0x00513DF0 */
 typedef struct ImageData_00513DA4 {
-    byte at_gap_00513DA4[12]; /* 00513DA4 gap */
-    dword at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0[16]; /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00513DA4[12]; /* 00513DA4 gap */
+    uint32_t at_g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0[16]; /* 00513DB0 g_GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_SwitchTable_00513DB0: jump table of the original code, not used by the C code */
 } ImageData_00513DA4;
 extern ImageData_00513DA4 g_ImageData_00513DA4;
 
 /* original 0x0051494C-0x00514E40 */
 typedef struct ImageData_0051494C {
-    byte at_gap_0051494C[20]; /* 0051494C gap */
+    uint8_t at_gap_0051494C[20]; /* 0051494C gap */
     SelectionPlayerRuntimeBlock * at_g_SelectionPlayerRuntimeBlockPointers[8]; /* 00514960 g_SelectionPlayerRuntimeBlockPointers */
-    dword at_g_SelectionPlayerRuntimeBlockPointers_rest[248]; /* beyond the declared type */
+    uint32_t at_g_SelectionPlayerRuntimeBlockPointers_rest[248]; /* beyond the declared type */
     SelectionPlayerRuntimeBlock * at_g_SelectionPlayerBlocks; /* 00514D60 g_SelectionPlayerBlocks */
     void * at_g_InGameFactionScratchBufferSetA8[8]; /* 00514D64 g_InGameFactionScratchBufferSetA8 */
     void * at_g_InGameFactionScratchBufferSetB8[8]; /* 00514D84 g_InGameFactionScratchBufferSetB8 */
-    undefined at_g_FrontendPlayerMessageScratchUtf16; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
-    dword at_g_FrontendPlayerMessageScratchUtf16_rest[23]; /* beyond the declared type */
-    byte at_g_FrontendPlayerMessageScratchUtf16_rest_tail[3];
+    uint8_t at_g_FrontendPlayerMessageScratchUtf16; /* 00514DA4 g_FrontendPlayerMessageScratchUtf16 */
+    uint32_t at_g_FrontendPlayerMessageScratchUtf16_rest[23]; /* beyond the declared type */
+    uint8_t at_g_FrontendPlayerMessageScratchUtf16_rest_tail[3];
     UiCommandPayloadTextBatch48 at_g_UiSevenSlotCommandPayloadText; /* 00514E04 g_UiSevenSlotCommandPayloadText */
-    dword at_g_UiSevenSlotCommandPayloadText_rest[3]; /* beyond the declared type */
+    uint32_t at_g_UiSevenSlotCommandPayloadText_rest[3]; /* beyond the declared type */
 } ImageData_0051494C;
 extern ImageData_0051494C g_ImageData_0051494C;
 
 /* original 0x00514FB4-0x00515010 */
 typedef struct ImageData_00514FB4 {
-    byte at_gap_00514FB4[12]; /* 00514FB4 gap */
+    uint8_t at_gap_00514FB4[12]; /* 00514FB4 gap */
     UiNodeVtable at_g_UiImageActionControlVtable; /* 00514FC0 g_UiImageActionControlVtable */
-    dword at_g_UiImageActionControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiImageActionControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00514FB4;
 extern ImageData_00514FB4 g_ImageData_00514FB4;
 
 /* original 0x0051528C-0x005152E0 */
 typedef struct ImageData_0051528C {
-    byte at_gap_0051528C[4]; /* 0051528C gap */
+    uint8_t at_gap_0051528C[4]; /* 0051528C gap */
     UiNodeVtable at_g_UiConditionalActionControlVtable; /* 00515290 g_UiConditionalActionControlVtable */
-    dword at_g_UiConditionalActionControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiConditionalActionControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_0051528C;
 extern ImageData_0051528C g_ImageData_0051528C;
 
 /* original 0x0051560C-0x005156A0 */
 typedef struct ImageData_0051560C {
-    byte at_gap_0051560C[4]; /* 0051560C gap */
+    uint8_t at_gap_0051560C[4]; /* 0051560C gap */
     UiNodeVtable at_g_UiNumericPairTextButtonVtable; /* 00515610 g_UiNumericPairTextButtonVtable */
-    undefined at_g_UiNumericPairFirstValueScratchUtf16; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
-    dword at_g_UiNumericPairFirstValueScratchUtf16_rest[7]; /* beyond the declared type */
-    byte at_g_UiNumericPairFirstValueScratchUtf16_rest_tail[3];
-    undefined at_g_UiNumericPairSecondValueScratchUtf16; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
-    dword at_g_UiNumericPairSecondValueScratchUtf16_rest[9]; /* beyond the declared type */
-    byte at_g_UiNumericPairSecondValueScratchUtf16_rest_tail[3];
+    uint8_t at_g_UiNumericPairFirstValueScratchUtf16; /* 00515658 g_UiNumericPairFirstValueScratchUtf16 */
+    uint32_t at_g_UiNumericPairFirstValueScratchUtf16_rest[7]; /* beyond the declared type */
+    uint8_t at_g_UiNumericPairFirstValueScratchUtf16_rest_tail[3];
+    uint8_t at_g_UiNumericPairSecondValueScratchUtf16; /* 00515678 g_UiNumericPairSecondValueScratchUtf16 */
+    uint32_t at_g_UiNumericPairSecondValueScratchUtf16_rest[9]; /* beyond the declared type */
+    uint8_t at_g_UiNumericPairSecondValueScratchUtf16_rest_tail[3];
 } ImageData_0051560C;
 extern ImageData_0051560C g_ImageData_0051560C;
 
 /* original 0x00515720-0x00515780 */
 typedef struct ImageData_00515720 {
-    byte at_gap_00515720[16]; /* 00515720 gap */
+    uint8_t at_gap_00515720[16]; /* 00515720 gap */
     UiNodeVtable at_g_UiPayloadPairTextButtonVtable; /* 00515730 g_UiPayloadPairTextButtonVtable */
-    dword at_g_UiPayloadPairTextButtonVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiPayloadPairTextButtonVtable_rest[2]; /* beyond the declared type */
 } ImageData_00515720;
 extern ImageData_00515720 g_ImageData_00515720;
 
 /* original 0x005157D0-0x00515830 */
 typedef struct ImageData_005157D0 {
-    byte at_gap_005157D0[16]; /* 005157D0 gap */
+    uint8_t at_gap_005157D0[16]; /* 005157D0 gap */
     UiNodeVtable at_g_UiFormattedContainerVtable; /* 005157E0 g_UiFormattedContainerVtable */
-    dword at_g_UiFormattedContainerVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiFormattedContainerVtable_rest[2]; /* beyond the declared type */
 } ImageData_005157D0;
 extern ImageData_005157D0 g_ImageData_005157D0;
 
 /* original 0x00515C60-0x00515CC0 */
 typedef struct ImageData_00515C60 {
-    byte at_gap_00515C60[16]; /* 00515C60 gap */
+    uint8_t at_gap_00515C60[16]; /* 00515C60 gap */
     UiNodeVtable at_g_UiSelectionGeometryControlVtable; /* 00515C70 g_UiSelectionGeometryControlVtable */
-    dword at_g_UiSelectionGeometryControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiSelectionGeometryControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00515C60;
 extern ImageData_00515C60 g_ImageData_00515C60;
 
 /* original 0x005162BC-0x00516360 */
 typedef struct ImageData_005162BC {
-    byte at_gap_005162BC[4]; /* 005162BC gap */
+    uint8_t at_gap_005162BC[4]; /* 005162BC gap */
     UiNodeVtable at_g_UiNodeVtable_005162C0; /* 005162C0 g_UiNodeVtable_005162C0 */
-    dword at_g_UiNodeVtable_005162C0_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_005162C0_rest[2]; /* beyond the declared type */
     UiNodeVtable at_g_UiNodeVtable_00516310; /* 00516310 g_UiNodeVtable_00516310 */
-    dword at_g_UiNodeVtable_00516310_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_00516310_rest[2]; /* beyond the declared type */
 } ImageData_005162BC;
 extern ImageData_005162BC g_ImageData_005162BC;
 
 /* original 0x0051650C-0x00516580 */
 typedef struct ImageData_0051650C {
-    byte at_gap_0051650C[4]; /* 0051650C gap */
-    word at_g_UiCatalogEntryRichTextScratchUtf16[16]; /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
+    uint8_t at_gap_0051650C[4]; /* 0051650C gap */
+    uint16_t at_g_UiCatalogEntryRichTextScratchUtf16[16]; /* 00516510 g_UiCatalogEntryRichTextScratchUtf16 */
     UiNodeVtable at_g_UiNodeVtable_00516530; /* 00516530 g_UiNodeVtable_00516530 */
-    dword at_g_UiNodeVtable_00516530_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_00516530_rest[2]; /* beyond the declared type */
 } ImageData_0051650C;
 extern ImageData_0051650C g_ImageData_0051650C;
 
 /* original 0x00516CBC-0x00516D10 */
 typedef struct ImageData_00516CBC {
-    byte at_gap_00516CBC[4]; /* 00516CBC gap */
+    uint8_t at_gap_00516CBC[4]; /* 00516CBC gap */
     UiNodeVtable at_g_UiArmyMetricsPanelVtable; /* 00516CC0 g_UiArmyMetricsPanelVtable */
-    dword at_g_UiArmyMetricsPanelVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiArmyMetricsPanelVtable_rest[2]; /* beyond the declared type */
 } ImageData_00516CBC;
 extern ImageData_00516CBC g_ImageData_00516CBC;
 
 /* original 0x00516E90-0x00517020 */
 typedef struct ImageData_00516E90 {
-    byte at_gap_00516E90[16]; /* 00516E90 gap */
-    undefined at_g_FrontendResultsValueTextUtf16; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
-    dword at_g_FrontendResultsValueTextUtf16_rest[15]; /* beyond the declared type */
-    byte at_g_FrontendResultsValueTextUtf16_rest_tail[3];
-    undefined at_g_EndGameElapsedTimeScratchUtf16; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
-    dword at_g_EndGameElapsedTimeScratchUtf16_rest[31]; /* beyond the declared type */
-    byte at_g_EndGameElapsedTimeScratchUtf16_rest_tail[3];
+    uint8_t at_gap_00516E90[16]; /* 00516E90 gap */
+    uint8_t at_g_FrontendResultsValueTextUtf16; /* 00516EA0 g_FrontendResultsValueTextUtf16 */
+    uint32_t at_g_FrontendResultsValueTextUtf16_rest[15]; /* beyond the declared type */
+    uint8_t at_g_FrontendResultsValueTextUtf16_rest_tail[3];
+    uint8_t at_g_EndGameElapsedTimeScratchUtf16; /* 00516EE0 g_EndGameElapsedTimeScratchUtf16 */
+    uint32_t at_g_EndGameElapsedTimeScratchUtf16_rest[31]; /* beyond the declared type */
+    uint8_t at_g_EndGameElapsedTimeScratchUtf16_rest_tail[3];
     UiNodeVtable at_g_UiNodeVtable_00516F60; /* 00516F60 g_UiNodeVtable_00516F60 */
     int at_g_FrontendResultsColumnAdvance00Pixels; /* 00516FA8 g_FrontendResultsColumnAdvance00Pixels */
     int at_g_FrontendResultsColumnAdvance01Pixels; /* 00516FAC g_FrontendResultsColumnAdvance01Pixels */
@@ -1596,126 +1596,126 @@ typedef struct ImageData_00516E90 {
     int at_g_FrontendResultsColumnAdvanceFactionFieldB4Pixels; /* 00516FE4 g_FrontendResultsColumnAdvanceFactionFieldB4Pixels */
     int at_g_FrontendResultsColumnAdvanceFactionFieldB8Pixels; /* 00516FE8 g_FrontendResultsColumnAdvanceFactionFieldB8Pixels */
     int at_g_FrontendResultsColumnAdvanceFactionFieldBCPixels; /* 00516FEC g_FrontendResultsColumnAdvanceFactionFieldBCPixels */
-    dword at_g_FrontendResultsFramebufferBytesPerPixel; /* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
-    dword at_g_FrontendResultsFramebufferScanlineStrideBytes; /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
-    dword at_g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
-    dword at_g_FrontendResultsFactionPackedPixelColors_rest[3]; /* beyond the declared type */
+    uint32_t at_g_FrontendResultsFramebufferBytesPerPixel; /* 00516FF0 g_FrontendResultsFramebufferBytesPerPixel */
+    uint32_t at_g_FrontendResultsFramebufferScanlineStrideBytes; /* 00516FF4 g_FrontendResultsFramebufferScanlineStrideBytes */
+    uint32_t at_g_FrontendResultsFactionPackedPixelColors[7]; /* 00516FF8 g_FrontendResultsFactionPackedPixelColors */
+    uint32_t at_g_FrontendResultsFactionPackedPixelColors_rest[3]; /* beyond the declared type */
 } ImageData_00516E90;
 extern ImageData_00516E90 g_ImageData_00516E90;
 
 /* original 0x00517068-0x005170C0 */
 typedef struct ImageData_00517068 {
-    byte at_gap_00517068[8]; /* 00517068 gap */
-    dword at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00517068[8]; /* 00517068 gap */
+    uint32_t at_g_UiNodeVtable_00517070[20]; /* 00517070 g_UiNodeVtable_00517070: jump table of the original code, not used by the C code */
 } ImageData_00517068;
 extern ImageData_00517068 g_ImageData_00517068;
 
 /* original 0x00517DD4-0x00517E30 */
 typedef struct ImageData_00517DD4 {
-    byte at_gap_00517DD4[12]; /* 00517DD4 gap */
+    uint8_t at_gap_00517DD4[12]; /* 00517DD4 gap */
     UiNodeVtable at_g_UiNodeVtable_00517DE0; /* 00517DE0 g_UiNodeVtable_00517DE0 */
-    dword at_g_UiNodeVtable_00517DE0_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiNodeVtable_00517DE0_rest[2]; /* beyond the declared type */
 } ImageData_00517DD4;
 extern ImageData_00517DD4 g_ImageData_00517DD4;
 
 /* original 0x00517F00-0x00517F60 */
 typedef struct ImageData_00517F00 {
-    byte at_gap_00517F00[16]; /* 00517F00 gap */
+    uint8_t at_gap_00517F00[16]; /* 00517F00 gap */
     UiNodeVtable at_g_UiCommandVisibilityWrappedTextVtable; /* 00517F10 g_UiCommandVisibilityWrappedTextVtable */
-    dword at_g_UiCommandVisibilityWrappedTextVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiCommandVisibilityWrappedTextVtable_rest[2]; /* beyond the declared type */
 } ImageData_00517F00;
 extern ImageData_00517F00 g_ImageData_00517F00;
 
 /* original 0x00517FBC-0x00518010 */
 typedef struct ImageData_00517FBC {
-    byte at_gap_00517FBC[4]; /* 00517FBC gap */
+    uint8_t at_gap_00517FBC[4]; /* 00517FBC gap */
     UiNodeVtable at_g_UiCommandVisibilitySingleLineTextVtable; /* 00517FC0 g_UiCommandVisibilitySingleLineTextVtable */
-    dword at_g_UiCommandVisibilitySingleLineTextVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiCommandVisibilitySingleLineTextVtable_rest[2]; /* beyond the declared type */
 } ImageData_00517FBC;
 extern ImageData_00517FBC g_ImageData_00517FBC;
 
 /* original 0x00518074-0x00518CE0 */
 typedef struct ImageData_00518074 {
-    byte at_gap_00518074[12]; /* 00518074 gap */
-    undefined at_g_SoftwareBilinearPackedInterpolationWeights256; /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256 */
-    dword at_g_SoftwareBilinearPackedInterpolationWeights256_rest[511]; /* beyond the declared type */
-    byte at_g_SoftwareBilinearPackedInterpolationWeights256_rest_tail[3];
-    dword at_g_SoftwarePixelIntensityToNativeColorLut256[256]; /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
-    undefined8 at_g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
-    dword at_g_SoftwareBlendUnityWordLanesQ14_rest[2]; /* beyond the declared type */
+    uint8_t at_gap_00518074[12]; /* 00518074 gap */
+    uint8_t at_g_SoftwareBilinearPackedInterpolationWeights256; /* 00518080 g_SoftwareBilinearPackedInterpolationWeights256 */
+    uint32_t at_g_SoftwareBilinearPackedInterpolationWeights256_rest[511]; /* beyond the declared type */
+    uint8_t at_g_SoftwareBilinearPackedInterpolationWeights256_rest_tail[3];
+    uint32_t at_g_SoftwarePixelIntensityToNativeColorLut256[256]; /* 00518880 g_SoftwarePixelIntensityToNativeColorLut256 */
+    uint64_t at_g_SoftwareBlendUnityWordLanesQ14; /* 00518C80 g_SoftwareBlendUnityWordLanesQ14 */
+    uint32_t at_g_SoftwareBlendUnityWordLanesQ14_rest[2]; /* beyond the declared type */
     UiNodeVtable at_g_UiSoftwareTexturePreviewControlVtable; /* 00518C90 g_UiSoftwareTexturePreviewControlVtable */
-    dword at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_UiSoftwareTexturePreviewControlVtable_rest[2]; /* beyond the declared type */
 } ImageData_00518074;
 extern ImageData_00518074 g_ImageData_00518074;
 
 /* original 0x005191F0-0x005191FC */
 typedef struct ImageData_005191F0 {
-    byte at_gap_005191F0[12]; /* 005191F0 gap */
+    uint8_t at_gap_005191F0[12]; /* 005191F0 gap */
 } ImageData_005191F0;
 extern ImageData_005191F0 g_ImageData_005191F0;
 
 /* original 0x0051936C-0x005193B0 */
 typedef struct ImageData_0051936C {
-    byte at_gap_0051936C[8]; /* 0051936C gap */
-    dword at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374[15]; /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0051936C[8]; /* 0051936C gap */
+    uint32_t at_g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374[15]; /* 00519374 g_SoftwareMaskBuffer_AdvancePatternByPercentTick_SwitchTable_00519374: jump table of the original code, not used by the C code */
 } ImageData_0051936C;
 extern ImageData_0051936C g_ImageData_0051936C;
 
 /* original 0x0051972C-0x0051B3C0 */
 typedef struct ImageData_0051972C {
-    byte at_gap_0051972C[4]; /* 0051972C gap */
+    uint8_t at_gap_0051972C[4]; /* 0051972C gap */
     ArmyRuntimeSlot * at_g_ArmyRuntimeSlots; /* 00519730 g_ArmyRuntimeSlots */
     void * at_g_ArmyRuntimeRebaseBaseMinusOne; /* 00519734 g_ArmyRuntimeRebaseBaseMinusOne */
     ArmyGraphicsBinding at_g_ArmyGraphicsBindings[8]; /* 00519738 g_ArmyGraphicsBindings */
     ArmyAssetRecordPrefix * at_g_ArmyAssetRecordRegistry[768]; /* 00519778 g_ArmyAssetRecordRegistry */
-    dword at_g_ArmyAssetRecordRegistry_rest[2]; /* beyond the declared type */
-    undefined at_g_ArmyPreviewAlphaPremultiplyMmxLut256; /* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256 */
-    dword at_g_ArmyPreviewAlphaPremultiplyMmxLut256_rest[511]; /* beyond the declared type */
-    byte at_g_ArmyPreviewAlphaPremultiplyMmxLut256_rest_tail[3];
-    undefined at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256; /* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256 */
-    dword at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256_rest[511]; /* beyond the declared type */
-    byte at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256_rest_tail[3];
-    undefined8 at_g_ArmyPreviewDownsampleAlphaRoundingBiasMmx; /* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
+    uint32_t at_g_ArmyAssetRecordRegistry_rest[2]; /* beyond the declared type */
+    uint8_t at_g_ArmyPreviewAlphaPremultiplyMmxLut256; /* 0051A380 g_ArmyPreviewAlphaPremultiplyMmxLut256 */
+    uint32_t at_g_ArmyPreviewAlphaPremultiplyMmxLut256_rest[511]; /* beyond the declared type */
+    uint8_t at_g_ArmyPreviewAlphaPremultiplyMmxLut256_rest_tail[3];
+    uint8_t at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256; /* 0051AB80 g_ArmyPreviewAverageAlphaReciprocalMmxLut256 */
+    uint32_t at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256_rest[511]; /* beyond the declared type */
+    uint8_t at_g_ArmyPreviewAverageAlphaReciprocalMmxLut256_rest_tail[3];
+    uint64_t at_g_ArmyPreviewDownsampleAlphaRoundingBiasMmx; /* 0051B380 g_ArmyPreviewDownsampleAlphaRoundingBiasMmx */
     ArmyCommandGeneration at_g_ArmyCommandGenerationStandard; /* 0051B388 g_ArmyCommandGenerationStandard */
     ArmyCommandGeneration at_g_AiCommandGenerationCandidateBase; /* 0051B38C g_AiCommandGenerationCandidateBase */
     ArmyCommandGeneration at_g_AiCommandGenerationRetainedTarget; /* 0051B390 g_AiCommandGenerationRetainedTarget */
-    dword at_g_AiCommandGenerationRetainedTarget_rest[11]; /* beyond the declared type */
+    uint32_t at_g_AiCommandGenerationRetainedTarget_rest[11]; /* beyond the declared type */
 } ImageData_0051972C;
 extern ImageData_0051972C g_ImageData_0051972C;
 
 /* original 0x0051DBB4-0x0051DFD0 */
 typedef struct ImageData_0051DBB4 {
-    byte at_gap_0051DBB4[12]; /* 0051DBB4 gap */
+    uint8_t at_gap_0051DBB4[12]; /* 0051DBB4 gap */
     GraphicsTextureSet * at_g_EffectTextureSet; /* 0051DBC0 g_EffectTextureSet */
     GraphicsPaletteAsset * at_g_EffectPalette; /* 0051DBC4 g_EffectPalette */
     EffectRuntimeSlot * at_g_EffectRuntimeSlots; /* 0051DBC8 g_EffectRuntimeSlots */
-    byte * at_g_EffectRuntimeRebaseBaseMinusOne; /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
+    uint8_t * at_g_EffectRuntimeRebaseBaseMinusOne; /* 0051DBCC g_EffectRuntimeRebaseBaseMinusOne */
     EffectDefinition * at_g_EffectDefinitionRegistry[256]; /* 0051DBD0 g_EffectDefinitionRegistry */
 } ImageData_0051DBB4;
 extern ImageData_0051DBB4 g_ImageData_0051DBB4;
 
 /* original 0x0051EAA0-0x0051EAD0 */
 typedef struct ImageData_0051EAA0 {
-    byte at_gap_0051EAA0[16]; /* 0051EAA0 gap */
-    dword at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0051EAA0[16]; /* 0051EAA0 gap */
+    uint32_t at_g_EffectLifecycleTransitionDispatchTable5[8]; /* 0051EAB0 g_EffectLifecycleTransitionDispatchTable5: jump table of the original code, not used by the C code */
 } ImageData_0051EAA0;
 extern ImageData_0051EAA0 g_ImageData_0051EAA0;
 
 /* original 0x0051EEE4-0x005200C0 */
 typedef struct ImageData_0051EEE4 {
-    byte at_gap_0051EEE4[12]; /* 0051EEE4 gap */
+    uint8_t at_gap_0051EEE4[12]; /* 0051EEE4 gap */
     ModelDefinitionRecordPrefix * at_g_ModelDefinitionRegistry[768]; /* 0051EEF0 g_ModelDefinitionRegistry */
     TerrainClassPlacementAndOverlayCallbackTable10 at_g_TerrainClassPlacementAndOverlayCallbacks10; /* 0051FAF0 g_TerrainClassPlacementAndOverlayCallbacks10 */
-    undefined at_g_FactionEnergyAllocationPriorityByModelClass; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
-    dword at_g_FactionEnergyAllocationPriorityByModelClass_rest[23]; /* beyond the declared type */
-    byte at_g_FactionEnergyAllocationPriorityByModelClass_rest_tail[3];
-    undefined at_g_AiCombatTargetClassBaseScoreTable24; /* 0051FB78 g_AiCombatTargetClassBaseScoreTable24 */
-    dword at_g_AiCombatTargetClassBaseScoreTable24_rest[23]; /* beyond the declared type */
-    byte at_g_AiCombatTargetClassBaseScoreTable24_rest_tail[3];
+    uint8_t at_g_FactionEnergyAllocationPriorityByModelClass; /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
+    uint32_t at_g_FactionEnergyAllocationPriorityByModelClass_rest[23]; /* beyond the declared type */
+    uint8_t at_g_FactionEnergyAllocationPriorityByModelClass_rest_tail[3];
+    uint8_t at_g_AiCombatTargetClassBaseScoreTable24; /* 0051FB78 g_AiCombatTargetClassBaseScoreTable24 */
+    uint32_t at_g_AiCombatTargetClassBaseScoreTable24_rest[23]; /* beyond the declared type */
+    uint8_t at_g_AiCombatTargetClassBaseScoreTable24_rest_tail[3];
     RuntimeModelClassPriorityTable24 at_g_RuntimeModelClassPriorityByModelClassId; /* 0051FBD8 g_RuntimeModelClassPriorityByModelClassId */
-    undefined at_g_ArmyRuntimeDepthBinClassByModelClass; /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass */
-    dword at_g_ArmyRuntimeDepthBinClassByModelClass_rest[23]; /* beyond the declared type */
-    byte at_g_ArmyRuntimeDepthBinClassByModelClass_rest_tail[3];
+    uint8_t at_g_ArmyRuntimeDepthBinClassByModelClass; /* 0051FC38 g_ArmyRuntimeDepthBinClassByModelClass */
+    uint32_t at_g_ArmyRuntimeDepthBinClassByModelClass_rest[23]; /* beyond the declared type */
+    uint8_t at_g_ArmyRuntimeDepthBinClassByModelClass_rest_tail[3];
     ArmyRuntimeOrderHandlerMatrix11x24 at_g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes; /* 0051FC98 g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes */
     ModelRuntimeSlot * at_g_ModelRuntimeSlots; /* 005200B8 g_ModelRuntimeSlots */
     int at_g_ModelRuntimeRebaseDelta; /* 005200BC g_ModelRuntimeRebaseDelta */
@@ -1724,106 +1724,106 @@ extern ImageData_0051EEE4 g_ImageData_0051EEE4;
 
 /* original 0x00520EA0-0x00520F60 */
 typedef struct ImageData_00520EA0 {
-    byte at_gap_00520EA0[16]; /* 00520EA0 gap */
-    undefined4 at_g_ArmySuspensionBlendVectorAXQ12; /* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
-    undefined4 at_g_ArmySuspensionBlendVectorAYQ12; /* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
-    undefined4 at_g_ArmySuspensionBlendVectorAZQ12; /* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
-    undefined4 at_g_ArmySuspensionBlendVectorBXQ12; /* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
-    undefined4 at_g_ArmySuspensionBlendVectorBYQ12; /* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
-    undefined4 at_g_ArmySuspensionBlendVectorBZQ12; /* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
-    undefined at_g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
-    dword at_g_ArmySuspensionRotationMatrixScratchA_rest[11]; /* beyond the declared type */
-    byte at_g_ArmySuspensionRotationMatrixScratchA_rest_tail[3];
-    undefined at_g_ArmySuspensionRotationMatrixScratchB; /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
-    dword at_g_ArmySuspensionRotationMatrixScratchB_rest[11]; /* beyond the declared type */
-    byte at_g_ArmySuspensionRotationMatrixScratchB_rest_tail[3];
-    undefined at_g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch */
-    dword at_g_ArmySuspensionRotationMatrixComposedScratch_rest[13]; /* beyond the declared type */
-    byte at_g_ArmySuspensionRotationMatrixComposedScratch_rest_tail[3];
+    uint8_t at_gap_00520EA0[16]; /* 00520EA0 gap */
+    uint32_t at_g_ArmySuspensionBlendVectorAXQ12; /* 00520EB0 g_ArmySuspensionBlendVectorAXQ12 */
+    uint32_t at_g_ArmySuspensionBlendVectorAYQ12; /* 00520EB4 g_ArmySuspensionBlendVectorAYQ12 */
+    uint32_t at_g_ArmySuspensionBlendVectorAZQ12; /* 00520EB8 g_ArmySuspensionBlendVectorAZQ12 */
+    uint32_t at_g_ArmySuspensionBlendVectorBXQ12; /* 00520EBC g_ArmySuspensionBlendVectorBXQ12 */
+    uint32_t at_g_ArmySuspensionBlendVectorBYQ12; /* 00520EC0 g_ArmySuspensionBlendVectorBYQ12 */
+    uint32_t at_g_ArmySuspensionBlendVectorBZQ12; /* 00520EC4 g_ArmySuspensionBlendVectorBZQ12 */
+    uint8_t at_g_ArmySuspensionRotationMatrixScratchA; /* 00520EC8 g_ArmySuspensionRotationMatrixScratchA */
+    uint32_t at_g_ArmySuspensionRotationMatrixScratchA_rest[11]; /* beyond the declared type */
+    uint8_t at_g_ArmySuspensionRotationMatrixScratchA_rest_tail[3];
+    uint8_t at_g_ArmySuspensionRotationMatrixScratchB; /* 00520EF8 g_ArmySuspensionRotationMatrixScratchB */
+    uint32_t at_g_ArmySuspensionRotationMatrixScratchB_rest[11]; /* beyond the declared type */
+    uint8_t at_g_ArmySuspensionRotationMatrixScratchB_rest_tail[3];
+    uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch; /* 00520F28 g_ArmySuspensionRotationMatrixComposedScratch */
+    uint32_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest[13]; /* beyond the declared type */
+    uint8_t at_g_ArmySuspensionRotationMatrixComposedScratch_rest_tail[3];
 } ImageData_00520EA0;
 extern ImageData_00520EA0 g_ImageData_00520EA0;
 
 /* original 0x00524110-0x00524130 */
 typedef struct ImageData_00524110 {
-    byte at_gap_00524110[16]; /* 00524110 gap */
-    dword at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[4]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00524110[16]; /* 00524110 gap */
+    uint32_t at_g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120[4]; /* 00524120 g_ArmyRuntimeClassUpdateSlot11_DispatchByClassId_SwitchTable_00524120: jump table of the original code, not used by the C code */
 } ImageData_00524110;
 extern ImageData_00524110 g_ImageData_00524110;
 
 /* original 0x005247C0-0x005247F0 */
 typedef struct ImageData_005247C0 {
-    byte at_gap_005247C0[16]; /* 005247C0 gap */
-    dword at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0[8]; /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
+    uint8_t at_gap_005247C0[16]; /* 005247C0 gap */
+    uint32_t at_g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0[8]; /* 005247D0 g_ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId_SwitchTable_005247D0: jump table of the original code, not used by the C code */
 } ImageData_005247C0;
 extern ImageData_005247C0 g_ImageData_005247C0;
 
 /* original 0x00525A8C-0x00525AB0 */
 typedef struct ImageData_00525A8C {
-    byte at_gap_00525A8C[4]; /* 00525A8C gap */
-    dword at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90[8]; /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00525A8C[4]; /* 00525A8C gap */
+    uint32_t at_g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90[8]; /* 00525A90 g_ArmyRuntimeClassUpdateSlot21_DispatchByClassId_SwitchTable_00525A90: jump table of the original code, not used by the C code */
 } ImageData_00525A8C;
 extern ImageData_00525A8C g_ImageData_00525A8C;
 
 /* original 0x005266B0-0x005266D0 */
 typedef struct ImageData_005266B0 {
-    byte at_gap_005266B0[16]; /* 005266B0 gap */
-    dword at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
+    uint8_t at_gap_005266B0[16]; /* 005266B0 gap */
+    uint32_t at_g_ArmyTerrainContactDispatchTable2[4]; /* 005266C0 g_ArmyTerrainContactDispatchTable2: jump table of the original code, not used by the C code */
 } ImageData_005266B0;
 extern ImageData_005266B0 g_ImageData_005266B0;
 
 /* original 0x00526988-0x005269B0 */
 typedef struct ImageData_00526988 {
-    byte at_gap_00526988[8]; /* 00526988 gap */
-    dword at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990[8]; /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00526988[8]; /* 00526988 gap */
+    uint32_t at_g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990[8]; /* 00526990 g_ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode_SwitchTable_00526990: jump table of the original code, not used by the C code */
 } ImageData_00526988;
 extern ImageData_00526988 g_ImageData_00526988;
 
 /* original 0x00527AA4-0x00527AC0 */
 typedef struct ImageData_00527AA4 {
-    byte at_gap_00527AA4[28]; /* 00527AA4 gap */
+    uint8_t at_gap_00527AA4[28]; /* 00527AA4 gap */
 } ImageData_00527AA4;
 extern ImageData_00527AA4 g_ImageData_00527AA4;
 
 /* original 0x00528674-0x00528678 */
 typedef struct ImageData_00528674 {
-    byte at_gap_00528674[4]; /* 00528674 gap */
+    uint8_t at_gap_00528674[4]; /* 00528674 gap */
 } ImageData_00528674;
 extern ImageData_00528674 g_ImageData_00528674;
 
 /* original 0x00528A6C-0x00528A70 */
 typedef struct ImageData_00528A6C {
-    byte at_gap_00528A6C[4]; /* 00528A6C gap */
+    uint8_t at_gap_00528A6C[4]; /* 00528A6C gap */
 } ImageData_00528A6C;
 extern ImageData_00528A6C g_ImageData_00528A6C;
 
 /* original 0x0052AF30-0x0052B350 */
 typedef struct ImageData_0052AF30 {
-    byte at_gap_0052AF30[16]; /* 0052AF30 gap */
+    uint8_t at_gap_0052AF30[16]; /* 0052AF30 gap */
     GraphicsTextureSet * at_g_ShotTextureSet; /* 0052AF40 g_ShotTextureSet */
     GraphicsPaletteAsset * at_g_ShotPalette; /* 0052AF44 g_ShotPalette */
     ShotRuntimeSlot * at_g_ShotRuntimeSlots; /* 0052AF48 g_ShotRuntimeSlots */
-    byte * at_g_ShotRuntimeRebaseBaseMinusOne; /* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
+    uint8_t * at_g_ShotRuntimeRebaseBaseMinusOne; /* 0052AF4C g_ShotRuntimeRebaseBaseMinusOne */
     ShotDefinition * at_g_ShotDefinitionRegistry[256]; /* 0052AF50 g_ShotDefinitionRegistry */
 } ImageData_0052AF30;
 extern ImageData_0052AF30 g_ImageData_0052AF30;
 
 /* original 0x0052CDE8-0x0052CEE0 */
 typedef struct ImageData_0052CDE8 {
-    byte at_gap_0052CDE8[8]; /* 0052CDE8 gap */
+    uint8_t at_gap_0052CDE8[8]; /* 0052CDE8 gap */
     GraphicsTextureSourceAsset * at_g_SelectionPanelTextureSource; /* 0052CDF0 g_SelectionPanelTextureSource */
     GraphicsTextureSourceAsset * at_g_InfoPanelTextureSource; /* 0052CDF4 g_InfoPanelTextureSource */
     void * at_g_SelectionPanelData; /* 0052CDF8 g_SelectionPanelData */
     void * at_g_InfoPanelData; /* 0052CDFC g_InfoPanelData */
-    undefined4 at_g_SelectionPanelNumberTextStyle; /* 0052CE00 g_SelectionPanelNumberTextStyle */
+    uint32_t at_g_SelectionPanelNumberTextStyle; /* 0052CE00 g_SelectionPanelNumberTextStyle */
     ModelProjectedBoundsPixels at_g_ModelProjectedBoundsPixels; /* 0052CE04 g_ModelProjectedBoundsPixels */
     SelectionInfoEntitySlots * at_g_SelectionInfoEntitySlots; /* 0052CE14 g_SelectionInfoEntitySlots */
-    word at_u_gfx_panel_select_gfx_0052ce18[21]; /* 0052CE18 u_gfx_panel_select_gfx_0052ce18 */
-    word at_u_gfx_panel_info_gfx_0052ce42[19]; /* 0052CE42 u_gfx_panel_info_gfx_0052ce42 */
-    word at_u_gfx_panel_select_dat_0052ce68[21]; /* 0052CE68 u_gfx_panel_select_dat_0052ce68 */
-    word at_u_gfx_panel_info_dat_0052ce92[19]; /* 0052CE92 u_gfx_panel_info_dat_0052ce92 */
-    undefined at_g_SelectionPanelNumberScratchUtf16; /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
-    dword at_g_SelectionPanelNumberScratchUtf16_rest[7]; /* beyond the declared type */
-    byte at_g_SelectionPanelNumberScratchUtf16_rest_tail[3];
+    uint16_t at_u_gfx_panel_select_gfx_0052ce18[21]; /* 0052CE18 u_gfx_panel_select_gfx_0052ce18 */
+    uint16_t at_u_gfx_panel_info_gfx_0052ce42[19]; /* 0052CE42 u_gfx_panel_info_gfx_0052ce42 */
+    uint16_t at_u_gfx_panel_select_dat_0052ce68[21]; /* 0052CE68 u_gfx_panel_select_dat_0052ce68 */
+    uint16_t at_u_gfx_panel_info_dat_0052ce92[19]; /* 0052CE92 u_gfx_panel_info_dat_0052ce92 */
+    uint8_t at_g_SelectionPanelNumberScratchUtf16; /* 0052CEB8 g_SelectionPanelNumberScratchUtf16 */
+    uint32_t at_g_SelectionPanelNumberScratchUtf16_rest[7]; /* beyond the declared type */
+    uint8_t at_g_SelectionPanelNumberScratchUtf16_rest_tail[3];
     GraphicsTextureSourceBlitProc * at_g_SelectionPanelBlitOpaque; /* 0052CED8 g_SelectionPanelBlitOpaque */
     GraphicsTextureSourceTiledBlitProc * at_g_SelectionPanelBlitClipped; /* 0052CEDC g_SelectionPanelBlitClipped */
 } ImageData_0052CDE8;
@@ -1831,440 +1831,440 @@ extern ImageData_0052CDE8 g_ImageData_0052CDE8;
 
 /* original 0x0052FF14-0x0052FF30 */
 typedef struct ImageData_0052FF14 {
-    byte at_gap_0052FF14[28]; /* 0052FF14 gap */
+    uint8_t at_gap_0052FF14[28]; /* 0052FF14 gap */
 } ImageData_0052FF14;
 extern ImageData_0052FF14 g_ImageData_0052FF14;
 
 /* original 0x00530080-0x005300A0 */
 typedef struct ImageData_00530080 {
-    byte at_gap_00530080[32]; /* 00530080 gap */
+    uint8_t at_gap_00530080[32]; /* 00530080 gap */
 } ImageData_00530080;
 extern ImageData_00530080 g_ImageData_00530080;
 
 /* original 0x005300C8-0x005300E0 */
 typedef struct ImageData_005300C8 {
-    byte at_gap_005300C8[24]; /* 005300C8 gap */
+    uint8_t at_gap_005300C8[24]; /* 005300C8 gap */
 } ImageData_005300C8;
 extern ImageData_005300C8 g_ImageData_005300C8;
 
 /* original 0x00530818-0x00531080 */
 typedef struct ImageData_00530818 {
-    byte at_gap_00530818[8]; /* 00530818 gap */
+    uint8_t at_gap_00530818[8]; /* 00530818 gap */
     void ** at_g_InGameLoadedResourcePointers; /* 00530820 g_InGameLoadedResourcePointers */
     InGameLoadedResourcePointerCount at_g_InGameLoadedResourcePointerCount; /* 00530824 g_InGameLoadedResourcePointerCount */
-    undefined at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
-    dword at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest_tail[3];
-    undefined at_g_InGameLevelSoundParentDirectoryScratchUtf16; /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
-    dword at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest_tail[3];
-    undefined at_g_LevelResourcePathScratchUtf16; /* 00530C28 g_LevelResourcePathScratchUtf16 */
-    dword at_g_LevelResourcePathScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_LevelResourcePathScratchUtf16_rest_tail[3];
-    word at_g_LevelEndingMovieSourcePath[256]; /* 00530E28 g_LevelEndingMovieSourcePath */
-    undefined4 at_g_InGameLevelTitleTextResourceIndex; /* 00531028 g_InGameLevelTitleTextResourceIndex */
-    dword at_g_InGameLevelCampaignAssociationIndex; /* 0053102C g_InGameLevelCampaignAssociationIndex */
-    undefined4 at_g_InGameLevelEffectVoiceSet0; /* 00531030 g_InGameLevelEffectVoiceSet0 */
-    undefined4 at_g_InGameLevelEffectVoiceSet1; /* 00531034 g_InGameLevelEffectVoiceSet1 */
-    undefined4 at_g_InGameLevelEffectVoiceSet2; /* 00531038 g_InGameLevelEffectVoiceSet2 */
-    undefined4 at_g_InGameLevelEffectVoiceSet3; /* 0053103C g_InGameLevelEffectVoiceSet3 */
-    undefined4 at_g_InGameActiveEffectVoice; /* 00531040 g_InGameActiveEffectVoice */
-    dword at_g_InGameEffectsEnabled; /* 00531044 g_InGameEffectsEnabled */
-    undefined4 at_g_InGameLevelMusicVoiceSet0; /* 00531048 g_InGameLevelMusicVoiceSet0 */
-    undefined4 at_g_InGameLevelMusicVoiceSet1; /* 0053104C g_InGameLevelMusicVoiceSet1 */
-    undefined4 at_g_InGameLevelMusicVoiceSet2; /* 00531050 g_InGameLevelMusicVoiceSet2 */
-    undefined4 at_g_InGameLevelMusicVoiceSet3; /* 00531054 g_InGameLevelMusicVoiceSet3 */
-    undefined4 at_g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice */
-    dword at_g_InGameMusicEnabled; /* 0053105C g_InGameMusicEnabled */
+    uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16; /* 00530828 g_InGameLevelSoundLeafOrCombinedPathScratchUtf16 */
+    uint32_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_InGameLevelSoundLeafOrCombinedPathScratchUtf16_rest_tail[3];
+    uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16; /* 00530A28 g_InGameLevelSoundParentDirectoryScratchUtf16 */
+    uint32_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_InGameLevelSoundParentDirectoryScratchUtf16_rest_tail[3];
+    uint8_t at_g_LevelResourcePathScratchUtf16; /* 00530C28 g_LevelResourcePathScratchUtf16 */
+    uint32_t at_g_LevelResourcePathScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_LevelResourcePathScratchUtf16_rest_tail[3];
+    uint16_t at_g_LevelEndingMovieSourcePath[256]; /* 00530E28 g_LevelEndingMovieSourcePath */
+    uint32_t at_g_InGameLevelTitleTextResourceIndex; /* 00531028 g_InGameLevelTitleTextResourceIndex */
+    uint32_t at_g_InGameLevelCampaignAssociationIndex; /* 0053102C g_InGameLevelCampaignAssociationIndex */
+    uint32_t at_g_InGameLevelEffectVoiceSet0; /* 00531030 g_InGameLevelEffectVoiceSet0 */
+    uint32_t at_g_InGameLevelEffectVoiceSet1; /* 00531034 g_InGameLevelEffectVoiceSet1 */
+    uint32_t at_g_InGameLevelEffectVoiceSet2; /* 00531038 g_InGameLevelEffectVoiceSet2 */
+    uint32_t at_g_InGameLevelEffectVoiceSet3; /* 0053103C g_InGameLevelEffectVoiceSet3 */
+    uint32_t at_g_InGameActiveEffectVoice; /* 00531040 g_InGameActiveEffectVoice */
+    uint32_t at_g_InGameEffectsEnabled; /* 00531044 g_InGameEffectsEnabled */
+    uint32_t at_g_InGameLevelMusicVoiceSet0; /* 00531048 g_InGameLevelMusicVoiceSet0 */
+    uint32_t at_g_InGameLevelMusicVoiceSet1; /* 0053104C g_InGameLevelMusicVoiceSet1 */
+    uint32_t at_g_InGameLevelMusicVoiceSet2; /* 00531050 g_InGameLevelMusicVoiceSet2 */
+    uint32_t at_g_InGameLevelMusicVoiceSet3; /* 00531054 g_InGameLevelMusicVoiceSet3 */
+    uint32_t at_g_InGameActiveMusicVoice; /* 00531058 g_InGameActiveMusicVoice */
+    uint32_t at_g_InGameMusicEnabled; /* 0053105C g_InGameMusicEnabled */
     InGameLevelRuntimeGlobalBlock20 at_g_InGameLevelRuntimeGlobalBlock; /* 00531060 g_InGameLevelRuntimeGlobalBlock */
 } ImageData_00530818;
 extern ImageData_00530818 g_ImageData_00530818;
 
 /* original 0x00531FF4-0x00532000 */
 typedef struct ImageData_00531FF4 {
-    byte at_gap_00531FF4[12]; /* 00531FF4 gap */
+    uint8_t at_gap_00531FF4[12]; /* 00531FF4 gap */
 } ImageData_00531FF4;
 extern ImageData_00531FF4 g_ImageData_00531FF4;
 
 /* original 0x00532998-0x005329A4 */
 typedef struct ImageData_00532998 {
-    byte at_gap_00532998[12]; /* 00532998 gap */
+    uint8_t at_gap_00532998[12]; /* 00532998 gap */
 } ImageData_00532998;
 extern ImageData_00532998 g_ImageData_00532998;
 
 /* original 0x0053329C-0x005332C0 */
 typedef struct ImageData_0053329C {
-    byte at_gap_0053329C[4]; /* 0053329C gap */
+    uint8_t at_gap_0053329C[4]; /* 0053329C gap */
     GridScratchCell * at_g_GridScratchPrimary; /* 005332A0 g_GridScratchPrimary */
     GridScratchCell * at_g_GridScratchSecondary; /* 005332A4 g_GridScratchSecondary */
     GridScratchCell ** at_g_GridPathCostQueueBegin; /* 005332A8 g_GridPathCostQueueBegin */
     GridScratchCell ** at_g_GridPathCostQueueEnd; /* 005332AC g_GridPathCostQueueEnd */
     GridScratchCell ** at_g_GridPathCostQueuePassBoundary; /* 005332B0 g_GridPathCostQueuePassBoundary */
-    dword at_g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
-    sdword at_g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
-    dword at_g_GridScratchHeight_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GridScratchWidth; /* 005332B4 g_GridScratchWidth */
+    int32_t at_g_GridScratchHeight; /* 005332B8 g_GridScratchHeight */
+    uint32_t at_g_GridScratchHeight_rest[1]; /* beyond the declared type */
 } ImageData_0053329C;
 extern ImageData_0053329C g_ImageData_0053329C;
 
 /* original 0x00533D4C-0x00533D60 */
 typedef struct ImageData_00533D4C {
-    byte at_gap_00533D4C[20]; /* 00533D4C gap */
+    uint8_t at_gap_00533D4C[20]; /* 00533D4C gap */
 } ImageData_00533D4C;
 extern ImageData_00533D4C g_ImageData_00533D4C;
 
 /* original 0x00533ED0-0x00533EF0 */
 typedef struct ImageData_00533ED0 {
-    dword at_g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask */
-    undefined4 at_g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
-    undefined4 at_g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
-    dword at_g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
-    dword at_g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
-    dword at_g_GridPathUnreachableRegionReferenceRow_rest[3]; /* beyond the declared type */
+    uint32_t at_g_GridPathEntityClassMask; /* 00533ED0 g_GridPathEntityClassMask */
+    uint32_t at_g_GridPathBlockingMask; /* 00533ED4 g_GridPathBlockingMask */
+    uint32_t at_g_GridPathHighCostMask; /* 00533ED8 g_GridPathHighCostMask */
+    uint32_t at_g_GridPathUnreachableRegionReferenceColumn; /* 00533EDC g_GridPathUnreachableRegionReferenceColumn */
+    uint32_t at_g_GridPathUnreachableRegionReferenceRow; /* 00533EE0 g_GridPathUnreachableRegionReferenceRow */
+    uint32_t at_g_GridPathUnreachableRegionReferenceRow_rest[3]; /* beyond the declared type */
 } ImageData_00533ED0;
 extern ImageData_00533ED0 g_ImageData_00533ED0;
 
 /* original 0x005367CC-0x005368E0 */
 typedef struct ImageData_005367CC {
-    byte at_gap_005367CC[4]; /* 005367CC gap */
+    uint8_t at_gap_005367CC[4]; /* 005367CC gap */
     EntityPathingPriorityPair * at_g_EntityPathingPriorityPairs; /* 005367D0 g_EntityPathingPriorityPairs */
-    dword at_g_EntityPathingPriorityPairStorage[1]; /* 005367D4 g_EntityPathingPriorityPairStorage */
-    dword at_g_EntityPathingPriorityPairStorage_0__priority[1]; /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
-    dword at_g_EntityPathingPriorityPairStorage_1__entity[1]; /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
-    dword at_g_EntityPathingPriorityPairStorage_1__priority[61]; /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
-    dword at_g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
-    dword at_g_EntityPathingPriorityPairCount_rest[2]; /* beyond the declared type */
+    uint32_t at_g_EntityPathingPriorityPairStorage[1]; /* 005367D4 g_EntityPathingPriorityPairStorage */
+    uint32_t at_g_EntityPathingPriorityPairStorage_0__priority[1]; /* 005367D8 g_EntityPathingPriorityPairStorage[0].priority */
+    uint32_t at_g_EntityPathingPriorityPairStorage_1__entity[1]; /* 005367DC g_EntityPathingPriorityPairStorage[1].entity */
+    uint32_t at_g_EntityPathingPriorityPairStorage_1__priority[61]; /* 005367E0 g_EntityPathingPriorityPairStorage[1].priority */
+    uint32_t at_g_EntityPathingPriorityPairCount; /* 005368D4 g_EntityPathingPriorityPairCount */
+    uint32_t at_g_EntityPathingPriorityPairCount_rest[2]; /* beyond the declared type */
 } ImageData_005367CC;
 extern ImageData_005367CC g_ImageData_005367CC;
 
 /* original 0x00536F08-0x00536FC0 */
 typedef struct ImageData_00536F08 {
-    byte at_gap_00536F08[8]; /* 00536F08 gap */
+    uint8_t at_gap_00536F08[8]; /* 00536F08 gap */
     Q12 at_g_GridTerrainClassBit24MaxWaterSurfaceDelta; /* 00536F10 g_GridTerrainClassBit24MaxWaterSurfaceDelta */
     AngleTurn16Stored32 at_g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16; /* 00536F14 g_GridTerrainClassBit24MaxTriangle1NormalAngleHigh16 */
     AngleTurn16Stored32 at_g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16; /* 00536F18 g_GridTerrainClassBit25MaxSelectedNormalAngleHigh16 */
     AngleTurn16Stored32 at_g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16; /* 00536F1C g_GridTerrainClassBit26MaxSelectedNormalAngleHigh16 */
     AngleTurn16Stored32 at_g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16; /* 00536F20 g_GridTerrainClassBit27MaxSelectedNormalAngleHigh16 */
-    undefined at_g_ModelTraversalClass4SecondaryThresholdTable3; /* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3 */
-    dword at_g_ModelTraversalClass4SecondaryThresholdTable3_rest[2]; /* beyond the declared type */
-    byte at_g_ModelTraversalClass4SecondaryThresholdTable3_rest_tail[3];
+    uint8_t at_g_ModelTraversalClass4SecondaryThresholdTable3; /* 00536F24 g_ModelTraversalClass4SecondaryThresholdTable3 */
+    uint32_t at_g_ModelTraversalClass4SecondaryThresholdTable3_rest[2]; /* beyond the declared type */
+    uint8_t at_g_ModelTraversalClass4SecondaryThresholdTable3_rest_tail[3];
     Q12 at_g_GridTerrainClassBit28MinWaterSurfaceDelta; /* 00536F30 g_GridTerrainClassBit28MinWaterSurfaceDelta */
     Q12 at_g_GridTerrainClassBit29MinWaterSurfaceDelta; /* 00536F34 g_GridTerrainClassBit29MinWaterSurfaceDelta */
     Q12 at_g_GridTerrainClassBit30MinWaterSurfaceDelta; /* 00536F38 g_GridTerrainClassBit30MinWaterSurfaceDelta */
     AngleTurn16Stored32 at_g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16; /* 00536F3C g_GridTerrainClassBit28MaxTriangle0NormalAngleHigh16 */
     AngleTurn16Stored32 at_g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16; /* 00536F40 g_GridTerrainClassBit29MaxTriangle0NormalAngleHigh16 */
     AngleTurn16Stored32 at_g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16; /* 00536F44 g_GridTerrainClassBit30MaxTriangle0NormalAngleHigh16 */
-    undefined at_g_ModelTraversalFallbackSecondaryThresholdTable3; /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3 */
-    dword at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest[5]; /* beyond the declared type */
-    byte at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest_tail[3];
-    undefined4 at_g_GridInfluenceRadiusOffset0; /* 00536F60 g_GridInfluenceRadiusOffset0 */
-    undefined4 at_g_GridInfluenceRadiusOffset1; /* 00536F64 g_GridInfluenceRadiusOffset1 */
-    undefined4 at_g_GridInfluenceRadiusOffset2; /* 00536F68 g_GridInfluenceRadiusOffset2 */
-    undefined4 at_g_GridInfluenceRadiusOffset3; /* 00536F6C g_GridInfluenceRadiusOffset3 */
-    undefined4 at_g_GridInfluenceRadiusOffset4; /* 00536F70 g_GridInfluenceRadiusOffset4 */
-    undefined4 at_g_GridInfluenceRadiusOffset5; /* 00536F74 g_GridInfluenceRadiusOffset5 */
-    undefined4 at_g_GridInfluenceRadiusOffset6; /* 00536F78 g_GridInfluenceRadiusOffset6 */
-    undefined4 at_g_GridInfluenceRadiusOffset7; /* 00536F7C g_GridInfluenceRadiusOffset7 */
-    undefined4 at_g_GridInfluenceSquaredThreshold0; /* 00536F80 g_GridInfluenceSquaredThreshold0 */
-    undefined4 at_g_GridInfluenceSquaredThreshold1; /* 00536F84 g_GridInfluenceSquaredThreshold1 */
-    undefined4 at_g_GridInfluenceSquaredThreshold2; /* 00536F88 g_GridInfluenceSquaredThreshold2 */
-    undefined4 at_g_GridInfluenceSquaredThreshold3; /* 00536F8C g_GridInfluenceSquaredThreshold3 */
-    undefined4 at_g_GridInfluenceSquaredThreshold4; /* 00536F90 g_GridInfluenceSquaredThreshold4 */
-    undefined4 at_g_GridInfluenceSquaredThreshold5; /* 00536F94 g_GridInfluenceSquaredThreshold5 */
-    undefined4 at_g_GridInfluenceSquaredThreshold6; /* 00536F98 g_GridInfluenceSquaredThreshold6 */
-    undefined4 at_g_GridInfluenceSquaredThreshold7; /* 00536F9C g_GridInfluenceSquaredThreshold7 */
-    undefined4 at_g_AiCombatTargetRadialClearanceWeight; /* 00536FA0 g_AiCombatTargetRadialClearanceWeight */
-    undefined4 at_g_AiCombatTargetCandidateCounterCountWeight; /* 00536FA4 g_AiCombatTargetCandidateCounterCountWeight */
-    undefined4 at_g_AiCombatTargetSourceCounterCountWeight; /* 00536FA8 g_AiCombatTargetSourceCounterCountWeight */
-    undefined4 at_g_AiCombatTargetScaleDeficitWeight; /* 00536FAC g_AiCombatTargetScaleDeficitWeight */
-    undefined4 at_g_AiCombatTargetClassBaseScoreMultiplier; /* 00536FB0 g_AiCombatTargetClassBaseScoreMultiplier */
+    uint8_t at_g_ModelTraversalFallbackSecondaryThresholdTable3; /* 00536F48 g_ModelTraversalFallbackSecondaryThresholdTable3 */
+    uint32_t at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest[5]; /* beyond the declared type */
+    uint8_t at_g_ModelTraversalFallbackSecondaryThresholdTable3_rest_tail[3];
+    uint32_t at_g_GridInfluenceRadiusOffset0; /* 00536F60 g_GridInfluenceRadiusOffset0 */
+    uint32_t at_g_GridInfluenceRadiusOffset1; /* 00536F64 g_GridInfluenceRadiusOffset1 */
+    uint32_t at_g_GridInfluenceRadiusOffset2; /* 00536F68 g_GridInfluenceRadiusOffset2 */
+    uint32_t at_g_GridInfluenceRadiusOffset3; /* 00536F6C g_GridInfluenceRadiusOffset3 */
+    uint32_t at_g_GridInfluenceRadiusOffset4; /* 00536F70 g_GridInfluenceRadiusOffset4 */
+    uint32_t at_g_GridInfluenceRadiusOffset5; /* 00536F74 g_GridInfluenceRadiusOffset5 */
+    uint32_t at_g_GridInfluenceRadiusOffset6; /* 00536F78 g_GridInfluenceRadiusOffset6 */
+    uint32_t at_g_GridInfluenceRadiusOffset7; /* 00536F7C g_GridInfluenceRadiusOffset7 */
+    uint32_t at_g_GridInfluenceSquaredThreshold0; /* 00536F80 g_GridInfluenceSquaredThreshold0 */
+    uint32_t at_g_GridInfluenceSquaredThreshold1; /* 00536F84 g_GridInfluenceSquaredThreshold1 */
+    uint32_t at_g_GridInfluenceSquaredThreshold2; /* 00536F88 g_GridInfluenceSquaredThreshold2 */
+    uint32_t at_g_GridInfluenceSquaredThreshold3; /* 00536F8C g_GridInfluenceSquaredThreshold3 */
+    uint32_t at_g_GridInfluenceSquaredThreshold4; /* 00536F90 g_GridInfluenceSquaredThreshold4 */
+    uint32_t at_g_GridInfluenceSquaredThreshold5; /* 00536F94 g_GridInfluenceSquaredThreshold5 */
+    uint32_t at_g_GridInfluenceSquaredThreshold6; /* 00536F98 g_GridInfluenceSquaredThreshold6 */
+    uint32_t at_g_GridInfluenceSquaredThreshold7; /* 00536F9C g_GridInfluenceSquaredThreshold7 */
+    uint32_t at_g_AiCombatTargetRadialClearanceWeight; /* 00536FA0 g_AiCombatTargetRadialClearanceWeight */
+    uint32_t at_g_AiCombatTargetCandidateCounterCountWeight; /* 00536FA4 g_AiCombatTargetCandidateCounterCountWeight */
+    uint32_t at_g_AiCombatTargetSourceCounterCountWeight; /* 00536FA8 g_AiCombatTargetSourceCounterCountWeight */
+    uint32_t at_g_AiCombatTargetScaleDeficitWeight; /* 00536FAC g_AiCombatTargetScaleDeficitWeight */
+    uint32_t at_g_AiCombatTargetClassBaseScoreMultiplier; /* 00536FB0 g_AiCombatTargetClassBaseScoreMultiplier */
     AiCommandGenerationRightShiftBits at_g_AiCombatTargetSelectedCommandGenerationRightShiftBits; /* 00536FB4 g_AiCombatTargetSelectedCommandGenerationRightShiftBits */
     AiCommandGenerationRightShiftBits at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits; /* 00536FB8 g_AiCombatTargetCurrentCommandGenerationRightShiftBits */
-    dword at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits_rest[1]; /* beyond the declared type */
+    uint32_t at_g_AiCombatTargetCurrentCommandGenerationRightShiftBits_rest[1]; /* beyond the declared type */
 } ImageData_00536F08;
 extern ImageData_00536F08 g_ImageData_00536F08;
 
 /* original 0x00537410-0x00537420 */
 typedef struct ImageData_00537410 {
     AiCandidateWorkspaceEntry * at_g_AiWorkspaceBuffer13_Size0400; /* 00537410 g_AiWorkspaceBuffer13_Size0400 */
-    undefined4 at_g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
-    dword at_g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
-    dword at_g_AiPurchaseAppliedArmyClassMask_rest[1]; /* beyond the declared type */
+    uint32_t at_g_AiCandidateWorkspaceEntryCount; /* 00537414 g_AiCandidateWorkspaceEntryCount */
+    uint32_t at_g_AiPurchaseAppliedArmyClassMask; /* 00537418 g_AiPurchaseAppliedArmyClassMask */
+    uint32_t at_g_AiPurchaseAppliedArmyClassMask_rest[1]; /* beyond the declared type */
 } ImageData_00537410;
 extern ImageData_00537410 g_ImageData_00537410;
 
 /* original 0x0053795C-0x005379E0 */
 typedef struct ImageData_0053795C {
-    byte at_gap_0053795C[4]; /* 0053795C gap */
+    uint8_t at_gap_0053795C[4]; /* 0053795C gap */
     AiWorkspace00EntryView8 * at_g_AiWorkspaceBuffer00_Size0400; /* 00537960 g_AiWorkspaceBuffer00_Size0400 */
-    undefined4 at_g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
+    uint32_t at_g_AiWorkspace00Count; /* 00537964 g_AiWorkspace00Count */
     AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer01_Size0200; /* 00537968 g_AiWorkspaceBuffer01_Size0200 */
-    undefined4 at_g_AiWorkspace01Count; /* 0053796C g_AiWorkspace01Count */
+    uint32_t at_g_AiWorkspace01Count; /* 0053796C g_AiWorkspace01Count */
     AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer02_Size0400; /* 00537970 g_AiWorkspaceBuffer02_Size0400 */
-    undefined4 at_g_AiWorkspace02Count; /* 00537974 g_AiWorkspace02Count */
+    uint32_t at_g_AiWorkspace02Count; /* 00537974 g_AiWorkspace02Count */
     AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer03_Size1000; /* 00537978 g_AiWorkspaceBuffer03_Size1000 */
-    undefined4 at_g_AiWorkspace03Count; /* 0053797C g_AiWorkspace03Count */
+    uint32_t at_g_AiWorkspace03Count; /* 0053797C g_AiWorkspace03Count */
     AiRuntimeWorkspaceEntry * at_g_AiWorkspaceBuffer04_Size0040; /* 00537980 g_AiWorkspaceBuffer04_Size0040 */
-    undefined4 at_g_AiWorkspace04Count; /* 00537984 g_AiWorkspace04Count */
+    uint32_t at_g_AiWorkspace04Count; /* 00537984 g_AiWorkspace04Count */
     AiScoredSiteWorkspaceEntry * at_g_AiWorkspaceBuffer05_Size0200; /* 00537988 g_AiWorkspaceBuffer05_Size0200 */
-    undefined4 at_g_AiWorkspace05Count; /* 0053798C g_AiWorkspace05Count */
-    byte * at_g_AiWorkspaceBuffer06_Size0400; /* 00537990 g_AiWorkspaceBuffer06_Size0400 */
-    undefined4 at_g_AiWorkspace06Count; /* 00537994 g_AiWorkspace06Count */
+    uint32_t at_g_AiWorkspace05Count; /* 0053798C g_AiWorkspace05Count */
+    uint8_t * at_g_AiWorkspaceBuffer06_Size0400; /* 00537990 g_AiWorkspaceBuffer06_Size0400 */
+    uint32_t at_g_AiWorkspace06Count; /* 00537994 g_AiWorkspace06Count */
     AiTargetWorkspaceEntry * at_g_AiWorkspaceBuffer07_Size0400; /* 00537998 g_AiWorkspaceBuffer07_Size0400 */
-    undefined4 at_g_AiWorkspace07Count; /* 0053799C g_AiWorkspace07Count */
+    uint32_t at_g_AiWorkspace07Count; /* 0053799C g_AiWorkspace07Count */
     AiTerrainFeatureWorkspaceEntry * at_g_AiWorkspaceBuffer08_Size0200; /* 005379A0 g_AiWorkspaceBuffer08_Size0200 */
-    undefined4 at_g_AiWorkspace08Count; /* 005379A4 g_AiWorkspace08Count */
+    uint32_t at_g_AiWorkspace08Count; /* 005379A4 g_AiWorkspace08Count */
     FieldGridCell ** at_g_AiWorkspaceBuffer09_Size1000; /* 005379A8 g_AiWorkspaceBuffer09_Size1000 */
-    undefined4 at_g_AiWorkspace09Count; /* 005379AC g_AiWorkspace09Count */
+    uint32_t at_g_AiWorkspace09Count; /* 005379AC g_AiWorkspace09Count */
     FieldGridCell ** at_g_AiWorkspaceBuffer10_Size0400; /* 005379B0 g_AiWorkspaceBuffer10_Size0400 */
-    undefined4 at_g_AiWorkspace10Count; /* 005379B4 g_AiWorkspace10Count */
+    uint32_t at_g_AiWorkspace10Count; /* 005379B4 g_AiWorkspace10Count */
     ArmyAssetRecordPrefix ** at_g_AiWorkspaceBuffer11_Size1000; /* 005379B8 g_AiWorkspaceBuffer11_Size1000 */
-    undefined4 at_g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
+    uint32_t at_g_AiWorkspace11Count; /* 005379BC g_AiWorkspace11Count */
     AiTechnologyPlanningCandidate * at_g_AiWorkspaceBuffer12_Size0200; /* 005379C0 g_AiWorkspaceBuffer12_Size0200 */
     AiTechnologyPlanningCandidateCount at_g_AiWorkspace12Count; /* 005379C4 g_AiWorkspace12Count */
-    undefined4 at_g_AiActiveGridMaskClass0; /* 005379C8 g_AiActiveGridMaskClass0 */
-    undefined4 at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
-    undefined4 at_g_AiActiveGridMaskClass2; /* 005379D0 g_AiActiveGridMaskClass2 */
-    undefined4 at_g_AiActiveGridMaskClass3; /* 005379D4 g_AiActiveGridMaskClass3 */
+    uint32_t at_g_AiActiveGridMaskClass0; /* 005379C8 g_AiActiveGridMaskClass0 */
+    uint32_t at_g_AiActiveGridMaskClass1; /* 005379CC g_AiActiveGridMaskClass1 */
+    uint32_t at_g_AiActiveGridMaskClass2; /* 005379D0 g_AiActiveGridMaskClass2 */
+    uint32_t at_g_AiActiveGridMaskClass3; /* 005379D4 g_AiActiveGridMaskClass3 */
     ArmyRuntimeSlot * at_g_AiWorkspaceOwnedAsset300Runtime; /* 005379D8 g_AiWorkspaceOwnedAsset300Runtime */
-    dword at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
+    uint32_t at_g_AiWorkspaceOwnedAsset300Runtime_rest[1]; /* beyond the declared type */
 } ImageData_0053795C;
 extern ImageData_0053795C g_ImageData_0053795C;
 
 /* original 0x00539050-0x00539070 */
 typedef struct ImageData_00539050 {
-    byte at_gap_00539050[16]; /* 00539050 gap */
-    undefined4 at_g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
-    dword at_g_AiConstructionPendingAssetConsumedCount_rest[3]; /* beyond the declared type */
+    uint8_t at_gap_00539050[16]; /* 00539050 gap */
+    uint32_t at_g_AiConstructionPendingAssetConsumedCount; /* 00539060 g_AiConstructionPendingAssetConsumedCount */
+    uint32_t at_g_AiConstructionPendingAssetConsumedCount_rest[3]; /* beyond the declared type */
 } ImageData_00539050;
 extern ImageData_00539050 g_ImageData_00539050;
 
 /* original 0x00539974-0x00539A40 */
 typedef struct ImageData_00539974 {
-    byte at_gap_00539974[12]; /* 00539974 gap */
-    dword at_g_TechnologyCategoryMaximumReciprocalQ24Table8[8]; /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
-    sdword at_g_TechnologyCategoryMaximum0; /* 005399A0 g_TechnologyCategoryMaximum0 */
-    undefined4 at_g_TechnologyCategoryMaximum1; /* 005399A4 g_TechnologyCategoryMaximum1 */
-    undefined4 at_g_TechnologyCategoryMaximum2; /* 005399A8 g_TechnologyCategoryMaximum2 */
-    undefined4 at_g_TechnologyCategoryMaximum3; /* 005399AC g_TechnologyCategoryMaximum3 */
-    undefined4 at_g_TechnologyCategoryMaximum4; /* 005399B0 g_TechnologyCategoryMaximum4 */
-    undefined4 at_g_TechnologyCategoryMaximum5; /* 005399B4 g_TechnologyCategoryMaximum5 */
-    undefined4 at_g_TechnologyCategoryMaximum6; /* 005399B8 g_TechnologyCategoryMaximum6 */
-    undefined4 at_g_TechnologyCategoryMaximum7; /* 005399BC g_TechnologyCategoryMaximum7 */
-    sdword at_g_AiArmyCandidateFlaggedDefinitionValueMaximum; /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
-    sdword at_g_AiStrategicClassTerrainWeights[5][3]; /* 005399C4 g_AiStrategicClassTerrainWeights */
+    uint8_t at_gap_00539974[12]; /* 00539974 gap */
+    uint32_t at_g_TechnologyCategoryMaximumReciprocalQ24Table8[8]; /* 00539980 g_TechnologyCategoryMaximumReciprocalQ24Table8 */
+    int32_t at_g_TechnologyCategoryMaximum0; /* 005399A0 g_TechnologyCategoryMaximum0 */
+    uint32_t at_g_TechnologyCategoryMaximum1; /* 005399A4 g_TechnologyCategoryMaximum1 */
+    uint32_t at_g_TechnologyCategoryMaximum2; /* 005399A8 g_TechnologyCategoryMaximum2 */
+    uint32_t at_g_TechnologyCategoryMaximum3; /* 005399AC g_TechnologyCategoryMaximum3 */
+    uint32_t at_g_TechnologyCategoryMaximum4; /* 005399B0 g_TechnologyCategoryMaximum4 */
+    uint32_t at_g_TechnologyCategoryMaximum5; /* 005399B4 g_TechnologyCategoryMaximum5 */
+    uint32_t at_g_TechnologyCategoryMaximum6; /* 005399B8 g_TechnologyCategoryMaximum6 */
+    uint32_t at_g_TechnologyCategoryMaximum7; /* 005399BC g_TechnologyCategoryMaximum7 */
+    int32_t at_g_AiArmyCandidateFlaggedDefinitionValueMaximum; /* 005399C0 g_AiArmyCandidateFlaggedDefinitionValueMaximum */
+    int32_t at_g_AiStrategicClassTerrainWeights[5][3]; /* 005399C4 g_AiStrategicClassTerrainWeights */
     TechnologyCategoryMasks at_g_TechnologyCategoryMasks; /* 00539A00 g_TechnologyCategoryMasks */
 } ImageData_00539974;
 extern ImageData_00539974 g_ImageData_00539974;
 
 /* original 0x0053B0CC-0x0053B0E0 */
 typedef struct ImageData_0053B0CC {
-    byte at_gap_0053B0CC[4]; /* 0053B0CC gap */
+    uint8_t at_gap_0053B0CC[4]; /* 0053B0CC gap */
     ArmyRuntimeSlot ** at_g_AiWorkspaceBuffer14_Size0100; /* 0053B0D0 g_AiWorkspaceBuffer14_Size0100 */
-    undefined4 at_g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
-    dword at_g_AiCollectedEntityCount_rest[2]; /* beyond the declared type */
+    uint32_t at_g_AiCollectedEntityCount; /* 0053B0D4 g_AiCollectedEntityCount */
+    uint32_t at_g_AiCollectedEntityCount_rest[2]; /* beyond the declared type */
 } ImageData_0053B0CC;
 extern ImageData_0053B0CC g_ImageData_0053B0CC;
 
 /* original 0x0053B9CC-0x0053BA00 */
 typedef struct ImageData_0053B9CC {
-    byte at_gap_0053B9CC[20]; /* 0053B9CC gap */
+    uint8_t at_gap_0053B9CC[20]; /* 0053B9CC gap */
     AiTechnologyCandidateScoreCallback * at_g_AiTechnologyCandidateScoreCallbackTable[6]; /* 0053B9E0 g_AiTechnologyCandidateScoreCallbackTable */
-    dword at_g_AiTechnologyCandidateScoreCallbackTable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_AiTechnologyCandidateScoreCallbackTable_rest[2]; /* beyond the declared type */
 } ImageData_0053B9CC;
 extern ImageData_0053B9CC g_ImageData_0053B9CC;
 
 /* original 0x0053C154-0x0053C1A0 */
 typedef struct ImageData_0053C154 {
-    byte at_gap_0053C154[12]; /* 0053C154 gap */
-    dword at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160[16]; /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0053C154[12]; /* 0053C154 gap */
+    uint32_t at_g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160[16]; /* 0053C160 g_GameFactionRelations_EvaluateTransitionRulesCf_SwitchTable_0053C160: jump table of the original code, not used by the C code */
 } ImageData_0053C154;
 extern ImageData_0053C154 g_ImageData_0053C154;
 
 /* original 0x0053C1FC-0x0053C210 */
 typedef struct ImageData_0053C1FC {
-    byte at_gap_0053C1FC[20]; /* 0053C1FC gap */
+    uint8_t at_gap_0053C1FC[20]; /* 0053C1FC gap */
 } ImageData_0053C1FC;
 extern ImageData_0053C1FC g_ImageData_0053C1FC;
 
 /* original 0x0053C5DC-0x0053C6C0 */
 typedef struct ImageData_0053C5DC {
-    byte at_gap_0053C5DC[4]; /* 0053C5DC gap */
+    uint8_t at_gap_0053C5DC[4]; /* 0053C5DC gap */
     AiKnowledgeDataImage * at_g_AiKnowledgeData; /* 0053C5E0 g_AiKnowledgeData */
-    word at_u_engine_ki_dat_0053c5e4[14]; /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
+    uint16_t at_u_engine_ki_dat_0053c5e4[14]; /* 0053C5E4 u_engine_ki_dat_0053c5e4 */
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantB15; /* 0053C600 g_AiArmyCandidateScoreWeightsVariantB15 */
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantA15; /* 0053C63C g_AiArmyCandidateScoreWeightsVariantA15 */
     AiArmyScoreWeights at_g_AiArmyCandidateScoreWeightsVariantC15; /* 0053C678 g_AiArmyCandidateScoreWeightsVariantC15 */
-    dword at_g_AiArmyCandidateScoreWeightsVariantC15_rest[3]; /* beyond the declared type */
+    uint32_t at_g_AiArmyCandidateScoreWeightsVariantC15_rest[3]; /* beyond the declared type */
 } ImageData_0053C5DC;
 extern ImageData_0053C5DC g_ImageData_0053C5DC;
 
 /* original 0x0053C808-0x0053C810 */
 typedef struct ImageData_0053C808 {
-    byte at_gap_0053C808[8]; /* 0053C808 gap */
+    uint8_t at_gap_0053C808[8]; /* 0053C808 gap */
 } ImageData_0053C808;
 extern ImageData_0053C808 g_ImageData_0053C808;
 
 /* original 0x0053C99C-0x0053CA10 */
 typedef struct ImageData_0053C99C {
-    byte at_gap_0053C99C[4]; /* 0053C99C gap */
+    uint8_t at_gap_0053C99C[4]; /* 0053C99C gap */
     float * at_g_WorldMotionSplineMatrixWorkspaces[6]; /* 0053C9A0 g_WorldMotionSplineMatrixWorkspaces */
     float * at_g_WorldMotionSplineCoefficientTables[6]; /* 0053C9B8 g_WorldMotionSplineCoefficientTables */
     float at_g_WorldMotionSplineCachedDerivatives[6]; /* 0053C9D0 g_WorldMotionSplineCachedDerivatives */
-    sdword at_g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
+    int32_t at_g_WorldMotionSplineEquationCounts[6]; /* 0053C9E8 g_WorldMotionSplineEquationCounts */
     float at_g_Q12FloatScale4096; /* 0053CA00 g_Q12FloatScale4096 */
-    dword at_g_Q12FloatScale4096_rest[3]; /* beyond the declared type */
+    uint32_t at_g_Q12FloatScale4096_rest[3]; /* beyond the declared type */
 } ImageData_0053C99C;
 extern ImageData_0053C99C g_ImageData_0053C99C;
 
 /* original 0x0053D358-0x0053D370 */
 typedef struct ImageData_0053D358 {
-    byte at_gap_0053D358[8]; /* 0053D358 gap */
+    uint8_t at_gap_0053D358[8]; /* 0053D358 gap */
     TerrainCompositeTextureRuntime * at_g_TerrainCompositeTexture; /* 0053D360 g_TerrainCompositeTexture */
-    dword at_g_TerrainCompositeTexture_rest[3]; /* beyond the declared type */
+    uint32_t at_g_TerrainCompositeTexture_rest[3]; /* beyond the declared type */
 } ImageData_0053D358;
 extern ImageData_0053D358 g_ImageData_0053D358;
 
 /* original 0x0053DA68-0x00543B70 */
 typedef struct ImageData_0053DA68 {
-    byte at_gap_0053DA68[8]; /* 0053DA68 gap */
+    uint8_t at_gap_0053DA68[8]; /* 0053DA68 gap */
     UiRootCallbacks at_g_UiRootCallbacks_0053DA70; /* 0053DA70 g_UiRootCallbacks_0053DA70 */
     FrontendSessionDiscoveryRecordB0 ** at_g_FrontendSessionListRows; /* 0053DA84 g_FrontendSessionListRows */
     FrontendSessionDiscoveryRecordB0 * at_g_FrontendSessionDiscoveryRecords; /* 0053DA88 g_FrontendSessionDiscoveryRecords */
     FrontendUiImage at_g_FrontendRootInitializationTemplate; /* 0053DA8C g_FrontendRootInitializationTemplate */
     FrontendPlayerRuntimeRecord * at_g_FrontendPlayerRuntimeRecordPointers32[31]; /* 005433E0 g_FrontendPlayerRuntimeRecordPointers32 */
     FrontendTaskAssignmentControlOffsetTablesA8 at_g_FrontendTaskAssignmentControlOffsets; /* 0054345C g_FrontendTaskAssignmentControlOffsets */
-    dword at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
+    uint32_t at_g_FrontendTaskAssignmentControlOffsets_rest[250]; /* beyond the declared type */
     FrontendUiSemanticScratch280 at_g_FrontendUiDisplayModeAndTaskAssignmentScratch; /* 005438EC g_FrontendUiDisplayModeAndTaskAssignmentScratch */
-    dword at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
+    uint32_t at_g_FrontendUiDisplayModeAndTaskAssignmentScratch_rest[1]; /* beyond the declared type */
 } ImageData_0053DA68;
 extern ImageData_0053DA68 g_ImageData_0053DA68;
 
 /* original 0x00543E34-0x00543F50 */
 typedef struct ImageData_00543E34 {
-    byte at_gap_00543E34[12]; /* 00543E34 gap */
+    uint8_t at_gap_00543E34[12]; /* 00543E34 gap */
     UiCommandQueueRecord at_g_FrontendCommandQueueRecords[16]; /* 00543E40 g_FrontendCommandQueueRecords */
     UiCommandQueueRecord * at_g_FrontendCommandQueueEnd; /* 00543F40 g_FrontendCommandQueueEnd */
-    dword at_g_FrontendCommandQueueEnd_rest[3]; /* beyond the declared type */
+    uint32_t at_g_FrontendCommandQueueEnd_rest[3]; /* beyond the declared type */
 } ImageData_00543E34;
 extern ImageData_00543E34 g_ImageData_00543E34;
 
 /* original 0x005456F0-0x005460E0 */
 typedef struct ImageData_005456F0 {
-    undefined4 at_g_FrontendRootNode; /* 005456F0 g_FrontendRootNode */
-    undefined4 at_g_FrontendPendingPageAction; /* 005456F4 g_FrontendPendingPageAction */
-    undefined4 at_g_FrontendRomTransitionContextValue; /* 005456F8 g_FrontendRomTransitionContextValue */
-    undefined4 at_g_FrontendActiveRomRecordTable; /* 005456FC g_FrontendActiveRomRecordTable */
-    dword at_g_FrontendRuntimeFlags; /* 00545700 g_FrontendRuntimeFlags */
-    undefined4 at_g_FrontendCentralTextureSet; /* 00545704 g_FrontendCentralTextureSet */
-    undefined4 at_g_FrontendCentralPaletteAsset; /* 00545708 g_FrontendCentralPaletteAsset */
+    uint32_t at_g_FrontendRootNode; /* 005456F0 g_FrontendRootNode */
+    uint32_t at_g_FrontendPendingPageAction; /* 005456F4 g_FrontendPendingPageAction */
+    uint32_t at_g_FrontendRomTransitionContextValue; /* 005456F8 g_FrontendRomTransitionContextValue */
+    uint32_t at_g_FrontendActiveRomRecordTable; /* 005456FC g_FrontendActiveRomRecordTable */
+    uint32_t at_g_FrontendRuntimeFlags; /* 00545700 g_FrontendRuntimeFlags */
+    uint32_t at_g_FrontendCentralTextureSet; /* 00545704 g_FrontendCentralTextureSet */
+    uint32_t at_g_FrontendCentralPaletteAsset; /* 00545708 g_FrontendCentralPaletteAsset */
     GraphicsTextureSourceAsset * at_g_FrontendMenuTextureSource; /* 0054570C g_FrontendMenuTextureSource */
-    undefined4 at_g_FrontendNetworkTickCounter; /* 00545710 g_FrontendNetworkTickCounter */
-    undefined4 at_g_FrontendNetworkState; /* 00545714 g_FrontendNetworkState */
-    undefined4 at_g_FrontendFactionAssignmentReadyStateGeneration; /* 00545718 g_FrontendFactionAssignmentReadyStateGeneration */
-    undefined4 at_g_FrontendRomTransitionElapsedTicks; /* 0054571C g_FrontendRomTransitionElapsedTicks */
-    undefined4 at_g_FrontendRomTransitionSplineKeyframes; /* 00545720 g_FrontendRomTransitionSplineKeyframes */
-    undefined4 at_g_FrontendRomTransitionSplineKeyframeCount; /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
-    undefined4 at_g_FrontendRomTransitionPendingCount; /* 00545728 g_FrontendRomTransitionPendingCount */
-    dword at_g_FrontendStateTickSpinLock; /* 0054572C g_FrontendStateTickSpinLock */
-    undefined4 at_g_FrontendTimerCountdownTicks; /* 00545730 g_FrontendTimerCountdownTicks */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel0Q12; /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel1Q12; /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel2Q12; /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel3Q12; /* 00545740 g_FrontendRomTransitionKeyframe0Channel3Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel4Q12; /* 00545744 g_FrontendRomTransitionKeyframe0Channel4Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0Channel5Q12; /* 00545748 g_FrontendRomTransitionKeyframe0Channel5Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe0TimeQ12; /* 0054574C g_FrontendRomTransitionKeyframe0TimeQ12 */
-    dword at_g_FrontendRomTransitionKeyframe0TimeQ12_rest[1]; /* beyond the declared type */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel0Q12; /* 00545754 g_FrontendRomTransitionKeyframe1Channel0Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel1Q12; /* 00545758 g_FrontendRomTransitionKeyframe1Channel1Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel2Q12; /* 0054575C g_FrontendRomTransitionKeyframe1Channel2Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel3Q12; /* 00545760 g_FrontendRomTransitionKeyframe1Channel3Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel4Q12; /* 00545764 g_FrontendRomTransitionKeyframe1Channel4Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1Channel5Q12; /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
-    undefined4 at_g_FrontendRomTransitionKeyframe1TimeQ12; /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
-    dword at_g_FrontendRomTransitionKeyframe1TimeQ12_rest[1]; /* beyond the declared type */
-    undefined4 at_g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset */
+    uint32_t at_g_FrontendNetworkTickCounter; /* 00545710 g_FrontendNetworkTickCounter */
+    uint32_t at_g_FrontendNetworkState; /* 00545714 g_FrontendNetworkState */
+    uint32_t at_g_FrontendFactionAssignmentReadyStateGeneration; /* 00545718 g_FrontendFactionAssignmentReadyStateGeneration */
+    uint32_t at_g_FrontendRomTransitionElapsedTicks; /* 0054571C g_FrontendRomTransitionElapsedTicks */
+    uint32_t at_g_FrontendRomTransitionSplineKeyframes; /* 00545720 g_FrontendRomTransitionSplineKeyframes */
+    uint32_t at_g_FrontendRomTransitionSplineKeyframeCount; /* 00545724 g_FrontendRomTransitionSplineKeyframeCount */
+    uint32_t at_g_FrontendRomTransitionPendingCount; /* 00545728 g_FrontendRomTransitionPendingCount */
+    uint32_t at_g_FrontendStateTickSpinLock; /* 0054572C g_FrontendStateTickSpinLock */
+    uint32_t at_g_FrontendTimerCountdownTicks; /* 00545730 g_FrontendTimerCountdownTicks */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel0Q12; /* 00545734 g_FrontendRomTransitionKeyframe0Channel0Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel1Q12; /* 00545738 g_FrontendRomTransitionKeyframe0Channel1Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel2Q12; /* 0054573C g_FrontendRomTransitionKeyframe0Channel2Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel3Q12; /* 00545740 g_FrontendRomTransitionKeyframe0Channel3Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel4Q12; /* 00545744 g_FrontendRomTransitionKeyframe0Channel4Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0Channel5Q12; /* 00545748 g_FrontendRomTransitionKeyframe0Channel5Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0TimeQ12; /* 0054574C g_FrontendRomTransitionKeyframe0TimeQ12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe0TimeQ12_rest[1]; /* beyond the declared type */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel0Q12; /* 00545754 g_FrontendRomTransitionKeyframe1Channel0Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel1Q12; /* 00545758 g_FrontendRomTransitionKeyframe1Channel1Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel2Q12; /* 0054575C g_FrontendRomTransitionKeyframe1Channel2Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel3Q12; /* 00545760 g_FrontendRomTransitionKeyframe1Channel3Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel4Q12; /* 00545764 g_FrontendRomTransitionKeyframe1Channel4Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1Channel5Q12; /* 00545768 g_FrontendRomTransitionKeyframe1Channel5Q12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12; /* 0054576C g_FrontendRomTransitionKeyframe1TimeQ12 */
+    uint32_t at_g_FrontendRomTransitionKeyframe1TimeQ12_rest[1]; /* beyond the declared type */
+    uint32_t at_g_FrontendCentralRomAsset; /* 00545774 g_FrontendCentralRomAsset */
     RomRegistrySlot * at_g_RomRegistrySlots; /* 00545778 g_RomRegistrySlots */
     WorldObjectRecord * at_g_FrontendWorldObjectRecords; /* 0054577C g_FrontendWorldObjectRecords */
     FrontendLoadedLevelRuntimeImage370 * at_g_FrontendLoadedLevelAsset; /* 00545780 g_FrontendLoadedLevelAsset */
-    undefined4 at_g_FrontendMenuSoundVoiceSetTable100; /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
-    undefined4 at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1; /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
-    dword at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1_rest[98]; /* beyond the declared type */
-    undefined4 at_g_FrontendLoadedCampaignAsset; /* 00545914 g_FrontendLoadedCampaignAsset */
-    undefined4 at_g_FrontendScenarioTransferState; /* 00545918 g_FrontendScenarioTransferState */
-    undefined4 at_g_FrontendPlayerMessageBuffers; /* 0054591C g_FrontendPlayerMessageBuffers */
-    undefined4 at_g_FrontendLocalPlayerPcxPreview; /* 00545920 g_FrontendLocalPlayerPcxPreview */
-    undefined4 at_g_FrontendHostSnapshotTransferCountdown; /* 00545924 g_FrontendHostSnapshotTransferCountdown */
-    undefined4 at_g_FrontendScenarioInitializationCount; /* 00545928 g_FrontendScenarioInitializationCount */
-    undefined4 at_g_FrontendMusicVoiceSet; /* 0054592C g_FrontendMusicVoiceSet */
-    undefined4 at_g_FrontendMusicActiveBuffer; /* 00545930 g_FrontendMusicActiveBuffer */
-    dword at_g_FrontendPendingPageActionDepth; /* 00545934 g_FrontendPendingPageActionDepth */
+    uint32_t at_g_FrontendMenuSoundVoiceSetTable100; /* 00545784 g_FrontendMenuSoundVoiceSetTable100 */
+    uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1; /* 00545788 g_FrontendMenuSoundVoiceSetLoadBaseEntry1 */
+    uint32_t at_g_FrontendMenuSoundVoiceSetLoadBaseEntry1_rest[98]; /* beyond the declared type */
+    uint32_t at_g_FrontendLoadedCampaignAsset; /* 00545914 g_FrontendLoadedCampaignAsset */
+    uint32_t at_g_FrontendScenarioTransferState; /* 00545918 g_FrontendScenarioTransferState */
+    uint32_t at_g_FrontendPlayerMessageBuffers; /* 0054591C g_FrontendPlayerMessageBuffers */
+    uint32_t at_g_FrontendLocalPlayerPcxPreview; /* 00545920 g_FrontendLocalPlayerPcxPreview */
+    uint32_t at_g_FrontendHostSnapshotTransferCountdown; /* 00545924 g_FrontendHostSnapshotTransferCountdown */
+    uint32_t at_g_FrontendScenarioInitializationCount; /* 00545928 g_FrontendScenarioInitializationCount */
+    uint32_t at_g_FrontendMusicVoiceSet; /* 0054592C g_FrontendMusicVoiceSet */
+    uint32_t at_g_FrontendMusicActiveBuffer; /* 00545930 g_FrontendMusicActiveBuffer */
+    uint32_t at_g_FrontendPendingPageActionDepth; /* 00545934 g_FrontendPendingPageActionDepth */
     FrontendUiActionHandlerPage20Prefix86 at_g_FrontendUiActionHandlersPage20; /* 00545938 g_FrontendUiActionHandlersPage20 */
     ScenarioCatalogRefreshSelectedRecordCallback * at_g_FrontendScenarioMapOptionHandlerTable[3]; /* 00545A98 g_FrontendScenarioMapOptionHandlerTable */
-    word at_u_engine_zentrale_rom_00545aa4[20]; /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
-    word at_u_gfx_texturen_zentrale_gfx_00545acc[26]; /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
-    word at_u_gfx_texturen_zentrale_pal_00545b00[26]; /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
-    word at_u_texte_hilfe_str_00545b34[16]; /* 00545B34 u_texte_hilfe_str_00545b34 */
-    word at_u_sound_menue01_sam_00545b54[18]; /* 00545B54 u_sound_menue01_sam_00545b54 */
-    word at_u_gfx_panel_menue_gfx_00545b78[20]; /* 00545B78 u_gfx_panel_menue_gfx_00545b78 */
-    word at_u_texte_menue_str_00545ba0[16]; /* 00545BA0 u_texte_menue_str_00545ba0 */
-    word at_u_texte_level_str_00545bc0[16]; /* 00545BC0 u_texte_level_str_00545bc0 */
-    word at_u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_00545be0 */
-    undefined at_g_FrontendMissionBriefingMoviePathUtf16; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16 */
-    dword at_g_FrontendMissionBriefingMoviePathUtf16_rest[3]; /* beyond the declared type */
-    byte at_g_FrontendMissionBriefingMoviePathUtf16_rest_tail[1];
-    undefined at_g_FrontendMissionBriefingLevelDigitsUtf16; /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16 */
-    dword at_g_FrontendMissionBriefingLevelDigitsUtf16_rest[4]; /* beyond the declared type */
-    byte at_g_FrontendMissionBriefingLevelDigitsUtf16_rest_tail[1];
-    word at_u_gfx_panel_credits_gfx_00545c22[22]; /* 00545C22 u_gfx_panel_credits_gfx_00545c22 */
-    word at_u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
-    undefined2 at_g_FrontendScenarioPathScratchUtf16; /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
-    dword at_g_FrontendScenarioPathScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_FrontendScenarioPathScratchUtf16_rest_tail[2];
+    uint16_t at_u_engine_zentrale_rom_00545aa4[20]; /* 00545AA4 u_engine_zentrale_rom_00545aa4 */
+    uint16_t at_u_gfx_texturen_zentrale_gfx_00545acc[26]; /* 00545ACC u_gfx_texturen_zentrale_gfx_00545acc */
+    uint16_t at_u_gfx_texturen_zentrale_pal_00545b00[26]; /* 00545B00 u_gfx_texturen_zentrale_pal_00545b00 */
+    uint16_t at_u_texte_hilfe_str_00545b34[16]; /* 00545B34 u_texte_hilfe_str_00545b34 */
+    uint16_t at_u_sound_menue01_sam_00545b54[18]; /* 00545B54 u_sound_menue01_sam_00545b54 */
+    uint16_t at_u_gfx_panel_menue_gfx_00545b78[20]; /* 00545B78 u_gfx_panel_menue_gfx_00545b78 */
+    uint16_t at_u_texte_menue_str_00545ba0[16]; /* 00545BA0 u_texte_menue_str_00545ba0 */
+    uint16_t at_u_texte_level_str_00545bc0[16]; /* 00545BC0 u_texte_level_str_00545bc0 */
+    uint16_t at_u_texte_inhalt_str_00545be0[17]; /* 00545BE0 u_texte_inhalt_str_00545be0 */
+    uint8_t at_g_FrontendMissionBriefingMoviePathUtf16; /* 00545C02 g_FrontendMissionBriefingMoviePathUtf16 */
+    uint32_t at_g_FrontendMissionBriefingMoviePathUtf16_rest[3]; /* beyond the declared type */
+    uint8_t at_g_FrontendMissionBriefingMoviePathUtf16_rest_tail[1];
+    uint8_t at_g_FrontendMissionBriefingLevelDigitsUtf16; /* 00545C10 g_FrontendMissionBriefingLevelDigitsUtf16 */
+    uint32_t at_g_FrontendMissionBriefingLevelDigitsUtf16_rest[4]; /* beyond the declared type */
+    uint8_t at_g_FrontendMissionBriefingLevelDigitsUtf16_rest_tail[1];
+    uint16_t at_u_gfx_panel_credits_gfx_00545c22[22]; /* 00545C22 u_gfx_panel_credits_gfx_00545c22 */
+    uint16_t at_u_sound_music00_sam_00545c4e[18]; /* 00545C4E u_sound_music00_sam_00545c4e */
+    uint16_t at_g_FrontendScenarioPathScratchUtf16; /* 00545C72 g_FrontendScenarioPathScratchUtf16 */
+    uint32_t at_g_FrontendScenarioPathScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_FrontendScenarioPathScratchUtf16_rest_tail[2];
     char at_s_SPIELER__SPIEL__NETZWERK__HOST_00545e72[31]; /* 00545E72 s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 */
     char at_s_NAME__CLIENT__KARTE___00545e91[533]; /* 00545E91 s_NAME__CLIENT__KARTE___00545e91 */
-    word at_u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
-    word at_u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
-    byte at_u_level___str_005460be_padding[10];
+    uint16_t at_u_level___lev_005460a6[12]; /* 005460A6 u_level___lev_005460a6 */
+    uint16_t at_u_level___str_005460be[12]; /* 005460BE u_level___str_005460be */
+    uint8_t at_u_level___str_005460be_padding[10];
 } ImageData_005456F0;
 extern ImageData_005456F0 g_ImageData_005456F0;
 
 /* original 0x00546BB4-0x00546BC0 */
 typedef struct ImageData_00546BB4 {
-    byte at_gap_00546BB4[12]; /* 00546BB4 gap */
+    uint8_t at_gap_00546BB4[12]; /* 00546BB4 gap */
 } ImageData_00546BB4;
 extern ImageData_00546BB4 g_ImageData_00546BB4;
 
 /* original 0x00547660-0x00547680 */
 typedef struct ImageData_00547660 {
-    dword at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
+    uint32_t at_PTR_ARRAY_00547660[8]; /* 00547660 PTR_ARRAY_00547660: jump table of the original code, not used by the C code */
 } ImageData_00547660;
 extern ImageData_00547660 g_ImageData_00547660;
 
 /* original 0x00547D88-0x00547DB0 */
 typedef struct ImageData_00547D88 {
-    byte at_gap_00547D88[8]; /* 00547D88 gap */
-    dword at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90[8]; /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00547D88[8]; /* 00547D88 gap */
+    uint32_t at_g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90[8]; /* 00547D90 g_FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState_SwitchTable_00547D90: jump table of the original code, not used by the C code */
 } ImageData_00547D88;
 extern ImageData_00547D88 g_ImageData_00547D88;
 
 /* original 0x00547DD8-0x00547DF0 */
 typedef struct ImageData_00547DD8 {
-    byte at_gap_00547DD8[24]; /* 00547DD8 gap */
+    uint8_t at_gap_00547DD8[24]; /* 00547DD8 gap */
 } ImageData_00547DD8;
 extern ImageData_00547DD8 g_ImageData_00547DD8;
 
 /* original 0x005480FC-0x00548130 */
 typedef struct ImageData_005480FC {
-    byte at_gap_005480FC[4]; /* 005480FC gap */
+    uint8_t at_gap_005480FC[4]; /* 005480FC gap */
     UiCommandDispatchRecord at_g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30[3]; /* 00548100 g_FrontendCommandDispatchRecords_00_Code00030071_Modifier30 */
-    dword at_g_FrontendCommandDispatchRecords_Terminator[3]; /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
+    uint32_t at_g_FrontendCommandDispatchRecords_Terminator[3]; /* 00548124 g_FrontendCommandDispatchRecords_Terminator */
 } ImageData_005480FC;
 extern ImageData_005480FC g_ImageData_005480FC;
 
 /* original 0x0054D780-0x0054E230 */
 typedef struct ImageData_0054D780 {
-    byte at_gap_0054D780[32]; /* 0054D780 gap */
+    uint8_t at_gap_0054D780[32]; /* 0054D780 gap */
     FrontendPacket10000Handshake at_g_FrontendPacket10000Buffer; /* 0054D7A0 g_FrontendPacket10000Buffer */
     FrontendPacket50001SessionAdvertisement at_g_FrontendPacket50001Buffer; /* 0054D7C0 g_FrontendPacket50001Buffer */
     FrontendPacket20002PlayerDescriptor at_g_FrontendPacket20002Buffer; /* 0054D860 g_FrontendPacket20002Buffer */
@@ -2282,429 +2282,429 @@ typedef struct ImageData_0054D780 {
     FrontendPacket10012SyncPending at_g_FrontendPacket10012Buffer; /* 0054DD40 g_FrontendPacket10012Buffer */
     FrontendPacket10013HeartbeatAck at_g_FrontendPacket10013Buffer; /* 0054DD60 g_FrontendPacket10013Buffer */
     FrontendPacket10032HostValue at_g_FrontendPacket10032Buffer; /* 0054DD80 g_FrontendPacket10032Buffer */
-    dword at_g_FrontendPendingSessionPlayerCount; /* 0054DDA0 g_FrontendPendingSessionPlayerCount */
-    dword at_g_FrontendPendingSessionPlayerCount_rest[1]; /* beyond the declared type */
-    dword at_g_FrontendExpectedPlayerRuntimeBlockCount; /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
-    dword at_g_FrontendHostPublishRoundRobinCounter; /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
-    dword at_g_FrontendPlayerListRows; /* 0054DDB0 g_FrontendPlayerListRows */
-    dword at_g_FrontendPlayerListRow1; /* 0054DDB4 g_FrontendPlayerListRow1 */
-    dword at_g_FrontendPlayerListRow2; /* 0054DDB8 g_FrontendPlayerListRow2 */
-    dword at_g_FrontendPlayerListRow3; /* 0054DDBC g_FrontendPlayerListRow3 */
-    dword at_g_FrontendPlayerListRow4; /* 0054DDC0 g_FrontendPlayerListRow4 */
-    dword at_g_FrontendPlayerListRow5; /* 0054DDC4 g_FrontendPlayerListRow5 */
-    dword at_g_FrontendPlayerListRow6; /* 0054DDC8 g_FrontendPlayerListRow6 */
-    dword at_g_FrontendPlayerListRow7; /* 0054DDCC g_FrontendPlayerListRow7 */
+    uint32_t at_g_FrontendPendingSessionPlayerCount; /* 0054DDA0 g_FrontendPendingSessionPlayerCount */
+    uint32_t at_g_FrontendPendingSessionPlayerCount_rest[1]; /* beyond the declared type */
+    uint32_t at_g_FrontendExpectedPlayerRuntimeBlockCount; /* 0054DDA8 g_FrontendExpectedPlayerRuntimeBlockCount */
+    uint32_t at_g_FrontendHostPublishRoundRobinCounter; /* 0054DDAC g_FrontendHostPublishRoundRobinCounter */
+    uint32_t at_g_FrontendPlayerListRows; /* 0054DDB0 g_FrontendPlayerListRows */
+    uint32_t at_g_FrontendPlayerListRow1; /* 0054DDB4 g_FrontendPlayerListRow1 */
+    uint32_t at_g_FrontendPlayerListRow2; /* 0054DDB8 g_FrontendPlayerListRow2 */
+    uint32_t at_g_FrontendPlayerListRow3; /* 0054DDBC g_FrontendPlayerListRow3 */
+    uint32_t at_g_FrontendPlayerListRow4; /* 0054DDC0 g_FrontendPlayerListRow4 */
+    uint32_t at_g_FrontendPlayerListRow5; /* 0054DDC4 g_FrontendPlayerListRow5 */
+    uint32_t at_g_FrontendPlayerListRow6; /* 0054DDC8 g_FrontendPlayerListRow6 */
+    uint32_t at_g_FrontendPlayerListRow7; /* 0054DDCC g_FrontendPlayerListRow7 */
     UiTransferEndpointDescriptor at_g_FrontendNetworkEndpointScratch; /* 0054DDD0 g_FrontendNetworkEndpointScratch */
-    undefined at_g_FrontendNetworkRuntimeCountTextUtf16; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
-    dword at_g_FrontendNetworkRuntimeCountTextUtf16_rest[1]; /* beyond the declared type */
-    byte at_g_FrontendNetworkRuntimeCountTextUtf16_rest_tail[3];
-    undefined at_g_FrontendNetworkPlayerCountTextUtf16; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
-    dword at_g_FrontendNetworkPlayerCountTextUtf16_rest[1]; /* beyond the declared type */
-    byte at_g_FrontendNetworkPlayerCountTextUtf16_rest_tail[3];
-    undefined at_g_FrontendNetworkPlayerCountLabelUtf16; /* 0054DDF0 g_FrontendNetworkPlayerCountLabelUtf16 */
-    dword at_g_FrontendNetworkPlayerCountLabelUtf16_rest[15]; /* beyond the declared type */
-    byte at_g_FrontendNetworkPlayerCountLabelUtf16_rest_tail[3];
-    undefined at_g_FrontendNetworkEndpointTextUtf16; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
-    dword at_g_FrontendNetworkEndpointTextUtf16_rest[255]; /* beyond the declared type */
-    byte at_g_FrontendNetworkEndpointTextUtf16_rest_tail[3];
+    uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16; /* 0054DDE0 g_FrontendNetworkRuntimeCountTextUtf16 */
+    uint32_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest[1]; /* beyond the declared type */
+    uint8_t at_g_FrontendNetworkRuntimeCountTextUtf16_rest_tail[3];
+    uint8_t at_g_FrontendNetworkPlayerCountTextUtf16; /* 0054DDE8 g_FrontendNetworkPlayerCountTextUtf16 */
+    uint32_t at_g_FrontendNetworkPlayerCountTextUtf16_rest[1]; /* beyond the declared type */
+    uint8_t at_g_FrontendNetworkPlayerCountTextUtf16_rest_tail[3];
+    uint8_t at_g_FrontendNetworkPlayerCountLabelUtf16; /* 0054DDF0 g_FrontendNetworkPlayerCountLabelUtf16 */
+    uint32_t at_g_FrontendNetworkPlayerCountLabelUtf16_rest[15]; /* beyond the declared type */
+    uint8_t at_g_FrontendNetworkPlayerCountLabelUtf16_rest_tail[3];
+    uint8_t at_g_FrontendNetworkEndpointTextUtf16; /* 0054DE30 g_FrontendNetworkEndpointTextUtf16 */
+    uint32_t at_g_FrontendNetworkEndpointTextUtf16_rest[255]; /* beyond the declared type */
+    uint8_t at_g_FrontendNetworkEndpointTextUtf16_rest_tail[3];
 } ImageData_0054D780;
 extern ImageData_0054D780 g_ImageData_0054D780;
 
 /* original 0x0054FBB0-0x0055C990 */
 typedef struct ImageData_0054FBB0 {
-    byte at_gap_0054FBB0[16]; /* 0054FBB0 gap */
+    uint8_t at_gap_0054FBB0[16]; /* 0054FBB0 gap */
     UiRootCallbacks at_g_UiRootCallbacks_0054FBC0; /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
-    word * at_g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
-    word * at_g_InGamePlayerListTextScratchUtf16; /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
+    uint16_t * at_g_InGameFactionStatusTextScratchUtf16; /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
+    uint16_t * at_g_InGamePlayerListTextScratchUtf16; /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
     InGamePlayerStatusTextSlot at_g_InGamePlayerStatusTextSlots[8]; /* 0054FBDC g_InGamePlayerStatusTextSlots */
-    dword at_g_InGameSelectionDetailNameTextUtf16[32]; /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
-    dword at_g_InGameSelectionDetailArmourTextUtf16[32]; /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
-    dword at_g_InGameSelectionDetailWeaponName0TextUtf16[32]; /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
-    dword at_g_InGameSelectionDetailWeaponName1TextUtf16[32]; /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
-    dword at_g_InGameSelectionDetailWeaponName2TextUtf16[32]; /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
-    dword at_g_InGameSelectionDetailTextSlot05Utf16[32]; /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
-    dword at_g_InGameSelectionDetailBuildXeniteCostTextUtf16[32]; /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
-    dword at_g_InGameSelectionDetailBuildTimeTextUtf16[32]; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
-    dword at_g_InGameSelectionDetailEnergyTextUtf16[32]; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
-    dword at_g_InGameSelectionDetailTextSlot09Utf16[32]; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
-    undefined at_g_FrontendCurrentFactionPrimaryResourceTextUtf16; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
-    dword at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest[7]; /* beyond the declared type */
-    byte at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest_tail[3];
-    undefined at_g_InGameTechnologyCostRichTextScratch; /* 005504FC g_InGameTechnologyCostRichTextScratch */
-    byte at_g_InGameTechnologyCostRichTextScratch_rest_tail[1];
-    word at_g_InGameTechnologyCostColorWords8[8]; /* 005504FE g_InGameTechnologyCostColorWords8 */
-    dword at_g_InGameTechnologyXeniteCostTextUtf16[8]; /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
-    dword at_g_InGameTechnologyEnergyCostTextUtf16[8]; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
-    dword at_g_InGameTechnologyResearchTimeTextUtf16[8]; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
-    word at_g_InGameHudNumberTextUtf16[16]; /* 0055056E g_InGameHudNumberTextUtf16 */
-    undefined at_g_EmptyFrontendPlayerNameUtf16; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
-    byte at_g_EmptyFrontendPlayerNameUtf16_rest_tail[1];
-    word at_g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailNameTextUtf16[32]; /* 0054FFDC g_InGameSelectionDetailNameTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailArmourTextUtf16[32]; /* 0055005C g_InGameSelectionDetailArmourTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailWeaponName0TextUtf16[32]; /* 005500DC g_InGameSelectionDetailWeaponName0TextUtf16 */
+    uint32_t at_g_InGameSelectionDetailWeaponName1TextUtf16[32]; /* 0055015C g_InGameSelectionDetailWeaponName1TextUtf16 */
+    uint32_t at_g_InGameSelectionDetailWeaponName2TextUtf16[32]; /* 005501DC g_InGameSelectionDetailWeaponName2TextUtf16 */
+    uint32_t at_g_InGameSelectionDetailTextSlot05Utf16[32]; /* 0055025C g_InGameSelectionDetailTextSlot05Utf16 */
+    uint32_t at_g_InGameSelectionDetailBuildXeniteCostTextUtf16[32]; /* 005502DC g_InGameSelectionDetailBuildXeniteCostTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailBuildTimeTextUtf16[32]; /* 0055035C g_InGameSelectionDetailBuildTimeTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailEnergyTextUtf16[32]; /* 005503DC g_InGameSelectionDetailEnergyTextUtf16 */
+    uint32_t at_g_InGameSelectionDetailTextSlot09Utf16[32]; /* 0055045C g_InGameSelectionDetailTextSlot09Utf16 */
+    uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16; /* 005504DC g_FrontendCurrentFactionPrimaryResourceTextUtf16 */
+    uint32_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest[7]; /* beyond the declared type */
+    uint8_t at_g_FrontendCurrentFactionPrimaryResourceTextUtf16_rest_tail[3];
+    uint8_t at_g_InGameTechnologyCostRichTextScratch; /* 005504FC g_InGameTechnologyCostRichTextScratch */
+    uint8_t at_g_InGameTechnologyCostRichTextScratch_rest_tail[1];
+    uint16_t at_g_InGameTechnologyCostColorWords8[8]; /* 005504FE g_InGameTechnologyCostColorWords8 */
+    uint32_t at_g_InGameTechnologyXeniteCostTextUtf16[8]; /* 0055050E g_InGameTechnologyXeniteCostTextUtf16 */
+    uint32_t at_g_InGameTechnologyEnergyCostTextUtf16[8]; /* 0055052E g_InGameTechnologyEnergyCostTextUtf16 */
+    uint32_t at_g_InGameTechnologyResearchTimeTextUtf16[8]; /* 0055054E g_InGameTechnologyResearchTimeTextUtf16 */
+    uint16_t at_g_InGameHudNumberTextUtf16[16]; /* 0055056E g_InGameHudNumberTextUtf16 */
+    uint8_t at_g_EmptyFrontendPlayerNameUtf16; /* 0055058E g_EmptyFrontendPlayerNameUtf16 */
+    uint8_t at_g_EmptyFrontendPlayerNameUtf16_rest_tail[1];
+    uint16_t at_g_InGameCountdownTextUtf16[8]; /* 00550590 g_InGameCountdownTextUtf16 */
     InGameUiImage at_g_InGameRuntimeDefaultImageTemplate; /* 005505A0 g_InGameRuntimeDefaultImageTemplate */
 } ImageData_0054FBB0;
 extern ImageData_0054FBB0 g_ImageData_0054FBB0;
 
 /* original 0x0055EFB0-0x0055F130 */
 typedef struct ImageData_0055EFB0 {
-    byte at_gap_0055EFB0[16]; /* 0055EFB0 gap */
+    uint8_t at_gap_0055EFB0[16]; /* 0055EFB0 gap */
     UiCommandQueueRecord at_g_InGameCommandQueueRecords[16]; /* 0055EFC0 g_InGameCommandQueueRecords */
     UiCommandQueueRecord * at_g_InGameCommandQueueEnd; /* 0055F0C0 g_InGameCommandQueueEnd */
-    undefined at_g_InGameSelectionInsertTripletDwords; /* 0055F0C4 g_InGameSelectionInsertTripletDwords */
-    dword at_g_InGameSelectionInsertTripletDwords_rest[11]; /* beyond the declared type */
-    byte at_g_InGameSelectionInsertTripletDwords_rest_tail[3];
-    undefined at_g_InGameSelectionRemoveTripletDwords; /* 0055F0F4 g_InGameSelectionRemoveTripletDwords */
-    dword at_g_InGameSelectionRemoveTripletDwords_rest[11]; /* beyond the declared type */
-    byte at_g_InGameSelectionRemoveTripletDwords_rest_tail[3];
-    sdword at_g_InGameSelectionInsertTripletDwordCount; /* 0055F124 g_InGameSelectionInsertTripletDwordCount */
-    sdword at_g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
-    dword at_g_InGameSelectionRemoveTripletDwordCount_rest[1]; /* beyond the declared type */
+    uint8_t at_g_InGameSelectionInsertTripletDwords; /* 0055F0C4 g_InGameSelectionInsertTripletDwords */
+    uint32_t at_g_InGameSelectionInsertTripletDwords_rest[11]; /* beyond the declared type */
+    uint8_t at_g_InGameSelectionInsertTripletDwords_rest_tail[3];
+    uint8_t at_g_InGameSelectionRemoveTripletDwords; /* 0055F0F4 g_InGameSelectionRemoveTripletDwords */
+    uint32_t at_g_InGameSelectionRemoveTripletDwords_rest[11]; /* beyond the declared type */
+    uint8_t at_g_InGameSelectionRemoveTripletDwords_rest_tail[3];
+    int32_t at_g_InGameSelectionInsertTripletDwordCount; /* 0055F124 g_InGameSelectionInsertTripletDwordCount */
+    int32_t at_g_InGameSelectionRemoveTripletDwordCount; /* 0055F128 g_InGameSelectionRemoveTripletDwordCount */
+    uint32_t at_g_InGameSelectionRemoveTripletDwordCount_rest[1]; /* beyond the declared type */
 } ImageData_0055EFB0;
 extern ImageData_0055EFB0 g_ImageData_0055EFB0;
 
 /* original 0x0055F7B4-0x0055F800 */
 typedef struct ImageData_0055F7B4 {
-    byte at_gap_0055F7B4[12]; /* 0055F7B4 gap */
-    dword at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0[2]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
-    dword at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0055F7B4[12]; /* 0055F7B4 gap */
+    uint32_t at_g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0[2]; /* 0055F7C0 g_GameFactionRuntime_AdvancePairwiseRelationState_SwitchTable_0055F7C0: jump table of the original code, not used by the C code */
+    uint32_t at_g_CodePointerTable_0055F7C8[14]; /* 0055F7C8 g_CodePointerTable_0055F7C8: jump table of the original code, not used by the C code */
 } ImageData_0055F7B4;
 extern ImageData_0055F7B4 g_ImageData_0055F7B4;
 
 /* original 0x0055F934-0x0055F980 */
 typedef struct ImageData_0055F934 {
-    byte at_gap_0055F934[12]; /* 0055F934 gap */
-    dword at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940[1]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
-    dword at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
-    dword at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0055F934[12]; /* 0055F934 gap */
+    uint32_t at_g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940[1]; /* 0055F940 g_GameFactionRuntime_ResetPairwiseRelationState_SwitchTable_0055F940: jump table of the original code, not used by the C code */
+    uint32_t at_g_CodePointerTable_0055F944[7]; /* 0055F944 g_CodePointerTable_0055F944: jump table of the original code, not used by the C code */
+    uint32_t at_g_CodePointerTable_0055F960[8]; /* 0055F960 g_CodePointerTable_0055F960: jump table of the original code, not used by the C code */
 } ImageData_0055F934;
 extern ImageData_0055F934 g_ImageData_0055F934;
 
 /* original 0x00562498-0x00563BD0 */
 typedef struct ImageData_00562498 {
-    byte at_gap_00562498[1]; /* 00562498 gap */
-    undefined at_InGameCommandHandlerCodeRegionEnd; /* 00562499 InGameCommandHandlerCodeRegionEnd */
-    dword at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
-    byte at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
+    uint8_t at_gap_00562498[1]; /* 00562498 gap */
+    uint8_t at_InGameCommandHandlerCodeRegionEnd; /* 00562499 InGameCommandHandlerCodeRegionEnd */
+    uint32_t at_InGameCommandHandlerCodeRegionEnd_rest[1]; /* beyond the declared type */
+    uint8_t at_InGameCommandHandlerCodeRegionEnd_rest_tail[2];
     InGameUiActionHandlerPage10Prefix40 at_g_InGameUiActionHandlersPage10; /* 005624A0 g_InGameUiActionHandlersPage10 */
     InGameUiCommandModeActionHandlerPage11 at_g_InGameUiCommandModeActionHandlers30; /* 00562540 g_InGameUiCommandModeActionHandlers30 */
     InGameUiActionHandlerPage12Prefix28 at_g_InGameUiActionHandlersPage12; /* 005625B8 g_InGameUiActionHandlersPage12 */
-    sdword at_g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
-    dword at_g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
-    dword at_g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
-    dword at_g_UiCommandSpriteVariantAColumnCount; /* 00562650 g_UiCommandSpriteVariantAColumnCount */
-    sdword * at_g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
-    sdword * at_g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
-    sdword * at_g_UiCommandSpriteVariantAOffsetTables[5]; /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
-    sdword at_g_UiCatalogGroup48OffsetsDefault[48]; /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
-    sdword at_g_UiCatalogGroup48Offsets5Columns[48]; /* 00562768 g_UiCatalogGroup48Offsets5Columns */
-    sdword at_g_UiCatalogGroup48Offsets6Columns[48]; /* 00562828 g_UiCatalogGroup48Offsets6Columns */
-    sdword at_g_UiCatalogGroup48Offsets7Columns[48]; /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
-    sdword at_g_UiCatalogGroup48Offsets8Columns[48]; /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
-    sdword at_g_UiCatalogGroup42OffsetsDefault[42]; /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
-    sdword at_g_UiCatalogGroup42Offsets5Columns[42]; /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
-    sdword at_g_UiCatalogGroup42Offsets6Columns[42]; /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
-    sdword at_g_UiCommandSpriteVariantAOffsets[24]; /* 00562C60 g_UiCommandSpriteVariantAOffsets */
-    sdword at_g_UiAction1012PlayerIndexTextOffsets[7]; /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
-    sdword at_g_UiAction1012PlayerLabelTextOffsets[7]; /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
-    sdword at_g_UiAction1012IconImageOffsets[7]; /* 00562CF8 g_UiAction1012IconImageOffsets */
-    sdword at_g_UiAction1012StateTextOffsets[7]; /* 00562D14 g_UiAction1012StateTextOffsets */
-    sdword at_g_UiAction1012ControlOffsets[7]; /* 00562D30 g_UiAction1012ControlOffsets */
-    sdword at_g_UiAction1012SlotPageOffsets[7]; /* 00562D4C g_UiAction1012SlotPageOffsets */
+    int32_t at_g_UiAction100AControlOffsets[8]; /* 00562628 g_UiAction100AControlOffsets */
+    uint32_t at_g_UiCatalogGroup48ColumnCount; /* 00562648 g_UiCatalogGroup48ColumnCount */
+    uint32_t at_g_UiCatalogGroup42ColumnCount; /* 0056264C g_UiCatalogGroup42ColumnCount */
+    uint32_t at_g_UiCommandSpriteVariantAColumnCount; /* 00562650 g_UiCommandSpriteVariantAColumnCount */
+    int32_t * at_g_UiCatalogGroup48OffsetTables[9]; /* 00562654 g_UiCatalogGroup48OffsetTables */
+    int32_t * at_g_UiCatalogGroup42OffsetTables[7]; /* 00562678 g_UiCatalogGroup42OffsetTables */
+    int32_t * at_g_UiCommandSpriteVariantAOffsetTables[5]; /* 00562694 g_UiCommandSpriteVariantAOffsetTables */
+    int32_t at_g_UiCatalogGroup48OffsetsDefault[48]; /* 005626A8 g_UiCatalogGroup48OffsetsDefault */
+    int32_t at_g_UiCatalogGroup48Offsets5Columns[48]; /* 00562768 g_UiCatalogGroup48Offsets5Columns */
+    int32_t at_g_UiCatalogGroup48Offsets6Columns[48]; /* 00562828 g_UiCatalogGroup48Offsets6Columns */
+    int32_t at_g_UiCatalogGroup48Offsets7Columns[48]; /* 005628E8 g_UiCatalogGroup48Offsets7Columns */
+    int32_t at_g_UiCatalogGroup48Offsets8Columns[48]; /* 005629A8 g_UiCatalogGroup48Offsets8Columns */
+    int32_t at_g_UiCatalogGroup42OffsetsDefault[42]; /* 00562A68 g_UiCatalogGroup42OffsetsDefault */
+    int32_t at_g_UiCatalogGroup42Offsets5Columns[42]; /* 00562B10 g_UiCatalogGroup42Offsets5Columns */
+    int32_t at_g_UiCatalogGroup42Offsets6Columns[42]; /* 00562BB8 g_UiCatalogGroup42Offsets6Columns */
+    int32_t at_g_UiCommandSpriteVariantAOffsets[24]; /* 00562C60 g_UiCommandSpriteVariantAOffsets */
+    int32_t at_g_UiAction1012PlayerIndexTextOffsets[7]; /* 00562CC0 g_UiAction1012PlayerIndexTextOffsets */
+    int32_t at_g_UiAction1012PlayerLabelTextOffsets[7]; /* 00562CDC g_UiAction1012PlayerLabelTextOffsets */
+    int32_t at_g_UiAction1012IconImageOffsets[7]; /* 00562CF8 g_UiAction1012IconImageOffsets */
+    int32_t at_g_UiAction1012StateTextOffsets[7]; /* 00562D14 g_UiAction1012StateTextOffsets */
+    int32_t at_g_UiAction1012ControlOffsets[7]; /* 00562D30 g_UiAction1012ControlOffsets */
+    int32_t at_g_UiAction1012SlotPageOffsets[7]; /* 00562D4C g_UiAction1012SlotPageOffsets */
     int at_g_TechnologyPanelRowFlagOffsets[7]; /* 00562D68 g_TechnologyPanelRowFlagOffsets */
     int at_g_TechnologyPanelRowValueOffsets[7]; /* 00562D84 g_TechnologyPanelRowValueOffsets */
     int at_g_InGameSelectionDetailGridCellOffsets[12]; /* 00562DA0 g_InGameSelectionDetailGridCellOffsets */
-    sdword at_g_UiSevenSlotSelectionControlOffsets[7]; /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
+    int32_t at_g_UiSevenSlotSelectionControlOffsets[7]; /* 00562DD0 g_UiSevenSlotSelectionControlOffsets */
     RuntimeMaintenanceCallbackPhasesTyped at_g_RuntimeMaintenanceCallbackPhases; /* 00562DEC g_RuntimeMaintenanceCallbackPhases */
-    dword at_g_UiAction1012SubresourceByState[11]; /* 00562E1C g_UiAction1012SubresourceByState */
+    uint32_t at_g_UiAction1012SubresourceByState[11]; /* 00562E1C g_UiAction1012SubresourceByState */
     EffectRuntimeSlot * at_g_InGameOwnedEntityTransientEffectMarkers[32]; /* 00562E48 g_InGameOwnedEntityTransientEffectMarkers */
-    undefined4 at_g_InGameOwnedEntityTransientEffectMarkerCount; /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
+    uint32_t at_g_InGameOwnedEntityTransientEffectMarkerCount; /* 00562EC8 g_InGameOwnedEntityTransientEffectMarkerCount */
     EffectRuntimeSlot * at_g_InGameCommandTargetTransientEffectMarkers[128]; /* 00562ECC g_InGameCommandTargetTransientEffectMarkers */
-    undefined4 at_g_InGameCommandTargetTransientEffectMarkerCount; /* 005630CC g_InGameCommandTargetTransientEffectMarkerCount */
-    word at_u_gfx_panel_panel0_gfx_005630d0[21]; /* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
-    word at_u_gfx_panel_tech_gfx_005630fa[19]; /* 005630FA u_gfx_panel_tech_gfx_005630fa */
-    word at_u_gfx_panel_diagram0_gfx_00563120[23]; /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
-    word at_u_flm_movie000_flm_0056314e[17]; /* 0056314E u_flm_movie000_flm_0056314e */
-    word at_u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
-    word at_u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
-    word at_u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
-    word at_g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
-    word at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
-    byte at_u_Hmmm__na_gut________0056321e_padding[26];
-    dword at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
+    uint32_t at_g_InGameCommandTargetTransientEffectMarkerCount; /* 005630CC g_InGameCommandTargetTransientEffectMarkerCount */
+    uint16_t at_u_gfx_panel_panel0_gfx_005630d0[21]; /* 005630D0 u_gfx_panel_panel0_gfx_005630d0 */
+    uint16_t at_u_gfx_panel_tech_gfx_005630fa[19]; /* 005630FA u_gfx_panel_tech_gfx_005630fa */
+    uint16_t at_u_gfx_panel_diagram0_gfx_00563120[23]; /* 00563120 u_gfx_panel_diagram0_gfx_00563120 */
+    uint16_t at_u_flm_movie000_flm_0056314e[17]; /* 0056314E u_flm_movie000_flm_0056314e */
+    uint16_t at_u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
+    uint16_t at_u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
+    uint16_t at_u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
+    uint16_t at_g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
+    uint16_t at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
+    uint8_t at_u_Hmmm__na_gut________0056321e_padding[26];
+    uint32_t at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
     InGameSimulationStepBatchTicks at_g_InGameSimulationStepTicks; /* 00563264 g_InGameSimulationStepTicks */
-    sdword at_g_InGamePendingSimulationTicks; /* 00563268 g_InGamePendingSimulationTicks */
-    dword at_g_InGameSessionNotificationTimeoutTicks; /* 0056326C g_InGameSessionNotificationTimeoutTicks */
-    dword at_g_EndGameResultsCurrentMusicTrackId; /* 00563270 g_EndGameResultsCurrentMusicTrackId */
-    undefined4 at_g_InGameNetworkTickCountdown; /* 00563274 g_InGameNetworkTickCountdown */
-    dword at_g_InGameStateTickSpinLock; /* 00563278 g_InGameStateTickSpinLock */
+    int32_t at_g_InGamePendingSimulationTicks; /* 00563268 g_InGamePendingSimulationTicks */
+    uint32_t at_g_InGameSessionNotificationTimeoutTicks; /* 0056326C g_InGameSessionNotificationTimeoutTicks */
+    uint32_t at_g_EndGameResultsCurrentMusicTrackId; /* 00563270 g_EndGameResultsCurrentMusicTrackId */
+    uint32_t at_g_InGameNetworkTickCountdown; /* 00563274 g_InGameNetworkTickCountdown */
+    uint32_t at_g_InGameStateTickSpinLock; /* 00563278 g_InGameStateTickSpinLock */
     InGameRuntimeRootImageC3E4 * at_g_InGameRuntimeRoot; /* 0056327C g_InGameRuntimeRoot */
     GraphicsTextureSourceAsset * at_g_InGamePanelTextureSource; /* 00563280 g_InGamePanelTextureSource */
-    undefined4 at_g_InGameDiagramTextureSource; /* 00563284 g_InGameDiagramTextureSource */
-    undefined4 at_g_InGameTechnologyTextureSource; /* 00563288 g_InGameTechnologyTextureSource */
-    undefined4 at_g_InGameWindowTextureSource; /* 0056328C g_InGameWindowTextureSource */
-    sdword at_g_InGamePanelTextureSubresource00Width; /* 00563290 g_InGamePanelTextureSubresource00Width */
-    sdword at_g_InGamePanelTextureSubresource01Width; /* 00563294 g_InGamePanelTextureSubresource01Width */
-    sdword at_g_InGamePanelTextureSubresource02Width; /* 00563298 g_InGamePanelTextureSubresource02Width */
-    sdword at_g_InGamePanelTextureSubresource06Width; /* 0056329C g_InGamePanelTextureSubresource06Width */
-    sdword at_g_InGamePanelTextureSubresource07Width; /* 005632A0 g_InGamePanelTextureSubresource07Width */
-    sdword at_g_InGamePanelTextureSubresource27Width; /* 005632A4 g_InGamePanelTextureSubresource27Width */
-    sdword at_g_InGamePanelTextureSubresource28Width; /* 005632A8 g_InGamePanelTextureSubresource28Width */
-    sdword at_g_InGamePanelTextureSubresource19Width; /* 005632AC g_InGamePanelTextureSubresource19Width */
-    sdword at_g_InGamePanelTextureSubresource20Width; /* 005632B0 g_InGamePanelTextureSubresource20Width */
-    sdword at_g_InGamePanelTextureSubresource34Width; /* 005632B4 g_InGamePanelTextureSubresource34Width */
-    sdword at_g_InGamePanelTextureSubresource32Width; /* 005632B8 g_InGamePanelTextureSubresource32Width */
-    sdword at_g_InGamePanelTextureSubresource33Width; /* 005632BC g_InGamePanelTextureSubresource33Width */
-    sdword at_g_InGamePanelTextureSubresource02Height; /* 005632C0 g_InGamePanelTextureSubresource02Height */
-    sdword at_g_InGamePanelTextureSubresource03Height; /* 005632C4 g_InGamePanelTextureSubresource03Height */
-    sdword at_g_InGamePanelTextureSubresource04Height; /* 005632C8 g_InGamePanelTextureSubresource04Height */
-    sdword at_g_InGamePanelTextureSubresource05Height; /* 005632CC g_InGamePanelTextureSubresource05Height */
-    sdword at_g_InGamePanelTextureSubresource36Height; /* 005632D0 g_InGamePanelTextureSubresource36Height */
-    sdword at_g_InGamePanelTextureSubresource37Height; /* 005632D4 g_InGamePanelTextureSubresource37Height */
-    sdword at_g_InGamePanelTextureSubresource06Height; /* 005632D8 g_InGamePanelTextureSubresource06Height */
-    sdword at_g_InGamePanelTextureSubresource00Height; /* 005632DC g_InGamePanelTextureSubresource00Height */
-    sdword at_g_InGamePanelTextureSubresource07Height; /* 005632E0 g_InGamePanelTextureSubresource07Height */
-    sdword at_g_InGamePanelTextureSubresource26Height; /* 005632E4 g_InGamePanelTextureSubresource26Height */
-    sdword at_g_InGamePanelTextureSubresource31Height; /* 005632E8 g_InGamePanelTextureSubresource31Height */
-    sdword at_g_InGamePanelTextureSubresource18Height; /* 005632EC g_InGamePanelTextureSubresource18Height */
-    sdword at_g_InGamePanelTextureSubresource23Height; /* 005632F0 g_InGamePanelTextureSubresource23Height */
-    sdword at_g_InGamePanelTextureSubresource34Height; /* 005632F4 g_InGamePanelTextureSubresource34Height */
-    sdword at_g_InGamePanelTextureSubresource32Height; /* 005632F8 g_InGamePanelTextureSubresource32Height */
+    uint32_t at_g_InGameDiagramTextureSource; /* 00563284 g_InGameDiagramTextureSource */
+    uint32_t at_g_InGameTechnologyTextureSource; /* 00563288 g_InGameTechnologyTextureSource */
+    uint32_t at_g_InGameWindowTextureSource; /* 0056328C g_InGameWindowTextureSource */
+    int32_t at_g_InGamePanelTextureSubresource00Width; /* 00563290 g_InGamePanelTextureSubresource00Width */
+    int32_t at_g_InGamePanelTextureSubresource01Width; /* 00563294 g_InGamePanelTextureSubresource01Width */
+    int32_t at_g_InGamePanelTextureSubresource02Width; /* 00563298 g_InGamePanelTextureSubresource02Width */
+    int32_t at_g_InGamePanelTextureSubresource06Width; /* 0056329C g_InGamePanelTextureSubresource06Width */
+    int32_t at_g_InGamePanelTextureSubresource07Width; /* 005632A0 g_InGamePanelTextureSubresource07Width */
+    int32_t at_g_InGamePanelTextureSubresource27Width; /* 005632A4 g_InGamePanelTextureSubresource27Width */
+    int32_t at_g_InGamePanelTextureSubresource28Width; /* 005632A8 g_InGamePanelTextureSubresource28Width */
+    int32_t at_g_InGamePanelTextureSubresource19Width; /* 005632AC g_InGamePanelTextureSubresource19Width */
+    int32_t at_g_InGamePanelTextureSubresource20Width; /* 005632B0 g_InGamePanelTextureSubresource20Width */
+    int32_t at_g_InGamePanelTextureSubresource34Width; /* 005632B4 g_InGamePanelTextureSubresource34Width */
+    int32_t at_g_InGamePanelTextureSubresource32Width; /* 005632B8 g_InGamePanelTextureSubresource32Width */
+    int32_t at_g_InGamePanelTextureSubresource33Width; /* 005632BC g_InGamePanelTextureSubresource33Width */
+    int32_t at_g_InGamePanelTextureSubresource02Height; /* 005632C0 g_InGamePanelTextureSubresource02Height */
+    int32_t at_g_InGamePanelTextureSubresource03Height; /* 005632C4 g_InGamePanelTextureSubresource03Height */
+    int32_t at_g_InGamePanelTextureSubresource04Height; /* 005632C8 g_InGamePanelTextureSubresource04Height */
+    int32_t at_g_InGamePanelTextureSubresource05Height; /* 005632CC g_InGamePanelTextureSubresource05Height */
+    int32_t at_g_InGamePanelTextureSubresource36Height; /* 005632D0 g_InGamePanelTextureSubresource36Height */
+    int32_t at_g_InGamePanelTextureSubresource37Height; /* 005632D4 g_InGamePanelTextureSubresource37Height */
+    int32_t at_g_InGamePanelTextureSubresource06Height; /* 005632D8 g_InGamePanelTextureSubresource06Height */
+    int32_t at_g_InGamePanelTextureSubresource00Height; /* 005632DC g_InGamePanelTextureSubresource00Height */
+    int32_t at_g_InGamePanelTextureSubresource07Height; /* 005632E0 g_InGamePanelTextureSubresource07Height */
+    int32_t at_g_InGamePanelTextureSubresource26Height; /* 005632E4 g_InGamePanelTextureSubresource26Height */
+    int32_t at_g_InGamePanelTextureSubresource31Height; /* 005632E8 g_InGamePanelTextureSubresource31Height */
+    int32_t at_g_InGamePanelTextureSubresource18Height; /* 005632EC g_InGamePanelTextureSubresource18Height */
+    int32_t at_g_InGamePanelTextureSubresource23Height; /* 005632F0 g_InGamePanelTextureSubresource23Height */
+    int32_t at_g_InGamePanelTextureSubresource34Height; /* 005632F4 g_InGamePanelTextureSubresource34Height */
+    int32_t at_g_InGamePanelTextureSubresource32Height; /* 005632F8 g_InGamePanelTextureSubresource32Height */
     UiCommandRuntimeRecordPrefix * at_g_UiHoverSelectionRecord; /* 005632FC g_UiHoverSelectionRecord */
     PckTechnologyIdCatalog at_g_InGameSelectedTechnologyId; /* 00563300 g_InGameSelectedTechnologyId */
-    dword at_g_InGameSelectedTechnologyId_rest[7]; /* beyond the declared type */
-    undefined4 at_g_MoviePlaybackBaseFrameGroup; /* 00563320 g_MoviePlaybackBaseFrameGroup */
-    undefined4 at_g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackScheduleCounter */
-    undefined4 at_g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
-    undefined4 at_g_MoviePlaybackCurrentFrame; /* 0056332C g_MoviePlaybackCurrentFrame */
-    dword at_g_DebugOverlayCounterRefreshCountdown; /* 00563330 g_DebugOverlayCounterRefreshCountdown */
-    word at_g_FrontendDebugOverlayTextSlot00Utf16[16]; /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot01Utf16[16]; /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot02Utf16[16]; /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot03Utf16[16]; /* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot04Utf16[16]; /* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot05Utf16[16]; /* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot06Utf16[16]; /* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot07Utf16[16]; /* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot08Utf16[16]; /* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot09Utf16[16]; /* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot10Utf16[16]; /* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot11Utf16[16]; /* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot12Utf16[16]; /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
-    word at_g_FrontendDebugOverlayTextSlot13Utf16[16]; /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
-    dword at_g_FrontendDebugOverlayTextSlot13Utf16_rest[8]; /* beyond the declared type */
-    dword at_g_InGameReadyStateToggleFlags; /* 00563514 g_InGameReadyStateToggleFlags */
+    uint32_t at_g_InGameSelectedTechnologyId_rest[7]; /* beyond the declared type */
+    uint32_t at_g_MoviePlaybackBaseFrameGroup; /* 00563320 g_MoviePlaybackBaseFrameGroup */
+    uint32_t at_g_MoviePlaybackScheduleCounter; /* 00563324 g_MoviePlaybackScheduleCounter */
+    uint32_t at_g_MoviePlaybackScheduleSpan; /* 00563328 g_MoviePlaybackScheduleSpan */
+    uint32_t at_g_MoviePlaybackCurrentFrame; /* 0056332C g_MoviePlaybackCurrentFrame */
+    uint32_t at_g_DebugOverlayCounterRefreshCountdown; /* 00563330 g_DebugOverlayCounterRefreshCountdown */
+    uint16_t at_g_FrontendDebugOverlayTextSlot00Utf16[16]; /* 00563334 g_FrontendDebugOverlayTextSlot00Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot01Utf16[16]; /* 00563354 g_FrontendDebugOverlayTextSlot01Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot02Utf16[16]; /* 00563374 g_FrontendDebugOverlayTextSlot02Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot03Utf16[16]; /* 00563394 g_FrontendDebugOverlayTextSlot03Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot04Utf16[16]; /* 005633B4 g_FrontendDebugOverlayTextSlot04Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot05Utf16[16]; /* 005633D4 g_FrontendDebugOverlayTextSlot05Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot06Utf16[16]; /* 005633F4 g_FrontendDebugOverlayTextSlot06Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot07Utf16[16]; /* 00563414 g_FrontendDebugOverlayTextSlot07Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot08Utf16[16]; /* 00563434 g_FrontendDebugOverlayTextSlot08Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot09Utf16[16]; /* 00563454 g_FrontendDebugOverlayTextSlot09Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot10Utf16[16]; /* 00563474 g_FrontendDebugOverlayTextSlot10Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot11Utf16[16]; /* 00563494 g_FrontendDebugOverlayTextSlot11Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot12Utf16[16]; /* 005634B4 g_FrontendDebugOverlayTextSlot12Utf16 */
+    uint16_t at_g_FrontendDebugOverlayTextSlot13Utf16[16]; /* 005634D4 g_FrontendDebugOverlayTextSlot13Utf16 */
+    uint32_t at_g_FrontendDebugOverlayTextSlot13Utf16_rest[8]; /* beyond the declared type */
+    uint32_t at_g_InGameReadyStateToggleFlags; /* 00563514 g_InGameReadyStateToggleFlags */
     UiCommandRuntimeRecordPrefix * at_g_UiCatalogGroup48Records[48]; /* 00563518 g_UiCatalogGroup48Records */
     UiCommandRuntimeRecordPrefix * at_g_UiCatalogGroup42Records[42]; /* 005635D8 g_UiCatalogGroup42Records */
     UiCommandRuntimeRecordPrefix * at_g_UiCommandSpriteVariantARecords[24]; /* 00563680 g_UiCommandSpriteVariantARecords */
-    dword at_g_UiAction1012TargetPlayerIndices[7]; /* 005636E0 g_UiAction1012TargetPlayerIndices */
+    uint32_t at_g_UiAction1012TargetPlayerIndices[7]; /* 005636E0 g_UiAction1012TargetPlayerIndices */
     WorldObjectRecord * at_g_InGameWorldObjectRecords; /* 005636FC g_InGameWorldObjectRecords */
-    byte * at_g_RuntimeObjectRebaseBaseMinusOne; /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
-    undefined4 at_g_InGamePlacementHeading16; /* 00563704 g_InGamePlacementHeading16 */
-    undefined4 at_g_InGamePlacementPointerCaptureX; /* 00563708 g_InGamePlacementPointerCaptureX */
-    undefined4 at_g_InGamePlacementPointerCaptureY; /* 0056370C g_InGamePlacementPointerCaptureY */
-    sdword at_g_InGamePendingPlacementArmyAsset; /* 00563710 g_InGamePendingPlacementArmyAsset */
+    uint8_t * at_g_RuntimeObjectRebaseBaseMinusOne; /* 00563700 g_RuntimeObjectRebaseBaseMinusOne */
+    uint32_t at_g_InGamePlacementHeading16; /* 00563704 g_InGamePlacementHeading16 */
+    uint32_t at_g_InGamePlacementPointerCaptureX; /* 00563708 g_InGamePlacementPointerCaptureX */
+    uint32_t at_g_InGamePlacementPointerCaptureY; /* 0056370C g_InGamePlacementPointerCaptureY */
+    int32_t at_g_InGamePendingPlacementArmyAsset; /* 00563710 g_InGamePendingPlacementArmyAsset */
     GameEntityRuntime * at_g_InGamePlacementPreviewArmyRuntime; /* 00563714 g_InGamePlacementPreviewArmyRuntime */
-    undefined4 at_g_InGamePlacementWorldYQ12; /* 00563718 g_InGamePlacementWorldYQ12 */
-    undefined4 at_g_InGamePlacementWorldXQ12; /* 0056371C g_InGamePlacementWorldXQ12 */
-    sdword at_g_InGamePlacementSurfaceHeightQ12OrSentinel; /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
+    uint32_t at_g_InGamePlacementWorldYQ12; /* 00563718 g_InGamePlacementWorldYQ12 */
+    uint32_t at_g_InGamePlacementWorldXQ12; /* 0056371C g_InGamePlacementWorldXQ12 */
+    int32_t at_g_InGamePlacementSurfaceHeightQ12OrSentinel; /* 00563720 g_InGamePlacementSurfaceHeightQ12OrSentinel */
     GameEntityRuntime * at_g_InGameCommandPreviewArmyRuntime; /* 00563724 g_InGameCommandPreviewArmyRuntime */
-    undefined4 at_g_InGameCommandPreviewHeading16; /* 00563728 g_InGameCommandPreviewHeading16 */
-    undefined4 at_g_InGameCommandPreviewWorldYQ12; /* 0056372C g_InGameCommandPreviewWorldYQ12 */
-    undefined4 at_g_InGameCommandPreviewWorldXQ12; /* 00563730 g_InGameCommandPreviewWorldXQ12 */
-    undefined4 at_g_InGameCommandPreviewSurfaceHeightQ12OrSentinel; /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
-    undefined4 at_g_InGameCommandPointerCaptureX; /* 00563738 g_InGameCommandPointerCaptureX */
-    undefined4 at_g_InGameCommandPointerCaptureY; /* 0056373C g_InGameCommandPointerCaptureY */
-    undefined4 at_g_InGameCommandPreviewArmyAssetId; /* 00563740 g_InGameCommandPreviewArmyAssetId */
-    undefined4 at_g_InGamePointerInteractionStateFlags; /* 00563744 g_InGamePointerInteractionStateFlags */
+    uint32_t at_g_InGameCommandPreviewHeading16; /* 00563728 g_InGameCommandPreviewHeading16 */
+    uint32_t at_g_InGameCommandPreviewWorldYQ12; /* 0056372C g_InGameCommandPreviewWorldYQ12 */
+    uint32_t at_g_InGameCommandPreviewWorldXQ12; /* 00563730 g_InGameCommandPreviewWorldXQ12 */
+    uint32_t at_g_InGameCommandPreviewSurfaceHeightQ12OrSentinel; /* 00563734 g_InGameCommandPreviewSurfaceHeightQ12OrSentinel */
+    uint32_t at_g_InGameCommandPointerCaptureX; /* 00563738 g_InGameCommandPointerCaptureX */
+    uint32_t at_g_InGameCommandPointerCaptureY; /* 0056373C g_InGameCommandPointerCaptureY */
+    uint32_t at_g_InGameCommandPreviewArmyAssetId; /* 00563740 g_InGameCommandPreviewArmyAssetId */
+    uint32_t at_g_InGamePointerInteractionStateFlags; /* 00563744 g_InGamePointerInteractionStateFlags */
     code * at_g_InGamePointerModeHandlers[8]; /* 00563748 g_InGamePointerModeHandlers */
-    dword at_g_InGamePointerModeCommandIds[8]; /* 00563768 g_InGamePointerModeCommandIds */
-    dword at_g_InGamePointerModePreviewArmyIds[8]; /* 00563788 g_InGamePointerModePreviewArmyIds */
+    uint32_t at_g_InGamePointerModeCommandIds[8]; /* 00563768 g_InGamePointerModeCommandIds */
+    uint32_t at_g_InGamePointerModePreviewArmyIds[8]; /* 00563788 g_InGamePointerModePreviewArmyIds */
     ArmyPlacementCandidateCount at_g_ArmyPlacementAcceptedCandidateCount; /* 005637A8 g_ArmyPlacementAcceptedCandidateCount */
-    undefined at_g_InGameWorldRuntimeDwordArray256; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
-    dword at_g_InGameWorldRuntimeDwordArray256_rest[255]; /* beyond the declared type */
-    byte at_g_InGameWorldRuntimeDwordArray256_rest_tail[3];
-    undefined4 at_g_EndMovieSelectionIndex; /* 00563BAC g_EndMovieSelectionIndex */
-    undefined4 at_g_EndMovieVariantIndex; /* 00563BB0 g_EndMovieVariantIndex */
-    word * at_g_EndMoviePath; /* 00563BB4 g_EndMoviePath */
-    dword at_g_EndMoviePendingTicks; /* 00563BB8 g_EndMoviePendingTicks */
-    dword * at_g_OldUnitSecondaryTable; /* 00563BBC g_OldUnitSecondaryTable */
-    dword * at_g_OldUnitPrimaryTable; /* 00563BC0 g_OldUnitPrimaryTable */
+    uint8_t at_g_InGameWorldRuntimeDwordArray256; /* 005637AC g_InGameWorldRuntimeDwordArray256 */
+    uint32_t at_g_InGameWorldRuntimeDwordArray256_rest[255]; /* beyond the declared type */
+    uint8_t at_g_InGameWorldRuntimeDwordArray256_rest_tail[3];
+    uint32_t at_g_EndMovieSelectionIndex; /* 00563BAC g_EndMovieSelectionIndex */
+    uint32_t at_g_EndMovieVariantIndex; /* 00563BB0 g_EndMovieVariantIndex */
+    uint16_t * at_g_EndMoviePath; /* 00563BB4 g_EndMoviePath */
+    uint32_t at_g_EndMoviePendingTicks; /* 00563BB8 g_EndMoviePendingTicks */
+    uint32_t * at_g_OldUnitSecondaryTable; /* 00563BBC g_OldUnitSecondaryTable */
+    uint32_t * at_g_OldUnitPrimaryTable; /* 00563BC0 g_OldUnitPrimaryTable */
     OldUnitRecordCount at_g_OldUnitRecordCount; /* 00563BC4 g_OldUnitRecordCount */
-    dword at_g_OldUnitRecordCount_rest[2]; /* beyond the declared type */
+    uint32_t at_g_OldUnitRecordCount_rest[2]; /* beyond the declared type */
 } ImageData_00562498;
 extern ImageData_00562498 g_ImageData_00562498;
 
 /* original 0x005658BC-0x005658E0 */
 typedef struct ImageData_005658BC {
-    byte at_gap_005658BC[4]; /* 005658BC gap */
+    uint8_t at_gap_005658BC[4]; /* 005658BC gap */
     UiCommandDispatchRecord at_g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30[2]; /* 005658C0 g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30 */
-    dword at_g_EndMovieCommandDispatchRecords_Terminator[2]; /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
+    uint32_t at_g_EndMovieCommandDispatchRecords_Terminator[2]; /* 005658D8 g_EndMovieCommandDispatchRecords_Terminator */
 } ImageData_005658BC;
 extern ImageData_005658BC g_ImageData_005658BC;
 
 /* original 0x00565E2C-0x00565E30 */
 typedef struct ImageData_00565E2C {
-    byte at_gap_00565E2C[4]; /* 00565E2C gap */
+    uint8_t at_gap_00565E2C[4]; /* 00565E2C gap */
 } ImageData_00565E2C;
 extern ImageData_00565E2C g_ImageData_00565E2C;
 
 /* original 0x00566034-0x00566060 */
 typedef struct ImageData_00566034 {
-    byte at_gap_00566034[12]; /* 00566034 gap */
-    dword at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040[8]; /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00566034[12]; /* 00566034 gap */
+    uint32_t at_g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040[8]; /* 00566040 g_InGameRuntime_UpdateSimulationAndNetworkTick_SwitchTable_00566040: jump table of the original code, not used by the C code */
 } ImageData_00566034;
 extern ImageData_00566034 g_ImageData_00566034;
 
 /* original 0x0056710C-0x005671D0 */
 typedef struct ImageData_0056710C {
-    byte at_gap_0056710C[4]; /* 0056710C gap */
+    uint8_t at_gap_0056710C[4]; /* 0056710C gap */
     UiCommandDispatchRecord at_g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30[15]; /* 00567110 g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30 */
-    dword at_g_EndGameResultsCommandDispatchRecords_Terminator[3]; /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
+    uint32_t at_g_EndGameResultsCommandDispatchRecords_Terminator[3]; /* 005671C4 g_EndGameResultsCommandDispatchRecords_Terminator */
 } ImageData_0056710C;
 extern ImageData_0056710C g_ImageData_0056710C;
 
 /* original 0x005679AC-0x00567CB0 */
 typedef struct ImageData_005679AC {
-    byte at_gap_005679AC[4]; /* 005679AC gap */
+    uint8_t at_gap_005679AC[4]; /* 005679AC gap */
     UiCommandDispatchRecord at_g_InGameCommandDispatchRecords_00_Code00030073_Modifier33[63]; /* 005679B0 g_InGameCommandDispatchRecords_00_Code00030073_Modifier33 */
-    dword at_g_InGameCommandDispatchRecords_Terminator[3]; /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
+    uint32_t at_g_InGameCommandDispatchRecords_Terminator[3]; /* 00567CA4 g_InGameCommandDispatchRecords_Terminator */
 } ImageData_005679AC;
 extern ImageData_005679AC g_ImageData_005679AC;
 
 /* original 0x0056A604-0x0056A610 */
 typedef struct ImageData_0056A604 {
-    undefined at_g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked */
-    dword at_g_InGameSessionStartedNetworked_rest[2]; /* beyond the declared type */
-    byte at_g_InGameSessionStartedNetworked_rest_tail[3];
+    uint8_t at_g_InGameSessionStartedNetworked; /* 0056A604 g_InGameSessionStartedNetworked */
+    uint32_t at_g_InGameSessionStartedNetworked_rest[2]; /* beyond the declared type */
+    uint8_t at_g_InGameSessionStartedNetworked_rest_tail[3];
 } ImageData_0056A604;
 extern ImageData_0056A604 g_ImageData_0056A604;
 
 /* original 0x0056D33C-0x0056D380 */
 typedef struct ImageData_0056D33C {
-    byte at_gap_0056D33C[4]; /* 0056D33C gap */
-    dword at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340[16]; /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0056D33C[4]; /* 0056D33C gap */
+    uint32_t at_g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340[16]; /* 0056D340 g_InGameTargetingContext_AdvanceOrResolveTarget_SwitchTable_0056D340: jump table of the original code, not used by the C code */
 } ImageData_0056D33C;
 extern ImageData_0056D33C g_ImageData_0056D33C;
 
 /* original 0x0056D71C-0x0056D840 */
 typedef struct ImageData_0056D71C {
-    byte at_gap_0056D71C[4]; /* 0056D71C gap */
-    dword at_g_UiCommandModeG; /* 0056D720 g_UiCommandModeG */
-    dword at_g_UiCommandModeC; /* 0056D724 g_UiCommandModeC */
-    dword at_g_UiCommandModeD; /* 0056D728 g_UiCommandModeD */
-    dword at_g_UiCommandModeE; /* 0056D72C g_UiCommandModeE */
-    dword at_g_UiCommandModeA; /* 0056D730 g_UiCommandModeA */
-    dword at_g_UiCommandModeB; /* 0056D734 g_UiCommandModeB */
-    dword at_g_UiCommandModeB_rest[1]; /* beyond the declared type */
-    dword at_g_UiCommandModeF; /* 0056D73C g_UiCommandModeF */
-    dword at_g_UiCommandAbsoluteSelectionIndex; /* 0056D740 g_UiCommandAbsoluteSelectionIndex */
-    dword at_g_UiCommandSelectionPageBaseIndex; /* 0056D744 g_UiCommandSelectionPageBaseIndex */
-    undefined4 at_g_UiCommandTerrainMaskToggleValue; /* 0056D748 g_UiCommandTerrainMaskToggleValue */
+    uint8_t at_gap_0056D71C[4]; /* 0056D71C gap */
+    uint32_t at_g_UiCommandModeG; /* 0056D720 g_UiCommandModeG */
+    uint32_t at_g_UiCommandModeC; /* 0056D724 g_UiCommandModeC */
+    uint32_t at_g_UiCommandModeD; /* 0056D728 g_UiCommandModeD */
+    uint32_t at_g_UiCommandModeE; /* 0056D72C g_UiCommandModeE */
+    uint32_t at_g_UiCommandModeA; /* 0056D730 g_UiCommandModeA */
+    uint32_t at_g_UiCommandModeB; /* 0056D734 g_UiCommandModeB */
+    uint32_t at_g_UiCommandModeB_rest[1]; /* beyond the declared type */
+    uint32_t at_g_UiCommandModeF; /* 0056D73C g_UiCommandModeF */
+    uint32_t at_g_UiCommandAbsoluteSelectionIndex; /* 0056D740 g_UiCommandAbsoluteSelectionIndex */
+    uint32_t at_g_UiCommandSelectionPageBaseIndex; /* 0056D744 g_UiCommandSelectionPageBaseIndex */
+    uint32_t at_g_UiCommandTerrainMaskToggleValue; /* 0056D748 g_UiCommandTerrainMaskToggleValue */
     FactionRuntimeIndex at_g_UiCommandModeGOwnerFactionIndex; /* 0056D74C g_UiCommandModeGOwnerFactionIndex */
-    undefined4 at_g_UiCommandModeGArmyAssetId; /* 0056D750 g_UiCommandModeGArmyAssetId */
-    sdword at_g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
-    sdword at_g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
+    uint32_t at_g_UiCommandModeGArmyAssetId; /* 0056D750 g_UiCommandModeGArmyAssetId */
+    int32_t at_g_UiCommandDragReferenceX; /* 0056D754 g_UiCommandDragReferenceX */
+    int32_t at_g_UiCommandDragReferenceY; /* 0056D758 g_UiCommandDragReferenceY */
     PckArmyAssetIdCatalog at_g_UiCommandMode4ArmyAssetId; /* 0056D75C g_UiCommandMode4ArmyAssetId */
-    undefined4 at_g_UiCommandCallerMaskHighBit; /* 0056D760 g_UiCommandCallerMaskHighBit */
-    dword at_g_UiCommandModeGPrimaryPageIndices[6]; /* 0056D764 g_UiCommandModeGPrimaryPageIndices */
-    dword at_g_UiCommandModeGSecondaryPageIndices[6]; /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
-    dword at_g_UiCommandModeGTertiaryPageIndices[6]; /* 0056D794 g_UiCommandModeGTertiaryPageIndices */
-    sdword at_g_UiCommandModeGControlOffsets[6]; /* 0056D7AC g_UiCommandModeGControlOffsets */
+    uint32_t at_g_UiCommandCallerMaskHighBit; /* 0056D760 g_UiCommandCallerMaskHighBit */
+    uint32_t at_g_UiCommandModeGPrimaryPageIndices[6]; /* 0056D764 g_UiCommandModeGPrimaryPageIndices */
+    uint32_t at_g_UiCommandModeGSecondaryPageIndices[6]; /* 0056D77C g_UiCommandModeGSecondaryPageIndices */
+    uint32_t at_g_UiCommandModeGTertiaryPageIndices[6]; /* 0056D794 g_UiCommandModeGTertiaryPageIndices */
+    int32_t at_g_UiCommandModeGControlOffsets[6]; /* 0056D7AC g_UiCommandModeGControlOffsets */
     void * at_g_UiCommandModeGHandlers[6]; /* 0056D7C4 g_UiCommandModeGHandlers */
-    sdword at_g_UiMappedCommandControlOffsets[12]; /* 0056D7DC g_UiMappedCommandControlOffsets */
-    sdword at_g_UiCommandSelectionAnchorWorldXQ12; /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
-    sdword at_g_UiCommandSelectionAnchorWorldYQ12; /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
-    sdword at_g_UiCommandSelectionCurrentWorldXQ12; /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
-    sdword at_g_UiCommandSelectionCurrentWorldYQ12; /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
-    undefined4 at_g_UiCommandDragAnchorWorldXQ12; /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
-    undefined4 at_g_UiCommandDragAnchorWorldYQ12; /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
-    undefined4 at_g_UiCommandDragStartScreenX; /* 0056D824 g_UiCommandDragStartScreenX */
-    undefined4 at_g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScreenY */
-    undefined4 at_g_TerrainMaterialEditFieldGrid; /* 0056D82C g_TerrainMaterialEditFieldGrid */
-    undefined4 at_g_TerrainMaterialEditDeltaBuffer; /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
-    undefined4 at_g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
-    dword at_g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
-    dword at_g_TerrainMaterialEditReplacementMaterialByte_rest[1]; /* beyond the declared type */
+    int32_t at_g_UiMappedCommandControlOffsets[12]; /* 0056D7DC g_UiMappedCommandControlOffsets */
+    int32_t at_g_UiCommandSelectionAnchorWorldXQ12; /* 0056D80C g_UiCommandSelectionAnchorWorldXQ12 */
+    int32_t at_g_UiCommandSelectionAnchorWorldYQ12; /* 0056D810 g_UiCommandSelectionAnchorWorldYQ12 */
+    int32_t at_g_UiCommandSelectionCurrentWorldXQ12; /* 0056D814 g_UiCommandSelectionCurrentWorldXQ12 */
+    int32_t at_g_UiCommandSelectionCurrentWorldYQ12; /* 0056D818 g_UiCommandSelectionCurrentWorldYQ12 */
+    uint32_t at_g_UiCommandDragAnchorWorldXQ12; /* 0056D81C g_UiCommandDragAnchorWorldXQ12 */
+    uint32_t at_g_UiCommandDragAnchorWorldYQ12; /* 0056D820 g_UiCommandDragAnchorWorldYQ12 */
+    uint32_t at_g_UiCommandDragStartScreenX; /* 0056D824 g_UiCommandDragStartScreenX */
+    uint32_t at_g_UiCommandDragStartScreenY; /* 0056D828 g_UiCommandDragStartScreenY */
+    uint32_t at_g_TerrainMaterialEditFieldGrid; /* 0056D82C g_TerrainMaterialEditFieldGrid */
+    uint32_t at_g_TerrainMaterialEditDeltaBuffer; /* 0056D830 g_TerrainMaterialEditDeltaBuffer */
+    uint32_t at_g_TerrainMaterialEditReferenceMaterialByte; /* 0056D834 g_TerrainMaterialEditReferenceMaterialByte */
+    uint32_t at_g_TerrainMaterialEditReplacementMaterialByte; /* 0056D838 g_TerrainMaterialEditReplacementMaterialByte */
+    uint32_t at_g_TerrainMaterialEditReplacementMaterialByte_rest[1]; /* beyond the declared type */
 } ImageData_0056D71C;
 extern ImageData_0056D71C g_ImageData_0056D71C;
 
 /* original 0x0056E408-0x0056E5D0 */
 typedef struct ImageData_0056E408 {
-    byte at_gap_0056E408[8]; /* 0056E408 gap */
+    uint8_t at_gap_0056E408[8]; /* 0056E408 gap */
     UiCommandDispatchRecord at_g_InGameKeyboardDispatchRecords[36]; /* 0056E410 g_InGameKeyboardDispatchRecords */
-    dword at_g_InGameKeyboardDispatchRecordsTerminator; /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
-    dword at_g_InGameKeyboardDispatchRecordsTerminator_rest[3]; /* beyond the declared type */
+    uint32_t at_g_InGameKeyboardDispatchRecordsTerminator; /* 0056E5C0 g_InGameKeyboardDispatchRecordsTerminator */
+    uint32_t at_g_InGameKeyboardDispatchRecordsTerminator_rest[3]; /* beyond the declared type */
 } ImageData_0056E408;
 extern ImageData_0056E408 g_ImageData_0056E408;
 
 /* original 0x0056F278-0x0056F350 */
 typedef struct ImageData_0056F278 {
-    byte at_gap_0056F278[8]; /* 0056F278 gap */
+    uint8_t at_gap_0056F278[8]; /* 0056F278 gap */
     InGameCameraCommandDispatchTable at_g_InGameCameraCommandDispatchRecords16; /* 0056F280 g_InGameCameraCommandDispatchRecords16 */
 } ImageData_0056F278;
 extern ImageData_0056F278 g_ImageData_0056F278;
 
 /* original 0x0056F81C-0x0056F840 */
 typedef struct ImageData_0056F81C {
-    byte at_gap_0056F81C[4]; /* 0056F81C gap */
-    dword at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0056F81C[4]; /* 0056F81C gap */
+    uint32_t at_g_InGameUiCommandCursorCodeModeDispatchTable[8]; /* 0056F820 g_InGameUiCommandCursorCodeModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_0056F81C;
 extern ImageData_0056F81C g_ImageData_0056F81C;
 
 /* original 0x0056FA98-0x0056FAC0 */
 typedef struct ImageData_0056FA98 {
-    byte at_gap_0056FA98[8]; /* 0056FA98 gap */
-    dword at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
+    uint8_t at_gap_0056FA98[8]; /* 0056FA98 gap */
+    uint32_t at_g_InGameUiCommandBeginInteractionModeDispatchTable[8]; /* 0056FAA0 g_InGameUiCommandBeginInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_0056FA98;
 extern ImageData_0056FA98 g_ImageData_0056FA98;
 
 /* original 0x00570408-0x00570430 */
 typedef struct ImageData_00570408 {
-    byte at_gap_00570408[8]; /* 00570408 gap */
-    dword at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00570408[8]; /* 00570408 gap */
+    uint32_t at_g_InGameUiCommandUpdateInteractionModeDispatchTable[8]; /* 00570410 g_InGameUiCommandUpdateInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570408;
 extern ImageData_00570408 g_ImageData_00570408;
 
 /* original 0x00570D90-0x00570DC0 */
 typedef struct ImageData_00570D90 {
-    byte at_gap_00570D90[16]; /* 00570D90 gap */
-    dword at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00570D90[16]; /* 00570D90 gap */
+    uint32_t at_g_InGameUiCommandEndInteractionModeDispatchTable[8]; /* 00570DA0 g_InGameUiCommandEndInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570D90;
 extern ImageData_00570D90 g_ImageData_00570D90;
 
 /* original 0x00570F48-0x00570F70 */
 typedef struct ImageData_00570F48 {
-    byte at_gap_00570F48[8]; /* 00570F48 gap */
-    dword at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
+    uint8_t at_gap_00570F48[8]; /* 00570F48 gap */
+    uint32_t at_g_InGameUiCommandResetInteractionModeDispatchTable[8]; /* 00570F50 g_InGameUiCommandResetInteractionModeDispatchTable: jump table of the original code, not used by the C code */
 } ImageData_00570F48;
 extern ImageData_00570F48 g_ImageData_00570F48;
 
 /* original 0x00571AE4-0x00571B00 */
 typedef struct ImageData_00571AE4 {
-    byte at_gap_00571AE4[28]; /* 00571AE4 gap */
+    uint8_t at_gap_00571AE4[28]; /* 00571AE4 gap */
 } ImageData_00571AE4;
 extern ImageData_00571AE4 g_ImageData_00571AE4;
 
 /* original 0x00571B30-0x00571B50 */
 typedef struct ImageData_00571B30 {
-    byte at_gap_00571B30[32]; /* 00571B30 gap */
+    uint8_t at_gap_00571B30[32]; /* 00571B30 gap */
 } ImageData_00571B30;
 extern ImageData_00571B30 g_ImageData_00571B30;
 
 /* original 0x00571D24-0x00571D40 */
 typedef struct ImageData_00571D24 {
-    byte at_gap_00571D24[28]; /* 00571D24 gap */
+    uint8_t at_gap_00571D24[28]; /* 00571D24 gap */
 } ImageData_00571D24;
 extern ImageData_00571D24 g_ImageData_00571D24;
 
 /* original 0x00571D70-0x00571D90 */
 typedef struct ImageData_00571D70 {
-    byte at_gap_00571D70[32]; /* 00571D70 gap */
+    uint8_t at_gap_00571D70[32]; /* 00571D70 gap */
 } ImageData_00571D70;
 extern ImageData_00571D70 g_ImageData_00571D70;
 
 /* original 0x00572030-0x005722C0 */
 typedef struct ImageData_00572030 {
-    byte at_gap_00572030[16]; /* 00572030 gap */
+    uint8_t at_gap_00572030[16]; /* 00572030 gap */
     FrontendPlayerRemovalPacket10007 at_g_FrontendClientPlayerRemovalPacket10007; /* 00572040 g_FrontendClientPlayerRemovalPacket10007 */
     FrontendCommandPacketRecord at_g_FrontendClientPlayerCommandRecords[8]; /* 00572060 g_FrontendClientPlayerCommandRecords */
     FrontendCommandPacketRecord at_g_FrontendClientCommandBatchPacketBuffer[8]; /* 00572160 g_FrontendClientCommandBatchPacketBuffer */
@@ -2716,63 +2716,63 @@ extern ImageData_00572030 g_ImageData_00572030;
 
 /* original 0x00572AB0-0x00573070 */
 typedef struct ImageData_00572AB0 {
-    byte at_gap_00572AB0[16]; /* 00572AB0 gap */
-    dword at_g_DataPackageHandle; /* 00572AC0 g_DataPackageHandle */
-    dword at_g_ModelPackageHandle; /* 00572AC4 g_ModelPackageHandle */
-    dword at_g_GraphicsPackageHandle; /* 00572AC8 g_GraphicsPackageHandle */
-    dword at_g_SoundPackageHandle; /* 00572ACC g_SoundPackageHandle */
-    dword at_g_MoviePackageHandle; /* 00572AD0 g_MoviePackageHandle */
-    dword at_g_LevelPackageHandle; /* 00572AD4 g_LevelPackageHandle */
+    uint8_t at_gap_00572AB0[16]; /* 00572AB0 gap */
+    uint32_t at_g_DataPackageHandle; /* 00572AC0 g_DataPackageHandle */
+    uint32_t at_g_ModelPackageHandle; /* 00572AC4 g_ModelPackageHandle */
+    uint32_t at_g_GraphicsPackageHandle; /* 00572AC8 g_GraphicsPackageHandle */
+    uint32_t at_g_SoundPackageHandle; /* 00572ACC g_SoundPackageHandle */
+    uint32_t at_g_MoviePackageHandle; /* 00572AD0 g_MoviePackageHandle */
+    uint32_t at_g_LevelPackageHandle; /* 00572AD4 g_LevelPackageHandle */
     DirectSoundVoiceSet * at_g_UiButtonSoundVoiceSets7[7]; /* 00572AD8 g_UiButtonSoundVoiceSets7 */
     FncModuleHeader * at_g_PcxFunctionModule; /* 00572AF4 g_PcxFunctionModule */
     PcxEncodeProc * at_g_PcxFunctionExport3; /* 00572AF8 g_PcxFunctionExport3 */
     PcxDecodeProc * at_g_PcxFunctionExport2; /* 00572AFC g_PcxFunctionExport2 */
-    dword at_g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks */
-    undefined4 at_g_InstallRegistryKeyHandle; /* 00572B04 g_InstallRegistryKeyHandle */
-    undefined at_g_InstallRegistryValueDataCapacityBytes; /* 00572B08 g_InstallRegistryValueDataCapacityBytes */
-    byte at_g_InstallRegistryValueDataCapacityBytes_rest_tail[3];
-    undefined4 at_g_InstallRegistryValueType; /* 00572B0C g_InstallRegistryValueType */
-    undefined at_g_InstallRegistryValueDataA; /* 00572B10 g_InstallRegistryValueDataA */
-    dword at_g_InstallRegistryValueDataA_rest[63]; /* beyond the declared type */
-    byte at_g_InstallRegistryValueDataA_rest_tail[3];
-    undefined at_g_InstallDirectoryScratchUtf16; /* 00572C10 g_InstallDirectoryScratchUtf16 */
-    dword at_g_InstallDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
-    byte at_g_InstallDirectoryScratchUtf16_rest_tail[3];
-    word at_u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
+    uint32_t at_g_IntroMoviePendingTicks; /* 00572B00 g_IntroMoviePendingTicks */
+    uint32_t at_g_InstallRegistryKeyHandle; /* 00572B04 g_InstallRegistryKeyHandle */
+    uint8_t at_g_InstallRegistryValueDataCapacityBytes; /* 00572B08 g_InstallRegistryValueDataCapacityBytes */
+    uint8_t at_g_InstallRegistryValueDataCapacityBytes_rest_tail[3];
+    uint32_t at_g_InstallRegistryValueType; /* 00572B0C g_InstallRegistryValueType */
+    uint8_t at_g_InstallRegistryValueDataA; /* 00572B10 g_InstallRegistryValueDataA */
+    uint32_t at_g_InstallRegistryValueDataA_rest[63]; /* beyond the declared type */
+    uint8_t at_g_InstallRegistryValueDataA_rest_tail[3];
+    uint8_t at_g_InstallDirectoryScratchUtf16; /* 00572C10 g_InstallDirectoryScratchUtf16 */
+    uint32_t at_g_InstallDirectoryScratchUtf16_rest[127]; /* beyond the declared type */
+    uint8_t at_g_InstallDirectoryScratchUtf16_rest_tail[3];
+    uint16_t at_u_Thandor_00572e10[8]; /* 00572E10 u_Thandor_00572e10 */
     char at_s_Software_Planet4_Thandor_00572e20[25]; /* 00572E20 s_Software_Planet4_Thandor_00572e20 */
-    undefined at_s_InstallRegistryValueNameCD; /* 00572E39 s_InstallRegistryValueNameCD */
-    word at_u_Dscreen00_pcx_00572e3a[1]; /* 00572E3A u_Dscreen00_pcx_00572e3a */
-    word at_g_ScreenshotFileNameUtf16[13]; /* 00572E3C g_ScreenshotFileNameUtf16 */
-    word at_u_daten_pck_00572e56[10]; /* 00572E56 u_daten_pck_00572e56 */
-    word at_u_modelle_pck_00572e6a[12]; /* 00572E6A u_modelle_pck_00572e6a */
-    word at_u_graphik_pck_00572e82[12]; /* 00572E82 u_graphik_pck_00572e82 */
-    word at_u_sound_pck_00572e9a[10]; /* 00572E9A u_sound_pck_00572e9a */
-    word at_u_filme_pck_00572eae[10]; /* 00572EAE u_filme_pck_00572eae */
-    word at_u_level_pck_00572ec2[10]; /* 00572EC2 u_level_pck_00572ec2 */
+    uint8_t at_s_InstallRegistryValueNameCD; /* 00572E39 s_InstallRegistryValueNameCD */
+    uint16_t at_u_Dscreen00_pcx_00572e3a[1]; /* 00572E3A u_Dscreen00_pcx_00572e3a */
+    uint16_t at_g_ScreenshotFileNameUtf16[13]; /* 00572E3C g_ScreenshotFileNameUtf16 */
+    uint16_t at_u_daten_pck_00572e56[10]; /* 00572E56 u_daten_pck_00572e56 */
+    uint16_t at_u_modelle_pck_00572e6a[12]; /* 00572E6A u_modelle_pck_00572e6a */
+    uint16_t at_u_graphik_pck_00572e82[12]; /* 00572E82 u_graphik_pck_00572e82 */
+    uint16_t at_u_sound_pck_00572e9a[10]; /* 00572E9A u_sound_pck_00572e9a */
+    uint16_t at_u_filme_pck_00572eae[10]; /* 00572EAE u_filme_pck_00572eae */
+    uint16_t at_u_level_pck_00572ec2[10]; /* 00572EC2 u_level_pck_00572ec2 */
     PatchArchivePathTemplate18 at_g_PatchArchivePathTemplateUtf16; /* 00572ED6 g_PatchArchivePathTemplateUtf16 */
     LevelArchivePathTemplate18 at_g_LevelArchivePathTemplateUtf16; /* 00572EEE g_LevelArchivePathTemplateUtf16 */
-    word at_u_sound_button0_sam_00572f06[18]; /* 00572F06 u_sound_button0_sam_00572f06 */
-    word at_u_sound_button1_sam_00572f2a[18]; /* 00572F2A u_sound_button1_sam_00572f2a */
-    word at_u_sound_button2_sam_00572f4e[18]; /* 00572F4E u_sound_button2_sam_00572f4e */
-    word at_u_sound_button3_sam_00572f72[18]; /* 00572F72 u_sound_button3_sam_00572f72 */
-    word at_u_sound_button4_sam_00572f96[18]; /* 00572F96 u_sound_button4_sam_00572f96 */
-    word at_u_sound_button5_sam_00572fba[18]; /* 00572FBA u_sound_button5_sam_00572fba */
-    word at_u_sound_button6_sam_00572fde[18]; /* 00572FDE u_sound_button6_sam_00572fde */
-    word at_u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
-    word at_u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
-    word at_u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
+    uint16_t at_u_sound_button0_sam_00572f06[18]; /* 00572F06 u_sound_button0_sam_00572f06 */
+    uint16_t at_u_sound_button1_sam_00572f2a[18]; /* 00572F2A u_sound_button1_sam_00572f2a */
+    uint16_t at_u_sound_button2_sam_00572f4e[18]; /* 00572F4E u_sound_button2_sam_00572f4e */
+    uint16_t at_u_sound_button3_sam_00572f72[18]; /* 00572F72 u_sound_button3_sam_00572f72 */
+    uint16_t at_u_sound_button4_sam_00572f96[18]; /* 00572F96 u_sound_button4_sam_00572f96 */
+    uint16_t at_u_sound_button5_sam_00572fba[18]; /* 00572FBA u_sound_button5_sam_00572fba */
+    uint16_t at_u_sound_button6_sam_00572fde[18]; /* 00572FDE u_sound_button6_sam_00572fde */
+    uint16_t at_u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
+    uint16_t at_u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
+    uint16_t at_u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
     char at_s_NOINTRO_00573064[8]; /* 00573064 s_NOINTRO_00573064 */
-    byte at_s_NOINTRO_00573064_padding[4];
+    uint8_t at_s_NOINTRO_00573064_padding[4];
 } ImageData_00572AB0;
 extern ImageData_00572AB0 g_ImageData_00572AB0;
 
 /* original 0x00573EE8-0x00575890 */
 typedef struct ImageData_00573EE8 {
-    byte at_gap_00573EE8[8]; /* 00573EE8 gap */
+    uint8_t at_gap_00573EE8[8]; /* 00573EE8 gap */
     DynamicModuleEntry at_g_DynamicModules[16]; /* 00573EF0 g_DynamicModules */
-    dword at_g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
+    uint32_t at_g_DynamicModuleCount; /* 00573F70 g_DynamicModuleCount */
     DynamicApiBinding at_g_BootstrapApiBindings[8]; /* 00573F74 g_BootstrapApiBindings */
-    dword at_g_BootstrapApiBindings_rest[2]; /* beyond the declared type */
+    uint32_t at_g_BootstrapApiBindings_rest[2]; /* beyond the declared type */
     DirectDrawCreate * at_pDirectDrawCreate; /* 00573FBC pDirectDrawCreate */
     DirectDrawEnumerateA * at_pDirectDrawEnumerateA; /* 00573FC0 pDirectDrawEnumerateA */
     DirectInputCreateA * at_pDirectInputCreateA; /* 00573FC4 pDirectInputCreateA */
@@ -2824,373 +2824,373 @@ typedef struct ImageData_00573EE8 {
     WinSock_WSAGetLastErrorProc * at_g_WinSock_WSAGetLastError; /* 00574340 g_WinSock_WSAGetLastError */
     WinSock_WSAIsBlockingProc * at_g_WinSock_WSAIsBlocking; /* 00574344 g_WinSock_WSAIsBlocking */
     WinSock_WSASetBlockingHookProc * at_g_WinSock_WSASetBlockingHook; /* 00574348 g_WinSock_WSASetBlockingHook */
-    dword at_g_WinSock_UnboundApiSlot34C[1]; /* 0057434C g_WinSock_UnboundApiSlot34C */
+    uint32_t at_g_WinSock_UnboundApiSlot34C[1]; /* 0057434C g_WinSock_UnboundApiSlot34C */
     WinSock_WSAStartupProc * at_g_WinSock_WSAStartup; /* 00574350 g_WinSock_WSAStartup */
     WinSock_WSAUnhookBlockingHookProc * at_g_WinSock_WSAUnhookBlockingHook; /* 00574354 g_WinSock_WSAUnhookBlockingHook */
-    dword at_g_Ws2_32_accept[1]; /* 00574358 g_Ws2_32_accept */
+    uint32_t at_g_Ws2_32_accept[1]; /* 00574358 g_Ws2_32_accept */
     WinSock_bindProc * at_g_Ws2_32_bind; /* 0057435C g_Ws2_32_bind */
     WinSock_closesocketProc * at_g_Ws2_32_closesocket; /* 00574360 g_Ws2_32_closesocket */
-    dword at_g_Ws2_32_connect[1]; /* 00574364 g_Ws2_32_connect */
-    dword at_g_Ws2_32_getpeername[1]; /* 00574368 g_Ws2_32_getpeername */
-    dword at_g_Ws2_32_getsockname[1]; /* 0057436C g_Ws2_32_getsockname */
-    dword at_g_Ws2_32_getsockopt[1]; /* 00574370 g_Ws2_32_getsockopt */
-    dword at_g_Ws2_32_htonl[1]; /* 00574374 g_Ws2_32_htonl */
+    uint32_t at_g_Ws2_32_connect[1]; /* 00574364 g_Ws2_32_connect */
+    uint32_t at_g_Ws2_32_getpeername[1]; /* 00574368 g_Ws2_32_getpeername */
+    uint32_t at_g_Ws2_32_getsockname[1]; /* 0057436C g_Ws2_32_getsockname */
+    uint32_t at_g_Ws2_32_getsockopt[1]; /* 00574370 g_Ws2_32_getsockopt */
+    uint32_t at_g_Ws2_32_htonl[1]; /* 00574374 g_Ws2_32_htonl */
     WinSock_htonsProc * at_g_Ws2_32_htons; /* 00574378 g_Ws2_32_htons */
-    dword at_g_Ws2_32_ioctlsocket[1]; /* 0057437C g_Ws2_32_ioctlsocket */
-    dword at_g_Ws2_32_listen[1]; /* 00574380 g_Ws2_32_listen */
-    dword at_g_Ws2_32_ntohl[1]; /* 00574384 g_Ws2_32_ntohl */
-    dword at_g_Ws2_32_ntohs[1]; /* 00574388 g_Ws2_32_ntohs */
-    dword at_g_Ws2_32_recv[1]; /* 0057438C g_Ws2_32_recv */
+    uint32_t at_g_Ws2_32_ioctlsocket[1]; /* 0057437C g_Ws2_32_ioctlsocket */
+    uint32_t at_g_Ws2_32_listen[1]; /* 00574380 g_Ws2_32_listen */
+    uint32_t at_g_Ws2_32_ntohl[1]; /* 00574384 g_Ws2_32_ntohl */
+    uint32_t at_g_Ws2_32_ntohs[1]; /* 00574388 g_Ws2_32_ntohs */
+    uint32_t at_g_Ws2_32_recv[1]; /* 0057438C g_Ws2_32_recv */
     WinSock_recvfromProc * at_g_Ws2_32_recvfrom; /* 00574390 g_Ws2_32_recvfrom */
-    dword at_g_Ws2_32_select[1]; /* 00574394 g_Ws2_32_select */
-    dword at_g_Ws2_32_send[1]; /* 00574398 g_Ws2_32_send */
+    uint32_t at_g_Ws2_32_select[1]; /* 00574394 g_Ws2_32_select */
+    uint32_t at_g_Ws2_32_send[1]; /* 00574398 g_Ws2_32_send */
     WinSock_sendtoProc * at_g_Ws2_32_sendto; /* 0057439C g_Ws2_32_sendto */
     WinSock_setsockoptProc * at_g_Ws2_32_setsockopt; /* 005743A0 g_Ws2_32_setsockopt */
-    dword at_g_Ws2_32_shutdown[1]; /* 005743A4 g_Ws2_32_shutdown */
+    uint32_t at_g_Ws2_32_shutdown[1]; /* 005743A4 g_Ws2_32_shutdown */
     WinSock_socketProc * at_g_Ws2_32_socket; /* 005743A8 g_Ws2_32_socket */
-    dword at_g_Ws2_32_socket_rest[1]; /* beyond the declared type */
-    dword at_g_Ws2_32_WSAAsyncSelect[1]; /* 005743B0 g_Ws2_32_WSAAsyncSelect */
-    dword at_g_Ws2_32_WSACancelBlockingCall[1]; /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
+    uint32_t at_g_Ws2_32_socket_rest[1]; /* beyond the declared type */
+    uint32_t at_g_Ws2_32_WSAAsyncSelect[1]; /* 005743B0 g_Ws2_32_WSAAsyncSelect */
+    uint32_t at_g_Ws2_32_WSACancelBlockingCall[1]; /* 005743B4 g_Ws2_32_WSACancelBlockingCall */
     WinSock_WSACleanupProc * at_g_Ws2_32_WSACleanup; /* 005743B8 g_Ws2_32_WSACleanup */
-    dword at_g_Ws2_32_WSACleanup_rest[7]; /* beyond the declared type */
+    uint32_t at_g_Ws2_32_WSACleanup_rest[7]; /* beyond the declared type */
     WinSock_WSAGetLastErrorProc * at_g_Ws2_32_WSAGetLastError; /* 005743D8 g_Ws2_32_WSAGetLastError */
-    dword at_g_Ws2_32_WSAGetLastError_rest[4]; /* beyond the declared type */
+    uint32_t at_g_Ws2_32_WSAGetLastError_rest[4]; /* beyond the declared type */
     WSAIoctl_Proc * at_g_Ws2_32_WSAIoctl; /* 005743EC g_Ws2_32_WSAIoctl */
-    dword at_g_Ws2_32_WSAIsBlocking[11]; /* 005743F0 g_Ws2_32_WSAIsBlocking */
-    dword at_g_Ws2_32_WSASetBlockingHook[4]; /* 0057441C g_Ws2_32_WSASetBlockingHook */
-    dword at_g_Ws2_32_WSAStartup[1]; /* 0057442C g_Ws2_32_WSAStartup */
-    dword at_g_Ws2_32_WSAUnhookBlockingHook[2]; /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
-    dword at_g_Ws2_32_inet_addr[1]; /* 00574438 g_Ws2_32_inet_addr */
-    dword at_g_Ws2_32_inet_ntoa[1]; /* 0057443C g_Ws2_32_inet_ntoa */
-    dword at_g_Ws2_32_gethostbyaddr[1]; /* 00574440 g_Ws2_32_gethostbyaddr */
+    uint32_t at_g_Ws2_32_WSAIsBlocking[11]; /* 005743F0 g_Ws2_32_WSAIsBlocking */
+    uint32_t at_g_Ws2_32_WSASetBlockingHook[4]; /* 0057441C g_Ws2_32_WSASetBlockingHook */
+    uint32_t at_g_Ws2_32_WSAStartup[1]; /* 0057442C g_Ws2_32_WSAStartup */
+    uint32_t at_g_Ws2_32_WSAUnhookBlockingHook[2]; /* 00574430 g_Ws2_32_WSAUnhookBlockingHook */
+    uint32_t at_g_Ws2_32_inet_addr[1]; /* 00574438 g_Ws2_32_inet_addr */
+    uint32_t at_g_Ws2_32_inet_ntoa[1]; /* 0057443C g_Ws2_32_inet_ntoa */
+    uint32_t at_g_Ws2_32_gethostbyaddr[1]; /* 00574440 g_Ws2_32_gethostbyaddr */
     WinSock_gethostbynameProc * at_g_Ws2_32_gethostbyname; /* 00574444 g_Ws2_32_gethostbyname */
-    dword at_g_Ws2_32_gethostname[1]; /* 00574448 g_Ws2_32_gethostname */
-    dword at_g_Ws2_32_getprotobyname[1]; /* 0057444C g_Ws2_32_getprotobyname */
-    dword at_g_Ws2_32_getprotobynumber[1]; /* 00574450 g_Ws2_32_getprotobynumber */
-    dword at_g_Ws2_32_getservbyname[1]; /* 00574454 g_Ws2_32_getservbyname */
-    dword at_g_Ws2_32_getservbyport[1]; /* 00574458 g_Ws2_32_getservbyport */
-    dword at_g_Ws2_32_WSAAsyncGetHostByAddr[1]; /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
-    dword at_g_Ws2_32_WSAAsyncGetHostByName[1]; /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
-    dword at_g_Ws2_32_WSAAsyncGetProtoByName[1]; /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
-    dword at_g_Ws2_32_WSAAsyncGetProtoByNumber[1]; /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
-    dword at_g_Ws2_32_WSAAsyncGetServByName[1]; /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
-    dword at_g_Ws2_32_WSAAsyncGetServByPort[1]; /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
-    dword at_g_Ws2_32_WSACancelAsyncRequest[1]; /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
+    uint32_t at_g_Ws2_32_gethostname[1]; /* 00574448 g_Ws2_32_gethostname */
+    uint32_t at_g_Ws2_32_getprotobyname[1]; /* 0057444C g_Ws2_32_getprotobyname */
+    uint32_t at_g_Ws2_32_getprotobynumber[1]; /* 00574450 g_Ws2_32_getprotobynumber */
+    uint32_t at_g_Ws2_32_getservbyname[1]; /* 00574454 g_Ws2_32_getservbyname */
+    uint32_t at_g_Ws2_32_getservbyport[1]; /* 00574458 g_Ws2_32_getservbyport */
+    uint32_t at_g_Ws2_32_WSAAsyncGetHostByAddr[1]; /* 0057445C g_Ws2_32_WSAAsyncGetHostByAddr */
+    uint32_t at_g_Ws2_32_WSAAsyncGetHostByName[1]; /* 00574460 g_Ws2_32_WSAAsyncGetHostByName */
+    uint32_t at_g_Ws2_32_WSAAsyncGetProtoByName[1]; /* 00574464 g_Ws2_32_WSAAsyncGetProtoByName */
+    uint32_t at_g_Ws2_32_WSAAsyncGetProtoByNumber[1]; /* 00574468 g_Ws2_32_WSAAsyncGetProtoByNumber */
+    uint32_t at_g_Ws2_32_WSAAsyncGetServByName[1]; /* 0057446C g_Ws2_32_WSAAsyncGetServByName */
+    uint32_t at_g_Ws2_32_WSAAsyncGetServByPort[1]; /* 00574470 g_Ws2_32_WSAAsyncGetServByPort */
+    uint32_t at_g_Ws2_32_WSACancelAsyncRequest[1]; /* 00574474 g_Ws2_32_WSACancelAsyncRequest */
     WSAAddressToStringA_Proc * at_g_Ws2_32_WSAAddressToStringA; /* 00574478 g_Ws2_32_WSAAddressToStringA */
-    dword at_g_Ws2_32_WSAAddressToStringA_rest[9]; /* beyond the declared type */
+    uint32_t at_g_Ws2_32_WSAAddressToStringA_rest[9]; /* beyond the declared type */
     WSAStringToAddressA_Proc * at_g_Ws2_32_WSAStringToAddressA; /* 005744A0 g_Ws2_32_WSAStringToAddressA */
     char at_sz_KERNEL32[9]; /* 005744A4 sz_KERNEL32 */
-    byte at_sz_KERNEL32_padding[1];
+    uint8_t at_sz_KERNEL32_padding[1];
     char at_sz_WINMM[6]; /* 005744AE sz_WINMM */
     char at_dynapi_2[6]; /* 005744B4 dynapi_2 */
     char at_dynapi_3[7]; /* 005744BA dynapi_3 */
-    byte at_dynapi_3_padding[1];
+    uint8_t at_dynapi_3_padding[1];
     char at_dynapi_4[7]; /* 005744C2 dynapi_4 */
-    byte at_dynapi_4_padding[1];
+    uint8_t at_dynapi_4_padding[1];
     char at_dynapi_5[8]; /* 005744CA dynapi_5 */
     char at_sz_ADVAPI32[9]; /* 005744D2 sz_ADVAPI32 */
-    byte at_sz_ADVAPI32_padding[1];
+    uint8_t at_sz_ADVAPI32_padding[1];
     char at_s_Wsock32ModuleName[8]; /* 005744DC s_Wsock32ModuleName */
     char at_sz_WS2_32[7]; /* 005744E4 sz_WS2_32 */
-    byte at_sz_WS2_32_padding[1];
+    uint8_t at_sz_WS2_32_padding[1];
     char at_dynapi_9[13]; /* 005744EC dynapi_9 */
-    byte at_dynapi_9_padding[1];
+    uint8_t at_dynapi_9_padding[1];
     char at_dynapi_10[12]; /* 005744FA dynapi_10 */
     char at_dynapi_11[14]; /* 00574506 dynapi_11 */
     char at_dynapi_12[17]; /* 00574514 dynapi_12 */
-    byte at_dynapi_12_padding[1];
+    uint8_t at_dynapi_12_padding[1];
     char at_dynapi_13[12]; /* 00574526 dynapi_13 */
     char at_dynapi_14[13]; /* 00574532 dynapi_14 */
-    byte at_dynapi_14_padding[1];
+    uint8_t at_dynapi_14_padding[1];
     char at_dynapi_15[14]; /* 00574540 dynapi_15 */
     char at_dynapi_16[16]; /* 0057454E dynapi_16 */
     char at_dynapi_17[17]; /* 0057455E dynapi_17 */
-    byte at_dynapi_17_padding[1];
+    uint8_t at_dynapi_17_padding[1];
     char at_dynapi_18[21]; /* 00574570 dynapi_18 */
-    byte at_dynapi_18_padding[1];
+    uint8_t at_dynapi_18_padding[1];
     char at_dynapi_19[19]; /* 00574586 dynapi_19 */
-    byte at_dynapi_19_padding[1];
+    uint8_t at_dynapi_19_padding[1];
     char at_dynapi_20[18]; /* 0057459A dynapi_20 */
     char at_dynapi_21[22]; /* 005745AC dynapi_21 */
     char at_dynapi_22[25]; /* 005745C2 dynapi_22 */
-    byte at_dynapi_22_padding[1];
+    uint8_t at_dynapi_22_padding[1];
     char at_dynapi_23[29]; /* 005745DC dynapi_23 */
-    byte at_dynapi_23_padding[1];
+    uint8_t at_dynapi_23_padding[1];
     char at_dynapi_24[21]; /* 005745FA dynapi_24 */
-    byte at_dynapi_24_padding[1];
+    uint8_t at_dynapi_24_padding[1];
     char at_dynapi_25[25]; /* 00574610 dynapi_25 */
-    byte at_dynapi_25_padding[1];
+    uint8_t at_dynapi_25_padding[1];
     char at_dynapi_26[19]; /* 0057462A dynapi_26 */
-    byte at_dynapi_26_padding[1];
+    uint8_t at_dynapi_26_padding[1];
     char at_dynapi_27[32]; /* 0057463E dynapi_27 */
     char at_dynapi_28[23]; /* 0057465E dynapi_28 */
-    byte at_dynapi_28_padding[1];
+    uint8_t at_dynapi_28_padding[1];
     char at_dynapi_29[29]; /* 00574676 dynapi_29 */
-    byte at_dynapi_29_padding[1];
+    uint8_t at_dynapi_29_padding[1];
     char at_dynapi_30[18]; /* 00574694 dynapi_30 */
     char at_dynapi_31[16]; /* 005746A6 dynapi_31 */
     char at_dynapi_32[19]; /* 005746B6 dynapi_32 */
-    byte at_dynapi_32_padding[1];
+    uint8_t at_dynapi_32_padding[1];
     char at_dynapi_33[20]; /* 005746CA dynapi_33 */
     char at_dynapi_34[17]; /* 005746DE dynapi_34 */
-    byte at_dynapi_34_padding[1];
+    uint8_t at_dynapi_34_padding[1];
     char at_dynapi_35[21]; /* 005746F0 dynapi_35 */
-    byte at_dynapi_35_padding[1];
+    uint8_t at_dynapi_35_padding[1];
     char at_dynapi_36[17]; /* 00574706 dynapi_36 */
-    byte at_dynapi_36_padding[1];
+    uint8_t at_dynapi_36_padding[1];
     char at_dynapi_37[19]; /* 00574718 dynapi_37 */
-    byte at_dynapi_37_padding[1];
+    uint8_t at_dynapi_37_padding[1];
     char at_dynapi_38[15]; /* 0057472C dynapi_38 */
-    byte at_dynapi_38_padding[1];
+    uint8_t at_dynapi_38_padding[1];
     char at_dynapi_39[24]; /* 0057473C dynapi_39 */
     char at_dynapi_40[21]; /* 00574754 dynapi_40 */
-    byte at_dynapi_40_padding[1];
+    uint8_t at_dynapi_40_padding[1];
     char at_dynapi_41[14]; /* 0057476A dynapi_41 */
     char at_dynapi_42[20]; /* 00574778 dynapi_42 */
     char at_dynapi_43[25]; /* 0057478C dynapi_43 */
-    byte at_dynapi_43_padding[1];
+    uint8_t at_dynapi_43_padding[1];
     char at_dynapi_44[21]; /* 005747A6 dynapi_44 */
-    byte at_dynapi_44_padding[1];
+    uint8_t at_dynapi_44_padding[1];
     char at_dynapi_45[15]; /* 005747BC dynapi_45 */
-    byte at_dynapi_45_padding[1];
+    uint8_t at_dynapi_45_padding[1];
     char at_dynapi_46[16]; /* 005747CC dynapi_46 */
     char at_dynapi_47[13]; /* 005747DC dynapi_47 */
-    byte at_dynapi_47_padding[1];
+    uint8_t at_dynapi_47_padding[1];
     char at_dynapi_48[23]; /* 005747EA dynapi_48 */
-    byte at_dynapi_48_padding[1];
+    uint8_t at_dynapi_48_padding[1];
     char at_dynapi_49[16]; /* 00574802 dynapi_49 */
     char at_dynapi_50[14]; /* 00574812 dynapi_50 */
     char at_dynapi_51[15]; /* 00574820 dynapi_51 */
-    byte at_dynapi_51_padding[1];
+    uint8_t at_dynapi_51_padding[1];
     char at_dynapi_52[19]; /* 00574830 dynapi_52 */
-    byte at_dynapi_52_padding[1];
+    uint8_t at_dynapi_52_padding[1];
     char at_dynapi_53[22]; /* 00574844 dynapi_53 */
     char at_dynapi_54[32]; /* 0057485A dynapi_54 */
     char at_dynapi_55[12]; /* 0057487A dynapi_55 */
     char at_dynapi_56[22]; /* 00574886 dynapi_56 */
     char at_dynapi_57[12]; /* 0057489C dynapi_57 */
     char at_dynapi_58[11]; /* 005748A8 dynapi_58 */
-    byte at_dynapi_58_padding[1];
+    uint8_t at_dynapi_58_padding[1];
     char at_dynapi_59[19]; /* 005748B4 dynapi_59 */
-    byte at_dynapi_59_padding[1];
+    uint8_t at_dynapi_59_padding[1];
     char at_dynapi_60[13]; /* 005748C8 dynapi_60 */
-    byte at_dynapi_60_padding[1];
+    uint8_t at_dynapi_60_padding[1];
     char at_dynapi_61[14]; /* 005748D6 dynapi_61 */
     char at_dynapi_62[10]; /* 005748E4 dynapi_62 */
     char at_dynapi_63[20]; /* 005748EE dynapi_63 */
     char at_dynapi_64[15]; /* 00574902 dynapi_64 */
-    byte at_dynapi_64_padding[1];
+    uint8_t at_dynapi_64_padding[1];
     char at_dynapi_65[19]; /* 00574912 dynapi_65 */
-    byte at_dynapi_65_padding[1];
+    uint8_t at_dynapi_65_padding[1];
     char at_dynapi_66[26]; /* 00574926 dynapi_66 */
     char at_dynapi_67[15]; /* 00574940 dynapi_67 */
-    byte at_dynapi_67_padding[1];
+    uint8_t at_dynapi_67_padding[1];
     char at_dynapi_68[19]; /* 00574950 dynapi_68 */
-    byte at_dynapi_68_padding[1];
+    uint8_t at_dynapi_68_padding[1];
     char at_dynapi_69[26]; /* 00574964 dynapi_69 */
     char at_dynapi_70[19]; /* 0057497E dynapi_70 */
-    byte at_dynapi_70_padding[1];
+    uint8_t at_dynapi_70_padding[1];
     char at_dynapi_71[22]; /* 00574992 dynapi_71 */
     char at_dynapi_72[22]; /* 005749A8 dynapi_72 */
     char at_dynapi_73[14]; /* 005749BE dynapi_73 */
     char at_dynapi_74[20]; /* 005749CC dynapi_74 */
     char at_dynapi_75[15]; /* 005749E0 dynapi_75 */
-    byte at_dynapi_75_padding[1];
+    uint8_t at_dynapi_75_padding[1];
     char at_dynapi_76[21]; /* 005749F0 dynapi_76 */
-    byte at_dynapi_76_padding[1];
+    uint8_t at_dynapi_76_padding[1];
     char at_dynapi_77[21]; /* 00574A06 dynapi_77 */
-    byte at_dynapi_77_padding[1];
+    uint8_t at_dynapi_77_padding[1];
     char at_dynapi_78[22]; /* 00574A1C dynapi_78 */
     char at_dynapi_79[18]; /* 00574A32 dynapi_79 */
     char at_dynapi_80[11]; /* 00574A44 dynapi_80 */
-    byte at_dynapi_80_padding[1];
+    uint8_t at_dynapi_80_padding[1];
     char at_dynapi_81[19]; /* 00574A50 dynapi_81 */
-    byte at_dynapi_81_padding[1];
+    uint8_t at_dynapi_81_padding[1];
     char at_dynapi_82[15]; /* 00574A64 dynapi_82 */
-    byte at_dynapi_82_padding[1];
+    uint8_t at_dynapi_82_padding[1];
     char at_dynapi_83[15]; /* 00574A74 dynapi_83 */
-    byte at_dynapi_83_padding[1];
+    uint8_t at_dynapi_83_padding[1];
     char at_dynapi_84[17]; /* 00574A84 dynapi_84 */
-    byte at_dynapi_84_padding[1];
+    uint8_t at_dynapi_84_padding[1];
     char at_dynapi_85[17]; /* 00574A96 dynapi_85 */
-    byte at_dynapi_85_padding[1];
+    uint8_t at_dynapi_85_padding[1];
     char at_dynapi_86[25]; /* 00574AA8 dynapi_86 */
-    byte at_dynapi_86_padding[1];
+    uint8_t at_dynapi_86_padding[1];
     char at_dynapi_87[22]; /* 00574AC2 dynapi_87 */
     char at_dynapi_88[24]; /* 00574AD8 dynapi_88 */
     char at_dynapi_89[19]; /* 00574AF0 dynapi_89 */
-    byte at_dynapi_89_padding[1];
+    uint8_t at_dynapi_89_padding[1];
     char at_dynapi_90[17]; /* 00574B04 dynapi_90 */
-    byte at_dynapi_90_padding[1];
+    uint8_t at_dynapi_90_padding[1];
     char at_dynapi_91[23]; /* 00574B16 dynapi_91 */
-    byte at_dynapi_91_padding[1];
+    uint8_t at_dynapi_91_padding[1];
     char at_dynapi_92[24]; /* 00574B2E dynapi_92 */
     char at_dynapi_93[29]; /* 00574B46 dynapi_93 */
-    byte at_dynapi_93_padding[1];
+    uint8_t at_dynapi_93_padding[1];
     char at_dynapi_94[36]; /* 00574B64 dynapi_94 */
     char at_dynapi_95[22]; /* 00574B88 dynapi_95 */
     char at_dynapi_96[30]; /* 00574B9E dynapi_96 */
     char at_dynapi_97[20]; /* 00574BBC dynapi_97 */
     char at_dynapi_98[21]; /* 00574BD0 dynapi_98 */
-    byte at_dynapi_98_padding[1];
+    uint8_t at_dynapi_98_padding[1];
     char at_dynapi_99[19]; /* 00574BE6 dynapi_99 */
-    byte at_dynapi_99_padding[1];
+    uint8_t at_dynapi_99_padding[1];
     char at_dynapi_100[19]; /* 00574BFA dynapi_100 */
-    byte at_dynapi_100_padding[1];
+    uint8_t at_dynapi_100_padding[1];
     char at_dynapi_101[20]; /* 00574C0E dynapi_101 */
     char at_dynapi_102[18]; /* 00574C22 dynapi_102 */
     char at_dynapi_103[26]; /* 00574C34 dynapi_103 */
     char at_dynapi_104[17]; /* 00574C4E dynapi_104 */
-    byte at_dynapi_104_padding[1];
+    uint8_t at_dynapi_104_padding[1];
     char at_dynapi_105[16]; /* 00574C60 dynapi_105 */
     char at_dynapi_106[27]; /* 00574C70 dynapi_106 */
-    byte at_dynapi_106_padding[1];
+    uint8_t at_dynapi_106_padding[1];
     char at_dynapi_107[19]; /* 00574C8C dynapi_107 */
-    byte at_dynapi_107_padding[1];
+    uint8_t at_dynapi_107_padding[1];
     char at_dynapi_108[15]; /* 00574CA0 dynapi_108 */
-    byte at_dynapi_108_padding[1];
+    uint8_t at_dynapi_108_padding[1];
     char at_dynapi_109[16]; /* 00574CB0 dynapi_109 */
     char at_dynapi_110[13]; /* 00574CC0 dynapi_110 */
-    byte at_dynapi_110_padding[1];
+    uint8_t at_dynapi_110_padding[1];
     char at_dynapi_111[20]; /* 00574CCE dynapi_111 */
     char at_dynapi_112[21]; /* 00574CE2 dynapi_112 */
-    byte at_dynapi_112_padding[1];
+    uint8_t at_dynapi_112_padding[1];
     char at_dynapi_113[24]; /* 00574CF8 dynapi_113 */
     char at_dynapi_114[22]; /* 00574D10 dynapi_114 */
     char at_dynapi_115[25]; /* 00574D26 dynapi_115 */
-    byte at_dynapi_115_padding[1];
+    uint8_t at_dynapi_115_padding[1];
     char at_s_Wsock32Export_accept[7]; /* 00574D40 s_Wsock32Export_accept */
-    byte at_s_Wsock32Export_accept_padding[1];
+    uint8_t at_s_Wsock32Export_accept_padding[1];
     char at_s_Wsock32Export_bind[5]; /* 00574D48 s_Wsock32Export_bind */
-    byte at_s_Wsock32Export_bind_padding[1];
+    uint8_t at_s_Wsock32Export_bind_padding[1];
     char at_s_Wsock32Export_closesocket[12]; /* 00574D4E s_Wsock32Export_closesocket */
     char at_s_Wsock32Export_connect[8]; /* 00574D5A s_Wsock32Export_connect */
     char at_s_Wsock32Export_getpeername[12]; /* 00574D62 s_Wsock32Export_getpeername */
     char at_s_Wsock32Export_getsockname[12]; /* 00574D6E s_Wsock32Export_getsockname */
     char at_s_Wsock32Export_getsockopt[11]; /* 00574D7A s_Wsock32Export_getsockopt */
-    byte at_s_Wsock32Export_getsockopt_padding[1];
+    uint8_t at_s_Wsock32Export_getsockopt_padding[1];
     char at_s_Wsock32Export_htonl[6]; /* 00574D86 s_Wsock32Export_htonl */
     char at_s_Wsock32Export_htons[6]; /* 00574D8C s_Wsock32Export_htons */
     char at_s_Wsock32Export_inet_addr[10]; /* 00574D92 s_Wsock32Export_inet_addr */
     char at_s_Wsock32Export_inet_ntoa[10]; /* 00574D9C s_Wsock32Export_inet_ntoa */
     char at_s_Wsock32Export_ioctlsocket[12]; /* 00574DA6 s_Wsock32Export_ioctlsocket */
     char at_s_Wsock32Export_listen[7]; /* 00574DB2 s_Wsock32Export_listen */
-    byte at_s_Wsock32Export_listen_padding[1];
+    uint8_t at_s_Wsock32Export_listen_padding[1];
     char at_s_Wsock32Export_ntohl[6]; /* 00574DBA s_Wsock32Export_ntohl */
     char at_s_Wsock32Export_ntohs[6]; /* 00574DC0 s_Wsock32Export_ntohs */
     char at_s_Wsock32Export_recv[5]; /* 00574DC6 s_Wsock32Export_recv */
-    byte at_s_Wsock32Export_recv_padding[1];
+    uint8_t at_s_Wsock32Export_recv_padding[1];
     char at_s_Wsock32Export_recvfrom[9]; /* 00574DCC s_Wsock32Export_recvfrom */
-    byte at_s_Wsock32Export_recvfrom_padding[1];
+    uint8_t at_s_Wsock32Export_recvfrom_padding[1];
     char at_s_Wsock32Export_select[7]; /* 00574DD6 s_Wsock32Export_select */
-    byte at_s_Wsock32Export_select_padding[1];
+    uint8_t at_s_Wsock32Export_select_padding[1];
     char at_s_Wsock32Export_send[5]; /* 00574DDE s_Wsock32Export_send */
-    byte at_s_Wsock32Export_send_padding[1];
+    uint8_t at_s_Wsock32Export_send_padding[1];
     char at_s_Wsock32Export_sendto[7]; /* 00574DE4 s_Wsock32Export_sendto */
-    byte at_s_Wsock32Export_sendto_padding[1];
+    uint8_t at_s_Wsock32Export_sendto_padding[1];
     char at_s_Wsock32Export_setsockopt[11]; /* 00574DEC s_Wsock32Export_setsockopt */
-    byte at_s_Wsock32Export_setsockopt_padding[1];
+    uint8_t at_s_Wsock32Export_setsockopt_padding[1];
     char at_s_Wsock32Export_shutdown[9]; /* 00574DF8 s_Wsock32Export_shutdown */
-    byte at_s_Wsock32Export_shutdown_padding[1];
+    uint8_t at_s_Wsock32Export_shutdown_padding[1];
     char at_s_Wsock32Export_socket[7]; /* 00574E02 s_Wsock32Export_socket */
-    byte at_s_Wsock32Export_socket_padding[1];
+    uint8_t at_s_Wsock32Export_socket_padding[1];
     char at_s_Wsock32Export_gethostbyaddr[14]; /* 00574E0A s_Wsock32Export_gethostbyaddr */
     char at_s_Wsock32Export_gethostbyname[14]; /* 00574E18 s_Wsock32Export_gethostbyname */
     char at_s_Wsock32Export_gethostname[12]; /* 00574E26 s_Wsock32Export_gethostname */
     char at_s_Wsock32Export_getprotobyname[15]; /* 00574E32 s_Wsock32Export_getprotobyname */
-    byte at_s_Wsock32Export_getprotobyname_padding[1];
+    uint8_t at_s_Wsock32Export_getprotobyname_padding[1];
     char at_s_Wsock32Export_getprotobynumber[17]; /* 00574E42 s_Wsock32Export_getprotobynumber */
-    byte at_s_Wsock32Export_getprotobynumber_padding[1];
+    uint8_t at_s_Wsock32Export_getprotobynumber_padding[1];
     char at_s_Wsock32Export_getservbyname[14]; /* 00574E54 s_Wsock32Export_getservbyname */
     char at_s_Wsock32Export_getservbyport[14]; /* 00574E62 s_Wsock32Export_getservbyport */
     char at_s_Wsock32Export_WSAAsyncGetHostByAddr[22]; /* 00574E70 s_Wsock32Export_WSAAsyncGetHostByAddr */
     char at_s_Wsock32Export_WSAAsyncGetHostByName[22]; /* 00574E86 s_Wsock32Export_WSAAsyncGetHostByName */
     char at_s_Wsock32Export_WSAAsyncGetProtoByName[23]; /* 00574E9C s_Wsock32Export_WSAAsyncGetProtoByName */
-    byte at_s_Wsock32Export_WSAAsyncGetProtoByName_padding[1];
+    uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByName_padding[1];
     char at_s_Wsock32Export_WSAAsyncGetProtoByNumber[25]; /* 00574EB4 s_Wsock32Export_WSAAsyncGetProtoByNumber */
-    byte at_s_Wsock32Export_WSAAsyncGetProtoByNumber_padding[1];
+    uint8_t at_s_Wsock32Export_WSAAsyncGetProtoByNumber_padding[1];
     char at_s_Wsock32Export_WSAAsyncGetServByName[22]; /* 00574ECE s_Wsock32Export_WSAAsyncGetServByName */
     char at_s_Wsock32Export_WSAAsyncGetServByPort[22]; /* 00574EE4 s_Wsock32Export_WSAAsyncGetServByPort */
     char at_s_Wsock32Export_WSAAsyncSelect[15]; /* 00574EFA s_Wsock32Export_WSAAsyncSelect */
-    byte at_s_Wsock32Export_WSAAsyncSelect_padding[1];
+    uint8_t at_s_Wsock32Export_WSAAsyncSelect_padding[1];
     char at_s_Wsock32Export_WSACancelAsyncRequest[22]; /* 00574F0A s_Wsock32Export_WSACancelAsyncRequest */
     char at_s_Wsock32Export_WSACancelBlockingCall[22]; /* 00574F20 s_Wsock32Export_WSACancelBlockingCall */
     char at_s_Wsock32Export_WSACleanup[11]; /* 00574F36 s_Wsock32Export_WSACleanup */
-    byte at_s_Wsock32Export_WSACleanup_padding[1];
+    uint8_t at_s_Wsock32Export_WSACleanup_padding[1];
     char at_s_Wsock32Export_WSAGetLastError[16]; /* 00574F42 s_Wsock32Export_WSAGetLastError */
     char at_s_Wsock32Export_WSAIsBlocking[14]; /* 00574F52 s_Wsock32Export_WSAIsBlocking */
     char at_s_Wsock32Export_WSASetBlockingHook[19]; /* 00574F60 s_Wsock32Export_WSASetBlockingHook */
-    byte at_s_Wsock32Export_WSASetBlockingHook_padding[1];
+    uint8_t at_s_Wsock32Export_WSASetBlockingHook_padding[1];
     char at_dynapi_159[16]; /* 00574F74 dynapi_159 */
     char at_s_Wsock32Export_WSAStartup[11]; /* 00574F84 s_Wsock32Export_WSAStartup */
-    byte at_s_Wsock32Export_WSAStartup_padding[1];
+    uint8_t at_s_Wsock32Export_WSAStartup_padding[1];
     char at_s_Wsock32Export_WSAUnhookBlockingHook[22]; /* 00574F90 s_Wsock32Export_WSAUnhookBlockingHook */
     char at_dynapi_162[7]; /* 00574FA6 dynapi_162 */
-    byte at_dynapi_162_padding[1];
+    uint8_t at_dynapi_162_padding[1];
     char at_dynapi_163[5]; /* 00574FAE dynapi_163 */
-    byte at_dynapi_163_padding[1];
+    uint8_t at_dynapi_163_padding[1];
     char at_dynapi_164[12]; /* 00574FB4 dynapi_164 */
     char at_dynapi_165[8]; /* 00574FC0 dynapi_165 */
     char at_dynapi_166[12]; /* 00574FC8 dynapi_166 */
     char at_dynapi_167[12]; /* 00574FD4 dynapi_167 */
     char at_dynapi_168[11]; /* 00574FE0 dynapi_168 */
-    byte at_dynapi_168_padding[1];
+    uint8_t at_dynapi_168_padding[1];
     char at_dynapi_169[6]; /* 00574FEC dynapi_169 */
     char at_dynapi_170[6]; /* 00574FF2 dynapi_170 */
     char at_dynapi_171[12]; /* 00574FF8 dynapi_171 */
     char at_dynapi_172[7]; /* 00575004 dynapi_172 */
-    byte at_dynapi_172_padding[1];
+    uint8_t at_dynapi_172_padding[1];
     char at_dynapi_173[6]; /* 0057500C dynapi_173 */
     char at_dynapi_174[6]; /* 00575012 dynapi_174 */
     char at_dynapi_175[5]; /* 00575018 dynapi_175 */
-    byte at_dynapi_175_padding[1];
+    uint8_t at_dynapi_175_padding[1];
     char at_dynapi_176[9]; /* 0057501E dynapi_176 */
-    byte at_dynapi_176_padding[1];
+    uint8_t at_dynapi_176_padding[1];
     char at_dynapi_177[7]; /* 00575028 dynapi_177 */
-    byte at_dynapi_177_padding[1];
+    uint8_t at_dynapi_177_padding[1];
     char at_dynapi_178[5]; /* 00575030 dynapi_178 */
-    byte at_dynapi_178_padding[1];
+    uint8_t at_dynapi_178_padding[1];
     char at_dynapi_179[7]; /* 00575036 dynapi_179 */
-    byte at_dynapi_179_padding[1];
+    uint8_t at_dynapi_179_padding[1];
     char at_dynapi_180[11]; /* 0057503E dynapi_180 */
-    byte at_dynapi_180_padding[1];
+    uint8_t at_dynapi_180_padding[1];
     char at_dynapi_181[9]; /* 0057504A dynapi_181 */
-    byte at_dynapi_181_padding[1];
+    uint8_t at_dynapi_181_padding[1];
     char at_dynapi_182[7]; /* 00575054 dynapi_182 */
-    byte at_dynapi_182_padding[1];
+    uint8_t at_dynapi_182_padding[1];
     char at_dynapi_183[10]; /* 0057505C dynapi_183 */
     char at_dynapi_184[15]; /* 00575066 dynapi_184 */
-    byte at_dynapi_184_padding[1];
+    uint8_t at_dynapi_184_padding[1];
     char at_dynapi_185[22]; /* 00575076 dynapi_185 */
     char at_dynapi_186[11]; /* 0057508C dynapi_186 */
-    byte at_dynapi_186_padding[1];
+    uint8_t at_dynapi_186_padding[1];
     char at_dynapi_187[14]; /* 00575098 dynapi_187 */
     char at_dynapi_188[11]; /* 005750A6 dynapi_188 */
-    byte at_dynapi_188_padding[1];
+    uint8_t at_dynapi_188_padding[1];
     char at_dynapi_189[15]; /* 005750B2 dynapi_189 */
-    byte at_dynapi_189_padding[1];
+    uint8_t at_dynapi_189_padding[1];
     char at_dynapi_190[20]; /* 005750C2 dynapi_190 */
     char at_dynapi_191[21]; /* 005750D6 dynapi_191 */
-    byte at_dynapi_191_padding[1];
+    uint8_t at_dynapi_191_padding[1];
     char at_dynapi_192[18]; /* 005750EC dynapi_192 */
     char at_dynapi_193[15]; /* 005750FE dynapi_193 */
-    byte at_dynapi_193_padding[1];
+    uint8_t at_dynapi_193_padding[1];
     char at_dynapi_194[16]; /* 0057510E dynapi_194 */
     char at_dynapi_195[23]; /* 0057511E dynapi_195 */
-    byte at_dynapi_195_padding[1];
+    uint8_t at_dynapi_195_padding[1];
     char at_dynapi_196[16]; /* 00575136 dynapi_196 */
     char at_dynapi_197[9]; /* 00575146 dynapi_197 */
-    byte at_dynapi_197_padding[1];
+    uint8_t at_dynapi_197_padding[1];
     char at_dynapi_198[9]; /* 00575150 dynapi_198 */
-    byte at_dynapi_198_padding[1];
+    uint8_t at_dynapi_198_padding[1];
     char at_dynapi_199[9]; /* 0057515A dynapi_199 */
-    byte at_dynapi_199_padding[1];
+    uint8_t at_dynapi_199_padding[1];
     char at_dynapi_200[14]; /* 00575164 dynapi_200 */
     char at_dynapi_201[12]; /* 00575172 dynapi_201 */
     char at_dynapi_202[9]; /* 0057517E dynapi_202 */
-    byte at_dynapi_202_padding[1];
+    uint8_t at_dynapi_202_padding[1];
     char at_dynapi_203[9]; /* 00575188 dynapi_203 */
-    byte at_dynapi_203_padding[1];
+    uint8_t at_dynapi_203_padding[1];
     char at_dynapi_204[8]; /* 00575192 dynapi_204 */
     char at_dynapi_205[18]; /* 0057519A dynapi_205 */
     char at_dynapi_206[12]; /* 005751AC dynapi_206 */
@@ -3199,98 +3199,98 @@ typedef struct ImageData_00573EE8 {
     char at_dynapi_209[18]; /* 005751CE dynapi_209 */
     char at_dynapi_210[10]; /* 005751E0 dynapi_210 */
     char at_dynapi_211[19]; /* 005751EA dynapi_211 */
-    byte at_dynapi_211_padding[1];
+    uint8_t at_dynapi_211_padding[1];
     char at_dynapi_212[12]; /* 005751FE dynapi_212 */
     char at_dynapi_213[16]; /* 0057520A dynapi_213 */
     char at_dynapi_214[11]; /* 0057521A dynapi_214 */
-    byte at_dynapi_214_padding[1];
+    uint8_t at_dynapi_214_padding[1];
     char at_dynapi_215[11]; /* 00575226 dynapi_215 */
-    byte at_dynapi_215_padding[1];
+    uint8_t at_dynapi_215_padding[1];
     char at_dynapi_216[22]; /* 00575232 dynapi_216 */
     char at_dynapi_217[25]; /* 00575248 dynapi_217 */
-    byte at_dynapi_217_padding[1];
+    uint8_t at_dynapi_217_padding[1];
     char at_dynapi_218[10]; /* 00575262 dynapi_218 */
     char at_dynapi_219[10]; /* 0057526C dynapi_219 */
     char at_dynapi_220[14]; /* 00575276 dynapi_220 */
     char at_dynapi_221[14]; /* 00575284 dynapi_221 */
     char at_dynapi_222[12]; /* 00575292 dynapi_222 */
     char at_dynapi_223[15]; /* 0057529E dynapi_223 */
-    byte at_dynapi_223_padding[1];
+    uint8_t at_dynapi_223_padding[1];
     char at_dynapi_224[17]; /* 005752AE dynapi_224 */
-    byte at_dynapi_224_padding[1];
+    uint8_t at_dynapi_224_padding[1];
     char at_dynapi_225[14]; /* 005752C0 dynapi_225 */
     char at_dynapi_226[14]; /* 005752CE dynapi_226 */
     char at_dynapi_227[22]; /* 005752DC dynapi_227 */
     char at_dynapi_228[22]; /* 005752F2 dynapi_228 */
     char at_dynapi_229[23]; /* 00575308 dynapi_229 */
-    byte at_dynapi_229_padding[1];
+    uint8_t at_dynapi_229_padding[1];
     char at_dynapi_230[25]; /* 00575320 dynapi_230 */
-    byte at_dynapi_230_padding[1];
+    uint8_t at_dynapi_230_padding[1];
     char at_dynapi_231[22]; /* 0057533A dynapi_231 */
     char at_dynapi_232[22]; /* 00575350 dynapi_232 */
     char at_dynapi_233[22]; /* 00575366 dynapi_233 */
     char at_dynapi_234[20]; /* 0057537C dynapi_234 */
     char at_dynapi_235[27]; /* 00575390 dynapi_235 */
-    byte at_dynapi_235_padding[1];
+    uint8_t at_dynapi_235_padding[1];
     char at_dynapi_236[24]; /* 005753AC dynapi_236 */
     char at_dynapi_237[33]; /* 005753C4 dynapi_237 */
-    byte at_dynapi_237_padding[1];
+    uint8_t at_dynapi_237_padding[1];
     char at_dynapi_238[24]; /* 005753E6 dynapi_238 */
     char at_dynapi_239[23]; /* 005753FE dynapi_239 */
-    byte at_dynapi_239_padding[1];
+    uint8_t at_dynapi_239_padding[1];
     char at_dynapi_240[20]; /* 00575416 dynapi_240 */
     char at_dynapi_241[22]; /* 0057542A dynapi_241 */
     char at_dynapi_242[22]; /* 00575440 dynapi_242 */
     char at_dynapi_243[15]; /* 00575456 dynapi_243 */
-    byte at_dynapi_243_padding[1];
+    uint8_t at_dynapi_243_padding[1];
     char at_dynapi_244[20]; /* 00575466 dynapi_244 */
-    byte at_dynapi_244_padding[6];
-    byte at_g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
-    dword at_g_FatalErrorNarrowBuffer_rest[4]; /* beyond the declared type */
+    uint8_t at_dynapi_244_padding[6];
+    uint8_t at_g_FatalErrorNarrowBuffer[1024]; /* 00575480 g_FatalErrorNarrowBuffer */
+    uint32_t at_g_FatalErrorNarrowBuffer_rest[4]; /* beyond the declared type */
 } ImageData_00573EE8;
 extern ImageData_00573EE8 g_ImageData_00573EE8;
 
 /* original 0x0057594C-0x00575CB0 */
 typedef struct ImageData_0057594C {
-    byte at_gap_0057594C[4]; /* 0057594C gap */
-    dword at_g_Win32FileBytesTransferred; /* 00575950 g_Win32FileBytesTransferred */
-    undefined4 at_g_Win32FileCreationTimeOrDosDateScratch; /* 00575954 g_Win32FileCreationTimeOrDosDateScratch */
-    dword at_g_Win32FileCreationTimeOrDosDateScratch_rest[1]; /* beyond the declared type */
-    undefined at_g_Win32FileLastAccessTimeScratch; /* 0057595C g_Win32FileLastAccessTimeScratch */
-    dword at_g_Win32FileLastAccessTimeScratch_rest[1]; /* beyond the declared type */
-    byte at_g_Win32FileLastAccessTimeScratch_rest_tail[3];
-    undefined at_g_Win32FileLastWriteTimeScratch; /* 00575964 g_Win32FileLastWriteTimeScratch */
-    byte at_g_Win32FileLastWriteTimeScratch_rest_tail[3];
-    undefined4 at_g_Win32FileLastWriteTimeHighScratch; /* 00575968 g_Win32FileLastWriteTimeHighScratch */
-    undefined4 at_g_Win32DiskSectorsPerClusterScratch; /* 0057596C g_Win32DiskSectorsPerClusterScratch */
-    undefined4 at_g_Win32DiskBytesPerSectorScratch; /* 00575970 g_Win32DiskBytesPerSectorScratch */
-    undefined4 at_g_Win32DiskFreeClustersScratch; /* 00575974 g_Win32DiskFreeClustersScratch */
-    undefined4 at_g_Win32DiskTotalClustersScratch; /* 00575978 g_Win32DiskTotalClustersScratch */
-    dword at_g_Win32DiskTotalClustersScratch_rest[1]; /* beyond the declared type */
-    undefined at_g_Win32FindDataFileNameA; /* 00575980 g_Win32FindDataFileNameA */
-    undefined at_g_Win32FindDataFileNameSecondCharA; /* 00575981 g_Win32FindDataFileNameSecondCharA */
-    undefined at_g_Win32FindDataFileNameThirdCharA; /* 00575982 g_Win32FindDataFileNameThirdCharA */
-    dword at_g_Win32FindDataFileNameThirdCharA_rest[68]; /* beyond the declared type */
-    byte at_g_Win32FindDataFileNameThirdCharA_rest_tail[1];
+    uint8_t at_gap_0057594C[4]; /* 0057594C gap */
+    uint32_t at_g_Win32FileBytesTransferred; /* 00575950 g_Win32FileBytesTransferred */
+    uint32_t at_g_Win32FileCreationTimeOrDosDateScratch; /* 00575954 g_Win32FileCreationTimeOrDosDateScratch */
+    uint32_t at_g_Win32FileCreationTimeOrDosDateScratch_rest[1]; /* beyond the declared type */
+    uint8_t at_g_Win32FileLastAccessTimeScratch; /* 0057595C g_Win32FileLastAccessTimeScratch */
+    uint32_t at_g_Win32FileLastAccessTimeScratch_rest[1]; /* beyond the declared type */
+    uint8_t at_g_Win32FileLastAccessTimeScratch_rest_tail[3];
+    uint8_t at_g_Win32FileLastWriteTimeScratch; /* 00575964 g_Win32FileLastWriteTimeScratch */
+    uint8_t at_g_Win32FileLastWriteTimeScratch_rest_tail[3];
+    uint32_t at_g_Win32FileLastWriteTimeHighScratch; /* 00575968 g_Win32FileLastWriteTimeHighScratch */
+    uint32_t at_g_Win32DiskSectorsPerClusterScratch; /* 0057596C g_Win32DiskSectorsPerClusterScratch */
+    uint32_t at_g_Win32DiskBytesPerSectorScratch; /* 00575970 g_Win32DiskBytesPerSectorScratch */
+    uint32_t at_g_Win32DiskFreeClustersScratch; /* 00575974 g_Win32DiskFreeClustersScratch */
+    uint32_t at_g_Win32DiskTotalClustersScratch; /* 00575978 g_Win32DiskTotalClustersScratch */
+    uint32_t at_g_Win32DiskTotalClustersScratch_rest[1]; /* beyond the declared type */
+    uint8_t at_g_Win32FindDataFileNameA; /* 00575980 g_Win32FindDataFileNameA */
+    uint8_t at_g_Win32FindDataFileNameSecondCharA; /* 00575981 g_Win32FindDataFileNameSecondCharA */
+    uint8_t at_g_Win32FindDataFileNameThirdCharA; /* 00575982 g_Win32FindDataFileNameThirdCharA */
+    uint32_t at_g_Win32FindDataFileNameThirdCharA_rest[68]; /* beyond the declared type */
+    uint8_t at_g_Win32FindDataFileNameThirdCharA_rest_tail[1];
     pointer at_g_FileSystemInitComputerNameCapacityOrConfigCursor; /* 00575A94 g_FileSystemInitComputerNameCapacityOrConfigCursor */
-    dword at_g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
-    byte at_g_Win32PathScratchA[256]; /* 00575A9C g_Win32PathScratchA */
-    byte at_g_Win32PathScratchB[256]; /* 00575B9C g_Win32PathScratchB */
-    undefined at_g_Win32DriveRootPathScratchA; /* 00575C9C g_Win32DriveRootPathScratchA */
-    dword at_g_Win32DriveRootPathScratchA_rest[4]; /* beyond the declared type */
-    byte at_g_Win32DriveRootPathScratchA_rest_tail[3];
+    uint32_t at_g_FileSystemConfigRemainingBytes; /* 00575A98 g_FileSystemConfigRemainingBytes */
+    uint8_t at_g_Win32PathScratchA[256]; /* 00575A9C g_Win32PathScratchA */
+    uint8_t at_g_Win32PathScratchB[256]; /* 00575B9C g_Win32PathScratchB */
+    uint8_t at_g_Win32DriveRootPathScratchA; /* 00575C9C g_Win32DriveRootPathScratchA */
+    uint32_t at_g_Win32DriveRootPathScratchA_rest[4]; /* beyond the declared type */
+    uint8_t at_g_Win32DriveRootPathScratchA_rest_tail[3];
 } ImageData_0057594C;
 extern ImageData_0057594C g_ImageData_0057594C;
 
 /* original 0x00576720-0x00576784 */
 typedef struct ImageData_00576720 {
-    byte at_gap_00576720[100]; /* 00576720 gap */
+    uint8_t at_gap_00576720[100]; /* 00576720 gap */
 } ImageData_00576720;
 extern ImageData_00576720 g_ImageData_00576720;
 
 /* original 0x00576B04-0x00576C30 */
 typedef struct ImageData_00576B04 {
-    byte at_gap_00576B04[12]; /* 00576B04 gap */
+    uint8_t at_gap_00576B04[12]; /* 00576B04 gap */
     IDirectInputA * at_g_DirectInput; /* 00576B10 g_DirectInput */
     IDirectInputDeviceA * at_g_MouseDevice; /* 00576B14 g_MouseDevice */
     TH_LEGACY_GUID at_GUID_SysMouse_Local; /* 00576B18 GUID_SysMouse_Local */
@@ -3300,23 +3300,23 @@ typedef struct ImageData_00576B04 {
     DIDATAFORMAT at_MouseDataFormat; /* 00576B58 MouseDataFormat */
     DIOBJECTDATAFORMAT at_MouseObjectFormats[7]; /* 00576B70 MouseObjectFormats */
     DIPROPDWORD at_MouseBufferProperty; /* 00576BE0 MouseBufferProperty */
-    dword at_g_MouseDeviceDataCount; /* 00576BF4 g_MouseDeviceDataCount */
-    dword at_g_MousePollBusy; /* 00576BF8 g_MousePollBusy */
+    uint32_t at_g_MouseDeviceDataCount; /* 00576BF4 g_MouseDeviceDataCount */
+    uint32_t at_g_MousePollBusy; /* 00576BF8 g_MousePollBusy */
     DIDEVICEOBJECTDATA_DX3 at_g_MouseDeviceEvent; /* 00576BFC g_MouseDeviceEvent */
     UiPixelCoordinate at_g_MouseX; /* 00576C0C g_MouseX */
     UiPixelCoordinate at_g_MouseY; /* 00576C10 g_MouseY */
     UiPointerWheelDelta at_g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
     GraphicsCursorButtonState at_g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
-    dword at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
+    uint32_t at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
     SoftwareDisplayModeHookProc * at_g_DirectInputMousePreviousDisplayModeHookCf; /* 00576C20 g_DirectInputMousePreviousDisplayModeHookCf */
     UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
-    dword at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
+    uint32_t at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
 } ImageData_00576B04;
 extern ImageData_00576B04 g_ImageData_00576B04;
 
 /* original 0x00577BFC-0x00578080 */
 typedef struct ImageData_00577BFC {
-    byte at_gap_00577BFC[4]; /* 00577BFC gap */
+    uint8_t at_gap_00577BFC[4]; /* 00577BFC gap */
     TH_LEGACY_GUID at_IID_IDirectDraw2_Local; /* 00577C00 IID_IDirectDraw2_Local */
     TH_LEGACY_GUID at_IID_IDirectDrawSurface3_Local; /* 00577C10 IID_IDirectDrawSurface3_Local */
     TH_LEGACY_GUID at_IID_IDirect3D2_Local; /* 00577C20 IID_IDirect3D2_Local */
@@ -3332,192 +3332,192 @@ typedef struct ImageData_00577BFC {
     IDirectDrawSurface * at_g_ZSurfaceBase; /* 00577C60 g_ZSurfaceBase */
     IDirectDrawSurface3 * at_g_ZSurface3; /* 00577C64 g_ZSurface3 */
     IDirect3DViewport2 * at_g_Direct3DViewport2; /* 00577C68 g_Direct3DViewport2 */
-    dword at_g_Direct3DViewport2_rest[1]; /* beyond the declared type */
+    uint32_t at_g_Direct3DViewport2_rest[1]; /* beyond the declared type */
     D3DRECT_DX6 at_g_CurrentClearRect; /* 00577C70 g_CurrentClearRect */
     DDSURFACEDESC_DX6 at_g_SurfaceDesc; /* 00577C80 g_SurfaceDesc */
-    dword at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
-    dword at_g_GraphicsCursorSurfaceDescScratch; /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
-    dword at_g_GraphicsCursorSurfaceDescScratch_rest[3]; /* beyond the declared type */
-    sdword at_g_GraphicsCursorSurfacePitchBytes; /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
-    dword at_g_GraphicsCursorSurfacePitchBytes_rest[4]; /* beyond the declared type */
-    byte * at_g_GraphicsCursorSurfacePixels; /* 00577D14 g_GraphicsCursorSurfacePixels */
-    dword at_g_GraphicsCursorSurfacePixels_rest[18]; /* beyond the declared type */
+    uint32_t at_g_SurfaceDesc_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GraphicsCursorSurfaceDescScratch; /* 00577CF0 g_GraphicsCursorSurfaceDescScratch */
+    uint32_t at_g_GraphicsCursorSurfaceDescScratch_rest[3]; /* beyond the declared type */
+    int32_t at_g_GraphicsCursorSurfacePitchBytes; /* 00577D00 g_GraphicsCursorSurfacePitchBytes */
+    uint32_t at_g_GraphicsCursorSurfacePitchBytes_rest[4]; /* beyond the declared type */
+    uint8_t * at_g_GraphicsCursorSurfacePixels; /* 00577D14 g_GraphicsCursorSurfacePixels */
+    uint32_t at_g_GraphicsCursorSurfacePixels_rest[18]; /* beyond the declared type */
     D3DVIEWPORT2 at_g_Direct3DViewportState; /* 00577D60 g_Direct3DViewportState */
-    dword at_g_Direct3DViewportState_rest[1]; /* beyond the declared type */
+    uint32_t at_g_Direct3DViewportState_rest[1]; /* beyond the declared type */
     DDPIXELFORMAT at_g_Direct3DOpaqueTextureFormat; /* 00577D90 g_Direct3DOpaqueTextureFormat */
     DDPIXELFORMAT at_g_Direct3DAlphaTextureFormat; /* 00577DB0 g_Direct3DAlphaTextureFormat */
     DDPIXELFORMAT at_g_Direct3DSelectedOpaqueTextureFormat; /* 00577DD0 g_Direct3DSelectedOpaqueTextureFormat */
     DDPIXELFORMAT at_g_Direct3DSelectedAlphaTextureFormat; /* 00577DF0 g_Direct3DSelectedAlphaTextureFormat */
-    undefined4 at_g_Direct3DTextureFilterMode; /* 00577E10 g_Direct3DTextureFilterMode */
-    undefined4 at_g_Direct3DTexturePerspectiveEnabled; /* 00577E14 g_Direct3DTexturePerspectiveEnabled */
-    undefined4 at_g_Direct3DAntialiasMode; /* 00577E18 g_Direct3DAntialiasMode */
+    uint32_t at_g_Direct3DTextureFilterMode; /* 00577E10 g_Direct3DTextureFilterMode */
+    uint32_t at_g_Direct3DTexturePerspectiveEnabled; /* 00577E14 g_Direct3DTexturePerspectiveEnabled */
+    uint32_t at_g_Direct3DAntialiasMode; /* 00577E18 g_Direct3DAntialiasMode */
     GraphicsPrimitiveRenderStateCache at_g_PrimitiveRenderStateCache; /* 00577E1C g_PrimitiveRenderStateCache */
-    dword at_g_BoundTextureHandle; /* 00577E2C g_BoundTextureHandle */
+    uint32_t at_g_BoundTextureHandle; /* 00577E2C g_BoundTextureHandle */
     SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeFinalizeCf; /* 00577E30 g_GraphicsDisplayModeFinalizeCf */
-    sdword at_g_CursorCurrentVisibilityToken; /* 00577E34 g_CursorCurrentVisibilityToken */
-    sdword at_g_CursorAlternateVisibilityToken; /* 00577E38 g_CursorAlternateVisibilityToken */
-    sdword at_g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
-    sdword at_g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
-    sdword at_g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
-    sdword at_g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
-    sdword at_g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
+    int32_t at_g_CursorCurrentVisibilityToken; /* 00577E34 g_CursorCurrentVisibilityToken */
+    int32_t at_g_CursorAlternateVisibilityToken; /* 00577E38 g_CursorAlternateVisibilityToken */
+    int32_t at_g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
+    int32_t at_g_CursorCurrentDrawY; /* 00577E40 g_CursorCurrentDrawY */
+    int32_t at_g_CursorAlternateDrawX; /* 00577E44 g_CursorAlternateDrawX */
+    int32_t at_g_CursorAlternateDrawY; /* 00577E48 g_CursorAlternateDrawY */
+    int32_t at_g_GraphicsBackendAccessState; /* 00577E4C g_GraphicsBackendAccessState */
     GraphicsPrimitiveRenderStatePreset at_g_PrimitiveRenderStatePresets[5]; /* 00577E50 g_PrimitiveRenderStatePresets */
     GraphicsDispatchTable at_g_GraphicsDispatchTable; /* 00577EA0 g_GraphicsDispatchTable */
-    dword at_g_GraphicsDispatchTable_rest[2]; /* beyond the declared type */
+    uint32_t at_g_GraphicsDispatchTable_rest[2]; /* beyond the declared type */
     D3DTLVERTEX_DX6 at_g_ImmediateTLVertices[4]; /* 00577FC0 g_ImmediateTLVertices */
     D3DRECT_DX6 at_g_LastViewportRect; /* 00578040 g_LastViewportRect */
-    dword at_g_ImmediateVertexCount; /* 00578050 g_ImmediateVertexCount */
-    dword at_g_TextureUseSerial; /* 00578054 g_TextureUseSerial */
+    uint32_t at_g_ImmediateVertexCount; /* 00578050 g_ImmediateVertexCount */
+    uint32_t at_g_TextureUseSerial; /* 00578054 g_TextureUseSerial */
     DirectDrawPaletteEntry * at_g_TexturePaletteEntries; /* 00578058 g_TexturePaletteEntries */
     GraphicsTextureResource ** at_g_GraphicsTextureSlots; /* 0057805C g_GraphicsTextureSlots */
     SoftwareFramebufferAccess at_g_DisplayFramebufferAccess; /* 00578060 g_DisplayFramebufferAccess */
-    dword at_g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
-    dword at_g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
+    uint32_t at_g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
+    uint32_t at_g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
     char at_s_D3DALL_00578078[7]; /* 00578078 s_D3DALL_00578078 */
-    byte at_s_D3DALL_00578078_padding[1];
+    uint8_t at_s_D3DALL_00578078_padding[1];
 } ImageData_00577BFC;
 extern ImageData_00577BFC g_ImageData_00577BFC;
 
 /* original 0x0057ECC8-0x0057EE90 */
 typedef struct ImageData_0057ECC8 {
-    byte at_gap_0057ECC8[8]; /* 0057ECC8 gap */
-    undefined at_g_GlideEnumerationResolutionQuery; /* 0057ECD0 g_GlideEnumerationResolutionQuery */
-    dword at_g_GlideEnumerationResolutionQuery_rest[3]; /* beyond the declared type */
-    byte at_g_GlideEnumerationResolutionQuery_rest_tail[3];
-    undefined4 at_g_GlideSelectedResolutionQuery; /* 0057ECE0 g_GlideSelectedResolutionQuery */
-    dword at_g_GlideSelectedResolutionQuery_rest[3]; /* beyond the declared type */
-    dword at_g_GlideRefreshRatesHz[9]; /* 0057ECF0 g_GlideRefreshRatesHz */
-    undefined4 at_g_GlideWindowContextHandle; /* 0057ED14 g_GlideWindowContextHandle */
-    undefined4 at_g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
-    dword at_g_GlideRuntimeActiveCount_rest[1]; /* beyond the declared type */
+    uint8_t at_gap_0057ECC8[8]; /* 0057ECC8 gap */
+    uint8_t at_g_GlideEnumerationResolutionQuery; /* 0057ECD0 g_GlideEnumerationResolutionQuery */
+    uint32_t at_g_GlideEnumerationResolutionQuery_rest[3]; /* beyond the declared type */
+    uint8_t at_g_GlideEnumerationResolutionQuery_rest_tail[3];
+    uint32_t at_g_GlideSelectedResolutionQuery; /* 0057ECE0 g_GlideSelectedResolutionQuery */
+    uint32_t at_g_GlideSelectedResolutionQuery_rest[3]; /* beyond the declared type */
+    uint32_t at_g_GlideRefreshRatesHz[9]; /* 0057ECF0 g_GlideRefreshRatesHz */
+    uint32_t at_g_GlideWindowContextHandle; /* 0057ED14 g_GlideWindowContextHandle */
+    uint32_t at_g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
+    uint32_t at_g_GlideRuntimeActiveCount_rest[1]; /* beyond the declared type */
     GlideLfbInfo at_g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
     GlideLfbInfo at_g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
-    dword at_g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers */
-    dword at_g_GlideVertex0ScreenX; /* 0057ED54 g_GlideVertex0ScreenX */
-    dword at_g_GlideVertex0ScreenY; /* 0057ED58 g_GlideVertex0ScreenY */
-    dword at_g_GlideVertex0ReciprocalDepth; /* 0057ED5C g_GlideVertex0ReciprocalDepth */
-    dword at_g_GlideVertex0PerspectiveScale; /* 0057ED60 g_GlideVertex0PerspectiveScale */
-    dword at_g_GlideVertex0PerspectiveScale_rest[1]; /* beyond the declared type */
-    dword at_g_GlideVertex0ProjectedTextureU; /* 0057ED68 g_GlideVertex0ProjectedTextureU */
-    dword at_g_GlideVertex0ProjectedTextureV; /* 0057ED6C g_GlideVertex0ProjectedTextureV */
-    dword at_g_GlideVertex0DiffuseColor; /* 0057ED70 g_GlideVertex0DiffuseColor */
-    dword at_g_GlideVertex1ScreenX; /* 0057ED74 g_GlideVertex1ScreenX */
-    dword at_g_GlideVertex1ScreenY; /* 0057ED78 g_GlideVertex1ScreenY */
-    dword at_g_GlideVertex1ReciprocalDepth; /* 0057ED7C g_GlideVertex1ReciprocalDepth */
-    dword at_g_GlideVertex1PerspectiveScale; /* 0057ED80 g_GlideVertex1PerspectiveScale */
-    dword at_g_GlideVertex1PerspectiveScale_rest[1]; /* beyond the declared type */
-    dword at_g_GlideVertex1ProjectedTextureU; /* 0057ED88 g_GlideVertex1ProjectedTextureU */
-    dword at_g_GlideVertex1ProjectedTextureV; /* 0057ED8C g_GlideVertex1ProjectedTextureV */
-    dword at_g_GlideVertex1DiffuseColor; /* 0057ED90 g_GlideVertex1DiffuseColor */
-    dword at_g_GlideVertex2ScreenX; /* 0057ED94 g_GlideVertex2ScreenX */
-    dword at_g_GlideVertex2ScreenY; /* 0057ED98 g_GlideVertex2ScreenY */
-    dword at_g_GlideVertex2ReciprocalDepth; /* 0057ED9C g_GlideVertex2ReciprocalDepth */
-    dword at_g_GlideVertex2PerspectiveScale; /* 0057EDA0 g_GlideVertex2PerspectiveScale */
-    dword at_g_GlideVertex2PerspectiveScale_rest[1]; /* beyond the declared type */
-    dword at_g_GlideVertex2ProjectedTextureU; /* 0057EDA8 g_GlideVertex2ProjectedTextureU */
-    dword at_g_GlideVertex2ProjectedTextureV; /* 0057EDAC g_GlideVertex2ProjectedTextureV */
-    dword at_g_GlideVertex2DiffuseColor; /* 0057EDB0 g_GlideVertex2DiffuseColor */
-    dword at_g_GlideVertex2DiffuseColor_rest[5]; /* beyond the declared type */
-    dword at_g_GlideTmuCount; /* 0057EDC8 g_GlideTmuCount */
+    uint32_t at_g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers */
+    uint32_t at_g_GlideVertex0ScreenX; /* 0057ED54 g_GlideVertex0ScreenX */
+    uint32_t at_g_GlideVertex0ScreenY; /* 0057ED58 g_GlideVertex0ScreenY */
+    uint32_t at_g_GlideVertex0ReciprocalDepth; /* 0057ED5C g_GlideVertex0ReciprocalDepth */
+    uint32_t at_g_GlideVertex0PerspectiveScale; /* 0057ED60 g_GlideVertex0PerspectiveScale */
+    uint32_t at_g_GlideVertex0PerspectiveScale_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GlideVertex0ProjectedTextureU; /* 0057ED68 g_GlideVertex0ProjectedTextureU */
+    uint32_t at_g_GlideVertex0ProjectedTextureV; /* 0057ED6C g_GlideVertex0ProjectedTextureV */
+    uint32_t at_g_GlideVertex0DiffuseColor; /* 0057ED70 g_GlideVertex0DiffuseColor */
+    uint32_t at_g_GlideVertex1ScreenX; /* 0057ED74 g_GlideVertex1ScreenX */
+    uint32_t at_g_GlideVertex1ScreenY; /* 0057ED78 g_GlideVertex1ScreenY */
+    uint32_t at_g_GlideVertex1ReciprocalDepth; /* 0057ED7C g_GlideVertex1ReciprocalDepth */
+    uint32_t at_g_GlideVertex1PerspectiveScale; /* 0057ED80 g_GlideVertex1PerspectiveScale */
+    uint32_t at_g_GlideVertex1PerspectiveScale_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GlideVertex1ProjectedTextureU; /* 0057ED88 g_GlideVertex1ProjectedTextureU */
+    uint32_t at_g_GlideVertex1ProjectedTextureV; /* 0057ED8C g_GlideVertex1ProjectedTextureV */
+    uint32_t at_g_GlideVertex1DiffuseColor; /* 0057ED90 g_GlideVertex1DiffuseColor */
+    uint32_t at_g_GlideVertex2ScreenX; /* 0057ED94 g_GlideVertex2ScreenX */
+    uint32_t at_g_GlideVertex2ScreenY; /* 0057ED98 g_GlideVertex2ScreenY */
+    uint32_t at_g_GlideVertex2ReciprocalDepth; /* 0057ED9C g_GlideVertex2ReciprocalDepth */
+    uint32_t at_g_GlideVertex2PerspectiveScale; /* 0057EDA0 g_GlideVertex2PerspectiveScale */
+    uint32_t at_g_GlideVertex2PerspectiveScale_rest[1]; /* beyond the declared type */
+    uint32_t at_g_GlideVertex2ProjectedTextureU; /* 0057EDA8 g_GlideVertex2ProjectedTextureU */
+    uint32_t at_g_GlideVertex2ProjectedTextureV; /* 0057EDAC g_GlideVertex2ProjectedTextureV */
+    uint32_t at_g_GlideVertex2DiffuseColor; /* 0057EDB0 g_GlideVertex2DiffuseColor */
+    uint32_t at_g_GlideVertex2DiffuseColor_rest[5]; /* beyond the declared type */
+    uint32_t at_g_GlideTmuCount; /* 0057EDC8 g_GlideTmuCount */
     GlideTextureUploadProc * at_g_GlideTextureColorUpload[3]; /* 0057EDCC g_GlideTextureColorUpload */
     GlideTextureUploadProc * at_g_GlideTextureAlphaUpload[3]; /* 0057EDD8 g_GlideTextureAlphaUpload */
-    dword at_g_GlideTexturingDisabledState; /* 0057EDE4 g_GlideTexturingDisabledState */
-    dword at_g_GlideBlendModeState; /* 0057EDE8 g_GlideBlendModeState */
-    undefined4 at_g_GlideDepthWriteEnabledState; /* 0057EDEC g_GlideDepthWriteEnabledState */
+    uint32_t at_g_GlideTexturingDisabledState; /* 0057EDE4 g_GlideTexturingDisabledState */
+    uint32_t at_g_GlideBlendModeState; /* 0057EDE8 g_GlideBlendModeState */
+    uint32_t at_g_GlideDepthWriteEnabledState; /* 0057EDEC g_GlideDepthWriteEnabledState */
     GraphicsTextureResource * at_g_GlideBoundTexture; /* 0057EDF0 g_GlideBoundTexture */
-    dword at_g_GlideTmuMinAddress[16]; /* 0057EDF4 g_GlideTmuMinAddress */
-    dword at_g_GlideTmuMaxAddress[16]; /* 0057EE34 g_GlideTmuMaxAddress */
+    uint32_t at_g_GlideTmuMinAddress[16]; /* 0057EDF4 g_GlideTmuMinAddress */
+    uint32_t at_g_GlideTmuMaxAddress[16]; /* 0057EE34 g_GlideTmuMaxAddress */
     GraphicsTextureResource * at_g_GlideResidentTextureTail; /* 0057EE74 g_GlideResidentTextureTail */
     GraphicsTextureResource * at_g_GlideResidentTextureHead; /* 0057EE78 g_GlideResidentTextureHead */
-    sdword at_g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
-    byte * at_g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
+    int32_t at_g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
+    uint8_t * at_g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
     char at_s_GLIDE_0057ee84[6]; /* 0057EE84 s_GLIDE_0057ee84 */
-    byte at_s_GLIDE_0057ee84_padding[6];
+    uint8_t at_s_GLIDE_0057ee84_padding[6];
 } ImageData_0057ECC8;
 extern ImageData_0057ECC8 g_ImageData_0057ECC8;
 
 /* original 0x00582ED8-0x00583140 */
 typedef struct ImageData_00582ED8 {
-    byte at_gap_00582ED8[8]; /* 00582ED8 gap */
+    uint8_t at_gap_00582ED8[8]; /* 00582ED8 gap */
     IDirectSound * at_g_DirectSound; /* 00582EE0 g_DirectSound */
     IDirectSoundBuffer * at_g_PrimarySoundBuffer; /* 00582EE4 g_PrimarySoundBuffer */
     TH_LEGACY_LONG at_g_PrimaryVolume; /* 00582EE8 g_PrimaryVolume */
     TH_LEGACY_LONG at_g_PrimaryPan; /* 00582EEC g_PrimaryPan */
     WAVEFORMATEX at_WaveFormat_PCM_22050_Stereo16; /* 00582EF0 WaveFormat_PCM_22050_Stereo16 */
-    dword at_WaveFormat_PCM_22050_Stereo16_rest[3]; /* beyond the declared type */
-    byte at_WaveFormat_PCM_22050_Stereo16_rest_tail[2];
+    uint32_t at_WaveFormat_PCM_22050_Stereo16_rest[3]; /* beyond the declared type */
+    uint8_t at_WaveFormat_PCM_22050_Stereo16_rest_tail[2];
     DSBUFFERDESC_DX6 at_PrimarySoundBufferDesc; /* 00582F10 PrimarySoundBufferDesc */
     DirectSoundVoiceSet ** at_g_DirectSoundVoiceSetRegistry; /* 00582F24 g_DirectSoundVoiceSetRegistry */
     char at_s_SOUND_00582f28[6]; /* 00582F28 s_SOUND_00582f28 */
-    sdword at_g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation */
-    dword at_g_DirectSoundGainAttenuation_rest[3]; /* beyond the declared type */
-    byte at_g_DirectSoundGainAttenuation_rest_tail[2];
+    int32_t at_g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation */
+    uint32_t at_g_DirectSoundGainAttenuation_rest[3]; /* beyond the declared type */
+    uint8_t at_g_DirectSoundGainAttenuation_rest_tail[2];
 } ImageData_00582ED8;
 extern ImageData_00582ED8 g_ImageData_00582ED8;
 
 /* original 0x00583D28-0x00584080 */
 typedef struct ImageData_00583D28 {
-    byte at_gap_00583D28[56]; /* 00583D28 gap */
-    dword at_g_NetworkBackendMode; /* 00583D60 g_NetworkBackendMode */
+    uint8_t at_gap_00583D28[56]; /* 00583D28 gap */
+    uint32_t at_g_NetworkBackendMode; /* 00583D60 g_NetworkBackendMode */
     WinSockData11 at_g_WinSockStartupData; /* 00583D64 g_WinSockStartupData */
     NetworkSocketHandle32 at_g_NetworkFallbackSocket; /* 00583EF2 g_NetworkFallbackSocket */
-    dword at_g_NetworkFallbackSocketOptionOn; /* 00583EF6 g_NetworkFallbackSocketOptionOn */
-    dword at_g_NetworkFallbackAddressLength; /* 00583EFA g_NetworkFallbackAddressLength */
+    uint32_t at_g_NetworkFallbackSocketOptionOn; /* 00583EF6 g_NetworkFallbackSocketOptionOn */
+    uint32_t at_g_NetworkFallbackAddressLength; /* 00583EFA g_NetworkFallbackAddressLength */
     WinSockAddress at_g_NetworkFallbackBindEndpoint; /* 00583EFE g_NetworkFallbackBindEndpoint */
-    dword at_g_NetworkBackendActiveAddressFamily; /* 00583F0E g_NetworkBackendActiveAddressFamily */
-    dword at_g_NetworkBackendActiveSocketAddressLength; /* 00583F12 g_NetworkBackendActiveSocketAddressLength */
-    dword at_g_NetworkBackendActiveSocketType; /* 00583F16 g_NetworkBackendActiveSocketType */
-    dword at_g_NetworkBackendActiveProtocol; /* 00583F1A g_NetworkBackendActiveProtocol */
-    dword at_g_NetworkBackendPortNetworkOrderCarrier; /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
+    uint32_t at_g_NetworkBackendActiveAddressFamily; /* 00583F0E g_NetworkBackendActiveAddressFamily */
+    uint32_t at_g_NetworkBackendActiveSocketAddressLength; /* 00583F12 g_NetworkBackendActiveSocketAddressLength */
+    uint32_t at_g_NetworkBackendActiveSocketType; /* 00583F16 g_NetworkBackendActiveSocketType */
+    uint32_t at_g_NetworkBackendActiveProtocol; /* 00583F1A g_NetworkBackendActiveProtocol */
+    uint32_t at_g_NetworkBackendPortNetworkOrderCarrier; /* 00583F1E g_NetworkBackendPortNetworkOrderCarrier */
     NetworkBackendSocketAddress16 at_g_NetworkBackendBindAddress; /* 00583F22 g_NetworkBackendBindAddress */
-    dword at_g_NetworkBackendBindAddress_rest[3]; /* beyond the declared type */
-    byte at_g_NetworkBackendBindAddress_rest_tail[2];
-    undefined at_g_NetworkEndpointTextScratchA; /* 00583F40 g_NetworkEndpointTextScratchA */
-    dword at_g_NetworkEndpointTextScratchA_rest[63]; /* beyond the declared type */
-    byte at_g_NetworkEndpointTextScratchA_rest_tail[3];
+    uint32_t at_g_NetworkBackendBindAddress_rest[3]; /* beyond the declared type */
+    uint8_t at_g_NetworkBackendBindAddress_rest_tail[2];
+    uint8_t at_g_NetworkEndpointTextScratchA; /* 00583F40 g_NetworkEndpointTextScratchA */
+    uint32_t at_g_NetworkEndpointTextScratchA_rest[63]; /* beyond the declared type */
+    uint8_t at_g_NetworkEndpointTextScratchA_rest_tail[3];
     NetworkBackendInstanceDescriptorPrefix at_NetworkBackendInstanceDescriptorPrefix_00584040; /* 00584040 NetworkBackendInstanceDescriptorPrefix_00584040 */
     char at_s_CommandLineOptionIp[4]; /* 00584078 s_CommandLineOptionIp */
-    dword at_s_CommandLineOptionIp_rest[1]; /* beyond the declared type */
+    uint32_t at_s_CommandLineOptionIp_rest[1]; /* beyond the declared type */
 } ImageData_00583D28;
 extern ImageData_00583D28 g_ImageData_00583D28;
 
 /* original 0x00584E44-0x00584E50 */
 typedef struct ImageData_00584E44 {
-    byte at_gap_00584E44[12]; /* 00584E44 gap */
+    uint8_t at_gap_00584E44[12]; /* 00584E44 gap */
 } ImageData_00584E44;
 extern ImageData_00584E44 g_ImageData_00584E44;
 
 /* original 0x005856A0-0x00585D40 */
 typedef struct ImageData_005856A0 {
-    byte at_gap_005856A0[16]; /* 005856A0 gap */
+    uint8_t at_gap_005856A0[16]; /* 005856A0 gap */
     HINSTANCE at_g_hInstance; /* 005856B0 g_hInstance */
     HWND at_g_MainWindow; /* 005856B4 g_MainWindow */
-    dword at_g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
-    dword at_g_AppActive; /* 005856BC g_AppActive */
+    uint32_t at_g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
+    uint32_t at_g_AppActive; /* 005856BC g_AppActive */
     Win32MainMessageStorage at_g_MainMessageStorage; /* 005856C0 g_MainMessageStorage */
-    dword at_g_MainMessageStorage_rest[2]; /* beyond the declared type */
+    uint32_t at_g_MainMessageStorage_rest[2]; /* beyond the declared type */
     ArenaState at_g_Arena; /* 00585708 g_Arena */
     TimerSystemState at_g_TimerSystemState; /* 0058571C g_TimerSystemState */
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */
     char at_sz_MainWindowTitle[15]; /* 00585D1C sz_MainWindowTitle */
     char at_sz_MainWindowClass[17]; /* 00585D2B sz_MainWindowClass */
-    byte at_sz_MainWindowClass_padding[4];
+    uint8_t at_sz_MainWindowClass_padding[4];
 } ImageData_005856A0;
 extern ImageData_005856A0 g_ImageData_005856A0;
 
 /* original 0x00586950-0x00586B70 */
 typedef struct ImageData_00586950 {
-    byte at_g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
-    dword at_g_LocaleInfoScratch_rest[68]; /* beyond the declared type */
+    uint8_t at_g_LocaleInfoScratch[16]; /* 00586950 g_LocaleInfoScratch */
+    uint32_t at_g_LocaleInfoScratch_rest[68]; /* beyond the declared type */
     LocaleSystemState at_g_LocaleSystemState; /* 00586A70 g_LocaleSystemState */
 } ImageData_00586950;
 extern ImageData_00586950 g_ImageData_00586950;
 
 /* original 0x005873BC-0x0058C000 */
 typedef struct ImageData_005873BC {
-    byte at_gap_005873BC[68]; /* 005873BC gap */
-    dword at_g_Arena_3[4096]; /* 00587400 g_Arena_3 */
-    dword at_g_Arena_4[768]; /* 0058B400 g_Arena_4 */
+    uint8_t at_gap_005873BC[68]; /* 005873BC gap */
+    uint32_t at_g_Arena_3[4096]; /* 00587400 g_Arena_3 */
+    uint32_t at_g_Arena_4[768]; /* 0058B400 g_Arena_4 */
 } ImageData_005873BC;
 extern ImageData_005873BC g_ImageData_005873BC;
 
@@ -5283,8 +5283,8 @@ extern ImageData_005873BC g_ImageData_005873BC;
 
 /* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its original range, and every converted
    pointer with its original location and value. */
-typedef struct ThandorImageBlock { dword start; dword end; const byte *data; } ThandorImageBlock;
-typedef struct ThandorImagePointer { dword location; dword originalValue; } ThandorImagePointer;
+typedef struct ThandorImageBlock { uint32_t start; uint32_t end; const uint8_t *data; } ThandorImageBlock;
+typedef struct ThandorImagePointer { uint32_t location; uint32_t originalValue; } ThandorImagePointer;
 extern const ThandorImageBlock g_ThandorImageBlocks[203];
 extern const ThandorImagePointer g_ThandorImagePointers[2393];
 

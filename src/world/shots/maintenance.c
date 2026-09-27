@@ -11,31 +11,31 @@
 /* Implementation ownership: world/shots/maintenance. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword ShotTint_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline dword ShotTint_PackWordsUnsignedSaturate(qword words)
+static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;
-  dword packed;
+  uint32_t packed;
   int lane;
 
   lanes.q = words;
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     packed = packed |
-             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
@@ -58,11 +58,11 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   PackedArgb32 nodeTintArgb;
   PackedArgb32 definitionTintArgb;
   FieldGridRegionMask primaryOccupancyMask;
-  dword probeOccupancyMask;
-  qword mm0PackedValue0;
+  uint32_t probeOccupancyMask;
+  uint64_t mm0PackedValue0;
   FixedDirectionXyzRegs12 probeOffset;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
-  uint combinedOccupancyMask;
+  uint32_t combinedOccupancyMask;
   ShotRuntimeSlot *shotRuntime;
   
   shotRuntime = modelNode->shotRuntime;
@@ -140,13 +140,13 @@ ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
 
 {
   GraphicsFixedVec3 *worldPosition;
-  uint soundSlotIndex;
+  uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
   bool cellMasked;
   ShotRuntimeSlot *shotRuntime;
   
   shotRuntime = modelNode->shotRuntime;
-  if ((worldRuntime->dwordArray != (dword *)0x0) &&
+  if ((worldRuntime->dwordArray != (uint32_t *)0x0) &&
      (soundSlotIndex = ((shotRuntime->definitionOrSavedId).definition)->terrainGridMaskIndex,
      soundSlotIndex < worldRuntime->dwordArrayCount)) {
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
@@ -195,20 +195,20 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
   AngleTurn32 *rotationAnglePtr;
   ShotFrameAdvanceThresholdQ4 frameAdvanceThreshold;
   int *targetStateRecord;
-  uint frameAccumulatorOrDistance;
-  uint frameCountDistanceOrAge;
-  dword mixedScalarOrPointerCarrier;
+  uint32_t frameAccumulatorOrDistance;
+  uint32_t frameCountDistanceOrAge;
+  uint32_t mixedScalarOrPointerCarrier;
   int workingValue;
   int targetDeltaX;
   ModelRuntimeNode *ownerModelNode;
-  uint terrainHitDistance;
-  uint secondaryHitDistance;
+  uint32_t terrainHitDistance;
+  uint32_t secondaryHitDistance;
   Q12 worldXQ12;
   Q12 trajectoryStepYQ12;
   AngleTurn16Stored32 headingTurnDeltaAngle16;
   AngleTurn32 ballisticAzimuthAngle;
   ModelRaycastNearestNodeOrScratch4 nearestArmyHit;
-  dword terrainMaterialIndex;
+  uint32_t terrainMaterialIndex;
   AngleTurn16Stored32 elevationTurnDeltaAngle16;
   ShotDefinition *shotDefinition;
   FactionRuntimeIndex ownerFactionIndex;
@@ -472,7 +472,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       if (frameAccumulatorOrDistance < mixedScalarOrPointerCarrier) {
         if (frameAccumulatorOrDistance < frameCountDistanceOrAge) {
           shotDefinition = (shotRuntime->definitionOrSavedId).definition;
-          if (frameAccumulatorOrDistance <= (uint)shotRuntime->launchSpeedQ12) {
+          if (frameAccumulatorOrDistance <= (uint32_t)shotRuntime->launchSpeedQ12) {
             InterpolationState_SetNegatedTargetAndRescaleProgress
                       (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
             effectDefinition = shotDefinition->primaryEffectDefinition;
@@ -494,7 +494,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndTerminateProjectile
           :
           shotDefinition = (shotRuntime->definitionOrSavedId).definition;
-          if (frameCountDistanceOrAge <= (uint)shotRuntime->launchSpeedQ12) {
+          if (frameCountDistanceOrAge <= (uint32_t)shotRuntime->launchSpeedQ12) {
             ShotRuntime_ApplyArmyHitRelationAndNotifications
                       (((nearestArmyHit.nearestModelNode)->runtimePayload).armyRuntime,shotRuntime);
             InterpolationState_SetNegatedTargetAndRescaleProgress
@@ -536,7 +536,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
         ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects_HandleNearestArmyHitAndTerminateProjectile
         ;
         shotDefinition = (shotRuntime->definitionOrSavedId).definition;
-        if (mixedScalarOrPointerCarrier <= (uint)shotRuntime->launchSpeedQ12) {
+        if (mixedScalarOrPointerCarrier <= (uint32_t)shotRuntime->launchSpeedQ12) {
           (shotRuntime->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
           InterpolationState_SetNegatedTargetAndRescaleProgress
                     (shotDefinition->shadingReleaseTransitionDurationTicks,modelNode->shadingRecord);
@@ -630,19 +630,19 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
               frameCountDistanceOrAge = shotDefinition->trajectoryRampDurationTicks;
             }
             shotRuntime->launchSpeedQ12 =
-                 (Q12)(((longlong)
-                        (int)(((longlong)(int)frameCountDistanceOrAge * (longlong)(int)frameCountDistanceOrAge) /
-                             (longlong)(int)shotDefinition->trajectoryRampDurationTicks) *
-                       (longlong)shotDefinition->launchSpeedQ12) /
-                      (longlong)(int)shotDefinition->trajectoryRampDurationTicks);
+                 (Q12)(((int64_t)
+                        (int)(((int64_t)(int)frameCountDistanceOrAge * (int64_t)(int)frameCountDistanceOrAge) /
+                             (int64_t)(int)shotDefinition->trajectoryRampDurationTicks) *
+                       (int64_t)shotDefinition->launchSpeedQ12) /
+                      (int64_t)(int)shotDefinition->trajectoryRampDurationTicks);
             if (shotDefinition->elevationOffsetAngle16 != 0) {
               frameCountDistanceOrAge = shotDefinition->trajectoryRampDurationTicks * 2;
               workingValue = frameCountDistanceOrAge - shotRuntime->projectileAgeTicks;
               if (frameCountDistanceOrAge < shotRuntime->projectileAgeTicks) {
                 workingValue = 0;
               }
-              workingValue = ((int)(((longlong)workingValue * (longlong)shotDefinition->elevationOffsetAngle16) /
-                             (longlong)(int)shotDefinition->trajectoryRampDurationTicks) >> 1) -
+              workingValue = ((int)(((int64_t)workingValue * (int64_t)shotDefinition->elevationOffsetAngle16) /
+                             (int64_t)(int)shotDefinition->trajectoryRampDurationTicks) >> 1) -
                        shotRuntime->elevationOffsetAngle16;
               shotRuntime->elevationOffsetAngle16 = shotRuntime->elevationOffsetAngle16 + workingValue;
               rotationAnglePtr = &(modelNodeRuntime->modelPayload).worldRotationAngle1;
@@ -685,14 +685,14 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                 frameCountDistanceOrAge = shotDefinition->trajectoryRampDurationTicks;
               }
               shotRuntime->launchSpeedQ12 =
-                   (Q12)(((longlong)
-                          (int)(((longlong)
-                                 (int)(((longlong)(int)frameCountDistanceOrAge * (longlong)(int)frameCountDistanceOrAge) /
-                                      (longlong)(int)shotDefinition->trajectoryRampDurationTicks) *
-                                (longlong)(int)frameCountDistanceOrAge) /
-                               (longlong)(int)shotDefinition->trajectoryRampDurationTicks) *
-                         (longlong)shotDefinition->launchSpeedQ12) /
-                        (longlong)(int)shotDefinition->trajectoryRampDurationTicks);
+                   (Q12)(((int64_t)
+                          (int)(((int64_t)
+                                 (int)(((int64_t)(int)frameCountDistanceOrAge * (int64_t)(int)frameCountDistanceOrAge) /
+                                      (int64_t)(int)shotDefinition->trajectoryRampDurationTicks) *
+                                (int64_t)(int)frameCountDistanceOrAge) /
+                               (int64_t)(int)shotDefinition->trajectoryRampDurationTicks) *
+                         (int64_t)shotDefinition->launchSpeedQ12) /
+                        (int64_t)(int)shotDefinition->trajectoryRampDurationTicks);
             }
             if (shotDefinition->fixedRangeTransitionAgeThresholdTicks <= shotRuntime->projectileAgeTicks) {
               shotDefinition = (ShotDefinition *)(shotRuntime->definitionOrSavedId).savedId;

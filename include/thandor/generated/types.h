@@ -862,7 +862,6 @@ typedef unsigned int code(); /* Ghidra: function of unknown signature (unprototy
 typedef void            *pointer;           /* Ghidra generic pointer */
 /* Ghidra odd-width integers, used when a value spans a register plus flags (e.g. EAX:CF = uint5).
  * Widened to the next native type; the casts that use them still need manual repair. */
-typedef unsigned int uint3;
 typedef unsigned long long uint5;
 typedef unsigned long long unkuint10; /* TODO: 10-byte x87/MMX value, truncated */
 typedef unsigned long long uint6;
@@ -900,17 +899,10 @@ typedef long __stdcall DirectSoundCaptureEnumerateA();
 #define TECHNOLOGY_ASSET_FAILURE_SENTINEL_0x4F 0x4f
 #define WIN32_IDC_ARROW_RESOURCE_ID 0x7f00
 
-typedef unsigned char   undefined;
 
 typedef unsigned char    bool;
-typedef unsigned char    byte;
-typedef unsigned int    dword;
 typedef pointer32 ImageBaseOffset32;
 
-typedef long long    longlong;
-typedef unsigned long long    qword;
-typedef char    sbyte;
-typedef int    sdword;
 
 
 /* Recovered x86 register calling-convention markers. Portable source views treat them as annotations. */
@@ -991,18 +983,18 @@ typedef int    sdword;
 #endif
 
 struct MovieOpenEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
-    dword playbackRateHzEcx; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
+    uint32_t playbackRateHzEcx; // ECX on success: header dword +0xFC, the frame-timer frequency callers pass to TimerRegisterPeriodic (lost in the Ghidra EAX/CF view)
 };
 
 struct Win32FileSeekEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct GridScratchAllocEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
@@ -1012,232 +1004,232 @@ struct ArmyRegistryEaxCf5_51b6d0 {
 };
 
 struct CommandLineFindOptionEbxCf5 {
-    byte *ebx; // Physical ABI component EBX
+    uint8_t *ebx; // Physical ABI component EBX
     bool carry; // Physical ABI component CF
 };
 
 struct ResourceLoadEaxEcxCf9 {
-    dword eax; // Physical ABI component EAX
-    dword ecx; // Physical ABI component ECX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ecx; // Physical ABI component ECX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571ca0 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_5719f0 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryEaxCf5_51b740 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct Win32FileReadEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FileSystemSeekEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct MovieAdvanceFrameEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct NetworkBackendReceiveEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FixedMathVectorAnglesRegs8 {
-    dword ecx; // Physical ABI component ECX
-    dword edx; // Physical ABI component EDX
+    uint32_t ecx; // Physical ABI component ECX
+    uint32_t edx; // Physical ABI component EDX
 };
 
 struct NetworkBackendOpenBindEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct Win32FileOpenEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FileSystemReadEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct RichTextCopyExpandedEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571a60 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571d40 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571b00 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FileSystemSizeEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArenaFreeEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct Win32FileSizeEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct NetworkBackendSendEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyMetric6CDefinitionC4Regs8 {
-    dword ebx; // Physical ABI component EBX
-    dword ecx; // Physical ABI component ECX
+    uint32_t ebx; // Physical ABI component EBX
+    uint32_t ecx; // Physical ABI component ECX
 };
 
 struct ArmyCollisionFindEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571c30 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FileSystemWriteEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FileSystemOpenEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FatalErrorEaxCf5 {
-    dword eax;
+    uint32_t eax;
     bool carry;
 };
 
 struct PckCodecEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FieldGridNearestPointRegsCf13 {
-    dword eax; // Physical ABI component EAX
-    dword ecx; // Physical ABI component ECX
-    dword edx; // Physical ABI component EDX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ecx; // Physical ABI component ECX
+    uint32_t edx; // Physical ABI component EDX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571cf0 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ModelLocalPointRegs12 {
-    dword eax; // Physical ABI component EAX
-    dword ecx; // Physical ABI component ECX
-    dword edx; // Physical ABI component EDX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ecx; // Physical ABI component ECX
+    uint32_t edx; // Physical ABI component EDX
 };
 
 struct ArmyRegistryIdEaxCf5_571ab0 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct PackageDecodeEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArenaAllocEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct Win32FileWriteEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct FixedDirectionXyzRegs12 {
-    dword eax; // Physical ABI component EAX
-    dword ecx; // Physical ABI component ECX
-    dword edx; // Physical ABI component EDX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ecx; // Physical ABI component ECX
+    uint32_t edx; // Physical ABI component EDX
 };
 
 struct UiTransferMailboxReceivedEaxEcxCf9 {
-    dword eax; // Physical ABI component EAX
-    dword ecx; // Physical ABI component ECX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ecx; // Physical ABI component ECX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRuntimeCreateEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct PackageFindEntryEaxEbxCf9 {
-    dword eax; // Physical ABI component EAX
-    dword ebx; // Physical ABI component EBX
+    uint32_t eax; // Physical ABI component EAX
+    uint32_t ebx; // Physical ABI component EBX
     bool carry; // Physical ABI component CF
 };
 
 struct NetworkBackendSetSessionEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571c50 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 
 struct ArmyRegistryIdEaxCf5_571a10 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 struct DisplayModeEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 struct GraphicsCursorFrameEaxCf5 {
-    dword eax; // Physical ABI component EAX
+    uint32_t eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
 struct GraphicsTextureSizeEaxEdxCf9 {
-    dword logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
-    dword logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
+    uint32_t logicalWidthPixels; // EAX logical texture width in pixels on CF-clear success
+    uint32_t logicalHeightPixels; // EDX logical texture height in pixels on CF-clear success
     bool carry; // Carry/status: false on success; true on failure
 };
 struct GraphicsFramebufferCaptureEaxCf5 {
@@ -1262,50 +1254,50 @@ struct SoundPlayVoiceEaxCf5 {
 };
 
 /* Callback/function-definition ABIs. */
-typedef GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsCursorSetFrameProc(dword arg0);
-typedef DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoftwareDisplayModeHookProc(dword arg0, dword arg1, dword arg2, dword arg3);
+typedef GraphicsCursorFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsCursorSetFrameProc(uint32_t arg0);
+typedef DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoftwareDisplayModeHookProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferPresentProc(SoftwareFramebufferAccess * arg0);
-typedef GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsFramebufferCaptureRegionProc(dword arg0, dword arg1, sdword arg2, sdword arg3);
+typedef GraphicsFramebufferCaptureEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsFramebufferCaptureRegionProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3);
 typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebufferBeginAccessProc(void);
 typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferEndAccessProc(void);
-typedef GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx GraphicsTextureSourceGetLogicalSizeProc(dword arg0, GraphicsTextureSourceAsset * arg1);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferFillRectArgbProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, sdword arg6, sdword arg7, dword arg8, SoftwareFramebufferAccess * arg9);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyRegionToOriginProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyOriginToRegionProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
+typedef GraphicsTextureSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx GraphicsTextureSourceGetLogicalSizeProc(uint32_t arg0, GraphicsTextureSourceAsset * arg1);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferFillRectArgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, SoftwareFramebufferAccess * arg9);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyRegionToOriginProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsFramebufferCopyOriginToRegionProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, SoftwareFramebufferAccess * arg4, SoftwareFramebufferAccess * arg5);
 typedef GraphicsTextureSourceAsset * __thandor_eax_preserve_ecx_edx GraphicsTextureSourceResolveAllocationBaseProc(GraphicsTextureSourceAsset * arg0);
 typedef GraphicsPaletteAsset * __thandor_eax_preserve_ecx_edx GraphicsPaletteAssetResolveAllocationBaseProc(GraphicsPaletteAsset * arg0);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, dword arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitModulatedSourceAlphaProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, dword arg6, dword arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceSaturatedAddRgbProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, dword arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
-typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceTestOpaquePixelProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, dword arg4, GraphicsTextureSourceAsset * arg5);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledBlitProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, sdword arg6, sdword arg7, dword arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledSaturatedAddRgbProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, sdword arg6, sdword arg7, dword arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceStretchDirectColorBilinearProc(dword arg0, dword arg1, sdword arg2, sdword arg3, dword arg4, GraphicsTextureSourceAsset * arg5, SoftwareFramebufferAccess * arg6);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, dword arg6, dword arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
-typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(sdword arg0, sdword arg1, sdword arg2, sdword arg3, sdword arg4, sdword arg5, dword arg6, dword arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
+typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceBlitModulatedSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, GraphicsTextureSourceAsset * arg7, SoftwareFramebufferAccess * arg8);
+typedef bool __thandor_cf_preserve_eax_ecx_edx GraphicsTextureSourceTestOpaquePixelProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledBlitProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceTiledSaturatedAddRgbProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, uint32_t arg8, GraphicsTextureSourceAsset * arg9, SoftwareFramebufferAccess * arg10);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceStretchDirectColorBilinearProc(uint32_t arg0, uint32_t arg1, int32_t arg2, int32_t arg3, uint32_t arg4, GraphicsTextureSourceAsset * arg5, SoftwareFramebufferAccess * arg6);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitIntegerScaledSourceAlphaProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
+typedef void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSourceBlitSourceAlphaPaletteBankProc(int32_t arg0, int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, uint32_t arg6, uint32_t arg7, GraphicsTextureSourceAsset * arg8, SoftwareFramebufferAccess * arg9);
 typedef SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundCreateSampleVoiceSetProc(SoundSampleAsset * arg0);
-typedef SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundCreatePcmVoiceSetProc(dword arg0, dword arg1, dword arg2, dword arg3, void * arg4);
-typedef SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundPlayVoiceProc(dword arg0, dword arg1, DirectSoundVoiceSet * arg2);
+typedef SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundCreatePcmVoiceSetProc(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, void * arg4);
+typedef SoundPlayVoiceEaxCf5 __thandor_eax_cf_preserve_ecx_edx SoundPlayVoiceProc(uint32_t arg0, uint32_t arg1, DirectSoundVoiceSet * arg2);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundReleaseSampleVoiceSetProc(DirectSoundVoiceSet * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundReleasePcmVoiceSetProc(DirectSoundVoiceSet * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundStopVoiceProc(IDirectSoundBuffer * arg0);
 typedef bool __thandor_cf_preserve_eax_ecx_edx SoundIsVoicePlayingProc(IDirectSoundBuffer * arg0);
 typedef void __thandor_void_preserve_eax_ecx_edx SoundStopAllVoicesProc(void);
-typedef void __thandor_void_preserve_eax_ecx_edx SoundSetVoiceGainsProc(dword arg0, dword arg1, IDirectSoundBuffer * arg2);
+typedef void __thandor_void_preserve_eax_ecx_edx SoundSetVoiceGainsProc(uint32_t arg0, uint32_t arg1, IDirectSoundBuffer * arg2);
 struct FrontendInitEaxCf5 {
-    dword frontendRootOrError; /* EAX result/error value. */
+    uint32_t frontendRootOrError; /* EAX result/error value. */
     bool carry;               /* Carry-flag status. */
 };
 struct ArmyRuntimeInitEaxCf5 {
-    dword errorOrValue; /* EAX result/error value. */
+    uint32_t errorOrValue; /* EAX result/error value. */
     bool carry;         /* Carry-flag status. */
 };
 struct InGameLevelDefaultLoadEaxCf5 {
-    dword errorOrValue; /* EAX result/error value. */
+    uint32_t errorOrValue; /* EAX result/error value. */
     bool carry;         /* Carry-flag status. */
 };
 struct FrontendMainLoopEaxCf5 {
-    dword errorOrValue; /* EAX result/error value. */
+    uint32_t errorOrValue; /* EAX result/error value. */
     bool carry;         /* Carry-flag status. */
 };
 struct ArmyPlacementCandidateEaxCf5 {
@@ -1313,75 +1305,66 @@ struct ArmyPlacementCandidateEaxCf5 {
     bool carry; /* Carry-flag status. */
 };
 struct InGameRuntimeLoadedInitEaxCf5 {
-    dword runtimeRootOrError; /* EAX result/error value. */
+    uint32_t runtimeRootOrError; /* EAX result/error value. */
     bool carry;               /* Carry-flag status. */
 };
 struct InGameRuntimeInitEaxCf5 {
-    dword runtimeRootOrError; /* EAX result/error value. */
+    uint32_t runtimeRootOrError; /* EAX result/error value. */
     bool carry;               /* Carry-flag status. */
 };
 struct InGameLevelLoadEaxCf5 {
-    dword errorOrValue; /* EAX result/error value. */
+    uint32_t errorOrValue; /* EAX result/error value. */
     bool carry;         /* Carry-flag status. */
 };
 struct InGameRuntimeRunEaxCf5 {
-    dword exitCodeOrError; /* EAX result/error value. */
+    uint32_t exitCodeOrError; /* EAX result/error value. */
     bool carry;            /* Carry-flag status. */
 };
 struct TextResourceLoadEaxCf5 {
-    dword errorOrValue; /* EAX result/error value. */
+    uint32_t errorOrValue; /* EAX result/error value. */
     bool carry;         /* Carry-flag status. */
 };
 
-typedef unsigned int    uint;
-typedef unsigned long    ulong;
-typedef unsigned long long    ulonglong;
-typedef unsigned char    undefined1;
-typedef unsigned short    undefined2;
-typedef unsigned int    undefined4;
-typedef unsigned long long    undefined8;
-typedef unsigned short    ushort;
 #ifndef _WCHAR_T_DEFINED /* Win32 wchar_t: 16-bit unsigned, same as the CRT's */
 #define _WCHAR_T_DEFINED
 typedef unsigned short wchar_t;
 #endif
-typedef unsigned short    word;
 
 struct TextResourceResolveEaxCf5 {
-    word *eax; // Physical ABI component EAX
+    uint16_t *eax; // Physical ABI component EAX
     bool carry; // Physical ABI component CF
 };
-typedef GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceLoadPackageAssetProc(word * pathUtf16);
+typedef GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsTextureSourceLoadPackageAssetProc(uint16_t * pathUtf16);
 
 /* Recovered semantic scalar types used by canonical records. */
-typedef dword ResourceExtractionDescriptor32;
-typedef dword LevelLightingCycleDurationTicks;
-typedef dword GameRelationUiFlags;
-typedef dword LevelFactionRelationGroupMasks32;
-typedef dword LevelMusicSampleNumber;
-typedef dword LevelEffectSampleNumber;
-typedef dword LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset;
-typedef dword ArmyPlacementContactKindIndex32;
-typedef dword SpatialSoundRuntimeSlotIndex;
+typedef uint32_t ResourceExtractionDescriptor32;
+typedef uint32_t LevelLightingCycleDurationTicks;
+typedef uint32_t GameRelationUiFlags;
+typedef uint32_t LevelFactionRelationGroupMasks32;
+typedef uint32_t LevelMusicSampleNumber;
+typedef uint32_t LevelEffectSampleNumber;
+typedef uint32_t LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset;
+typedef uint32_t ArmyPlacementContactKindIndex32;
+typedef uint32_t SpatialSoundRuntimeSlotIndex;
 typedef int WeaponAimCountdownTicks;
-typedef dword LevelPlayerSlotByteOffset32;
+typedef uint32_t LevelPlayerSlotByteOffset32;
 
 struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct {
-    dword OffsetToDirectory:31;
-    dword DataIsDirectory:1;
+    uint32_t OffsetToDirectory:31;
+    uint32_t DataIsDirectory:1;
 };
 
 union IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryUnion {
-    dword OffsetToData;
+    uint32_t OffsetToData;
     struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_DirectoryStruct;
 };
 
 typedef unsigned short    wchar16;
-typedef ulong DWORD;
+typedef uint32_t DWORD;
 
 typedef DWORD LCTYPE;
 
-typedef ulong ULONG_PTR;
+typedef uint32_t ULONG_PTR;
 
 typedef void *HANDLE;
 
@@ -1414,7 +1397,7 @@ struct _SECURITY_ATTRIBUTES {
     BOOL bInheritHandle;
 };
 
-typedef ushort WORD;
+typedef uint16_t WORD;
 
 struct _SYSTEMTIME {
     WORD wYear;
@@ -1489,7 +1472,7 @@ struct _CONSOLE_SCREEN_BUFFER_INFO {
 
 typedef struct _CONSOLE_READCONSOLE_CONTROL *PCONSOLE_READCONSOLE_CONTROL;
 
-typedef ulong ULONG;
+typedef uint32_t ULONG;
 
 struct _CONSOLE_READCONSOLE_CONTROL {
     ULONG nLength;
@@ -1504,9 +1487,9 @@ typedef char *va_list;
 
 typedef struct HWND__ *HWND;
 
-typedef uint UINT;
+typedef uint32_t UINT;
 
-typedef uint UINT_PTR;
+typedef uint32_t UINT_PTR;
 
 typedef UINT_PTR WPARAM;
 
@@ -1590,39 +1573,39 @@ typedef DWORD LCID;
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct IMAGE_DOS_HEADER {
     char e_magic[2]; 
-    word e_cblp; 
-    word e_cp; 
-    word e_crlc; 
-    word e_cparhdr; 
-    word e_minalloc; 
-    word e_maxalloc; 
-    word e_ss; 
-    word e_sp; 
-    word e_csum; 
-    word e_ip; 
-    word e_cs; 
-    word e_lfarlc; 
-    word e_ovno; 
-    word e_res[4]; /* Ghidra C export printed [4][4] */
-    word e_oemid; 
-    word e_oeminfo; 
-    word e_res2[10]; /* Ghidra C export printed [10][10] */
-    dword e_lfanew; 
-    byte e_program[64]; 
+    uint16_t e_cblp; 
+    uint16_t e_cp; 
+    uint16_t e_crlc; 
+    uint16_t e_cparhdr; 
+    uint16_t e_minalloc; 
+    uint16_t e_maxalloc; 
+    uint16_t e_ss; 
+    uint16_t e_sp; 
+    uint16_t e_csum; 
+    uint16_t e_ip; 
+    uint16_t e_cs; 
+    uint16_t e_lfarlc; 
+    uint16_t e_ovno; 
+    uint16_t e_res[4]; /* Ghidra C export printed [4][4] */
+    uint16_t e_oemid; 
+    uint16_t e_oeminfo; 
+    uint16_t e_res2[10]; /* Ghidra C export printed [10][10] */
+    uint32_t e_lfanew; 
+    uint8_t e_program[64]; 
 };
 #pragma pack(pop)
 
 typedef int FactionRuntimeIndex;
 
-typedef dword ArmyMovementStateFlags;
+typedef uint32_t ArmyMovementStateFlags;
 
 typedef int Q12;
 
-typedef dword ArmyCommandModeFlags;
+typedef uint32_t ArmyCommandModeFlags;
 
-typedef dword ArmyCommandGeneration;
+typedef uint32_t ArmyCommandGeneration;
 
-typedef dword FieldGridRegionMask;
+typedef uint32_t FieldGridRegionMask;
 
 typedef enum WorldOwnerRuntimeClassId {
     WORLD_OWNER_RUNTIME_MODEL=0,
@@ -1986,15 +1969,15 @@ typedef enum PckArmyAssetIdCatalog {
     ARM_0855_ROHSTOFF_MDL0855=855
 } PckArmyAssetIdCatalog;
 
-typedef dword ArmyRuntimeFlags;
+typedef uint32_t ArmyRuntimeFlags;
 
-typedef dword ArmyRuntimeTimer;
+typedef uint32_t ArmyRuntimeTimer;
 
 typedef int ArmySelectionMetric;
 
-typedef dword EffectAnimationFrameCount;
+typedef uint32_t EffectAnimationFrameCount;
 
-typedef dword DefinitionReferencePresentFlag;
+typedef uint32_t DefinitionReferencePresentFlag;
 
 typedef enum EffectRuntimeCompletionAction {
     EFFECT_RUNTIME_COMPLETION_NONE=0,
@@ -2003,31 +1986,31 @@ typedef enum EffectRuntimeCompletionAction {
     EFFECT_RUNTIME_COMPLETION_SPAWN_ARMY_FROM_MODEL=3
 } EffectRuntimeCompletionAction;
 
-typedef dword EffectShadingCountdownTicks;
+typedef uint32_t EffectShadingCountdownTicks;
 
-typedef dword EffectPeriodicIntervalTicks;
+typedef uint32_t EffectPeriodicIntervalTicks;
 
-typedef dword PackedArgb32;
+typedef uint32_t PackedArgb32;
 
-typedef dword EffectAgeTicks;
+typedef uint32_t EffectAgeTicks;
 
-typedef dword ShotAnimationFrameAccumulatorQ4;
+typedef uint32_t ShotAnimationFrameAccumulatorQ4;
 
 typedef int AngleTurn16Stored32;
 
-typedef dword ShotImpactEffectEmissionFlags;
+typedef uint32_t ShotImpactEffectEmissionFlags;
 
-typedef dword ShotProjectileAgeTicks;
+typedef uint32_t ShotProjectileAgeTicks;
 
-typedef dword ShotLifetimeRemainingTicks;
+typedef uint32_t ShotLifetimeRemainingTicks;
 
-typedef dword ModelRuntimeFlags;
+typedef uint32_t ModelRuntimeFlags;
 
 typedef int ModelTextureSubresourceIndex;
 
 typedef int ModelTextureOffsetTexel;
 
-typedef dword ModelDepthBinMask;
+typedef uint32_t ModelDepthBinMask;
 
 typedef int ArmyTurnVelocityAngle16;
 
@@ -2179,7 +2162,7 @@ typedef enum PckEffectDefinitionIdCatalog {
     EFF_0242_ERCKC0=242
 } PckEffectDefinitionIdCatalog;
 
-typedef dword EffectAnimationFrameAccumulatorQ4;
+typedef uint32_t EffectAnimationFrameAccumulatorQ4;
 
 typedef enum PckShotDefinitionIdCatalog {
     SHT_0000_SLRAY0=0,
@@ -2320,35 +2303,35 @@ typedef enum PckShotDefinitionIdCatalog {
     SHT_3033_SIIOB0=3033
 } PckShotDefinitionIdCatalog;
 
-typedef dword ShotAnimationFrameIndex;
+typedef uint32_t ShotAnimationFrameIndex;
 
-typedef dword ShotSecondaryEffectCountdownTicks;
+typedef uint32_t ShotSecondaryEffectCountdownTicks;
 
-typedef dword AngleTurn32;
+typedef uint32_t AngleTurn32;
 
-typedef dword ModelMeshGroupMask;
+typedef uint32_t ModelMeshGroupMask;
 
 typedef int GraphicsWorldCoordinateQ12;
 
-typedef dword PackedRgb24;
+typedef uint32_t PackedRgb24;
 
 typedef int GraphicsTransitionTickCount;
 
 typedef int GraphicsRadiusQ12;
 
-typedef dword GameEntityCommandFlags;
+typedef uint32_t GameEntityCommandFlags;
 
-typedef dword RuntimeToken;
+typedef uint32_t RuntimeToken;
 
-typedef dword GameEntityRuntimeFlags;
+typedef uint32_t GameEntityRuntimeFlags;
 
 typedef int GameEntityCommandState;
 
-typedef dword UQ12;
+typedef uint32_t UQ12;
 
 typedef Q12 EffectMovementSpeedQ12;
 
-typedef dword EffectFrameAdvanceThresholdQ4;
+typedef uint32_t EffectFrameAdvanceThresholdQ4;
 
 typedef int TerrainGridMaskIndex;
 
@@ -2357,13 +2340,13 @@ typedef enum EffectCreationFlagBits {
     EFFECT_CREATION_USE_ARMY_PALETTE_AND_TEXTURE_SET=2
 } EffectCreationFlagBits;
 
-typedef dword EffectAlphaFadeTicks;
+typedef uint32_t EffectAlphaFadeTicks;
 
-typedef dword SpatialSoundGainQ15;
+typedef uint32_t SpatialSoundGainQ15;
 
-typedef dword SpatialSoundMaximumDistanceQ12;
+typedef uint32_t SpatialSoundMaximumDistanceQ12;
 
-typedef dword OwnedNestedResourceFlag;
+typedef uint32_t OwnedNestedResourceFlag;
 
 typedef enum ShotTrajectoryMode {
     SHOT_TRAJECTORY_DIRECT_LINE=0,
@@ -2372,37 +2355,37 @@ typedef enum ShotTrajectoryMode {
     SHOT_TRAJECTORY_LEAD_ADJUSTED=3
 } ShotTrajectoryMode;
 
-typedef dword ShotProjectileLifetimeTicks;
+typedef uint32_t ShotProjectileLifetimeTicks;
 
 typedef AngleTurn16Stored32 ShotModelSpinStepTurn16;
 
-typedef dword ShotTerrainImpactEffectOwnerSlot;
+typedef uint32_t ShotTerrainImpactEffectOwnerSlot;
 
-typedef dword ShotFrameAdvanceThresholdQ4;
+typedef uint32_t ShotFrameAdvanceThresholdQ4;
 
-typedef dword ShotAnimationFrameCount;
+typedef uint32_t ShotAnimationFrameCount;
 
 typedef int TerrainMaterialIndex;
 
-typedef dword ShotSecondaryEffectIntervalTicks;
+typedef uint32_t ShotSecondaryEffectIntervalTicks;
 
-typedef dword ShotTrajectoryRampDurationTicks;
+typedef uint32_t ShotTrajectoryRampDurationTicks;
 
-typedef dword ShotFixedRangeTransitionAgeTicks;
+typedef uint32_t ShotFixedRangeTransitionAgeTicks;
 
-typedef dword EffectLeadDisableFlag;
+typedef uint32_t EffectLeadDisableFlag;
 
-typedef dword WorldRuntimeNodeFlags;
+typedef uint32_t WorldRuntimeNodeFlags;
 
-typedef dword WorldRuntimeFlags;
+typedef uint32_t WorldRuntimeFlags;
 
-typedef dword WorldSurfaceSelectionFlags;
+typedef uint32_t WorldSurfaceSelectionFlags;
 
-typedef dword WorldObjectRecordCount;
+typedef uint32_t WorldObjectRecordCount;
 
-typedef dword WorldWorkspaceElementCount;
+typedef uint32_t WorldWorkspaceElementCount;
 
-typedef dword WorldRuntimeControlFlags;
+typedef uint32_t WorldRuntimeControlFlags;
 
 typedef enum AssetMagic {
     ASSET_MAGIC_TEC=6514036,
@@ -2422,31 +2405,31 @@ typedef enum AssetMagic {
     ASSET_MAGIC_GFX=7890535
 } AssetMagic;
 
-typedef dword AssetAllocationSizeBytes;
+typedef uint32_t AssetAllocationSizeBytes;
 
-typedef dword AssetPaletteBankCount;
+typedef uint32_t AssetPaletteBankCount;
 
-typedef dword ModelMeshGroupCount;
+typedef uint32_t ModelMeshGroupCount;
 
-typedef dword ModelPackedLookupTableRelativeOffset;
+typedef uint32_t ModelPackedLookupTableRelativeOffset;
 
-typedef dword ModelPackedLookupTableEntryCount;
+typedef uint32_t ModelPackedLookupTableEntryCount;
 
-typedef dword ModelMeshGroupRelativeOffset;
+typedef uint32_t ModelMeshGroupRelativeOffset;
 
-typedef dword ModelPackedGeometryRecordCount;
+typedef uint32_t ModelPackedGeometryRecordCount;
 
 typedef enum ModelResourceHitTestFlags {
     MODEL_RESOURCE_DISABLE_PROJECTED_HIT_TEST=4
 } ModelResourceHitTestFlags;
 
-typedef dword GameEntityCommandTargetFlags;
+typedef uint32_t GameEntityCommandTargetFlags;
 
-typedef dword TechnologyResearchDurationQ5;
+typedef uint32_t TechnologyResearchDurationQ5;
 
-typedef dword TechnologyEnergyCostQ4;
+typedef uint32_t TechnologyEnergyCostQ4;
 
-typedef dword TechnologyXeniteCostQ4;
+typedef uint32_t TechnologyXeniteCostQ4;
 
 typedef enum EffectLifecycleTransitionKind {
     EFFECT_TRANSITION_SPAWN_LINKED_EFFECT_AFTER_COUNTDOWN=0,
@@ -2456,25 +2439,25 @@ typedef enum EffectLifecycleTransitionKind {
     EFFECT_TRANSITION_ADVANCE_TERRAIN_RELATIVE_MOTION_AND_TERMINATE_ON_CONTACT=4
 } EffectLifecycleTransitionKind;
 
-typedef dword WorldInteractionFlags;
+typedef uint32_t WorldInteractionFlags;
 
-typedef dword FieldGridFlags;
+typedef uint32_t FieldGridFlags;
 
-typedef dword FieldGridRuntimeFlags;
+typedef uint32_t FieldGridRuntimeFlags;
 
-typedef dword FieldGridDimension;
+typedef uint32_t FieldGridDimension;
 
-typedef dword WorldFieldDimension;
+typedef uint32_t WorldFieldDimension;
 
-typedef dword PlayerRuntimeId;
+typedef uint32_t PlayerRuntimeId;
 
-typedef dword GraphicsTextureDimensionLog2;
+typedef uint32_t GraphicsTextureDimensionLog2;
 
-typedef dword GraphicsSubresourceIndex;
+typedef uint32_t GraphicsSubresourceIndex;
 
-typedef dword ModelChildNodeIndex;
+typedef uint32_t ModelChildNodeIndex;
 
-typedef dword AssetFormatVersion;
+typedef uint32_t AssetFormatVersion;
 
 typedef enum PckConverterVersion {
     PCK_CONVERTER_ROM_00010005=65541,
@@ -2487,7 +2470,7 @@ typedef enum PckConverterVersion {
     PCK_CONVERTER_MDL_0008000A=524298
 } PckConverterVersion;
 
-typedef dword PackedTerrainNormalAngles;
+typedef uint32_t PackedTerrainNormalAngles;
 
 typedef enum FieldCellPackedFlagsAndMaterial { 
     FIELD_CELL_MATERIAL_ID_MASK=255,
@@ -2505,19 +2488,19 @@ typedef enum FieldCellPackedFlagsAndMaterial {
     FIELD_CELL_FLUID_SOURCE_EXCLUDED=1073741824
 } FieldCellPackedFlagsAndMaterial;
 
-typedef dword FieldCellPersistedAux;
+typedef uint32_t FieldCellPersistedAux;
 
-typedef qword TerrainOccupancyMask;
+typedef uint64_t TerrainOccupancyMask;
 
-typedef dword WorldObjectAllocationFlags;
+typedef uint32_t WorldObjectAllocationFlags;
 
-typedef dword AssetSubresourceCount;
+typedef uint32_t AssetSubresourceCount;
 
-typedef dword AssetRelativeOffset;
+typedef uint32_t AssetRelativeOffset;
 
-typedef dword GraphicsTextureHandle;
+typedef uint32_t GraphicsTextureHandle;
 
-typedef dword GraphicsResourceUsageSerial;
+typedef uint32_t GraphicsResourceUsageSerial;
 
 typedef enum GraphicsTextureDownsampleShift {
     GRAPHICS_TEXTURE_DOWNSAMPLE_1X=0,
@@ -2530,15 +2513,15 @@ typedef enum GraphicsTextureResidentTmuIndex {
     GRAPHICS_TEXTURE_NOT_RESIDENT=4294967295
 } GraphicsTextureResidentTmuIndex;
 
-typedef dword GraphicsTextureMemoryAddress;
+typedef uint32_t GraphicsTextureMemoryAddress;
 
-typedef dword AssetDimension;
+typedef uint32_t AssetDimension;
 
 typedef int GraphicsPaletteIndex;
 
 typedef int GraphicsPixelOrigin;
 
-typedef dword AssetRecordByteCount;
+typedef uint32_t AssetRecordByteCount;
 
 typedef enum PckModelDefinitionIdCatalog {
     MDL_0100_UNTERBAU1=100,
@@ -2921,19 +2904,19 @@ typedef enum PckModelDefinitionIdCatalog {
     MDL_2329_BUILDING3=2329
 } PckModelDefinitionIdCatalog;
 
-typedef dword SprAttachmentPackedKey;
+typedef uint32_t SprAttachmentPackedKey;
 
-typedef sdword TH_LEGACY_HRESULT;
+typedef int32_t TH_LEGACY_HRESULT;
 
 typedef void *TH_LEGACY_LPVOID;
 
-typedef dword TH_LEGACY_ULONG;
+typedef uint32_t TH_LEGACY_ULONG;
 
-typedef dword TH_LEGACY_DWORD;
+typedef uint32_t TH_LEGACY_DWORD;
 
 typedef void *TH_LEGACY_HANDLE;
 
-typedef sdword TH_LEGACY_LONG;
+typedef int32_t TH_LEGACY_LONG;
 
 typedef int GrLOD_t;
 
@@ -2941,15 +2924,15 @@ typedef int GrAspectRatio_t;
 
 typedef int GrTextureFormat_t;
 
-typedef dword AssetPackedDate;
+typedef uint32_t AssetPackedDate;
 
-typedef dword AssetPackedTime;
+typedef uint32_t AssetPackedTime;
 
-typedef word TH_LEGACY_WORD;
+typedef uint16_t TH_LEGACY_WORD;
 
-typedef byte TH_LEGACY_BYTE;
+typedef uint8_t TH_LEGACY_BYTE;
 
-typedef sdword TH_LEGACY_BOOL;
+typedef int32_t TH_LEGACY_BOOL;
 
 typedef void *TH_LEGACY_HWND;
 
@@ -3007,9 +2990,9 @@ typedef enum D3DRENDERSTATETYPE_DX6 {
 } D3DRENDERSTATETYPE_DX6;
 
 struct ModelResourceHitTestAndRenderView210 {
-    byte reserved00_AF[176]; 
+    uint8_t reserved00_AF[176]; 
     ModelMeshGroupCount meshGroupCount; 
-    byte reservedB4_BF[12]; 
+    uint8_t reservedB4_BF[12]; 
     Q12 localBoundsX0Q12; 
     Q12 localBoundsX1Q12; 
     Q12 localBoundsY0Q12; 
@@ -3021,17 +3004,17 @@ struct ModelResourceHitTestAndRenderView210 {
     Q12 lightingScaleQ12; 
     ModelPackedLookupTableRelativeOffset packedLookupTableRelativeOffset; 
     ModelPackedLookupTableEntryCount packedLookupTableEntryCount; 
-    byte reservedEC_1FF[276]; 
+    uint8_t reservedEC_1FF[276]; 
     ModelMeshGroupRelativeOffset firstMeshGroupRelativeOffset; 
     ModelPackedGeometryRecordCount packedGeometryRecordCount; 
-    byte reserved208_20B[4]; 
+    uint8_t reserved208_20B[4]; 
     enum ModelResourceHitTestFlags hitTestFlags20C; 
 };
 
 union GameEntityDamageCounterOrTerminalReference4 {
     int countdownOrState; 
     struct GameEntityRuntime *terminalEntity; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct GrTexInfo {
@@ -3049,9 +3032,9 @@ struct GraphicsFixedVec3 {
 };
 
 struct GraphicsFixedMatrix3x4 {
-    sdword basisRow0[3]; 
-    sdword basisRow1[3]; 
-    sdword basisRow2[3]; 
+    int32_t basisRow0[3]; 
+    int32_t basisRow1[3]; 
+    int32_t basisRow2[3]; 
     struct GraphicsFixedVec3 translation; 
 };
 
@@ -3103,26 +3086,26 @@ struct IDirectDrawSurface3_Vtbl {
 };
 
 struct IDirect3DTexture2_Vtbl {
-    sdword (__stdcall *QueryInterface)(struct IDirect3DTexture2 *, struct TH_LEGACY_GUID *, void **);
-    dword (__stdcall *AddRef)(struct IDirect3DTexture2 *);
-    dword (__stdcall *Release)(struct IDirect3DTexture2 *);
-    sdword (__stdcall *GetHandle)(struct IDirect3DTexture2 *, struct IDirect3DDevice2 *, dword *);
-    sdword (__stdcall *PaletteChanged)(struct IDirect3DTexture2 *, dword, dword);
-    sdword (__stdcall *Load)(struct IDirect3DTexture2 *, struct IDirect3DTexture2 *);
+    int32_t (__stdcall *QueryInterface)(struct IDirect3DTexture2 *, struct TH_LEGACY_GUID *, void **);
+    uint32_t (__stdcall *AddRef)(struct IDirect3DTexture2 *);
+    uint32_t (__stdcall *Release)(struct IDirect3DTexture2 *);
+    int32_t (__stdcall *GetHandle)(struct IDirect3DTexture2 *, struct IDirect3DDevice2 *, uint32_t *);
+    int32_t (__stdcall *PaletteChanged)(struct IDirect3DTexture2 *, uint32_t, uint32_t);
+    int32_t (__stdcall *Load)(struct IDirect3DTexture2 *, struct IDirect3DTexture2 *);
 };
 
 struct ModelDefinitionRecordPrefix {
     AssetRecordByteCount byteSize; 
-    dword flags; 
+    uint32_t flags; 
     enum PckModelDefinitionIdCatalog definitionId; 
 };
 
 struct GameEntityTechnologyPayload {
     TechnologyResearchDurationQ5 appliedResearchDurationQ5; 
-    dword entityValue24; 
+    uint32_t entityValue24; 
     TechnologyEnergyCostQ4 energyCostQ4; // [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Energy requirement Q4 for active research. Starting research adds this demand to the research ArmyRuntime load; completion removes it. It is not Tritium stock.
     TechnologyXeniteCostQ4 xeniteCostQ4; // [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Xenite requirement Q4. Starting research pays this once from faction Xenite stock before research enters its active Energy-demand phase.
-    byte reserved14_FB[236]; 
+    uint8_t reserved14_FB[236]; 
 };
 
 struct TH_LEGACY_GUID {
@@ -3135,24 +3118,24 @@ struct TH_LEGACY_GUID {
 union EffectRuntimeOwnerReference4 {
     struct ModelRuntimeNode *modelNode; 
     struct ArmyRuntimeSlot *armyRuntime; 
-    dword serializedOffset; 
+    uint32_t serializedOffset; 
 };
 
 struct EffectRuntimeOwnerAndDefinitionState8 {
     union EffectRuntimeOwnerReference4 owner; 
-    dword runtimeValue24; 
+    uint32_t runtimeValue24; 
 };
 
 struct EffectRuntimeLifecycleState10 {
-    dword runtimeState14; 
+    uint32_t runtimeState14; 
     EffectAnimationFrameAccumulatorQ4 animationFrameAccumulatorQ4; 
     struct EffectRuntimeOwnerAndDefinitionState8 ownerAndDefinition; 
 };
 
 struct ArmyRuntimeLinkedChildSpawnParameters0C {
-    dword parameter0; 
-    dword parameter1; 
-    dword parameter2; 
+    uint32_t parameter0; 
+    uint32_t parameter1; 
+    uint32_t parameter2; 
 };
 
 struct GameEntityOwnershipState10 {
@@ -3163,61 +3146,61 @@ struct GameEntityOwnershipState10 {
 };
 
 struct D3DLIGHTINGCAPS_DX6 {
-    dword dwSize;
-    dword dwCaps;
-    dword dwLightingModel;
-    dword dwNumLights;
+    uint32_t dwSize;
+    uint32_t dwCaps;
+    uint32_t dwLightingModel;
+    uint32_t dwNumLights;
 };
 
 struct D3DPRIMCAPS_DX6 {
-    dword dwSize;
-    dword dwMiscCaps;
-    dword dwRasterCaps;
-    dword dwZCmpCaps;
-    dword dwSrcBlendCaps;
-    dword dwDestBlendCaps;
-    dword dwAlphaCmpCaps;
-    dword dwShadeCaps;
-    dword dwTextureCaps;
-    dword dwTextureFilterCaps;
-    dword dwTextureBlendCaps;
-    dword dwTextureAddressCaps;
-    dword dwStippleWidth;
-    dword dwStippleHeight;
+    uint32_t dwSize;
+    uint32_t dwMiscCaps;
+    uint32_t dwRasterCaps;
+    uint32_t dwZCmpCaps;
+    uint32_t dwSrcBlendCaps;
+    uint32_t dwDestBlendCaps;
+    uint32_t dwAlphaCmpCaps;
+    uint32_t dwShadeCaps;
+    uint32_t dwTextureCaps;
+    uint32_t dwTextureFilterCaps;
+    uint32_t dwTextureBlendCaps;
+    uint32_t dwTextureAddressCaps;
+    uint32_t dwStippleWidth;
+    uint32_t dwStippleHeight;
 };
 
 struct D3DTRANSFORMCAPS_DX6 {
-    dword dwSize;
-    dword dwCaps;
+    uint32_t dwSize;
+    uint32_t dwCaps;
 };
 
 struct D3DDEVICEDESC_DX6 {
-    dword dwSize;
-    dword dwFlags;
-    dword dcmColorModel;
-    dword dwDevCaps;
+    uint32_t dwSize;
+    uint32_t dwFlags;
+    uint32_t dcmColorModel;
+    uint32_t dwDevCaps;
     struct D3DTRANSFORMCAPS_DX6 dtcTransformCaps;
-    sdword bClipping;
+    int32_t bClipping;
     struct D3DLIGHTINGCAPS_DX6 dlcLightingCaps;
     struct D3DPRIMCAPS_DX6 dpcLineCaps;
     struct D3DPRIMCAPS_DX6 dpcTriCaps;
-    dword dwDeviceRenderBitDepth;
-    dword dwDeviceZBufferBitDepth;
-    dword dwMaxBufferSize;
-    dword dwMaxVertexCount;
-    dword dwMinTextureWidth;
-    dword dwMinTextureHeight;
-    dword dwMaxTextureWidth;
-    dword dwMaxTextureHeight;
-    dword dwMinStippleWidth;
-    dword dwMaxStippleWidth;
-    dword dwMinStippleHeight;
-    dword dwMaxStippleHeight;
+    uint32_t dwDeviceRenderBitDepth;
+    uint32_t dwDeviceZBufferBitDepth;
+    uint32_t dwMaxBufferSize;
+    uint32_t dwMaxVertexCount;
+    uint32_t dwMinTextureWidth;
+    uint32_t dwMinTextureHeight;
+    uint32_t dwMaxTextureWidth;
+    uint32_t dwMaxTextureHeight;
+    uint32_t dwMinStippleWidth;
+    uint32_t dwMaxStippleWidth;
+    uint32_t dwMinStippleHeight;
+    uint32_t dwMaxStippleHeight;
 };
 
 struct ShotDefinition {
     enum ShotTrajectoryMode trajectoryMode; // Shot trajectory selector; enum is partial.
-    dword reservedDword04; // Exact fixed dword with semantics deferred.
+    uint32_t reservedDword04; // Exact fixed dword with semantics deferred.
     enum PckShotDefinitionIdCatalog definitionId; // Shot-definition registry identifier.
     Q12 launchSpeedQ12; // Launch speed in Q12.
     struct EffectDefinition *primaryEffectDefinition; // Primary effect identifier resolved in place to EffectDefinition pointer.
@@ -3230,7 +3213,7 @@ struct ShotDefinition {
     Q12 ballisticDivisorQ12; // Ballistic divisor in Q12.
     ShotTerrainImpactEffectOwnerSlot terrainImpactEffectOwnerSlots31[31]; // Parallel 31-slot owner/address storage indexed with terrainImpactEffectDefinitions31; selected slot address is passed as effect owner argument. Element payload semantics remain opaque.
     ShotFrameAdvanceThresholdQ4 animationFrameAdvanceThresholdQ4; // SHT +0x15C compared against a +0x10 animation accumulator.
-    dword reservedDwords160_1DB[31]; // [V422_COMPOSITE_DEPENDENCY_AND_SLOT_WIDTH_CLOSURE] Exact SHT +0x160..+0x1DB 31-dword span. ShotDefinitionDisk2E0 and all 170 stock SHT records prove dword alignment; semantics deliberately unresolved.
+    uint32_t reservedDwords160_1DB[31]; // [V422_COMPOSITE_DEPENDENCY_AND_SLOT_WIDTH_CLOSURE] Exact SHT +0x160..+0x1DB 31-dword span. ShotDefinitionDisk2E0 and all 170 stock SHT records prove dword alignment; semantics deliberately unresolved.
     ShotAnimationFrameCount animationFrameCount; // SHT +0x1DC wraps projectile texture subresource animation.
     TerrainMaterialIndex terrainMaterialIndices31[31]; // Thirty-one signed terrain-material indices; negative values are sentinels, nonnegative values are bounded to loaded material texture sets.
     PackedArgb32 shadingColorArgb; // Packed shading ARGB color.
@@ -3249,27 +3232,27 @@ struct ShotDefinition {
     AngleTurn16Stored32 guidanceTurnLimitAngle16; // Nonzero signed turn-limit magnitude used as a symmetric +/- clamp for in-flight guidance angle deltas; zero disables that runtime guidance path and selects the unguided/pre-lead range checks.
     void *ownedNestedResource; // Loaded or reused nested sprite resource.
     OwnedNestedResourceFlag ownedNestedResourcePresent; // Nested-resource ownership marker.
-    word resourcePathUtf16[34]; // Fixed 34-word resource path changed to .spr during registration.
+    uint16_t resourcePathUtf16[34]; // Fixed 34-word resource path changed to .spr during registration.
 };
 
 struct WorldRuntimeSelectionState {
     PlayerRuntimeId activePlayerRuntimeId; // Selection-player runtime used to index the local selection block table.
-    byte reserved04_1F[28]; // Unresolved selection and overlay state.
+    uint8_t reserved04_1F[28]; // Unresolved selection and overlay state.
     struct GameEntityRuntime *selectedEntity; // Current selected entity cleared during destruction and replaced by context-action resolution.
-    void (*dispatchCommandCallback)(dword, dword, struct WorldRuntimeContext *);
-    dword (*resolveContextActionPrimaryCallback)(dword, dword, dword, dword, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
-    dword (*resolveContextActionSecondaryCallback)(dword, dword, dword, dword, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
-    void (*beginPointerCaptureCallback)(dword, dword, dword, dword, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
-    void (*updateDragSelectionCallback)(dword, dword, dword, dword, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
-    void (*commitPointerActionCallback)(dword, dword, dword, dword, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
+    void (*dispatchCommandCallback)(uint32_t, uint32_t, struct WorldRuntimeContext *);
+    uint32_t (*resolveContextActionPrimaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
+    uint32_t (*resolveContextActionSecondaryCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
+    void (*beginPointerCaptureCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
+    void (*updateDragSelectionCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
+    void (*commitPointerActionCallback)(uint32_t, uint32_t, uint32_t, uint32_t, struct WorldOwnerListNode100 *, struct WorldRuntimeContext *);
     void (*dispatchWorldContextActionCallback)(struct WorldRuntimeContext *);
-    dword reservedCallbackState40; // Observed callback-table tail state; semantic meaning remains deferred.
+    uint32_t reservedCallbackState40; // Observed callback-table tail state; semantic meaning remains deferred.
 };
 
 union EffectModelNodeReferenceOrSavedOffset4 {
     struct ModelRuntimeNode *modelNode; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 struct WorldMotionState {
@@ -3279,7 +3262,7 @@ struct WorldMotionState {
     UQ12 positionMagnitudeQ12; 
     AngleTurn32 headingAngle; 
     AngleTurn32 pitchAngle; 
-    dword motionValue78; 
+    uint32_t motionValue78; 
     UQ12 committedDistanceQ12; 
     Q12 targetPositionXQ12; 
     Q12 targetPositionYQ12; 
@@ -3311,13 +3294,13 @@ struct WorldLightingState {
 };
 
 struct WorldRuntimeInteractionState {
-    byte reserved00_47[72]; 
+    uint8_t reserved00_47[72]; 
     WorldInteractionFlags interactionFlags48; 
 };
 
 struct WorldFieldRegionState {
     void (*clearTransientStateCallback)(struct WorldRuntimeContext *); 
-    dword reservedCallbackState04; 
+    uint32_t reservedCallbackState04; 
     WorldFieldDimension regionWidth; 
     WorldFieldDimension regionHeight; 
 };
@@ -3345,15 +3328,15 @@ struct IDirect3DViewport2_Vtbl {
 
 union ModelRuntimeArmyLinkOrState4 {
     struct ArmyRuntimeSlot *armyRuntime; 
-    dword classState; 
-    dword serializedOffset; 
+    uint32_t classState; 
+    uint32_t serializedOffset; 
 };
 
 union ArmyRuntimeCoordinateCommandOrHistoryValue4 {
     int signedValue; 
     Q12 coordinateOrTargetQ12; 
     AngleTurn32 headingOrTurnValue; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct IDirect3DDevice2 {
@@ -3363,9 +3346,9 @@ struct IDirect3DDevice2 {
 struct GraphicsAdapterRecord {
     struct TH_LEGACY_GUID adapterGuid; 
     struct TH_LEGACY_GUID deviceGuid; 
-    word driverDescriptionUtf16[21]; 
-    word deviceNameUtf16[21]; 
-    dword reserved74; 
+    uint16_t driverDescriptionUtf16[21]; 
+    uint16_t deviceNameUtf16[21]; 
+    uint32_t reserved74; 
     struct D3DDEVICEDESC_DX6 *hardwareDesc; 
     struct D3DDEVICEDESC_DX6 *softwareDesc; 
 };
@@ -3374,8 +3357,8 @@ union ResourceRegistrationRuntimePayloadReference4 {
     struct ArmyRuntimeSlot *armyRuntime;
     struct EffectRuntimeSlot *effectRuntime;
     struct ShotRuntimeSlot *shotRuntime;
-    dword savedOffset;
-    dword raw;
+    uint32_t savedOffset;
+    uint32_t raw;
 };
 
 struct DDCOLORKEY {
@@ -3391,37 +3374,37 @@ struct ModelAttachmentTransformRecord {
 };
 
 struct WorldObjectRecordCommon {
-    byte reserved00_07[8]; 
+    uint8_t reserved00_07[8]; 
     struct WorldRuntimeContext *ownerWorld; 
-    byte reserved0C_4B[64]; 
+    uint8_t reserved0C_4B[64]; 
     WorldObjectAllocationFlags allocationFlags; 
 };
 
 struct WorldObjectRecord {
     struct WorldObjectRecordCommon common; 
-    byte classPayload[176]; 
+    uint8_t classPayload[176]; 
 };
 
 struct GameEntityImpactOwnerLinksPayloadFC {
-    byte reserved00_3B[60]; 
+    uint8_t reserved00_3B[60]; 
     struct ArmyRuntimeSlot *primaryImpactArmyRuntime; 
-    byte reserved40_5B[28]; 
+    uint8_t reserved40_5B[28]; 
     struct ArmyRuntimeSlot *secondaryImpactArmyRuntime; 
-    byte reserved60_FB[156]; 
+    uint8_t reserved60_FB[156]; 
 };
 
 union GameEntityRuntimeClassPayload {
-    byte opaque[252]; 
+    uint8_t opaque[252]; 
     struct GameEntityTechnologyPayload technology; 
     struct GameEntityImpactOwnerLinksPayloadFC impactOwnerLinks; 
 };
 
 struct GameEntityImpactReactionBytes8 {
-    byte state08; 
-    byte reactionCode09; 
-    byte state0A; 
-    byte state0B; 
-    byte reserved0C_0F[4]; 
+    uint8_t state08; 
+    uint8_t reactionCode09; 
+    uint8_t state0A; 
+    uint8_t state0B; 
+    uint8_t reserved0C_0F[4]; 
 };
 
 struct GameEntityPathingReferenceState8 {
@@ -3435,10 +3418,10 @@ struct GameEntityPathingAndImpactState10 {
 };
 
 struct GameEntityDamageState2C {
-    dword reserved00; // Unresolved damage-state prefix.
+    uint32_t reserved00; // Unresolved damage-state prefix.
     union GameEntityDamageCounterOrTerminalReference4 counterOrTerminalReference; // Movement countdown/state or terminal entity reference selected by the active path.
     int remainingIntegrity; // Impact-subtracted integrity clamped against definition maximum.
-    byte reserved0C_23[24]; // Unresolved damage/relation bytes; includes the still-unresolved +0x1C relation/eligibility word.
+    uint8_t reserved0C_23[24]; // Unresolved damage/relation bytes; includes the still-unresolved +0x1C relation/eligibility word.
     Q12 trackedCoordinate0Q12; // First machine-proven tracked coordinate mirrored from pathCoordinate0Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
     Q12 trackedCoordinate1Q12; // Second machine-proven tracked coordinate mirrored from pathCoordinate1Q12/model transform; neutral axis name retained because callers disagree on X/Y naming.
 };
@@ -3454,21 +3437,21 @@ struct GameEntityCommandTargetState {
 
 struct GameEntityRuntimeCommon {
     struct GameEntityOwnershipState10 ownership; // Definition, model, runtime-link, and owner prefix.
-    byte reserved10_17[8]; // Unresolved common state.
+    uint8_t reserved10_17[8]; // Unresolved common state.
     GameEntityCommandFlags commandFlags; // Selection-command and transient flags.
     struct GameEntityCommandTargetState commandTarget; // Typed entity command-target state used by target resolution, routing, shot aiming, and selection commands.
     struct GameEntityDamageState2C damageState; // Impact-mutated integrity and terminal entity state.
     Q12 selectionOffsetXQ12; // Selection-relative X offset.
     Q12 selectionOffsetYQ12; // Selection-relative Y offset.
-    byte reserved68_77[16]; // Unresolved common entity state before the tracked-coordinate pair.
+    uint8_t reserved68_77[16]; // Unresolved common entity state before the tracked-coordinate pair.
     Q12 trackedCoordinate0Q12; // First machine-proven tracked coordinate mirrored with path/model coordinate 0.
     Q12 trackedCoordinate1Q12; // Second machine-proven tracked coordinate mirrored with path/model coordinate 1.
-    byte reserved80_9F[32]; // Unresolved common entity state after the tracked-coordinate pair.
+    uint8_t reserved80_9F[32]; // Unresolved common entity state after the tracked-coordinate pair.
     RuntimeToken runtimeIdentityOrArmyAssetId; // Runtime identity or army asset identifier.
-    byte reservedA4_B7[20]; // Unresolved prefix retained.
+    uint8_t reservedA4_B7[20]; // Unresolved prefix retained.
     Q12 pathCoordinate0Q12; // First stored path/aim coordinate, consumed by AI distance, shot aim and overlay routines; axis naming differs between callers.
     Q12 pathCoordinate1Q12; // Second stored path/aim coordinate; paired with +0xB8.
-    byte reservedC0_EB[44]; // Remaining path state not subdivided.
+    uint8_t reservedC0_EB[44]; // Remaining path state not subdivided.
     GameEntityRuntimeFlags runtimeFlags; // Runtime eligibility and lifecycle flags.
     struct GameEntityPathingAndImpactState10 pathingAndImpactState; // Pathing-reference prefix plus impact-reaction tail.
     GameEntityCommandState commandState; // Signed command/state value.
@@ -3481,13 +3464,13 @@ struct GameEntityRuntime {
 
 union ArmyRuntimeReferenceOrSavedOffset4 {
     struct ArmyRuntimeSlot *armyRuntime; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 struct AssetProducerSourceNames {
-    word producerName[32];
-    word sourceName[32];
+    uint16_t producerName[32];
+    uint16_t sourceName[32];
 };
 
 struct AssetBuildTimestampSet {
@@ -3501,7 +3484,7 @@ struct AssetBuildTimestampSet {
 
 struct GeneratedAssetBuildMetadata {
     struct AssetBuildTimestampSet timestamps;
-    byte assetRelativeAddressAnchor28[8]; 
+    uint8_t assetRelativeAddressAnchor28[8]; 
     struct AssetProducerSourceNames names;
 };
 
@@ -3520,8 +3503,8 @@ struct ArmyRuntimeMovementControlState {
 
 union ArmyRuntimeContactRadiusOrLinkedSlotMask4 {
     UQ12 contactRadiusQ12; 
-    dword linkedChildSlotMask; 
-    dword raw; 
+    uint32_t linkedChildSlotMask; 
+    uint32_t raw; 
 };
 
 struct ArmyRuntimeArticulatedContactState14 {
@@ -3533,10 +3516,10 @@ struct ArmyRuntimeArticulatedContactState14 {
 };
 
 struct ArmyRuntimeLinkedChildPendingCounts4 {
-    byte slot0; 
-    byte slot1; 
-    byte slot2; 
-    byte reserved03; 
+    uint8_t slot0; 
+    uint8_t slot1; 
+    uint8_t slot2; 
+    uint8_t reserved03; 
 };
 
 struct ArmyRuntimeLinkedChildOverloadedState10 {
@@ -3554,9 +3537,9 @@ struct GraphicsPaletteAssetEntry {
 struct GraphicsPaletteAsset {
     enum AssetMagic magic;
     AssetAllocationSizeBytes allocationSizeBytes;
-    byte reserved08_AF[168];
+    uint8_t reserved08_AF[168];
     AssetPaletteBankCount paletteBankCount;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
     struct GraphicsPaletteAssetEntry paletteEntries[1];
 };
 
@@ -3582,14 +3565,14 @@ struct GraphicsTextureResource {
 union ShotDefinitionReferenceOrSavedId4 {
     struct ShotDefinition *definition; 
     enum PckShotDefinitionIdCatalog savedId; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct IDirect3D2_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirect3D2 *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
     TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirect3D2 *);
     TH_LEGACY_ULONG (__stdcall *Release)(struct IDirect3D2 *);
-    sdword (__stdcall *EnumDevices)(struct IDirect3D2 *, sdword (__stdcall *)(struct TH_LEGACY_GUID *, char *, char *, struct D3DDEVICEDESC_DX6 *, struct D3DDEVICEDESC_DX6 *, struct GraphicsAdapterRecord *), struct GraphicsAdapterRecord *); 
+    int32_t (__stdcall *EnumDevices)(struct IDirect3D2 *, int32_t (__stdcall *)(struct TH_LEGACY_GUID *, char *, char *, struct D3DDEVICEDESC_DX6 *, struct D3DDEVICEDESC_DX6 *, struct GraphicsAdapterRecord *), struct GraphicsAdapterRecord *); 
     TH_LEGACY_HRESULT (__stdcall *CreateLight)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *CreateMaterial)(struct IDirect3D2 *, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *CreateViewport)(struct IDirect3D2 *, struct IDirect3DViewport2 **, TH_LEGACY_LPVOID);
@@ -3603,8 +3586,8 @@ struct IDirectDrawSurface {
 
 union ModelRuntimeSlotLinkOrState4 {
     struct ModelRuntimeSlot *modelRuntime; // Class-selected model-runtime link.
-    dword classState; // Class-selected scalar state.
-    dword serializedOffset; // Saved model-pool offset.
+    uint32_t classState; // Class-selected scalar state.
+    uint32_t serializedOffset; // Saved model-pool offset.
     int signedScalarState; // Signed 32-bit scalar interpretation for polymorphic class state when machine code performs arithmetic, signed comparison, or class-index use rather than pointer dereference.
 };
 
@@ -3617,7 +3600,7 @@ struct IDirectDraw_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    sdword (__stdcall *EnumDisplayModes)(struct IDirectDraw *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (__stdcall *)(struct DDSURFACEDESC_DX6 *, dword)); 
+    int32_t (__stdcall *EnumDisplayModes)(struct IDirectDraw *, uint32_t, struct DDSURFACEDESC_DX6 *, uint32_t, int32_t (__stdcall *)(struct DDSURFACEDESC_DX6 *, uint32_t)); 
     TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw *);
     TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
@@ -3641,45 +3624,45 @@ struct GraphicsTextureSetEntry {
     struct GraphicsTextureSourceAsset *sourceAsset; 
     struct GraphicsTextureSourceEntry *sourceEntry; 
     GraphicsSubresourceIndex subresourceIndex; 
-    dword reserved18; 
-    dword reserved1C; 
+    uint32_t reserved18; 
+    uint32_t reserved1C; 
 };
 
 struct ModelRuntimeSlotClassState7C {
-    byte reserved84_A7[36]; // Unresolved class-specific state.
-    dword classStateA8; // Class-discriminated runtime state.
-    dword classStateAC; // Class-discriminated runtime state.
-    sdword classStateB0; // Class-discriminated signed runtime state.
-    sdword classStateB4; // Class-discriminated signed runtime state.
-    dword classStateB8; // Class-discriminated runtime flags or value.
-    byte reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
-    dword classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
-    byte reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
-    dword classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
-    byte reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
-    sdword classStateD0; // Class-discriminated signed runtime state.
-    byte reservedD4_DB[8]; // Unresolved class-specific state.
-    dword classStateDC; // Class-discriminated runtime state.
-    dword classStateE0; // Class-discriminated runtime state.
-    dword enabledStateE4; // Constructor-initialized enabled state.
-    dword enabledStateE8; // Constructor-initialized enabled state or sentinel.
-    dword classStateEC; // Constructor-cleared class state.
+    uint8_t reserved84_A7[36]; // Unresolved class-specific state.
+    uint32_t classStateA8; // Class-discriminated runtime state.
+    uint32_t classStateAC; // Class-discriminated runtime state.
+    int32_t classStateB0; // Class-discriminated signed runtime state.
+    int32_t classStateB4; // Class-discriminated signed runtime state.
+    uint32_t classStateB8; // Class-discriminated runtime flags or value.
+    uint8_t reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
+    uint32_t classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
+    uint8_t reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
+    uint32_t classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
+    uint8_t reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
+    int32_t classStateD0; // Class-discriminated signed runtime state.
+    uint8_t reservedD4_DB[8]; // Unresolved class-specific state.
+    uint32_t classStateDC; // Class-discriminated runtime state.
+    uint32_t classStateE0; // Class-discriminated runtime state.
+    uint32_t enabledStateE4; // Constructor-initialized enabled state.
+    uint32_t enabledStateE8; // Constructor-initialized enabled state or sentinel.
+    uint32_t classStateEC; // Constructor-cleared class state.
     union ArmyRuntimeReferenceOrSavedOffset4 linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
-    dword definitionDerivedValueF4; // Definition-derived class value.
-    dword classStateF8; // Constructor-cleared class state.
-    dword classStateFC; // Constructor-cleared class state.
+    uint32_t definitionDerivedValueF4; // Definition-derived class value.
+    uint32_t classStateF8; // Constructor-cleared class state.
+    uint32_t classStateFC; // Constructor-cleared class state.
 };
 
 struct ModelRuntimeClassLinkState24 {
     union ModelRuntimeSlotLinkOrState4 modelLinkOrState60; 
-    dword classState64; 
-    dword classState68; 
+    uint32_t classState64; 
+    uint32_t classState68; 
     union ModelRuntimeArmyLinkOrState4 armyLinkOrState6C; 
-    dword classState70; 
-    dword classState74; 
-    dword classState78; 
-    dword classState7C; 
-    dword classState80; 
+    uint32_t classState70; 
+    uint32_t classState74; 
+    uint32_t classState78; 
+    uint32_t classState7C; 
+    uint32_t classState80; 
 };
 
 struct ShotRuntimeOwnerAndTrajectoryLiveState18 {
@@ -3693,21 +3676,21 @@ struct ShotRuntimeOwnerAndTrajectoryLiveState18 {
 
 union ShotModelNodeReferenceOrSavedOffset4 {
     struct ModelRuntimeNode *modelNode; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 union ShotModelRuntimeStateOrSavedOffset4 {
-    dword runtimeState; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t runtimeState; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
     void *runtimeStatePointer; 
 };
 
 struct ShotRuntimeSlot {
     union ShotDefinitionReferenceOrSavedId4 definitionOrSavedId; 
     Q12 launchSpeedQ12; 
-    dword terrainRuntimeClassState; 
+    uint32_t terrainRuntimeClassState; 
     ShotAnimationFrameAccumulatorQ4 animationFrameAccumulatorQ4; 
     union ShotModelNodeReferenceOrSavedOffset4 modelNodeOrSavedOffset; 
     union ShotModelRuntimeStateOrSavedOffset4 runtimeStateOrSavedOffset; 
@@ -3730,7 +3713,7 @@ struct WorldRuntimeNodeCommon {
 
 struct EffectDefinitionTransitionPrefix8 {
     enum EffectLifecycleTransitionKind transitionKind; 
-    dword reserved04; 
+    uint32_t reserved04; 
 };
 
 struct EffectDefinition {
@@ -3742,7 +3725,7 @@ struct EffectDefinition {
     DefinitionReferencePresentFlag linkedShotPresent; 
     struct ShotDefinition *linkedShotDefinition; 
     EffectMovementSpeedQ12 movementSpeedQ12; 
-    dword runtimeValue24; 
+    uint32_t runtimeValue24; 
     EffectFrameAdvanceThresholdQ4 frameAdvanceThresholdQ4; 
     TerrainGridMaskIndex terrainGridMaskIndex; 
     enum EffectCreationFlagBits creationFlags; 
@@ -3755,8 +3738,8 @@ struct EffectDefinition {
     EffectPeriodicIntervalTicks periodicEffectIntervalTicks; 
     EffectAlphaFadeTicks alphaFadeInTicks; 
     EffectAlphaFadeTicks alphaFadeOutTicks; 
-    dword unknown58; 
-    dword unknown5C; 
+    uint32_t unknown58; 
+    uint32_t unknown5C; 
     PackedArgb32 stateTintArgb; 
     Q12 modelScaleStartQ12; 
     Q12 modelScaleEndQ12; 
@@ -3764,7 +3747,7 @@ struct EffectDefinition {
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; 
     void *ownedNestedResource; 
     OwnedNestedResourceFlag ownedNestedResourcePresent; 
-    word resourcePathUtf16[34]; 
+    uint16_t resourcePathUtf16[34]; 
 };
 
 union ModelRuntimePayloadReference4 {
@@ -3773,7 +3756,7 @@ union ModelRuntimePayloadReference4 {
     struct EffectRuntimeSlot *effectRuntime; 
     struct ShotRuntimeSlot *shotRuntime; 
     void *opaqueRuntime; 
-    dword savedOffsetOrRaw; 
+    uint32_t savedOffsetOrRaw; 
 };
 
 struct WorldRuntimeNodeModelPayload {
@@ -3788,7 +3771,7 @@ struct WorldRuntimeNodeModelPayload {
     AngleTurn32 localRotationAngle2; 
     struct GraphicsPaletteAsset *paletteAsset; 
     struct GraphicsTextureSet *textureSet; 
-    byte reserved2C_33[8]; 
+    uint8_t reserved2C_33[8]; 
     struct ModelResourceHitTestAndRenderView210 *modelResource; 
     ModelMeshGroupMask meshGroupMask; 
 };
@@ -3807,7 +3790,7 @@ struct ModelRuntimeNode {
     ModelTextureOffsetTexel primaryTextureOffsetU; 
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
-    dword runtimeStateA0; 
+    uint32_t runtimeStateA0; 
     enum WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
@@ -3817,14 +3800,14 @@ struct ModelRuntimeNode {
     int renderDepthBiasOrState; 
     Q12 modelScaleQ12; 
     struct ModelRuntimeNode *parentNode; 
-    dword childCount; 
+    uint32_t childCount; 
     struct ModelRuntimeNode *childNodes[13]; 
 };
 
 union ModelRuntimeNodeReferenceOrSavedOffset4 {
     struct ModelRuntimeNode *modelNode; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 struct ModelRuntimeAttachmentDescriptor {
@@ -3835,19 +3818,19 @@ struct ModelRuntimeAttachmentDescriptor {
     AngleTurn32 childLocalRotationAngle0; 
     AngleTurn32 childLocalRotationAngle1; 
     AngleTurn32 childLocalRotationAngle2; 
-    dword reserved1C; 
+    uint32_t reserved1C; 
 };
 
 union ModelDefinitionReferenceOrSavedId4 {
     struct ModelDefinitionRecordPrefix *definition; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 union ModelRuntimeSlotReferenceOrSavedOffset4 {
     struct ModelRuntimeSlot *modelRuntime; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 struct ArmyRuntimeSlot {
@@ -3866,44 +3849,44 @@ struct ArmyRuntimeSlot {
     Q12 actionVector0Q12; // Committed V218d army runtime field.
     Q12 actionVector1Q12; // Committed V218d army runtime field.
     Q12 actionVector2Q12; // Committed V218d army runtime field.
-    dword runtimeState40; // Committed V218d army runtime field.
-    dword runtimeState44; // Committed V218d army runtime field.
-    dword runtimeState48; // Committed V218d army runtime field.
-    dword runtimeState4C; // Committed V218d army runtime field.
+    uint32_t runtimeState40; // Committed V218d army runtime field.
+    uint32_t runtimeState44; // Committed V218d army runtime field.
+    uint32_t runtimeState48; // Committed V218d army runtime field.
+    uint32_t runtimeState4C; // Committed V218d army runtime field.
     FieldGridRegionMask terrainOccupancyMask0; // First mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     FieldGridRegionMask terrainOccupancyMask1; // Second mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     Q12 movementPosition0Q12; // Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Committed V218d army runtime field.
-    dword classState60; // Committed V218d army runtime field.
-    dword ownerValue64; // Committed V218d army runtime field.
-    dword ownerValue68; // Committed V218d army runtime field.
+    uint32_t classState60; // Committed V218d army runtime field.
+    uint32_t ownerValue64; // Committed V218d army runtime field.
+    uint32_t ownerValue68; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Committed V218d army runtime field.
     Q12 movementTarget1Q12; // Committed V218d army runtime field.
-    dword definitionClassValue80; // Committed V218d army runtime field.
-    dword definitionClassValue84; // Committed V218d army runtime field.
-    dword definitionClassValue88; // Committed V218d army runtime field.
-    dword runtimeState8C; // Committed V218d army runtime field.
-    dword runtimeState90; // Committed V218d army runtime field.
-    dword runtimeState94; // Committed V218d army runtime field.
-    dword runtimeState98; // Committed V218d army runtime field.
+    uint32_t definitionClassValue80; // Committed V218d army runtime field.
+    uint32_t definitionClassValue84; // Committed V218d army runtime field.
+    uint32_t definitionClassValue88; // Committed V218d army runtime field.
+    uint32_t runtimeState8C; // Committed V218d army runtime field.
+    uint32_t runtimeState90; // Committed V218d army runtime field.
+    uint32_t runtimeState94; // Committed V218d army runtime field.
+    uint32_t runtimeState98; // Committed V218d army runtime field.
     enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
     enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
-    dword runtimeStateA4; // Committed V218d army runtime field.
-    dword runtimeStateA8; // Committed V218d army runtime field.
+    uint32_t runtimeStateA4; // Committed V218d army runtime field.
+    uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; // Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; // Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; // Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; // Three independently decremented pending child counters.
-    byte reservedE0_EB[12]; // Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
-    byte reservedF8_FF[8]; // Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     int stateOrTechnologyId; // Committed V218d army runtime field.
-    dword runtimeState104; // Committed V218d army runtime field.
+    uint32_t runtimeState104; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
@@ -3916,29 +3899,29 @@ struct ModelRuntimeSlot {
     union ModelDefinitionReferenceOrSavedId4 definitionOrSavedId; 
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; 
     union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; 
-    dword attachmentCount0C; 
-    byte reserved10_37[40]; 
+    uint32_t attachmentCount0C; 
+    uint8_t reserved10_37[40]; 
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; 
-    dword definitionValue60_3C; 
-    dword definitionValue84_40; 
-    dword definitionValue88_44; 
-    dword definitionValue94_48; 
-    dword definitionValue9C_4C; 
-    dword definitionValueA4_50; 
-    dword definitionValueAC_54; 
-    dword definitionValueB4_58; 
-    dword definitionValueBC_5C; 
+    uint32_t definitionValue60_3C; 
+    uint32_t definitionValue84_40; 
+    uint32_t definitionValue88_44; 
+    uint32_t definitionValue94_48; 
+    uint32_t definitionValue9C_4C; 
+    uint32_t definitionValueA4_50; 
+    uint32_t definitionValueAC_54; 
+    uint32_t definitionValueB4_58; 
+    uint32_t definitionValueBC_5C; 
     struct ModelRuntimeClassLinkState24 classLinkState; 
     struct ModelRuntimeSlotClassState7C classState; 
-    byte reserved100_117[24]; 
-    dword classState118; 
-    dword classState11C; 
-    byte reserved120_13F[32]; 
+    uint8_t reserved100_117[24]; 
+    uint32_t classState118; 
+    uint32_t classState11C; 
+    uint8_t reserved120_13F[32]; 
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; 
 };
 
 union WorldRuntimeNodePayload {
-    byte opaque[60]; 
+    uint8_t opaque[60]; 
     struct WorldRuntimeNodeModelPayload model; 
 };
 
@@ -3994,14 +3977,14 @@ struct IDirect3DDevice2_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *Vertex)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *Index)(struct IDirect3DDevice2 *, TH_LEGACY_WORD);
     TH_LEGACY_HRESULT (__stdcall *End)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD);
-    sdword (__stdcall *GetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword *); 
-    sdword (__stdcall *SetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, dword); 
+    int32_t (__stdcall *GetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, uint32_t *); 
+    int32_t (__stdcall *SetRenderState)(struct IDirect3DDevice2 *, enum D3DRENDERSTATETYPE_DX6, uint32_t); 
     TH_LEGACY_HRESULT (__stdcall *GetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD *);
     TH_LEGACY_HRESULT (__stdcall *SetLightState)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
     TH_LEGACY_HRESULT (__stdcall *SetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *GetTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *MultiplyTransform)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID);
-    sdword (__stdcall *DrawPrimitive)(struct IDirect3DDevice2 *, dword, dword, struct D3DTLVERTEX_DX6 *, dword, dword); 
+    int32_t (__stdcall *DrawPrimitive)(struct IDirect3DDevice2 *, uint32_t, uint32_t, struct D3DTLVERTEX_DX6 *, uint32_t, uint32_t); 
     TH_LEGACY_HRESULT (__stdcall *DrawIndexedPrimitive)(struct IDirect3DDevice2 *, TH_LEGACY_DWORD, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_DWORD, TH_LEGACY_WORD *, TH_LEGACY_DWORD, TH_LEGACY_DWORD);
     TH_LEGACY_HRESULT (__stdcall *SetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *GetClipStatus)(struct IDirect3DDevice2 *, TH_LEGACY_LPVOID);
@@ -4026,8 +4009,8 @@ struct D3DTLVERTEX_DX6 {
     float sy;
     float sz;
     float rhw;
-    dword color;
-    dword specular;
+    uint32_t color;
+    uint32_t specular;
     float tu;
     float tv;
 };
@@ -4118,7 +4101,7 @@ struct DDSURFACEDESC_DX6 {
 union EffectDefinitionReferenceOrSavedId4 {
     struct EffectDefinition *definition; 
     enum PckEffectDefinitionIdCatalog savedId; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct GraphicsShadingRuntimeRecord {
@@ -4126,12 +4109,12 @@ struct GraphicsShadingRuntimeRecord {
     GraphicsWorldCoordinateQ12 worldYQ12; 
     GraphicsWorldCoordinateQ12 worldZQ12; 
     PackedRgb24 packedColorRgbActive; 
-    qword squaredRadiusQ24; 
+    uint64_t squaredRadiusQ24; 
     GraphicsTransitionTickCount radiusTransitionDurationTicks; 
     GraphicsTransitionTickCount radiusTransitionElapsedTicks; 
     GraphicsRadiusQ12 targetRadiusQ12; 
-    byte opaque24_3B[24]; 
-    dword serializationToggleDword; 
+    uint8_t opaque24_3B[24]; 
+    uint32_t serializationToggleDword; 
 };
 
 struct IDirectDrawSurface3 {
@@ -4149,31 +4132,31 @@ struct EffectRuntimeSlot {
     EffectShadingCountdownTicks shadingStartCountdownTicksRemaining; 
     EffectShadingCountdownTicks shadingStopCountdownTicksRemaining; 
     EffectPeriodicIntervalTicks periodicEffectCountdownTicks; 
-    dword terrainRuntimeClassState; 
+    uint32_t terrainRuntimeClassState; 
     PackedArgb32 stateTintArgb; 
     EffectAgeTicks effectAgeTicks; 
 };
 
 struct GraphicsTextureSet {
     struct GraphicsTextureSourceAsset *sourceAsset; 
-    dword subresourceCount; 
+    uint32_t subresourceCount; 
     struct GraphicsTextureSetEntry entries[1]; 
 };
 
 struct GraphicsTextureSourceAsset {
     struct GeneratedAssetCommonPrefix common; 
     struct GraphicsTextureSourceTableDescriptor tableDescriptor; 
-    byte opaqueTablePayloadBC_1FF[324]; 
+    uint8_t opaqueTablePayloadBC_1FF[324]; 
 };
 
 struct UiCommandPayloadTriple12 {
-    dword payloadDword04; 
-    dword payloadDword08; 
-    dword payloadDword0C; 
+    uint32_t payloadDword04; 
+    uint32_t payloadDword08; 
+    uint32_t payloadDword0C; 
 };
 
 union UiCommandPayloadTextBatch48 {
-    byte textBytes[48]; 
+    uint8_t textBytes[48]; 
     struct UiCommandPayloadTriple12 triples[4]; 
 };
 
@@ -4182,9 +4165,9 @@ enum /* NetworkAddressFamily, stored in 2 byte(s) */ {
     NETWORK_ADDRESS_FAMILY_IPV4=2,
     NETWORK_ADDRESS_FAMILY_IPX=6
 };
-typedef word NetworkAddressFamily;
+typedef uint16_t NetworkAddressFamily;
 
-typedef word NetworkPortNetworkOrder;
+typedef uint16_t NetworkPortNetworkOrder;
 
 struct NetworkEndpointFamilyPortFields4 {
     NetworkAddressFamily addressFamily; 
@@ -4193,28 +4176,28 @@ struct NetworkEndpointFamilyPortFields4 {
 
 union NetworkEndpointAddressHeader4 {
     struct NetworkEndpointFamilyPortFields4 fields; 
-    dword packedFamilyAndPort; 
+    uint32_t packedFamilyAndPort; 
 };
 
-typedef dword PckHuffmanFrequencyCount;
+typedef uint32_t PckHuffmanFrequencyCount;
 
-typedef dword PckHuffmanPackedCodeAndBitLength;
+typedef uint32_t PckHuffmanPackedCodeAndBitLength;
 
 union PckHuffmanSymbolState {
     PckHuffmanFrequencyCount frequencyCount; 
     PckHuffmanPackedCodeAndBitLength packedCodeAndBitLength; 
 };
 
-typedef dword AssetRegistryId;
+typedef uint32_t AssetRegistryId;
 
-typedef dword AssetRecordCount;
+typedef uint32_t AssetRecordCount;
 
-typedef dword SpriteAssetId;
+typedef uint32_t SpriteAssetId;
 
 union SpriteAssetReferenceOrSavedId4 {
     struct SpriteAssetHeader *spriteAsset; // Live relocated sprite pointer.
     AssetRegistryId savedId; // Serialized sprite registry id.
-    dword raw; // Raw exact dword view.
+    uint32_t raw; // Raw exact dword view.
     struct ModelResourceHitTestAndRenderView210 *modelResource; // typed model/render view of relocated sprite asset pointer
 };
 
@@ -4227,27 +4210,27 @@ struct GeneratedAssetRegistryHeader {
 
 struct SpriteAssetHeader {
     struct GeneratedAssetRegistryHeader registryHeader;
-    byte reservedBC_1FF[324];
+    uint8_t reservedBC_1FF[324];
 };
 
 union Utf16DecimalDigitPair4 {
-    word codeUnits[2]; 
-    dword packedDigits; 
+    uint16_t codeUnits[2]; 
+    uint32_t packedDigits; 
 };
 
 union WidePathBuffer256 {
-    word codeUnits[256]; 
-    dword firstTwoCodeUnits; 
+    uint16_t codeUnits[256]; 
+    uint32_t firstTwoCodeUnits; 
 };
 
 typedef int FrontendDisplayAdapterIndex;
 
-typedef dword FrontendDisplayDimensionPixels;
+typedef uint32_t FrontendDisplayDimensionPixels;
 
-typedef dword FrontendColorDepthBits;
+typedef uint32_t FrontendColorDepthBits;
 
 struct FrontendTaskAssignmentGeneratedFactionTextRow50 {
-    word textUtf16[40]; 
+    uint16_t textUtf16[40]; 
 };
 
 struct FrontendDisplayModePersistentSelection10 {
@@ -4258,20 +4241,20 @@ struct FrontendDisplayModePersistentSelection10 {
 };
 
 union FrontendDisplayModeScratch28 {
-    dword bitsPerPixelCandidates4[4]; 
-    dword packedResolutionCandidates10[10]; 
-    dword rawDwords[10]; 
+    uint32_t bitsPerPixelCandidates4[4]; 
+    uint32_t packedResolutionCandidates10[10]; 
+    uint32_t rawDwords[10]; 
 };
 
 struct FrontendDisplayModeEnumerationState280 {
     union FrontendDisplayModeScratch28 candidates; 
-    byte reserved0028_003F[24]; 
+    uint8_t reserved0028_003F[24]; 
     struct FrontendDisplayModePersistentSelection10 persistentSelection; 
-    byte reserved0050_027F[560]; 
+    uint8_t reserved0050_027F[560]; 
 };
 
 struct FrontendDisplayModeCandidateScratch28 {
-    dword candidateValues10[10]; 
+    uint32_t candidateValues10[10]; 
 };
 
 struct FrontendTaskAssignmentGeneratedFactionTextState280 {
@@ -4282,30 +4265,30 @@ union FrontendUiSemanticScratch280 {
     struct FrontendDisplayModeCandidateScratch28 displayModeScratch; 
     struct FrontendTaskAssignmentGeneratedFactionTextState280 taskAssignmentText; 
     struct FrontendDisplayModeEnumerationState280 displayEnumeration; 
-    byte raw[640]; 
+    uint8_t raw[640]; 
 };
 
-typedef qword ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64;
+typedef uint64_t ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64;
 
 typedef int FieldGridCellCoordinate;
 
 struct GridPathNearestCellCfRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
     FieldGridCellCoordinate selectedRow; 
-    dword preservedEdxCompatibility; 
+    uint32_t preservedEdxCompatibility; 
 };
 
-typedef qword AiWorkspaceCountEaxPreservedEdxCarrier64;
+typedef uint64_t AiWorkspaceCountEaxPreservedEdxCarrier64;
 
 typedef int ModelDefinitionHierarchyNodeAddress32;
 
 struct ModelTechnologyHierarchyCfVolatileContinuityResult {
     ModelDefinitionHierarchyNodeAddress32 preservedEaxDefinitionNodeAddress; 
-    dword preservedEcxCallerValue; 
-    dword preservedEdxCallerValue; 
+    uint32_t preservedEcxCallerValue; 
+    uint32_t preservedEdxCallerValue; 
 };
 
-typedef qword AiCandidateScoreCfEaxPreservedEdxCarrier64;
+typedef uint64_t AiCandidateScoreCfEaxPreservedEdxCarrier64;
 
 struct GridPathBacktrackCfRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
@@ -4317,18 +4300,18 @@ struct AiPreservedFactionIndexEdxResult {
     FactionRuntimeIndex preservedEdxFactionIndex; 
 };
 
-typedef qword AiCombatTargetSelectionResult64;
+typedef uint64_t AiCombatTargetSelectionResult64;
 
 struct AiTechnologyPlanningLoopRegisterContinuityResult {
-    dword preservedEaxTechnologyPanelIndex; 
-    dword preservedEcxSourceArmyEntriesRemaining; 
-    dword preservedEdxFactionRecordOffset; 
+    uint32_t preservedEaxTechnologyPanelIndex; 
+    uint32_t preservedEcxSourceArmyEntriesRemaining; 
+    uint32_t preservedEdxFactionRecordOffset; 
 };
 
 struct GameFactionCapabilityCfVolatileContinuityResult {
-    dword preservedEaxCallerValue; 
-    dword preservedEcxCallerValue; 
-    dword preservedEdxCallerValue; 
+    uint32_t preservedEaxCallerValue; 
+    uint32_t preservedEcxCallerValue; 
+    uint32_t preservedEdxCallerValue; 
 };
 
 struct EntityPathingDestinationRegisterResult {
@@ -4338,11 +4321,11 @@ struct EntityPathingDestinationRegisterResult {
     Q12 fallbackWorldYQ12; 
 };
 
-typedef qword EnergyQ4AggregateEaxPreservedEdxCarrier64;
+typedef uint64_t EnergyQ4AggregateEaxPreservedEdxCarrier64;
 
-typedef qword DepthBinMaskEaxPreservedEdxCarrier64;
+typedef uint64_t DepthBinMaskEaxPreservedEdxCarrier64;
 
-typedef qword AiWorkspaceEntryValueEaxPreservedEdxCarrier64;
+typedef uint64_t AiWorkspaceEntryValueEaxPreservedEdxCarrier64;
 
 struct ModelRaycastNearestHitCfRegisterResult {
     Q12 nearestDistanceQ12; 
@@ -4355,16 +4338,16 @@ struct AiWorkspace09AnchorCfRegisterResult {
 };
 
 struct AiPlanningGridScanLoopContinuityResult {
-    dword preservedEcxInteriorGridRowCount; 
-    dword preservedEdxGridScratchRowStrideBytes; 
+    uint32_t preservedEcxInteriorGridRowCount; 
+    uint32_t preservedEdxGridScratchRowStrideBytes; 
 };
 
 struct AiFactionPlanningCallerLoopRegisterContinuityResult {
     FactionRuntimeIndex preservedEaxFactionIndex; 
-    dword preservedEcxRemainingFactionCount; 
+    uint32_t preservedEcxRemainingFactionCount; 
 };
 
-typedef uint AiPlanningPhaseIndex;
+typedef uint32_t AiPlanningPhaseIndex;
 
 struct AiPlanningDispatchRegisterContinuityResult {
     FactionRuntimeIndex preservedEdxFactionIndex; 
@@ -4376,17 +4359,17 @@ struct GridPathMarkedRegionCellRegisterResult {
     FieldGridCellCoordinate selectedRow; 
 };
 
-typedef qword AiCandidateScoreEaxPreservedEdxCarrier64;
+typedef uint64_t AiCandidateScoreEaxPreservedEdxCarrier64;
 
 struct AiPlanningGridScratchEdxContinuityResult {
-    dword preservedEdxGridScratchRowStrideBytes; 
+    uint32_t preservedEdxGridScratchRowStrideBytes; 
 };
 
 struct GridInfluenceDiagonalScanRegisterResult {
     FieldGridCellCoordinate preservedEaxGridMetric; 
     FieldGridCellCoordinate preservedEcxGridMetric; 
     FieldGridCellCoordinate preservedEdxGridMetric; 
-    dword processedCellCount; 
+    uint32_t processedCellCount; 
 };
 
 typedef enum TerrainRelaxationMode {
@@ -4556,12 +4539,12 @@ enum /* FactionRuntimeLifecycleObservedState, stored in 1 byte(s) */ {
     FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING=2,
     FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED=3
 };
-typedef byte FactionRuntimeLifecycleObservedState;
+typedef uint8_t FactionRuntimeLifecycleObservedState;
 
 enum /* WinSockIpv4AddressLength, stored in 2 byte(s) */ {
     WINSOCK_IPV4_ADDRESS_BYTES=4
 };
-typedef word WinSockIpv4AddressLength;
+typedef uint16_t WinSockIpv4AddressLength;
 
 typedef enum RuntimeRegistrationRecordFlags {
     RUNTIME_REGISTRATION_RECORD_ALLOCATED=1073741824
@@ -4638,7 +4621,7 @@ typedef enum UiTransferJoinAvailability {
 enum /* WaveFormatTag, stored in 2 byte(s) */ {
     WAVE_FORMAT_PCM=1
 };
-typedef word WaveFormatTag;
+typedef uint16_t WaveFormatTag;
 
 typedef enum FrontendModelPointerContextFlags {
     FRONTEND_MODEL_POINTER_CONTEXT_SUPPRESS_BUILTIN_ACTION_RESOLUTION=16,
@@ -5028,11 +5011,11 @@ typedef enum GraphicsPaletteTextureFormatVersion {
     GRAPHICS_PALETTE_TEXTURE_FORMAT_VERSION_1=1
 } GraphicsPaletteTextureFormatVersion;
 
-typedef dword TerrainRelaxationPassCount;
+typedef uint32_t TerrainRelaxationPassCount;
 
-typedef dword FrontendRandomSeed;
+typedef uint32_t FrontendRandomSeed;
 
-typedef dword ArmyBuildXeniteCostQ4;
+typedef uint32_t ArmyBuildXeniteCostQ4;
 
 typedef int WorldMotionSplineKeyframeCount;
 
@@ -5046,127 +5029,127 @@ typedef int FrontendFactionAssignmentIndex;
 
 typedef int RichTextCommandOrdinal;
 
-typedef dword GraphicsPackedPixelMask;
+typedef uint32_t GraphicsPackedPixelMask;
 
-typedef dword AudioBitsPerSampleStack32;
+typedef uint32_t AudioBitsPerSampleStack32;
 
 typedef int SoftwareColorTransformQ16;
 
 typedef int SelectionPanelCellIndex;
 
-typedef dword FactionRuntimeFlags;
+typedef uint32_t FactionRuntimeFlags;
 
-typedef qword FixedLengthAngleEdxEax8;
+typedef uint64_t FixedLengthAngleEdxEax8;
 
-typedef dword UiTransferXorChecksum;
+typedef uint32_t UiTransferXorChecksum;
 
-typedef uint RichTextMarkupCapacityCodeUnits;
+typedef uint32_t RichTextMarkupCapacityCodeUnits;
 
-typedef dword RomRegistrySlotValue;
+typedef uint32_t RomRegistrySlotValue;
 
 typedef int GraphicsSceneExtentFixed;
 
 typedef int UiStopMessageCode;
 
-typedef dword FrontendReadyOrWaitState;
+typedef uint32_t FrontendReadyOrWaitState;
 
-typedef qword UiGridDimensionsEdxEax8;
+typedef uint64_t UiGridDimensionsEdxEax8;
 
-typedef dword TextResourceStringCount;
+typedef uint32_t TextResourceStringCount;
 
 typedef int RichTextCommandSelector;
 
 typedef int ModelLocalPointRecordAddress32;
 
-typedef dword FrontendConsensusValue;
+typedef uint32_t FrontendConsensusValue;
 
-typedef dword GraphicsCursorClockValue;
+typedef uint32_t GraphicsCursorClockValue;
 
 typedef int WorldMotionSplineValueQ12;
 
 typedef int DepthIntervalRadius32;
 
-typedef uint FrontendSelectionTransferModeFlags;
+typedef uint32_t FrontendSelectionTransferModeFlags;
 
-typedef dword UiTextCodeUnitIndex;
+typedef uint32_t UiTextCodeUnitIndex;
 
-typedef dword UiListRowIndex;
+typedef uint32_t UiListRowIndex;
 
-typedef word UiTechnologyValueTextBuffer16Utf16[16];
+typedef uint16_t UiTechnologyValueTextBuffer16Utf16[16];
 
-typedef dword PersistentSettingsDwordValue;
+typedef uint32_t PersistentSettingsDwordValue;
 
-typedef dword MovieFrameIndex;
+typedef uint32_t MovieFrameIndex;
 
-typedef dword NetworkIpv4AddressNetworkOrder;
+typedef uint32_t NetworkIpv4AddressNetworkOrder;
 
-typedef dword InGameNotificationPriority;
+typedef uint32_t InGameNotificationPriority;
 
-typedef dword UiTextCodeUnitCount;
+typedef uint32_t UiTextCodeUnitCount;
 
-typedef dword LevelCampaignAssociationIndex;
+typedef uint32_t LevelCampaignAssociationIndex;
 
-typedef dword GraphicsDiagnosticCounter;
+typedef uint32_t GraphicsDiagnosticCounter;
 
-typedef dword LevelAssetPointerArrayByteCount;
+typedef uint32_t LevelAssetPointerArrayByteCount;
 
-typedef dword PckDecodedByteCount;
+typedef uint32_t PckDecodedByteCount;
 
-typedef dword FileSystemOutputCapacityBytes;
+typedef uint32_t FileSystemOutputCapacityBytes;
 
 typedef int GraphicsPrimitiveBackendCoordinate;
 
-typedef dword MovieWorkerActiveFlag;
+typedef uint32_t MovieWorkerActiveFlag;
 
-typedef word Win32CalendarYear16;
+typedef uint16_t Win32CalendarYear16;
 
-typedef dword GraphicsCursorFrameIndex;
+typedef uint32_t GraphicsCursorFrameIndex;
 
-typedef dword LocaleCalendarDayStack32;
+typedef uint32_t LocaleCalendarDayStack32;
 
-typedef dword FieldCellFlagMask;
+typedef uint32_t FieldCellFlagMask;
 
-typedef dword PckEntryCount;
+typedef uint32_t PckEntryCount;
 
-typedef dword RomRecordByteSize;
+typedef uint32_t RomRecordByteSize;
 
-typedef dword PersistentDisplayAdapterIndex;
+typedef uint32_t PersistentDisplayAdapterIndex;
 
-typedef qword FixedPlanarPointEdxEax8;
+typedef uint64_t FixedPlanarPointEdxEax8;
 
-typedef dword GraphicsCursorFrameCount;
+typedef uint32_t GraphicsCursorFrameCount;
 
-typedef dword SprAttachmentSelectorOrdinal;
+typedef uint32_t SprAttachmentSelectorOrdinal;
 
-typedef dword ArmyPlacementDispatchArg2;
+typedef uint32_t ArmyPlacementDispatchArg2;
 
-typedef dword ArmyPlacementDispatchArg3;
+typedef uint32_t ArmyPlacementDispatchArg3;
 
-typedef dword ArmyPlacementDispatchArg0;
+typedef uint32_t ArmyPlacementDispatchArg0;
 
-typedef dword PckStoredByteCount;
+typedef uint32_t PckStoredByteCount;
 
-typedef dword MdlNodeFlags;
+typedef uint32_t MdlNodeFlags;
 
-typedef dword GraphicsAssetRelativeByteOffset;
+typedef uint32_t GraphicsAssetRelativeByteOffset;
 
-typedef dword UiCommandModeIndex;
+typedef uint32_t UiCommandModeIndex;
 
-typedef dword GraphicsProjectionShift;
+typedef uint32_t GraphicsProjectionShift;
 
-typedef dword InGameNotificationMovieId;
+typedef uint32_t InGameNotificationMovieId;
 
-typedef dword PckOutputCapacityBytes;
+typedef uint32_t PckOutputCapacityBytes;
 
-typedef dword MoviePaletteBankCount;
+typedef uint32_t MoviePaletteBankCount;
 
 typedef int UiNumericValue32;
 
-typedef dword FileSystemFilePosition;
+typedef uint32_t FileSystemFilePosition;
 
 typedef struct UiNodeBase *InGamePersistentSettingsPageSourceNodePtr; /* Ghidra shifted pointer: points at InGamePersistentSettingsPage3508.sourceNode; ADJ() -> InGamePersistentSettingsPage3508 */
 
-typedef dword UiPageCount;
+typedef uint32_t UiPageCount;
 
 typedef int UiSerializedRelocationDelta;
 
@@ -5184,14 +5167,14 @@ struct WorldRuntimeContext {
     UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to 0x13000 by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
     UiPixelCoordinate pointerCaptureX; // Pointer-capture X anchor. World-camera pointer input subtracts this from pointerX and warps the pointer back here after each handled delta.
     UiPixelCoordinate pointerCaptureY; // Pointer-capture Y anchor. World-camera pointer input subtracts this from pointerY and warps the pointer back here after each handled delta.
-    dword reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
+    uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount; // Attached world-object count.
     struct WorldFieldRegionState fieldRegion; // Field-region dimensions and retained prefix.
-    dword *dwordArray; // Attached dword workspace.
+    uint32_t *dwordArray; // Attached dword workspace.
     WorldWorkspaceElementCount dwordArrayCount; // Attached workspace element count.
-    dword runtimeStateC8; // Runtime state retained.
+    uint32_t runtimeStateC8; // Runtime state retained.
     WorldRuntimeControlFlags runtimeControlFlags; // Secondary world control/state flags.
-    dword *tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
+    uint32_t *tickSpinLock; // Pointer to g_InGameStateTickSpinLock installed by both session initializers.
     void (*simulationAndNetworkTickCallback)(void); // In-game simulation/network tick callback installed by both session initializers.
     struct WorldOwnerListNode100 *ownerListHead; // World-runtime owner-list head.
     struct WorldRuntimeSelectionState selection; // In-game selection and overlay state.
@@ -5199,33 +5182,33 @@ struct WorldRuntimeContext {
     struct WorldMotionSnapshot snapshot; // Captured motion snapshot.
 };
 
-typedef dword UiKeyboardStateMask;
+typedef uint32_t UiKeyboardStateMask;
 
-typedef dword UiKeyboardEventCode;
+typedef uint32_t UiKeyboardEventCode;
 
-typedef dword UiNodeFlagMask;
+typedef uint32_t UiNodeFlagMask;
 
 typedef int UiActionId;
 
-typedef dword UiAnchorFractionQ31;
+typedef uint32_t UiAnchorFractionQ31;
 
-typedef dword UiPixelOffset;
+typedef uint32_t UiPixelOffset;
 
-typedef word AudioChannelCount;
+typedef uint16_t AudioChannelCount;
 
-typedef dword AudioSampleRateHz;
+typedef uint32_t AudioSampleRateHz;
 
-typedef dword AudioByteRate;
+typedef uint32_t AudioByteRate;
 
-typedef word AudioBlockAlignBytes;
+typedef uint16_t AudioBlockAlignBytes;
 
-typedef word AudioBitsPerSample;
+typedef uint16_t AudioBitsPerSample;
 
-typedef word WaveFormatExtraByteCount;
+typedef uint16_t WaveFormatExtraByteCount;
 
-typedef dword DirectSoundBufferDescriptionByteSize;
+typedef uint32_t DirectSoundBufferDescriptionByteSize;
 
-typedef dword AudioBufferByteCount;
+typedef uint32_t AudioBufferByteCount;
 
 struct IDirectSound {
     struct IDirectSound_Vtbl *lpVtbl;
@@ -5244,20 +5227,20 @@ struct UiNodeBase {
     struct UiNodeBase *firstChild; 
     struct UiNodeBase *parent; 
     struct UiNodeVtable *vtable; 
-    sdword left; 
-    sdword top; 
-    sdword right; 
-    sdword bottom; 
-    sdword leftOffset; 
-    sdword topOffset; 
-    sdword rightOffset; 
-    sdword bottomOffset; 
+    int32_t left; 
+    int32_t top; 
+    int32_t right; 
+    int32_t bottom; 
+    int32_t leftOffset; 
+    int32_t topOffset; 
+    int32_t rightOffset; 
+    int32_t bottomOffset; 
     UiAnchorFractionQ31 leftAnchorQ31; 
     UiAnchorFractionQ31 topAnchorQ31; 
     UiAnchorFractionQ31 rightAnchorQ31; 
     UiAnchorFractionQ31 bottomAnchorQ31; 
-    sdword layoutWidth; 
-    sdword layoutHeight; 
+    int32_t layoutWidth; 
+    int32_t layoutHeight; 
     enum UiNodeFlags nodeFlags; 
 };
 
@@ -5271,7 +5254,7 @@ struct UiNumericTextControl {
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
     struct DirectSoundVoiceSet *activationSound; 
-    word textBuffer[16]; 
+    uint16_t textBuffer[16]; 
     UiNumericValue32 minimumValue; 
     UiNumericValue32 maximumValue; 
 };
@@ -5303,8 +5286,8 @@ struct UiSelectableControl {
 typedef struct UiSoundSelectableControl UiSoundSelectableControl;
 struct UiSoundSelectableControl {
     struct UiSelectableControl selectable;
-    dword subclassField54;
-    dword subclassField58;
+    uint32_t subclassField54;
+    uint32_t subclassField58;
     struct DirectSoundVoiceSet *activationSound;
 };
 
@@ -5381,77 +5364,77 @@ struct UiPageStackControl {
 
 struct InGamePersistentSettingsPage3508 {
     struct UiPageStackControl settingsPageStack; 
-    byte reserved0054_1A9F[6732]; 
+    uint8_t reserved0054_1A9F[6732]; 
     struct UiNodeBase sourceNode; 
-    byte reserved1AEC_2DCB[4832]; 
+    uint8_t reserved1AEC_2DCB[4832]; 
     struct UiSelectableControl musicEnabledControl; 
-    byte reserved2E20_2E2B[12]; 
+    uint8_t reserved2E20_2E2B[12]; 
     struct UiSelectableControl soundEffectsEnabledControl; 
-    byte reserved2E80_2E8B[12]; 
+    uint8_t reserved2E80_2E8B[12]; 
     struct UiSelectableControl reverseStereoControl; 
-    byte reserved2EE0_2FFF[288]; 
+    uint8_t reserved2EE0_2FFF[288]; 
     struct UiNumericTextControl soundEffectsGainControl; 
-    byte reserved3094_317B[232]; 
+    uint8_t reserved3094_317B[232]; 
     struct UiNumericTextControl movieDefaultAudioGainControl; 
-    byte reserved3210_32F7[232]; 
+    uint8_t reserved3210_32F7[232]; 
     struct UiNumericTextControl musicGainControl; 
-    byte reserved338C_3473[232]; 
+    uint8_t reserved338C_3473[232]; 
     struct UiNumericTextControl movieAlternateAudioGainControl; 
 };
 
-typedef dword DisplayModeHookArgument0;
+typedef uint32_t DisplayModeHookArgument0;
 
-typedef word Win32CalendarMonth16;
+typedef uint16_t Win32CalendarMonth16;
 
-typedef dword DisplayModeHookArgument1;
+typedef uint32_t DisplayModeHookArgument1;
 
-typedef dword SerializedRelativeByteOffset;
+typedef uint32_t SerializedRelativeByteOffset;
 
-typedef dword PersistentDisplayDimensionPixels;
+typedef uint32_t PersistentDisplayDimensionPixels;
 
-typedef dword TerrainExploredPercent;
+typedef uint32_t TerrainExploredPercent;
 
 typedef int WorldMotionSplineTimeQ12;
 
-typedef dword MovieAudioGainQ15;
+typedef uint32_t MovieAudioGainQ15;
 
-typedef dword PersistentShadingSubresourceCount;
+typedef uint32_t PersistentShadingSubresourceCount;
 
-typedef dword UiPixelExtent;
+typedef uint32_t UiPixelExtent;
 
 typedef int WorldRuntimeExtendedMapControlAddress32;
 
-typedef dword RomRecordId;
+typedef uint32_t RomRecordId;
 
-typedef dword MovieSubresourceCount;
+typedef uint32_t MovieSubresourceCount;
 
 typedef int FrontendConsensusSourceAddress32;
 
-typedef dword ModelRuntimePoolRelativeOffset;
+typedef uint32_t ModelRuntimePoolRelativeOffset;
 
-typedef dword GraphicsViewAngle16;
+typedef uint32_t GraphicsViewAngle16;
 
-typedef dword GraphicsDisplayModeCount;
+typedef uint32_t GraphicsDisplayModeCount;
 
 typedef int SelectionPanelSegmentCount;
 
-typedef dword GraphicsSubresourceEndIndex;
+typedef uint32_t GraphicsSubresourceEndIndex;
 
-typedef dword FactionActiveMask;
+typedef uint32_t FactionActiveMask;
 
-typedef dword MovieSubresourceTableOffset;
+typedef uint32_t MovieSubresourceTableOffset;
 
-typedef dword FactionProgressAmountQ4;
+typedef uint32_t FactionProgressAmountQ4;
 
-typedef dword NetworkPlayerCount;
+typedef uint32_t NetworkPlayerCount;
 
 typedef int PriorityPairHeapCount;
 
 typedef int PersistentModelLodDepthQ8;
 
-typedef dword UiTextResourceId;
+typedef uint32_t UiTextResourceId;
 
-typedef dword UiListRowCount;
+typedef uint32_t UiListRowCount;
 
 /* The first 0x64 bytes of a UiListControl (g_UiListControlVtable); pages embed it with the column tail in
    the following reserved bytes, and methods that need columnCount/columns view it as UiListControl. */
@@ -5465,458 +5448,458 @@ struct UiPointerListControl {
     void **selectedRowSlot; 
 };
 
-typedef qword FixedEulerPairEdxEax8;
+typedef uint64_t FixedEulerPairEdxEax8;
 
-typedef dword CubicSplineEquationCount;
+typedef uint32_t CubicSplineEquationCount;
 
 typedef int GraphicsScreenCoordinate;
 
-typedef word Win32CalendarDay16;
+typedef uint16_t Win32CalendarDay16;
 
-typedef dword KeyboardVirtualKeyCode;
+typedef uint32_t KeyboardVirtualKeyCode;
 
 typedef int GraphicsPlaneNormalFixed;
 
-typedef dword UiFrameRefreshCountdownFrames;
+typedef uint32_t UiFrameRefreshCountdownFrames;
 
-typedef dword UInt64Half32;
+typedef uint32_t UInt64Half32;
 
-typedef word SoftwareColorLaneUnsigned16;
+typedef uint16_t SoftwareColorLaneUnsigned16;
 
-typedef word Win32Millisecond16;
+typedef uint16_t Win32Millisecond16;
 
-typedef dword UiTransferRemainingByteCount;
+typedef uint32_t UiTransferRemainingByteCount;
 
-typedef dword FrontendMessageValueA;
+typedef uint32_t FrontendMessageValueA;
 
-typedef dword FrontendMessageValueB;
+typedef uint32_t FrontendMessageValueB;
 
-typedef dword FrontendMessageValueC;
+typedef uint32_t FrontendMessageValueC;
 
-typedef dword WideNumberFormatCodeUnitCount;
+typedef uint32_t WideNumberFormatCodeUnitCount;
 
-typedef dword TextOutputCapacityBytes;
+typedef uint32_t TextOutputCapacityBytes;
 
-typedef dword PaletteBankIndex;
+typedef uint32_t PaletteBankIndex;
 
-typedef dword RomVisibilityFrontendValue;
+typedef uint32_t RomVisibilityFrontendValue;
 
-typedef dword PersistentShadingTextureDimension;
+typedef uint32_t PersistentShadingTextureDimension;
 
-typedef dword PlayerState8090Value;
+typedef uint32_t PlayerState8090Value;
 
-typedef dword Win32MessageId32;
+typedef uint32_t Win32MessageId32;
 
 typedef int PlayerOrFactionRuntimeId32;
 
-typedef dword MovieOpenFlags;
+typedef uint32_t MovieOpenFlags;
 
-typedef dword LevelAssetRelativeByteOffset;
+typedef uint32_t LevelAssetRelativeByteOffset;
 
-typedef dword ScenarioCatalogByteOffset;
+typedef uint32_t ScenarioCatalogByteOffset;
 
-typedef dword GraphicsPrimitiveDispatchFlags;
+typedef uint32_t GraphicsPrimitiveDispatchFlags;
 
-typedef dword PackedFramebufferPixel;
+typedef uint32_t PackedFramebufferPixel;
 
-typedef dword PackedFileExtensionCode32;
+typedef uint32_t PackedFileExtensionCode32;
 
-typedef dword TextResourceLocaleBlockByteSize;
+typedef uint32_t TextResourceLocaleBlockByteSize;
 
-typedef dword DepthBinMask32;
+typedef uint32_t DepthBinMask32;
 
-typedef dword LocaleClockHourStack32;
+typedef uint32_t LocaleClockHourStack32;
 
-typedef dword InGameSimulationStepBatchTicks;
+typedef uint32_t InGameSimulationStepBatchTicks;
 
-typedef dword FrontendReadyFlagMask;
+typedef uint32_t FrontendReadyFlagMask;
 
-typedef dword SelectionMarkerCoordinateValue32;
+typedef uint32_t SelectionMarkerCoordinateValue32;
 
-typedef dword LocaleCountryCode;
+typedef uint32_t LocaleCountryCode;
 
 typedef int GraphicsPrimitiveTextureCoordinateFixed;
 
-typedef dword FactionNotificationCodeBase;
+typedef uint32_t FactionNotificationCodeBase;
 
-typedef dword PlayerState8094Value;
+typedef uint32_t PlayerState8094Value;
 
-typedef dword UiTransferMailboxTickCounter;
+typedef uint32_t UiTransferMailboxTickCounter;
 
 typedef int Win32CursorCoordinate32;
 
-typedef dword LevelPackedHeadingPitch;
+typedef uint32_t LevelPackedHeadingPitch;
 
 typedef int FixedMathVectorComponent32;
 
-typedef dword UiTransferSequenceToken;
+typedef uint32_t UiTransferSequenceToken;
 
 typedef int FrontendPlayerRuntimeId;
 
 typedef int Win32LParam32;
 
-typedef dword GraphicsPrimitiveQueueCapacity;
+typedef uint32_t GraphicsPrimitiveQueueCapacity;
 
-typedef dword CubicSplineMatrixIndex;
+typedef uint32_t CubicSplineMatrixIndex;
 
-typedef dword MovieSharedStreamHandleFlag;
+typedef uint32_t MovieSharedStreamHandleFlag;
 
 typedef int ModelMeshGroupAddress32;
 
-typedef qword GraphicsLogicalDimensionsEdxEax8;
+typedef uint64_t GraphicsLogicalDimensionsEdxEax8;
 
-typedef dword GraphicsAssetAllocationByteSize;
+typedef uint32_t GraphicsAssetAllocationByteSize;
 
-typedef dword WinMmTimerPeriodMilliseconds;
+typedef uint32_t WinMmTimerPeriodMilliseconds;
 
-typedef dword FactionArmyContributionValue;
+typedef uint32_t FactionArmyContributionValue;
 
-typedef qword FixedLengthElevationEdxEax8;
+typedef uint64_t FixedLengthElevationEdxEax8;
 
-typedef dword GridPathUnreachableReferenceColumn32;
+typedef uint32_t GridPathUnreachableReferenceColumn32;
 
-typedef dword WideNumberIntegerDigitLimit;
+typedef uint32_t WideNumberIntegerDigitLimit;
 
-typedef dword GraphicsAssetSubresourceCount;
+typedef uint32_t GraphicsAssetSubresourceCount;
 
-typedef dword ArmySelectionDetailTemplateVariantIndex;
+typedef uint32_t ArmySelectionDetailTemplateVariantIndex;
 
-typedef dword UiPackedTextStyle;
+typedef uint32_t UiPackedTextStyle;
 
 typedef int InGameSaveGamePageControlAddress32;
 
-typedef dword ArmyPlacementDispatchArg7;
+typedef uint32_t ArmyPlacementDispatchArg7;
 
-typedef dword PackedUiCommandAndPlayerId;
+typedef uint32_t PackedUiCommandAndPlayerId;
 
 typedef Q12 ArmyPlacementClearancePaddingQ12;
 
-typedef dword MovieFrameCount;
+typedef uint32_t MovieFrameCount;
 
 typedef int NetworkTimeoutMicroseconds;
 
-typedef dword FrontendRoleStateFlags;
+typedef uint32_t FrontendRoleStateFlags;
 
-typedef word Win32Hour16;
+typedef uint16_t Win32Hour16;
 
 typedef int WideNumberSignedValue32;
 
-typedef dword ArmyPlacementMode;
+typedef uint32_t ArmyPlacementMode;
 
-typedef dword ArmyMoveAuxiliaryValue0;
+typedef uint32_t ArmyMoveAuxiliaryValue0;
 
-typedef qword GraphicsProjectedPointEdxEax8;
+typedef uint64_t GraphicsProjectedPointEdxEax8;
 
-typedef dword GraphicsPixelChannelBitShift;
+typedef uint32_t GraphicsPixelChannelBitShift;
 
-typedef dword ArmyMoveAuxiliaryValue1;
+typedef uint32_t ArmyMoveAuxiliaryValue1;
 
-typedef dword InGamePointerCallbackValue2;
+typedef uint32_t InGamePointerCallbackValue2;
 
-typedef dword InGamePointerCallbackValue3;
+typedef uint32_t InGamePointerCallbackValue3;
 
-typedef dword InGamePointerCallbackValue0;
+typedef uint32_t InGamePointerCallbackValue0;
 
-typedef dword InGamePointerCallbackValue1;
+typedef uint32_t InGamePointerCallbackValue1;
 
-typedef dword UiTransferSenderContext;
+typedef uint32_t UiTransferSenderContext;
 
 typedef int RomRuntimeNodeRecordAddress32;
 
-typedef dword LevelStartingResourceAmountQ4;
+typedef uint32_t LevelStartingResourceAmountQ4;
 
 typedef int GraphicsPrimitiveScreenCoordinate;
 
 typedef int ModelLookupKeyIndex;
 
-typedef dword TimerCallbackSlotByteOffset;
+typedef uint32_t TimerCallbackSlotByteOffset;
 
 typedef int AiCandidateScore32;
 
-typedef dword DosDriveLetterCode32;
+typedef uint32_t DosDriveLetterCode32;
 
-typedef qword Win32DriveCapacityEdxEax8;
+typedef uint64_t Win32DriveCapacityEdxEax8;
 
-typedef dword FrontendBackendSessionValue;
+typedef uint32_t FrontendBackendSessionValue;
 
-typedef dword GraphicsElapsedTickCount;
+typedef uint32_t GraphicsElapsedTickCount;
 
 typedef int TerrainOverlayCellRuntimeValue;
 
-typedef dword FrontendNetworkTickInterval;
+typedef uint32_t FrontendNetworkTickInterval;
 
-typedef word WinSockSocketCount16;
+typedef uint16_t WinSockSocketCount16;
 
 typedef int UiPointerRegionCode;
 
-typedef dword NetworkPortHostOrder;
+typedef uint32_t NetworkPortHostOrder;
 
-typedef dword ModelRuntimeCount;
+typedef uint32_t ModelRuntimeCount;
 
-typedef dword ModelLookupKeyClass;
+typedef uint32_t ModelLookupKeyClass;
 
-typedef dword ScenarioCatalogSourceByteCount;
+typedef uint32_t ScenarioCatalogSourceByteCount;
 
-typedef dword SessionTransferTimeoutTicks;
+typedef uint32_t SessionTransferTimeoutTicks;
 
 typedef int GraphicsDistanceAttenuationTableAddress32;
 
-typedef dword GraphicsIntegerScale;
+typedef uint32_t GraphicsIntegerScale;
 
 typedef int FactionResourceIncomeQ4;
 
-typedef dword UiPageIndex;
+typedef uint32_t UiPageIndex;
 
-typedef dword FrontendSnapshotChunkByteOffset;
+typedef uint32_t FrontendSnapshotChunkByteOffset;
 
-typedef dword UiTransferMailboxByteOffset;
+typedef uint32_t UiTransferMailboxByteOffset;
 
 typedef int CameraScrollStepPixels;
 
-typedef dword FactionPackedRelationStates;
+typedef uint32_t FactionPackedRelationStates;
 
-typedef dword FactionResourceAmountQ4;
+typedef uint32_t FactionResourceAmountQ4;
 
-typedef word WinSockVersionWord;
+typedef uint16_t WinSockVersionWord;
 
-typedef dword GraphicsBitsPerPixel;
+typedef uint32_t GraphicsBitsPerPixel;
 
-typedef dword FncExportIndex;
+typedef uint32_t FncExportIndex;
 
 typedef int SoftwareMaskRadiusStep;
 
 typedef int ImpactDamageValue32;
 
-typedef dword ArenaPayloadByteCount;
+typedef uint32_t ArenaPayloadByteCount;
 
-typedef dword SprRelocationCount;
+typedef uint32_t SprRelocationCount;
 
-typedef dword FileIoByteCount;
+typedef uint32_t FileIoByteCount;
 
-typedef dword GraphicsPaletteBankCount;
+typedef uint32_t GraphicsPaletteBankCount;
 
-typedef dword FrontendPlayerIndex;
+typedef uint32_t FrontendPlayerIndex;
 
 typedef int FieldGridDimensionCells;
 
-typedef dword RandomSeed;
+typedef uint32_t RandomSeed;
 
 typedef int GraphicsProjectedCoordinate;
 
-typedef dword FrontendResultsFactionFieldByteOffset;
+typedef uint32_t FrontendResultsFactionFieldByteOffset;
 
-typedef dword FrontendReturnCallbackContext32;
+typedef uint32_t FrontendReturnCallbackContext32;
 
-typedef dword LevelStartCameraMagnitudeQ12;
+typedef uint32_t LevelStartCameraMagnitudeQ12;
 
-typedef dword WideNumberFractionalDigitCount;
+typedef uint32_t WideNumberFractionalDigitCount;
 
-typedef dword TerrainHeightBrushDeltaSource;
+typedef uint32_t TerrainHeightBrushDeltaSource;
 
-typedef dword MovieStreamOffset;
+typedef uint32_t MovieStreamOffset;
 
-typedef dword PckHuffmanRunLength;
+typedef uint32_t PckHuffmanRunLength;
 
-typedef dword KeyboardEventRingIndex;
+typedef uint32_t KeyboardEventRingIndex;
 
 typedef int DepthIntervalCenter32;
 
-typedef dword AudioMixerGainQ15;
+typedef uint32_t AudioMixerGainQ15;
 
-typedef dword PersistentSettingsMutationCount;
+typedef uint32_t PersistentSettingsMutationCount;
 
-typedef word Win32DayOfWeek16;
+typedef uint16_t Win32DayOfWeek16;
 
 typedef int PlayerStateLookupValue1;
 
 typedef int PlayerStateLookupValue0;
 
-typedef dword FrontendPlayerValue8C;
+typedef uint32_t FrontendPlayerValue8C;
 
-typedef word UiSelectionDetailTextBuffer64Utf16[64];
+typedef uint16_t UiSelectionDetailTextBuffer64Utf16[64];
 
-typedef dword UiNumericCursorFrameIndex;
+typedef uint32_t UiNumericCursorFrameIndex;
 
-typedef dword ArmyBuildDurationQ5;
+typedef uint32_t ArmyBuildDurationQ5;
 
-typedef dword UiPointerButtonMask;
+typedef uint32_t UiPointerButtonMask;
 
-typedef qword RuntimeImagePointerByteSizeEdxEax8;
+typedef uint64_t RuntimeImagePointerByteSizeEdxEax8;
 
 typedef int FactionRelationCounter;
 
-typedef dword TerrainDirectionalScanStep;
+typedef uint32_t TerrainDirectionalScanStep;
 
-typedef dword InGameLoadedResourcePointerCount;
+typedef uint32_t InGameLoadedResourcePointerCount;
 
-typedef dword RichTextOpcode1APayloadValue32;
+typedef uint32_t RichTextOpcode1APayloadValue32;
 
-typedef dword RomRecordTableIndex;
+typedef uint32_t RomRecordTableIndex;
 
-typedef dword CommandPayloadDword04;
+typedef uint32_t CommandPayloadDword04;
 
-typedef undefined8 MmxPacked64;
+typedef uint64_t MmxPacked64;
 
-typedef dword FactionAnchorCooldownTicks;
+typedef uint32_t FactionAnchorCooldownTicks;
 
-typedef dword CommandPayloadDword0C;
+typedef uint32_t CommandPayloadDword0C;
 
-typedef dword CommandPayloadDword08;
+typedef uint32_t CommandPayloadDword08;
 
-typedef dword Win32WindowMessageId;
+typedef uint32_t Win32WindowMessageId;
 
-typedef dword PckHeaderDwordCount;
+typedef uint32_t PckHeaderDwordCount;
 
 typedef int InGameCommandHandlerAddress32;
 
 /* A queued player command handler: the command code is the handler's code offset from the queue
    function (see THANDOR_CODE_AT); called with the player runtime id and the three payload dwords. */
-typedef void CommandQueueHandlerProc(dword playerRuntimeId,dword payloadDword0C,dword payloadDword08,
-                                     dword payloadDword04);
+typedef void CommandQueueHandlerProc(uint32_t playerRuntimeId,uint32_t payloadDword0C,uint32_t payloadDword08,
+                                     uint32_t payloadDword04);
 
-typedef dword FrontendPackedTextCommandState;
+typedef uint32_t FrontendPackedTextCommandState;
 
-typedef dword MovieStreamFileOffset;
+typedef uint32_t MovieStreamFileOffset;
 
-typedef dword MovieFrameIntervalMilliseconds;
+typedef uint32_t MovieFrameIntervalMilliseconds;
 
 typedef int AiArmyAssetRecordAddress32;
 
-typedef dword LocaleClockMinuteStack32;
+typedef uint32_t LocaleClockMinuteStack32;
 
-typedef qword FixedSinCosEdxEax8;
+typedef uint64_t FixedSinCosEdxEax8;
 
-typedef dword TextResourceId;
+typedef uint32_t TextResourceId;
 
 typedef struct UiNodeBase *FrontendPersistentSettingsPageSourceNodePtr; /* Ghidra shifted pointer: points at FrontendPersistentSettingsPage417C.sourceNode; ADJ() -> FrontendPersistentSettingsPage417C */
 
 struct FrontendPersistentSettingsPage417C {
     struct UiNodeBase pageRoot; 
-    byte reserved004C_019B[336]; 
+    uint8_t reserved004C_019B[336]; 
     struct UiPageStackControl settingsPageStack; 
-    byte reserved01F0_2487[8856]; 
+    uint8_t reserved01F0_2487[8856]; 
     struct UiNodeBase sourceNode; 
-    byte reserved24D4_3BBB[5864]; 
+    uint8_t reserved24D4_3BBB[5864]; 
     struct UiSelectableControl musicEnabledControl; 
-    byte reserved3C10_3C1B[12]; 
+    uint8_t reserved3C10_3C1B[12]; 
     struct UiSelectableControl soundEffectsEnabledControl; 
-    byte reserved3C70_3C7B[12]; 
+    uint8_t reserved3C70_3C7B[12]; 
     struct UiSelectableControl reverseStereoControl; 
-    byte reserved3CD0_3DEF[288]; 
+    uint8_t reserved3CD0_3DEF[288]; 
     struct UiNumericTextControl soundEffectsGainControl; 
-    byte reserved3E84_3F6B[232]; 
+    uint8_t reserved3E84_3F6B[232]; 
     struct UiNumericTextControl movieDefaultAudioGainControl; 
-    byte reserved4000_40E7[232]; 
+    uint8_t reserved4000_40E7[232]; 
     struct UiNumericTextControl musicGainControl; 
 };
 
-typedef uint UiCommandRuntimeFlagMask;
+typedef uint32_t UiCommandRuntimeFlagMask;
 
 typedef int FixedVectorStateAddress32;
 
-typedef dword WorldMotionValue74;
+typedef uint32_t WorldMotionValue74;
 
-typedef dword WorldMotionValue70;
+typedef uint32_t WorldMotionValue70;
 
 typedef int FixedMathScale32;
 
-typedef dword ShotRuntimeState14;
+typedef uint32_t ShotRuntimeState14;
 
-typedef dword WorldMotionValue78;
+typedef uint32_t WorldMotionValue78;
 
 typedef int ArmyLinkedChildDefinitionContextAddress32;
 
 typedef int AiPlacementWorkspaceRecordAddress32;
 
-typedef dword Win32MessageTimestamp32;
+typedef uint32_t Win32MessageTimestamp32;
 
 typedef int FactionProgressScore;
 
-typedef dword GameSpeedPercent;
+typedef uint32_t GameSpeedPercent;
 
-typedef dword WinSockFdSetCount;
+typedef uint32_t WinSockFdSetCount;
 
-typedef dword EngineFileHandle;
+typedef uint32_t EngineFileHandle;
 
-typedef dword NetworkBackendSessionReturnValue32;
+typedef uint32_t NetworkBackendSessionReturnValue32;
 
-typedef dword TextResourcePageIndex;
+typedef uint32_t TextResourcePageIndex;
 
-typedef dword UiTransferPayloadByteCount;
+typedef uint32_t UiTransferPayloadByteCount;
 
-typedef dword UiTransferMailboxByteCount;
+typedef uint32_t UiTransferMailboxByteCount;
 
 typedef int InGameMapViewControlAddress32;
 
-typedef dword FrontendHeartbeatTickCount;
+typedef uint32_t FrontendHeartbeatTickCount;
 
-typedef dword MoviePixelDimension;
+typedef uint32_t MoviePixelDimension;
 
-typedef dword UiActionHandlerPageIndex;
+typedef uint32_t UiActionHandlerPageIndex;
 
 typedef int SoftwareMaskThresholdStep;
 
-typedef dword TerrainRegionCollectionCount;
+typedef uint32_t TerrainRegionCollectionCount;
 
-typedef qword FixedDirectionXZEdxEax8;
+typedef uint64_t FixedDirectionXZEdxEax8;
 
-typedef word Win32Second16;
+typedef uint16_t Win32Second16;
 
-typedef dword FactionArmyAssetCount;
+typedef uint32_t FactionArmyAssetCount;
 
-typedef dword Win32WParam32;
+typedef uint32_t Win32WParam32;
 
 typedef int DwordBlockRecordCount;
 
-typedef dword FrontendTextCommandValue0;
+typedef uint32_t FrontendTextCommandValue0;
 
-typedef dword PersistentColorDepthBits;
+typedef uint32_t PersistentColorDepthBits;
 
-typedef dword SoundAssetIndex;
+typedef uint32_t SoundAssetIndex;
 
-typedef dword FrontendTextCommandValue2;
+typedef uint32_t FrontendTextCommandValue2;
 
-typedef dword FrontendTextCommandValue1;
+typedef uint32_t FrontendTextCommandValue1;
 
-typedef dword LevelPlayerAiClassOrMode;
+typedef uint32_t LevelPlayerAiClassOrMode;
 
-typedef dword CommandLineOptionLengthBytes;
+typedef uint32_t CommandLineOptionLengthBytes;
 
-typedef dword UiBooleanState32;
+typedef uint32_t UiBooleanState32;
 
-typedef dword FrontendPlayerValue84;
+typedef uint32_t FrontendPlayerValue84;
 
-typedef dword FrontendPlayerValue88;
+typedef uint32_t FrontendPlayerValue88;
 
-typedef dword FrontendPlayerCount;
+typedef uint32_t FrontendPlayerCount;
 
-typedef dword FrontendCallbackArgument5;
+typedef uint32_t FrontendCallbackArgument5;
 
-typedef dword GraphicsShadingRecordCount;
+typedef uint32_t GraphicsShadingRecordCount;
 
 typedef struct UiPointerListControl *FrontendNetworkSetupPageBackendListPtr; /* Ghidra shifted pointer: points at FrontendNetworkSetupPageState4BCC.backendList; ADJ() -> FrontendNetworkSetupPageState4BCC */
 
 struct FrontendNetworkSetupPageState4BCC {
     struct UiNodeBase rootNode; 
-    byte reserved004C_036B[800]; 
+    uint8_t reserved004C_036B[800]; 
     struct UiNodeBase compactLayoutControl; 
-    byte reserved03B8_0507[336]; 
+    uint8_t reserved03B8_0507[336]; 
     struct UiPageStackControl primaryPageStack; 
-    byte reserved055C_4A6F[17684]; 
+    uint8_t reserved055C_4A6F[17684]; 
     struct UiPointerListControl backendList; 
-    byte reserved4AD4_4B67[148]; 
+    uint8_t reserved4AD4_4B67[148]; 
     struct UiPointerListControl sessionList; 
 };
 
-typedef dword UiFrameCount;
+typedef uint32_t UiFrameCount;
 
-typedef dword MdlChildCount;
+typedef uint32_t MdlChildCount;
 
-typedef qword MovieFrameDimensionsEdxEax8;
+typedef uint64_t MovieFrameDimensionsEdxEax8;
 
 typedef int UiPixelMetric;
 
-typedef dword FrontendStatusCode;
+typedef uint32_t FrontendStatusCode;
 
 typedef int ModelLinkedDefinitionListAddress32;
 
@@ -5926,144 +5909,144 @@ typedef int SelectionPanelNumericValue32;
 
 typedef int LevelStartCameraCoordinateQ12;
 
-typedef dword KeyboardCharacterCode;
+typedef uint32_t KeyboardCharacterCode;
 
 typedef int FactionAiPressureScore;
 
-typedef dword FactionCapabilityFlags;
+typedef uint32_t FactionCapabilityFlags;
 
-typedef dword NetworkByteCount;
+typedef uint32_t NetworkByteCount;
 
-typedef dword FactionRelationTick;
+typedef uint32_t FactionRelationTick;
 
-typedef dword TerrainDirectionRecordCount;
+typedef uint32_t TerrainDirectionRecordCount;
 
-typedef byte ColorChannelByte;
+typedef uint8_t ColorChannelByte;
 
-typedef dword ArmyPlacementContext;
+typedef uint32_t ArmyPlacementContext;
 
 typedef int SerializedImageRelocationDelta;
 
 typedef int FrontendScenarioSelectionControlAddress32;
 
-typedef dword ScenarioCatalogRecordCount;
+typedef uint32_t ScenarioCatalogRecordCount;
 
 typedef int FixedVectorStepMultiplier32;
 
-typedef dword RichTextNestedStreamPointerValue32;
+typedef uint32_t RichTextNestedStreamPointerValue32;
 
-typedef dword FactionRelationCapabilityState;
+typedef uint32_t FactionRelationCapabilityState;
 
-typedef uint TerrainMaterialByteValue;
+typedef uint32_t TerrainMaterialByteValue;
 
-typedef dword PersistentSettingsByteOffset;
+typedef uint32_t PersistentSettingsByteOffset;
 
-typedef dword TerrainProjectedHeightThresholdQ20;
+typedef uint32_t TerrainProjectedHeightThresholdQ20;
 
-typedef dword ContinuationEntryAddress32;
+typedef uint32_t ContinuationEntryAddress32;
 
-typedef word NetworkDatagramByteCount16;
+typedef uint16_t NetworkDatagramByteCount16;
 
-typedef dword TechnologyIndexOrRestoreCode;
+typedef uint32_t TechnologyIndexOrRestoreCode;
 
-typedef dword FrontendCapabilityFlags;
+typedef uint32_t FrontendCapabilityFlags;
 
-typedef word WinSockProtocolNumber16;
+typedef uint16_t WinSockProtocolNumber16;
 
-typedef dword FrontendCapturedStateFlag;
+typedef uint32_t FrontendCapturedStateFlag;
 
-typedef dword WinMmTimerId;
+typedef uint32_t WinMmTimerId;
 
-typedef dword GraphicsProjectionScale;
+typedef uint32_t GraphicsProjectionScale;
 
 typedef int GraphicsPrimitiveDepthFixed;
 
-typedef dword FrontendProtocolMagic;
+typedef uint32_t FrontendProtocolMagic;
 
-typedef dword FactionImageByteOffset;
+typedef uint32_t FactionImageByteOffset;
 
 typedef int SelectionMarkerIndex;
 
-typedef dword RecentTextSerialCounter;
+typedef uint32_t RecentTextSerialCounter;
 
-typedef dword PersistentSettingsByteCount;
+typedef uint32_t PersistentSettingsByteCount;
 
-typedef byte PaletteEntryFlagsByte;
+typedef uint8_t PaletteEntryFlagsByte;
 
-typedef dword GraphicsRenderFlagMask;
+typedef uint32_t GraphicsRenderFlagMask;
 
-typedef dword WideNumberDenominator32;
+typedef uint32_t WideNumberDenominator32;
 
 typedef int CameraScreenDeltaPixels;
 
-typedef dword UiFrameDelayFrames;
+typedef uint32_t UiFrameDelayFrames;
 
 typedef int FactionResourceScoreComponent;
 
-typedef dword MovieAudioTrackCount;
+typedef uint32_t MovieAudioTrackCount;
 
-typedef dword RecentTextHistoryEntryLimit;
+typedef uint32_t RecentTextHistoryEntryLimit;
 
-typedef dword UiDirtyRectCount;
+typedef uint32_t UiDirtyRectCount;
 
-typedef dword PckDwordCopyCount;
+typedef uint32_t PckDwordCopyCount;
 
-typedef dword ModelRuntimeAttachmentIndex;
+typedef uint32_t ModelRuntimeAttachmentIndex;
 
-typedef word SoftwareColorLaneFixed16;
+typedef uint16_t SoftwareColorLaneFixed16;
 
-typedef dword FrontendIndexedSelectionArgument;
+typedef uint32_t FrontendIndexedSelectionArgument;
 
-typedef dword LocaleCalendarMonthStack32;
+typedef uint32_t LocaleCalendarMonthStack32;
 
-typedef dword TimerFrequencyHz;
+typedef uint32_t TimerFrequencyHz;
 
-typedef dword PersistentShadingGridHalfSize;
+typedef uint32_t PersistentShadingGridHalfSize;
 
-typedef dword FactionTechnologyCount;
+typedef uint32_t FactionTechnologyCount;
 
 typedef int FrontendRootRuntimeAddress32;
 
-typedef dword UiTransferRetryTickCount;
+typedef uint32_t UiTransferRetryTickCount;
 
-typedef dword PckCompactFieldImageByteCount;
+typedef uint32_t PckCompactFieldImageByteCount;
 
-typedef uint RichTextCommandFlagBits;
+typedef uint32_t RichTextCommandFlagBits;
 
-typedef dword GraphicsPixelDimension;
+typedef uint32_t GraphicsPixelDimension;
 
 typedef int GridPathPassCount;
 
-typedef dword GridPathUnreachableReferenceRow32;
+typedef uint32_t GridPathUnreachableReferenceRow32;
 
-typedef uint ArmyPlacementCollisionFilterFlags;
+typedef uint32_t ArmyPlacementCollisionFilterFlags;
 
-typedef dword WorldMotionSplineChannelByteOffset;
+typedef uint32_t WorldMotionSplineChannelByteOffset;
 
-typedef dword UiPointerListFieldByteOffset;
+typedef uint32_t UiPointerListFieldByteOffset;
 
-typedef dword ModelAttachmentOrdinal;
+typedef uint32_t ModelAttachmentOrdinal;
 
 typedef int FrontendBooleanState32;
 
 typedef int AiSourceClassCount;
 
-typedef dword UiActionQueueUsedBytes;
+typedef uint32_t UiActionQueueUsedBytes;
 
-typedef dword AudioChannelCountStack32;
+typedef uint32_t AudioChannelCountStack32;
 
-typedef dword MusicTrackClassId;
+typedef uint32_t MusicTrackClassId;
 
-typedef dword GraphicsSubresourceOffset;
+typedef uint32_t GraphicsSubresourceOffset;
 
-typedef dword ArmyRuntimeSavedOffset;
-typedef dword AiWorkspaceRuntimeSlotAddress32; /* opaque 32-bit ArmyRuntimeSlot address (x86 target) */
+typedef uint32_t ArmyRuntimeSavedOffset;
+typedef uint32_t AiWorkspaceRuntimeSlotAddress32; /* opaque 32-bit ArmyRuntimeSlot address (x86 target) */
 
 struct FieldGridCell {
-    dword runtimeState00; // First 32-bit decoder/runtime state word. Kept semantically generic because byte-granular occupancy code also addresses this runtime prefix.
-    dword runtimeOverlayOrHeightValue04; // Second 32-bit runtime word. Terrain overlay passes store PackedArgb32 or TerrainOverlayCellRuntimeValue/Q12-like reference values here; exact use is phase-dependent.
+    uint32_t runtimeState00; // First 32-bit decoder/runtime state word. Kept semantically generic because byte-granular occupancy code also addresses this runtime prefix.
+    uint32_t runtimeOverlayOrHeightValue04; // Second 32-bit runtime word. Terrain overlay passes store PackedArgb32 or TerrainOverlayCellRuntimeValue/Q12-like reference values here; exact use is phase-dependent.
     PackedTerrainNormalAngles triangle0NormalAngles; // Packed normal-angle pair.
-    byte runtime0C_3F[52]; // Terrain runtime state.
+    uint8_t runtime0C_3F[52]; // Terrain runtime state.
     Q12 worldX; // Generated world X coordinate.
     Q12 worldY; // Generated world Y coordinate.
     Q12 terrainHeight; // Terrain height.
@@ -6072,7 +6055,7 @@ struct FieldGridCell {
     FieldCellPersistedAux persistedAux54; // Persisted field-cell auxiliary value.
     PackedArgb32 groundDirectionalLightColor58; // Packed ground directional-light color written by FieldGridCell_ComputeDirectionalLightColor and consumed by terrain shading.
     PackedArgb32 secondarySurfaceDirectionalLightColor5C; // Packed secondary-surface directional-light color written beside the ground color and consumed by the secondary terrain shading path.
-    byte runtime60_6B[12]; // Runtime field state following the two binary-proven directional-light colors and preceding armyRuntimeSavedOffset6C.
+    uint8_t runtime60_6B[12]; // Runtime field state following the two binary-proven directional-light colors and preceding armyRuntimeSavedOffset6C.
     ArmyRuntimeSavedOffset armyRuntimeSavedOffset6C; // Army runtime pool-relative token. Producer stores armyRuntime - g_ModelRuntimeRebaseDelta; connected-region collection copies it; consumer adds the same delta before dereference.
     TerrainOccupancyMask occupancyMask; // [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Separate 64-bit runtime occupancy namespace. Do not conflate with FLD +0x50 flagsAndMaterial or GridScratchCell_V419.stateMask.
     PackedTerrainNormalAngles triangle1NormalAngles; // Packed normal-angle pair.
@@ -6085,30 +6068,30 @@ struct FieldGridAsset {
     FieldGridRuntimeFlags runtimeStateFlags; 
     FieldGridDimension gridWidth; 
     FieldGridDimension gridHeight; 
-    byte reservedC0_FF[64]; 
-    word sourcePath[128]; 
+    uint8_t reservedC0_FF[64]; 
+    uint16_t sourcePath[128]; 
     struct FieldGridCell cells[1]; 
 };
 
-typedef dword LocaleCalendarYearStack32;
+typedef uint32_t LocaleCalendarYearStack32;
 
 typedef int GraphicsObjectAddress32;
 
-typedef dword GraphicsPixelChannelBitCount;
+typedef uint32_t GraphicsPixelChannelBitCount;
 
-typedef dword MemoryByteCount;
+typedef uint32_t MemoryByteCount;
 
-typedef qword UiScrollableContentDimensionsEdxEax8;
+typedef uint64_t UiScrollableContentDimensionsEdxEax8;
 
-typedef word Win32Minute16;
+typedef uint16_t Win32Minute16;
 
-typedef dword LevelAssetRecordCount;
+typedef uint32_t LevelAssetRecordCount;
 
-typedef dword OldUnitRecordCount;
+typedef uint32_t OldUnitRecordCount;
 
 typedef struct PckHuffmanNode *PckHuffmanNodePtr;
 
-typedef dword PckHuffmanWeight;
+typedef uint32_t PckHuffmanWeight;
 
 struct PckHuffmanNode {
     PckHuffmanWeight weight; 
@@ -6117,29 +6100,29 @@ struct PckHuffmanNode {
     PckHuffmanNodePtr parent; 
 };
 
-typedef dword UiControlCount;
+typedef uint32_t UiControlCount;
 
 typedef int InGameCommandPanelSourceAddress32;
 
 typedef int NetworkTimeoutSeconds;
 
-typedef dword PckRuntimePayloadOffset;
+typedef uint32_t PckRuntimePayloadOffset;
 
-typedef dword RichTextCommandPayload32;
+typedef uint32_t RichTextCommandPayload32;
 
-typedef dword InGameCommandPayloadTripletValue32;
+typedef uint32_t InGameCommandPayloadTripletValue32;
 
-typedef dword AiCandidateEntryKind;
+typedef uint32_t AiCandidateEntryKind;
 
-typedef dword FieldGridOccupancyBlockCount;
+typedef uint32_t FieldGridOccupancyBlockCount;
 
-typedef dword MovieStreamByteCount;
+typedef uint32_t MovieStreamByteCount;
 
-typedef dword SelectionMarkerLaneMask;
+typedef uint32_t SelectionMarkerLaneMask;
 
-typedef dword ArmyPlacementCandidateCount;
+typedef uint32_t ArmyPlacementCandidateCount;
 
-typedef dword ModelNodePoolRelativeOffset;
+typedef uint32_t ModelNodePoolRelativeOffset;
 
 typedef struct InGameCommandTextEditControlCC *InGameCommandTextEntryPageTextEditPtr; /* Ghidra shifted pointer: points at InGameCommandTextEntryPage2320.commandTextEdit; ADJ() -> InGameCommandTextEntryPage2320 */
 
@@ -6148,71 +6131,71 @@ struct InGameCommandTextEditControlCC {
     enum UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
-    dword valueOrCapacity58; 
+    uint32_t valueOrCapacity58; 
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
     struct DirectSoundVoiceSet *activationSound; 
-    word textBuffer[48]; 
+    uint16_t textBuffer[48]; 
 };
 
 struct InGameCommandTextEntryPage2320 {
     struct UiPageStackControl commandPageStack; 
-    byte reserved0054_0057[4]; 
+    uint8_t reserved0054_0057[4]; 
     struct InGameCommandTextEditControlCC commandTextEdit; 
-    byte reserved0124_1E2B[7432]; 
+    uint8_t reserved0124_1E2B[7432]; 
     struct UiSelectableControl packedStateModeLowControl; 
-    byte reserved1E80_1E8B[12]; 
+    uint8_t reserved1E80_1E8B[12]; 
     struct UiSelectableControl packedStateModeHighControl; 
-    byte reserved1EE0_1EEB[12]; 
+    uint8_t reserved1EE0_1EEB[12]; 
     struct UiSelectableControl packedStateModeFallbackControl; 
-    byte reserved1F40_208B[332]; 
+    uint8_t reserved1F40_208B[332]; 
     struct UiSelectableControl selectionSlot0Control; 
-    byte reservedSelectionSlotGap0[12]; 
+    uint8_t reservedSelectionSlotGap0[12]; 
     struct UiSelectableControl selectionSlot1Control; 
-    byte reservedSelectionSlotGap1[12]; 
+    uint8_t reservedSelectionSlotGap1[12]; 
     struct UiSelectableControl selectionSlot2Control; 
-    byte reservedSelectionSlotGap2[12]; 
+    uint8_t reservedSelectionSlotGap2[12]; 
     struct UiSelectableControl selectionSlot3Control; 
-    byte reservedSelectionSlotGap3[12]; 
+    uint8_t reservedSelectionSlotGap3[12]; 
     struct UiSelectableControl selectionSlot4Control; 
-    byte reservedSelectionSlotGap4[12]; 
+    uint8_t reservedSelectionSlotGap4[12]; 
     struct UiSelectableControl selectionSlot5Control; 
-    byte reservedSelectionSlotGap5[12]; 
+    uint8_t reservedSelectionSlotGap5[12]; 
     struct UiSelectableControl selectionSlot6Control; 
 };
 
-typedef dword FactionContributionScaleQ8;
+typedef uint32_t FactionContributionScaleQ8;
 
-typedef dword PckLoadCapacityFlags;
+typedef uint32_t PckLoadCapacityFlags;
 
 typedef int SoftwareMaskRuntimeAddress32;
 
-typedef dword FactionRelationStateNibble;
+typedef uint32_t FactionRelationStateNibble;
 
-typedef dword FrontendPlayerRuntimeBlockCount;
+typedef uint32_t FrontendPlayerRuntimeBlockCount;
 
-typedef dword ModelCommandTarget0;
+typedef uint32_t ModelCommandTarget0;
 
 typedef int DamageAmount32;
 
-typedef dword ModelCommandTarget1;
+typedef uint32_t ModelCommandTarget1;
 
-typedef dword InGameConditionRecordCount;
+typedef uint32_t InGameConditionRecordCount;
 
-typedef dword RichTextInlinePayloadValue32;
+typedef uint32_t RichTextInlinePayloadValue32;
 
-typedef byte PckHuffmanBitOffset;
+typedef uint8_t PckHuffmanBitOffset;
 
 struct SelectionInfoEntitySlots {
     struct GameEntityRuntime *entries[32]; 
 };
 
 struct WinSockProtoEnt32 {
-    byte *name;
-    byte **aliases;
+    uint8_t *name;
+    uint8_t **aliases;
     WinSockProtocolNumber16 protocolNumber; 
-    word alignmentPadding;
+    uint16_t alignmentPadding;
 };
 
 struct GraphicsCursorInputEvent18 {
@@ -6229,12 +6212,12 @@ struct UiTextEditControl {
     enum UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
-    dword valueOrCapacity58; 
+    uint32_t valueOrCapacity58; 
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
     struct DirectSoundVoiceSet *activationSound; 
-    word textPrefix6C[10]; 
+    uint16_t textPrefix6C[10]; 
 };
 
 struct KeyboardInputEvent {
@@ -6242,9 +6225,9 @@ struct KeyboardInputEvent {
     UiKeyboardStateMask stateMask04; 
 };
 
-typedef dword XeniteAmountQ4;
+typedef uint32_t XeniteAmountQ4;
 
-typedef dword TritiumAmountQ4;
+typedef uint32_t TritiumAmountQ4;
 
 struct LevelAssetResourceTableDirectory24 {
     LevelRuntimePrefixByteSizeAndInitialArmyPlacementOffset runtimePrefixByteSizeAndInitialArmyPlacementOffset; // Dual-use LEV header value: exact byte count copied from file start into mutable level runtime storage, and file-relative offset of the 0x20-byte initial army placement table.
@@ -6276,11 +6259,11 @@ struct LevelAssetHeader {
     struct LevelAssetPathOffsets pathOffsets;
     LevelAssetRecordCount initialArmyPlacementRecordCount; // Number of 0x20-byte initial army placement records at resourceTables.runtimePrefixByteSizeAndInitialArmyPlacementOffset.
     struct LevelAssetResourceTableDirectory24 resourceTables; // Counts and UTF-16 path-table offsets for ARM, MDL, EFF, and SHT assets.
-    byte opaque100_16F[112]; // Level-header region without closed field evidence.
+    uint8_t opaque100_16F[112]; // Level-header region without closed field evidence.
     UiTextResourceId titleTextResourceIndex; // Localized level title resource identifier.
-    byte opaque174_18F[28]; // Level-header region without closed field evidence.
+    uint8_t opaque174_18F[28]; // Level-header region without closed field evidence.
     LevelCampaignAssociationIndex campaignAssociationIndex; // Campaign association index.
-    byte opaque194_1FF[108]; // Level-header tail without closed field evidence.
+    uint8_t opaque194_1FF[108]; // Level-header tail without closed field evidence.
 };
 
 struct LevelPlayerSlotRecord {
@@ -6295,26 +6278,26 @@ struct LevelPlayerSlotRecord {
 };
 
 struct LevelAssetRuntimeTail90 {
-    dword packedFieldRegionOriginYHigh16XLow16;
+    uint32_t packedFieldRegionOriginYHigh16XLow16;
     PackedArgb32 terrainBaseColorArgb;
     PackedArgb32 terrainRampColor124Argb;
     LevelLightingCycleDurationTicks terrainLightingCycleDurationTicks; // Modulo period for WorldLightingRuntime_UpdateInterpolatedTerrainLighting; zero disables periodic interpolation.
-    dword packedFieldRegionHeightHigh16WidthLow16;
+    uint32_t packedFieldRegionHeightHigh16WidthLow16;
     PackedArgb32 terrainLightingColor128Argb;
     PackedArgb32 terrainRampColor12CArgb;
-    dword reserved1C;
+    uint32_t reserved1C;
     PackedArgb32 terrainLightingColor130Argb;
     PackedArgb32 terrainLightingColor134Argb;
     PackedArgb32 terrainLightingColor138Argb;
     PackedArgb32 terrainLightingColor13CArgb;
-    dword assignableFactionCount; // Count of initially assignable factions. Frontend faction assignment loops consume this count and wrap factionAssignmentIndex modulo it.
-    dword activeFactionCount; // Total active faction count copied into GameFactionRuntimeImageTail and used as the upper faction index/count.
+    uint32_t assignableFactionCount; // Count of initially assignable factions. Frontend faction assignment loops consume this count and wrap factionAssignmentIndex modulo it.
+    uint32_t activeFactionCount; // Total active faction count copied into GameFactionRuntimeImageTail and used as the upper faction index/count.
     GameRelationUiFlags relationUiFlags; // Copied directly into GameFactionRuntimeImage.tail.relationUiFlags during level initialization.
     LevelFactionRelationGroupMasks32 relationState8FactionGroupMasks; // Packed faction groups whose pairwise members are transitioned with state arguments 8/8 during level initialization.
     LevelFactionRelationGroupMasks32 relationState4FactionGroupMasks; // Packed faction groups whose pairwise members are transitioned with state arguments 4/4 during level initialization.
-    byte reserved44_47[4]; // Unresolved dword between relation setup and the alternate field/lighting profile.
-    dword alternatePackedFieldRegionOriginYHigh16XLow16; // Second field-region origin pair interpolated against packedFieldRegionOriginYHigh16XLow16.
-    dword alternatePackedFieldRegionHeightHigh16WidthLow16; // Second field-region dimension pair interpolated against packedFieldRegionHeightHigh16WidthLow16.
+    uint8_t reserved44_47[4]; // Unresolved dword between relation setup and the alternate field/lighting profile.
+    uint32_t alternatePackedFieldRegionOriginYHigh16XLow16; // Second field-region origin pair interpolated against packedFieldRegionOriginYHigh16XLow16.
+    uint32_t alternatePackedFieldRegionHeightHigh16WidthLow16; // Second field-region dimension pair interpolated against packedFieldRegionHeightHigh16WidthLow16.
     PackedArgb32 alternateTerrainBaseColorArgb; // Second endpoint for terrain base-color interpolation.
     PackedArgb32 alternateTerrainRampColor124Argb; // Second endpoint for terrain ramp color +0x124 interpolation.
     PackedArgb32 alternateTerrainLightingColor128Argb; // Second endpoint for terrain lighting color +0x128 interpolation.
@@ -6335,24 +6318,24 @@ struct LevelAssetRuntimeImagePrefix370 {
 
 struct FrontendRootPageState26C4 {
     struct UiNodeBase rootNode; 
-    byte reserved004C_036B[800]; 
+    uint8_t reserved004C_036B[800]; 
     struct UiNodeBase compactLayoutControl; 
-    byte reserved03B8_0507[336]; 
+    uint8_t reserved03B8_0507[336]; 
     struct UiPageStackControl primaryPageStack; 
-    byte reserved055C_2677[8476]; 
+    uint8_t reserved055C_2677[8476]; 
     struct UiNodeBase returnToMainActionControl; 
 };
 
 struct TerrainDirectionRecord {
-    dword angleAComponent0ScaledQ28;
-    dword angleAComponent1ScaledQ28;
-    dword angleBComponent0ScaledQ28;
-    dword packedAngleA_low16_AngleB_high16;
-    dword scaleA;
-    dword scaleB;
-    word rateA;
-    word rateB;
-    dword reserved1C;
+    uint32_t angleAComponent0ScaledQ28;
+    uint32_t angleAComponent1ScaledQ28;
+    uint32_t angleBComponent0ScaledQ28;
+    uint32_t packedAngleA_low16_AngleB_high16;
+    uint32_t scaleA;
+    uint32_t scaleB;
+    uint16_t rateA;
+    uint16_t rateB;
+    uint32_t reserved1C;
 };
 
 /* One 16-byte entry of a timed-list tree. A record block is an array of these: element 0 is the block
@@ -6360,8 +6343,8 @@ struct TerrainDirectionRecord {
    flags has UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY), elements 1..count are rows (payload00 = label text,
    rowPayload04 = icon subresource, link = child block when flags 1|2 say expanded). */
 struct UiTimedListTreeRecord16 {
-    dword recordCountOrRowPayload00;
-    dword rowPayload04;
+    uint32_t recordCountOrRowPayload00;
+    uint32_t rowPayload04;
     struct UiTimedListTreeRecord16 *nestedRecordBlockOrParentLink08;
     enum UiTimedListRecordFlags recordFlags0C;
 };
@@ -6378,17 +6361,17 @@ struct UiTimedListControl {
     struct UiTimedListTreeRecord16 *selectedRecord;
     void (*recordSelectionCallback)(struct UiTimedListTreeRecord16 *, struct UiTimedListRuntimeExtendedView88 *);
     struct GraphicsTextureSourceAsset *rowTextureSource;
-    dword observedDrawParameter6C; // subresource of the collapsed-node icon (expandable row, flag 2 clear)
+    uint32_t observedDrawParameter6C; // subresource of the collapsed-node icon (expandable row, flag 2 clear)
 };
 
 struct UiTimedListRuntimeExtendedView88 {
     struct UiTimedListControl base;
-    dword observedDrawParameter70; // subresource of the expanded-node icon
-    dword observedDrawParameter74; // subresource of the vertical connector of an ancestor level
-    dword observedDrawParameter78; // subresource of the connector of a row with more siblings below
-    dword observedDrawParameter7C; // subresource of the connector of the last row of a block
-    dword observedDrawParameter80; // indent width in pixels per tree level
-    dword observedDrawParameter84; // horizontal space in pixels reserved for the row icon
+    uint32_t observedDrawParameter70; // subresource of the expanded-node icon
+    uint32_t observedDrawParameter74; // subresource of the vertical connector of an ancestor level
+    uint32_t observedDrawParameter78; // subresource of the connector of a row with more siblings below
+    uint32_t observedDrawParameter7C; // subresource of the connector of the last row of a block
+    uint32_t observedDrawParameter80; // indent width in pixels per tree level
+    uint32_t observedDrawParameter84; // horizontal space in pixels reserved for the row icon
 };
 
 struct FrontendResultsColumnDrawDispatchTable18 {
@@ -6423,15 +6406,15 @@ struct FrontendPacket50001SessionAdvertisement {
     struct UiTransferPacketHeader header; 
     UiTransferPayloadByteCount payloadByteCount; 
     enum UiTransferJoinAvailability joinAvailableFlag; 
-    word sessionTitleUtf16[20]; 
-    word hostDescriptionUtf16[44]; 
-    word playerCountTextUtf16[4]; 
+    uint16_t sessionTitleUtf16[20]; 
+    uint16_t hostDescriptionUtf16[44]; 
+    uint16_t playerCountTextUtf16[4]; 
 };
 
 struct UiTransferEndpointDescriptor {
     union NetworkEndpointAddressHeader4 addressHeader; 
     NetworkIpv4AddressNetworkOrder ipv4AddressNetworkOrder; 
-    byte zeroPadding[8]; 
+    uint8_t zeroPadding[8]; 
 };
 
 struct FrontendSessionDiscoveryRecordB0 {
@@ -6440,22 +6423,22 @@ struct FrontendSessionDiscoveryRecordB0 {
 };
 
 struct AiCandidateWorkspaceEntry {
-    dword weightedScoreAndKind; 
-    dword entityIdAndMultiplicity; 
+    uint32_t weightedScoreAndKind; 
+    uint32_t entityIdAndMultiplicity; 
 };
 
 struct UiCommandQueueRecord {
     PackedUiCommandAndPlayerId packedCommandAndPlayerId; 
-    dword payloadDword04;
-    dword payloadDword08;
-    dword payloadDword0C;
+    uint32_t payloadDword04;
+    uint32_t payloadDword08;
+    uint32_t payloadDword0C;
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct LevelArchivePathTemplate18 {
-    word prefixCodeUnits[5]; 
+    uint16_t prefixCodeUnits[5]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
-    word suffixCodeUnits[5]; 
+    uint16_t suffixCodeUnits[5]; 
 };
 #pragma pack(pop)
 
@@ -6487,30 +6470,30 @@ struct RuntimeModelClassPriorityTable24 {
 };
 
 struct WinSockServEnt32 {
-    byte *name;
-    byte **aliases;
+    uint8_t *name;
+    uint8_t **aliases;
     NetworkPortNetworkOrder portNetworkOrder; 
-    word alignmentPadding;
-    byte *protocolName;
+    uint16_t alignmentPadding;
+    uint8_t *protocolName;
 };
 
 struct UiTextListControl {
     struct UiNodeBase base; 
     enum UiTextListStateFlags listStateFlags; 
-    word **rowTextSlots; 
+    uint16_t **rowTextSlots; 
     UiListRowCount rowCount; 
     UiPixelExtent rowHeight; 
     UiActionId actionId; 
-    word **selectedRowSlot; 
+    uint16_t **selectedRowSlot; 
     struct DirectSoundVoiceSet *activationSound; 
 };
 
 struct SprRelocationBlockHeader20 {
     SerializedRelativeByteOffset blockByteSize;
-    dword reserved04;
+    uint32_t reserved04;
     SprRelocationCount fixedRecordCount40; 
     SprRelocationCount pointerRelocationCount;
-    byte reserved10_1F[16];
+    uint8_t reserved10_1F[16];
 };
 
 typedef enum InGameConditionKind {
@@ -6530,67 +6513,67 @@ struct InGameNotificationPayload18 {
     Q12 primaryWorldCoordinateQ12_00; 
     Q12 secondaryWorldCoordinateQ12_04; 
     AngleTurn32 primaryOrientationAngle08; 
-    dword orientationOrPresentationValue0C; 
-    dword reserved10; 
+    uint32_t orientationOrPresentationValue0C; 
+    uint32_t reserved10; 
     enum InGameNotificationPayloadKind payloadKind14; 
 };
 
 struct WinSockHostEnt32 {
-    byte *canonicalName;
-    byte **aliases;
+    uint8_t *canonicalName;
+    uint8_t **aliases;
     NetworkAddressFamily addressType; 
     WinSockIpv4AddressLength addressLength; 
-    byte **addressList;
+    uint8_t **addressList;
 };
 
 struct WinSockFdSet64 {
     WinSockFdSetCount count; 
-    dword sockets[64];
+    uint32_t sockets[64];
 };
 
 struct UiTransferAuxiliaryEndpointRecord80 {
     struct UiTransferEndpointDescriptor endpoint; 
-    dword transferTimeoutTicks; 
-    byte reserved0014_007F[108]; 
+    uint32_t transferTimeoutTicks; 
+    uint8_t reserved0014_007F[108]; 
 };
 
 struct FrontendModelPointerContextRuntimeState118 {
     struct UiNodeBase base; // Accepted frontend UI-node prefix.
     enum FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
-    byte reserved50_5F[16]; // Unresolved.
+    uint8_t reserved50_5F[16]; // Unresolved.
     Q12 hitReferenceWorldXQ12; // Subtracted from model world-transform X when computing the hit metric.
     Q12 hitReferenceWorldYQ12; // Subtracted from model world-transform Y when computing the hit metric.
     Q12 hitReferenceWorldZQ12; // Subtracted from model world-transform Z when computing the hit metric.
-    byte reserved6C_D7[108]; // Unresolved.
+    uint8_t reserved6C_D7[108]; // Unresolved.
     struct ModelRuntimeNode *candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
-    dword observedContextValueDC; // Not consumed by the recovered selection paths.
+    uint32_t observedContextValueDC; // Not consumed by the recovered selection paths.
     struct ModelRuntimeNode *selectedModelNode; // EDX return half from the model selector.
     int selectedHitMetric; // EAX return half from the model selector.
-    dword callbackArgumentE8; // Passed unchanged to resolved-action callbacks.
-    dword callbackArgumentEC; // Passed unchanged to resolved-action callbacks.
-    dword callbackArgumentF0; // Passed unchanged to resolved-action callbacks.
-    byte reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
+    uint32_t callbackArgumentE8; // Passed unchanged to resolved-action callbacks.
+    uint32_t callbackArgumentEC; // Passed unchanged to resolved-action callbacks.
+    uint32_t callbackArgumentF0; // Passed unchanged to resolved-action callbacks.
+    uint8_t reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
     bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
-    dword (*resolvedActionCallback104)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback108)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback10C)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback110)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback114)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback110)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback114)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
 };
 
 struct RecentTextHistorySlot {
-    word text[128]; 
+    uint16_t text[128]; 
 };
 
 struct RecentTextHistoryPointerList {
-    dword count; 
+    uint32_t count; 
     struct RecentTextHistorySlot *entries[8]; 
 };
 
 struct RecentTextHistoryView {
-    byte reserved00_57[88]; 
+    uint8_t reserved00_57[88]; 
     struct RecentTextHistoryPointerList recentTextPointerList; 
-    byte reserved7C_FF[132]; 
+    uint8_t reserved7C_FF[132]; 
 };
 
 struct InGameNotificationQueueRecord20 {
@@ -6614,7 +6597,7 @@ struct MdlSerializedNodeHeader38 {
 struct WinSockAddress {
     union NetworkEndpointAddressHeader4 addressHeader; 
     NetworkIpv4AddressNetworkOrder ipv4AddressNetworkOrder; 
-    byte zeroPadding[8]; 
+    uint8_t zeroPadding[8]; 
 };
 
 struct WorldMotionSplineKeyframe {
@@ -6625,28 +6608,28 @@ struct WorldMotionSplineKeyframe {
     WorldMotionSplineValueQ12 channel4Q12; 
     WorldMotionSplineValueQ12 channel5Q12; 
     WorldMotionSplineTimeQ12 timeQ12; 
-    dword reserved1C;
+    uint32_t reserved1C;
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct PatchArchivePathTemplate18 {
-    word prefixCodeUnits[5]; 
+    uint16_t prefixCodeUnits[5]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
-    word suffixCodeUnits[5]; 
+    uint16_t suffixCodeUnits[5]; 
 };
 #pragma pack(pop)
 
 struct TerrainMaterialSuffixEntry {
-    word lowercaseLetterUtf16;
-    word terminator;
+    uint16_t lowercaseLetterUtf16;
+    uint16_t terminator;
 };
 
 /* One column of a UiListControl: the rich-text string at rowRecord + rowTextOffset is drawn in a column
    of width pixels; a negative width is a right-aligned column of -width pixels. */
 typedef struct UiListColumn UiListColumn;
 struct UiListColumn {
-    sdword width;
-    dword rowTextOffset;
+    int32_t width;
+    uint32_t rowTextOffset;
 };
 
 /* Multi-column text list (g_UiListControlVtable): rowSlots points at rowCount row records whose
@@ -6661,26 +6644,26 @@ struct UiListControl {
     UiPixelExtent rowHeight;
     UiActionId actionId;
     void **selectedRowSlot;
-    dword columnCount;
+    uint32_t columnCount;
     struct DirectSoundVoiceSet *activationSound;
     struct UiListColumn columns[1];
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioCampaignDataPathTemplate2A {
-    word prefixCodeUnits[14]; 
+    uint16_t prefixCodeUnits[14]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
-    word suffixCodeUnits[5]; 
+    uint16_t suffixCodeUnits[5]; 
 };
 #pragma pack(pop)
 
 struct SprPointerRelocationRecord40 {
-    dword pointerOrSerializedOffset00;
-    byte reserved04_0B[8];
-    dword pointerOrSerializedOffset0C;
-    byte reserved10_17[8];
-    dword pointerOrSerializedOffset18;
-    byte reserved1C_3F[36];
+    uint32_t pointerOrSerializedOffset00;
+    uint8_t reserved04_0B[8];
+    uint32_t pointerOrSerializedOffset0C;
+    uint8_t reserved10_17[8];
+    uint32_t pointerOrSerializedOffset18;
+    uint8_t reserved1C_3F[36];
 };
 
 struct GraphicsProjectedPoint2i {
@@ -6690,11 +6673,11 @@ struct GraphicsProjectedPoint2i {
 
 struct EntityPathingPriorityPair {
     struct GameEntityRuntime *entity;
-    sdword priority;
+    int32_t priority;
 };
 
 struct FrontendResultsRowMetrics {
-    byte reserved00_5B[92]; 
+    uint8_t reserved00_5B[92]; 
     UiPixelMetric headerBaselineOffsetPixels; 
     UiPixelMetric rowAdvancePixels; 
 };
@@ -6713,11 +6696,11 @@ struct WinSockTimeVal32 {
 struct WinSockData11 {
     WinSockVersionWord version; // WinSock startup metadata.
     WinSockVersionWord highestVersion; // WinSock startup metadata.
-    byte description[257];
-    byte systemStatus[129];
+    uint8_t description[257];
+    uint8_t systemStatus[129];
     WinSockSocketCount16 maximumSockets; // WinSock startup metadata.
     NetworkDatagramByteCount16 maximumUdpDatagram; // WinSock startup metadata.
-    byte *vendorInfo; // Historical WinSock 1.x vendor info pointer; structure is packed with no alignment padding before this field.
+    uint8_t *vendorInfo; // Historical WinSock 1.x vendor info pointer; structure is packed with no alignment padding before this field.
 };
 #pragma pack(pop)
 
@@ -6744,22 +6727,22 @@ struct UiScrollableControl {
 
 struct InGameTargetingContext {
     struct UiNodeBase base; 
-    byte reserved4C_4F[4]; 
+    uint8_t reserved4C_4F[4]; 
     enum InGameTargetingObservedActionState actionState; 
-    byte reserved54_FF[172]; 
+    uint8_t reserved54_FF[172]; 
 };
 
 struct ModelRaycastTriangleDescriptor {
     struct GraphicsFixedVec3 *vertex0; 
-    byte reservedVertex0Metadata04_0B[8]; 
+    uint8_t reservedVertex0Metadata04_0B[8]; 
     struct GraphicsFixedVec3 *vertex1; 
-    byte reservedVertex1Metadata10_17[8]; 
+    uint8_t reservedVertex1Metadata10_17[8]; 
     struct GraphicsFixedVec3 *vertex2; 
-    byte reservedVertex2Metadata1C_23[8]; 
+    uint8_t reservedVertex2Metadata1C_23[8]; 
     GraphicsPlaneNormalFixed planeNormalX; 
     GraphicsPlaneNormalFixed planeNormalY; 
     GraphicsPlaneNormalFixed planeNormalZ; 
-    byte reserved30_3F[16]; 
+    uint8_t reserved30_3F[16]; 
 };
 
 struct GraphicsOffscreenSceneExtents {
@@ -6769,15 +6752,15 @@ struct GraphicsOffscreenSceneExtents {
 
 struct UiSettingsValueControl {
     struct UiNodeBase base; 
-    byte reserved4C_57[12]; 
-    dword boundValue; 
-    byte reserved5C_67[12]; 
+    uint8_t reserved4C_57[12]; 
+    uint32_t boundValue; 
+    uint8_t reserved5C_67[12]; 
 };
 
 struct SprGroupRelocationHeader20 {
     SerializedRelativeByteOffset nextGroupByteOffset; 
     SprRelocationCount relocationBlockCount;
-    byte reserved08_1F[24];
+    uint8_t reserved08_1F[24];
 };
 
 struct GraphicsOffscreenViewParameters {
@@ -6791,21 +6774,21 @@ struct GraphicsOffscreenViewParameters {
 };
 
 struct NetworkSessionContext {
-    dword transportContext00; 
-    dword ipv4AddressNetworkOrder; 
-    byte reserved08_FF[248];
+    uint32_t transportContext00; 
+    uint32_t ipv4AddressNetworkOrder; 
+    uint8_t reserved08_FF[248];
 };
 
 struct InGameCameraCommandDispatchRecord {
     enum InGameCameraCommandKeyCode keyCode;
-    dword requiredModifierMask;
+    uint32_t requiredModifierMask;
     ContinuationEntryAddress32 continuationEntryAddress; 
 };
 
 struct InGameCameraCommandDispatchTable {
     struct InGameCameraCommandDispatchRecord records[16];
-    dword terminatorKeyCode;
-    byte alignmentPadding[12];
+    uint32_t terminatorKeyCode;
+    uint8_t alignmentPadding[12];
 };
 
 typedef enum UiRootFlags {
@@ -6820,8 +6803,8 @@ typedef enum MovieStreamState {
 } MovieStreamState;
 
 struct SelectionPlayerPairRecord {
-    dword pairKey; 
-    dword pairValue; 
+    uint32_t pairKey; 
+    uint32_t pairValue; 
 };
 
 struct MovieFileHeader {
@@ -6831,9 +6814,9 @@ struct MovieFileHeader {
     MovieFrameCount frameCount; 
     MovieAudioTrackCount audioTrackCount; 
     MovieStreamByteCount videoStreamBytes; 
-    dword audioTrackBytes[14]; 
+    uint32_t audioTrackBytes[14]; 
     MovieFrameIntervalMilliseconds frameIntervalMilliseconds; 
-    byte reserved100_1FF[256]; 
+    uint8_t reserved100_1FF[256]; 
 };
 
 struct UiRootNode {
@@ -6854,94 +6837,94 @@ typedef struct UiResizableWindowControl UiResizableWindowControl;
 struct UiResizableWindowControl {
     struct UiRootNode root; // rootFlags: 0x1 tiled interior, 0x2 frame, 0x4 title bar, 0x8 close button, 0x10 maximize button, 0x20 movable, 0x40 resizable, 0x80 maximized, 0x800/0x1000 close/maximize pressed, 0x2000 moving, 0x4000 resizing, 0x80000/0x100000 close/maximize armed, 0xFF000000 resized edges.
     UiTextResourceId titleTextResourceId;
-    dword field5C; // Not read by any window method; zero in the template.
-    sdword restoredLeft; // Rectangle saved on maximize and restored on un-maximize.
-    sdword restoredTop;
-    sdword restoredRight;
-    sdword restoredBottom;
-    sdword dragAnchorXOrPendingRight; // Move: pointer x relative to left at grab time. Resize: new right edge being applied.
-    sdword dragAnchorYOrPendingBottom; // Move: pointer y relative to top at grab time. Resize: new bottom edge being applied.
+    uint32_t field5C; // Not read by any window method; zero in the template.
+    int32_t restoredLeft; // Rectangle saved on maximize and restored on un-maximize.
+    int32_t restoredTop;
+    int32_t restoredRight;
+    int32_t restoredBottom;
+    int32_t dragAnchorXOrPendingRight; // Move: pointer x relative to left at grab time. Resize: new right edge being applied.
+    int32_t dragAnchorYOrPendingBottom; // Move: pointer y relative to top at grab time. Resize: new bottom edge being applied.
 };
 
 typedef struct UiTitledWindowControl UiTitledWindowControl;
 /* Titled box (g_UiTitledWindowControlVtable): framed group box with a title text in its top edge. */
 struct UiTitledWindowControl {
     struct UiNodeBase base;
-    dword titleFlags; // Bit 0x1: title centered (otherwise at the left corner).
+    uint32_t titleFlags; // Bit 0x1: title centered (otherwise at the left corner).
     UiTextResourceId titleTextResourceId;
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeRootImageC3E4 {
     struct UiRootNode rootUi0000; // Exact UiRootNode prefix used by root-stack and shutdown paths.
-    byte opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl primaryPageStack017C;
-    byte opaque01D0_022B[92]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque01D0_022B[92]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct MovieRuntime *activeEndMovieRuntime022C;
-    dword endMoviePlaybackState0230; // Cleared when selected end-movie playback begins; exact wider meaning remains deferred.
-    byte opaque0234_02F7[196]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t endMoviePlaybackState0230; // Cleared when selected end-movie playback begins; exact wider meaning remains deferred.
+    uint8_t opaque0234_02F7[196]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl endMoviePageStack02F8;
-    byte opaque034C_08D3[1416]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque034C_08D3[1416]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct MovieRuntime *levelMovieRuntime08D4;
-    byte opaque08D8_08E3[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque08D8_08E3[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiNodeBase playerStatusNode08E4;
-    byte opaque0930_093B[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword playerStatusLayoutMetric093C; // Written by InGamePanel_RebuildPlayerStatusRows and cleared by both session initializers.
-    byte opaque0940_09B7[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0930_093B[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t playerStatusLayoutMetric093C; // Written by InGamePanel_RebuildPlayerStatusRows and cleared by both session initializers.
+    uint8_t opaque0940_09B7[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct RecentTextHistoryPointerList recentTextHistory09B8;
-    byte opaque09DC_0A03[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword optionalUiLayoutState0A04; // Cleared after the three optional page stacks are switched and before root layout.
-    byte opaque0A08_0A2F[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque09DC_0A03[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t optionalUiLayoutState0A04; // Cleared after the three optional page stacks are switched and before root layout.
+    uint8_t opaque0A08_0A2F[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct WorldRuntimeContext worldRuntime0A30;
-    void (*worldOverlayCallback0B8C)(dword, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
-    byte opaque0B90_0B9F[16]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    void (*worldOverlayCallback0B8C)(uint32_t, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
+    uint8_t opaque0B90_0B9F[16]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct SelectionPlayerPairRecord *localPlayerPairRecords0BA0;
-    dword localPlayerPairCount0BA4;
+    uint32_t localPlayerPairCount0BA4;
     Q12 fieldRegionOriginWorldXQ12_0BA8;
     Q12 fieldRegionOriginWorldYQ12_0BAC;
-    byte opaque0BB0_0BCF[32]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0BB0_0BCF[32]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl gameWindowPageStack0BD0;
-    byte opaque0C24_24DF[6332]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword localNetworkUiStateFlags24E0;
-    byte opaque24E4_40AB[7112]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0C24_24DF[6332]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t localNetworkUiStateFlags24E0;
+    uint8_t opaque24E4_40AB[7112]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack40AC; // Activated with page index 1 when persistent-settings bit 0x4 selects the optional UI layout.
-    byte opaque4100_452F[1072]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4100_452F[1072]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack4530; // Activated with page index 0 in the same optional UI-layout branch.
-    byte opaque4584_4643[192]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4584_4643[192]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack4644; // Third exact page stack activated with page index 0 in the same branch.
-    byte opaque4698_4937[672]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword observedTerrainCompositeFlags4938;
-    byte opaque493C_49B3[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4698_4937[672]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t observedTerrainCompositeFlags4938;
+    uint8_t opaque493C_49B3[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int primaryResourceDisplayCurrent49B4;
     int primaryResourceDisplayLimit49B8;
-    byte opaque49BC_4A4B[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque49BC_4A4B[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int secondaryResourceDisplayCurrent4A4C;
     int secondaryResourceDisplayLimit4A50;
-    byte opaque4A54_4AE3[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4A54_4AE3[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int transientContributionDisplay4AE4;
     int progressLimitDisplay4AE8;
-    byte opaque4AEC_4B27[60]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4AEC_4B27[60]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int combinedProgressOrArmyScaleDisplay4B28;
-    byte opaque4B2C_4D53[552]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword observedRelationTransitionFlags4D54;
-    byte opaque4D58_9A6B[19732]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4B2C_4D53[552]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t observedRelationTransitionFlags4D54;
+    uint8_t opaque4D58_9A6B[19732]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     FixedPlanarPointEdxEax8 fieldGridPosition9A6C;
-    byte opaque9A74_9B4B[216]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque9A74_9B4B[216]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     enum InGameNotificationInteractionState sessionNotificationInteractionState9B4C; // State 7 is active only while a nonzero notification payload is presented; state 0 is idle.
-    dword observedSessionNotificationValue9B50;
-    dword notificationPlaybackCompletionCode9B54; // Cleared when a queued notification movie opens and set to observed code 0x25 after playback closes.
-    byte opaque9B58_9E3F[744]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t observedSessionNotificationValue9B50;
+    uint32_t notificationPlaybackCompletionCode9B54; // Cleared when a queued notification movie opens and set to observed code 0x25 after playback closes.
+    uint8_t opaque9B58_9E3F[744]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct InGameNotificationPayload18 activeNotificationPayload9E40; // Payload promoted from the head queue record when its movie opens.
     Q12 targetingPrimaryWorldCoordinateQ12_9E58; // Targeting scratch coordinate copied from activeNotificationPayload9E40.primaryWorldCoordinateQ12_00 by the impact-anchor targeting path.
     Q12 targetingSecondaryWorldCoordinateQ12_9E5C; // Targeting scratch coordinate copied from activeNotificationPayload9E40.secondaryWorldCoordinateQ12_04 by the impact-anchor targeting path.
     struct InGameNotificationQueueRecord20 notificationQueue9E60[4]; // Four exact 0x20-byte records maintained in descending priority order.
-    byte opaque9EE0_9FAB[204]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque9EE0_9FAB[204]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl selectionDetailPageStack9FAC;
-    byte opaqueA000_A05F[96]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword selectionDetailArmyAssetValueA060;
-    byte opaqueA064_A067[4]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaqueA000_A05F[96]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t selectionDetailArmyAssetValueA060;
+    uint8_t opaqueA064_A067[4]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct GameEntityRuntime *selectionDetailEntityA068;
-    byte opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
 };
 #pragma pack(pop)
 
@@ -6950,7 +6933,7 @@ struct MovieRuntime {
     MovieSubresourceCount subresourceCount; 
     MoviePaletteBankCount paletteBankCount; 
     MovieSubresourceTableOffset subresourceTableOffset; 
-    dword reservedBC; 
+    uint32_t reservedBC; 
     struct MovieFileHeader *fileHeader; 
     MovieFrameIndex currentFrameIndex; 
     MovieStreamOffset videoStreamOffset; 
@@ -6958,7 +6941,7 @@ struct MovieRuntime {
     struct IDirectSoundBuffer *activeAudioBuffer; 
     void *streamHandle; 
     MovieSharedStreamHandleFlag streamHandleIsSharedPackage; 
-    byte *loadedVideoEnd; 
+    uint8_t *loadedVideoEnd; 
     MovieStreamByteCount remainingVideoBytes; 
     MovieStreamFileOffset streamFileOffset; 
     MovieOpenFlags openFlags; 
@@ -6966,10 +6949,10 @@ struct MovieRuntime {
     MovieWorkerActiveFlag workerActive; 
     enum MovieStreamState streamState; 
     void *refillSemaphore; 
-    dword reservedFC; 
-    byte reserved100_1FF[256]; 
+    uint32_t reservedFC; 
+    uint8_t reserved100_1FF[256]; 
     struct GraphicsTextureSourceEntry sourceEntry; 
-    dword argbPixels[1]; 
+    uint32_t argbPixels[1]; 
 };
 
 struct UiRootCallbacks {
@@ -6999,13 +6982,13 @@ struct InGameScheduledConditionDispatchTable14 {
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioLevelDataPathTemplate24 {
-    word prefixCodeUnits[11]; 
+    uint16_t prefixCodeUnits[11]; 
     union Utf16DecimalDigitPair4 decimalDigits; 
-    word suffixCodeUnits[5]; 
+    uint16_t suffixCodeUnits[5]; 
 };
 #pragma pack(pop)
 
-typedef dword EnergyDemandQ4;
+typedef uint32_t EnergyDemandQ4;
 
 struct ModelRuntimeAttachmentSerializedScalarDescriptor20 {
     ModelRuntimePoolRelativeOffset childModelRuntimeSavedOffset00; 
@@ -7015,58 +6998,58 @@ struct ModelRuntimeAttachmentSerializedScalarDescriptor20 {
     AngleTurn32 childLocalRotationAngle0; 
     AngleTurn32 childLocalRotationAngle1; 
     AngleTurn32 childLocalRotationAngle2; 
-    dword reserved1C; 
+    uint32_t reserved1C; 
 };
 
 struct ModelRuntimeSlotClassStateSerializedScalar7C {
-    byte reserved84_A7[36]; 
-    dword classStateA8; 
-    dword classStateAC; 
-    sdword classStateB0; 
-    sdword classStateB4; 
-    dword classStateB8; 
-    byte reservedBC_CF[20]; 
-    sdword classStateD0; 
-    byte reservedD4_DB[8]; 
-    dword classStateDC; 
-    dword classStateE0; 
-    dword enabledStateE4; 
-    dword enabledStateE8; 
-    dword classStateEC; 
-    dword linkedArmyRuntimeSavedOffset; 
+    uint8_t reserved84_A7[36]; 
+    uint32_t classStateA8; 
+    uint32_t classStateAC; 
+    int32_t classStateB0; 
+    int32_t classStateB4; 
+    uint32_t classStateB8; 
+    uint8_t reservedBC_CF[20]; 
+    int32_t classStateD0; 
+    uint8_t reservedD4_DB[8]; 
+    uint32_t classStateDC; 
+    uint32_t classStateE0; 
+    uint32_t enabledStateE4; 
+    uint32_t enabledStateE8; 
+    uint32_t classStateEC; 
+    uint32_t linkedArmyRuntimeSavedOffset; 
     EnergyDemandQ4 energyDemandQ4; 
-    dword classStateF8; 
-    dword classStateFC; 
+    uint32_t classStateF8; 
+    uint32_t classStateFC; 
 };
 
 struct ModelRuntimeSlotSerializedScalarView200 {
     enum PckModelDefinitionIdCatalog definitionSavedId; 
-    dword rootModelNodeSavedOffset; 
-    dword ownerArmyRuntimeSavedOffset; 
-    dword attachmentCount0C; 
-    byte reserved10_37[40]; 
-    dword linkedModelRuntimeSavedOffset; 
-    dword definitionValue60_3C; 
-    dword definitionValue84_40; 
-    dword definitionValue88_44; 
-    dword definitionValue94_48; 
-    dword definitionValue9C_4C; 
-    dword definitionValueA4_50; 
-    dword definitionValueAC_54; 
-    dword definitionValueB4_58; 
-    dword definitionValueBC_5C; 
+    uint32_t rootModelNodeSavedOffset; 
+    uint32_t ownerArmyRuntimeSavedOffset; 
+    uint32_t attachmentCount0C; 
+    uint8_t reserved10_37[40]; 
+    uint32_t linkedModelRuntimeSavedOffset; 
+    uint32_t definitionValue60_3C; 
+    uint32_t definitionValue84_40; 
+    uint32_t definitionValue88_44; 
+    uint32_t definitionValue94_48; 
+    uint32_t definitionValue9C_4C; 
+    uint32_t definitionValueA4_50; 
+    uint32_t definitionValueAC_54; 
+    uint32_t definitionValueB4_58; 
+    uint32_t definitionValueBC_5C; 
     struct ModelRuntimeClassLinkState24 classLinkState; 
     struct ModelRuntimeSlotClassStateSerializedScalar7C classState; 
-    byte reserved100_117[24]; 
-    dword classState118; 
-    dword classState11C; 
-    byte reserved120_13F[32]; 
+    uint8_t reserved100_117[24]; 
+    uint32_t classState118; 
+    uint32_t classState11C; 
+    uint8_t reserved120_13F[32]; 
     struct ModelRuntimeAttachmentSerializedScalarDescriptor20 attachments140[6]; 
 };
 
 struct EffectRuntimeSlotSerializedScalarView40 {
     enum PckEffectDefinitionIdCatalog definitionSavedId; 
-    dword modelNodeSavedOffset; 
+    uint32_t modelNodeSavedOffset; 
     EffectAnimationFrameCount animationFramesRemaining; 
     DefinitionReferencePresentFlag linkedEffectPresent; 
     DefinitionReferencePresentFlag linkedShotPresent; 
@@ -7075,9 +7058,9 @@ struct EffectRuntimeSlotSerializedScalarView40 {
     EffectShadingCountdownTicks shadingStartCountdownTicksRemaining; 
     EffectShadingCountdownTicks shadingStopCountdownTicksRemaining; 
     EffectPeriodicIntervalTicks periodicEffectCountdownTicks; 
-    dword terrainRuntimeClassState; 
+    uint32_t terrainRuntimeClassState; 
     PackedArgb32 stateTintArgb; 
-    dword serializationToggleDword; 
+    uint32_t serializationToggleDword; 
 };
 
 typedef enum ResourceRegistrationDomainIndex {
@@ -7087,41 +7070,41 @@ typedef enum ResourceRegistrationDomainIndex {
 } ResourceRegistrationDomainIndex;
 
 struct ResourceRegistrationRecordSerializedScalarView100 {
-    dword primarySavedIdOrOffset; 
-    dword secondarySavedIdOrOffset; 
-    dword ownerRuntimeSavedOffset; 
-    byte reserved000C_002F[36]; 
-    dword paletteAssetSavedIdOrOffset; 
-    dword textureSetSavedIdOrOffset; 
-    byte reserved0038_003F[8]; 
-    dword spriteAssetSavedIdOrOffset; 
-    byte reserved0044_0047[4]; 
-    dword runtimePayloadSavedOffset; 
+    uint32_t primarySavedIdOrOffset; 
+    uint32_t secondarySavedIdOrOffset; 
+    uint32_t ownerRuntimeSavedOffset; 
+    uint8_t reserved000C_002F[36]; 
+    uint32_t paletteAssetSavedIdOrOffset; 
+    uint32_t textureSetSavedIdOrOffset; 
+    uint8_t reserved0038_003F[8]; 
+    uint32_t spriteAssetSavedIdOrOffset; 
+    uint8_t reserved0044_0047[4]; 
+    uint32_t runtimePayloadSavedOffset; 
     enum RuntimeRegistrationRecordFlags flags; 
-    byte reserved0050_005B[12]; 
-    dword auxiliarySavedIdOrOffset; 
-    byte reserved0060_00A3[68]; 
+    uint8_t reserved0050_005B[12]; 
+    uint32_t auxiliarySavedIdOrOffset; 
+    uint8_t reserved0060_00A3[68]; 
     enum ResourceRegistrationDomainIndex domainIndex; 
-    byte reserved00A8_00C3[28]; 
-    dword nestedBaseSavedOffset; 
-    dword nestedCountC8; 
-    dword nestedSavedOffsets13[13]; 
+    uint8_t reserved00A8_00C3[28]; 
+    uint32_t nestedBaseSavedOffset; 
+    uint32_t nestedCountC8; 
+    uint32_t nestedSavedOffsets13[13]; 
 };
 
 union ResourceRegistrationPointerOrSavedOffset4 {
     void *runtimePointer; 
-    dword savedIdOrOffset; 
-    dword raw; 
+    uint32_t savedIdOrOffset; 
+    uint32_t raw; 
 };
 
 struct ResourceRegistrationRuntimeImageSerializedScalarViewDC {
-    byte reserved0000_004F[80]; 
-    dword levelRuntimeRecordIndex50; 
-    byte reserved0054_0057[4]; 
+    uint8_t reserved0000_004F[80]; 
+    uint32_t levelRuntimeRecordIndex50; 
+    uint8_t reserved0054_0057[4]; 
     struct ResourceRegistrationRecordSerializedScalarView100 *records58; 
-    byte reserved005C_00AB[80]; 
-    dword recordCountAC; 
-    byte reserved00B0_00D7[40]; 
+    uint8_t reserved005C_00AB[80]; 
+    uint32_t recordCountAC; 
+    uint8_t reserved00B0_00D7[40]; 
     struct ResourceRegistrationRecord100 *tailRecordD8; 
 };
 
@@ -7129,21 +7112,21 @@ struct ResourceRegistrationRecord100 {
     union ResourceRegistrationPointerOrSavedOffset4 primaryPointerOrSavedOffset; 
     union ResourceRegistrationPointerOrSavedOffset4 secondaryPointerOrSavedOffset; 
     union ResourceRegistrationPointerOrSavedOffset4 ownerRuntimeOrSavedOffset; 
-    byte reserved000C_002F[36]; 
+    uint8_t reserved000C_002F[36]; 
     struct GraphicsPaletteAsset *paletteAsset; 
     struct GraphicsTextureSet *textureSet; 
-    byte reserved0038_003F[8]; 
+    uint8_t reserved0038_003F[8]; 
     struct SpriteAssetHeader *spriteAsset; 
-    byte reserved0044_0047[4]; 
+    uint8_t reserved0044_0047[4]; 
     union ResourceRegistrationRuntimePayloadReference4 runtimePayload; 
     enum RuntimeRegistrationRecordFlags flags; 
-    byte reserved0050_005B[12]; 
+    uint8_t reserved0050_005B[12]; 
     union ResourceRegistrationPointerOrSavedOffset4 auxiliaryPointerOrSavedOffset; 
-    byte reserved0060_00A3[68]; 
+    uint8_t reserved0060_00A3[68]; 
     enum ResourceRegistrationDomainIndex domainIndex; 
-    byte reserved00A8_00C3[28]; 
+    uint8_t reserved00A8_00C3[28]; 
     union ResourceRegistrationPointerOrSavedOffset4 nestedBasePointerOrSavedOffset; 
-    dword nestedCountC8; 
+    uint32_t nestedCountC8; 
     union ResourceRegistrationPointerOrSavedOffset4 nestedPointerOrOffsetArray13[13]; 
 };
 
@@ -7153,16 +7136,16 @@ struct ShotRuntimeOwnerAndTrajectoryState18 {
     Q12 directionComponent1Q12; 
     Q12 directionComponent2Q12; 
     ShotAnimationFrameIndex animationFrameIndex; 
-    dword definitionValue26C; 
+    uint32_t definitionValue26C; 
 };
 
 struct ShotRuntimeSlotSerializedScalarView40 {
     enum PckShotDefinitionIdCatalog definitionSavedId; 
     Q12 launchSpeedQ12; 
-    dword terrainRuntimeClassState; 
+    uint32_t terrainRuntimeClassState; 
     ShotAnimationFrameAccumulatorQ4 animationFrameAccumulatorQ4; 
-    dword modelNodeSavedOffset; 
-    dword runtimeStateSavedOffset; 
+    uint32_t modelNodeSavedOffset; 
+    uint32_t runtimeStateSavedOffset; 
     AngleTurn16Stored32 elevationOffsetAngle16; 
     ShotImpactEffectEmissionFlags impactEffectEmissionFlags; 
     ShotProjectileAgeTicks projectileAgeTicks; 
@@ -7186,43 +7169,43 @@ struct ArmyArticulatedRuntimeSlotView {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     int articulatedCoordinateOrState9C; 
     int articulatedHeightOrStateA0; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; 
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -7232,7 +7215,7 @@ struct ArmyArticulatedRuntimeSlotView {
 };
 
 struct ArmyRuntimeLinkedChildSlotMaskState4 {
-    dword linkedChildSlotMask; 
+    uint32_t linkedChildSlotMask; 
 };
 
 struct ArmyRuntimeLinkedChildMaskArticulatedContactState14 {
@@ -7259,43 +7242,43 @@ struct ArmyRuntimeLinkedChildMaskSlotView {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeLinkedChildMaskArticulatedContactState14 articulatedContact; 
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -7320,43 +7303,43 @@ struct ArmyRuntimeMovementCountdownSlotView {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; 
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -7366,23 +7349,23 @@ struct ArmyRuntimeMovementCountdownSlotView {
 };
 
 struct GameEntityMovementCountdownDamageState2C {
-    dword reserved00; 
+    uint32_t reserved00; 
     int countdownOrState; 
     int remainingIntegrity; 
-    byte reserved0C_2B[32]; 
+    uint8_t reserved0C_2B[32]; 
 };
 
 struct GameEntityMovementCountdownRuntimeCommon {
     struct GameEntityOwnershipState10 ownership; 
-    byte reserved10_17[8]; 
+    uint8_t reserved10_17[8]; 
     GameEntityCommandFlags commandFlags; 
     struct GameEntityCommandTargetState commandTarget; 
     struct GameEntityMovementCountdownDamageState2C damageState; 
     Q12 selectionOffsetXQ12; 
     Q12 selectionOffsetYQ12; 
-    byte reserved68_9F[56]; 
+    uint8_t reserved68_9F[56]; 
     RuntimeToken runtimeIdentityOrArmyAssetId; 
-    byte reservedA4_EB[72]; 
+    uint8_t reservedA4_EB[72]; 
     GameEntityRuntimeFlags runtimeFlags; 
     struct GameEntityPathingAndImpactState10 pathingAndImpactState; 
     GameEntityCommandState commandState; 
@@ -7399,11 +7382,11 @@ struct ArmyGraphicsBinding {
 };
 
 struct ArmyLinkedChildDispatchCallerFrame28 {
-    byte reserved00_0B[12]; 
-    dword preservedReturnLow0C; 
-    byte reserved10_17[8]; 
-    dword preservedReturnHigh18; 
-    dword reserved1C; 
+    uint8_t reserved00_0B[12]; 
+    uint32_t preservedReturnLow0C; 
+    uint8_t reserved10_17[8]; 
+    uint32_t preservedReturnHigh18; 
+    uint32_t reserved1C; 
     struct WorldRuntimeContext *worldRuntime; 
     struct ArmyRuntimeSlot *armyRuntime; 
 };
@@ -7431,43 +7414,43 @@ struct ArmyRuntimeWaypointCoordinateSlotView {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; 
     struct ArmyRuntimeWaypointCoordinateState10 linkedChildWaypointState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -7488,11 +7471,11 @@ struct ArmyRuntimeLinkedChildDefinitionState10 {
     AngleTurn32 rightContactHeading; 
 };
 
-typedef qword ArmyLinkedChildDispatchPreservedRegisterPair8;
+typedef uint64_t ArmyLinkedChildDispatchPreservedRegisterPair8;
 
-typedef dword ArmyWaypointCount;
+typedef uint32_t ArmyWaypointCount;
 
-typedef dword ArmyMovementRetryCountdown;
+typedef uint32_t ArmyMovementRetryCountdown;
 
 struct WorldPointXYQ12 {
     Q12 worldXQ12; 
@@ -7515,37 +7498,37 @@ struct ArmyMovementRuntime {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementWorldXQ12; 
     Q12 movementWorldYQ12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; 
     Q12 lastCheckedWorldXQ12; 
     Q12 lastCheckedWorldYQ12; 
     Q12 movementTargetWorldXQ12; 
     Q12 movementTargetWorldYQ12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
     ArmyMovementRetryCountdown retryCountdown; 
     ArmyWaypointCount queuedWaypointCount; 
-    byte unresolvedMovementPrefix[12]; 
+    uint8_t unresolvedMovementPrefix[12]; 
     struct WorldPointXYQ12 fallbackPosition; 
     struct WorldPointXYQ12 queuedWaypoints[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -7555,11 +7538,11 @@ struct ArmyMovementRuntime {
 };
 
 struct ArmyPlacementAssetClassDispatchCallbackTable24 {
-    void (*callbacks[24])(dword, dword, dword, dword, Q12, Q12, struct ModelDefinitionRecordPrefix *, dword, struct WorldRuntimeContext *); 
+    void (*callbacks[24])(uint32_t, uint32_t, uint32_t, uint32_t, Q12, Q12, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *); 
 };
 
 struct InGameFieldImageSaveContext58 {
-    byte opaqueRuntimePrefix00_53[84]; 
+    uint8_t opaqueRuntimePrefix00_53[84]; 
     struct FieldGridAsset *fieldGridAsset; 
 };
 
@@ -7573,7 +7556,7 @@ enum /* RuntimeClassFamilyProfile, stored in 1 byte(s) */ {
     RUNTIME_CLASS_PROFILE_CLASS14=6,
     RUNTIME_CLASS_PROFILE_CLASS23=7
 };
-typedef byte RuntimeClassFamilyProfile;
+typedef uint8_t RuntimeClassFamilyProfile;
 
 struct RuntimeClassFamilyMap24 {
     RuntimeClassFamilyProfile class00; 
@@ -7647,14 +7630,14 @@ enum /* RuntimeMaintenancePhaseIndex, stored in 1 byte(s) */ {
     OCCUPANCY_REBUILD=2,
     AUDIO_REFRESH=3
 };
-typedef byte RuntimeMaintenancePhaseIndex;
+typedef uint8_t RuntimeMaintenancePhaseIndex;
 
 enum /* RuntimeMaintenanceDomainIndex, stored in 1 byte(s) */ {
     ARMY=0,
     SHOT=1,
     EFFECT=2
 };
-typedef byte RuntimeMaintenanceDomainIndex;
+typedef uint8_t RuntimeMaintenanceDomainIndex;
 
 enum /* RuntimeMaintenanceSecondArgumentKind, stored in 1 byte(s) */ {
     WORLD_NODE=0,
@@ -7662,13 +7645,13 @@ enum /* RuntimeMaintenanceSecondArgumentKind, stored in 1 byte(s) */ {
     ARMY_RUNTIME=2,
     OPAQUE=3
 };
-typedef byte RuntimeMaintenanceSecondArgumentKind;
+typedef uint8_t RuntimeMaintenanceSecondArgumentKind;
 
 struct RuntimeMaintenanceTargetTypeDescriptor8 {
     RuntimeMaintenancePhaseIndex phase; 
     RuntimeMaintenanceDomainIndex domain; 
     RuntimeMaintenanceSecondArgumentKind secondArgumentKind; 
-    byte reserved03; 
+    uint8_t reserved03; 
     void *callbackTarget; 
 };
 
@@ -7725,11 +7708,11 @@ struct ModelRuntimeSlotClassInitializeCallbackTable24 {
 };
 
 struct NetworkBackendInstanceDescriptorPrefix {
-    dword addressFamily; // Winsock address family used as socket(af,...)
-    dword socketAddressLength; // sockaddr byte length used by bind/send/recv/address conversion
-    dword socketType; // Winsock socket type used as socket(...,type,...)
-    dword protocol; // Winsock protocol used as socket(...,...,protocol)
-    word displayNameUtf16[20]; // Twenty UTF-16 code units: WinSock32 1.1 - UDP.
+    uint32_t addressFamily; // Winsock address family used as socket(af,...)
+    uint32_t socketAddressLength; // sockaddr byte length used by bind/send/recv/address conversion
+    uint32_t socketType; // Winsock socket type used as socket(...,type,...)
+    uint32_t protocol; // Winsock protocol used as socket(...,...,protocol)
+    uint16_t displayNameUtf16[20]; // Twenty UTF-16 code units: WinSock32 1.1 - UDP.
 };
 
 typedef enum PersistentSoundOptionFlags {
@@ -7748,7 +7731,7 @@ struct PersistentSettingsRuntime {
     struct PersistentSettingsImage *image; 
     PersistentSettingsByteCount loadedByteCount; 
     PersistentSettingsMutationCount dirtyWriteCount; 
-    word path[256]; 
+    uint16_t path[256]; 
 };
 
 struct PersistentSettingsImage {
@@ -7772,74 +7755,74 @@ struct PersistentSettingsImage {
     GameSpeedPercent gameSpeedPercent; 
     CameraScrollStepPixels cameraScrollStep; 
     MovieAudioGainQ15 movieAlternateAudioGainQ15; 
-    byte reserved50_5B[12]; 
+    uint8_t reserved50_5B[12]; 
     enum PersistentMouseLinkPanelOptionFlags mouseLinkPanelOptionFlags; 
-    word playerName[20]; 
-    word gameName[20]; 
-    byte reservedB0_C7[24]; 
+    uint16_t playerName[20]; 
+    uint16_t gameName[20]; 
+    uint8_t reservedB0_C7[24]; 
 };
 
 struct AiKnowledgeParameters {
-    dword resource136DeficitScoreNumerator; 
-    dword specialSite14aBaseWeight; 
-    dword specialSite14cBaseWeight; 
-    dword structure14bBaseWeight; 
-    dword structure14dBaseWeight; 
-    dword workspace08Id14aDerivedWeight; 
-    dword workspace08OtherDerivedWeight; 
-    dword strategicClass12dBaseWeight; 
-    dword strategicClass12fTo132BaseWeight; 
-    dword armyVariantABaseWeight; 
-    dword armyVariantBUnexploredTerrainWeightCoefficient; 
-    dword armyVariantCBaseWeight; 
-    dword strategicClass141To143BaseWeight; 
-    dword workspace12BestCandidateBaseWeight; 
-    dword unknownParameterDwords14_15[2]; 
-    dword strategic12dAnd141To143AdditionalPlanningCapacity; 
-    dword strategic12fTo132AdditionalPlanningCapacity; 
-    dword unknownParameterDword18; 
-    dword resource136DeficitScoreDenominator; 
-    dword structure14bPrerequisite14aCountLimit; 
-    dword structure14dPrerequisite14cCountLimit; 
-    dword structure14bCountGapLimit; 
-    dword structure14dCountGapLimit; 
+    uint32_t resource136DeficitScoreNumerator; 
+    uint32_t specialSite14aBaseWeight; 
+    uint32_t specialSite14cBaseWeight; 
+    uint32_t structure14bBaseWeight; 
+    uint32_t structure14dBaseWeight; 
+    uint32_t workspace08Id14aDerivedWeight; 
+    uint32_t workspace08OtherDerivedWeight; 
+    uint32_t strategicClass12dBaseWeight; 
+    uint32_t strategicClass12fTo132BaseWeight; 
+    uint32_t armyVariantABaseWeight; 
+    uint32_t armyVariantBUnexploredTerrainWeightCoefficient; 
+    uint32_t armyVariantCBaseWeight; 
+    uint32_t strategicClass141To143BaseWeight; 
+    uint32_t workspace12BestCandidateBaseWeight; 
+    uint32_t unknownParameterDwords14_15[2]; 
+    uint32_t strategic12dAnd141To143AdditionalPlanningCapacity; 
+    uint32_t strategic12fTo132AdditionalPlanningCapacity; 
+    uint32_t unknownParameterDword18; 
+    uint32_t resource136DeficitScoreDenominator; 
+    uint32_t structure14bPrerequisite14aCountLimit; 
+    uint32_t structure14dPrerequisite14cCountLimit; 
+    uint32_t structure14bCountGapLimit; 
+    uint32_t structure14dCountGapLimit; 
     XeniteAmountQ4 factionScaledTechnologyMinimumXeniteQ4;
-    dword unknownParameterDwords25_27[3];
-    dword specialSiteSeparationQuantumQ12; 
-    dword unknownParameterDwords29_31[3]; 
-    dword generalSiteMinimumAxisSeparationQ12; 
-    dword unknownParameterDword33; 
-    dword generalSiteSecondaryDistanceCapQ12; 
-    dword workspace05DistanceBiasQ12; 
-    dword unknownParameterDwords36_37[2]; 
-    dword generalSiteSecondaryDistanceCoefficient; 
-    dword workspace05DistanceScaleQ12; 
-    dword unknownParameterDwords40_47[8]; 
-    dword flaggedSiteMinimumAxisSeparationQ12; 
-    dword unknownParameterDwords49_50[2]; 
-    dword factionAnchorDistanceBiasQ12; 
-    dword unknownParameterDwords52_54[3]; 
-    dword factionAnchorDistanceScaleQ12; 
-    dword unknownParameterDwords56_66[11]; 
-    dword secondaryWorkspaceDistanceBiasQ12; 
-    dword unknownParameterDwords68_70[3]; 
-    dword secondaryWorkspaceDistanceScaleQ12; 
-    dword unknownParameterDwords72_79[8]; 
-    dword terrainFeatureMinimumAxisSeparationQ12; 
-    dword placementClearancePaddingQ12; 
-    dword specialClass12SecondaryWorkspaceDistanceThresholdQ12; 
-    dword specialClass12EntityDistanceBiasQ12; 
-    dword specialClass12Workspace02NearDistanceThresholdQ12; 
-    dword specialClass12Workspace08Field0cCoefficient; 
-    dword specialClass12SecondaryWorkspaceShortfallCoefficient; 
-    dword specialClass12EntityDistanceCoefficient; 
-    dword specialClass12Workspace02NearDistanceCoefficient; 
-    dword specialSiteMinimumWorkspaceDistanceQ12; 
-    dword unknownParameterDwords90_119[30]; 
-    dword strategicClass141Weight; 
-    dword strategicClass142Weight; 
-    dword strategicClass143Weight; 
-    dword unknownParameterDwords123_127[5]; 
+    uint32_t unknownParameterDwords25_27[3];
+    uint32_t specialSiteSeparationQuantumQ12; 
+    uint32_t unknownParameterDwords29_31[3]; 
+    uint32_t generalSiteMinimumAxisSeparationQ12; 
+    uint32_t unknownParameterDword33; 
+    uint32_t generalSiteSecondaryDistanceCapQ12; 
+    uint32_t workspace05DistanceBiasQ12; 
+    uint32_t unknownParameterDwords36_37[2]; 
+    uint32_t generalSiteSecondaryDistanceCoefficient; 
+    uint32_t workspace05DistanceScaleQ12; 
+    uint32_t unknownParameterDwords40_47[8]; 
+    uint32_t flaggedSiteMinimumAxisSeparationQ12; 
+    uint32_t unknownParameterDwords49_50[2]; 
+    uint32_t factionAnchorDistanceBiasQ12; 
+    uint32_t unknownParameterDwords52_54[3]; 
+    uint32_t factionAnchorDistanceScaleQ12; 
+    uint32_t unknownParameterDwords56_66[11]; 
+    uint32_t secondaryWorkspaceDistanceBiasQ12; 
+    uint32_t unknownParameterDwords68_70[3]; 
+    uint32_t secondaryWorkspaceDistanceScaleQ12; 
+    uint32_t unknownParameterDwords72_79[8]; 
+    uint32_t terrainFeatureMinimumAxisSeparationQ12; 
+    uint32_t placementClearancePaddingQ12; 
+    uint32_t specialClass12SecondaryWorkspaceDistanceThresholdQ12; 
+    uint32_t specialClass12EntityDistanceBiasQ12; 
+    uint32_t specialClass12Workspace02NearDistanceThresholdQ12; 
+    uint32_t specialClass12Workspace08Field0cCoefficient; 
+    uint32_t specialClass12SecondaryWorkspaceShortfallCoefficient; 
+    uint32_t specialClass12EntityDistanceCoefficient; 
+    uint32_t specialClass12Workspace02NearDistanceCoefficient; 
+    uint32_t specialSiteMinimumWorkspaceDistanceQ12; 
+    uint32_t unknownParameterDwords90_119[30]; 
+    uint32_t strategicClass141Weight; 
+    uint32_t strategicClass142Weight; 
+    uint32_t strategicClass143Weight; 
+    uint32_t unknownParameterDwords123_127[5]; 
 };
 
 struct AiKnowledgeDataImage {
@@ -7855,7 +7838,7 @@ struct AiScoredSiteWorkspaceEntry {
 
 struct AiTerrainFeatureWorkspaceEntry {
     struct FieldGridCell *cell; 
-    dword unresolved04; 
+    uint32_t unresolved04; 
     enum PckArmyAssetIdCatalog armyAssetId; 
     int priority; 
 };
@@ -7873,11 +7856,11 @@ struct AiTargetWorkspaceEntry {
 };
 
 struct AiLinkedDefinitionListView {
-    byte unresolved00_07[8]; 
-    uint childListCount; 
+    uint8_t unresolved00_07[8]; 
+    uint32_t childListCount; 
     ModelLinkedDefinitionListAddress32 childList0Address; 
     ModelLinkedDefinitionListAddress32 childList1Address; 
-    byte unresolved14_1F[12]; 
+    uint8_t unresolved14_1F[12]; 
     enum PckModelDefinitionIdCatalog definitionIds[8]; 
 };
 
@@ -7907,22 +7890,22 @@ struct AiTechnologyPlanningCandidate {
     enum PckTechnologyIdCatalog technologyId00; 
     struct ArmyRuntimeSlot *sourceArmyRuntime04; 
     enum AiTechnologyCandidateScoreKind scoreKind08; 
-    dword reserved0C; 
+    uint32_t reserved0C; 
 };
 
-typedef dword AiTechnologyPlanningCandidateCount;
+typedef uint32_t AiTechnologyPlanningCandidateCount;
 
-typedef dword AiTechnologyCategoryMask;
+typedef uint32_t AiTechnologyCategoryMask;
 
-typedef dword AssetDecodedBlockCount;
+typedef uint32_t AssetDecodedBlockCount;
 
 struct SoundSampleAsset {
     enum AssetMagic magic;
-    byte reserved04_0B[8];
+    uint8_t reserved04_0B[8];
     AssetFormatVersion formatVersion;
-    byte reserved10_AF[160];
+    uint8_t reserved10_AF[160];
     AssetDecodedBlockCount decodedBlockCount;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct SpatialSoundSlot {
@@ -7947,33 +7930,33 @@ struct SelectionPointerArray32 {
 struct SelectionPlayerRuntimeBlock {
     struct SelectionPointerArray32 selection; 
     struct SelectionPlayerPairRecord pairRecords80_807F[4096]; 
-    dword primaryEntityOrFactionToken8080; 
-    dword activePairCount8084; 
+    uint32_t primaryEntityOrFactionToken8080; 
+    uint32_t activePairCount8084; 
     int *terrainHeightScratchPlane8088; 
-    dword *terrainMaterialEditPlane808C; 
-    dword constructionLookupState8090; 
-    dword primarySelectionEntityOffset8094; 
-    dword pendingSelectionEntityOffset8098; 
-    dword packedSelectionState809C; 
-    dword assignmentToken80A0; 
-    dword assignmentFlags80A4; 
-    uint sessionFlags; 
+    uint32_t *terrainMaterialEditPlane808C; 
+    uint32_t constructionLookupState8090; 
+    uint32_t primarySelectionEntityOffset8094; 
+    uint32_t pendingSelectionEntityOffset8098; 
+    uint32_t packedSelectionState809C; 
+    uint32_t assignmentToken80A0; 
+    uint32_t assignmentFlags80A4; 
+    uint32_t sessionFlags; 
     InGameSimulationStepBatchTicks simulationStepTicks; 
-    byte reserved80B0_8117[104]; 
+    uint8_t reserved80B0_8117[104]; 
 };
 
-typedef dword PckArchiveByteCount;
+typedef uint32_t PckArchiveByteCount;
 
-typedef dword PckArchiveVersion;
+typedef uint32_t PckArchiveVersion;
 
-typedef dword PckArchiveFormat;
+typedef uint32_t PckArchiveFormat;
 
-typedef dword PckPackedDate;
+typedef uint32_t PckPackedDate;
 
-typedef dword PckPackedTime;
+typedef uint32_t PckPackedTime;
 
 struct PckArchiveHeader {
-    byte magic[4]; 
+    uint8_t magic[4]; 
     PckArchiveByteCount archiveSize; 
     PckArchiveVersion version; 
     PckArchiveFormat format; 
@@ -7983,15 +7966,15 @@ struct PckArchiveHeader {
     PckPackedTime timeValue1; 
     PckPackedDate dateValue2; 
     PckPackedTime timeValue2; 
-    byte reserved28[8]; 
-    word producerName[32]; 
-    word sourceName[32]; 
+    uint8_t reserved28[8]; 
+    uint16_t producerName[32]; 
+    uint16_t sourceName[32]; 
     PckEntryCount entryCount; 
-    byte reservedB4[332]; 
+    uint8_t reservedB4[332]; 
 };
 
 struct PckEntryHeader {
-    word path[246]; 
+    uint16_t path[246]; 
     PckRuntimePayloadOffset runtimePayloadOffset; 
     PckDecodedByteCount unpackedSize; 
     enum PckAssetTypeTag typeTag; 
@@ -8009,7 +7992,7 @@ union ShotRayDistanceOrDefinitionReference4 {
     Q12 rayDistanceQ12; 
     struct ShotDefinition *definition; 
     enum PckShotDefinitionIdCatalog savedId; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 union GraphicsGeneratedTextureAssetOrEntryView200 {
@@ -8019,229 +8002,229 @@ union GraphicsGeneratedTextureAssetOrEntryView200 {
 
 struct ModelRuntimeSlotUnrebaseSemanticView200 {
     union ModelDefinitionReferenceOrSavedId4 definitionReferenceOrSavedId; 
-    dword rootModelNodeSavedOffset; 
-    dword ownerArmyRuntimeSavedOffset; 
-    dword attachmentCount0C; 
-    byte reserved10_37[40]; 
-    dword linkedModelRuntimeSavedOffset; 
-    dword definitionValue60_3C; 
-    dword definitionValue84_40; 
-    dword definitionValue88_44; 
-    dword definitionValue94_48; 
-    dword definitionValue9C_4C; 
-    dword definitionValueA4_50; 
-    dword definitionValueAC_54; 
-    dword definitionValueB4_58; 
-    dword definitionValueBC_5C; 
+    uint32_t rootModelNodeSavedOffset; 
+    uint32_t ownerArmyRuntimeSavedOffset; 
+    uint32_t attachmentCount0C; 
+    uint8_t reserved10_37[40]; 
+    uint32_t linkedModelRuntimeSavedOffset; 
+    uint32_t definitionValue60_3C; 
+    uint32_t definitionValue84_40; 
+    uint32_t definitionValue88_44; 
+    uint32_t definitionValue94_48; 
+    uint32_t definitionValue9C_4C; 
+    uint32_t definitionValueA4_50; 
+    uint32_t definitionValueAC_54; 
+    uint32_t definitionValueB4_58; 
+    uint32_t definitionValueBC_5C; 
     struct ModelRuntimeClassLinkState24 classLinkState; 
     struct ModelRuntimeSlotClassStateSerializedScalar7C classState; 
-    byte reserved100_117[24]; 
-    dword classState118; 
-    dword classState11C; 
-    byte reserved120_13F[32]; 
+    uint8_t reserved100_117[24]; 
+    uint32_t classState118; 
+    uint32_t classState11C; 
+    uint8_t reserved120_13F[32]; 
     struct ModelRuntimeAttachmentSerializedScalarDescriptor20 attachments140[6]; 
 };
 
 union ArmyAssetReferenceOrSavedId4 {
     struct ArmyAssetRecordPrefix *record; 
     enum PckArmyAssetIdCatalog savedId; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct ArmyAssetRecordPrefix {
     AssetRecordByteCount byteSize; 
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex; 
     enum PckArmyAssetIdCatalog registryId; 
-    dword rootNodeOffsetOrPointer; 
+    uint32_t rootNodeOffsetOrPointer; 
 };
 
 struct ArmyAssetRuntimeSemanticView80 {
     AssetRecordByteCount byteSize;
     ArmySelectionDetailTemplateVariantIndex selectionDetailTemplateVariantIndex;
     enum PckArmyAssetIdCatalog registryId;
-    dword rootNodeOffsetOrPointer;
+    uint32_t rootNodeOffsetOrPointer;
     void *linkedRuntimeOrRecord10;
-    uint flags14; 
-    byte reserved018_023[12]; 
-    dword relocationValue24;
-    dword relocationValue28;
-    dword relocationPointerOrOffset2C;
-    byte reserved030_06F[64]; 
-    dword definitionClassValue70; 
-    dword definitionClassValue74; 
-    dword definitionClassValue78; 
-    byte reserved07C_07F[4]; 
+    uint32_t flags14; 
+    uint8_t reserved018_023[12]; 
+    uint32_t relocationValue24;
+    uint32_t relocationValue28;
+    uint32_t relocationPointerOrOffset2C;
+    uint8_t reserved030_06F[64]; 
+    uint32_t definitionClassValue70; 
+    uint32_t definitionClassValue74; 
+    uint32_t definitionClassValue78; 
+    uint8_t reserved07C_07F[4]; 
 };
 
 struct ModelDefinitionRuntimeSemanticView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelDefinitionResolvePhaseView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    dword runtimeValue0C; // Definition scalar used by movement and the AI coefficient at +24.
-    byte reserved010_017[8]; // Unresolved intervening fields.
-    dword runtimeValue18; // Definition scalar whose nonzero state enables the AI score bonus.
-    byte reserved01C_023[8]; // Unresolved remaining fields.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint32_t runtimeValue0C; // Definition scalar used by movement and the AI coefficient at +24.
+    uint8_t reserved010_017[8]; // Unresolved intervening fields.
+    uint32_t runtimeValue18; // Definition scalar whose nonzero state enables the AI score bonus.
+    uint8_t reserved01C_023[8]; // Unresolved remaining fields.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     struct ShotDefinition *shotDefinitionReference2C; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
-    dword runtimeValue30; // Nonzero signed divisor for shot-damage score contributions; signed interpretation stays explicit at uses.
-    byte reserved034_047[20]; // Unresolved remaining fields.
-    dword runtimeValue48;
+    uint32_t runtimeValue30; // Nonzero signed divisor for shot-damage score contributions; signed interpretation stays explicit at uses.
+    uint8_t reserved034_047[20]; // Unresolved remaining fields.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field14_0x50;
-    undefined field15_0x51;
-    undefined field16_0x52;
-    undefined field17_0x53;
+    uint8_t field14_0x50;
+    uint8_t field15_0x51;
+    uint8_t field16_0x52;
+    uint8_t field17_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     struct EffectDefinition *effectDefinitionReference58; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    uint categoryMaximumIndex5C; // Indexes the existing technology-category maximum array during AI scoring; no enum identity asserted.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field24_0x6c;
-    undefined field25_0x6d;
-    undefined field26_0x6e;
-    undefined field27_0x6f;
-    undefined field28_0x70;
-    undefined field29_0x71;
-    undefined field30_0x72;
-    undefined field31_0x73;
-    undefined field32_0x74;
-    undefined field33_0x75;
-    undefined field34_0x76;
-    undefined field35_0x77;
+    uint32_t categoryMaximumIndex5C; // Indexes the existing technology-category maximum array during AI scoring; no enum identity asserted.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field24_0x6c;
+    uint8_t field25_0x6d;
+    uint8_t field26_0x6e;
+    uint8_t field27_0x6f;
+    uint8_t field28_0x70;
+    uint8_t field29_0x71;
+    uint8_t field30_0x72;
+    uint8_t field31_0x73;
+    uint8_t field32_0x74;
+    uint8_t field33_0x75;
+    uint8_t field34_0x76;
+    uint8_t field35_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     struct EffectDefinition *effectDefinitionReference80; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     struct EffectDefinition *effectDefinitionReference88; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     struct EffectDefinition *effectDefinitionReference90; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     struct EffectDefinition *effectDefinitionReference98; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     struct EffectDefinition *effectDefinitionReferenceA0; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     struct EffectDefinition *effectDefinitionReferenceA8; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     struct EffectDefinition *effectDefinitionReferenceB0; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     struct EffectDefinition *effectDefinitionReferenceB8; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     struct ShotDefinition *shotDefinitionReference168; // Resolver-phase slot: serialized Shot id on entry, live ShotDefinition pointer after successful lookup.
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     struct EffectDefinition *effectDefinitionReference174; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     struct EffectDefinition *effectDefinitionReference190; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value; deliberately not an Effect reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value; deliberately not an Effect reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     struct EffectDefinition *effectDefinitionReference254; // Resolver-phase slot: serialized Effect id on entry, live EffectDefinition pointer after successful lookup.
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ArmyRuntimeTerrainContactLinkedChildState14 {
     enum ArmyTerrainContactDispatchMode terrainContactMode; 
-    dword linkedChildDispatchState; 
+    uint32_t linkedChildDispatchState; 
     union ArmyRuntimeContactRadiusOrLinkedSlotMask4 contactRadiusOrLinkedSlotMask; 
     Q12 fallbackPosition0Q12; 
     Q12 fallbackPosition1Q12; 
@@ -8263,43 +8246,43 @@ struct ArmyRuntimeTerrainContactLinkedChildClassView120 {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
-    dword linkedChildClassIndexOrSavedValue6C; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
+    uint32_t linkedChildClassIndexOrSavedValue6C; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeTerrainContactLinkedChildState14 terrainContactLinkedChildState; 
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -8309,33 +8292,33 @@ struct ArmyRuntimeTerrainContactLinkedChildClassView120 {
 };
 
 struct ModelRuntimeLinkedChildClassStateView7C {
-    byte reserved84_A7[36]; 
-    dword classStateA8; 
-    dword classStateAC; 
-    sdword classStateB0; 
-    sdword classStateB4; 
-    dword classStateB8; 
-    byte reservedBC_C3[8]; 
+    uint8_t reserved84_A7[36]; 
+    uint32_t classStateA8; 
+    uint32_t classStateAC; 
+    int32_t classStateB0; 
+    int32_t classStateB4; 
+    uint32_t classStateB8; 
+    uint8_t reservedBC_C3[8]; 
     FactionArmyAssetCount linkedChildSlotCountC4; 
-    byte reservedC8_CF[8]; 
-    sdword classStateD0; 
-    byte reservedD4_DB[8]; 
-    dword classStateDC; 
-    dword classStateE0; 
-    dword enabledStateE4; 
-    dword enabledStateE8; 
-    dword classStateEC; 
+    uint8_t reservedC8_CF[8]; 
+    int32_t classStateD0; 
+    uint8_t reservedD4_DB[8]; 
+    uint32_t classStateDC; 
+    uint32_t classStateE0; 
+    uint32_t enabledStateE4; 
+    uint32_t enabledStateE8; 
+    uint32_t classStateEC; 
     union ArmyRuntimeReferenceOrSavedOffset4 linkedArmyRuntimeOrSavedOffset; 
-    dword definitionDerivedValueF4; 
-    dword classStateF8; 
-    dword classStateFC; 
+    uint32_t definitionDerivedValueF4; 
+    uint32_t classStateF8; 
+    uint32_t classStateFC; 
 };
 
 struct EffectCompletionLinkedHandlerOwnerColumns104 {
     ShotTerrainImpactEffectOwnerSlot ownerSlot0; // Action-2 owner column 0; address originates from ShotDefinition terrainImpactEffectOwnerSlots31[index].
-    byte opaqueGap0004_007F[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword auxiliaryValue80; // Parallel action-2 owner column at +0x80; semantic payload remains neutral.
-    byte opaqueGap0084_00FF[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0004_007F[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t auxiliaryValue80; // Parallel action-2 owner column at +0x80; semantic payload remains neutral.
+    uint8_t opaqueGap0084_00FF[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     TerrainMaterialIndex terrainMaterialIndex100; // Parallel ShotDefinition terrain-material column at +0x100.
 };
 
@@ -8343,24 +8326,24 @@ struct ModelRuntimeLinkedChildClassView200 {
     union ModelDefinitionReferenceOrSavedId4 definitionOrSavedId; 
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; 
     union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; 
-    dword attachmentCount0C; 
-    byte reserved10_37[40]; 
+    uint32_t attachmentCount0C; 
+    uint8_t reserved10_37[40]; 
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; 
-    dword definitionValue60_3C; 
-    dword definitionValue84_40; 
-    dword definitionValue88_44; 
-    dword definitionValue94_48; 
-    dword definitionValue9C_4C; 
-    dword definitionValueA4_50; 
-    dword definitionValueAC_54; 
-    dword definitionValueB4_58; 
-    dword definitionValueBC_5C; 
+    uint32_t definitionValue60_3C; 
+    uint32_t definitionValue84_40; 
+    uint32_t definitionValue88_44; 
+    uint32_t definitionValue94_48; 
+    uint32_t definitionValue9C_4C; 
+    uint32_t definitionValueA4_50; 
+    uint32_t definitionValueAC_54; 
+    uint32_t definitionValueB4_58; 
+    uint32_t definitionValueBC_5C; 
     struct ModelRuntimeClassLinkState24 classLinkState; 
     struct ModelRuntimeLinkedChildClassStateView7C linkedChildClassState; 
-    byte reserved100_117[24]; 
-    dword classState118; 
-    dword classState11C; 
-    byte reserved120_13F[32]; 
+    uint8_t reserved100_117[24]; 
+    uint32_t classState118; 
+    uint32_t classState11C; 
+    uint8_t reserved120_13F[32]; 
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; 
 };
 
@@ -8380,43 +8363,43 @@ struct ArmyRuntimeTerrainContactLinkedChildModelView120 {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
-    dword linkedChildClassIndexOrSavedValue6C; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
+    uint32_t linkedChildClassIndexOrSavedValue6C; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
     Q12 movementTarget0Q12; 
     Q12 movementTarget1Q12; 
-    dword definitionClassValue80; 
-    dword definitionClassValue84; 
-    dword definitionClassValue88; 
-    dword runtimeState8C; 
-    dword runtimeState90; 
-    dword runtimeState94; 
-    dword runtimeState98; 
+    uint32_t definitionClassValue80; 
+    uint32_t definitionClassValue84; 
+    uint32_t definitionClassValue88; 
+    uint32_t runtimeState8C; 
+    uint32_t runtimeState90; 
+    uint32_t runtimeState94; 
+    uint32_t runtimeState98; 
     enum ModelRuntimeClassId depthBinClass; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    dword runtimeStateA4; 
-    dword runtimeStateA8; 
+    uint32_t runtimeStateA4; 
+    uint32_t runtimeStateA8; 
     struct ArmyRuntimeTerrainContactLinkedChildState14 terrainContactLinkedChildState; 
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -8441,16 +8424,16 @@ struct ArmyRuntimeTerrainContactLinkedChildSlotView120 {
     Q12 actionVector0Q12; 
     Q12 actionVector1Q12; 
     Q12 actionVector2Q12; 
-    dword runtimeState40; 
-    dword runtimeState44; 
-    dword runtimeState48; 
-    dword runtimeState4C; 
-    byte reserved50_57[8]; 
+    uint32_t runtimeState40; 
+    uint32_t runtimeState44; 
+    uint32_t runtimeState48; 
+    uint32_t runtimeState4C; 
+    uint8_t reserved50_57[8]; 
     Q12 movementPosition0Q12; 
     Q12 movementPosition1Q12; 
-    dword classState60; 
-    dword ownerValue64; 
-    dword ownerValue68; 
+    uint32_t classState60; 
+    uint32_t ownerValue64; 
+    uint32_t ownerValue68; 
     FactionArmyAssetCount linkedChildUsedSlotCount6C; 
     Q12 fallbackWorldYQ12; 
     Q12 fallbackWorldXQ12; 
@@ -8459,13 +8442,13 @@ struct ArmyRuntimeTerrainContactLinkedChildSlotView120 {
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; 
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; 
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; 
-    byte reservedE0_EB[12]; 
+    uint8_t reservedE0_EB[12]; 
     ArmyRuntimeFlags runtimeFlags; 
     struct ArmyRuntimeSlot *linkedArmyRuntime; 
     ArmyRuntimeTimer runtimeTimer; 
-    byte reservedF8_FF[8]; 
+    uint8_t reservedF8_FF[8]; 
     int stateOrTechnologyId; 
-    dword runtimeState104; 
+    uint32_t runtimeState104; 
     ArmySelectionMetric selectionMetric0; 
     ArmySelectionMetric selectionMetric1; 
     ArmySelectionMetric selectionMetric2; 
@@ -8488,7 +8471,7 @@ struct EffectModelRuntimeNodeClassView100 {
     ModelTextureOffsetTexel primaryTextureOffsetU; 
     ModelTextureOffsetTexel primaryTextureOffsetV; 
     struct GraphicsFixedMatrix3x4 worldTransform; 
-    dword runtimeStateA0; 
+    uint32_t runtimeStateA0; 
     enum WorldOwnerRuntimeClassId ownerClassId; 
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; 
     ModelTextureOffsetTexel secondaryTextureOffsetU; 
@@ -8498,30 +8481,30 @@ struct EffectModelRuntimeNodeClassView100 {
     int renderDepthBiasOrState; 
     Q12 modelScaleQ12; 
     struct ModelRuntimeNode *parentNode; 
-    dword childCount; 
+    uint32_t childCount; 
     struct ModelRuntimeNode *childNodes[13]; 
 };
 
-typedef dword EnergyAmountQ4;
+typedef uint32_t EnergyAmountQ4;
 
-typedef dword ResourceExtractionRateQ4PerTick;
+typedef uint32_t ResourceExtractionRateQ4PerTick;
 
 struct ResourceRegistrationRuntimeImage {
-    byte reserved0000_004F[80]; 
-    dword levelRuntimeRecordIndex50; 
-    byte reserved0054_0057[4]; 
+    uint8_t reserved0000_004F[80]; 
+    uint32_t levelRuntimeRecordIndex50; 
+    uint8_t reserved0054_0057[4]; 
     struct ResourceRegistrationRecord100 *records58; 
-    byte reserved005C_00AB[80]; 
-    dword recordCountAC; 
-    byte reserved00B0_00D7[40]; 
+    uint8_t reserved005C_00AB[80]; 
+    uint32_t recordCountAC; 
+    uint8_t reserved00B0_00D7[40]; 
     struct ResourceRegistrationRecord100 *tailRecordD8; 
 };
 
-typedef qword ResourceRegistrationImagePair;
+typedef uint64_t ResourceRegistrationImagePair;
 
 struct ResourceRegistrationImagePairComponents8 {
     void *runtimeImageBase; 
-    dword byteLength; 
+    uint32_t byteLength; 
 };
 
 struct ResourceRegistrationDomainPairDispatchTable3 {
@@ -8549,7 +8532,7 @@ enum /* InGameEndConditionTriggerStateFlags, stored in 1 byte(s) */ {
     INGAME_END_CONDITION_TRIGGER_ACTIVE=1,
     INGAME_END_CONDITION_TRIGGER_PROCESSED=2
 };
-typedef byte InGameEndConditionTriggerStateFlags;
+typedef uint8_t InGameEndConditionTriggerStateFlags;
 
 typedef enum InGameScheduledConditionStatusFlags {
     INGAME_SCHEDULED_CONDITION_SATISFIED=1,
@@ -8570,88 +8553,88 @@ typedef enum FrontendPointerContextFlags {
     FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_80000000=2147483648
 } FrontendPointerContextFlags;
 
-typedef dword ArenaAlignedPayloadByteCount;
+typedef uint32_t ArenaAlignedPayloadByteCount;
 
-typedef dword WorldMotionSplineChannelCount;
+typedef uint32_t WorldMotionSplineChannelCount;
 
-typedef dword SprMeshRecordFlags;
+typedef uint32_t SprMeshRecordFlags;
 
-typedef dword MdlTimedEffectIntervalTicks;
+typedef uint32_t MdlTimedEffectIntervalTicks;
 
-typedef dword LevelAssetFormatVersion;
+typedef uint32_t LevelAssetFormatVersion;
 
-typedef dword FileSystemEnumerationRecordBytes;
+typedef uint32_t FileSystemEnumerationRecordBytes;
 
-typedef dword GraphicsPrimitiveQueueCount;
+typedef uint32_t GraphicsPrimitiveQueueCount;
 
-typedef dword FileSystemByteCount;
+typedef uint32_t FileSystemByteCount;
 
-typedef dword MdlTimedEffectRandomSpanTicks;
+typedef uint32_t MdlTimedEffectRandomSpanTicks;
 
-typedef dword LocaleTimeFormat24HourFlag;
+typedef uint32_t LocaleTimeFormat24HourFlag;
 
-typedef dword PersistentOptionFlags5C;
+typedef uint32_t PersistentOptionFlags5C;
 
-typedef dword LevelAssetConverterVersion;
+typedef uint32_t LevelAssetConverterVersion;
 
-typedef dword GraphicsCursorEventRingIndex;
+typedef uint32_t GraphicsCursorEventRingIndex;
 
-typedef dword LevelAssetByteSize;
+typedef uint32_t LevelAssetByteSize;
 
-typedef dword ArmyPlacementAuxiliaryValue;
+typedef uint32_t ArmyPlacementAuxiliaryValue;
 
-typedef dword EngineDriveLetter;
+typedef uint32_t EngineDriveLetter;
 
-typedef dword FileSystemEntryCount;
+typedef uint32_t FileSystemEntryCount;
 
-typedef dword ModelAttachmentPackedKindOrdinal;
+typedef uint32_t ModelAttachmentPackedKindOrdinal;
 
-typedef dword LocaleLanguageIdentifierDigits;
+typedef uint32_t LocaleLanguageIdentifierDigits;
 
-typedef dword MdlReloadTicks;
+typedef uint32_t MdlReloadTicks;
 
 typedef int GraphicsResourceActiveToken;
 
-typedef dword LocaleLongDateOrderCode;
+typedef uint32_t LocaleLongDateOrderCode;
 
-typedef dword GraphicsBackendHandlerIndex;
+typedef uint32_t GraphicsBackendHandlerIndex;
 
-typedef dword SprMeshGroupSelectorMask;
+typedef uint32_t SprMeshGroupSelectorMask;
 
-typedef dword LocaleNegativeNumberFormatCode;
+typedef uint32_t LocaleNegativeNumberFormatCode;
 
-typedef dword SprVertexCount;
+typedef uint32_t SprVertexCount;
 
-typedef dword Dos83ComponentLength;
+typedef uint32_t Dos83ComponentLength;
 
-typedef dword PersistentOptionFlags40;
+typedef uint32_t PersistentOptionFlags40;
 
-typedef dword RomRecordTableCount;
+typedef uint32_t RomRecordTableCount;
 
-typedef dword SprTriangleCount;
+typedef uint32_t SprTriangleCount;
 
-typedef dword ArmyPlacementDispatchArg1;
+typedef uint32_t ArmyPlacementDispatchArg1;
 
 struct InGameEndConditionTriggerRecord8 {
-    byte stateFlags;
-    byte movieVariantSelector;
-    byte skipArmyDisableWhenOne;
-    byte reserved03;
-    byte factionRuntimeIndex;
-    byte endMovieSelectionIndex;
-    byte conditionIndex;
-    byte reserved07;
+    uint8_t stateFlags;
+    uint8_t movieVariantSelector;
+    uint8_t skipArmyDisableWhenOne;
+    uint8_t reserved03;
+    uint8_t factionRuntimeIndex;
+    uint8_t endMovieSelectionIndex;
+    uint8_t conditionIndex;
+    uint8_t reserved07;
 };
 
 union InGameScheduledConditionStatusAndKind4 {
     enum InGameScheduledConditionKind kind; 
     enum InGameScheduledConditionStatusFlags statusFlags; 
-    dword raw;
+    uint32_t raw;
 };
 
 union InGameScheduledConditionPayload0C {
-    dword operands[3];
-    byte postfixExpression[12];
+    uint32_t operands[3];
+    uint8_t postfixExpression[12];
 };
 
 struct InGameScheduledConditionRecord10 {
@@ -8661,13 +8644,13 @@ struct InGameScheduledConditionRecord10 {
 
 struct InGameEndConditionTriggerRecord8ReferenceView {
     InGameEndConditionTriggerStateFlags stateFlags;
-    byte movieVariantSelector;
-    byte skipArmyDisableWhenOne;
-    byte reserved03;
-    byte factionRuntimeIndex;
-    byte endMovieSelectionIndex;
-    byte conditionIndex;
-    byte reserved07;
+    uint8_t movieVariantSelector;
+    uint8_t skipArmyDisableWhenOne;
+    uint8_t reserved03;
+    uint8_t factionRuntimeIndex;
+    uint8_t endMovieSelectionIndex;
+    uint8_t conditionIndex;
+    uint8_t reserved07;
 };
 
 struct InGameConditionScheduleImageView480 {
@@ -8676,110 +8659,110 @@ struct InGameConditionScheduleImageView480 {
 };
 
 struct InGameConditionRuntimeStorageView800 {
-    byte runtimePrefix000_37F[896];
+    uint8_t runtimePrefix000_37F[896];
     struct InGameConditionScheduleImageView480 schedule; 
 };
 
 struct SprMeshRecordHeader20 {
-    dword recordByteSize;
+    uint32_t recordByteSize;
     SprMeshGroupSelectorMask meshGroupSelectorMask; 
     SprVertexCount vertexCount; 
     SprTriangleCount triangleCount; 
     SprMeshRecordFlags meshRecordFlags; 
-    byte reserved14_1F[12];
+    uint8_t reserved14_1F[12];
 };
 
 struct RuntimeHexSegment {
-    byte opaque0000_00FF[256]; 
+    uint8_t opaque0000_00FF[256]; 
 };
 
 struct InGameActiveNotificationPayload18 {
-    dword payloadDword14; 
-    dword payloadDword10;
-    dword payloadDword0C;
-    dword payloadDword08;
-    dword payloadDword04;
-    dword payloadDword00;
+    uint32_t payloadDword14; 
+    uint32_t payloadDword10;
+    uint32_t payloadDword0C;
+    uint32_t payloadDword08;
+    uint32_t payloadDword04;
+    uint32_t payloadDword00;
 };
 
 struct FileSystemEntryNameUtf16_200 {
-    word codeUnits[256]; 
+    uint16_t codeUnits[256]; 
 };
 
 struct MdlDefinitionSemanticPrefix80 {
     AssetRecordByteCount byteSize; 
-    dword nameTextOffset; 
+    uint32_t nameTextOffset; 
     enum PckModelDefinitionIdCatalog definitionId; 
     Q12 classSpeedQ12; 
-    dword yawMaxVelocityTurn16; 
-    dword pitchMaxVelocityTurn16; 
-    dword unknown18; 
-    dword yawAccelerationTurn16; 
-    dword pitchAccelerationTurn16; 
+    uint32_t yawMaxVelocityTurn16; 
+    uint32_t pitchMaxVelocityTurn16; 
+    uint32_t unknown18; 
+    uint32_t yawAccelerationTurn16; 
+    uint32_t pitchAccelerationTurn16; 
     int pitchMinimumTurn16; 
     int pitchMaximumTurn16; 
     enum PckShotDefinitionIdCatalog shotDefinitionId; 
     MdlReloadTicks reloadTicks; 
-    dword recoilRotationStepTurn16; 
-    dword recoilDurationOrIntershotTicks; 
+    uint32_t recoilRotationStepTurn16; 
+    uint32_t recoilDurationOrIntershotTicks; 
     Q12 recoilTranslationQ12; 
-    dword actionVector0; 
-    dword actionVector1; 
-    dword unknown48; 
+    uint32_t actionVector0; 
+    uint32_t actionVector1; 
+    uint32_t unknown48; 
     enum ModelRuntimeClassId runtimeClassId; 
-    dword unknown50; 
+    uint32_t unknown50; 
     Q12 placementRadiusQ12; 
-    dword unknown58; 
-    dword shotImpactClassIndex; 
-    dword unknown60; 
-    dword rootNodeOffset; 
-    dword runtimeRenderFlags; 
-    dword unknown6C; 
-    dword unknown70; 
-    dword unknown74; 
-    dword positionedSoundGainQ15; 
+    uint32_t unknown58; 
+    uint32_t shotImpactClassIndex; 
+    uint32_t unknown60; 
+    uint32_t rootNodeOffset; 
+    uint32_t runtimeRenderFlags; 
+    uint32_t unknown6C; 
+    uint32_t unknown70; 
+    uint32_t unknown74; 
+    uint32_t positionedSoundGainQ15; 
     Q12 positionedSoundMaximumDistanceQ12; 
 };
 
 struct PcxPreview64LegacyOpaqueShell1300 {
-    byte opaquePreviewImageBytes[4864]; 
+    uint8_t opaquePreviewImageBytes[4864]; 
 };
 
 struct RomRecordTableEntry200 {
-    byte opaqueEntry00_1B[28];
-    dword recordId;
-    byte opaqueEntry20_1FF[480];
+    uint8_t opaqueEntry00_1B[28];
+    uint32_t recordId;
+    uint8_t opaqueEntry20_1FF[480];
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeRootObservedView9E70 {
-    byte opaque0000_09B7[2488]; 
+    uint8_t opaque0000_09B7[2488]; 
     struct RecentTextHistoryPointerList recentTextHistory09B8; 
-    byte opaque09DC_0A2F[84]; 
+    uint8_t opaque09DC_0A2F[84]; 
     struct WorldRuntimeContext worldRuntime0A30; 
-    byte opaque0B8C_0BA7[28]; 
+    uint8_t opaque0B8C_0BA7[28]; 
     Q12 fieldRegionOriginWorldXQ12_0BA8; 
     Q12 fieldRegionOriginWorldYQ12_0BAC; 
-    byte opaque0BB0_4937[15752]; 
-    dword observedTerrainCompositeFlags4938; 
-    byte opaque493C_49B3[120]; 
+    uint8_t opaque0BB0_4937[15752]; 
+    uint32_t observedTerrainCompositeFlags4938; 
+    uint8_t opaque493C_49B3[120]; 
     int primaryResourceDisplayCurrent49B4; 
     int primaryResourceDisplayLimit49B8; 
-    byte opaque49BC_4D53[920]; 
-    dword observedRelationTransitionFlags4D54; 
-    byte opaque4D58_9A6B[19732]; 
+    uint8_t opaque49BC_4D53[920]; 
+    uint32_t observedRelationTransitionFlags4D54; 
+    uint8_t opaque4D58_9A6B[19732]; 
     FixedPlanarPointEdxEax8 fieldGridPosition9A6C; 
-    byte opaque9A74_9B4B[216]; 
-    dword observedSessionNotificationState9B4C; 
-    dword observedSessionNotificationValue9B50; 
-    byte opaque9B54_9E5F[780]; 
-    dword observedPayloadScratch9E60[4]; 
+    uint8_t opaque9A74_9B4B[216]; 
+    uint32_t observedSessionNotificationState9B4C; 
+    uint32_t observedSessionNotificationValue9B50; 
+    uint8_t opaque9B54_9E5F[780]; 
+    uint32_t observedPayloadScratch9E60[4]; 
 };
 #pragma pack(pop)
 
 struct ShotDefinitionDisk2E0 {
-    dword trajectoryMode; 
-    dword reservedZero04; 
+    uint32_t trajectoryMode; 
+    uint32_t reservedZero04; 
     enum PckShotDefinitionIdCatalog definitionId; 
     Q12 launchSpeedQ12; 
     enum PckEffectDefinitionIdCatalog primaryEffectId; 
@@ -8790,28 +8773,28 @@ struct ShotDefinitionDisk2E0 {
     enum PckEffectDefinitionIdCatalog launchEffectId; 
     ShotModelSpinStepTurn16 modelSpinStepTurn16; 
     Q12 ballisticDivisorQ12; 
-    byte reservedE0_15B[124]; 
+    uint8_t reservedE0_15B[124]; 
     ShotFrameAdvanceThresholdQ4 animationFrameAdvanceThresholdQ4; 
-    byte reserved160_1DB[124]; 
+    uint8_t reserved160_1DB[124]; 
     ShotAnimationFrameCount animationFrameCount; 
     int terrainMaterialIndices31[31]; 
     PackedArgb32 shadingColorArgb; 
     GraphicsTransitionTickCount shadingTransitionDurationTicks; 
-    dword unknown264; 
+    uint32_t unknown264; 
     enum PckEffectDefinitionIdCatalog secondaryEffectId; 
     ShotSecondaryEffectIntervalTicks secondaryEffectIntervalTicks; 
     Q12 rangeScale270Q12; 
-    dword unknown274; 
+    uint32_t unknown274; 
     AngleTurn16Stored32 elevationOffsetAngle16; 
     Q12 mode2SelectionRangeQ12; 
-    dword unknown280; 
+    uint32_t unknown280; 
     PackedArgb32 stateTintArgb; 
-    dword unknown288; 
-    dword unknown28C; 
-    dword mode3LeadDisabled; 
-    dword nestedResourceSaved; 
-    dword ownedNestedResourcePresent; 
-    word resourcePathUtf16[34]; 
+    uint32_t unknown288; 
+    uint32_t unknown28C; 
+    uint32_t mode3LeadDisabled; 
+    uint32_t nestedResourceSaved; 
+    uint32_t ownedNestedResourcePresent; 
+    uint16_t resourcePathUtf16[34]; 
 };
 
 struct CubicSplineCoefficientTable80 {
@@ -8819,62 +8802,62 @@ struct CubicSplineCoefficientTable80 {
 };
 
 struct FrontendNetworkSettingsControl {
-    byte opaque0000_024F[592]; 
+    uint8_t opaque0000_024F[592]; 
 };
 
 struct GraphicsAdapterEnumerationContext {
-    byte opaque0000_003F[64]; 
+    uint8_t opaque0000_003F[64]; 
 };
 
 struct SprVertexRecord40_Pck {
     Q12 positionXQ12; 
     Q12 positionYQ12; 
     Q12 positionZQ12; 
-    dword reserved0C; 
+    uint32_t reserved0C; 
     Q12 normalXQ12; 
     Q12 normalYQ12; 
     Q12 normalZQ12; 
-    dword reserved1C; 
-    byte reserved20_3F[32]; 
+    uint32_t reserved1C; 
+    uint8_t reserved20_3F[32]; 
 };
 
 struct FrontendPointerContextRuntimeState118 {
     struct UiNodeBase base; 
     enum FrontendPointerContextFlags contextFlags; 
-    byte reserved50_D7[136]; 
+    uint8_t reserved50_D7[136]; 
     struct UiNodeBase *candidateNodeListHead; 
-    dword observedContextValueDC; 
+    uint32_t observedContextValueDC; 
     struct UiNodeBase *selectedHitNode; 
     int selectedHitMetric; 
-    dword callbackArgumentE8; 
-    dword callbackArgumentEC; 
-    dword callbackArgumentF0; 
-    byte reservedF4_103[16]; 
-    dword (*resolvedActionCallback104)(dword, dword, dword, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
-    dword (*resolvedActionCallback108)(dword, dword, dword, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
-    dword (*resolvedActionCallback10C)(dword, dword, dword, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
-    dword (*resolvedActionCallback110)(dword, dword, dword, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
-    dword (*resolvedActionCallback114)(dword, dword, dword, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
+    uint32_t callbackArgumentE8; 
+    uint32_t callbackArgumentEC; 
+    uint32_t callbackArgumentF0; 
+    uint8_t reservedF4_103[16]; 
+    uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
+    uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
+    uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
+    uint32_t (*resolvedActionCallback110)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
+    uint32_t (*resolvedActionCallback114)(uint32_t, uint32_t, uint32_t, int, struct UiNodeBase *, struct FrontendPointerContextRuntimeState118 *); 
 };
 
 struct TechnologyMask256 {
-    dword words[8]; 
+    uint32_t words[8]; 
 };
 
 struct EffectDefinitionDiskC0 {
-    dword transitionKind; 
-    dword reservedZero04; 
+    uint32_t transitionKind; 
+    uint32_t reservedZero04; 
     enum PckEffectDefinitionIdCatalog definitionId; 
-    dword runtimeValue0C; 
-    dword linkedEffectPresent; 
+    uint32_t runtimeValue0C; 
+    uint32_t linkedEffectPresent; 
     enum PckEffectDefinitionIdCatalog linkedEffectId; 
-    dword linkedShotPresent; 
+    uint32_t linkedShotPresent; 
     enum PckShotDefinitionIdCatalog linkedShotId; 
     EffectMovementSpeedQ12 movementSpeedQ12; 
-    dword runtimeValue24; 
+    uint32_t runtimeValue24; 
     EffectFrameAdvanceThresholdQ4 frameAdvanceThresholdQ4; 
     TerrainGridMaskIndex terrainGridMaskIndex; 
-    dword creationFlags; 
+    uint32_t creationFlags; 
     PackedArgb32 shadingColorArgb; 
     GraphicsTransitionTickCount shadingTransitionDurationTicks; 
     GraphicsTransitionTickCount shadingReleaseTransitionDurationTicks; 
@@ -8884,22 +8867,22 @@ struct EffectDefinitionDiskC0 {
     EffectPeriodicIntervalTicks periodicEffectIntervalTicks; 
     EffectAlphaFadeTicks alphaFadeInTicks; 
     EffectAlphaFadeTicks alphaFadeOutTicks; 
-    dword unknown58; 
-    dword unknown5C; 
+    uint32_t unknown58; 
+    uint32_t unknown5C; 
     PackedArgb32 stateTintArgb; 
     Q12 modelScaleStartQ12; 
     Q12 modelScaleEndQ12; 
-    dword positionedSoundArgument0; 
-    dword positionedSoundArgument1; 
-    dword nestedResourceSaved; 
-    dword ownedNestedResourcePresent; 
-    word resourcePathUtf16[34]; 
+    uint32_t positionedSoundArgument0; 
+    uint32_t positionedSoundArgument1; 
+    uint32_t nestedResourceSaved; 
+    uint32_t ownedNestedResourcePresent; 
+    uint16_t resourcePathUtf16[34]; 
 };
 
 struct RomRecordTableHeader200 {
-    byte opaqueHeader00_3B[60];
+    uint8_t opaqueHeader00_3B[60];
     RomRecordTableCount recordCount;
-    byte opaqueHeader40_1FF[448];
+    uint8_t opaqueHeader40_1FF[448];
 };
 
 struct SprAttachmentRecord10 {
@@ -8919,17 +8902,17 @@ struct LevelPlacementRecord {
     GraphicsWorldCoordinateQ12 worldYQ12; 
     GraphicsWorldCoordinateQ12 worldXQ12; 
     AngleTurn16Stored32 orientationTurn16; 
-    dword preservedTailDword0;
-    dword preservedTailDword1;
-    dword preservedTailDword2;
+    uint32_t preservedTailDword0;
+    uint32_t preservedTailDword1;
+    uint32_t preservedTailDword2;
 };
 
 struct SprLodGroupHeader20 {
-    dword groupByteSize;
-    dword meshRecordCount;
-    dword reserved08;
-    dword groupFlags;
-    byte reserved10_1F[16];
+    uint32_t groupByteSize;
+    uint32_t meshRecordCount;
+    uint32_t reserved08;
+    uint32_t groupFlags;
+    uint8_t reserved10_1F[16];
 };
 
 struct FieldGridCompactCell {
@@ -8945,59 +8928,59 @@ struct SprMeshRecordHeader20_Pck {
     SprVertexCount vertexCount; 
     SprTriangleCount triangleCount; 
     SprMeshRecordFlags meshRecordFlags; 
-    byte reserved14_1F[12]; 
+    uint8_t reserved14_1F[12]; 
 };
 
 union FieldGridAux54LifetimeUnion {
-    dword serializedAuxDword;
-    dword runtimeTerrainDirectionRecordPointer;
+    uint32_t serializedAuxDword;
+    uint32_t runtimeTerrainDirectionRecordPointer;
 };
 
 struct FieldGridRuntimeCellView {
-    dword animationPhaseSeed;
-    dword visibilityOverlayArgb;
-    dword triangle0NormalAngles;
-    byte runtime0C_3F[52];
-    dword worldXQ12;
-    dword worldYQ12;
-    dword terrainHeightQ12;
-    dword waterSurfaceDeltaQ12;
-    dword flagsAndMaterial;
+    uint32_t animationPhaseSeed;
+    uint32_t visibilityOverlayArgb;
+    uint32_t triangle0NormalAngles;
+    uint8_t runtime0C_3F[52];
+    uint32_t worldXQ12;
+    uint32_t worldYQ12;
+    uint32_t terrainHeightQ12;
+    uint32_t waterSurfaceDeltaQ12;
+    uint32_t flagsAndMaterial;
     union FieldGridAux54LifetimeUnion aux54;
-    byte runtime58_6F[24];
-    qword occupancyMask;
-    dword triangle1NormalAngles;
-    dword runtime7C;
+    uint8_t runtime58_6F[24];
+    uint64_t occupancyMask;
+    uint32_t triangle1NormalAngles;
+    uint32_t runtime7C;
 };
 
 struct SprTriangleRecord40_Pck {
-    dword vertex0SerializedOffset; 
+    uint32_t vertex0SerializedOffset; 
     Q12 vertex0UQ12; 
     Q12 vertex0VQ12; 
-    dword vertex1SerializedOffset; 
+    uint32_t vertex1SerializedOffset; 
     Q12 vertex1UQ12; 
     Q12 vertex1VQ12; 
-    dword vertex2SerializedOffset; 
+    uint32_t vertex2SerializedOffset; 
     Q12 vertex2UQ12; 
     Q12 vertex2VQ12; 
     Q12 planeNormalXQ12; 
     Q12 planeNormalYQ12; 
     Q12 planeNormalZQ12; 
-    dword textureSubresourceIndex; 
-    dword renderFlags; 
-    byte reserved38_3F[8]; 
+    uint32_t textureSubresourceIndex; 
+    uint32_t renderFlags; 
+    uint8_t reserved38_3F[8]; 
 };
 
 struct TechnologyRecordDisk40 {
-    dword prerequisiteMasks[8]; 
+    uint32_t prerequisiteMasks[8]; 
     TechnologyXeniteCostQ4 xeniteCostQ4; 
     TechnologyEnergyCostQ4 energyCostQ4; 
     TechnologyResearchDurationQ5 researchDurationQ5; 
     enum PckTechnologyIdCatalog dependencyTechnologyIndex; 
     UiTextResourceId completionMessageResourceId; 
-    dword category; 
+    uint32_t category; 
     AiTechnologyCandidateScore baseCandidateScore; 
-    dword reservedZero3C; 
+    uint32_t reservedZero3C; 
 };
 
 struct TextResourceLocaleCountHeader {
@@ -9007,14 +8990,14 @@ struct TextResourceLocaleCountHeader {
 
 struct TextResourceAssetHeader {
     struct TextResourceLocaleCountHeader localeCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct TextResourceLocaleBlockPrefix {
     TextResourceLocaleBlockByteSize blockSizeBytes; 
     TextResourceStringCount stringCount; 
     enum LocaleTelephoneCountryCode countryCode; 
-    dword reserved0C; 
+    uint32_t reserved0C; 
 };
 
 struct TextResourcePageBinding {
@@ -9029,21 +9012,21 @@ struct WideNumberFormatState {
     WideNumberFormatCodeUnitCount negativeSignLength; 
     WideNumberFormatCodeUnitCount hexPrefixLength; 
     WideNumberFormatCodeUnitCount hexSuffixLength; 
-    word decimalSeparator[16]; 
-    word groupSeparator[16]; 
-    word positiveSign[16]; 
-    word negativeSign[16]; 
-    word hexPrefix[16]; 
-    word hexSuffix[16]; 
-    word spacePadding[16]; 
-    word zeroPadding[16]; 
-    word reservedZero[16]; 
-    word digitAlphabet[16]; 
+    uint16_t decimalSeparator[16]; 
+    uint16_t groupSeparator[16]; 
+    uint16_t positiveSign[16]; 
+    uint16_t negativeSign[16]; 
+    uint16_t hexPrefix[16]; 
+    uint16_t hexSuffix[16]; 
+    uint16_t spacePadding[16]; 
+    uint16_t zeroPadding[16]; 
+    uint16_t reservedZero[16]; 
+    uint16_t digitAlphabet[16]; 
 };
 
 struct TextResourceOverrideTable {
-    dword resourceIds[4096]; 
-    word *textPointers[4096]; 
+    uint32_t resourceIds[4096]; 
+    uint16_t *textPointers[4096]; 
 };
 
 typedef enum WideNumberFormatFlags {
@@ -9056,11 +9039,11 @@ typedef enum WideNumberFormatFlags {
     WIDE_FORMAT_WRITE_TERMINATOR=64,
     WIDE_FORMAT_GROUP_THOUSANDS=128
 } WideNumberFormatFlags;
-typedef dword __thandor_eax_preserve_ecx_edx WideNumberFormatUtf16Proc(WideNumberFormatFlags arg0, dword arg1, dword arg2, dword arg3, sdword arg4, word * arg5);
+typedef uint32_t __thandor_eax_preserve_ecx_edx WideNumberFormatUtf16Proc(WideNumberFormatFlags arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3, int32_t arg4, uint16_t * arg5);
 
 struct RichTextExtentRegs {
-    dword widthPixels; 
-    dword heightPixels; 
+    uint32_t widthPixels; 
+    uint32_t heightPixels; 
 };
 
 struct GraphicsDisplayMode {
@@ -9076,8 +9059,8 @@ struct GraphicsTexturePaletteEntry {
 };
 
 struct GraphicsProjectedVertexSource {
-    byte reserved00_0B[12]; // Unresolved prefix retained.
-    dword texturedPacketAttributes[5]; // Five consecutive dwords copied into textured packet slots 0..4. Numeric representation is intentionally unchanged.
+    uint8_t reserved00_0B[12]; // Unresolved prefix retained.
+    uint32_t texturedPacketAttributes[5]; // Five consecutive dwords copied into textured packet slots 0..4. Numeric representation is intentionally unchanged.
     GraphicsPrimitiveBackendCoordinate backendCoord0; // Projected backend coordinate 0.
     GraphicsPrimitiveBackendCoordinate backendCoord1; // Projected backend coordinate 1.
     GraphicsPrimitiveDepthFixed depth; // Projected primitive depth.
@@ -9090,12 +9073,12 @@ struct GraphicsPaletteTextureSourceAsset {
     enum GraphicsPaletteTextureAssetMagic magic; 
     GraphicsAssetAllocationByteSize allocationSizeBytes; 
     enum GraphicsPaletteTextureFormatVersion formatVersion; 
-    dword reserved0C; 
-    byte reserved10_AF[160]; 
+    uint32_t reserved0C; 
+    uint8_t reserved10_AF[160]; 
     GraphicsAssetSubresourceCount subresourceCount; 
     GraphicsPaletteBankCount paletteBankCount; 
     GraphicsAssetRelativeByteOffset subresourceTableOffset; 
-    byte reservedBC_1FF[324]; 
+    uint8_t reservedBC_1FF[324]; 
     struct GraphicsTexturePaletteEntry paletteEntries[1]; 
 };
 
@@ -9121,14 +9104,14 @@ struct SoftwarePixelFormatConfig {
 struct GraphicsCapturedTextureSourceAsset {
     struct GeneratedAssetCommonPrefix common; 
     struct GraphicsTextureSourceTableDescriptor tableDescriptor; 
-    byte opaqueTablePayloadBC_1FF[324]; 
+    uint8_t opaqueTablePayloadBC_1FF[324]; 
     struct GraphicsTextureSourceEntry sourceEntry; 
-    dword argb8888Pixels[1]; 
+    uint32_t argb8888Pixels[1]; 
 };
 
 struct SoftwareRasterScalarMmxLane {
-    sdword value; 
-    sdword unusedHighLane; 
+    int32_t value; 
+    int32_t unusedHighLane; 
 };
 
 struct GraphicsPrimitiveVertexRaw {
@@ -9147,16 +9130,16 @@ struct GraphicsPrimitivePacket {
     PackedArgb32 modulationColor; 
     struct GraphicsTextureSetEntry *textureEntry; 
     GraphicsPrimitiveDispatchFlags renderFlags; 
-    byte reserved6C_7F[20]; 
+    uint8_t reserved6C_7F[20]; 
 };
 
 union GraphicsPrimitiveRadixBucket {
-    dword count; 
+    uint32_t count; 
     struct GraphicsPrimitiveQueueNode *writeCursor; 
 };
 
 struct GraphicsPrimitiveQueueNode {
-    dword sortKey; 
+    uint32_t sortKey; 
     struct GraphicsPrimitivePacket *packet; 
     struct GraphicsPrimitiveQueueNode *next; 
     struct GraphicsPrimitiveQueueNode *previous; 
@@ -9180,10 +9163,10 @@ struct GraphicsTriangleInput {
 };
 
 struct GlideTextureInfo {
-    dword smallLod; 
-    dword largeLod; 
-    sdword aspectRatio; 
-    dword format; 
+    uint32_t smallLod; 
+    uint32_t largeLod; 
+    int32_t aspectRatio; 
+    uint32_t format; 
     void *data; 
 };
 
@@ -9204,13 +9187,13 @@ struct SoftwareFramebufferAccess {
     GraphicsPixelDimension width; 
     GraphicsPixelDimension height; 
     enum SoftwareFramebufferPixelSize bytesPerPixel; 
-    byte *pixels; 
+    uint8_t *pixels; 
 };
 
 struct ComReleaseObject_Vtbl {
-    sdword (*QueryInterface)(struct ComReleaseObject *, void *, void **);
-    dword (*AddRef)(struct ComReleaseObject *);
-    dword (*Release)(struct ComReleaseObject *);
+    int32_t (*QueryInterface)(struct ComReleaseObject *, void *, void **);
+    uint32_t (*AddRef)(struct ComReleaseObject *);
+    uint32_t (*Release)(struct ComReleaseObject *);
 };
 
 struct ComReleaseObject {
@@ -9219,7 +9202,7 @@ struct ComReleaseObject {
 
 struct GraphicsCursorInputEvent {
     enum GraphicsCursorEventType eventType; 
-    dword buttonMask; 
+    uint32_t buttonMask; 
     UiPixelCoordinate x; 
     UiPixelCoordinate y; 
     UiPointerWheelDelta wheelDelta; 
@@ -9250,20 +9233,20 @@ struct GraphicsPrimitiveRenderStateCache {
 };
 
 struct SoftwareMaskRuntimeView {
-    byte unresolved00_4F[80]; 
+    uint8_t unresolved00_4F[80]; 
     struct GraphicsTextureSourceAsset *textureSource; 
-    uint patternState54; 
-    uint patternState58; 
-    dword unresolved5C; 
-    byte *maskPixels; 
-    dword unresolved64; 
+    uint32_t patternState54; 
+    uint32_t patternState58; 
+    uint32_t unresolved5C; 
+    uint8_t *maskPixels; 
+    uint32_t unresolved64; 
     int tickCounter; 
 };
 
 struct SoftwarePixelPackTables {
-    dword blue[256]; 
-    dword green[256]; 
-    dword red[256]; 
+    uint32_t blue[256]; 
+    uint32_t green[256]; 
+    uint32_t red[256]; 
 };
 
 struct GraphicsResourceRecord {
@@ -9282,12 +9265,12 @@ struct GraphicsResourceRecord {
 };
 
 struct SoftwareRasterTextureAddressState {
-    dword uMaskQ12; 
-    dword zeroAfterUMask; 
-    dword zeroBeforeVMask; 
-    dword vMaskQ12; 
-    dword vRowAddressShift; 
-    dword zeroShiftHigh; 
+    uint32_t uMaskQ12; 
+    uint32_t zeroAfterUMask; 
+    uint32_t zeroBeforeVMask; 
+    uint32_t vMaskQ12; 
+    uint32_t vRowAddressShift; 
+    uint32_t zeroShiftHigh; 
 };
 
 struct GraphicsCursorFrameRecord {
@@ -9302,8 +9285,8 @@ struct GraphicsCursorFrameRecord {
 };
 
 struct GraphicsWideFixed {
-    dword low; 
-    sdword high; 
+    uint32_t low; 
+    int32_t high; 
 };
 
 struct GraphicsFixedRect {
@@ -9328,20 +9311,20 @@ struct SoftwarePixelMmxConstants {
 };
 
 struct GraphicsPrimitiveQueue {
-    dword capacity; 
-    dword count; 
+    uint32_t capacity; 
+    uint32_t count; 
     struct GraphicsPrimitivePacket *packetPool; 
     struct GraphicsPrimitiveQueueNode *radixScratchPool; 
     struct GraphicsPrimitiveQueueNode *traversalCursor; 
-    dword reserved14; 
-    dword reserved18; 
-    dword reserved1C; 
+    uint32_t reserved14; 
+    uint32_t reserved18; 
+    uint32_t reserved1C; 
     struct GraphicsPrimitiveQueueNode primaryNodes[1]; 
 };
 
 struct GraphicsFixedVec2 {
-    sdword component0; 
-    sdword component1; 
+    int32_t component0; 
+    int32_t component1; 
 };
 
 struct SoftwareRasterTexCoordFixed2 {
@@ -9350,14 +9333,14 @@ struct SoftwareRasterTexCoordFixed2 {
 };
 
 struct GraphicsSceneBounds8 {
-    sdword bound0; 
-    sdword bound1; 
-    sdword bound2; 
-    sdword bound3; 
-    sdword bound4; 
-    sdword bound5; 
-    sdword bound6; 
-    sdword bound7; 
+    int32_t bound0; 
+    int32_t bound1; 
+    int32_t bound2; 
+    int32_t bound3; 
+    int32_t bound4; 
+    int32_t bound5; 
+    int32_t bound6; 
+    int32_t bound7; 
 };
 
 struct SoftwareRasterColorFixed4 {
@@ -9377,18 +9360,18 @@ struct SoftwareRasterScanState {
     struct SoftwareRasterScalarMmxLane longEdgeDepth; 
     struct SoftwareRasterScalarMmxLane longEdgeDepthStepY; 
     struct SoftwareRasterScalarMmxLane depthStepX; 
-    sdword longEdgeXQ12; 
-    sdword shortEdgeXQ12; 
-    sdword longEdgeXStepYQ12; 
-    sdword shortEdgeXStepYQ12; 
+    int32_t longEdgeXQ12; 
+    int32_t shortEdgeXQ12; 
+    int32_t longEdgeXStepYQ12; 
+    int32_t shortEdgeXStepYQ12; 
     struct SoftwareRasterTextureAddressState textureAddress; 
-    sdword scanlineY; 
+    int32_t scanlineY; 
 };
 
 struct TerrainCompositeTextureRuntime {
     struct GraphicsTextureSourceAsset textureSource; 
     struct GraphicsTextureSourceEntry sourceEntries[3]; 
-    dword argbPixels[1]; 
+    uint32_t argbPixels[1]; 
 };
 
 struct DirectDrawPaletteEntry {
@@ -9398,7 +9381,7 @@ struct DirectDrawPaletteEntry {
     PaletteEntryFlagsByte flags; 
 };
 
-typedef dword GridPathCost;
+typedef uint32_t GridPathCost;
 
 typedef enum GridScratchStateMask { 
     GRID_SCRATCH_TRAVERSAL_VISITED=1,
@@ -9421,7 +9404,7 @@ typedef int FieldGridOccupancyByteIndex;
 union TerrainScanSelectorUnion {
     FieldGridOccupancyByteIndex occupancyMaskByteIndex; 
     FieldCellFlagMask fieldCellFlagMask; 
-    dword raw; 
+    uint32_t raw; 
 };
 
 struct FncHostApiTable {
@@ -9434,9 +9417,9 @@ struct FncHostApiTable {
     void *copyDefaultComputerLabelUtf16; 
 };
 
-typedef dword AssetExportCount;
+typedef uint32_t AssetExportCount;
 
-typedef dword FncBindingMode;
+typedef uint32_t FncBindingMode;
 
 struct FncModuleExportBindingDescriptor {
     AssetExportCount exportCount;
@@ -9449,24 +9432,24 @@ struct FncModuleHeader {
     enum AssetMagic magic;
     AssetAllocationSizeBytes allocationSizeBytes;
     AssetFormatVersion formatVersion;
-    dword reserved0C;
-    byte reserved10_AF[160];
+    uint32_t reserved0C;
+    uint8_t reserved10_AF[160];
     struct FncModuleExportBindingDescriptor exportBinding;
-    byte reservedC0_1FF[320];
+    uint8_t reservedC0_1FF[320];
 };
 
-typedef qword PreservedEaxEdxRegisterPair64;
+typedef uint64_t PreservedEaxEdxRegisterPair64;
 
 struct SoundCoefficientBlock256 {
     short coefficients[256]; 
 };
 
-typedef qword MmxPackedValue64;
+typedef uint64_t MmxPackedValue64;
 
 struct AiFactionCandidateCacheState {
     struct AiCandidateWorkspaceEntry savedEntries[3]; 
-    dword savedEntryCount; 
-    dword cacheReuseState; 
+    uint32_t savedEntryCount; 
+    uint32_t cacheReuseState; 
 };
 
 struct GameFactionRuntimeRecord {
@@ -9484,7 +9467,7 @@ struct GameFactionRuntimeRecord {
     EnergyDemandQ4 unpoweredEnergyDemandQ4; 
     FactionArmyAssetCount primaryArmyAssetCount; 
     FactionArmyAssetCount secondaryArmyAssetCount; 
-    dword factionClassOrMode; 
+    uint32_t factionClassOrMode; 
     FactionCapabilityFlags capabilityFlags; 
     FactionPackedRelationStates packedRelationStates; 
     FactionRelationCapabilityState relationCapabilityState; 
@@ -9500,7 +9483,7 @@ struct GameFactionRuntimeRecord {
     FactionAnchorCooldownTicks anchorCooldown2; 
     FactionRuntimeFlags runtimeFlags; 
     FactionAiPressureScore maximumAiPressure; 
-    byte reserved78_87[16]; 
+    uint8_t reserved78_87[16]; 
     FactionProgressScore combinedProgressScore; 
     FactionProgressScore activeArmyContribution; 
     FactionProgressScore economyProgressScore; 
@@ -9516,25 +9499,25 @@ struct GameFactionRuntimeRecord {
     FactionRelationCounter relationCounterE; 
     FactionRelationCounter relationCounterF; 
     struct AiFactionCandidateCacheState candidateCache; 
-    dword secondaryArmyAssetPointersOrIds[64]; 
-    dword primaryArmyAssetPointersOrIds[64]; 
+    uint32_t secondaryArmyAssetPointersOrIds[64]; 
+    uint32_t primaryArmyAssetPointersOrIds[64]; 
     struct ArmyRuntimeSlot *runtimeGroupMembers8x32[256]; 
-    dword technologyMasks256Bits[8]; 
-    dword relationStateTicks[8]; 
-    sdword aiPressureValues[8]; 
+    uint32_t technologyMasks256Bits[8]; 
+    uint32_t relationStateTicks[8]; 
+    int32_t aiPressureValues[8]; 
 };
 
-typedef dword InGameSimulationTick;
+typedef uint32_t InGameSimulationTick;
 
-typedef dword InGamePresentationTick;
+typedef uint32_t InGamePresentationTick;
 
-typedef dword InGamePeriodicClockTick;
+typedef uint32_t InGamePeriodicClockTick;
 
-typedef dword GameSpeedQ8;
+typedef uint32_t GameSpeedQ8;
 
 
 struct GameFactionRuntimeImageTail {
-    dword activeFactionCount; // Total active faction count copied from the loaded level runtime tail; faction loops and owner-faction UI cycling use it as their upper index/count.
+    uint32_t activeFactionCount; // Total active faction count copied from the loaded level runtime tail; faction loops and owner-faction UI cycling use it as their upper index/count.
     FactionRuntimeLifecycleObservedState factionLifecycleStates[8]; // Observed states: 1 active, 2 ending pending, 3 ended/transitioned. Zero remains deliberately unnamed.
     InGameSimulationTick simulationTick; // Monotonic simulation tick used for phased maintenance scheduling.
     InGamePresentationTick presentationTick; // Presentation/update cadence counter used by end-game HUD and terrain-composite refresh scheduling.
@@ -9549,17 +9532,17 @@ struct GameFactionRuntimeImage {
 };
 
 struct GameDataAuxState {
-    dword pairPressureMatrix8x8[64]; 
+    uint32_t pairPressureMatrix8x8[64]; 
 };
 
 struct KeyboardAsciiCaseTransformCallbackTable3 {
-    bool (*compareCaseInsensitiveFlags)(dword, dword); /* CF: upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
-    dword (*toUpper)(dword); 
-    dword (*toLower)(dword); 
+    bool (*compareCaseInsensitiveFlags)(uint32_t, uint32_t); /* CF: upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
+    uint32_t (*toUpper)(uint32_t); 
+    uint32_t (*toLower)(uint32_t); 
 };
 
 struct RandomGeneratorState {
-    dword (*next)(void); 
+    uint32_t (*next)(void); 
     RandomSeed primarySeed; 
     RandomSeed secondarySeed; 
 };
@@ -9568,7 +9551,7 @@ struct UiTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    dword activationSoundId;
+    uint32_t activationSoundId;
 };
 
 /* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
@@ -9576,8 +9559,8 @@ struct UiTextButtonControl {
 typedef struct UiNumericPairTextButton UiNumericPairTextButton;
 struct UiNumericPairTextButton {
     struct UiTextButtonControl base;
-    sdword firstValue;
-    sdword secondValue;
+    int32_t firstValue;
+    int32_t secondValue;
 };
 
 /* Text button that patches two payload pointers into rich-text payload selectors 0 and 1 of its text before
@@ -9590,32 +9573,32 @@ struct UiPayloadPairTextButton {
 };
 
 struct UiCommandRuntimeRecordPrefix {
-    byte reserved00_07[8]; 
+    uint8_t reserved00_07[8]; 
     enum PckArmyAssetIdCatalog armyAssetId; 
-    byte reserved0C_1B[16]; 
+    uint8_t reserved0C_1B[16]; 
     struct GraphicsTextureSourceAsset *textureSource; 
-    dword reserved20; 
+    uint32_t reserved20; 
     ArmyBuildDurationQ5 buildDurationQ5; 
     ArmyBuildXeniteCostQ4 buildXeniteCostQ4; 
 };
 
 struct UiSpriteButtonDrawOffsets {
-    sbyte normalX; 
-    sbyte normalY; 
-    sbyte selectedX; 
-    sbyte selectedY; 
+    int8_t normalX; 
+    int8_t normalY; 
+    int8_t selectedX; 
+    int8_t selectedY; 
 };
 
 struct UiSpriteButtonControl {
     struct UiSelectableControl selectable; 
     struct GraphicsTextureSourceAsset *primaryTextureSource; 
-    dword normalSubresourceStartOrDescriptor; 
+    uint32_t normalSubresourceStartOrDescriptor; 
     struct UiSpriteButtonDrawOffsets drawOffsets; 
     GraphicsSubresourceIndex selectedSubresourceStart; 
     GraphicsSubresourceEndIndex normalSubresourceEndExclusive; 
     GraphicsSubresourceEndIndex selectedSubresourceEndExclusive; 
     GraphicsSubresourceOffset animationFrameOffset; 
-    dword activationSoundId; 
+    uint32_t activationSoundId; 
     struct GraphicsTextureSourceAsset *alternateTextureSource; 
 };
 
@@ -9626,7 +9609,7 @@ struct UiCommandSpriteButtonControl {
 
 struct UiCatalogEntryControl {
     struct UiCommandSpriteButtonControl command; 
-    dword runtimeDisplayValueQ4; 
+    uint32_t runtimeDisplayValueQ4; 
 };
 
 struct UiDirtyRectEntry {
@@ -9642,10 +9625,10 @@ struct UiImageControl {
     struct UiSelectableControl selectable; 
     struct GraphicsTextureSourceAsset *textureSource; 
     GraphicsSubresourceIndex normalSubresource; 
-    dword keyboardActivationSoundId; 
+    uint32_t keyboardActivationSoundId; 
     GraphicsSubresourceIndex alternateSubresource; 
     struct UiNodeBase *activeChild;
-    dword pointerActivationSoundId;
+    uint32_t pointerActivationSoundId;
 };
 
 /* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
@@ -9654,13 +9637,13 @@ struct UiImageControl {
 typedef struct UiImageActionControl UiImageActionControl;
 struct UiImageActionControl {
     struct UiNodeBase base;
-    dword displayFlags; /* 1: stretch to the node, 2: Enter queues primaryActionId, 4: letterbox to letterboxWidth */
+    uint32_t displayFlags; /* 1: stretch to the node, 2: Enter queues primaryActionId, 4: letterbox to letterboxWidth */
     GraphicsCursorFrameIndex cursorFrame;
     struct GraphicsTextureSourceAsset *textureSource;
     GraphicsSubresourceIndex subresource;
     UiActionId primaryActionId;
     UiActionId secondaryActionId;
-    sdword letterboxWidth;
+    int32_t letterboxWidth;
 };
 
 /* Framed text box drawing lineCount rich-text lines; left clicks queue actionId while it has lines
@@ -9668,18 +9651,18 @@ struct UiImageActionControl {
 typedef struct UiConditionalActionControl UiConditionalActionControl;
 struct UiConditionalActionControl {
     struct UiNodeBase base;
-    dword field4C;
+    uint32_t field4C;
     GraphicsCursorFrameIndex cursorFrame;
     UiActionId actionId;
-    dword lineCount;
-    word *textLines[1];
+    uint32_t lineCount;
+    uint16_t *textLines[1];
 };
 
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
     UiPackedTextStyle packedTextStyle;
-    dword activationSoundId;
+    uint32_t activationSoundId;
 };
 
 typedef struct UiWindowControl UiWindowControl;
@@ -9715,11 +9698,11 @@ enum /* UiPointerCaptureButton, stored in 1 byte(s) */ {
     UI_POINTER_CAPTURE_RIGHT=2,
     UI_POINTER_CAPTURE_NONE=255
 };
-typedef byte UiPointerCaptureButton;
+typedef uint8_t UiPointerCaptureButton;
 
 struct UiRuntimeRecord {
     struct UiTransferPacketHeader packetHeader; 
-    byte payload10_FF[240]; 
+    uint8_t payload10_FF[240]; 
 };
 
 struct UiTransferMailboxState {
@@ -9734,7 +9717,7 @@ struct UiTransferMailboxState {
 struct FrontendDisplayResolutionOptionRow68 {
     FrontendDisplayDimensionPixels width; 
     FrontendDisplayDimensionPixels height; 
-    byte reserved0008_0067[96]; 
+    uint8_t reserved0008_0067[96]; 
 };
 
 struct FrontendDisplayResolutionRows410 {
@@ -9742,9 +9725,9 @@ struct FrontendDisplayResolutionRows410 {
 };
 
 struct FrontendDisplayAdapterOptionRow68 {
-    word *adapterDescriptionUtf16; 
-    word *deviceNameUtf16; 
-    byte reserved0008_0067[96]; 
+    uint16_t *adapterDescriptionUtf16; 
+    uint16_t *deviceNameUtf16; 
+    uint8_t reserved0008_0067[96]; 
 };
 
 struct FrontendDisplayAdapterRows208 {
@@ -9752,8 +9735,8 @@ struct FrontendDisplayAdapterRows208 {
 };
 
 struct FrontendDisplayColorDepthOptionRow68 {
-    dword bitsPerPixel; 
-    byte reserved0004_0067[100]; 
+    uint32_t bitsPerPixel; 
+    uint8_t reserved0004_0067[100]; 
 };
 
 struct FrontendDisplayColorDepthRows1A0 {
@@ -9761,16 +9744,16 @@ struct FrontendDisplayColorDepthRows1A0 {
 };
 
 struct FrontendDisplaySettingsPageOptionState1010 {
-    byte reserved0000_07AF[1968]; 
+    uint8_t reserved0000_07AF[1968]; 
     struct FrontendDisplayAdapterRows208 adapterRows; 
-    byte reserved09B8_0A0B[84]; 
+    uint8_t reserved09B8_0A0B[84]; 
     struct FrontendDisplayResolutionRows410 resolutionRows; 
-    byte reserved0E1C_0E6F[84]; 
+    uint8_t reserved0E1C_0E6F[84]; 
     struct FrontendDisplayColorDepthRows1A0 colorDepthRows; 
 };
 
 union FrontendUiDisplayModeAndTaskAssignmentScratch280 {
-    byte raw[640]; 
+    uint8_t raw[640]; 
     struct FrontendTaskAssignmentGeneratedFactionTextState280 taskAssignmentText; 
     union FrontendDisplayModeScratch28 displayModeScratch; 
     struct FrontendDisplayModeEnumerationState280 displayEnumeration; 
@@ -9778,7 +9761,7 @@ union FrontendUiDisplayModeAndTaskAssignmentScratch280 {
 
 struct UiSelectableOptionRow60 {
     struct UiSelectableControl control; 
-    byte reserved0054_005F[12]; 
+    uint8_t reserved0054_005F[12]; 
 };
 
 struct FrontendGraphicsSecondaryRows120 {
@@ -9787,7 +9770,7 @@ struct FrontendGraphicsSecondaryRows120 {
 
 struct UiSelectableOptionRow68 {
     struct UiSelectableControl control; 
-    byte reserved0054_0067[20]; 
+    uint8_t reserved0054_0067[20]; 
 };
 
 struct FrontendGraphicsQualityRows270 {
@@ -9796,18 +9779,18 @@ struct FrontendGraphicsQualityRows270 {
 
 struct FrontendGraphicsRuntimeSettingsPageState167C {
     struct UiNodeBase base; 
-    byte reserved4C_1067[4124]; 
+    uint8_t reserved4C_1067[4124]; 
     struct UiSelectableControl shadingEnabledControl; 
-    byte reserved10BC_111B[96]; 
+    uint8_t reserved10BC_111B[96]; 
     struct FrontendGraphicsQualityRows270 shadingResolutionRows; 
-    byte reserved138C_14F7[364]; 
-    dword polygonResolutionLodThresholdQ8; 
-    byte reserved14FC_155B[96]; 
+    uint8_t reserved138C_14F7[364]; 
+    uint32_t polygonResolutionLodThresholdQ8; 
+    uint8_t reserved14FC_155B[96]; 
     struct FrontendGraphicsSecondaryRows120 textureResolutionRows; 
 };
 
 struct InGamePlayerStatusTextSlot {
-    word text[64]; 
+    uint16_t text[64]; 
 };
 
 struct UiRequiredTextEditControl {
@@ -9820,7 +9803,7 @@ struct UiRequiredTextEditControl {
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
     struct DirectSoundVoiceSet *activationSound; 
-    word textPrefix6C[10]; 
+    uint16_t textPrefix6C[10]; 
 };
 
 struct UiPathTextEditControl {
@@ -9828,12 +9811,12 @@ struct UiPathTextEditControl {
     enum UiTextEditStateFlags editStateFlags; 
     UiActionId actionId; 
     UiPixelOffset horizontalScrollPixels; 
-    dword reservedOrCapacity58; 
+    uint32_t reservedOrCapacity58; 
     UiTextCodeUnitIndex cursorIndex; 
     UiTextCodeUnitIndex selectionStart; 
     UiTextCodeUnitIndex selectionEnd; 
     struct DirectSoundVoiceSet *activationSound; 
-    word pathBuffer[256]; 
+    uint16_t pathBuffer[256]; 
 };
 
 struct UiDisplayModeSelectionActionHandlerTable20 {
@@ -9842,7 +9825,7 @@ struct UiDisplayModeSelectionActionHandlerTable20 {
 
 struct FrontendUiActionHandlerPage20Prefix86 {
     void (*handlers00_54[85])(void *); // Generic queued action handlers for action IDs 0x2000-0x2054.
-    void (*scenarioCatalogRebuildCallbacks[3])(dword, dword, dword, dword); // Indexed 3-way save/level/campaign record-list rebuild callbacks; selector 0..2 is carried in ECX.
+    void (*scenarioCatalogRebuildCallbacks[3])(uint32_t, uint32_t, uint32_t, uint32_t); // Indexed 3-way save/level/campaign record-list rebuild callbacks; selector 0..2 is carried in ECX.
 };
 
 struct InGameUiActionHandlerPage12Prefix28 {
@@ -9858,7 +9841,7 @@ struct InGameUiCommandModeActionHandlerPage11 {
 };
 
 struct FrontendTaskAssignmentControlOffsetRow1C {
-    dword offsets[7]; 
+    uint32_t offsets[7]; 
 };
 
 struct FrontendTaskAssignmentControlOffsetTablesA8 {
@@ -9871,8 +9854,8 @@ struct FrontendTaskAssignmentControlOffsetTablesA8 {
 };
 
 struct UiCommandDispatchRecord {
-    dword commandCode; 
-    dword modifierClassFlags; 
+    uint32_t commandCode; 
+    uint32_t modifierClassFlags; 
     ContinuationEntryAddress32 continuationEntryAddress; 
 };
 
@@ -9887,11 +9870,11 @@ struct DynamicApiBinding {
 };
 
 struct ArenaBlockHeader {
-    dword payloadSize; 
+    uint32_t payloadSize; 
     enum ArenaBlockStateMagic stateMagic; 
     struct ArenaBlockHeader *next; 
     struct ArenaBlockHeader *previous; 
-    byte alignmentPadding10_1F[16]; 
+    uint8_t alignmentPadding10_1F[16]; 
 };
 
 struct TimerCallbackTable {
@@ -9910,15 +9893,15 @@ struct ArenaState {
     void *processHeap; 
     void *rawAllocation; 
     struct ArenaBlockHeader *firstBlock; 
-    byte *linearCursor; 
-    byte *linearLimit; 
+    uint8_t *linearCursor; 
+    uint8_t *linearLimit; 
 };
 
 struct TH_WNDCLASSA {
-    dword style;
-    LRESULT (*lpfnWndProc)(HWND, dword, WPARAM, LPARAM); 
-    sdword cbClsExtra;
-    sdword cbWndExtra;
+    uint32_t style;
+    LRESULT (*lpfnWndProc)(HWND, uint32_t, WPARAM, LPARAM); 
+    int32_t cbClsExtra;
+    int32_t cbWndExtra;
     HINSTANCE hInstance;
     void *hIcon;
     void *hCursor;
@@ -9928,7 +9911,7 @@ struct TH_WNDCLASSA {
 };
 
 struct ArenaLinearReserveEaxCf5 {
-    dword baseOrError; // EAX: reserved linear base on CF-clear; engine error on CF-set.
+    uint32_t baseOrError; // EAX: reserved linear base on CF-clear; engine error on CF-set.
     bool carry; // Carry flag: clear success, set failure.
 };
 
@@ -10009,7 +9992,7 @@ struct IDirectDraw2_Vtbl {
     TH_LEGACY_HRESULT (__stdcall *CreatePalette)(struct IDirectDraw2 *, TH_LEGACY_DWORD, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID *, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *CreateSurface)(struct IDirectDraw2 *, struct DDSURFACEDESC_DX6 *, struct IDirectDrawSurface **, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *DuplicateSurface)(struct IDirectDraw2 *, struct IDirectDrawSurface *, struct IDirectDrawSurface **);
-    sdword (__stdcall *EnumDisplayModes)(struct IDirectDraw2 *, dword, struct DDSURFACEDESC_DX6 *, dword, sdword (__stdcall *)(struct DDSURFACEDESC_DX6 *, dword)); 
+    int32_t (__stdcall *EnumDisplayModes)(struct IDirectDraw2 *, uint32_t, struct DDSURFACEDESC_DX6 *, uint32_t, int32_t (__stdcall *)(struct DDSURFACEDESC_DX6 *, uint32_t)); 
     TH_LEGACY_HRESULT (__stdcall *EnumSurfaces)(struct IDirectDraw2 *, TH_LEGACY_DWORD, struct DDSURFACEDESC_DX6 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
     TH_LEGACY_HRESULT (__stdcall *FlipToGDISurface)(struct IDirectDraw2 *);
     TH_LEGACY_HRESULT (__stdcall *GetCaps)(struct IDirectDraw2 *, TH_LEGACY_LPVOID, TH_LEGACY_LPVOID);
@@ -10084,39 +10067,39 @@ struct IDirectInputA {
     struct IDirectInputA_Vtbl *lpVtbl;
 };
 
-typedef qword WorldPositionXYRegisterPairQ12;
+typedef uint64_t WorldPositionXYRegisterPairQ12;
 
-typedef byte FactionRuntimeLifecycleState;
+typedef uint8_t FactionRuntimeLifecycleState;
 
-typedef qword ModelRuntimeScaleRatioRegisterPairQ12;
+typedef uint64_t ModelRuntimeScaleRatioRegisterPairQ12;
 
-typedef qword ModelRuntimeAttachmentCollectionRegisterPair;
+typedef uint64_t ModelRuntimeAttachmentCollectionRegisterPair;
 
-typedef qword ModelRuntimeActiveTotalMetricRegisterPair;
+typedef uint64_t ModelRuntimeActiveTotalMetricRegisterPair;
 
-typedef qword ShotAimXZRegisterPairQ12;
+typedef uint64_t ShotAimXZRegisterPairQ12;
 
-typedef uint DisplayModeScratchWord;
+typedef uint32_t DisplayModeScratchWord;
 
 typedef int FieldGridRadiusUnits;
 
-typedef dword ArmyTerrainContactMode;
+typedef uint32_t ArmyTerrainContactMode;
 
-typedef dword UQ8;
+typedef uint32_t UQ8;
 
-typedef dword ArmyAssetId;
+typedef uint32_t ArmyAssetId;
 
 typedef int FieldGridAccumulatorValue;
 
-typedef dword SelectionPlayerPairKey;
+typedef uint32_t SelectionPlayerPairKey;
 
-typedef dword FieldGridTransitionValue;
+typedef uint32_t FieldGridTransitionValue;
 
 typedef int FieldGridRowStrideBytes;
 
-typedef dword FieldGridCommandReservedValue;
+typedef uint32_t FieldGridCommandReservedValue;
 
-typedef dword TechnologyId;
+typedef uint32_t TechnologyId;
 
 typedef int FieldGridMaterialBitIndex;
 
@@ -10124,9 +10107,9 @@ typedef int FieldGridByteOffset;
 
 typedef int FieldGridHeightDeltaUnits;
 
-typedef dword SelectionPlayerPairValue;
+typedef uint32_t SelectionPlayerPairValue;
 
-typedef dword PackedFieldGridDeltaXY16;
+typedef uint32_t PackedFieldGridDeltaXY16;
 
 struct Win32SystemTime16 {
     Win32CalendarYear16 year; 
@@ -10141,17 +10124,17 @@ struct Win32SystemTime16 {
 
 struct LocaleSystemState {
     struct Win32SystemTime16 localTime; 
-    dword languageIdentifierDigits; 
-    word decimalSeparator[16]; 
-    word thousandsSeparator[16]; 
-    word numberGrouping[16]; 
-    dword negativeNumberFormat; 
-    word dateSeparator[16]; 
-    word timeSeparator[16]; 
-    dword longDateOrder; 
-    dword timeFormat24Hour; 
-    word amDesignator[16]; 
-    word pmDesignator[16]; 
+    uint32_t languageIdentifierDigits; 
+    uint16_t decimalSeparator[16]; 
+    uint16_t thousandsSeparator[16]; 
+    uint16_t numberGrouping[16]; 
+    uint32_t negativeNumberFormat; 
+    uint16_t dateSeparator[16]; 
+    uint16_t timeSeparator[16]; 
+    uint32_t longDateOrder; 
+    uint32_t timeFormat24Hour; 
+    uint16_t amDesignator[16]; 
+    uint16_t pmDesignator[16]; 
 };
 
 typedef enum RuntimeSpinLockValue {
@@ -10161,7 +10144,7 @@ typedef enum RuntimeSpinLockValue {
 
 struct TimerSystemState {
     void (*callbacks[32])(void); 
-    dword winmmTimerIds[32]; 
+    uint32_t winmmTimerIds[32]; 
 };
 
 struct Win32Message32 {
@@ -10177,7 +10160,7 @@ struct Win32Message32 {
 /* WNDCLASSA as the image stores it (the main window's class, see g_MainWindowClass). */
 typedef struct Win32WindowClass32 Win32WindowClass32;
 struct Win32WindowClass32 {
-    dword style;
+    uint32_t style;
     void *windowProc;
     int classExtraBytes;
     int windowExtraBytes;
@@ -10193,7 +10176,7 @@ struct Win32WindowClass32 {
    MSG.pt.y. The first PeekMessageA overwrites the style only after RegisterClassA copied the class. */
 typedef struct Win32MessageWindowClassOverlay Win32MessageWindowClassOverlay;
 struct Win32MessageWindowClassOverlay {
-    dword messageHead[6];
+    uint32_t messageHead[6];
     struct Win32WindowClass32 windowClass;
 };
 
@@ -10206,11 +10189,11 @@ union Win32MainMessageStorage {
 /* Glide 3 GrLfbInfo_t: what grLfbLock reports about a locked frame buffer. */
 typedef struct GlideLfbInfo GlideLfbInfo;
 struct GlideLfbInfo {
-    dword size;
-    byte *pixels;
-    dword strideBytes;
-    dword writeMode;
-    dword origin;
+    uint32_t size;
+    uint8_t *pixels;
+    uint32_t strideBytes;
+    uint32_t writeMode;
+    uint32_t origin;
 };
 
 struct PcxRgb24 {
@@ -10221,16 +10204,16 @@ struct PcxRgb24 {
 
 struct PcxPreview64 {
     struct PcxRgb24 paletteRgbTriplets256[256]; 
-    byte indexedPixels64x64[4096]; 
+    uint8_t indexedPixels64x64[4096]; 
 };
 
 struct TechnologyCategoryMasks {
-    dword category2[8]; 
-    dword category3[8]; 
+    uint32_t category2[8]; 
+    uint32_t category3[8]; 
 };
 
 struct TechnologyRecord {
-    dword prerequisiteMasks[8]; 
+    uint32_t prerequisiteMasks[8]; 
     TechnologyXeniteCostQ4 xeniteCostQ4; 
     TechnologyEnergyCostQ4 energyCostQ4; 
     TechnologyResearchDurationQ5 researchDurationQ5; 
@@ -10238,12 +10221,12 @@ struct TechnologyRecord {
     UiTextResourceId completionMessageResourceId; 
     enum TechnologyCategory category; 
     AiTechnologyCandidateScore baseCandidateScore; 
-    dword reserved3C; 
+    uint32_t reserved3C; 
 };
 
 struct TechnologyAssetHeader {
     struct GeneratedAssetCommonPrefix common; 
-    byte reservedB0_1FF[336]; 
+    uint8_t reservedB0_1FF[336]; 
 };
 
 struct TechnologyAsset {
@@ -10258,7 +10241,7 @@ struct GeneratedAssetRecordCountHeader {
 
 struct ArmyAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct GeneratedAssetEntryCountHeader {
@@ -10280,7 +10263,7 @@ struct GraphicsPaletteAssetLifecycleCallbackTable3 {
 
 struct RomAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct RomRegistrySlot {
@@ -10290,27 +10273,27 @@ struct RomRegistrySlot {
 
 struct RomAssetRecordPrefix {
     RomRecordByteSize byteSize; 
-    dword rootNodeOffsetOrPointer; 
+    uint32_t rootNodeOffsetOrPointer; 
     RomRecordId recordId; 
 };
 
 struct ModelPackedPointRecord {
-    uint packedLookupKey; 
+    uint32_t packedLookupKey; 
     struct GraphicsFixedVec3 localPosition; 
 };
 
 struct ModelAssetHeader {
     struct GeneratedAssetRecordCountHeader recordCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct ModelRuntimeSlotAssetView200 {
-    byte opaque[512]; 
+    uint8_t opaque[512]; 
 };
 
 struct EffectAssetHeader {
     struct GeneratedAssetEntryCountHeader entryCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 struct EffectLifecycleTransitionDispatchTable5 {
@@ -10323,14 +10306,14 @@ struct EffectLifecycleTransitionDispatchTable5 {
 
 struct ShotAssetHeader {
     struct GeneratedAssetEntryCountHeader entryCountHeader;
-    byte reservedB4_1FF[332];
+    uint8_t reservedB4_1FF[332];
 };
 
 typedef char *TH_LEGACY_LPCSTR;
 
 typedef char *TH_LEGACY_LPSTR;
 
-typedef dword TH_LEGACY_UINT;
+typedef uint32_t TH_LEGACY_UINT;
 
 typedef void *TH_LEGACY_LPCVOID;
 
@@ -10343,9 +10326,9 @@ struct CommandLineArgumentMirrorState500 {
 };
 
 struct CommandLineWideArguments {
-    word argument1[256]; 
-    word argument2[256]; 
-    word argument3[256]; 
+    uint16_t argument1[256]; 
+    uint16_t argument2[256]; 
+    uint16_t argument3[256]; 
 };
 
 struct FrontendPlayerFactionAssignmentState10 {
@@ -10356,7 +10339,7 @@ struct FrontendPlayerFactionAssignmentState10 {
 };
 
 struct FrontendPlayerNameUtf16_28 {
-    word textUtf16[20]; 
+    uint16_t textUtf16[20]; 
 };
 
 struct FrontendNetworkSettingsPageCommonPrefix44 {
@@ -10364,19 +10347,19 @@ struct FrontendNetworkSettingsPageCommonPrefix44 {
     struct UiNodeBase *firstChild; 
     struct UiNodeBase *parent; 
     struct UiNodeVtable *vtable; 
-    sdword left; 
-    sdword top; 
-    sdword right; 
-    sdword bottom; 
-    sdword leftOffset; 
-    sdword topOffset; 
-    sdword rightOffset; 
-    sdword bottomOffset; 
+    int32_t left; 
+    int32_t top; 
+    int32_t right; 
+    int32_t bottom; 
+    int32_t leftOffset; 
+    int32_t topOffset; 
+    int32_t rightOffset; 
+    int32_t bottomOffset; 
     UiAnchorFractionQ31 leftAnchorQ31; 
     UiAnchorFractionQ31 topAnchorQ31; 
     UiAnchorFractionQ31 rightAnchorQ31; 
     UiAnchorFractionQ31 bottomAnchorQ31; 
-    sdword layoutWidth; 
+    int32_t layoutWidth; 
 };
 
 struct FrontendNetworkBackendCommonPrefix44 {
@@ -10384,64 +10367,64 @@ struct FrontendNetworkBackendCommonPrefix44 {
 };
 
 struct FrontendNetworkSettingsPrimaryPageStackView250 {
-    byte reserved0000_0067[104]; 
+    uint8_t reserved0000_0067[104]; 
     struct UiPageStackControl pageStack; 
-    byte reserved00BC_024F[404]; 
+    uint8_t reserved00BC_024F[404]; 
 };
 
 struct FrontendNetworkSettingsGeneratedNameBufferView250 {
-    byte reserved0000_0177[376]; 
-    word generatedNameUtf16[40]; 
-    byte reserved01C8_024F[136]; 
+    uint8_t reserved0000_0177[376]; 
+    uint16_t generatedNameUtf16[40]; 
+    uint8_t reserved01C8_024F[136]; 
 };
 
 struct FrontendNetworkSettingsUiNodeView250 {
     struct UiNodeBase base; 
-    byte reserved004C_024F[516]; 
+    uint8_t reserved004C_024F[516]; 
 };
 
 struct FrontendNetworkGeneratedNamePrefix2E {
-    byte backendModeMarker; 
-    byte reserved01_05[5]; 
+    uint8_t backendModeMarker; 
+    uint8_t reserved01_05[5]; 
     char generatedName[40]; 
 };
 
 union FrontendNetworkBackendModeOverlap44 {
     struct FrontendNetworkBackendCommonPrefix44 commonPrefix; 
     struct FrontendNetworkGeneratedNamePrefix2E generatedNamePrefix; 
-    byte raw[68]; 
+    uint8_t raw[68]; 
 };
 
 struct FrontendNetworkBackendModePageState250 {
     union FrontendNetworkBackendModeOverlap44 backendModeOverlap; 
-    byte reserved44_24F[524]; 
+    uint8_t reserved44_24F[524]; 
 };
 
 struct FrontendNetworkSettingsTextEditView250 {
-    byte reserved0000_0043[68]; 
+    uint8_t reserved0000_0043[68]; 
     struct UiTextEditControl textEdit; 
-    byte reserved00C4_024F[396]; 
+    uint8_t reserved00C4_024F[396]; 
 };
 
 struct FrontendNetworkSettingsPointerListView250 {
-    byte reserved0000_005B[92]; 
+    uint8_t reserved0000_005B[92]; 
     struct UiPointerListControl pointerList; 
-    byte reserved00C0_024F[400]; 
+    uint8_t reserved00C0_024F[400]; 
 };
 
 struct FrontendNetworkSettingsPageCommonState250 {
     struct FrontendNetworkSettingsPageCommonPrefix44 commonPrefix; 
-    byte reserved0044_024F[524]; 
+    uint8_t reserved0044_024F[524]; 
 };
 
 struct FrontendNetworkSettingsSecondaryPageStackView250 {
-    byte reserved0000_0147[328]; 
+    uint8_t reserved0000_0147[328]; 
     struct UiPageStackControl pageStack; 
-    byte reserved019C_024F[180]; 
+    uint8_t reserved019C_024F[180]; 
 };
 
 union FrontendNetworkSettingsControlView250 {
-    byte raw[592]; 
+    uint8_t raw[592]; 
     struct FrontendNetworkSettingsPageCommonState250 commonState; 
     struct FrontendNetworkSettingsUiNodeView250 nodeView; 
     struct FrontendNetworkSettingsTextEditView250 textEditView; 
@@ -10453,28 +10436,28 @@ union FrontendNetworkSettingsControlView250 {
 };
 
 struct FrontendPlayerRuntimeRecord {
-    dword runtimeState00; // Record-local state copied in host snapshots; narrower semantics deferred.
+    uint32_t runtimeState00; // Record-local state copied in host snapshots; narrower semantics deferred.
     UiTransferSequenceToken peerSequenceToken; // Peer/session sequence token.
-    dword runtimeState08;
-    dword runtimeState0C;
+    uint32_t runtimeState08;
+    uint32_t runtimeState0C;
     FrontendHeartbeatTickCount heartbeatExpiryTicks; // Heartbeat expiry countdown.
     FrontendPlayerRuntimeId playerRuntimeId; // Stable player runtime identifier.
     struct FrontendPlayerNameUtf16_28 playerName; // Typed UTF-16 player name/descriptor text.
     struct UiTransferEndpointDescriptor endpoint; // Remote IPv4 endpoint; address is compared at record offset +0x44.
     enum FrontendCommandSyncPendingState commandSyncPending; // Command synchronization pending state.
     struct FrontendPlayerFactionAssignmentState10 factionAssignment; // Exact ready/wait, faction assignment, consensus, and role-state subrecord. commandSyncPending at +0x50 remains separate.
-    dword runtimeState64;
+    uint32_t runtimeState64;
     enum FrontendSnapshotTransferFlags snapshotTransferFlags; // Snapshot transfer-state flags.
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; // Current snapshot chunk offset.
-    dword runtimeState70;
+    uint32_t runtimeState70;
     FrontendCapabilityFlags capabilityFlags; // Player capability/selection flags.
-    byte reserved78_7F[8];
+    uint8_t reserved78_7F[8];
     FrontendCapturedStateFlag capturedFlag80; // Captured assignment/runtime state flag.
-    dword scenarioAvailabilityMask0; // Scenario-availability bitmask for catalog group 0; selected level index maps to one bit within this dword.
-    dword scenarioAvailabilityMask1; // Scenario-availability bitmask for catalog group 1.
-    dword scenarioAvailabilityMask2; // Scenario-availability bitmask for catalog group 2.
-    byte reserved90_AF[32];
-    byte snapshotPayloadB0_13AF[4864]; // Fixed snapshot image transferred in 0xE0/0xE8-byte chunks.
+    uint32_t scenarioAvailabilityMask0; // Scenario-availability bitmask for catalog group 0; selected level index maps to one bit within this dword.
+    uint32_t scenarioAvailabilityMask1; // Scenario-availability bitmask for catalog group 1.
+    uint32_t scenarioAvailabilityMask2; // Scenario-availability bitmask for catalog group 2.
+    uint8_t reserved90_AF[32];
+    uint8_t snapshotPayloadB0_13AF[4864]; // Fixed snapshot image transferred in 0xE0/0xE8-byte chunks.
 };
 
 struct FrontendCommandPacketRecord {
@@ -10485,28 +10468,28 @@ struct FrontendCommandPacketRecord {
 struct FrontendPlayerRemovalPacket10007 {
     struct UiTransferPacketHeader header; 
     FrontendPlayerRuntimeId removedPlayerToken; 
-    byte reservedPayload14_1F[12]; 
+    uint8_t reservedPayload14_1F[12]; 
 };
 
 struct FrontendPacket20002PlayerDescriptor {
     struct UiTransferPacketHeader header; 
     UiTransferPayloadByteCount payloadByteCount; 
-    dword reserved14; 
-    dword playerDescriptorPayload[10]; 
+    uint32_t reserved14; 
+    uint32_t playerDescriptorPayload[10]; 
 };
 
 struct FrontendPacket8000ASnapshotChunk {
     struct UiTransferPacketHeader header; 
-    dword reserved10; 
+    uint32_t reserved10; 
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; 
-    byte packet10009Buffer[232]; 
+    uint8_t packet10009Buffer[232]; 
 };
 
 struct FrontendPacket10003JoinAck {
     struct UiTransferPacketHeader header; 
     FrontendPlayerRuntimeId assignedPlayerRuntimeId; 
     FrontendNetworkTickInterval networkTickInterval; 
-    byte reserved18_1F[8]; 
+    uint8_t reserved18_1F[8]; 
 };
 
 struct FrontendPacket40008LobbyRosterSnapshot {
@@ -10514,32 +10497,32 @@ struct FrontendPacket40008LobbyRosterSnapshot {
     FrontendPlayerCount pendingSessionPlayerCount; 
     FrontendStatusCode selectedStatusCode0; 
     FrontendStatusCode selectedStatusCode1; 
-    dword reserved1C; 
+    uint32_t reserved1C; 
     FrontendPlayerIndex selectedPlayerIndex; 
     FrontendPlayerCount playerCount; 
     FrontendPlayerRuntimeId selectedPlayerRuntimeId; 
-    byte reserved2C_37[12]; 
-    dword playerDescriptorPayload[10]; 
-    word selectedPlayerStatusTextUtf16[16]; 
+    uint8_t reserved2C_37[12]; 
+    uint32_t playerDescriptorPayload[10]; 
+    uint16_t selectedPlayerStatusTextUtf16[16]; 
 };
 
 struct FrontendPacket10032HostValue {
     struct UiTransferPacketHeader header; 
     FrontendBackendSessionValue backendSessionValue; 
-    byte reserved14_1F[12]; 
+    uint8_t reserved14_1F[12]; 
 };
 
 struct FrontendPacket10000Handshake {
     struct UiTransferPacketHeader header; 
     FrontendProtocolMagic protocolMagic2931; 
-    byte reserved14_1F[12]; 
+    uint8_t reserved14_1F[12]; 
 };
 
 struct FrontendPacket30005PlayerSnapshot {
     struct UiTransferPacketHeader header; 
     FrontendPlayerIndex playerIndex; 
     FrontendPlayerRuntimeId playerRuntimeId; 
-    dword playerDescriptorPayload[10]; 
+    uint32_t playerDescriptorPayload[10]; 
     struct UiTransferEndpointDescriptor endpoint; 
     FrontendRandomSeed secondaryRandomSeed; 
     FrontendReadyOrWaitState readyOrWaitState; 
@@ -10549,42 +10532,42 @@ struct FrontendPacket30005PlayerSnapshot {
 
 struct FrontendPacket10012SyncPending {
     struct UiTransferPacketHeader header; 
-    byte reserved10_1F[16]; 
+    uint8_t reserved10_1F[16]; 
 };
 
 struct FrontendPacket10013HeartbeatAck {
     struct UiTransferPacketHeader header; 
-    byte reserved10_1F[16]; 
+    uint8_t reserved10_1F[16]; 
 };
 
 struct FrontendPacket10004PlayerSnapshotRequest {
     struct UiTransferPacketHeader header; 
     FrontendPlayerIndex requestedPlayerIndex; 
-    byte reserved14_1F[12]; 
+    uint8_t reserved14_1F[12]; 
 };
 
 struct FrontendPacket10023StateAck {
     struct UiTransferPacketHeader header; 
-    byte reserved10_1F[16]; 
+    uint8_t reserved10_1F[16]; 
 };
 
 struct FrontendPacket10022StatePending {
     struct UiTransferPacketHeader header; 
-    byte reserved10_1F[16]; 
+    uint8_t reserved10_1F[16]; 
 };
 
 struct FrontendPacket10009SnapshotChunkRequest {
     struct UiTransferPacketHeader header; 
-    dword reserved10; 
+    uint32_t reserved10; 
     FrontendSnapshotChunkByteOffset snapshotChunkOffset; 
-    byte reserved18_1F[8]; 
+    uint8_t reserved18_1F[8]; 
 };
 
 struct FrontendPacket10006CapabilityHeartbeat {
     struct UiTransferPacketHeader header; 
     FrontendCapabilityFlags capabilityFlags; 
     FrontendHeartbeatTickCount heartbeatExpiryTicks; 
-    byte reserved18_1F[8]; 
+    uint8_t reserved18_1F[8]; 
 };
 
 union FrontendTransferPacketUnion {
@@ -10618,9 +10601,9 @@ struct ScenarioCatalogHeader {
 };
 
 struct ScenarioCatalogRecord {
-    word identifier[32]; 
-    byte metadata40_BF[128]; 
-    word timestampText[32]; 
+    uint16_t identifier[32]; 
+    uint8_t metadata40_BF[128]; 
+    uint16_t timestampText[32]; 
 };
 
 typedef ULONG_PTR SIZE_T;
@@ -10651,56 +10634,56 @@ typedef void *LPCVOID;
 
 struct IMAGE_DATA_DIRECTORY {
     ImageBaseOffset32 VirtualAddress;
-    dword Size;
+    uint32_t Size;
 };
 
 struct IMAGE_OPTIONAL_HEADER32 {
-    word Magic;
-    byte MajorLinkerVersion;
-    byte MinorLinkerVersion;
-    dword SizeOfCode;
-    dword SizeOfInitializedData;
-    dword SizeOfUninitializedData;
+    uint16_t Magic;
+    uint8_t MajorLinkerVersion;
+    uint8_t MinorLinkerVersion;
+    uint32_t SizeOfCode;
+    uint32_t SizeOfInitializedData;
+    uint32_t SizeOfUninitializedData;
     ImageBaseOffset32 AddressOfEntryPoint;
     ImageBaseOffset32 BaseOfCode;
     ImageBaseOffset32 BaseOfData;
     pointer32 ImageBase;
-    dword SectionAlignment;
-    dword FileAlignment;
-    word MajorOperatingSystemVersion;
-    word MinorOperatingSystemVersion;
-    word MajorImageVersion;
-    word MinorImageVersion;
-    word MajorSubsystemVersion;
-    word MinorSubsystemVersion;
-    dword Win32VersionValue;
-    dword SizeOfImage;
-    dword SizeOfHeaders;
-    dword CheckSum;
-    word Subsystem;
-    word DllCharacteristics;
-    dword SizeOfStackReserve;
-    dword SizeOfStackCommit;
-    dword SizeOfHeapReserve;
-    dword SizeOfHeapCommit;
-    dword LoaderFlags;
-    dword NumberOfRvaAndSizes;
+    uint32_t SectionAlignment;
+    uint32_t FileAlignment;
+    uint16_t MajorOperatingSystemVersion;
+    uint16_t MinorOperatingSystemVersion;
+    uint16_t MajorImageVersion;
+    uint16_t MinorImageVersion;
+    uint16_t MajorSubsystemVersion;
+    uint16_t MinorSubsystemVersion;
+    uint32_t Win32VersionValue;
+    uint32_t SizeOfImage;
+    uint32_t SizeOfHeaders;
+    uint32_t CheckSum;
+    uint16_t Subsystem;
+    uint16_t DllCharacteristics;
+    uint32_t SizeOfStackReserve;
+    uint32_t SizeOfStackCommit;
+    uint32_t SizeOfHeapReserve;
+    uint32_t SizeOfHeapCommit;
+    uint32_t LoaderFlags;
+    uint32_t NumberOfRvaAndSizes;
     struct IMAGE_DATA_DIRECTORY DataDirectory[16];
 };
 
 struct IMAGE_RESOURCE_DIRECTORY_ENTRY_NameStruct {
-    dword NameOffset:31;
-    dword NameIsString:1;
+    uint32_t NameOffset:31;
+    uint32_t NameIsString:1;
 };
 
 struct IMAGE_FILE_HEADER {
-    word Machine; 
-    word NumberOfSections;
-    dword TimeDateStamp;
-    dword PointerToSymbolTable;
-    dword NumberOfSymbols;
-    word SizeOfOptionalHeader;
-    word Characteristics;
+    uint16_t Machine; 
+    uint16_t NumberOfSections;
+    uint32_t TimeDateStamp;
+    uint32_t PointerToSymbolTable;
+    uint32_t NumberOfSymbols;
+    uint16_t SizeOfOptionalHeader;
+    uint16_t Characteristics;
 };
 
 struct IMAGE_NT_HEADERS32 {
@@ -10711,8 +10694,8 @@ struct IMAGE_NT_HEADERS32 {
 
 union IMAGE_RESOURCE_DIRECTORY_ENTRY_NameUnion {
     struct IMAGE_RESOURCE_DIRECTORY_ENTRY_NameStruct IMAGE_RESOURCE_DIRECTORY_ENTRY_NameStruct;
-    dword Name;
-    word Id;
+    uint32_t Name;
+    uint16_t Id;
 };
 
 struct IMAGE_RESOURCE_DIRECTORY_ENTRY {
@@ -10761,48 +10744,48 @@ typedef enum SectionFlags {
 } SectionFlags;
 
 union Misc {
-    dword PhysicalAddress;
-    dword VirtualSize;
+    uint32_t PhysicalAddress;
+    uint32_t VirtualSize;
 };
 
 struct IMAGE_SECTION_HEADER {
     char Name[8];
     union Misc Misc;
     ImageBaseOffset32 VirtualAddress;
-    dword SizeOfRawData;
-    dword PointerToRawData;
-    dword PointerToRelocations;
-    dword PointerToLinenumbers;
-    word NumberOfRelocations;
-    word NumberOfLinenumbers;
+    uint32_t SizeOfRawData;
+    uint32_t PointerToRawData;
+    uint32_t PointerToRelocations;
+    uint32_t PointerToLinenumbers;
+    uint16_t NumberOfRelocations;
+    uint16_t NumberOfLinenumbers;
     enum SectionFlags Characteristics;
 };
 
 struct IMAGE_RESOURCE_DATA_ENTRY {
-    dword OffsetToData;
-    dword Size;
-    dword CodePage;
-    dword Reserved;
+    uint32_t OffsetToData;
+    uint32_t Size;
+    uint32_t CodePage;
+    uint32_t Reserved;
 };
 
 struct IMAGE_RESOURCE_DIRECTORY {
-    dword Characteristics;
-    dword TimeDateStamp;
-    word MajorVersion;
-    word MinorVersion;
-    word NumberOfNamedEntries;
-    word NumberOfIdEntries;
+    uint32_t Characteristics;
+    uint32_t TimeDateStamp;
+    uint16_t MajorVersion;
+    uint16_t MinorVersion;
+    uint16_t NumberOfNamedEntries;
+    uint16_t NumberOfIdEntries;
 };
 
 struct AiCandidateScoreEaxCf5 {
-    dword score; // EAX candidate score
+    uint32_t score; // EAX candidate score
     bool carry; // CF status
 };
 
 struct ModelBuildMetricEaxEcxEdxCf13 {
-    dword metric0; // EAX build metric component
-    dword metric1; // ECX build metric component
-    dword metric2; // EDX build metric component
+    uint32_t metric0; // EAX build metric component
+    uint32_t metric1; // ECX build metric component
+    uint32_t metric2; // EDX build metric component
     bool carry; // CF lookup status
 };
 
@@ -10860,7 +10843,7 @@ struct EntityPathingDestinationEaxEdxEbxEcxCf17 {
 };
 
 struct WorldRuntimeFlagsEaxCf5 {
-    dword flags; // EAX world runtime flags
+    uint32_t flags; // EAX world runtime flags
     bool carry; // CF status (implementation clears on return)
 };
 
@@ -10871,19 +10854,19 @@ struct FieldGridCoordinatesEaxEdx8 {
 
 struct FieldGridRaycastEaxEdxCf9 {
     Q12 distanceQ12; // EAX nearest distance
-    dword materialOrCellIndex; // EDX cell/material result
+    uint32_t materialOrCellIndex; // EDX cell/material result
     bool carry; // CF hit status
 };
 
 struct FontGlyphSizeEaxEdxCf9 {
-    dword width; // EAX glyph width
-    dword lineHeight; // EDX active font line height
+    uint32_t width; // EAX glyph width
+    uint32_t lineHeight; // EDX active font line height
     bool carry; // CF state (implementation clears on return)
 };
 
 struct PackageFindEntryEaxEcxCf9 {
-    dword recordSizeOrError; // EAX 0x200 record size or error code
-    dword matchCount; // ECX matching entry count
+    uint32_t recordSizeOrError; // EAX 0x200 record size or error code
+    uint32_t matchCount; // ECX matching entry count
     bool carry; // CF status
 };
 
@@ -10914,7 +10897,7 @@ struct GraphicsOffscreenAllocationEaxCf5 {
 };
 
 struct StatusValueEaxCf5 {
-    dword valueOrError; // EAX value/error code
+    uint32_t valueOrError; // EAX value/error code
     bool carry; // CF status
 };
 
@@ -10955,8 +10938,8 @@ struct GraphicsTextureSetEaxCf5 {
 };
 
 struct KeyboardEventEaxEdxCf9 {
-    dword eventCode; // EAX keyboard event code
-    dword eventData; // EDX keyboard event payload
+    uint32_t eventCode; // EAX keyboard event code
+    uint32_t eventData; // EDX keyboard event payload
     bool carry; // CF queue-empty status
 };
 
@@ -10986,12 +10969,12 @@ struct GridPathBacktrackEaxEbxEcxCf13 {
 };
 
 struct EndingMoviePathEaxCf5 {
-    word *moviePath; // EAX ending-movie path
+    uint16_t *moviePath; // EAX ending-movie path
     bool carry; // CF status
 };
 
 struct ModelSmoothEaxCf5 {
-    dword eax; // EAX smoothing state/value
+    uint32_t eax; // EAX smoothing state/value
     bool carry; // CF threshold/status
 };
 
@@ -11003,7 +10986,7 @@ struct FixedEulerAnglesEaxEcxEdx12 {
 
 struct FieldGridHeightNormalEaxEdxCf9 {
     Q12 heightQ12; // EAX interpolated terrain height
-    dword packedNormalAngles; // EDX packed normal angles
+    uint32_t packedNormalAngles; // EDX packed normal angles
     bool carry; // CF status
 };
 
@@ -11023,7 +11006,7 @@ struct RichTextLineAdvanceEaxCf5 {
 };
 
 struct InputEventEaxCf5 {
-    dword eventType; // EAX input event type
+    uint32_t eventType; // EAX input event type
     bool carry; // CF queue-empty status
 };
 
@@ -11055,12 +11038,12 @@ struct DynApiResolveEaxCf5 {
 };
 
 struct FactionRuntimeGroupIndexEaxCf5 {
-    dword runtimeGroupIndex; // EAX one-based runtime group index
+    uint32_t runtimeGroupIndex; // EAX one-based runtime group index
     bool carry; // CF not-found status
 };
 
 struct FixedLengthAnglesEaxEcxEdx12 {
-    dword lengthQ12; // EAX vector length
+    uint32_t lengthQ12; // EAX vector length
     AngleTurn32 azimuthAngle; // ECX azimuth/heading
     AngleTurn32 elevationAngle; // EDX elevation/pitch
 };
@@ -11079,9 +11062,9 @@ struct FieldGridSurfacePointEaxEcxEdxCf13 {
 };
 
 struct ModelLookupPayloadEaxEcxEdxCf13 {
-    dword payloadEax; // EAX entry payload +4
-    dword payloadEcx; // ECX entry payload +8
-    dword payloadEdx; // EDX entry payload +12
+    uint32_t payloadEax; // EAX entry payload +4
+    uint32_t payloadEcx; // ECX entry payload +8
+    uint32_t payloadEdx; // EDX entry payload +12
     bool carry; // CF status
 };
 
@@ -11096,7 +11079,7 @@ struct SpriteRegisterRelocateEaxCf5 {
 };
 
 struct ArmyPlacementDispatchEaxCf5 {
-    dword eax; // EAX placement result
+    uint32_t eax; // EAX placement result
     bool carry; // CF status
 };
 
@@ -11108,7 +11091,7 @@ struct ArmyRuntimeOrderHandlerMatrix11x24 {
     void (*modelClassInitialize[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     void (*modelReleaseOrCommit[24])(struct ModelDefinitionRecordPrefix *, struct ModelRuntimeSlot *);
     bool (*placementValidationCf[24])(struct WorldRuntimeContext *, struct ModelRuntimePlacementValidationView200 *); // 24 placement validators; CF is the boolean result. Split from generic world/army callbacks.
-    ArmyPlacementDispatchEaxCf5 (*placementAssetClassDispatch[24])(dword, dword, dword, dword, int, int, struct ModelDefinitionRecordPrefix *, dword, struct WorldRuntimeContext *);
+    ArmyPlacementDispatchEaxCf5 (*placementAssetClassDispatch[24])(uint32_t, uint32_t, uint32_t, uint32_t, int, int, struct ModelDefinitionRecordPrefix *, uint32_t, struct WorldRuntimeContext *);
     void (*classCommand[24])(struct WorldRuntimeContext *, struct ArmyRuntimeSlot *);
     void (*gridInfluenceAdd[24])(struct GameEntityRuntime *);
     void (*gridInfluenceRemove[24])(struct GameEntityRuntime *);
@@ -11150,13 +11133,13 @@ struct GraphicsProjectedBlockEaxCf5 {
     bool carry; // CF capacity status
 };
 struct FileSystemEnumerationEaxEcxCf9 {
-    dword recordSizeBytes; /* EAX physical enumeration record size; current backend returns 0x200. */
-    dword entryCount;      /* ECX number of output records produced. */
+    uint32_t recordSizeBytes; /* EAX physical enumeration record size; current backend returns 0x200. */
+    uint32_t entryCount;      /* ECX number of output records produced. */
     bool carry;            /* CF enumeration status; current Win32 backend clears CF on every return. */
 };
 struct UiRuntimeRecordRingDiscardEaxEdxCf9 {
-    dword eaxPayloadOrReadIndex; /* EAX: packet-buffer pointer on CF=0; ring read index on CF=1. */
-    dword edxEndpointOrReadIndex; /* EDX: endpoint pointer on CF=0; same ring read index on CF=1. */
+    uint32_t eaxPayloadOrReadIndex; /* EAX: packet-buffer pointer on CF=0; ring read index on CF=1. */
+    uint32_t edxEndpointOrReadIndex; /* EDX: endpoint pointer on CF=0; same ring read index on CF=1. */
     bool carryEmpty;             /* CF=1 when empty; CF=0 when one record was removed. */
 };
 struct AiSecondaryWorkspaceDistanceSelectionRegs8 {
@@ -11164,54 +11147,54 @@ struct AiSecondaryWorkspaceDistanceSelectionRegs8 {
     struct AiTargetWorkspaceEntry *selectedEntry;
 };
 struct TerrainOccupancyRuntimeFlagsEaxEcx8 {
-    dword runtimeFlags;
-    dword combinedOccupancyMask;
+    uint32_t runtimeFlags;
+    uint32_t combinedOccupancyMask;
 };
 struct TerrainOccupancyResolvedMasksRegs12 {
-    dword secondaryOccupancyMask;
-    dword primaryOccupancyMask;
-    dword runtimeFlags;
+    uint32_t secondaryOccupancyMask;
+    uint32_t primaryOccupancyMask;
+    uint32_t runtimeFlags;
 };
 struct AiWorkspace05DistanceSelectionRegs8 {
     AiCandidateScore32 score;
     struct AiScoredSiteWorkspaceEntry *selectedEntry;
 };
 struct ArenaLargestAllocationEaxEcxCf9 {
-    dword allocationOrError;    /* EAX: allocation pointer on success; arena error code on failure. */
-    dword blockSizeOrSentinel;  /* ECX: selected block size on success; failure sentinel otherwise. */
+    uint32_t allocationOrError;    /* EAX: allocation pointer on success; arena error code on failure. */
+    uint32_t blockSizeOrSentinel;  /* ECX: selected block size on success; failure sentinel otherwise. */
     bool carry;                 /* CF: clear on success, set on failure. */
 };
 struct GridPathUnreachableRecursiveEdiEdx8 {
-    dword bestCellByteOffset; /* EDI in/out: byte offset from g_GridScratchBase. */
+    uint32_t bestCellByteOffset; /* EDI in/out: byte offset from g_GridScratchBase. */
     GridPathCost bestCost;    /* EDX in/out: best path metric; outer caller starts at 0x7fffffff. */
 };
 struct AiStrategicClassSelectionRegs8 {
-    dword existingCountOrPressure;
+    uint32_t existingCountOrPressure;
     RuntimeToken selectedRuntimeToken;
 };
 
 struct ArenaShrinkEaxCf5 {
-    dword scratchOrError; // Physical ABI component EAX; arithmetic/free-block scratch on success, engine error on failure
+    uint32_t scratchOrError; // Physical ABI component EAX; arithmetic/free-block scratch on success, engine error on failure
     bool carry; // Physical ABI component CF; clear=success, set=failure
 };
 
 struct MemoryApiTable {
-    ArenaAllocEaxCf5 (*alloc)(dword); // 0x005864A0
+    ArenaAllocEaxCf5 (*alloc)(uint32_t); // 0x005864A0
     ArenaFreeEaxCf5 (*free)(void *); // 0x005865B0
     ArenaLargestAllocationEaxEcxCf9 (*allocLargestFreeBlock)(void); // 0x00586640
-    ArenaShrinkEaxCf5 (*shrinkInPlace)(dword, void *); // 0x005866B0; arguments are (newSize, memory). Status is returned through CF; EAX is only meaningful on failure.
-    dword (*queryFreeBytes)(void); // 0x00586570
-    ArenaLinearReserveEaxCf5 (*reserveLinear)(dword); // 0x00586750; returns the previous linear cursor in EAX.
+    ArenaShrinkEaxCf5 (*shrinkInPlace)(uint32_t, void *); // 0x005866B0; arguments are (newSize, memory). Status is returned through CF; EAX is only meaningful on failure.
+    uint32_t (*queryFreeBytes)(void); // 0x00586570
+    ArenaLinearReserveEaxCf5 (*reserveLinear)(uint32_t); // 0x00586750; returns the previous linear cursor in EAX.
 };
 
 struct Direct3DRenderStateApplyEaxCf5 {
-    dword appliedValueOrError; // EAX: requested state value on success; error 0x1d on failure.
+    uint32_t appliedValueOrError; // EAX: requested state value on success; error 0x1d on failure.
     bool carry; // CF: clear on success, set on failure.
 };
 
 struct DriveLetterEnumerationEaxEcx8 {
-    dword driveCount; // EAX drive count
-    dword driveCountMirror; // ECX mirrored drive count
+    uint32_t driveCount; // EAX drive count
+    uint32_t driveCountMirror; // ECX mirrored drive count
 };
 
 struct FileBufferEaxCf5 {
@@ -11220,30 +11203,30 @@ struct FileBufferEaxCf5 {
 };
 
 struct FileSystemStringTableEaxEcxCf9 {
-    dword tableOrError; // EAX: packed pointer/string-table allocation on success; engine error/scratch value on failure.
-    dword entryCountOrScratch; // ECX: entry count on success; live backend/cleanup scratch on failure.
+    uint32_t tableOrError; // EAX: packed pointer/string-table allocation on success; engine error/scratch value on failure.
+    uint32_t entryCountOrScratch; // ECX: entry count on success; live backend/cleanup scratch on failure.
     bool carry; // CF: clear on success, set on failure.
 };
 
 struct FrontendCreditsUiStateView {
-    byte opaqueGap0000_0057[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_0057[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPageStackControl pageStack; // frontend page stack used by credits activation
-    byte opaqueGap00AC_01D3[296]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap00AC_01D3[296]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct SoftwareMaskRuntimeView creditsMaskRuntime; // credits texture/mask work state
 };
 
 struct GeneratedTextureRenderContextView {
-    byte reserved00_53[84]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
+    uint8_t reserved00_53[84]; // Unresolved prefix; caller is FrontendModelPointerContext_DrawClipped control object.
     struct FieldGridAsset *fieldGrid; // World/terrain grid consumed by generated-texture surface probes.
-    byte reserved58_B7[96]; // Unresolved context fields.
+    uint8_t reserved58_B7[96]; // Unresolved context fields.
     AngleTurn32 viewAngleB8; // Angle consumed as the second DirectionFromAnglesScaledRegs argument.
     AngleTurn32 viewAngleBC; // Angle consumed as the first DirectionFromAnglesScaledRegs argument.
-    byte reservedC0_C7[8]; // Unresolved context fields.
-    dword *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
+    uint8_t reservedC0_C7[8]; // Unresolved context fields.
+    uint32_t *projectedPointBlockPool; // Pool descriptor used by reserve/rollback helpers; descriptor[1] is allocation cursor and descriptor[2] data base.
 };
 
 struct GraphicsCursorInputEventRegsCf21 {
-    dword eventCode; // EAX event code when CF clear
+    uint32_t eventCode; // EAX event code when CF clear
     enum GraphicsCursorButtonState buttonState; // EBX button state when CF clear
     UiPixelCoordinate pointerX; // ECX X when CF clear
     UiPixelCoordinate pointerY; // EDX Y when CF clear
@@ -11268,7 +11251,7 @@ struct GraphicsTextureSourceHeaderViewBC {
 
 struct InGameLevelSaveWorldView {
     struct WorldRuntimeContext worldRuntime;
-    undefined1 reserved15C_177[28];
+    uint8_t reserved15C_177[28];
     Q12 fieldRegionOriginWorldXQ12;
     Q12 fieldRegionOriginWorldYQ12;
 };
@@ -11292,7 +11275,7 @@ struct PcxDecodeEaxCf5 {
 
 struct PcxEncodeEaxEcxCf9 {
     void *encodedBytesOrError; // EAX encoded allocation or error
-    dword encodedByteCount; // ECX encoded byte count
+    uint32_t encodedByteCount; // ECX encoded byte count
     bool carry; // CF status
 };
 
@@ -11304,29 +11287,29 @@ struct RichTextStringAssetEaxCf5 {
 struct RuntimeModelFactionPrefix10 {
     struct ModelRuntimeSlot *modelRuntime; // Root ModelRuntimeSlot consumed by hierarchy metric wrappers.
     struct ModelRuntimeNode *modelNode; // Model node pointer shared by the observed ArmyRuntimeSlot/GameEntityRuntime headers.
-    dword runtimeLinkOrKind08; // Owner-specific runtime link or small kind/state value; semantics deliberately not unified.
+    uint32_t runtimeLinkOrKind08; // Owner-specific runtime link or small kind/state value; semantics deliberately not unified.
     FactionRuntimeIndex factionIndex; // Faction/owner index consumed by faction-runtime lookup.
 };
 
 struct TerrainProjectedVertexWorkRecord {
     int surfacePacketIndex; // Index into g_TerrainSurfacePacketTablePayload; proven by 00500CE0 -> 00500820 and 32-byte table stride.
     PackedArgb32 basePackedColor; // Packed color multiplier read by both shading variants
-    byte reserved08_0B[4]; // Unresolved
+    uint8_t reserved08_0B[4]; // Unresolved
     struct GraphicsProjectedPointPair projectedPointA; // Projected screen point for viewPointA; EAX=X, EDX=Y.
     struct GraphicsFixedVec3 viewPointA; // First transformed view-space point
-    byte reserved20_2B[12]; // Unresolved
+    uint8_t reserved20_2B[12]; // Unresolved
     struct GraphicsProjectedPointPair projectedPointB; // Projected screen point for viewPointB; EAX=X, EDX=Y.
     struct GraphicsFixedVec3 viewPointB; // Second transformed view-space point
     struct GraphicsFixedVec3 sourcePoint; // Mutable source point temporarily offset before second projection
     Q12 secondaryProjectionDepthQ12; // Q12 depth/extent added to sourcePoint.z for the secondary projection
-    dword projectionFlags; // Projection/clip and shading flags
+    uint32_t projectionFlags; // Projection/clip and shading flags
     struct GraphicsFixedVec3 *secondaryOffset; // Three-component offset added to sourcePoint for second projection
     PackedArgb32 packedColorA; // Packed color input A
     PackedArgb32 packedColorB; // Packed color input B
     PackedArgb32 shadedColorA; // Computed packed shaded color A
     PackedArgb32 shadedColorB; // Computed packed shaded color B
-    dword lightingLookupIndexOrSentinel; // Packed-light lookup selector; 0xff selects dynamic compact-light accumulation
-    byte reserved6C_7F[20]; // Unresolved tail to proven 0x80 grid stride
+    uint32_t lightingLookupIndexOrSentinel; // Packed-light lookup selector; 0xff selects dynamic compact-light accumulation
+    uint8_t reserved6C_7F[20]; // Unresolved tail to proven 0x80 grid stride
 };
 
 struct TriangleBarycentricWeightsQ12 {
@@ -11335,7 +11318,7 @@ struct TriangleBarycentricWeightsQ12 {
 };
 
 struct UiSelectableGroupIndexEcxCf5 {
-    dword selectedIndexOrCount;
+    uint32_t selectedIndexOrCount;
     bool carryNoneSelected;
 };
 
@@ -11347,7 +11330,7 @@ struct UiSelectableNodeEaxEcxCf9 {
 
 struct UiSelectionGeometryControl {
     struct UiNodeBase base; // Common UI-node prefix.
-    dword reserved4C; // Serialized/runtime slot not required by the two recovered methods; intentionally unresolved.
+    uint32_t reserved4C; // Serialized/runtime slot not required by the two recovered methods; intentionally unresolved.
     Q12 sourceOriginYQ12; // Y origin used by the affine texture-sampling transform and pointer conversion.
     Q12 sourceOriginXQ12; // X origin used by the affine texture-sampling transform and pointer conversion.
     Q12 sampleScaleQ12; // Scale multiplied by the fixed sine/cosine tables before the sampling transform.
@@ -11370,11 +11353,11 @@ union RomSerializedNodeReferenceOrSavedOffset4 {
 };
 
 struct RomSerializedNodeHeader34 {
-    dword reserved00; // unclassified leading dword
+    uint32_t reserved00; // unclassified leading dword
     AngleTurn32 localRotationAngle0;
     AngleTurn32 localRotationAngle1;
     AngleTurn32 localRotationAngle2;
-    dword childCount; // number of child references; runtime code supports six inline slots
+    uint32_t childCount; // number of child references; runtime code supports six inline slots
     union RomSerializedNodeReferenceOrSavedOffset4 childReferences[6]; // serialized offsets before relocation; pointers afterward
     union SpriteAssetReferenceOrSavedId4 spriteAssetReference; // sprite/model resource reference after relocation
     OwnedNestedResourceFlag ownedNestedResourcePresent; // incremented when relocation owns loaded nested resource
@@ -11383,119 +11366,119 @@ struct RomSerializedNodeHeader34 {
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameRuntimeUiGridViewC3E4 {
     struct UiRootNode rootUi0000; // Exact UiRootNode prefix used by root-stack and shutdown paths.
-    byte opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0058_017B[292]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl primaryPageStack017C;
-    byte opaque01D0_022B[92]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque01D0_022B[92]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct MovieRuntime *activeEndMovieRuntime022C;
-    dword endMoviePlaybackState0230; // Cleared when selected end-movie playback begins; exact wider meaning remains deferred.
-    byte opaque0234_02F7[196]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t endMoviePlaybackState0230; // Cleared when selected end-movie playback begins; exact wider meaning remains deferred.
+    uint8_t opaque0234_02F7[196]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl endMoviePageStack02F8;
-    byte opaque034C_08D3[1416]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque034C_08D3[1416]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct MovieRuntime *levelMovieRuntime08D4;
-    byte opaque08D8_08E3[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque08D8_08E3[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiNodeBase playerStatusNode08E4;
-    byte opaque0930_093B[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword playerStatusLayoutMetric093C; // Written by InGamePanel_RebuildPlayerStatusRows and cleared by both session initializers.
-    byte opaque0940_09B7[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0930_093B[12]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t playerStatusLayoutMetric093C; // Written by InGamePanel_RebuildPlayerStatusRows and cleared by both session initializers.
+    uint8_t opaque0940_09B7[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct RecentTextHistoryPointerList recentTextHistory09B8;
-    byte opaque09DC_0A03[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword optionalUiLayoutState0A04; // Cleared after the three optional page stacks are switched and before root layout.
-    byte opaque0A08_0A2F[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque09DC_0A03[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t optionalUiLayoutState0A04; // Cleared after the three optional page stacks are switched and before root layout.
+    uint8_t opaque0A08_0A2F[40]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct WorldRuntimeContext worldRuntime0A30;
-    void (*worldOverlayCallback0B8C)(dword, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
-    byte opaque0B90_0B9F[16]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    void (*worldOverlayCallback0B8C)(uint32_t, struct WorldRuntimeContext *); // Overlay rebuild/release callback installed identically for new and loaded sessions.
+    uint8_t opaque0B90_0B9F[16]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct SelectionPlayerPairRecord *localPlayerPairRecords0BA0;
-    dword localPlayerPairCount0BA4;
+    uint32_t localPlayerPairCount0BA4;
     Q12 fieldRegionOriginWorldXQ12_0BA8;
     Q12 fieldRegionOriginWorldYQ12_0BAC;
-    byte opaque0BB0_0BCF[32]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0BB0_0BCF[32]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl gameWindowPageStack0BD0;
-    byte opaque0C24_24DF[6332]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword localNetworkUiStateFlags24E0;
-    byte opaque24E4_40AB[7112]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque0C24_24DF[6332]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t localNetworkUiStateFlags24E0;
+    uint8_t opaque24E4_40AB[7112]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack40AC; // Activated with page index 1 when persistent-settings bit 0x4 selects the optional UI layout.
-    byte opaque4100_452F[1072]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4100_452F[1072]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack4530; // Activated with page index 0 in the same optional UI-layout branch.
-    byte opaque4584_4643[192]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4584_4643[192]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl optionalUiPageStack4644; // Third exact page stack activated with page index 0 in the same branch.
-    byte opaque4698_4937[672]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword observedTerrainCompositeFlags4938;
-    byte opaque493C_49B3[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4698_4937[672]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t observedTerrainCompositeFlags4938;
+    uint8_t opaque493C_49B3[120]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int primaryResourceDisplayCurrent49B4;
     int primaryResourceDisplayLimit49B8;
-    byte opaque49BC_4A4B[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque49BC_4A4B[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int secondaryResourceDisplayCurrent4A4C;
     int secondaryResourceDisplayLimit4A50;
-    byte opaque4A54_4AE3[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4A54_4AE3[144]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int transientContributionDisplay4AE4;
     int progressLimitDisplay4AE8;
-    byte opaque4AEC_4B27[60]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque4AEC_4B27[60]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     int combinedProgressOrArmyScaleDisplay4B28;
-    byte opaque4B2C_4D0B[480];
+    uint8_t opaque4B2C_4D0B[480];
     struct UiNodeBase otherPlayerTargetGridNode4D0C; // layout container node; vtable layout slot preserves EAX/ECX/EDX
-    byte opaque4D58_4D73[28];
+    uint8_t opaque4D58_4D73[28];
     struct DirectSoundVoiceSet *otherPlayerGridSoundVoiceSet4D74; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase otherPlayerGridLayoutNode4D78; // embedded UI node prefix; rebuild updates layout offsets
-    byte opaque4DC4_5DB3[4080];
+    uint8_t opaque4DC4_5DB3[4080];
     struct UiNodeBase catalogGroup48GridNode5DB4; // layout container node
-    byte opaque5E00_5E1B[28];
+    uint8_t opaque5E00_5E1B[28];
     struct DirectSoundVoiceSet *catalogGroup48SoundVoiceSet5E1C; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase catalogGroup48LayoutNode5E20; // embedded UI node prefix; rebuild updates layout offsets
-    byte opaque5E6C_767F[6164];
+    uint8_t opaque5E6C_767F[6164];
     struct UiNodeBase catalogGroup42GridNode7680; // layout container node
-    byte opaque76CC_76E7[28];
+    uint8_t opaque76CC_76E7[28];
     struct DirectSoundVoiceSet *catalogGroup42SoundVoiceSet76E8; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase catalogGroup42LayoutNode76EC; // embedded UI node prefix; rebuild updates layout offsets
-    byte opaque7738_8C4B[5396];
+    uint8_t opaque7738_8C4B[5396];
     struct UiNodeBase commandSpriteVariantAGridNode8C4C; // layout container node
-    byte opaque8C98_8CB3[28];
+    uint8_t opaque8C98_8CB3[28];
     struct DirectSoundVoiceSet *commandSpriteVariantASoundVoiceSet8CB4; // initialized from g_UiButtonSoundVoiceSets7[0]
     struct UiNodeBase commandSpriteVariantALayoutNode8CB8; // embedded UI node prefix; rebuild updates layout offsets and node flags
-    byte opaque8D04_9A6B[3432];
+    uint8_t opaque8D04_9A6B[3432];
     FixedPlanarPointEdxEax8 fieldGridPosition9A6C;
-    byte opaque9A74_9B4B[216]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque9A74_9B4B[216]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     enum InGameNotificationInteractionState sessionNotificationInteractionState9B4C; // State 7 is active only while a nonzero notification payload is presented; state 0 is idle.
-    dword observedSessionNotificationValue9B50;
-    dword notificationPlaybackCompletionCode9B54; // Cleared when a queued notification movie opens and set to observed code 0x25 after playback closes.
-    byte opaque9B58_9E3F[744]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t observedSessionNotificationValue9B50;
+    uint32_t notificationPlaybackCompletionCode9B54; // Cleared when a queued notification movie opens and set to observed code 0x25 after playback closes.
+    uint8_t opaque9B58_9E3F[744]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct InGameNotificationPayload18 activeNotificationPayload9E40; // Payload promoted from the head queue record when its movie opens.
     Q12 targetingPrimaryWorldCoordinateQ12_9E58; // Targeting scratch coordinate copied from activeNotificationPayload9E40.primaryWorldCoordinateQ12_00 by the impact-anchor targeting path.
     Q12 targetingSecondaryWorldCoordinateQ12_9E5C; // Targeting scratch coordinate copied from activeNotificationPayload9E40.secondaryWorldCoordinateQ12_04 by the impact-anchor targeting path.
     struct InGameNotificationQueueRecord20 notificationQueue9E60[4]; // Four exact 0x20-byte records maintained in descending priority order.
-    byte opaque9EE0_9FAB[204]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaque9EE0_9FAB[204]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct UiPageStackControl selectionDetailPageStack9FAC;
-    byte opaqueA000_A05F[96]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
-    dword selectionDetailArmyAssetValueA060;
-    byte opaqueA064_A067[4]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaqueA000_A05F[96]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint32_t selectionDetailArmyAssetValueA060;
+    uint8_t opaqueA064_A067[4]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
     struct GameEntityRuntime *selectionDetailEntityA068;
-    byte opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
+    uint8_t opaqueA06C_C3E3[9080]; // Opaque bytes preserved exactly; no semantic fields are asserted in this interval.
 };
 #pragma pack(pop)
 
 struct EndGameResultsRuntimeView44C4 {
     struct UiRootNode rootUi0000;
-    byte opaqueGap0058_09B7[2400]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0058_09B7[2400]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct RecentTextHistoryPointerList recentTextHistory09B8;
     struct UiPageStackControl endGameResultsPageStack09DC;
     struct WorldRuntimeContext worldRuntime0A30;
-    byte opaqueGap0B8C_0BCF[68]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0B8C_0BCF[68]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPageStackControl gameWindowPageStack0BD0;
-    byte opaqueGap0C24_44BF[14492]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0C24_44BF[14492]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     enum UiNodeFlags sessionTimerNodeFlags44C0;
 };
 
 struct WidePathPrefix4 {
-    word firstCodeUnit;
-    word secondCodeUnit;
+    uint16_t firstCodeUnit;
+    uint16_t secondCodeUnit;
 };
 
 struct FrontendModelPointerContextRuntimeState17C {
     struct UiNodeBase base; // Accepted frontend UI-node prefix.
     enum FrontendModelPointerContextFlags contextFlags; // Directly observed model-pointer selection and action-routing flags.
-    dword contextValue50; // Frontend/world-runtime overlay dword; exact frontend semantic unresolved.
+    uint32_t contextValue50; // Frontend/world-runtime overlay dword; exact frontend semantic unresolved.
     struct FieldGridAsset *fieldGrid; // Field grid consumed by generated-texture and selection-overlay paths.
-    dword contextValue58; // Frontend/world-runtime overlay dword; cleared by relocation.
-    dword renderedPrimitiveCount; // Accumulated primitive count for this draw pass; shares storage with a world-runtime token view.
+    uint32_t contextValue58; // Frontend/world-runtime overlay dword; cleared by relocation.
+    uint32_t renderedPrimitiveCount; // Accumulated primitive count for this draw pass; shares storage with a world-runtime token view.
     Q12 hitReferenceWorldXQ12; // Subtracted from model world-transform X when computing the hit metric.
     Q12 hitReferenceWorldYQ12; // Subtracted from model world-transform Y when computing the hit metric.
     Q12 hitReferenceWorldZQ12; // Subtracted from model world-transform Z when computing the hit metric.
@@ -11510,40 +11493,40 @@ struct FrontendModelPointerContextRuntimeState17C {
     UQ12 targetDistanceQ12; // World-motion target distance.
     AngleTurn32 minimumPitchAngle; // Minimum pitch clamp; relocation installs -0x4000 default when zero.
     AngleTurn32 maximumPitchAngle; // Maximum pitch clamp; relocation installs +0x4000 default when zero.
-    dword minimumDistanceQ12; // Lower camera-distance clamp; relocation installs 0x400 when zero.
-    dword maximumDistanceOrSurfaceLimitQ12; // Upper distance/surface limit; relocation installs 0x7f000 when zero.
+    uint32_t minimumDistanceQ12; // Lower camera-distance clamp; relocation installs 0x400 when zero.
+    uint32_t maximumDistanceOrSurfaceLimitQ12; // Upper distance/surface limit; relocation installs 0x7f000 when zero.
     UiPixelCoordinate capturedPointerX; // Captured pointer X used as drag origin.
     UiPixelCoordinate capturedPointerY; // Captured pointer Y used as drag origin.
     UiPointerWheelDelta capturedWheelDelta; // Captured wheel/button delta state.
-    dword objectCountOrFrontendStateAC; // World object-count overlay; relocation clears this frontend state slot.
-    dword transientClearCallbackOrFrontendStateB0; // World transient-clear callback overlay; frontend draw semantics unresolved.
-    dword overlayMarkerStateB4; // Frontend overlay state; low byte is passed to projected-vertex mask marker drawing.
+    uint32_t objectCountOrFrontendStateAC; // World object-count overlay; relocation clears this frontend state slot.
+    uint32_t transientClearCallbackOrFrontendStateB0; // World transient-clear callback overlay; frontend draw semantics unresolved.
+    uint32_t overlayMarkerStateB4; // Frontend overlay state; low byte is passed to projected-vertex mask marker drawing.
     AngleTurn32 auxiliaryOrientationAngle0; // First auxiliary orientation angle in the frontend draw view; overlaps world field-region width.
     AngleTurn32 auxiliaryOrientationAngle1; // Second auxiliary orientation angle in the frontend draw view; overlaps world field-region height.
-    dword frontendWorkspaceC0; // Frontend/world workspace overlay; unresolved.
-    dword frontendWorkspaceC4; // Frontend/world workspace overlay; unresolved.
+    uint32_t frontendWorkspaceC0; // Frontend/world workspace overlay; unresolved.
+    uint32_t frontendWorkspaceC4; // Frontend/world workspace overlay; unresolved.
     struct GraphicsPrimitiveQueue *activePrimitiveQueue; // Primitive queue captured from GraphicsPrimitiveQueue_ResetGlobal for all model/terrain passes.
-    dword runtimeControlFlagsOrFrontendStateCC; // World runtime-control overlay; frontend semantics unresolved.
+    uint32_t runtimeControlFlagsOrFrontendStateCC; // World runtime-control overlay; frontend semantics unresolved.
     enum RuntimeSpinLockValue *renderSpinLock; // Spin lock acquired around graphics queue construction.
     void (*renderSpinLockReleaseCallback)(void); // Callback passed to g_SpinLockReleaseAndInvoke between rendering stages.
     struct ModelRuntimeNode *candidateModelListHead; // Head traversed through ModelRuntimeNode.common.nextNode.
-    dword observedContextValueDC; // Not consumed by the recovered selection paths.
+    uint32_t observedContextValueDC; // Not consumed by the recovered selection paths.
     struct ModelRuntimeNode *selectedModelNode; // EDX return half from the model selector.
     int selectedHitMetric; // EAX return half from the model selector.
-    dword callbackArgumentE8; // Passed unchanged to resolved-action callbacks.
-    dword callbackArgumentEC; // Passed unchanged to resolved-action callbacks.
-    dword callbackArgumentF0; // Passed unchanged to resolved-action callbacks.
+    uint32_t callbackArgumentE8; // Passed unchanged to resolved-action callbacks.
+    uint32_t callbackArgumentEC; // Passed unchanged to resolved-action callbacks.
+    uint32_t callbackArgumentF0; // Passed unchanged to resolved-action callbacks.
     Q12 cursorWorldXQ12; // Cursor override X converted from pixels to Q12 for overlay hit state.
     Q12 cursorWorldYQ12; // Cursor override Y converted from pixels to Q12 for overlay hit state.
     struct GameEntityRuntime *selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
     bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
-    dword (*resolvedActionCallback104)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback108)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback10C)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback110)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword (*resolvedActionCallback114)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback110)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
+    uint32_t (*resolvedActionCallback114)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     void (*rightReleaseCallback118)(struct FrontendModelPointerContextRuntimeState17C *); // Invoked on right release when rightButtonState11C < 7 (unsigned); receives the context (PUSH EBX; CALL EDX at 0050c75c). Callee may clobber ECX (caller preserves only EAX/EDX).
-    dword rightButtonState11C; // Small right-button state code; cleared on press and compared unsigned/signed against 7 on release.
+    uint32_t rightButtonState11C; // Small right-button state code; cleared on press and compared unsigned/signed against 7 on release.
     GraphicsSceneExtentFixed sceneBound0; // Exact bound0 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound1; // Exact bound1 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound2; // Exact bound2 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
@@ -11552,7 +11535,7 @@ struct FrontendModelPointerContextRuntimeState17C {
     GraphicsSceneExtentFixed sceneBound5; // Exact bound5 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound6; // Exact bound6 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound7; // Exact bound7 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
-    byte reserved140_15B[28]; // Observed but not semantically resolved in this pass.
+    uint8_t reserved140_15B[28]; // Observed but not semantically resolved in this pass.
     void (*renderPhaseCallback15C)(enum GraphicsBooleanState, struct WorldRuntimeContext *); // In-game world-overlay render phase callback stored immediately after WorldRuntimeContext; installed target 00568300 preserves EAX/ECX/EDX.
     UiPixelCoordinate scratchCoordinate160; // Runtime-reused coordinate: pointer X in NonRightPress and first selection-overlay frame coordinate in DrawClipped.
     UiPixelCoordinate scratchCoordinate164; // Runtime-reused coordinate: pointer Y in NonRightPress and second selection-overlay frame coordinate in DrawClipped.
@@ -11560,12 +11543,12 @@ struct FrontendModelPointerContextRuntimeState17C {
     UiPixelCoordinate scratchCoordinate16C; // Runtime-reused coordinate: pointer Y in NonRightDrag and fourth selection-overlay frame coordinate in DrawClipped.
     int *terrainMarkerCoordinatePairs170; // Pointer consumed as int coordinate pairs by SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints.
     int terrainMarkerPointCount174; // Point count paired with terrainMarkerCoordinatePairs170.
-    dword observedState178; // Observed trailing dword; semantics unresolved.
+    uint32_t observedState178; // Observed trailing dword; semantics unresolved.
 };
 
 struct ModelLinkedDefinitionBranchView18 {
-    byte unresolved00_07[8];
-    uint childListCount;
+    uint8_t unresolved00_07[8];
+    uint32_t childListCount;
     ModelLinkedDefinitionListAddress32 childList0Address;
     ModelLinkedDefinitionListAddress32 childList1Address;
     ModelLinkedDefinitionListAddress32 childList2Address;
@@ -11583,20 +11566,20 @@ struct WorldRuntimeExtendedMapControlView170 {
     UQ12 maximumCameraDistanceQ12; // Upper Q12 camera/world-motion distance clamp. Initialized to 0x13000 by both session initializers and used as the upper clamp and terrain/secondary ray-distance limit.
     UiPixelCoordinate pointerCaptureX; // Pointer-capture X anchor. World-camera pointer input subtracts this from pointerX and warps the pointer back here after each handled delta.
     UiPixelCoordinate pointerCaptureY; // Pointer-capture Y anchor. World-camera pointer input subtracts this from pointerY and warps the pointer back here after each handled delta.
-    dword reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
+    uint32_t reservedA8; // Unresolved trailing dword of the former A0..AB runtime span; kept deliberately generic.
     WorldObjectRecordCount objectCount;
     struct WorldFieldRegionState fieldRegion;
-    dword *dwordArray;
+    uint32_t *dwordArray;
     WorldWorkspaceElementCount dwordArrayCount;
-    dword runtimeStateC8;
+    uint32_t runtimeStateC8;
     WorldRuntimeControlFlags runtimeControlFlags;
-    dword *tickSpinLock;
+    uint32_t *tickSpinLock;
     void (*simulationAndNetworkTickCallback)(void);
     struct WorldRuntimeNode *ownerListHead;
     struct WorldRuntimeSelectionState selection;
     struct WorldLightingState lighting;
     struct WorldMotionSnapshot snapshot;
-    dword extendedState15C;
+    uint32_t extendedState15C;
     int extendedCoordinate160;
     int extendedCoordinate164;
     int extendedCoordinate168;
@@ -11604,32 +11587,32 @@ struct WorldRuntimeExtendedMapControlView170 {
 };
 
 struct ArmyRuntimeClassUpdate21DefinitionView27C {
-    byte opaqueGap0000_000B[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_000B[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     Q12 movementStepQ12_0C;
-    byte opaqueGap0010_0013[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0010_0013[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     int arcCoefficient14;
-    byte opaqueGap0018_002B[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0018_002B[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     enum PckEffectDefinitionIdCatalog modelPointEffectId2C;
     int modelPointStep30;
-    byte opaqueGap0034_0047[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword worldPointAllowedContext48;
-    byte opaqueGap004C_0053[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0034_0047[20]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t worldPointAllowedContext48;
+    uint8_t opaqueGap004C_0053[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     Q12 placementContactRadiusQ12_54;
-    byte opaqueGap0058_005F[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0058_005F[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     Q12 healthOrScaleQ12_60;
     void *modelPointSource64;
-    byte opaqueGap0068_00BF[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword phaseInitialC0;
-    dword phaseDurationC4;
+    uint8_t opaqueGap0068_00BF[88]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t phaseInitialC0;
+    uint32_t phaseDurationC4;
     int travelStepCountC8;
     int verticalArcCoefficientCC;
-    byte opaqueGap00D0_00DB[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap00D0_00DB[12]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     DepthIntervalRadius32 depthIntervalRadiusDC;
-    byte opaqueGap00E0_018F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap00E0_018F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct EffectDefinition *completionEffect190;
-    byte opaqueGap0194_026B[216]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0194_026B[216]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     SoundAssetIndex terrainSoundAssetIndex26C;
-    byte opaqueGap0270_0277[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0270_0277[8]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Shared placement-contact callback dispatch index; value vocabulary 0..4 documented by the placement callback table.
 };
 
@@ -11650,31 +11633,31 @@ struct SelectionPanelAdvanceEaxEdx8 {
 
 struct GeneratedTextureSampleWorkRecord18 {
     struct GraphicsFixedVec3 worldPoint;
-    sdword textureCoordinateOffsetQ20;
-    dword reserved10;
+    int32_t textureCoordinateOffsetQ20;
+    uint32_t reserved10;
     Q12 terrainRayDistanceQ12;
 };
 
 struct GeneratedTextureScratchRuntime1A8 {
-    sdword projectedMinX;
-    sdword projectedMinY;
-    sdword projectedMaxX;
-    sdword projectedMaxY;
-    dword downsampleBorderOffset;
-    dword reserved14;
+    int32_t projectedMinX;
+    int32_t projectedMinY;
+    int32_t projectedMaxX;
+    int32_t projectedMaxY;
+    uint32_t downsampleBorderOffset;
+    uint32_t reserved14;
     struct GraphicsFixedMatrix3x4 modelToGeneratedTextureTransform;
     struct GraphicsFixedMatrix3x4 generatedTextureBasisTransform;
     struct GeneratedTextureSampleWorkRecord18 samples[12];
     struct GraphicsFixedVec3 currentModelOriginQ12;
-    dword reserved1A4;
+    uint32_t reserved1A4;
 };
 
 struct InGameAction101FTextPanelE8 {
     struct UiScrollableControl scrollable;
-    byte reserved0090_00B7[40];
-    dword measuredWidthB8;
-    dword measuredHeightBC;
-    byte reserved00C0_00DF[32];
+    uint8_t reserved0090_00B7[40];
+    uint32_t measuredWidthB8;
+    uint32_t measuredHeightBC;
+    uint8_t reserved00C0_00DF[32];
     UiPixelExtent wrapWidthE0;
     UiTextResourceId textResourceIdE4;
 };
@@ -11682,35 +11665,35 @@ struct InGameAction101FTextPanelE8 {
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct InGameAction101FRootView43DC {
     union { struct UiNodeBase base; } rootUi0000; /* Ghidra: UiRootNode truncated to its 0x4C-byte UiNodeBase */
-    byte opaqueGap004C_0A2F[2532]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap004C_0A2F[2532]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct WorldRuntimeContext worldRuntime0A30;
-    byte opaqueGap0B8C_0BCF[68]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0B8C_0BCF[68]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPageStackControl gameWindowPageStack0BD0;
-    byte opaqueGap0C24_10FF[1244]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0C24_10FF[1244]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct InGameAction101FTextPanelE8 textPanel0_1100;
-    byte opaqueGap11E8_11EB[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap11E8_11EB[4]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct InGameAction101FTextPanelE8 textPanel1_11EC;
-    byte opaqueGap12D4_1333[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap12D4_1333[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct InGameAction101FTextPanelE8 textPanel2_1334;
-    byte opaqueGap141C_4387[12140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap141C_4387[12140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiSelectableControl sharedSettingsToggle4388;
 };
 #pragma pack(pop)
 
 struct FrontendPointerHintControl58 {
     struct UiNodeBase base;
-    dword state4C;
-    dword hintActive50;
-    word *commandStream54;
+    uint32_t state4C;
+    uint32_t hintActive50;
+    uint16_t *commandStream54;
 };
 
 struct FrontendPointerSceneRuntimeView43E8 {
     struct UiNodeBase base;
     enum FrontendModelPointerContextFlags contextFlags;
-    dword contextValue50;
+    uint32_t contextValue50;
     struct FieldGridAsset *fieldGrid;
-    dword contextValue58;
-    dword renderedPrimitiveCount;
+    uint32_t contextValue58;
+    uint32_t renderedPrimitiveCount;
     Q12 hitReferenceWorldXQ12;
     Q12 hitReferenceWorldYQ12;
     Q12 hitReferenceWorldZQ12;
@@ -11725,40 +11708,40 @@ struct FrontendPointerSceneRuntimeView43E8 {
     UQ12 targetDistanceQ12;
     AngleTurn32 minimumPitchAngle;
     AngleTurn32 maximumPitchAngle;
-    dword minimumDistanceQ12;
-    dword maximumDistanceOrSurfaceLimitQ12;
+    uint32_t minimumDistanceQ12;
+    uint32_t maximumDistanceOrSurfaceLimitQ12;
     UiPixelCoordinate capturedPointerX;
     UiPixelCoordinate capturedPointerY;
     UiPointerWheelDelta capturedWheelDelta;
-    dword objectCountOrFrontendStateAC;
-    dword transientClearCallbackOrFrontendStateB0;
-    dword overlayMarkerStateB4;
+    uint32_t objectCountOrFrontendStateAC;
+    uint32_t transientClearCallbackOrFrontendStateB0;
+    uint32_t overlayMarkerStateB4;
     AngleTurn32 auxiliaryOrientationAngle0;
     AngleTurn32 auxiliaryOrientationAngle1;
-    dword frontendWorkspaceC0;
-    dword frontendWorkspaceC4;
+    uint32_t frontendWorkspaceC0;
+    uint32_t frontendWorkspaceC4;
     struct GraphicsPrimitiveQueue *activePrimitiveQueue;
-    dword runtimeControlFlagsOrFrontendStateCC;
+    uint32_t runtimeControlFlagsOrFrontendStateCC;
     enum RuntimeSpinLockValue *renderSpinLock;
     void (*renderSpinLockReleaseCallback)(void);
     struct ModelRuntimeNode *candidateModelListHead;
-    dword observedContextValueDC;
+    uint32_t observedContextValueDC;
     struct ModelRuntimeNode *selectedModelNode;
     int selectedHitMetric;
-    dword callbackArgumentE8;
-    dword callbackArgumentEC;
-    dword callbackArgumentF0;
+    uint32_t callbackArgumentE8;
+    uint32_t callbackArgumentEC;
+    uint32_t callbackArgumentF0;
     Q12 cursorWorldXQ12;
     Q12 cursorWorldYQ12;
     struct GameEntityRuntime *selectedOverlayEntity;
     bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
-    dword (*resolvedActionCallback104)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
-    dword (*resolvedActionCallback108)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
-    dword (*resolvedActionCallback10C)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
-    dword (*resolvedActionCallback110)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
-    dword (*resolvedActionCallback114)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
-    dword rightReleaseCallback118;
-    dword rightButtonState11C;
+    uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
+    uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
+    uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
+    uint32_t (*resolvedActionCallback110)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
+    uint32_t (*resolvedActionCallback114)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
+    uint32_t rightReleaseCallback118;
+    uint32_t rightButtonState11C;
     GraphicsSceneExtentFixed sceneBound0;
     GraphicsSceneExtentFixed sceneBound1;
     GraphicsSceneExtentFixed sceneBound2;
@@ -11767,277 +11750,277 @@ struct FrontendPointerSceneRuntimeView43E8 {
     GraphicsSceneExtentFixed sceneBound5;
     GraphicsSceneExtentFixed sceneBound6;
     GraphicsSceneExtentFixed sceneBound7;
-    byte reserved140_15B[28];
-    dword renderPhaseCallback15C;
+    uint8_t reserved140_15B[28];
+    uint32_t renderPhaseCallback15C;
     UiPixelCoordinate scratchCoordinate160;
     UiPixelCoordinate scratchCoordinate164;
     UiPixelCoordinate scratchCoordinate168;
     UiPixelCoordinate scratchCoordinate16C;
     int *terrainMarkerCoordinatePairs170;
     int terrainMarkerPointCount174;
-    dword observedState178;
-    byte opaqueGap017C_019F[36]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t observedState178;
+    uint8_t opaqueGap017C_019F[36]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPageStackControl activePageStack1A0;
-    byte opaqueGap01F4_438F[16796]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap01F4_438F[16796]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct FrontendPointerHintControl58 hintControl4390;
 };
 
 struct FrontendScenarioSelectionPageView26C4 {
-    byte opaqueGap0000_036B[876]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_036B[876]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiNodeBase compactLayoutControl;
-    byte opaqueGap03B8_0507[336]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap03B8_0507[336]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPageStackControl primaryPageStack;
-    byte opaqueGap055C_1C93[5944]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap055C_1C93[5944]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiSelectableOptionRow60 scenarioOptionRow0;
     struct UiSelectableOptionRow60 scenarioOptionRow1;
     struct UiSelectableOptionRow60 scenarioOptionRow2;
     struct UiSelectableOptionRow60 scenarioOptionRow3;
     struct UiSelectableOptionRow60 scenarioOptionRow4;
-    byte opaqueGap1E74_26C3[2128]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1E74_26C3[2128]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 
 struct FrontendRootResourceSlots5954 {
-    byte opaqueGap0000_05DF[1504]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_05DF[1504]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_05E0;
-    byte opaqueGap05E4_0643[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap05E4_0643[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0644;
-    byte opaqueGap0648_06A3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0648_06A3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_06A4;
-    byte opaqueGap06A8_0703[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap06A8_0703[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0704;
-    byte opaqueGap0708_0763[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0708_0763[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0764;
-    byte opaqueGap0768_0A8B[804]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0768_0A8B[804]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_0A8C;
-    byte opaqueGap0A90_0AE3[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0A90_0AE3[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_0AE4;
-    byte opaqueGap0AE8_0B47[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0AE8_0B47[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0B48;
-    byte opaqueGap0B4C_0BA7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0B4C_0BA7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0BA8;
-    byte opaqueGap0BAC_0C67[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0BAC_0C67[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_0C68;
-    byte opaqueGap0C6C_1C8B[4128]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0C6C_1C8B[4128]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_1C8C;
-    byte opaqueGap1C90_1CEF[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1C90_1CEF[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_1CF0;
-    byte opaqueGap1CF4_1D4F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1CF4_1D4F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_1D50;
-    byte opaqueGap1D54_1DAF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1D54_1DAF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_1DB0;
-    byte opaqueGap1DB4_1E0F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1DB4_1E0F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_1E10;
-    byte opaqueGap1E14_1E6F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1E14_1E6F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_1E70;
-    byte opaqueGap1E74_2023[432]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap1E74_2023[432]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_2024;
-    byte opaqueGap2028_21EB[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2028_21EB[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_21EC;
-    byte opaqueGap21F0_23CB[476]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap21F0_23CB[476]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_23CC;
-    byte opaqueGap23D0_24F7[296]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap23D0_24F7[296]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_24F8;
-    byte opaqueGap24FC_255B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap24FC_255B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_255C;
-    byte opaqueGap2560_25BB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2560_25BB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_25BC;
-    byte opaqueGap25C0_266F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap25C0_266F[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_2670;
-    byte opaqueGap2674_26D3[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2674_26D3[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_26D4;
-    byte opaqueGap26D8_278F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap26D8_278F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_2790;
-    byte opaqueGap2794_27EF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2794_27EF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_27F0;
-    byte opaqueGap27F4_284F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap27F4_284F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_2850;
-    byte opaqueGap2854_28AF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2854_28AF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_28B0;
-    byte opaqueGap28B4_2ADF[556]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap28B4_2ADF[556]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2AE0;
-    byte opaqueGap2AE4_2B3F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2AE4_2B3F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2B40;
-    byte opaqueGap2B44_2BF3[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2B44_2BF3[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2BF4;
-    byte opaqueGap2BF8_2C53[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2BF8_2C53[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2C54;
-    byte opaqueGap2C58_2CB3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2C58_2CB3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2CB4;
-    byte opaqueGap2CB8_2D0B[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2CB8_2D0B[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_2D0C;
-    byte opaqueGap2D10_2D6F[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2D10_2D6F[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_2D70;
-    byte opaqueGap2D74_2DCF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2D74_2DCF[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_2DD0;
-    byte opaqueGap2DD4_2EDF[268]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2DD4_2EDF[268]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2EE0;
-    byte opaqueGap2EE4_2F47[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2EE4_2F47[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2F48;
-    byte opaqueGap2F4C_2FAF[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2F4C_2FAF[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_2FB0;
-    byte opaqueGap2FB4_3017[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap2FB4_3017[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3018;
-    byte opaqueGap301C_307F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap301C_307F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3080;
-    byte opaqueGap3084_313B[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3084_313B[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_313C;
-    byte opaqueGap3140_31A3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3140_31A3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_31A4;
-    byte opaqueGap31A8_320B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap31A8_320B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_320C;
-    byte opaqueGap3210_3273[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3210_3273[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3274;
-    byte opaqueGap3278_32DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3278_32DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_32DC;
-    byte opaqueGap32E0_3343[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap32E0_3343[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3344;
-    byte opaqueGap3348_33AB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3348_33AB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_33AC;
-    byte opaqueGap33B0_3413[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap33B0_3413[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3414;
-    byte opaqueGap3418_347B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3418_347B[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_347C;
-    byte opaqueGap3480_34E3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3480_34E3[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_34E4;
-    byte opaqueGap34E8_359F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap34E8_359F[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_35A0;
-    byte opaqueGap35A4_3607[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap35A4_3607[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3608;
-    byte opaqueGap360C_366F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap360C_366F[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3670;
-    byte opaqueGap3674_36D7[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3674_36D7[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_36D8;
-    byte opaqueGap36DC_3737[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap36DC_3737[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_3738;
-    byte opaqueGap373C_379B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap373C_379B[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_379C;
-    byte opaqueGap37A0_3857[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap37A0_3857[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3858;
-    byte opaqueGap385C_390B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap385C_390B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_390C;
-    byte opaqueGap3910_3973[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3910_3973[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3974;
-    byte opaqueGap3978_39DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3978_39DB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_39DC;
-    byte opaqueGap39E0_3A43[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap39E0_3A43[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3A44;
-    byte opaqueGap3A48_3AAB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3A48_3AAB[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3AAC;
-    byte opaqueGap3AB0_3B13[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3AB0_3B13[100]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3B14;
-    byte opaqueGap3B18_3C97[384]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3B18_3C97[384]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_3C98;
-    byte opaqueGap3C9C_3D4B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3C9C_3D4B[176]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3D4C;
-    byte opaqueGap3D50_3DAB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3D50_3DAB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3DAC;
-    byte opaqueGap3DB0_3E0B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3DB0_3E0B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3E0C;
-    byte opaqueGap3E10_3E63[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3E10_3E63[84]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_3E64;
-    byte opaqueGap3E68_3EC7[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3E68_3EC7[96]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_3EC8;
-    byte opaqueGap3ECC_3F83[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3ECC_3F83[184]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3F84;
-    byte opaqueGap3F88_3FE3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3F88_3FE3[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_3FE4;
-    byte opaqueGap3FE8_4043[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap3FE8_4043[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet4_4044;
-    byte opaqueGap4048_41BF[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4048_41BF[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_41C0;
-    byte opaqueGap41C4_433B[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap41C4_433B[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_433C;
-    byte opaqueGap4340_44B7[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4340_44B7[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_44B8;
-    byte opaqueGap44BC_4633[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap44BC_4633[376]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_4634;
-    byte opaqueGap4638_485B[548]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4638_485B[548]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_485C;
-    byte opaqueGap4860_491B[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4860_491B[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_491C;
-    byte opaqueGap4920_497B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4920_497B[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_497C;
-    byte opaqueGap4980_49DB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4980_49DB[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_49DC;
-    byte opaqueGap49E0_4AD3[244]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap49E0_4AD3[244]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_4AD4;
-    byte opaqueGap4AD8_4BCF[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4AD8_4BCF[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_4BD0;
-    byte opaqueGap4BD4_4DC3[496]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4BD4_4DC3[496]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_4DC4;
-    byte opaqueGap4DC8_4EAF[232]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4DC8_4EAF[232]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_4EB0;
-    byte opaqueGap4EB4_4F2F[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4EB4_4F2F[124]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_4F30;
-    byte opaqueGap4F34_4FEF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4F34_4FEF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_4FF0;
-    byte opaqueGap4FF4_504F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4FF4_504F[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_5050;
-    byte opaqueGap5054_50BB[104]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap5054_50BB[104]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_50BC;
-    byte opaqueGap50C0_514B[140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap50C0_514B[140]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_514C;
-    byte opaqueGap5150_520F[192]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap5150_520F[192]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet5_5210;
-    byte opaqueGap5214_53D7[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap5214_53D7[452]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_53D8;
-    byte opaqueGap53DC_5497[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap53DC_5497[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_5498;
-    byte opaqueGap549C_54F7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap549C_54F7[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_54F8;
-    byte opaqueGap54FC_5557[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap54FC_5557[92]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_5558;
-    byte opaqueGap555C_5653[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap555C_5653[248]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet6_5654;
-    byte opaqueGap5658_571F[200]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap5658_571F[200]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct GraphicsTextureSourceAsset *menuTextureSource_5720;
-    byte opaqueGap5724_57DF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap5724_57DF[188]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct DirectSoundVoiceSet *buttonVoiceSet3_57E0;
-    byte opaqueGap57E4_5953[368]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap57E4_5953[368]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 
 struct FrontendTaskAssignmentPageInitView26C4 { // Function-specific init view. Dynamic control-offset regions remain byte arrays; fixed-offset 0x055C..0x2677 is neutral dword[] because FrontendTaskAssignmentPage_Initialize accesses it with 32-bit stores. Canonical FrontendRootPageState26C4 remains unchanged.
     struct UiNodeBase rootNode;
-    byte taskRowControls04C[800]; // 800-byte backing region for the seven task-assignment row controls. Accessed through player/faction/selection/status/assignment offset tables; individual offsets remain dynamic.
+    uint8_t taskRowControls04C[800]; // 800-byte backing region for the seven task-assignment row controls. Accessed through player/faction/selection/status/assignment offset tables; individual offsets remain dynamic.
     struct UiNodeBase compactLayoutControl;
-    byte reserved03B8_0507[336];
+    uint8_t reserved03B8_0507[336];
     struct UiPageStackControl primaryPageStack;
-    dword taskPageControlState55C[2119]; // Dword backing region for fixed task-assignment page controls and network-role visibility/enable/value state. Kept as neutral dwords where individual control identities are not yet proven.
+    uint32_t taskPageControlState55C[2119]; // Dword backing region for fixed task-assignment page controls and network-role visibility/enable/value state. Kept as neutral dwords where individual control identities are not yet proven.
     struct UiNodeBase returnToMainActionControl;
 };
 
 struct FieldGridCellSaveImageView80 { // Function-local physical serialization view for FieldGrid_SaveAssetImageFromRuntimeStateCf. Opaque runtime spans are neutral dwords because this routine writes them with 32-bit stores; canonical FieldGridCell remains unchanged.
-    dword runtime00;
-    dword runtime04;
+    uint32_t runtime00;
+    uint32_t runtime04;
     PackedTerrainNormalAngles triangle0NormalAngles;
-    dword runtime0C;
-    dword runtime10;
-    dword runtime14;
-    dword runtime18;
-    dword runtime1C;
-    dword runtime20;
-    dword runtime24;
-    dword runtime28;
-    dword runtime2C;
-    dword runtime30;
-    dword runtime34;
-    dword runtime38;
-    dword runtime3C;
+    uint32_t runtime0C;
+    uint32_t runtime10;
+    uint32_t runtime14;
+    uint32_t runtime18;
+    uint32_t runtime1C;
+    uint32_t runtime20;
+    uint32_t runtime24;
+    uint32_t runtime28;
+    uint32_t runtime2C;
+    uint32_t runtime30;
+    uint32_t runtime34;
+    uint32_t runtime38;
+    uint32_t runtime3C;
     Q12 worldX;
     Q12 worldY;
     Q12 terrainHeight;
     Q12 waterSurfaceDelta;
     enum FieldCellPackedFlagsAndMaterial flagsAndMaterial;
     FieldCellPersistedAux persistedAux54;
-    dword runtime58;
-    dword runtime5C;
-    dword runtime60;
-    dword runtime64;
-    dword runtime68;
-    dword runtime6C;
+    uint32_t runtime58;
+    uint32_t runtime5C;
+    uint32_t runtime60;
+    uint32_t runtime64;
+    uint32_t runtime68;
+    uint32_t runtime6C;
     TerrainOccupancyMask occupancyMask;
     PackedTerrainNormalAngles triangle1NormalAngles;
-    dword runtime7C;
+    uint32_t runtime7C;
 };
 
 struct AiWorkspace00EntryView8 {
@@ -12046,16 +12029,16 @@ struct AiWorkspace00EntryView8 {
 };
 
 struct LevelPlacedModelRecord20 {
-    dword modelRuntimeFieldA0; // Serialized dword copied from model runtime payload +0xA0; semantic identifier unresolved.
-    dword modelRuntimeField0C; // Serialized dword copied from model runtime payload +0x0C; semantic identifier unresolved.
+    uint32_t modelRuntimeFieldA0; // Serialized dword copied from model runtime payload +0xA0; semantic identifier unresolved.
+    uint32_t modelRuntimeField0C; // Serialized dword copied from model runtime payload +0x0C; semantic identifier unresolved.
     ModelMeshGroupMask meshGroupMask; // Mesh-group mask copied from the world runtime node.
-    dword nodePayloadField0C; // Serialized dword copied from the selected world-node payload slot; retained neutrally.
+    uint32_t nodePayloadField0C; // Serialized dword copied from the selected world-node payload slot; retained neutrally.
     AngleTurn32 worldRotationAngle2; // World rotation angle component serialized from the model node.
-    byte reserved14_1F[12]; // Twelve bytes explicitly zeroed for every emitted record.
+    uint8_t reserved14_1F[12]; // Twelve bytes explicitly zeroed for every emitted record.
 };
 
 struct FrontendLoadedLevelPathState28 {
-    dword levelPathOffsetOrLoadedFieldGrid;
+    uint32_t levelPathOffsetOrLoadedFieldGrid;
     AssetRelativeOffset groundTextureBasePathOffset;
     AssetRelativeOffset surfaceTextureBasePathOffset;
     AssetRelativeOffset skyTextureBasePathOffset;
@@ -12070,13 +12053,13 @@ struct FrontendLoadedLevelPathState28 {
 struct FrontendLoadedLevelHeader200 {
     struct GeneratedAssetCommonPrefix common;
     struct FrontendLoadedLevelPathState28 pathState;
-    dword opaqueHeaderDwordD8;
+    uint32_t opaqueHeaderDwordD8;
     struct LevelAssetResourceTableDirectory24 resourceTables;
-    byte opaque100_16F[112];
+    uint8_t opaque100_16F[112];
     UiTextResourceId titleTextResourceIndex;
-    byte opaque174_18F[28];
+    uint8_t opaque174_18F[28];
     LevelCampaignAssociationIndex campaignAssociationIndex;
-    byte opaque194_1FF[108];
+    uint8_t opaque194_1FF[108];
 };
 
 struct FrontendLoadedLevelRuntimeImage370 {
@@ -12086,85 +12069,85 @@ struct FrontendLoadedLevelRuntimeImage370 {
 };
 
 struct FrontendNetworkListsRuntimeView5650 {
-    byte opaqueGap0000_4B67[19304]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0000_4B67[19304]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPointerListControl sessionDiscoveryList; // frontend session-discovery pointer list
-    byte opaqueGap4BCC_55EB[2592]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap4BCC_55EB[2592]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct UiPointerListControl playerRuntimeList; // frontend player-runtime pointer list
 };
 
 struct FrontendResultsColumnSequenceTemplate6_7C {
     struct UiNodeBase base; // serialized/runtime UiNode prefix
-    dword modeFlags;
+    uint32_t modeFlags;
     void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair8 *);
-    dword columnTypeCount;
-    dword field58;
-    dword field5C;
-    dword field60;
-    dword columnTypes[6];
+    uint32_t columnTypeCount;
+    uint32_t field58;
+    uint32_t field5C;
+    uint32_t field60;
+    uint32_t columnTypes[6];
 };
 
 struct FrontendResultsFactionWeightPair8 {
-    dword lane0;
-    dword lane1;
+    uint32_t lane0;
+    uint32_t lane1;
 };
 
 struct FrontendResultsColumnSequenceControl68 {
     struct UiNodeBase base; // runtime UiNode prefix
-    dword modeFlags; // bit 0 selects column sequence vs faction-weight raster path
+    uint32_t modeFlags; // bit 0 selects column sequence vs faction-weight raster path
     void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair8 *); // four-argument raster column callback
-    dword columnTypeCount; // number of trailing column type dwords
-    dword field58;
-    dword field5C;
-    dword field60;
-    dword columnTypes0; // first element of variable-length trailing column type list
+    uint32_t columnTypeCount; // number of trailing column type dwords
+    uint32_t field58;
+    uint32_t field5C;
+    uint32_t field60;
+    uint32_t columnTypes0; // first element of variable-length trailing column type list
 };
 
 struct FrontendResultsColumnSequenceTemplate8_84 {
     struct UiNodeBase base; // serialized/runtime UiNode prefix
-    dword modeFlags;
+    uint32_t modeFlags;
     void (*factionWeightRaster)(UiPixelCoordinate, UiPixelCoordinate, UiPixelCoordinate, struct FrontendResultsFactionWeightPair8 *);
-    dword columnTypeCount;
-    dword field58;
-    dword field5C;
-    dword field60;
-    dword columnTypes[8];
+    uint32_t columnTypeCount;
+    uint32_t field58;
+    uint32_t field5C;
+    uint32_t field60;
+    uint32_t columnTypes[8];
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
 struct ScenarioCatalogRuntimeExpandedRecord100 {
-    word identifier[32]; // UTF-16 scenario identifier
-    byte opaqueGap0040_004F[16]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword titleTextResourceId; // resource id used with family-specific base
-    word titleDisplayTag; // runtime display tag
-    word *titleResolvedText; // resolved UTF-16 text pointer
-    byte opaqueGap005A_005F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword subtitleTextResourceId; // resource id used with family-specific base
-    word subtitleDisplayTag; // runtime display tag
-    word *subtitleResolvedText; // resolved UTF-16 text pointer
-    byte opaqueGap006A_006F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword scenarioTextResourceId; // resource id used with family-specific base
-    word scenarioDisplayTag; // runtime display tag
-    word *scenarioResolvedText; // resolved UTF-16 text pointer
-    byte opaqueGap007A_007F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    dword modeTextResourceId; // resource id used with family-specific base
-    word modeDisplayTag; // runtime display tag
-    word *modeResolvedText; // resolved UTF-16 text pointer
-    byte opaqueGap008A_00FF[118]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint16_t identifier[32]; // UTF-16 scenario identifier
+    uint8_t opaqueGap0040_004F[16]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t titleTextResourceId; // resource id used with family-specific base
+    uint16_t titleDisplayTag; // runtime display tag
+    uint16_t *titleResolvedText; // resolved UTF-16 text pointer
+    uint8_t opaqueGap005A_005F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t subtitleTextResourceId; // resource id used with family-specific base
+    uint16_t subtitleDisplayTag; // runtime display tag
+    uint16_t *subtitleResolvedText; // resolved UTF-16 text pointer
+    uint8_t opaqueGap006A_006F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t scenarioTextResourceId; // resource id used with family-specific base
+    uint16_t scenarioDisplayTag; // runtime display tag
+    uint16_t *scenarioResolvedText; // resolved UTF-16 text pointer
+    uint8_t opaqueGap007A_007F[6]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint32_t modeTextResourceId; // resource id used with family-specific base
+    uint16_t modeDisplayTag; // runtime display tag
+    uint16_t *modeResolvedText; // resolved UTF-16 text pointer
+    uint8_t opaqueGap008A_00FF[118]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
 };
 #pragma pack(pop)
 
 struct ScenarioCatalogSaveRecord {
-    word identifier[32];
-    byte metadata40_6F[48];
+    uint16_t identifier[32];
+    uint8_t metadata40_6F[48];
     int localizedStringId70;
-    byte metadata74_8F[28];
+    uint8_t metadata74_8F[28];
     int optionalLocalizedStringId90;
-    byte metadata94_BF[44];
-    word timestampText[32];
+    uint8_t metadata94_BF[44];
+    uint16_t timestampText[32];
 };
 
 
-typedef dword AiCommandGenerationRightShiftBits;
+typedef uint32_t AiCommandGenerationRightShiftBits;
 struct GridReachabilityRuntimePair8 {
     struct ArmyRuntimeSlot *armyRuntime;
     struct ModelRuntimeNode *modelNodeRuntime;
@@ -12175,7 +12158,7 @@ struct AiCombatTargetSelectionResult {
 };
 
 /* ws2_32 WSAAddressToStringA callback type recovered by the V533 API boundary pass. */
-typedef int WSAAddressToStringA_Proc(WinSockAddress *address, dword addressLength, void *protocolInfo, byte *addressString, dword *addressStringLength);
+typedef int WSAAddressToStringA_Proc(WinSockAddress *address, uint32_t addressLength, void *protocolInfo, uint8_t *addressString, uint32_t *addressStringLength);
 
 
 #ifndef __thandor_void_preserve_eax_ecx_edx_mm0
@@ -12193,85 +12176,85 @@ struct WorldOwnerListNode100 {
     struct WorldOwnerListNode100 *previousNode;
     struct WorldOwnerListNode100 *nextNode;
     struct WorldRuntimeContext *ownerWorld;
-    byte opaque0C_13[8]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint8_t opaque0C_13[8]; // Opaque owner-list bytes; semantics remain class-dependent.
     AngleTurn32 modelLocalRotationAngle2; // ModelRuntimeNode local/world rotation angle 2; valid only when ownerClassId == WORLD_OWNER_RUNTIME_MODEL.
-    byte opaque18_47[48]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint8_t opaque18_47[48]; // Opaque owner-list bytes; semantics remain class-dependent.
     void *runtimePayload; // Class-dependent payload: MODEL=>ModelRuntimeSlot*, SHOT=>ShotRuntimeSlot*, EFFECT=>EffectRuntimeSlot*. Kept void here deliberately so the neutral owner-list view cannot select a false union arm.
-    dword runtimeFlags;
-    byte opaque50_57[8]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint32_t runtimeFlags;
+    uint8_t opaque50_57[8]; // Opaque owner-list bytes; semantics remain class-dependent.
     PackedArgb32 modelTintArgb; // ModelRuntimeNode tint ARGB; valid only for MODEL owner nodes.
-    byte opaque5C_93[56]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint8_t opaque5C_93[56]; // Opaque owner-list bytes; semantics remain class-dependent.
     Q12 worldXQ12;
     Q12 worldYQ12;
     Q12 worldZQ12;
-    dword runtimeStateA0;
+    uint32_t runtimeStateA0;
     enum WorldOwnerRuntimeClassId ownerClassId; // Binary constructors prove MODEL=0, SHOT=1, EFFECT=2.
-    byte opaqueA8_B3[12]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint8_t opaqueA8_B3[12]; // Opaque owner-list bytes; semantics remain class-dependent.
     ModelDepthBinMask modelDepthBinMaskNear; // ModelRuntimeNode near depth-bin mask; valid only for MODEL owner nodes.
     ModelDepthBinMask modelDepthBinMaskFar; // ModelRuntimeNode far depth-bin mask; valid only for MODEL owner nodes.
-    byte opaqueBC_FF[68]; // Opaque owner-list bytes; semantics remain class-dependent.
+    uint8_t opaqueBC_FF[68]; // Opaque owner-list bytes; semantics remain class-dependent.
 };
 
 struct ModelRuntimePlacementValidationView200 {
     struct ModelDefinitionRuntimeSemanticView280 *modelDefinition; // Live placement-validation phase: dispatcher dereferences ModelRuntimeSlot +0 as ModelDefinition and selects class via definition +0x4C; targets read placement fields including +0xDC,+0x1A8,+0x260,+0x264,+0x278.
     struct ModelRuntimeNode *rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex +0x0C and pass owner/runtime context onward.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ArmyWeaponDefinitionView68 {
-    undefined field0_0x0;
-    undefined field1_0x1;
-    undefined field2_0x2;
-    undefined field3_0x3;
-    undefined field4_0x4;
-    undefined field5_0x5;
-    undefined field6_0x6;
-    undefined field7_0x7;
-    undefined field8_0x8;
-    undefined field9_0x9;
-    undefined field10_0xa;
-    undefined field11_0xb;
-    undefined field12_0xc;
-    undefined field13_0xd;
-    undefined field14_0xe;
-    undefined field15_0xf;
+    uint8_t field0_0x0;
+    uint8_t field1_0x1;
+    uint8_t field2_0x2;
+    uint8_t field3_0x3;
+    uint8_t field4_0x4;
+    uint8_t field5_0x5;
+    uint8_t field6_0x6;
+    uint8_t field7_0x7;
+    uint8_t field8_0x8;
+    uint8_t field9_0x9;
+    uint8_t field10_0xa;
+    uint8_t field11_0xb;
+    uint8_t field12_0xc;
+    uint8_t field13_0xd;
+    uint8_t field14_0xe;
+    uint8_t field15_0xf;
     ArmyTurnVelocityAngle16 yawTurnRateLimitAnglePerTick10; // Positive magnitude cap for the signed yaw turn velocity used by ModelNodeRuntime_SmoothYawTowardTarget.
     ArmyTurnVelocityAngle16 pitchTurnRateLimitAnglePerTick14; // Positive magnitude cap for the signed pitch turn velocity used by ModelNodeRuntime_SmoothPitchTowardTarget.
-    undefined field18_0x18;
-    undefined field19_0x19;
-    undefined field20_0x1a;
-    undefined field21_0x1b;
+    uint8_t field18_0x18;
+    uint8_t field19_0x19;
+    uint8_t field20_0x1a;
+    uint8_t field21_0x1b;
     ArmyTurnVelocityAngle16 yawTurnRateAccelerationAnglePerTick1C; // Per-tick acceleration/deceleration step applied to yaw turn velocity.
     ArmyTurnVelocityAngle16 pitchTurnRateAccelerationAnglePerTick20; // Per-tick acceleration/deceleration step applied to pitch turn velocity.
     AngleTurn32 minimumPitchAngle24; // Lower clamped pitch target for articulated weapon aiming.
     AngleTurn32 maximumPitchAngle28; // Upper clamped pitch target for articulated weapon aiming.
     struct ShotDefinition *shotDefinition; // Pointer consumed by the shot aim, launch-angle and launch-resolution helpers.
-    dword attachmentReloadTicks; // Value copied into one of eight selector reload slots when a launch is attempted.
+    uint32_t attachmentReloadTicks; // Value copied into one of eight selector reload slots when a launch is attempted.
     int localRotationAngle2StepPerTick34; // Signed per-tick increment applied to the articulated child node localRotationAngle2 during the class-7/8 weapon recoil/aim state.
-    dword sharedInterShotTicks; // Value copied into the shared firing gate after a successful launch.
+    uint32_t sharedInterShotTicks; // Value copied into the shared firing gate after a successful launch.
     FixedMathScale32 backwardStepScale3C; // Scale supplied to FixedVector_StepBackwardAlongOwnDirection for the class-7/8 articulated weapon recoil step.
     Q12 postLaunchVector0Q12; // Q12 value passed to the post-launch action-vector update.
     Q12 postLaunchVector1Q12; // Q12 value passed to the post-launch action-vector update.
-    byte opaqueGap0048_0063[28]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0048_0063[28]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     struct MdlSerializedNodeHeader38 *modelPointSource64; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferencesCf rebases definition +0x64.
 };
 
@@ -12291,37 +12274,37 @@ struct ArmyWeaponRuntimeSlotView {
     Q12 actionVector0Q12; // Committed V218d army runtime field.
     Q12 actionVector1Q12; // Committed V218d army runtime field.
     Q12 actionVector2Q12; // Committed V218d army runtime field.
-    dword runtimeState40; // Committed V218d army runtime field.
-    dword runtimeState44; // Committed V218d army runtime field.
-    dword runtimeState48; // Committed V218d army runtime field.
-    dword runtimeState4C; // Committed V218d army runtime field.
+    uint32_t runtimeState40; // Committed V218d army runtime field.
+    uint32_t runtimeState44; // Committed V218d army runtime field.
+    uint32_t runtimeState48; // Committed V218d army runtime field.
+    uint32_t runtimeState4C; // Committed V218d army runtime field.
     FieldGridRegionMask terrainOccupancyMask0; // First mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     FieldGridRegionMask terrainOccupancyMask1; // Second mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     Q12 movementPosition0Q12; // Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Committed V218d army runtime field.
-    dword attachmentReloadTicks[8]; // Eight independent attachment-selector reload states.
-    dword sharedInterShotTicks; // Shared inter-shot gate decremented once per simulation step.
-    dword definitionClassValue84; // Committed V218d army runtime field.
-    dword definitionClassValue88; // Committed V218d army runtime field.
-    dword runtimeState8C; // Committed V218d army runtime field.
-    dword runtimeState90; // Committed V218d army runtime field.
-    dword runtimeState94; // Committed V218d army runtime field.
-    dword runtimeState98; // Committed V218d army runtime field.
+    uint32_t attachmentReloadTicks[8]; // Eight independent attachment-selector reload states.
+    uint32_t sharedInterShotTicks; // Shared inter-shot gate decremented once per simulation step.
+    uint32_t definitionClassValue84; // Committed V218d army runtime field.
+    uint32_t definitionClassValue88; // Committed V218d army runtime field.
+    uint32_t runtimeState8C; // Committed V218d army runtime field.
+    uint32_t runtimeState90; // Committed V218d army runtime field.
+    uint32_t runtimeState94; // Committed V218d army runtime field.
+    uint32_t runtimeState98; // Committed V218d army runtime field.
     enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
     enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
-    dword runtimeStateA4; // Committed V218d army runtime field.
-    dword runtimeStateA8; // Committed V218d army runtime field.
+    uint32_t runtimeStateA4; // Committed V218d army runtime field.
+    uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; // Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; // Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; // Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; // Three independently decremented pending child counters.
-    byte reservedE0_EB[12]; // Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
-    byte reservedF8_FF[8]; // Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     int stateOrTechnologyId; // Committed V218d army runtime field.
-    dword runtimeState104; // Committed V218d army runtime field.
+    uint32_t runtimeState104; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
@@ -12333,7 +12316,7 @@ struct ArmyWeaponRuntimeSlotView {
 struct RuntimeCollisionQueryViewF4 {
     struct ModelDefinitionRuntimeSemanticView280 *modelDefinition; // Common collision-query physical layout: [runtime+0] is dereferenced directly for ModelDefinition +0xDC.
     struct ModelRuntimeNode *modelNodeRuntime; // Common collision-query physical layout: [runtime+4] supplies model-node depth bins.
-    byte opaqueGap0008_00EF[232]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
+    uint8_t opaqueGap0008_00EF[232]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
     void *linkedRuntimeF0; // Common relation/link pointer compared for self/linked-runtime exclusion; pointee class intentionally left polymorphic.
 };
 
@@ -12348,168 +12331,168 @@ struct ModelRuntimeUpdateView200 {
     struct ModelDefinitionRuntimeSemanticView280 *modelDefinition; // Live runtime-update phase definition pointer.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionClass14PlacementView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    dword resourceFieldSupportSelectorC0; // Runtime class 14 only. Slot 14 placement callback uses 0x800 << low5(selector) as required positive FieldGrid support bit; selector 0=>0x0800 Xenite, 1=>0x1000 Tritium. Do not generalize this name to other runtime classes.
-    undefined field51_0xc4;
-    undefined field52_0xc5;
-    undefined field53_0xc6;
-    undefined field54_0xc7;
-    undefined field55_0xc8;
-    undefined field56_0xc9;
-    undefined field57_0xca;
-    undefined field58_0xcb;
-    undefined field59_0xcc;
-    undefined field60_0xcd;
-    undefined field61_0xce;
-    undefined field62_0xcf;
-    undefined field63_0xd0;
-    undefined field64_0xd1;
-    undefined field65_0xd2;
-    undefined field66_0xd3;
-    undefined field67_0xd4;
-    undefined field68_0xd5;
-    undefined field69_0xd6;
-    undefined field70_0xd7;
-    undefined field71_0xd8;
-    undefined field72_0xd9;
-    undefined field73_0xda;
-    undefined field74_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint32_t resourceFieldSupportSelectorC0; // Runtime class 14 only. Slot 14 placement callback uses 0x800 << low5(selector) as required positive FieldGrid support bit; selector 0=>0x0800 Xenite, 1=>0x1000 Tritium. Do not generalize this name to other runtime classes.
+    uint8_t field51_0xc4;
+    uint8_t field52_0xc5;
+    uint8_t field53_0xc6;
+    uint8_t field54_0xc7;
+    uint8_t field55_0xc8;
+    uint8_t field56_0xc9;
+    uint8_t field57_0xca;
+    uint8_t field58_0xcb;
+    uint8_t field59_0xcc;
+    uint8_t field60_0xcd;
+    uint8_t field61_0xce;
+    uint8_t field62_0xcf;
+    uint8_t field63_0xd0;
+    uint8_t field64_0xd1;
+    uint8_t field65_0xd2;
+    uint8_t field66_0xd3;
+    uint8_t field67_0xd4;
+    uint8_t field68_0xd5;
+    uint8_t field69_0xd6;
+    uint8_t field70_0xd7;
+    uint8_t field71_0xd8;
+    uint8_t field72_0xd9;
+    uint8_t field73_0xda;
+    uint8_t field74_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimePlacementClass14View200 {
     struct ModelDefinitionClass14PlacementView280 *modelDefinition; // Class-14 placement-validation definition view; table slot 14 at 0x0051FF10 targets 0x00524F70.
     struct ModelRuntimeNode *rootModelNode; // Live placement-validation phase root ModelRuntimeNode; targets read world transform fields from this pointer.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live placement-validation phase owner ArmyRuntimeSlot; targets read factionIndex +0x0C and pass owner/runtime context onward.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct InGameTargetingRootTraversalView9E60 {
     struct UiNodeBase base; // UI-node prefix valid both for the initiating targeting control and while walking its parent chain.
-    undefined1 opaqueGap4C_4F[4]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
+    uint8_t opaqueGap4C_4F[4]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
     enum InGameTargetingObservedActionState actionState; // Targeting action state read before root traversal: idle, advance/resolve, or cancel/restore.
-    undefined1 opaqueGap54_A2F[2524]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
+    uint8_t opaqueGap54_A2F[2524]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
     struct WorldRuntimeContext worldRuntime0A30; // Root image WorldRuntimeContext reached after parent traversal.
-    undefined1 opaqueGapB8C_9B4B[36800]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
+    uint8_t opaqueGapB8C_9B4B[36800]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
     enum InGameNotificationInteractionState sessionNotificationInteractionState9B4C; // Root interaction state used by the targeting/notification flow.
-    dword observedSessionNotificationValue9B50; // Root notification value retained from the canonical root image.
-    dword notificationPlaybackCompletionCode9B54; // Root notification playback completion code retained from the canonical root image.
-    undefined1 opaqueGap9B58_9E3F[744]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
+    uint32_t observedSessionNotificationValue9B50; // Root notification value retained from the canonical root image.
+    uint32_t notificationPlaybackCompletionCode9B54; // Root notification playback completion code retained from the canonical root image.
+    uint8_t opaqueGap9B58_9E3F[744]; // Opaque byte range retained explicitly so C export uses one array instead of one undefined field per byte.
     struct InGameNotificationPayload18 activeNotificationPayload9E40; // Active root notification/targeting payload consumed by state-7 targeting resolution.
     Q12 targetingPrimaryWorldCoordinateQ12_9E58; // Targeting scratch coordinate written from activeNotificationPayload9E40.primaryWorldCoordinateQ12_00 before the impact-anchor fallthrough path.
     Q12 targetingSecondaryWorldCoordinateQ12_9E5C; // Targeting scratch coordinate written from activeNotificationPayload9E40.secondaryWorldCoordinateQ12_04 before the impact-anchor fallthrough path.
@@ -12517,7 +12500,7 @@ struct InGameTargetingRootTraversalView9E60 {
 
 union TextResourceOverrideParallelWord4 {
     TextResourceId resourceId; // Resource-id arm used by the first 4096 dwords scanned with REPNE SCASD.
-    word *textPointer; // UTF-16 pointer arm used by the second 4096 dwords at +0x4000.
+    uint16_t *textPointer; // UTF-16 pointer arm used by the second 4096 dwords at +0x4000.
 };
 
 struct ShotModelRuntimeNodeClassView100 {
@@ -12534,7 +12517,7 @@ struct ShotModelRuntimeNodeClassView100 {
     ModelTextureOffsetTexel primaryTextureOffsetU; // Primary animated texture U offset.
     ModelTextureOffsetTexel primaryTextureOffsetV; // Primary animated texture V offset.
     struct GraphicsFixedMatrix3x4 worldTransform; // Composed world transform.
-    dword runtimeStateA0; // Class-specific runtime state.
+    uint32_t runtimeStateA0; // Class-specific runtime state.
     enum WorldOwnerRuntimeClassId ownerClassId; // Runtime owner/class discriminator.
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex; // Secondary animated texture subresource index.
     ModelTextureOffsetTexel secondaryTextureOffsetU; // Secondary animated texture U offset.
@@ -12544,7 +12527,7 @@ struct ShotModelRuntimeNodeClassView100 {
     int renderDepthBiasOrState; // Render depth bias or class state.
     Q12 modelScaleQ12; // Model scale.
     struct ModelRuntimeNode *parentNode; // Parent model node.
-    dword childCount; // Valid child pointer count.
+    uint32_t childCount; // Valid child pointer count.
     struct ModelRuntimeNode *childNodes[13]; // Fixed child-node pointer array.
 };
 
@@ -12552,24 +12535,24 @@ struct ModelRuntimeClass14UpdateView200 {
     struct ModelDefinitionClass14PlacementView280 *modelDefinition; // Runtime class-14 definition; +0xC0 is the binary-proven resource-field selector for this class.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -12577,7 +12560,7 @@ struct ModelRuntimeArticulatedUpdateView200 {
     struct ModelDefinitionRuntimeSemanticView280 *modelDefinition; // Live class-3 ModelRuntime definition pointer.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
     struct ArmyRuntimeMovementControlState movementControl; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -12589,50 +12572,50 @@ struct ModelRuntimeArticulatedUpdateView200 {
     Q12 actionVector0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 actionVector1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 actionVector2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState40; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState44; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState48; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState4C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reserved50_57[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState40; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState44; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState48; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState4C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reserved50_57[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementPosition0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword classState60; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword ownerValue64; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword ownerValue68; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t classState60; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t ownerValue64; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t ownerValue68; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue80; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue84; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue88; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState8C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState90; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState94; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState98; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue80; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue84; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue88; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState8C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState90; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState94; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState98; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int articulatedCoordinateOrState9C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Articulated class-specific signed coordinate/state view; not a runtime-class enum.
     int articulatedHeightOrStateA0; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Articulated class-specific signed height/state view; not an ARM catalog id.
-    dword runtimeStateA4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeStateA8; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeStateA4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeStateA8; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
-    byte reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState104; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState104; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric0; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric1; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric2; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric3; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric5; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -12640,25 +12623,25 @@ struct ModelRuntimeWeaponUpdateView200 {
     struct ArmyWeaponDefinitionView68 *modelDefinition; // Class-9 weapon definition view with binary-proven live modelPointSource64 node pointer.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
-    dword attachmentReloadTicks[8]; // Eight class-9 attachment countdowns at +0x60..+0x7C.
-    dword sharedInterShotTicks; // Class-9 shared inter-shot countdown at +0x80.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t attachmentReloadTicks[8]; // Eight class-9 attachment countdowns at +0x60..+0x7C.
+    uint32_t sharedInterShotTicks; // Class-9 shared inter-shot countdown at +0x80.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -12679,7 +12662,7 @@ struct WorldPositionXYEaxEdx8 {
 };
 
 struct FixedLengthAngleEaxEdx8 {
-    dword length; // Physical EAX result from FixedMath_Length2.
+    uint32_t length; // Physical EAX result from FixedMath_Length2.
     AngleTurn32 angle; // Physical EDX result: masked low-16 angle from FixedMath_Atan2Angle16.
 };
 
@@ -12689,12 +12672,12 @@ struct TerrainPlacementTestEaxCf5 {
 };
 
 struct TerrainClassPlacementAndOverlayCallbackTable10 {
-    bool (*placementTests[5])(dword, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; CF (reject) is the bool result.
-    bool (*overlayCallbacks[5])(dword, int, dword, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
+    bool (*placementTests[5])(uint32_t, Q12, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition; CF (reject) is the bool result.
+    bool (*overlayCallbacks[5])(uint32_t, int, uint32_t, Q12, Q12, struct FieldGridAsset *); // Exact immutable callback partition.
 };
 
 
-typedef dword NetworkSocketHandle32;
+typedef uint32_t NetworkSocketHandle32;
 struct GraphicsTextureSourceAssetEaxCf5 {
     struct GraphicsTextureSourceAsset *assetOrError;
     bool carry;
@@ -12705,10 +12688,10 @@ struct TerrainProjectedRowSpan {
 };
 struct WinSockIpxAddress16 {
     NetworkAddressFamily addressFamily;
-    byte networkNumber[4];
-    byte nodeNumber[6];
+    uint8_t networkNumber[4];
+    uint8_t nodeNumber[6];
     NetworkPortNetworkOrder socketNetworkOrder;
-    byte padding[2];
+    uint8_t padding[2];
 };
 union NetworkBackendSocketAddress16 {
     struct WinSockAddress ipv4;
@@ -12727,813 +12710,813 @@ struct ModelRuntimeLinkedChildSpawnInheritedState0C {
 };
 
 struct ModelRuntimePositionedSoundClassState7C {
-    byte reserved84_A7[36]; // Unresolved class-specific state.
-    dword classStateA8; // Class-discriminated runtime state.
-    dword classStateAC; // Class-discriminated runtime state.
-    sdword classStateB0; // Class-discriminated signed runtime state.
-    sdword classStateB4; // Class-discriminated signed runtime state.
-    dword classStateB8; // Class-discriminated runtime flags or value.
-    byte reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
-    dword classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
-    byte reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
-    dword classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
-    byte reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
+    uint8_t reserved84_A7[36]; // Unresolved class-specific state.
+    uint32_t classStateA8; // Class-discriminated runtime state.
+    uint32_t classStateAC; // Class-discriminated runtime state.
+    int32_t classStateB0; // Class-discriminated signed runtime state.
+    int32_t classStateB4; // Class-discriminated signed runtime state.
+    uint32_t classStateB8; // Class-discriminated runtime flags or value.
+    uint8_t reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
+    uint32_t classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
+    uint8_t reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
+    uint32_t classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
+    uint8_t reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
     SpatialSoundRuntimeSlotIndex positionedSoundSlotIndex0D0; // Index into WorldRuntimeContext.dwordArray for the first projected positioned-sound runtime slot.
-    undefined field12_0x50;
-    undefined field13_0x51;
-    undefined field14_0x52;
-    undefined field15_0x53;
+    uint8_t field12_0x50;
+    uint8_t field13_0x51;
+    uint8_t field14_0x52;
+    uint8_t field15_0x53;
     SpatialSoundRuntimeSlotIndex positionedSoundSlotIndex1D8; // Index into WorldRuntimeContext.dwordArray for the second projected positioned-sound runtime slot.
-    dword classStateDC; // Class-discriminated runtime state.
-    dword classStateE0; // Class-discriminated runtime state.
-    dword enabledStateE4; // Constructor-initialized enabled state.
-    dword enabledStateE8; // Constructor-initialized enabled state or sentinel.
-    dword classStateEC; // Constructor-cleared class state.
+    uint32_t classStateDC; // Class-discriminated runtime state.
+    uint32_t classStateE0; // Class-discriminated runtime state.
+    uint32_t enabledStateE4; // Constructor-initialized enabled state.
+    uint32_t enabledStateE8; // Constructor-initialized enabled state or sentinel.
+    uint32_t classStateEC; // Constructor-cleared class state.
     union ArmyRuntimeReferenceOrSavedOffset4 linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
-    dword definitionDerivedValueF4; // Definition-derived class value.
-    dword classStateF8; // Constructor-cleared class state.
-    dword classStateFC; // Constructor-cleared class state.
+    uint32_t definitionDerivedValueF4; // Definition-derived class value.
+    uint32_t classStateF8; // Constructor-cleared class state.
+    uint32_t classStateFC; // Constructor-cleared class state.
 };
 
 struct ModelDefinitionVerticalDeploymentView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
     Q12 verticalDeploymentStepQ12PerTick; // Signed local-Z displacement applied per simulation tick while deploying/retracting the child model.
-    undefined field4_0x10;
-    undefined field5_0x11;
-    undefined field6_0x12;
-    undefined field7_0x13;
-    undefined field8_0x14;
-    undefined field9_0x15;
-    undefined field10_0x16;
-    undefined field11_0x17;
-    undefined field12_0x18;
-    undefined field13_0x19;
-    undefined field14_0x1a;
-    undefined field15_0x1b;
-    undefined field16_0x1c;
-    undefined field17_0x1d;
-    undefined field18_0x1e;
-    undefined field19_0x1f;
-    undefined field20_0x20;
-    undefined field21_0x21;
-    undefined field22_0x22;
-    undefined field23_0x23;
+    uint8_t field4_0x10;
+    uint8_t field5_0x11;
+    uint8_t field6_0x12;
+    uint8_t field7_0x13;
+    uint8_t field8_0x14;
+    uint8_t field9_0x15;
+    uint8_t field10_0x16;
+    uint8_t field11_0x17;
+    uint8_t field12_0x18;
+    uint8_t field13_0x19;
+    uint8_t field14_0x1a;
+    uint8_t field15_0x1b;
+    uint8_t field16_0x1c;
+    uint8_t field17_0x1d;
+    uint8_t field18_0x1e;
+    uint8_t field19_0x1f;
+    uint8_t field20_0x20;
+    uint8_t field21_0x21;
+    uint8_t field22_0x22;
+    uint8_t field23_0x23;
     Q12 deploymentTravelLimitQ12; // Class-23 deployment travel threshold used to select endpoint transitions and sounds.
-    dword runtimeValue28;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field30_0x50;
-    undefined field31_0x51;
-    undefined field32_0x52;
-    undefined field33_0x53;
+    uint8_t field30_0x50;
+    uint8_t field31_0x51;
+    uint8_t field32_0x52;
+    uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field40_0x6c;
-    undefined field41_0x6d;
-    undefined field42_0x6e;
-    undefined field43_0x6f;
-    undefined field44_0x70;
-    undefined field45_0x71;
-    undefined field46_0x72;
-    undefined field47_0x73;
-    undefined field48_0x74;
-    undefined field49_0x75;
-    undefined field50_0x76;
-    undefined field51_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field40_0x6c;
+    uint8_t field41_0x6d;
+    uint8_t field42_0x6e;
+    uint8_t field43_0x6f;
+    uint8_t field44_0x70;
+    uint8_t field45_0x71;
+    uint8_t field46_0x72;
+    uint8_t field47_0x73;
+    uint8_t field48_0x74;
+    uint8_t field49_0x75;
+    uint8_t field50_0x76;
+    uint8_t field51_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
     SoundAssetIndex deploymentSoundAssetIndex26C; // Positioned one-shot sound asset index used at class-23 deployment endpoints.
-    undefined field96_0x270;
-    undefined field97_0x271;
-    undefined field98_0x272;
-    undefined field99_0x273;
-    undefined field100_0x274;
-    undefined field101_0x275;
-    undefined field102_0x276;
-    undefined field103_0x277;
+    uint8_t field96_0x270;
+    uint8_t field97_0x271;
+    uint8_t field98_0x272;
+    uint8_t field99_0x273;
+    uint8_t field100_0x274;
+    uint8_t field101_0x275;
+    uint8_t field102_0x276;
+    uint8_t field103_0x277;
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeTimedEffectsUpdateView200 {
     struct ModelDefinitionTimedEffectsUpdateView280 *modelDefinition; // Class-specific definition overlay containing the timed-effects update gate.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionTimedEffectsUpdateView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    undefined field69_0x1c0;
-    undefined field70_0x1c1;
-    undefined field71_0x1c2;
-    undefined field72_0x1c3;
-    undefined field73_0x1c4;
-    undefined field74_0x1c5;
-    undefined field75_0x1c6;
-    undefined field76_0x1c7;
+    uint8_t field69_0x1c0;
+    uint8_t field70_0x1c1;
+    uint8_t field71_0x1c2;
+    uint8_t field72_0x1c3;
+    uint8_t field73_0x1c4;
+    uint8_t field74_0x1c5;
+    uint8_t field75_0x1c6;
+    uint8_t field76_0x1c7;
     int timedEffectsRequireRuntimeState40Gate1C8; // Exact machine semantics: 0 allows timed-emitter and animated-subnode updates whenever classStateEC bits 0/3 are clear; nonzero additionally requires runtime classStateEC bit 0x40.
-    undefined field78_0x1cc;
-    undefined field79_0x1cd;
-    undefined field80_0x1ce;
-    undefined field81_0x1cf;
-    undefined field82_0x1d0;
-    undefined field83_0x1d1;
-    undefined field84_0x1d2;
-    undefined field85_0x1d3;
-    undefined field86_0x1d4;
-    undefined field87_0x1d5;
-    undefined field88_0x1d6;
-    undefined field89_0x1d7;
-    undefined field90_0x1d8;
-    undefined field91_0x1d9;
-    undefined field92_0x1da;
-    undefined field93_0x1db;
-    undefined field94_0x1dc;
-    undefined field95_0x1dd;
-    undefined field96_0x1de;
-    undefined field97_0x1df;
-    undefined field98_0x1e0;
-    undefined field99_0x1e1;
-    undefined field100_0x1e2;
-    undefined field101_0x1e3;
-    undefined field102_0x1e4;
-    undefined field103_0x1e5;
-    undefined field104_0x1e6;
-    undefined field105_0x1e7;
-    undefined field106_0x1e8;
-    undefined field107_0x1e9;
-    undefined field108_0x1ea;
-    undefined field109_0x1eb;
-    undefined field110_0x1ec;
-    undefined field111_0x1ed;
-    undefined field112_0x1ee;
-    undefined field113_0x1ef;
-    undefined field114_0x1f0;
-    undefined field115_0x1f1;
-    undefined field116_0x1f2;
-    undefined field117_0x1f3;
-    undefined field118_0x1f4;
-    undefined field119_0x1f5;
-    undefined field120_0x1f6;
-    undefined field121_0x1f7;
-    undefined field122_0x1f8;
-    undefined field123_0x1f9;
-    undefined field124_0x1fa;
-    undefined field125_0x1fb;
-    undefined field126_0x1fc;
-    undefined field127_0x1fd;
-    undefined field128_0x1fe;
-    undefined field129_0x1ff;
-    undefined field130_0x200;
-    undefined field131_0x201;
-    undefined field132_0x202;
-    undefined field133_0x203;
-    undefined field134_0x204;
-    undefined field135_0x205;
-    undefined field136_0x206;
-    undefined field137_0x207;
-    undefined field138_0x208;
-    undefined field139_0x209;
-    undefined field140_0x20a;
-    undefined field141_0x20b;
-    undefined field142_0x20c;
-    undefined field143_0x20d;
-    undefined field144_0x20e;
-    undefined field145_0x20f;
-    undefined field146_0x210;
-    undefined field147_0x211;
-    undefined field148_0x212;
-    undefined field149_0x213;
-    undefined field150_0x214;
-    undefined field151_0x215;
-    undefined field152_0x216;
-    undefined field153_0x217;
-    undefined field154_0x218;
-    undefined field155_0x219;
-    undefined field156_0x21a;
-    undefined field157_0x21b;
-    undefined field158_0x21c;
-    undefined field159_0x21d;
-    undefined field160_0x21e;
-    undefined field161_0x21f;
-    undefined field162_0x220;
-    undefined field163_0x221;
-    undefined field164_0x222;
-    undefined field165_0x223;
-    undefined field166_0x224;
-    undefined field167_0x225;
-    undefined field168_0x226;
-    undefined field169_0x227;
-    undefined field170_0x228;
-    undefined field171_0x229;
-    undefined field172_0x22a;
-    undefined field173_0x22b;
-    undefined field174_0x22c;
-    undefined field175_0x22d;
-    undefined field176_0x22e;
-    undefined field177_0x22f;
-    undefined field178_0x230;
-    undefined field179_0x231;
-    undefined field180_0x232;
-    undefined field181_0x233;
-    undefined field182_0x234;
-    undefined field183_0x235;
-    undefined field184_0x236;
-    undefined field185_0x237;
-    undefined field186_0x238;
-    undefined field187_0x239;
-    undefined field188_0x23a;
-    undefined field189_0x23b;
-    undefined field190_0x23c;
-    undefined field191_0x23d;
-    undefined field192_0x23e;
-    undefined field193_0x23f;
-    undefined field194_0x240;
-    undefined field195_0x241;
-    undefined field196_0x242;
-    undefined field197_0x243;
-    undefined field198_0x244;
-    undefined field199_0x245;
-    undefined field200_0x246;
-    undefined field201_0x247;
-    undefined field202_0x248;
-    undefined field203_0x249;
-    undefined field204_0x24a;
-    undefined field205_0x24b;
-    undefined field206_0x24c;
-    undefined field207_0x24d;
-    undefined field208_0x24e;
-    undefined field209_0x24f;
-    undefined field210_0x250;
-    undefined field211_0x251;
-    undefined field212_0x252;
-    undefined field213_0x253;
+    uint8_t field78_0x1cc;
+    uint8_t field79_0x1cd;
+    uint8_t field80_0x1ce;
+    uint8_t field81_0x1cf;
+    uint8_t field82_0x1d0;
+    uint8_t field83_0x1d1;
+    uint8_t field84_0x1d2;
+    uint8_t field85_0x1d3;
+    uint8_t field86_0x1d4;
+    uint8_t field87_0x1d5;
+    uint8_t field88_0x1d6;
+    uint8_t field89_0x1d7;
+    uint8_t field90_0x1d8;
+    uint8_t field91_0x1d9;
+    uint8_t field92_0x1da;
+    uint8_t field93_0x1db;
+    uint8_t field94_0x1dc;
+    uint8_t field95_0x1dd;
+    uint8_t field96_0x1de;
+    uint8_t field97_0x1df;
+    uint8_t field98_0x1e0;
+    uint8_t field99_0x1e1;
+    uint8_t field100_0x1e2;
+    uint8_t field101_0x1e3;
+    uint8_t field102_0x1e4;
+    uint8_t field103_0x1e5;
+    uint8_t field104_0x1e6;
+    uint8_t field105_0x1e7;
+    uint8_t field106_0x1e8;
+    uint8_t field107_0x1e9;
+    uint8_t field108_0x1ea;
+    uint8_t field109_0x1eb;
+    uint8_t field110_0x1ec;
+    uint8_t field111_0x1ed;
+    uint8_t field112_0x1ee;
+    uint8_t field113_0x1ef;
+    uint8_t field114_0x1f0;
+    uint8_t field115_0x1f1;
+    uint8_t field116_0x1f2;
+    uint8_t field117_0x1f3;
+    uint8_t field118_0x1f4;
+    uint8_t field119_0x1f5;
+    uint8_t field120_0x1f6;
+    uint8_t field121_0x1f7;
+    uint8_t field122_0x1f8;
+    uint8_t field123_0x1f9;
+    uint8_t field124_0x1fa;
+    uint8_t field125_0x1fb;
+    uint8_t field126_0x1fc;
+    uint8_t field127_0x1fd;
+    uint8_t field128_0x1fe;
+    uint8_t field129_0x1ff;
+    uint8_t field130_0x200;
+    uint8_t field131_0x201;
+    uint8_t field132_0x202;
+    uint8_t field133_0x203;
+    uint8_t field134_0x204;
+    uint8_t field135_0x205;
+    uint8_t field136_0x206;
+    uint8_t field137_0x207;
+    uint8_t field138_0x208;
+    uint8_t field139_0x209;
+    uint8_t field140_0x20a;
+    uint8_t field141_0x20b;
+    uint8_t field142_0x20c;
+    uint8_t field143_0x20d;
+    uint8_t field144_0x20e;
+    uint8_t field145_0x20f;
+    uint8_t field146_0x210;
+    uint8_t field147_0x211;
+    uint8_t field148_0x212;
+    uint8_t field149_0x213;
+    uint8_t field150_0x214;
+    uint8_t field151_0x215;
+    uint8_t field152_0x216;
+    uint8_t field153_0x217;
+    uint8_t field154_0x218;
+    uint8_t field155_0x219;
+    uint8_t field156_0x21a;
+    uint8_t field157_0x21b;
+    uint8_t field158_0x21c;
+    uint8_t field159_0x21d;
+    uint8_t field160_0x21e;
+    uint8_t field161_0x21f;
+    uint8_t field162_0x220;
+    uint8_t field163_0x221;
+    uint8_t field164_0x222;
+    uint8_t field165_0x223;
+    uint8_t field166_0x224;
+    uint8_t field167_0x225;
+    uint8_t field168_0x226;
+    uint8_t field169_0x227;
+    uint8_t field170_0x228;
+    uint8_t field171_0x229;
+    uint8_t field172_0x22a;
+    uint8_t field173_0x22b;
+    uint8_t field174_0x22c;
+    uint8_t field175_0x22d;
+    uint8_t field176_0x22e;
+    uint8_t field177_0x22f;
+    uint8_t field178_0x230;
+    uint8_t field179_0x231;
+    uint8_t field180_0x232;
+    uint8_t field181_0x233;
+    uint8_t field182_0x234;
+    uint8_t field183_0x235;
+    uint8_t field184_0x236;
+    uint8_t field185_0x237;
+    uint8_t field186_0x238;
+    uint8_t field187_0x239;
+    uint8_t field188_0x23a;
+    uint8_t field189_0x23b;
+    uint8_t field190_0x23c;
+    uint8_t field191_0x23d;
+    uint8_t field192_0x23e;
+    uint8_t field193_0x23f;
+    uint8_t field194_0x240;
+    uint8_t field195_0x241;
+    uint8_t field196_0x242;
+    uint8_t field197_0x243;
+    uint8_t field198_0x244;
+    uint8_t field199_0x245;
+    uint8_t field200_0x246;
+    uint8_t field201_0x247;
+    uint8_t field202_0x248;
+    uint8_t field203_0x249;
+    uint8_t field204_0x24a;
+    uint8_t field205_0x24b;
+    uint8_t field206_0x24c;
+    uint8_t field207_0x24d;
+    uint8_t field208_0x24e;
+    uint8_t field209_0x24f;
+    uint8_t field210_0x250;
+    uint8_t field211_0x251;
+    uint8_t field212_0x252;
+    uint8_t field213_0x253;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimePositionedSoundLinkState24 {
     union ModelRuntimeSlotLinkOrState4 modelLinkOrState60; // Model pointer, saved offset, or class state.
-    dword classState64; // Class state.
-    dword classState68; // Class state.
+    uint32_t classState64; // Class state.
+    uint32_t classState68; // Class state.
     union ModelRuntimeArmyLinkOrState4 armyLinkOrState6C; // Army pointer, saved offset, or class state.
-    dword classState70; // Class state.
-    dword classState74; // Class state.
+    uint32_t classState70; // Class state.
+    uint32_t classState74; // Class state.
     SpatialSoundGainQ15 positionedSoundGainQ15_78; // Q15 gain passed as argument 2 to SpatialSound_UpdateDesiredPositionedGains.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12_7C; // Q12 maximum distance passed as argument 1 to SpatialSound_UpdateDesiredPositionedGains.
-    dword classState80; // Class state.
+    uint32_t classState80; // Class state.
 };
 
 struct ModelRuntimeGroundMovementPositionedSoundView200 {
     union ModelDefinitionReferenceOrSavedId4 definitionOrSavedId; // Live definition or serialized id.
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; // Live model node or saved offset.
     union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; // Live army runtime or saved offset.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimePositionedSoundLinkState24 positionedSoundLinkState60; // Gain/distance settings used by both positioned-sound channels.
     struct ModelRuntimePositionedSoundClassState7C positionedSoundClassState84; // Class-local positioned-sound runtime slot indices.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionLinkedChildStateView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
     ModelTextureOffsetTexel linkedChildTextureVStepPerTick0C; // Signed per-tick primary texture-V step used by the linked-child transition animation.
-    undefined field4_0x10;
-    undefined field5_0x11;
-    undefined field6_0x12;
-    undefined field7_0x13;
-    undefined field8_0x14;
-    undefined field9_0x15;
-    undefined field10_0x16;
-    undefined field11_0x17;
-    undefined field12_0x18;
-    undefined field13_0x19;
-    undefined field14_0x1a;
-    undefined field15_0x1b;
-    undefined field16_0x1c;
-    undefined field17_0x1d;
-    undefined field18_0x1e;
-    undefined field19_0x1f;
-    undefined field20_0x20;
-    undefined field21_0x21;
-    undefined field22_0x22;
-    undefined field23_0x23;
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t field4_0x10;
+    uint8_t field5_0x11;
+    uint8_t field6_0x12;
+    uint8_t field7_0x13;
+    uint8_t field8_0x14;
+    uint8_t field9_0x15;
+    uint8_t field10_0x16;
+    uint8_t field11_0x17;
+    uint8_t field12_0x18;
+    uint8_t field13_0x19;
+    uint8_t field14_0x1a;
+    uint8_t field15_0x1b;
+    uint8_t field16_0x1c;
+    uint8_t field17_0x1d;
+    uint8_t field18_0x1e;
+    uint8_t field19_0x1f;
+    uint8_t field20_0x20;
+    uint8_t field21_0x21;
+    uint8_t field22_0x22;
+    uint8_t field23_0x23;
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field30_0x50;
-    undefined field31_0x51;
-    undefined field32_0x52;
-    undefined field33_0x53;
+    uint8_t field30_0x50;
+    uint8_t field31_0x51;
+    uint8_t field32_0x52;
+    uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field40_0x6c;
-    undefined field41_0x6d;
-    undefined field42_0x6e;
-    undefined field43_0x6f;
-    undefined field44_0x70;
-    undefined field45_0x71;
-    undefined field46_0x72;
-    undefined field47_0x73;
-    undefined field48_0x74;
-    undefined field49_0x75;
-    undefined field50_0x76;
-    undefined field51_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field40_0x6c;
+    uint8_t field41_0x6d;
+    uint8_t field42_0x6e;
+    uint8_t field43_0x6f;
+    uint8_t field44_0x70;
+    uint8_t field45_0x71;
+    uint8_t field46_0x72;
+    uint8_t field47_0x73;
+    uint8_t field48_0x74;
+    uint8_t field49_0x75;
+    uint8_t field50_0x76;
+    uint8_t field51_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    undefined field70_0xc0;
-    undefined field71_0xc1;
-    undefined field72_0xc2;
-    undefined field73_0xc3;
+    uint32_t runtimeValueBC;
+    uint8_t field70_0xc0;
+    uint8_t field71_0xc1;
+    uint8_t field72_0xc2;
+    uint8_t field73_0xc3;
     FactionArmyAssetCount linkedChildSlotCapacityC4; // Maximum linked-child asset slots scanned/stored by this class.
     Q12 linkedChildTranslationStepQ12PerTickC8; // Per-tick local-Z step for linked-child deployment/retraction.
     Q12 linkedChildTranslationLimitQ12CC; // Upper local-Z endpoint for the linked-child transition.
-    undefined field77_0xd0;
-    undefined field78_0xd1;
-    undefined field79_0xd2;
-    undefined field80_0xd3;
-    undefined field81_0xd4;
-    undefined field82_0xd5;
-    undefined field83_0xd6;
-    undefined field84_0xd7;
-    undefined field85_0xd8;
-    undefined field86_0xd9;
-    undefined field87_0xda;
-    undefined field88_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t field77_0xd0;
+    uint8_t field78_0xd1;
+    uint8_t field79_0xd2;
+    uint8_t field80_0xd3;
+    uint8_t field81_0xd4;
+    uint8_t field82_0xd5;
+    uint8_t field83_0xd6;
+    uint8_t field84_0xd7;
+    uint8_t field85_0xd8;
+    uint8_t field86_0xd9;
+    uint8_t field87_0xda;
+    uint8_t field88_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
     SoundAssetIndex linkedChildTransitionSoundAssetIndex26C; // First positioned sound selector used by linked-child transition state changes.
     SoundAssetIndex linkedChildTransitionSoundAssetIndex270; // Second positioned sound selector used after the texture-V transition reaches its upper endpoint.
-    undefined field115_0x274;
-    undefined field116_0x275;
-    undefined field117_0x276;
-    undefined field118_0x277;
+    uint8_t field115_0x274;
+    uint8_t field116_0x275;
+    uint8_t field117_0x276;
+    uint8_t field118_0x277;
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeLinkedChildDefinitionView200 {
     struct ModelDefinitionLinkedChildStateView280 *modelDefinition; // Class-specific linked-child definition overlay.
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; // Live model node or saved offset.
     union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; // Live army runtime or saved offset.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeLinkedChildClassStateView7C linkedChildClassState; // Linked-child ModelRuntime class-state view; generic ModelRuntimeSlot remains unchanged.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelRuntimeTimedTargetState28 {
-    byte opaque10_23[20]; // Class-local runtime state not interpreted by this timed-target family.
+    uint8_t opaque10_23[20]; // Class-local runtime state not interpreted by this timed-target family.
     int targetProjectileReloadCountdownTicks24; // Signed simulation-tick countdown decremented by g_InGameSimulationStepTicks and reloaded from MDL +0x30.
-    byte opaque28_2B[4]; // Class-local dword not interpreted by this family.
-    byte opaque2C_2F[4]; // Class-local dword left unresolved; the owner-list callback's shot definition comes from modelDefinition +0x2C, not this runtime offset.
-    byte opaque30_37[8]; // Class-local runtime tail not interpreted by this family.
+    uint8_t opaque28_2B[4]; // Class-local dword not interpreted by this family.
+    uint8_t opaque2C_2F[4]; // Class-local dword left unresolved; the owner-list callback's shot definition comes from modelDefinition +0x2C, not this runtime offset.
+    uint8_t opaque30_37[8]; // Class-local runtime tail not interpreted by this family.
 };
 
 struct ModelDefinitionDestroyEffectsView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
     Q12 verticalTranslationStepQ12PerTick0C; // Signed world-Z translation step applied each simulation tick before destroying the model hierarchy at the travel limit.
-    undefined field4_0x10;
-    undefined field5_0x11;
-    undefined field6_0x12;
-    undefined field7_0x13;
-    undefined field8_0x14;
-    undefined field9_0x15;
-    undefined field10_0x16;
-    undefined field11_0x17;
-    undefined field12_0x18;
-    undefined field13_0x19;
-    undefined field14_0x1a;
-    undefined field15_0x1b;
-    undefined field16_0x1c;
-    undefined field17_0x1d;
-    undefined field18_0x1e;
-    undefined field19_0x1f;
-    undefined field20_0x20;
-    undefined field21_0x21;
-    undefined field22_0x22;
-    undefined field23_0x23;
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t field4_0x10;
+    uint8_t field5_0x11;
+    uint8_t field6_0x12;
+    uint8_t field7_0x13;
+    uint8_t field8_0x14;
+    uint8_t field9_0x15;
+    uint8_t field10_0x16;
+    uint8_t field11_0x17;
+    uint8_t field12_0x18;
+    uint8_t field13_0x19;
+    uint8_t field14_0x1a;
+    uint8_t field15_0x1b;
+    uint8_t field16_0x1c;
+    uint8_t field17_0x1d;
+    uint8_t field18_0x1e;
+    uint8_t field19_0x1f;
+    uint8_t field20_0x20;
+    uint8_t field21_0x21;
+    uint8_t field22_0x22;
+    uint8_t field23_0x23;
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field30_0x50;
-    undefined field31_0x51;
-    undefined field32_0x52;
-    undefined field33_0x53;
+    uint8_t field30_0x50;
+    uint8_t field31_0x51;
+    uint8_t field32_0x52;
+    uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field40_0x6c;
-    undefined field41_0x6d;
-    undefined field42_0x6e;
-    undefined field43_0x6f;
-    undefined field44_0x70;
-    undefined field45_0x71;
-    undefined field46_0x72;
-    undefined field47_0x73;
-    undefined field48_0x74;
-    undefined field49_0x75;
-    undefined field50_0x76;
-    undefined field51_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field40_0x6c;
+    uint8_t field41_0x6d;
+    uint8_t field42_0x6e;
+    uint8_t field43_0x6f;
+    uint8_t field44_0x70;
+    uint8_t field45_0x71;
+    uint8_t field46_0x72;
+    uint8_t field47_0x73;
+    uint8_t field48_0x74;
+    uint8_t field49_0x75;
+    uint8_t field50_0x76;
+    uint8_t field51_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeResourceStorageClass15View200 {
     struct ModelDefinitionResourceStorageClass15View280 *modelDefinition; // Class-15 resource-storage definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionResourceStorageClass15View280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     Q12 storageEmptyChildLocalZQ12; // Child-0 local Z endpoint used when the selected faction resource storage is empty.
     Q12 storageFullChildLocalZQ12; // Child-0 local Z endpoint used when the selected faction resource storage is at its limit.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    dword resourceStorageSelectorC0; // Class-15 resource selector: observed value 0 selects Xenite current/limit; value 1 selects Tritium current/limit.
+    uint32_t runtimeValueBC;
+    uint32_t resourceStorageSelectorC0; // Class-15 resource selector: observed value 0 selects Xenite current/limit; value 1 selects Tritium current/limit.
     FactionProgressAmountQ4 resourceStorageCapacityContributionQ4; // Q4 storage-limit contribution added at class init and subtracted at class release for the selected Xenite/Tritium resource.
-    undefined field52_0xc8;
-    undefined field53_0xc9;
-    undefined field54_0xca;
-    undefined field55_0xcb;
-    undefined field56_0xcc;
-    undefined field57_0xcd;
-    undefined field58_0xce;
-    undefined field59_0xcf;
-    undefined field60_0xd0;
-    undefined field61_0xd1;
-    undefined field62_0xd2;
-    undefined field63_0xd3;
-    undefined field64_0xd4;
-    undefined field65_0xd5;
-    undefined field66_0xd6;
-    undefined field67_0xd7;
-    undefined field68_0xd8;
-    undefined field69_0xd9;
-    undefined field70_0xda;
-    undefined field71_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t field52_0xc8;
+    uint8_t field53_0xc9;
+    uint8_t field54_0xca;
+    uint8_t field55_0xcb;
+    uint8_t field56_0xcc;
+    uint8_t field57_0xcd;
+    uint8_t field58_0xce;
+    uint8_t field59_0xcf;
+    uint8_t field60_0xd0;
+    uint8_t field61_0xd1;
+    uint8_t field62_0xd2;
+    uint8_t field63_0xd3;
+    uint8_t field64_0xd4;
+    uint8_t field65_0xd5;
+    uint8_t field66_0xd6;
+    uint8_t field67_0xd7;
+    uint8_t field68_0xd8;
+    uint8_t field69_0xd9;
+    uint8_t field70_0xda;
+    uint8_t field71_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ArmyRuntimeGroundMovementPositionedSoundView120 {
@@ -13552,44 +13535,44 @@ struct ArmyRuntimeGroundMovementPositionedSoundView120 {
     Q12 actionVector0Q12; // Committed V218d army runtime field.
     Q12 actionVector1Q12; // Committed V218d army runtime field.
     Q12 actionVector2Q12; // Committed V218d army runtime field.
-    dword runtimeState40; // Committed V218d army runtime field.
-    dword runtimeState44; // Committed V218d army runtime field.
-    dword runtimeState48; // Committed V218d army runtime field.
-    dword runtimeState4C; // Committed V218d army runtime field.
+    uint32_t runtimeState40; // Committed V218d army runtime field.
+    uint32_t runtimeState44; // Committed V218d army runtime field.
+    uint32_t runtimeState48; // Committed V218d army runtime field.
+    uint32_t runtimeState4C; // Committed V218d army runtime field.
     FieldGridRegionMask terrainOccupancyMask0; // First mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     FieldGridRegionMask terrainOccupancyMask1; // Second mask supplied to TerrainOccupancyMask_ResolveRuntimeClassFlags.
     Q12 movementPosition0Q12; // Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Committed V218d army runtime field.
-    dword classState60; // Committed V218d army runtime field.
-    dword ownerValue64; // Committed V218d army runtime field.
-    dword ownerValue68; // Committed V218d army runtime field.
+    uint32_t classState60; // Committed V218d army runtime field.
+    uint32_t ownerValue64; // Committed V218d army runtime field.
+    uint32_t ownerValue68; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Committed V218d army runtime field.
     Q12 movementTarget1Q12; // Committed V218d army runtime field.
-    dword definitionClassValue80; // Committed V218d army runtime field.
-    dword definitionClassValue84; // Committed V218d army runtime field.
-    dword definitionClassValue88; // Committed V218d army runtime field.
-    dword runtimeState8C; // Committed V218d army runtime field.
-    dword runtimeState90; // Committed V218d army runtime field.
-    dword runtimeState94; // Committed V218d army runtime field.
-    dword runtimeState98; // Committed V218d army runtime field.
+    uint32_t definitionClassValue80; // Committed V218d army runtime field.
+    uint32_t definitionClassValue84; // Committed V218d army runtime field.
+    uint32_t definitionClassValue88; // Committed V218d army runtime field.
+    uint32_t runtimeState8C; // Committed V218d army runtime field.
+    uint32_t runtimeState90; // Committed V218d army runtime field.
+    uint32_t runtimeState94; // Committed V218d army runtime field.
+    uint32_t runtimeState98; // Committed V218d army runtime field.
     enum ModelRuntimeClassId depthBinClass; // Committed V218d army runtime field.
     enum PckArmyAssetIdCatalog armyAssetId; // Committed V218d army runtime field.
-    dword runtimeStateA4; // Committed V218d army runtime field.
-    dword runtimeStateA8; // Committed V218d army runtime field.
+    uint32_t runtimeStateA4; // Committed V218d army runtime field.
+    uint32_t runtimeStateA8; // Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; // Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; // Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; // Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; // Three independently decremented pending child counters.
-    byte reservedE0_EB[12]; // Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12]; // Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Committed V218d army runtime field.
-    byte reservedF8_FF[8]; // Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Committed V218d army runtime field.
     int stateOrTechnologyId; // Committed V218d army runtime field.
-    dword runtimeState104; // Committed V218d army runtime field.
+    uint32_t runtimeState104; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric0; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric1; // Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric2; // Committed V218d army runtime field.
@@ -13602,24 +13585,24 @@ struct ModelRuntimeDestroyEffectsView200 {
     struct ModelDefinitionDestroyEffectsView280 *modelDefinition; // Class-specific destroy/effects definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -13627,189 +13610,189 @@ struct ModelRuntimeGroundMovementTrackView200 {
     struct ModelDefinitionGroundMovementTrackView280 *modelDefinition; // Ground-movement track-animation definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
     struct ArmyRuntimeMovementControlState movementControl; // Model-runtime movement step and signed turn-rate state used by the ground-movement callbacks.
-    byte reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
+    uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionGroundMovementTrackView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
     Q12 movementStepQ12PerTick0C; // Per-tick planar movement step; also used as the short-range movement threshold scale in the banking variant.
     ArmyTurnVelocityAngle16 turnRateLimitAnglePerTick10; // Positive magnitude cap for the signed per-tick heading turn rate.
-    dword trackTextureUScalePerDistance14; // Signed scale converting traveled planar distance into animated track texture-U offset.
-    undefined field6_0x18;
-    undefined field7_0x19;
-    undefined field8_0x1a;
-    undefined field9_0x1b;
+    uint32_t trackTextureUScalePerDistance14; // Signed scale converting traveled planar distance into animated track texture-U offset.
+    uint8_t field6_0x18;
+    uint8_t field7_0x19;
+    uint8_t field8_0x1a;
+    uint8_t field9_0x1b;
     ArmyTurnVelocityAngle16 turnRateAccelerationAnglePerTick1C; // Per-tick signed turn-rate acceleration toward the configured turn-rate limit.
-    undefined field11_0x20;
-    undefined field12_0x21;
-    undefined field13_0x22;
-    undefined field14_0x23;
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t field11_0x20;
+    uint8_t field12_0x21;
+    uint8_t field13_0x22;
+    uint8_t field14_0x23;
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field21_0x50;
-    undefined field22_0x51;
-    undefined field23_0x52;
-    undefined field24_0x53;
+    uint8_t field21_0x50;
+    uint8_t field22_0x51;
+    uint8_t field23_0x52;
+    uint8_t field24_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field31_0x6c;
-    undefined field32_0x6d;
-    undefined field33_0x6e;
-    undefined field34_0x6f;
-    undefined field35_0x70;
-    undefined field36_0x71;
-    undefined field37_0x72;
-    undefined field38_0x73;
-    undefined field39_0x74;
-    undefined field40_0x75;
-    undefined field41_0x76;
-    undefined field42_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field31_0x6c;
+    uint8_t field32_0x6d;
+    uint8_t field33_0x6e;
+    uint8_t field34_0x6f;
+    uint8_t field35_0x70;
+    uint8_t field36_0x71;
+    uint8_t field37_0x72;
+    uint8_t field38_0x73;
+    uint8_t field39_0x74;
+    uint8_t field40_0x75;
+    uint8_t field41_0x76;
+    uint8_t field42_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
+    uint32_t runtimeValueBC;
     Q12 headingErrorInterpolationDistanceQ12C0; // Distance below which the allowed heading error interpolates from the near-angle limit toward the far-angle limit; banking uses the same distance as its heading-hold threshold.
     AngleTurn32 farHeadingErrorLimitAngleC4; // Allowed heading-error angle at or beyond the interpolation distance.
     AngleTurn32 nearHeadingErrorLimitAngleC8; // Allowed heading-error angle at zero distance, linearly blended toward the far limit.
-    undefined field64_0xcc;
-    undefined field65_0xcd;
-    undefined field66_0xce;
-    undefined field67_0xcf;
-    undefined field68_0xd0;
-    undefined field69_0xd1;
-    undefined field70_0xd2;
-    undefined field71_0xd3;
-    undefined field72_0xd4;
-    undefined field73_0xd5;
-    undefined field74_0xd6;
-    undefined field75_0xd7;
-    undefined field76_0xd8;
-    undefined field77_0xd9;
-    undefined field78_0xda;
-    undefined field79_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t field64_0xcc;
+    uint8_t field65_0xcd;
+    uint8_t field66_0xce;
+    uint8_t field67_0xcf;
+    uint8_t field68_0xd0;
+    uint8_t field69_0xd1;
+    uint8_t field70_0xd2;
+    uint8_t field71_0xd3;
+    uint8_t field72_0xd4;
+    uint8_t field73_0xd5;
+    uint8_t field74_0xd6;
+    uint8_t field75_0xd7;
+    uint8_t field76_0xd8;
+    uint8_t field77_0xd9;
+    uint8_t field78_0xda;
+    uint8_t field79_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
     int waterDamageMultiplier194; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold198; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeLinkedChildPendingSpawnCounts4 {
-    byte slot0; // Pending spawn-attempt countdown for linked-child slot 0.
-    byte slot1; // Pending spawn-attempt countdown for linked-child slot 1.
-    byte slot2; // Pending spawn-attempt countdown for linked-child slot 2.
-    byte reserved03; // Unused/preserved fourth byte in this function family.
+    uint8_t slot0; // Pending spawn-attempt countdown for linked-child slot 0.
+    uint8_t slot1; // Pending spawn-attempt countdown for linked-child slot 1.
+    uint8_t slot2; // Pending spawn-attempt countdown for linked-child slot 2.
+    uint8_t reserved03; // Unused/preserved fourth byte in this function family.
 };
 
 struct ModelRuntimeLinkedChildBuildState18 {
     enum PckArmyAssetIdCatalog selectedSecondaryArmyAssetId60; // Secondary Army asset id selected from the faction queue and committed when its build interval completes.
-    dword secondaryArmyAssetBuildElapsedTicks64; // Simulation ticks elapsed while the selected secondary Army asset is being completed.
-    dword secondaryArmyAssetBuildRequiredTicks68; // Required build interval copied from the selected secondary Army asset record (+0x24), adjusted by fast-build mode.
+    uint32_t secondaryArmyAssetBuildElapsedTicks64; // Simulation ticks elapsed while the selected secondary Army asset is being completed.
+    uint32_t secondaryArmyAssetBuildRequiredTicks68; // Required build interval copied from the selected secondary Army asset record (+0x24), adjusted by fast-build mode.
     FactionArmyAssetCount completedSecondaryArmyAssetCount6C; // Number of completed secondary Army asset ids already stored in completedSecondaryArmyAssetIds78.
-    dword classState70; // Class-local completion counter/state; incremented after a secondary Army asset id is stored.
-    dword selectedSecondaryArmyAssetValue74; // Class-local value copied from selected secondary Army asset +0x2C and accumulated in definitionDerivedValueF4 while the build is active.
+    uint32_t classState70; // Class-local completion counter/state; incremented after a secondary Army asset id is stored.
+    uint32_t selectedSecondaryArmyAssetValue74; // Class-local value copied from selected secondary Army asset +0x2C and accumulated in definitionDerivedValueF4 while the build is active.
 };
 
 struct ModelRuntimeLinkedChildSpawnAndBuildView200 {
     struct ModelDefinitionLinkedChildStateView280 *modelDefinition; // Class-specific linked-child definition overlay.
     union ModelRuntimeNodeReferenceOrSavedOffset4 rootModelNodeOrSavedOffset; // Live model node or saved offset.
     union ArmyRuntimeReferenceOrSavedOffset4 ownerArmyRuntimeOrSavedOffset; // Live army runtime or saved offset.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeLinkedChildBuildState18 linkedChildBuildState60; // Class-local secondary-Army build and completed-slot counters.
     enum PckArmyAssetIdCatalog completedSecondaryArmyAssetIds78[13]; // Thirteen dword slots from +0x78 through +0xAB. The definition slot-capacity bounds the reverse scan; +0xAC is independent state.
-    dword secondaryArmyAssetBuildStateAC; // Two-state secondary-Army selection/build-completion state (0 idle/select, 1 building).
-    dword linkedChildTransitionStateB0; // Seven-way linked-child transition/spawn state used by the computed dispatch at 0x00526981.
-    byte opaqueB4_B7[4]; // Class-local dword not interpreted by this callback.
+    uint32_t secondaryArmyAssetBuildStateAC; // Two-state secondary-Army selection/build-completion state (0 idle/select, 1 building).
+    uint32_t linkedChildTransitionStateB0; // Seven-way linked-child transition/spawn state used by the computed dispatch at 0x00526981.
+    uint8_t opaqueB4_B7[4]; // Class-local dword not interpreted by this callback.
     struct ModelRuntimeLinkedChildSpawnInheritedState0C linkedChildSpawnInheritedStateB8[3]; // Three contiguous inherited-state triplets for linked-child spawn slots 0, 1, and 2.
     struct ModelRuntimeLinkedChildPendingSpawnCounts4 linkedChildPendingSpawnCountsDC; // Three byte countdowns consumed before attempting linked-child spawns.
-    dword classStateE0;
-    dword enabledStateE4;
-    dword enabledStateE8;
-    dword linkedChildRuntimeFlagsEC; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
+    uint32_t classStateE0;
+    uint32_t enabledStateE4;
+    uint32_t enabledStateE8;
+    uint32_t linkedChildRuntimeFlagsEC; // Class runtime flags tested for transition, inhibit, and build/spawn state bits.
     union ArmyRuntimeReferenceOrSavedOffset4 linkedArmyRuntimeOrSavedOffset;
-    dword definitionDerivedValueF4; // Accumulator adjusted by the selected secondary Army asset +0x2C value while active.
-    dword classStateF8;
-    dword classStateFC;
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint32_t definitionDerivedValueF4; // Accumulator adjusted by the selected secondary Army asset +0x2C value while active.
+    uint32_t classStateF8;
+    uint32_t classStateFC;
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -13817,394 +13800,394 @@ struct ModelRuntimeGroundMovementSteeringView200 {
     struct ModelDefinitionGroundMovementSteeringView280 *modelDefinition; // Ground-movement steering definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
     struct ArmyRuntimeMovementControlState movementControl; // Model-runtime movement step and signed turn-rate state used by the ground-movement callbacks.
-    byte reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
+    uint8_t reserved18_37[32]; // Unresolved common runtime state following the recovered movement-control pair.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionGroundMovementSteeringView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
     Q12 movementStepQ12PerTick0C; // Per-tick planar movement step; also used as the short-range movement threshold scale in the banking variant.
     ArmyTurnVelocityAngle16 turnRateLimitAnglePerTick10; // Positive magnitude cap for the signed per-tick heading turn rate.
-    undefined field5_0x14;
-    undefined field6_0x15;
-    undefined field7_0x16;
-    undefined field8_0x17;
-    undefined field9_0x18;
-    undefined field10_0x19;
-    undefined field11_0x1a;
-    undefined field12_0x1b;
+    uint8_t field5_0x14;
+    uint8_t field6_0x15;
+    uint8_t field7_0x16;
+    uint8_t field8_0x17;
+    uint8_t field9_0x18;
+    uint8_t field10_0x19;
+    uint8_t field11_0x1a;
+    uint8_t field12_0x1b;
     ArmyTurnVelocityAngle16 turnRateAccelerationAnglePerTick1C; // Per-tick signed turn-rate acceleration toward the configured turn-rate limit.
-    undefined field14_0x20;
-    undefined field15_0x21;
-    undefined field16_0x22;
-    undefined field17_0x23;
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t field14_0x20;
+    uint8_t field15_0x21;
+    uint8_t field16_0x22;
+    uint8_t field17_0x23;
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field24_0x50;
-    undefined field25_0x51;
-    undefined field26_0x52;
-    undefined field27_0x53;
+    uint8_t field24_0x50;
+    uint8_t field25_0x51;
+    uint8_t field26_0x52;
+    uint8_t field27_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field34_0x6c;
-    undefined field35_0x6d;
-    undefined field36_0x6e;
-    undefined field37_0x6f;
-    undefined field38_0x70;
-    undefined field39_0x71;
-    undefined field40_0x72;
-    undefined field41_0x73;
-    undefined field42_0x74;
-    undefined field43_0x75;
-    undefined field44_0x76;
-    undefined field45_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field34_0x6c;
+    uint8_t field35_0x6d;
+    uint8_t field36_0x6e;
+    uint8_t field37_0x6f;
+    uint8_t field38_0x70;
+    uint8_t field39_0x71;
+    uint8_t field40_0x72;
+    uint8_t field41_0x73;
+    uint8_t field42_0x74;
+    uint8_t field43_0x75;
+    uint8_t field44_0x76;
+    uint8_t field45_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
+    uint32_t runtimeValueBC;
     Q12 headingErrorInterpolationDistanceQ12C0; // Distance below which the allowed heading error interpolates from the near-angle limit toward the far-angle limit; banking uses the same distance as its heading-hold threshold.
     AngleTurn32 farHeadingErrorLimitAngleC4; // Allowed heading-error angle at or beyond the interpolation distance.
     AngleTurn32 nearHeadingErrorLimitAngleC8; // Allowed heading-error angle at zero distance, linearly blended toward the far limit.
-    undefined field67_0xcc;
-    undefined field68_0xcd;
-    undefined field69_0xce;
-    undefined field70_0xcf;
-    undefined field71_0xd0;
-    undefined field72_0xd1;
-    undefined field73_0xd2;
-    undefined field74_0xd3;
-    undefined field75_0xd4;
-    undefined field76_0xd5;
-    undefined field77_0xd6;
-    undefined field78_0xd7;
-    undefined field79_0xd8;
-    undefined field80_0xd9;
-    undefined field81_0xda;
-    undefined field82_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t field67_0xcc;
+    uint8_t field68_0xcd;
+    uint8_t field69_0xce;
+    uint8_t field70_0xcf;
+    uint8_t field71_0xd0;
+    uint8_t field72_0xd1;
+    uint8_t field73_0xd2;
+    uint8_t field74_0xd3;
+    uint8_t field75_0xd4;
+    uint8_t field76_0xd5;
+    uint8_t field77_0xd6;
+    uint8_t field78_0xd7;
+    uint8_t field79_0xd8;
+    uint8_t field80_0xd9;
+    uint8_t field81_0xda;
+    uint8_t field82_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
     int waterDamageMultiplier194; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold198; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeTimedTargetLinkState24 {
     struct ModelRuntimeSlot *selectedTargetModelRuntime60; // Eligible class-10 ModelRuntimeSlot selected from the owner-list traversal.
     struct ShotRuntimeSlot *matchingActiveShotRuntime64; // ShotRuntimeSlot whose live ShotDefinition equals targetShotDefinition2C; non-null suppresses a new emission.
-    dword classState68; // Class state.
+    uint32_t classState68; // Class state.
     union ModelRuntimeArmyLinkOrState4 armyLinkOrState6C; // Army pointer, saved offset, or class state.
-    dword classState70; // Class state.
-    dword classState74; // Class state.
-    dword classState78; // Class state.
-    dword classState7C; // Class state.
-    dword classState80; // Class state.
+    uint32_t classState70; // Class state.
+    uint32_t classState74; // Class state.
+    uint32_t classState78; // Class state.
+    uint32_t classState7C; // Class state.
+    uint32_t classState80; // Class state.
 };
 
 struct ModelDefinitionTimedTargetParameters18 {
     MdlReloadTicks reloadTicks30; // MDL +0x30 reload/cadence interval added to the runtime countdown after a target is accepted and a projectile is emitted.
-    byte opaque34_47[20]; // Class-local MDL parameters not required by the timed-target callback; preserved without semantic assertion.
+    uint8_t opaque34_47[20]; // Class-local MDL parameters not required by the timed-target callback; preserved without semantic assertion.
 };
 
 struct ModelDefinitionTimedTargetProjectileView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
     struct ModelDefinitionTimedTargetParameters18 timedTargetParameters30; // Class-20 timed-target projectile parameters rooted at MDL +0x30.
-    dword runtimeValue48;
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeTimedTargetProjectileView200 {
     struct ModelDefinitionTimedTargetProjectileView280 *modelDefinition; // Class-20 timed-target definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
     struct ModelRuntimeTimedTargetState28 timedTargetState; // Timed-target reload and ShotDefinition state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeTimedTargetLinkState24 timedTargetLinkState; // Traversal outputs and adjacent class-link state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelDefinitionResourceExtractorClass14View280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    byte reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t reserved00C_023[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field10_0x50;
-    undefined field11_0x51;
-    undefined field12_0x52;
-    undefined field13_0x53;
+    uint8_t field10_0x50;
+    uint8_t field11_0x51;
+    uint8_t field12_0x52;
+    uint8_t field13_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field20_0x6c;
-    undefined field21_0x6d;
-    undefined field22_0x6e;
-    undefined field23_0x6f;
-    undefined field24_0x70;
-    undefined field25_0x71;
-    undefined field26_0x72;
-    undefined field27_0x73;
-    undefined field28_0x74;
-    undefined field29_0x75;
-    undefined field30_0x76;
-    undefined field31_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field20_0x6c;
+    uint8_t field21_0x6d;
+    uint8_t field22_0x6e;
+    uint8_t field23_0x6f;
+    uint8_t field24_0x70;
+    uint8_t field25_0x71;
+    uint8_t field26_0x72;
+    uint8_t field27_0x73;
+    uint8_t field28_0x74;
+    uint8_t field29_0x75;
+    uint8_t field30_0x76;
+    uint8_t field31_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    dword resourceFieldSupportSelectorC0; // Runtime class 14 only. Slot 14 placement callback uses 0x800 << low5(selector) as required positive FieldGrid support bit; selector 0=>0x0800 Xenite, 1=>0x1000 Tritium. Do not generalize this name to other runtime classes.
+    uint32_t runtimeValueBC;
+    uint32_t resourceFieldSupportSelectorC0; // Runtime class 14 only. Slot 14 placement callback uses 0x800 << low5(selector) as required positive FieldGrid support bit; selector 0=>0x0800 Xenite, 1=>0x1000 Tritium. Do not generalize this name to other runtime classes.
     FactionProgressAmountQ4 resourceStorageCapacityContributionQ4; // Q4 Xenite/Tritium storage-limit contribution added at class-14 init and removed at release.
-    dword resourceExtractionWeightC8; // Low byte is shifted into bits 24..31 of the field-cell resource-extraction descriptor.
-    undefined field53_0xcc;
-    undefined field54_0xcd;
-    undefined field55_0xce;
-    undefined field56_0xcf;
-    undefined field57_0xd0;
-    undefined field58_0xd1;
-    undefined field59_0xd2;
-    undefined field60_0xd3;
-    undefined field61_0xd4;
-    undefined field62_0xd5;
-    undefined field63_0xd6;
-    undefined field64_0xd7;
-    undefined field65_0xd8;
-    undefined field66_0xd9;
-    undefined field67_0xda;
-    undefined field68_0xdb;
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t resourceExtractionWeightC8; // Low byte is shifted into bits 24..31 of the field-cell resource-extraction descriptor.
+    uint8_t field53_0xcc;
+    uint8_t field54_0xcd;
+    uint8_t field55_0xce;
+    uint8_t field56_0xcf;
+    uint8_t field57_0xd0;
+    uint8_t field58_0xd1;
+    uint8_t field59_0xd2;
+    uint8_t field60_0xd3;
+    uint8_t field61_0xd4;
+    uint8_t field62_0xd5;
+    uint8_t field63_0xd6;
+    uint8_t field64_0xd7;
+    uint8_t field65_0xd8;
+    uint8_t field66_0xd9;
+    uint8_t field67_0xda;
+    uint8_t field68_0xdb;
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
-    byte reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue198;
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved194_197[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue198;
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeWeaponAimStateView200 {
     struct ArmyWeaponDefinitionView68 *modelDefinition; // Weapon-aim definition used by the shared smoothing and firing family.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_13[4]; // Unresolved class-local dword before the recovered aim velocities.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_13[4]; // Unresolved class-local dword before the recovered aim velocities.
     ArmyTurnVelocityAngle16 yawTurnVelocityAngle16; // Signed current yaw turn velocity maintained by ModelNodeRuntime_SmoothYawTowardTarget.
     ArmyTurnVelocityAngle16 pitchTurnVelocityAngle16; // Signed current pitch turn velocity maintained by ModelNodeRuntime_SmoothPitchTowardTarget.
-    byte reserved1C_1F[4]; // Unresolved class-local dword between aim velocity and firing-state fields.
-    dword alternatingAttachmentSequence20; // Monotonic firing sequence whose low bit selects attachment 0 versus 1 in weapon-update variant B.
+    uint8_t reserved1C_1F[4]; // Unresolved class-local dword between aim velocity and firing-state fields.
+    uint32_t alternatingAttachmentSequence20; // Monotonic firing sequence whose low bit selects attachment 0 versus 1 in weapon-update variant B.
     WeaponAimCountdownTicks attachmentReloadCountdownTicks24; // Signed countdown controlling the articulated child rotation/reload phase; decremented by simulation ticks and clamped to zero.
     WeaponAimCountdownTicks attachment0BackwardStepCountdownTicks28; // Signed duration countdown for attachment-0 backward-vector stepping; decremented by simulation ticks and clamped to zero.
     WeaponAimCountdownTicks attachment1BackwardStepCountdownTicks2C; // Signed duration countdown for attachment-1 backward-vector stepping in variant B; decremented by simulation ticks and clamped to zero.
-    byte reserved30_37[8]; // Unresolved tail of the class-local aim/firing state prefix.
+    uint8_t reserved30_37[8]; // Unresolved tail of the class-local aim/firing state prefix.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
-    dword attachmentReloadTicks[8]; // Eight class-9 attachment countdowns at +0x60..+0x7C.
-    dword sharedInterShotTicks; // Class-9 shared inter-shot countdown at +0x80.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t attachmentReloadTicks[8]; // Eight class-9 attachment countdowns at +0x60..+0x7C.
+    uint32_t sharedInterShotTicks; // Class-9 shared inter-shot countdown at +0x80.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -14212,244 +14195,244 @@ struct ModelRuntimeResourceExtractorClass14View200 {
     struct ModelDefinitionResourceExtractorClass14View280 *modelDefinition; // Class-14 resource-extractor definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelRuntimeVerticalDeploymentLinkState24 {
     Q12 deploymentTravelQ12_60; // Signed accumulated deployment travel. Raw code compares it with deploymentTravelLimitQ12 and adds/subtracts verticalDeploymentStepQ12PerTick times simulation ticks in lockstep with child local-Z.
-    dword collisionRetryCountdown64; // Per-tick countdown. When it reaches zero, the class retries the linked-runtime collision test and reloads this field with 8 ticks.
-    dword classState68; // Class state.
+    uint32_t collisionRetryCountdown64; // Per-tick countdown. When it reaches zero, the class retries the linked-runtime collision test and reloads this field with 8 ticks.
+    uint32_t classState68; // Class state.
     union ModelRuntimeArmyLinkOrState4 armyLinkOrState6C; // Army pointer, saved offset, or class state.
-    dword classState70; // Class state.
-    dword classState74; // Class state.
-    dword classState78; // Class state.
-    dword classState7C; // Class state.
-    dword classState80; // Class state.
+    uint32_t classState70; // Class state.
+    uint32_t classState74; // Class state.
+    uint32_t classState78; // Class state.
+    uint32_t classState7C; // Class state.
+    uint32_t classState80; // Class state.
 };
 
 struct ModelRuntimeVerticalDeploymentView200 {
     struct ModelDefinitionVerticalDeploymentView280 *modelDefinition; // Class-23 vertical-deployment definition overlay.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeVerticalDeploymentLinkState24 deploymentState60; // Class-23 vertical-deployment scalar travel and collision retry state.
     struct ModelRuntimeSlotClassState7C classState; // First grouped model-runtime class-state region derived from the 24x11 callback matrix.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
 struct ModelRuntimeClass21State7C {
     Q12 trajectoryTerrainReferenceHeightQ12_84; // Terrain-relative trajectory reference height. Computed from the maximum sampled top-surface height plus 0x800 Q12 and twice the saved child local-Z; consumed by the class-21 vertical arc state.
-    undefined field1_0x4;
-    undefined field2_0x5;
-    undefined field3_0x6;
-    undefined field4_0x7;
-    undefined field5_0x8;
-    undefined field6_0x9;
-    undefined field7_0xa;
-    undefined field8_0xb;
-    undefined field9_0xc;
-    undefined field10_0xd;
-    undefined field11_0xe;
-    undefined field12_0xf;
-    undefined field13_0x10;
-    undefined field14_0x11;
-    undefined field15_0x12;
-    undefined field16_0x13;
-    undefined field17_0x14;
-    undefined field18_0x15;
-    undefined field19_0x16;
-    undefined field20_0x17;
-    undefined field21_0x18;
-    undefined field22_0x19;
-    undefined field23_0x1a;
-    undefined field24_0x1b;
-    undefined field25_0x1c;
-    undefined field26_0x1d;
-    undefined field27_0x1e;
-    undefined field28_0x1f;
-    undefined field29_0x20;
-    undefined field30_0x21;
-    undefined field31_0x22;
-    undefined field32_0x23;
-    dword classStateA8; // Class-discriminated runtime state.
-    dword classStateAC; // Class-discriminated runtime state.
-    sdword classStateB0; // Class-discriminated signed runtime state.
-    sdword classStateB4; // Class-discriminated signed runtime state.
-    dword classStateB8; // Class-discriminated runtime flags or value.
-    byte reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
-    dword classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
-    byte reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
-    dword classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
-    byte reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
-    sdword classStateD0; // Class-discriminated signed runtime state.
-    byte reservedD4_DB[8]; // Unresolved class-specific state.
-    dword classStateDC; // Class-discriminated runtime state.
-    dword classStateE0; // Class-discriminated runtime state.
-    dword enabledStateE4; // Constructor-initialized enabled state.
-    dword enabledStateE8; // Constructor-initialized enabled state or sentinel.
-    dword classStateEC; // Constructor-cleared class state.
+    uint8_t field1_0x4;
+    uint8_t field2_0x5;
+    uint8_t field3_0x6;
+    uint8_t field4_0x7;
+    uint8_t field5_0x8;
+    uint8_t field6_0x9;
+    uint8_t field7_0xa;
+    uint8_t field8_0xb;
+    uint8_t field9_0xc;
+    uint8_t field10_0xd;
+    uint8_t field11_0xe;
+    uint8_t field12_0xf;
+    uint8_t field13_0x10;
+    uint8_t field14_0x11;
+    uint8_t field15_0x12;
+    uint8_t field16_0x13;
+    uint8_t field17_0x14;
+    uint8_t field18_0x15;
+    uint8_t field19_0x16;
+    uint8_t field20_0x17;
+    uint8_t field21_0x18;
+    uint8_t field22_0x19;
+    uint8_t field23_0x1a;
+    uint8_t field24_0x1b;
+    uint8_t field25_0x1c;
+    uint8_t field26_0x1d;
+    uint8_t field27_0x1e;
+    uint8_t field28_0x1f;
+    uint8_t field29_0x20;
+    uint8_t field30_0x21;
+    uint8_t field31_0x22;
+    uint8_t field32_0x23;
+    uint32_t classStateA8; // Class-discriminated runtime state.
+    uint32_t classStateAC; // Class-discriminated runtime state.
+    int32_t classStateB0; // Class-discriminated signed runtime state.
+    int32_t classStateB4; // Class-discriminated signed runtime state.
+    uint32_t classStateB8; // Class-discriminated runtime flags or value.
+    uint8_t reservedBC_BF[4]; // Unresolved class-specific bytes BC-BF.
+    uint32_t classStateC0; // Class-discriminated dword at ModelRuntimeSlot +0xC0; binary-proven selector input in class-14 placement/runtime paths.
+    uint8_t reservedC4_C7[4]; // Unresolved class-specific bytes C4-C7.
+    uint32_t classStateC8; // Class-discriminated dword at ModelRuntimeSlot +0xC8; binary-proven packed runtime contribution in class-14 update path.
+    uint8_t reservedCC_CF[4]; // Unresolved class-specific bytes CC-CF.
+    int32_t classStateD0; // Class-discriminated signed runtime state.
+    uint8_t reservedD4_DB[8]; // Unresolved class-specific state.
+    uint32_t classStateDC; // Class-discriminated runtime state.
+    uint32_t classStateE0; // Class-discriminated runtime state.
+    uint32_t enabledStateE4; // Constructor-initialized enabled state.
+    uint32_t enabledStateE8; // Constructor-initialized enabled state or sentinel.
+    uint32_t classStateEC; // Constructor-cleared class state.
     union ArmyRuntimeReferenceOrSavedOffset4 linkedArmyRuntimeOrSavedOffset; // Live army pointer or serialized pool offset.
-    dword definitionDerivedValueF4; // Definition-derived class value.
-    dword classStateF8; // Constructor-cleared class state.
-    dword classStateFC; // Constructor-cleared class state.
+    uint32_t definitionDerivedValueF4; // Definition-derived class value.
+    uint32_t classStateF8; // Constructor-cleared class state.
+    uint32_t classStateFC; // Constructor-cleared class state.
 };
 
 struct ModelDefinitionArticulatedMovementView280 {
     AssetRecordByteCount byteSize;
-    dword flags;
+    uint32_t flags;
     enum PckModelDefinitionIdCatalog definitionId;
-    undefined field3_0xc;
-    undefined field4_0xd;
-    undefined field5_0xe;
-    undefined field6_0xf;
-    undefined field7_0x10;
-    undefined field8_0x11;
-    undefined field9_0x12;
-    undefined field10_0x13;
-    undefined field11_0x14;
-    undefined field12_0x15;
-    undefined field13_0x16;
-    undefined field14_0x17;
+    uint8_t field3_0xc;
+    uint8_t field4_0xd;
+    uint8_t field5_0xe;
+    uint8_t field6_0xf;
+    uint8_t field7_0x10;
+    uint8_t field8_0x11;
+    uint8_t field9_0x12;
+    uint8_t field10_0x13;
+    uint8_t field11_0x14;
+    uint8_t field12_0x15;
+    uint8_t field13_0x16;
+    uint8_t field14_0x17;
     Q12 movementAdvanceDeltaQ12PerTick18; // Signed amount added to or subtracted from movementAdvancePerTickQ12 while articulated contact transition bits are active.
-    undefined field16_0x1c;
-    undefined field17_0x1d;
-    undefined field18_0x1e;
-    undefined field19_0x1f;
-    undefined field20_0x20;
-    undefined field21_0x21;
-    undefined field22_0x22;
-    undefined field23_0x23;
-    dword runtimeValue24;
-    dword runtimeValue28;
+    uint8_t field16_0x1c;
+    uint8_t field17_0x1d;
+    uint8_t field18_0x1e;
+    uint8_t field19_0x1f;
+    uint8_t field20_0x20;
+    uint8_t field21_0x21;
+    uint8_t field22_0x22;
+    uint8_t field23_0x23;
+    uint32_t runtimeValue24;
+    uint32_t runtimeValue28;
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference2C;
-    byte reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue48;
+    uint8_t reserved030_047[24]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue48;
     enum ModelRuntimeClassId runtimeClassId4C; // 24-way model/army runtime callback class selector; consumed by placement, grid-influence, maintenance, and class-method dispatch tables.
-    undefined field30_0x50;
-    undefined field31_0x51;
-    undefined field32_0x52;
-    undefined field33_0x53;
+    uint8_t field30_0x50;
+    uint8_t field31_0x51;
+    uint8_t field32_0x52;
+    uint8_t field33_0x53;
     Q12 placementHeightOffsetQ12; // Q12 height offset passed as the first argument to the five ArmyPlacementContact callbacks.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference58;
-    byte reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword runtimeValue60;
-    dword serializedNodeOffsetOrPointer64;
-    dword runtimeValue68;
-    undefined field40_0x6c;
-    undefined field41_0x6d;
-    undefined field42_0x6e;
-    undefined field43_0x6f;
-    undefined field44_0x70;
-    undefined field45_0x71;
-    undefined field46_0x72;
-    undefined field47_0x73;
-    undefined field48_0x74;
-    undefined field49_0x75;
-    undefined field50_0x76;
-    undefined field51_0x77;
+    uint8_t reserved05C_05F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValue60;
+    uint32_t serializedNodeOffsetOrPointer64;
+    uint32_t runtimeValue68;
+    uint8_t field40_0x6c;
+    uint8_t field41_0x6d;
+    uint8_t field42_0x6e;
+    uint8_t field43_0x6f;
+    uint8_t field44_0x70;
+    uint8_t field45_0x71;
+    uint8_t field46_0x72;
+    uint8_t field47_0x73;
+    uint8_t field48_0x74;
+    uint8_t field49_0x75;
+    uint8_t field50_0x76;
+    uint8_t field51_0x77;
     SpatialSoundGainQ15 positionedSoundGainQ15; // Q15 gain passed with +0x7C maximum distance to positioned-sound playback/update helpers.
     SpatialSoundMaximumDistanceQ12 positionedSoundMaximumDistanceQ12; // Q12 maximum positioned-sound distance paired with +0x78 gain.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference80;
-    dword runtimeValue84;
+    uint32_t runtimeValue84;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference88;
-    dword runtimeValue8C;
+    uint32_t runtimeValue8C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference90;
-    dword runtimeValue94;
+    uint32_t runtimeValue94;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference98;
-    dword runtimeValue9C;
+    uint32_t runtimeValue9C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA0;
-    dword runtimeValueA4;
+    uint32_t runtimeValueA4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceA8;
-    dword runtimeValueAC;
+    uint32_t runtimeValueAC;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB0;
-    dword runtimeValueB4;
+    uint32_t runtimeValueB4;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReferenceB8;
-    dword runtimeValueBC;
-    byte reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementRadiusOrClearanceDC;
-    byte reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t runtimeValueBC;
+    uint8_t reserved0C0_0DB[28]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementRadiusOrClearanceDC;
+    uint8_t reserved0E0_167[136]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union ShotDefinitionReferenceOrSavedId4 shotDefinitionReference168;
-    byte reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved16C_173[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference174;
-    byte reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved178_187[16]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     void *buildMetricTuple188;
-    dword runtimeValue18C;
+    uint32_t runtimeValue18C;
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference190;
     int waterDamageMultiplier194; // Signed multiplier applied to FieldGrid_InterpolateWaterDelta; arithmetic shift right by 7 produces the damage value.
     int waterDamageThreshold198; // Signed interpolated-water-delta threshold; damage is evaluated only when the sampled delta is greater than this value.
-    byte reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
-    byte reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword placementFlags1A8;
-    byte reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved19C_19F[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridDerivedRuntimeValue1A0; // Grid-derived runtime value selected through gridClassification260; not an Effect definition reference.
+    uint8_t reserved1A4_1A7[4]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t placementFlags1A8;
+    uint8_t reserved1AC_1B7[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ModelTextureSubresourceIndex primaryAnimatedSubresourceIndex1B8;
     ModelTextureSubresourceIndex secondaryAnimatedSubresourceIndex1BC;
-    byte reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved1C0_253[148]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     union EffectDefinitionReferenceOrSavedId4 effectDefinitionReference254;
-    byte reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
-    dword gridClassification260;
-    dword gridClassification264;
-    dword runtimeValue268;
-    byte reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint8_t reserved258_25F[8]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
+    uint32_t gridClassification260;
+    uint32_t gridClassification264;
+    uint32_t runtimeValue268;
+    uint8_t reserved26C_277[12]; // Unresolved byte span retained explicitly to avoid autogenerated undefined-byte components.
     ArmyPlacementContactKindIndex32 placementContactKindIndex278; // Placement-contact callback dispatch index. Observed vocabulary: 0 terrain height; 1 water-surface height; 2 terrain height+normal; 3 articulated suspension; 4 top-surface height. Kept as a 32-bit index typedef rather than enum storage.
-    dword runtimeValue27C;
+    uint32_t runtimeValue27C;
 };
 
 struct ModelRuntimeClass21UpdateView200 {
     struct ArmyRuntimeClassUpdate21DefinitionView27C *modelDefinition; // Class-21 update definition overlay with recovered ballistic/phase/model-point fields.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
-    byte reserved10_37[40]; // Unresolved common runtime state.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint8_t reserved10_37[40]; // Unresolved common runtime state.
     union ModelRuntimeSlotReferenceOrSavedOffset4 linkedModelRuntimeOrSavedOffset; // Live model runtime or saved offset.
-    dword definitionValue60_3C; // Definition-derived value copied from offset 0x60.
-    dword definitionValue84_40; // Definition-derived value copied from offset 0x84.
-    dword definitionValue88_44; // Definition-derived value copied from offset 0x88.
-    dword definitionValue94_48; // Definition-derived value copied from offset 0x94.
-    dword definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
-    dword definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
-    dword definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
-    dword definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
-    dword definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
+    uint32_t definitionValue60_3C; // Definition-derived value copied from offset 0x60.
+    uint32_t definitionValue84_40; // Definition-derived value copied from offset 0x84.
+    uint32_t definitionValue88_44; // Definition-derived value copied from offset 0x88.
+    uint32_t definitionValue94_48; // Definition-derived value copied from offset 0x94.
+    uint32_t definitionValue9C_4C; // Definition-derived value copied from offset 0x9C.
+    uint32_t definitionValueA4_50; // Definition-derived value copied from offset 0xA4.
+    uint32_t definitionValueAC_54; // Definition-derived value copied from offset 0xAC.
+    uint32_t definitionValueB4_58; // Definition-derived value copied from offset 0xB4.
+    uint32_t definitionValueBC_5C; // Definition-derived value copied from offset 0xBC.
     struct ModelRuntimeClassLinkState24 classLinkState; // Class-specific model/army pointer-or-offset overlays and adjacent state.
     struct ModelRuntimeClass21State7C class21State84; // Class-21 trajectory/state-machine fields.
-    byte reserved100_117[24]; // Unresolved class-specific state.
-    dword classState118; // Constructor-cleared class state.
-    dword classState11C; // Constructor-cleared class state.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved100_117[24]; // Unresolved class-specific state.
+    uint32_t classState118; // Constructor-cleared class state.
+    uint32_t classState11C; // Constructor-cleared class state.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -14457,7 +14440,7 @@ struct ModelRuntimeArticulatedMovementDefinitionView200 {
     struct ModelDefinitionArticulatedMovementView280 *modelDefinition; // Articulated-movement definition overlay with movement-advance and water-damage parameters.
     struct ModelRuntimeNode *rootModelNode; // Live root ModelRuntimeNode.
     struct ArmyRuntimeSlot *ownerArmyRuntime; // Live owning ArmyRuntimeSlot.
-    dword attachmentCount0C; // Valid attachment descriptors in attachments140.
+    uint32_t attachmentCount0C; // Valid attachment descriptors in attachments140.
     struct ArmyRuntimeMovementControlState movementControl; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Typed per-tick movement advance and signed turn-velocity state used by runtime-update and projected-sound callbacks.
     ArmyMovementStateFlags movementStateFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *commandTargetArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
@@ -14469,50 +14452,50 @@ struct ModelRuntimeArticulatedMovementDefinitionView200 {
     Q12 actionVector0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 actionVector1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 actionVector2Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState40; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState44; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState48; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState4C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reserved50_57[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState40; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState44; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState48; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState4C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reserved50_57[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementPosition0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementPosition1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword classState60; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword ownerValue64; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword ownerValue68; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t classState60; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t ownerValue64; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t ownerValue68; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntimeOrSavedOffset; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldYQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 fallbackWorldXQ12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget0Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     Q12 movementTarget1Q12; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue80; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue84; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword definitionClassValue88; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState8C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState90; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState94; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState98; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue80; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue84; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t definitionClassValue88; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState8C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState90; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState94; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState98; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int articulatedCoordinateOrState9C; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Articulated class-specific signed coordinate/state view; not a runtime-class enum.
     int articulatedHeightOrStateA0; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Articulated class-specific signed height/state view; not an ARM catalog id.
-    dword runtimeStateA4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeStateA8; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeStateA4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeStateA8; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeArticulatedContactState14 articulatedContact; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Terrain-contact and articulated movement state.
     struct ArmyRuntimeLinkedChildOverloadedState10 linkedChildOverloadedState; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Mixed coordinate, command, heading, spawn, and state-history overlay.
     struct ArmyRuntimeLinkedChildSpawnParameters0C linkedChildSpawnParameters; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Third linked-child spawn parameter triplet.
     struct ArmyRuntimeLinkedChildPendingCounts4 linkedChildPendingCounts; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Three independently decremented pending child counters.
-    byte reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reservedE0_EB[12]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeFlags runtimeFlags; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     struct ArmyRuntimeSlot *linkedArmyRuntime; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmyRuntimeTimer runtimeTimer; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint8_t reservedF8_FF[8]; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     int stateOrTechnologyId; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    dword runtimeState104; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
+    uint32_t runtimeState104; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric0; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric1; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric2; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric3; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric4; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
     ArmySelectionMetric selectionMetric5; // Class-3 ModelRuntime overlay retained from certified V534 field recovery. Committed V218d army runtime field.
-    byte reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
+    uint8_t reserved120_13F[32]; // Unresolved state before fixed attachment descriptors.
     struct ModelRuntimeAttachmentDescriptor attachments140[6]; // Six fixed 0x20-byte attachment descriptors.
 };
 
@@ -14523,7 +14506,7 @@ struct InGameLevelRuntimeGlobalBlock20 {
 
 struct InGameLevelConditionStorageView800 {
     struct LevelAssetRuntimeImagePrefix370 levelImage; // Mutable copy of the level runtime prefix loaded from the LEV image.
-    byte transition370[16]; // Unresolved 0x10-byte transition between copied level prefix and schedule image.
+    uint8_t transition370[16]; // Unresolved 0x10-byte transition between copied level prefix and schedule image.
     struct InGameConditionScheduleImageView480 schedule; // 64 x 0x10 scheduled-condition records plus transition descriptors.
 };
 
@@ -14533,7 +14516,7 @@ struct LevelInitialArmyPlacementRecord20 {
     Q12 worldYQ12;
     Q12 worldXQ12;
     AngleTurn32 orientationAngle;
-    byte reserved14_1F[12]; // Unresolved trailing bytes of the 0x20 placement record.
+    uint8_t reserved14_1F[12]; // Unresolved trailing bytes of the 0x20 placement record.
 };
 
 
@@ -14543,9 +14526,9 @@ struct LevelInitialArmyPlacementRecord20 {
 typedef struct UiSingleLineTextControl UiSingleLineTextControl;
 struct UiSingleLineTextControl {
     struct UiNodeBase base;
-    dword labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
+    uint32_t labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
     struct UiNodeBase *focusChild; // Child that receives focus and forwarded input; relocated, may be null.
-    word *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    uint16_t *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
@@ -14554,9 +14537,9 @@ struct UiSingleLineTextControl {
 typedef struct UiWrappedTextControl UiWrappedTextControl;
 struct UiWrappedTextControl {
     struct UiNodeBase base;
-    dword labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
+    uint32_t labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
     UiPixelExtent wrapWidth; // Maximum line width for wrapping.
-    word *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    uint16_t *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
     UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
 };
 
@@ -14566,11 +14549,11 @@ struct UiWrappedTextControl {
 typedef struct UiRangeSliderControl UiRangeSliderControl;
 struct UiRangeSliderControl {
     struct UiNodeBase base;
-    dword sliderFlags; // 1 vertical (else horizontal), 2 thumb drag in progress, 4 play clickSound on press/release/key step, 8 reversed direction.
-    sdword minimumValue;
-    sdword maximumValue;
-    sdword value; // Current value, kept within minimumValue..maximumValue.
-    sdword stepValue; // Increment per arrow key; per wheel notch it is scaled by g_UiRangeSliderDragScale.
+    uint32_t sliderFlags; // 1 vertical (else horizontal), 2 thumb drag in progress, 4 play clickSound on press/release/key step, 8 reversed direction.
+    int32_t minimumValue;
+    int32_t maximumValue;
+    int32_t value; // Current value, kept within minimumValue..maximumValue.
+    int32_t stepValue; // Increment per arrow key; per wheel notch it is scaled by g_UiRangeSliderDragScale.
     UiActionId actionId; // Enqueued on every value change; also the id matched by suppress/unsuppress.
     struct DirectSoundVoiceSet *clickSound; // Set at runtime; may be null.
 };
@@ -14581,10 +14564,10 @@ struct UiRangeSliderControl {
 typedef struct UiHorizontalGaugeControl UiHorizontalGaugeControl;
 struct UiHorizontalGaugeControl {
     struct UiNodeBase base;
-    dword gaugeFlags; // 1 draw the percent label.
-    dword minimumValue;
-    dword maximumValue; // Compared unsigned with value.
-    dword value;
+    uint32_t gaugeFlags; // 1 draw the percent label.
+    uint32_t minimumValue;
+    uint32_t maximumValue; // Compared unsigned with value.
+    uint32_t value;
 };
 
 /* Panel drawing one texture subresource aligned (or stretched) inside its layout box, optionally over a drop shadow,
@@ -14593,10 +14576,10 @@ struct UiHorizontalGaugeControl {
 typedef struct UiImagePanelControl UiImagePanelControl;
 struct UiImagePanelControl {
     struct UiNodeBase base;
-    dword panelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 draw a drop shadow, 0x20 never hit, 0x40 hit the whole box (skip the opaque-pixel test), 0x80 stretch the texture over the layout box.
-    sbyte shadowOffsetX; // Drop-shadow offset from the texture position (panelFlags & 0x10).
-    sbyte shadowOffsetY;
-    word reserved52;
+    uint32_t panelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 draw a drop shadow, 0x20 never hit, 0x40 hit the whole box (skip the opaque-pixel test), 0x80 stretch the texture over the layout box.
+    int8_t shadowOffsetX; // Drop-shadow offset from the texture position (panelFlags & 0x10).
+    int8_t shadowOffsetY;
+    uint16_t reserved52;
     struct GraphicsTextureSourceAsset *textureSource;
     GraphicsSubresourceIndex subresource;
 };
@@ -14615,10 +14598,10 @@ struct UiArmyMetricsPanel {
 typedef struct UiFillPanelControl UiFillPanelControl;
 struct UiFillPanelControl {
     struct UiNodeBase base;
-    dword fillFlags; // 1 tile horizontally, 2 tile vertically (else one tile), 0x10 draw a drop shadow under each tile.
-    sbyte shadowOffsetX; // Drop-shadow offset from each tile (fillFlags & 0x10).
-    sbyte shadowOffsetY;
-    word reserved52;
+    uint32_t fillFlags; // 1 tile horizontally, 2 tile vertically (else one tile), 0x10 draw a drop shadow under each tile.
+    int8_t shadowOffsetX; // Drop-shadow offset from each tile (fillFlags & 0x10).
+    int8_t shadowOffsetY;
+    uint16_t reserved52;
     struct GraphicsTextureSourceAsset *textureSource; // Null: fill the box with the color instead.
     GraphicsSubresourceIndex subresourceOrFillArgb; // Subresource of textureSource; the ARGB fill color while textureSource is null.
 };
@@ -14628,7 +14611,7 @@ struct UiFillPanelControl {
 typedef struct UiNineSlicePanelControl UiNineSlicePanelControl;
 struct UiNineSlicePanelControl {
     struct UiNodeBase base;
-    dword field4C; // Not read by the class methods; 0 in every template.
+    uint32_t field4C; // Not read by the class methods; 0 in every template.
     struct GraphicsTextureSourceAsset *textureSource;
     GraphicsSubresourceIndex firstFrameSubresource; // Eight consecutive subresources: +0 top-left, +1 top-right, +2 top edge, +3 left edge, +4 right edge, +5 bottom-left, +6 bottom-right, +7 bottom edge.
     GraphicsSubresourceIndex centerSubresource; // Tiled over the interior.
@@ -14640,14 +14623,14 @@ struct UiNineSlicePanelControl {
 typedef struct UiSoftwareTexturePreviewControl UiSoftwareTexturePreviewControl;
 struct UiSoftwareTexturePreviewControl {
     struct UiNodeBase base;
-    dword field4C; // Not read by the class methods; 0 in the template.
+    uint32_t field4C; // Not read by the class methods; 0 in the template.
     struct GraphicsTextureSourceAsset *textureSource; // Nothing is drawn while null.
     GraphicsSubresourceIndex outgoingSubresource; // Blend source B (SoftwareMaskRuntimeView.patternState54).
     GraphicsSubresourceIndex incomingSubresource; // Blend source A (SoftwareMaskRuntimeView.patternState58).
     UiActionId actionId; // Enqueued on primary/secondary press and on every key except 0x10002 (which moves focus).
-    qword *blendFactorPixels; // Per-pixel blend mask (SoftwareMaskRuntimeView.maskPixels).
-    qword *blendedSourcePixels;
-    sdword tickCounter; // Mask animation tick (SoftwareMaskRuntimeView.tickCounter).
+    uint64_t *blendFactorPixels; // Per-pixel blend mask (SoftwareMaskRuntimeView.maskPixels).
+    uint64_t *blendedSourcePixels;
+    int32_t tickCounter; // Mask animation tick (SoftwareMaskRuntimeView.tickCounter).
 };
 
 /* Resource gauge (g_UiFormattedContainerVtable; xenite, tritium and energy on the in-game resource panel): a
@@ -14658,22 +14641,22 @@ struct UiSoftwareTexturePreviewControl {
 typedef struct UiFormattedContainer UiFormattedContainer;
 struct UiFormattedContainer {
     struct UiNodeBase base;
-    dword gaugeFlags; // 1 two-sided variant scale (below 40% and above 85% both use the late variants; else they rise from 80%), 2 has the markerValue tail (UiFormattedContainerWithMarker).
-    sdword currentValue;
-    sdword limitValue; // Nothing but the texts is drawn while 0.
+    uint32_t gaugeFlags; // 1 two-sided variant scale (below 40% and above 85% both use the late variants; else they rise from 80%), 2 has the markerValue tail (UiFormattedContainerWithMarker).
+    int32_t currentValue;
+    int32_t limitValue; // Nothing but the texts is drawn while 0.
     struct GraphicsTextureSourceAsset *textureSource;
     GraphicsSubresourceIndex firstFrameSubresource; // +0/+1/+2 empty bar left/middle/right, +3..+0x14 six fill variants of three parts each, +0x15 marker.
-    word currentValueTextUtf16[12]; // Tooltip payload 0.
-    word limitValueTextUtf16[12]; // Tooltip payload 1.
-    sdword initialScaleRange;
+    uint16_t currentValueTextUtf16[12]; // Tooltip payload 0.
+    uint16_t limitValueTextUtf16[12]; // Tooltip payload 1.
+    int32_t initialScaleRange;
 };
 
 /* Resource gauge with a second marker (gaugeFlags & 2; the energy gauge). 0xB0 bytes. */
 typedef struct UiFormattedContainerWithMarker UiFormattedContainerWithMarker;
 struct UiFormattedContainerWithMarker {
     struct UiFormattedContainer base;
-    sdword markerValue; // Second marker; also caps the fill-percentage divisor when smaller than limitValue.
-    word markerValueTextUtf16[12]; // Tooltip payload 2.
+    int32_t markerValue; // Second marker; also caps the fill-percentage divisor when smaller than limitValue.
+    uint16_t markerValueTextUtf16[12]; // Tooltip payload 2.
 };
 
 /* The two handlers of the root-stack action page: UiRootStack_PopCf, FatalErrorDialog_DismissAndPopRoot. */

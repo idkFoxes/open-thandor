@@ -12,12 +12,12 @@
 
 /* Box filter of the 2x/4x downsampling uploads, written out per channel (the original unpacks the ARGB8888 texels
    to word lanes, adds them with PADDW, shifts right and repacks with PACKUSWB). */
-#define TEXTURE_TEXEL_BLUE(texel) ((ushort)(byte)(texel))
-#define TEXTURE_TEXEL_GREEN(texel) ((ushort)(byte)((uint)(texel) >> 8))
-#define TEXTURE_TEXEL_RED(texel) ((ushort)(byte)((uint)(texel) >> 16))
-#define TEXTURE_TEXEL_ALPHA(texel) ((ushort)(byte)((uint)(texel) >> 24))
+#define TEXTURE_TEXEL_BLUE(texel) ((uint16_t)(uint8_t)(texel))
+#define TEXTURE_TEXEL_GREEN(texel) ((uint16_t)(uint8_t)((uint32_t)(texel) >> 8))
+#define TEXTURE_TEXEL_RED(texel) ((uint16_t)(uint8_t)((uint32_t)(texel) >> 16))
+#define TEXTURE_TEXEL_ALPHA(texel) ((uint16_t)(uint8_t)((uint32_t)(texel) >> 24))
 /* PACKUSWB of one averaged word lane: values above 0xff saturate to 0xff. */
-#define TEXTURE_SATURATE_TO_BYTE(lane) ((uint)((0xff < (lane)) ? 0xff : (byte)(lane)))
+#define TEXTURE_SATURATE_TO_BYTE(lane) ((uint32_t)((0xff < (lane)) ? 0xff : (uint8_t)(lane)))
 
 /* Address: 0x0057E970.
    Ownership: graphics/resources/texture.
@@ -33,7 +33,7 @@ GraphicsTextureSet_Create(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsTextureSourceAsset *setSourceAsset;
-  dword currentDownsampleShift;
+  uint32_t currentDownsampleShift;
   int adapterIndex;
   GraphicsAdapterRecord *adapters;
   DDPIXELFORMAT *selectedPixelFormat;
@@ -152,7 +152,7 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
   GraphicsTextureResource **slotCursor;
   GraphicsTextureSourceAsset *releasedSourceAsset;
   int slotsRemaining;
-  dword entriesRemaining;
+  uint32_t entriesRemaining;
   GraphicsTextureSetEntry *entryCursor;
   GraphicsTextureResource **matchedSlot;
   
@@ -197,7 +197,7 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set)
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
 GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_LoadPackage(word *pathUtf16)
+GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsTextureSourceAsset *loadedTextureSource;
@@ -280,11 +280,11 @@ GraphicsTextureSource_GetLogicalSizeRegs
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
     subresourceTableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
     successResult.logicalHeightPixels =
-         *(dword *)
+         *(uint32_t *)
           ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
           subresourceIndex * 0x20 + subresourceTableOffset + -0x24);
     successResult.logicalWidthPixels =
-         *(dword *)
+         *(uint32_t *)
           ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
           subresourceIndex * 0x20 + subresourceTableOffset + -0x28);
     successResult.carry = false;
@@ -312,7 +312,7 @@ GraphicsTextureSource_TestOpaquePixel
           GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  byte *entryField;
+  uint8_t *entryField;
   AssetRelativeOffset tableOffset;
   int paletteIndex;
   int localXOrPixelIndex;
@@ -341,16 +341,16 @@ GraphicsTextureSource_TestOpaquePixel
                                 entryOffset + tableOffset + -0x10) + localXOrPixelIndex;
         if (paletteIndex == -1) {
           if (0xffffff <
-              *(uint *)(localXOrPixelIndex * 4 +
+              *(uint32_t *)(localXOrPixelIndex * 4 +
                         *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                                 entryOffset + tableOffset + -0x1c) + (int)sourceAsset)) {
             return true;
           }
         }
         else if (0xffffff <
-                 *(uint *)(sourceAsset[paletteIndex * 4 + 1].common.buildMetadata.
+                 *(uint32_t *)(sourceAsset[paletteIndex * 4 + 1].common.buildMetadata.
                            assetRelativeAddressAnchor28 +
-                          (uint)*(byte *)(localXOrPixelIndex + *(int *)((sourceAsset->common).buildMetadata.
+                          (uint32_t)*(uint8_t *)(localXOrPixelIndex + *(int *)((sourceAsset->common).buildMetadata.
                                                            assetRelativeAddressAnchor28 +
                                                           entryOffset + tableOffset + -0x1c) + (int)sourceAsset)
                           * 8 + -0x28)) {
@@ -381,9 +381,9 @@ GraphicsTextureSource_BlitTiledSourceAlpha
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  dword tileWidth;
+  uint32_t tileWidth;
   int tileX;
-  dword tileHeight;
+  uint32_t tileHeight;
   int tileY;
   bool overflowed;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
@@ -454,9 +454,9 @@ GraphicsTextureSource_BlitTiledHalfSourceRgb
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  dword tileWidth;
+  uint32_t tileWidth;
   int tileX;
-  dword tileHeight;
+  uint32_t tileHeight;
   int tileY;
   bool overflowed;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
@@ -526,9 +526,9 @@ GraphicsTextureSource_BlitTiledSaturatedAddRgb
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  dword tileWidth;
+  uint32_t tileWidth;
   int tileX;
-  dword tileHeight;
+  uint32_t tileHeight;
   int tileY;
   bool overflowed;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
@@ -598,9 +598,9 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  dword tileWidth;
+  uint32_t tileWidth;
   int tileX;
-  dword tileHeight;
+  uint32_t tileHeight;
   int tileY;
   bool overflowed;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
@@ -662,41 +662,41 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  word *entryCounterField;
-  byte backgroundIndex;
-  byte edgeIndex;
+  uint16_t *entryCounterField;
+  uint8_t backgroundIndex;
+  uint8_t edgeIndex;
   int regionCopyBytes;
-  uint regionWidth;
-  uint regionCopyWidth;
+  uint32_t regionWidth;
+  uint32_t regionCopyWidth;
   GraphicsTextureSourceAsset *copySourceOrError;
-  dword packedDateTime;
-  dword largestBlockSize;
+  uint32_t packedDateTime;
+  uint32_t largestBlockSize;
   int remainingBytesOrCount;
   int paletteIndexOrCount;
   int offsetOrColumnCount;
-  uint backgroundColorOrCount;
+  uint32_t backgroundColorOrCount;
   AssetSubresourceCount entryCount;
   int copyBytesRemaining;
   int fillBytesRemaining;
-  uint pixelCountOrCounter;
-  uint scanCountOrEdgeColor;
-  uint copyRemaining;
-  uint fillRemaining;
+  uint32_t pixelCountOrCounter;
+  uint32_t scanCountOrEdgeColor;
+  uint32_t copyRemaining;
+  uint32_t fillRemaining;
   int sourceWidthOrTableBytes;
   int entryOffsetOrRows;
-  uint fillRows;
-  byte *entryOrByteCursor;
+  uint32_t fillRows;
+  uint8_t *entryOrByteCursor;
   PckConverterVersion pixelDataOffset;
-  uint *scanCursor;
-  uint *rowCursor;
+  uint32_t *scanCursor;
+  uint32_t *rowCursor;
   GraphicsTextureSourceAsset *copyDestination;
-  byte *scanByteCursor;
-  byte *probeByteCursor;
-  byte *trimByteCursor;
-  byte *trimByteProbe;
-  uint *probeCursor;
-  uint *trimProbe;
-  uint *fillCursor;
+  uint8_t *scanByteCursor;
+  uint8_t *probeByteCursor;
+  uint8_t *trimByteCursor;
+  uint8_t *trimByteProbe;
+  uint32_t *probeCursor;
+  uint32_t *trimProbe;
+  uint32_t *fillCursor;
   bool matchedOrEdgeTransparent;
   bool bytesMatched;
   ArenaShrinkEaxCf5 shrinkResult;
@@ -704,12 +704,12 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   GraphicsTextureSourceAssetEaxCf5 successResult;
   GraphicsTextureSourceAssetEaxCf5 failureResult;
   ArenaLargestAllocationEaxEcxCf9 largestBlock;
-  uint *regionStart;
-  uint packedPixelBytes;
-  uint *packedPixelCursor;
+  uint32_t *regionStart;
+  uint32_t packedPixelBytes;
+  uint32_t *packedPixelCursor;
   int freeBytesAfterPacked;
   int rowsRemaining;
-  uint *fillRowCursor;
+  uint32_t *fillRowCursor;
   
   if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
      ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) {
@@ -757,7 +757,7 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
       ((decomposedAsset.assetOrError)->tableDescriptor).paletteBankCount = 0;
       ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount = 0;
       ((decomposedAsset.assetOrError)->tableDescriptor).subresourceTableOffset = 0x200;
-      backgroundColorOrCount = *(uint *)entryOrByteCursor;
+      backgroundColorOrCount = *(uint32_t *)entryOrByteCursor;
       pixelCountOrCounter = sourceWidthOrTableBytes * rowsRemaining;
       matchedOrEdgeTransparent = true;
       scanCountOrEdgeColor = pixelCountOrCounter;
@@ -767,20 +767,20 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
         if (scanCountOrEdgeColor == 0) break;
         scanCountOrEdgeColor = scanCountOrEdgeColor - 1;
         probeByteCursor = scanByteCursor + 4;
-        matchedOrEdgeTransparent = backgroundColorOrCount == *(uint *)scanByteCursor;
+        matchedOrEdgeTransparent = backgroundColorOrCount == *(uint32_t *)scanByteCursor;
         scanByteCursor = probeByteCursor;
       } while (matchedOrEdgeTransparent);
-      scanCountOrEdgeColor = *(uint *)(probeByteCursor + -4);
+      scanCountOrEdgeColor = *(uint32_t *)(probeByteCursor + -4);
       copySourceOrError = (GraphicsTextureSourceAsset *)0x2d;
       if (!matchedOrEdgeTransparent) {
         copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
         freeBytesAfterPacked = remainingBytesOrCount + pixelCountOrCounter * -4;
         if (freeBytesAfterPacked != 0 && (int)(pixelCountOrCounter * 4) <= remainingBytesOrCount) {
-          scanCursor = (uint *)((int)decomposedAsset.assetOrError + freeBytesAfterPacked + 0x200);
-          matchedOrEdgeTransparent = scanCursor == (uint *)0x0;
+          scanCursor = (uint32_t *)((int)decomposedAsset.assetOrError + freeBytesAfterPacked + 0x200);
+          matchedOrEdgeTransparent = scanCursor == (uint32_t *)0x0;
           rowCursor = scanCursor;
           for (pixelCountOrCounter = pixelCountOrCounter & 0x3fffffff; pixelCountOrCounter != 0; pixelCountOrCounter = pixelCountOrCounter - 1) {
-            *rowCursor = *(uint *)entryOrByteCursor;
+            *rowCursor = *(uint32_t *)entryOrByteCursor;
             entryOrByteCursor = entryOrByteCursor + 4;
             rowCursor = rowCursor + 1;
           }
@@ -823,32 +823,32 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
               }
               entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                         entryOffsetOrRows + -0x28;
-              *(uint *)entryOrByteCursor = (uint)((int)probeCursor - (int)scanCursor) >> 2;
+              *(uint32_t *)entryOrByteCursor = (uint32_t)((int)probeCursor - (int)scanCursor) >> 2;
               entryOrByteCursor[4] = 0;
               entryOrByteCursor[5] = 0;
               entryOrByteCursor[6] = 0;
               entryOrByteCursor[7] = 0;
-              *(word *)((int)(entryOrByteCursor + 0x10) + 0) = 0;
-              *(word *)((int)(entryOrByteCursor + 0x10) + 2) = 0;
-              *(word *)((int)(entryOrByteCursor + 0x14) + 0) = 0;
-              *(word *)((int)(entryOrByteCursor + 0x14) + 2) = 0;
+              *(uint16_t *)((int)(entryOrByteCursor + 0x10) + 0) = 0;
+              *(uint16_t *)((int)(entryOrByteCursor + 0x10) + 2) = 0;
+              *(uint16_t *)((int)(entryOrByteCursor + 0x14) + 0) = 0;
+              *(uint16_t *)((int)(entryOrByteCursor + 0x14) + 2) = 0;
               ((AssetProducerSourceNames *)(entryOrByteCursor + 8))->producerName[0] = 0xffff;
               ((AssetProducerSourceNames *)(entryOrByteCursor + 8))->producerName[1] = 0xffff;
               paletteIndexOrCount = rowsRemaining;
               rowCursor = scanCursor;
               do {
-                *(uint *)(entryOrByteCursor + 4) = *(uint *)(entryOrByteCursor + 4) + 1;
+                *(uint32_t *)(entryOrByteCursor + 4) = *(uint32_t *)(entryOrByteCursor + 4) + 1;
                 rowCursor = rowCursor + sourceWidthOrTableBytes;
                 paletteIndexOrCount = paletteIndexOrCount + -1;
                 matchedOrEdgeTransparent = true;
                 if (paletteIndexOrCount == 0) break;
                 matchedOrEdgeTransparent = backgroundColorOrCount == *rowCursor;
               } while (!matchedOrEdgeTransparent);
-              *(uint *)(entryOrByteCursor + 0x18) = *(uint *)entryOrByteCursor;
-              *(uint *)(entryOrByteCursor + 0x1c) = *(uint *)(entryOrByteCursor + 4);
+              *(uint32_t *)(entryOrByteCursor + 0x18) = *(uint32_t *)entryOrByteCursor;
+              *(uint32_t *)(entryOrByteCursor + 0x1c) = *(uint32_t *)(entryOrByteCursor + 4);
               rowCursor = scanCursor;
               do {
-                pixelCountOrCounter = *(uint *)entryOrByteCursor;
+                pixelCountOrCounter = *(uint32_t *)entryOrByteCursor;
                 probeCursor = rowCursor;
                 do {
                   if (pixelCountOrCounter == 0) break;
@@ -858,20 +858,20 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
                 } while (matchedOrEdgeTransparent);
                 if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimBottomRows;
                 rowCursor = rowCursor + sourceWidthOrTableBytes;
-                *(uint *)(entryOrByteCursor + 0x14) = *(uint *)(entryOrByteCursor + 0x14) + 1;
-                entryCounterField = (word *)(entryOrByteCursor + 0x1c);
-                *(uint *)entryCounterField = *(uint *)entryCounterField - 1;
-                matchedOrEdgeTransparent = *(uint *)entryCounterField == 0;
+                *(uint32_t *)(entryOrByteCursor + 0x14) = *(uint32_t *)(entryOrByteCursor + 0x14) + 1;
+                entryCounterField = (uint16_t *)(entryOrByteCursor + 0x1c);
+                *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
+                matchedOrEdgeTransparent = *(uint32_t *)entryCounterField == 0;
               } while (!matchedOrEdgeTransparent);
               rowCursor = rowCursor + -sourceWidthOrTableBytes;
-              *(uint *)(entryOrByteCursor + 0x14) = *(uint *)(entryOrByteCursor + 0x14) - 1;
-              *(uint *)(entryOrByteCursor + 0x1c) = *(uint *)(entryOrByteCursor + 0x1c) + 1;
+              *(uint32_t *)(entryOrByteCursor + 0x14) = *(uint32_t *)(entryOrByteCursor + 0x14) - 1;
+              *(uint32_t *)(entryOrByteCursor + 0x1c) = *(uint32_t *)(entryOrByteCursor + 0x1c) + 1;
 TrueColorTrimBottomRows:
-              probeCursor = (uint *)((int)rowCursor + sourceWidthOrTableBytes * 4 * *(uint *)(entryOrByteCursor + 0x1c));
+              probeCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes * 4 * *(uint32_t *)(entryOrByteCursor + 0x1c));
               do {
                 probeCursor = probeCursor + -sourceWidthOrTableBytes;
-                matchedOrEdgeTransparent = probeCursor == (uint *)0x0;
-                pixelCountOrCounter = *(uint *)entryOrByteCursor;
+                matchedOrEdgeTransparent = probeCursor == (uint32_t *)0x0;
+                pixelCountOrCounter = *(uint32_t *)entryOrByteCursor;
                 trimProbe = probeCursor;
                 do {
                   if (pixelCountOrCounter == 0) break;
@@ -880,12 +880,12 @@ TrueColorTrimBottomRows:
                   trimProbe = trimProbe + 1;
                 } while (matchedOrEdgeTransparent);
                 if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimLeftColumns;
-                entryCounterField = (word *)(entryOrByteCursor + 0x1c);
-                *(uint *)entryCounterField = *(uint *)entryCounterField - 1;
-              } while (*(uint *)entryCounterField != 0);
-              *(uint *)(entryOrByteCursor + 0x1c) = *(uint *)(entryOrByteCursor + 0x1c) + 1;
+                entryCounterField = (uint16_t *)(entryOrByteCursor + 0x1c);
+                *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
+              } while (*(uint32_t *)entryCounterField != 0);
+              *(uint32_t *)(entryOrByteCursor + 0x1c) = *(uint32_t *)(entryOrByteCursor + 0x1c) + 1;
 TrueColorTrimLeftColumns:
-              pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
+              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + 0x1c);
               regionStart = rowCursor;
               probeCursor = rowCursor;
               if ((scanCountOrEdgeColor & 0xff000000) == 0) {
@@ -897,23 +897,23 @@ TrueColorTrimLeftColumns:
                     pixelCountOrCounter = pixelCountOrCounter - 1;
                     probeCursor = regionStart;
                   } while (pixelCountOrCounter != 0);
-                  *(uint *)(entryOrByteCursor + 0x10) = *(uint *)(entryOrByteCursor + 0x10) + 1;
+                  *(uint32_t *)(entryOrByteCursor + 0x10) = *(uint32_t *)(entryOrByteCursor + 0x10) + 1;
                   rowCursor = regionStart + 1;
-                  pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
-                  entryCounterField = (word *)(entryOrByteCursor + 0x18);
-                  *(uint *)entryCounterField = *(uint *)entryCounterField - 1;
+                  pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + 0x1c);
+                  entryCounterField = (uint16_t *)(entryOrByteCursor + 0x18);
+                  *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
                   probeCursor = rowCursor;
-                } while (*(uint *)entryCounterField != 0);
-                *(uint *)(entryOrByteCursor + 0x10) = *(uint *)(entryOrByteCursor + 0x10) - 1;
-                *(uint *)(entryOrByteCursor + 0x18) = *(uint *)(entryOrByteCursor + 0x18) + 1;
+                } while (*(uint32_t *)entryCounterField != 0);
+                *(uint32_t *)(entryOrByteCursor + 0x10) = *(uint32_t *)(entryOrByteCursor + 0x10) - 1;
+                *(uint32_t *)(entryOrByteCursor + 0x18) = *(uint32_t *)(entryOrByteCursor + 0x18) + 1;
               }
 TrueColorTrimRightColumns:
               rowCursor = regionStart;
-              pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
-              probeCursor = (uint *)((int)regionStart +
-                                *(uint *)(entryOrByteCursor + 0x18) +
-                                *(uint *)(entryOrByteCursor + 0x18) +
-                                *(uint *)(entryOrByteCursor + 0x18) + *(uint *)(entryOrByteCursor + 0x18) + -4);
+              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + 0x1c);
+              probeCursor = (uint32_t *)((int)regionStart +
+                                *(uint32_t *)(entryOrByteCursor + 0x18) +
+                                *(uint32_t *)(entryOrByteCursor + 0x18) +
+                                *(uint32_t *)(entryOrByteCursor + 0x18) + *(uint32_t *)(entryOrByteCursor + 0x18) + -4);
               regionStart = probeCursor;
               if ((scanCountOrEdgeColor & 0xff000000) == 0) {
                 do {
@@ -922,17 +922,17 @@ TrueColorTrimRightColumns:
                     probeCursor = probeCursor + sourceWidthOrTableBytes;
                     pixelCountOrCounter = pixelCountOrCounter - 1;
                   } while (pixelCountOrCounter != 0);
-                  pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
+                  pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + 0x1c);
                   probeCursor = regionStart + -1;
-                  entryCounterField = (word *)(entryOrByteCursor + 0x18);
-                  *(uint *)entryCounterField = *(uint *)entryCounterField - 1;
+                  entryCounterField = (uint16_t *)(entryOrByteCursor + 0x18);
+                  *(uint32_t *)entryCounterField = *(uint32_t *)entryCounterField - 1;
                   regionStart = probeCursor;
-                } while (*(uint *)entryCounterField != 0);
-                *(uint *)(entryOrByteCursor + 0x18) = *(uint *)(entryOrByteCursor + 0x18) + 1;
+                } while (*(uint32_t *)entryCounterField != 0);
+                *(uint32_t *)(entryOrByteCursor + 0x18) = *(uint32_t *)(entryOrByteCursor + 0x18) + 1;
               }
 TrueColorPackRegion:
-              pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
-              paletteIndexOrCount = *(uint *)(entryOrByteCursor + 0x18) * pixelCountOrCounter;
+              pixelCountOrCounter = *(uint32_t *)(entryOrByteCursor + 0x1c);
+              paletteIndexOrCount = *(uint32_t *)(entryOrByteCursor + 0x18) * pixelCountOrCounter;
               freeBytesAfterPacked = remainingBytesOrCount + paletteIndexOrCount * -4;
               if (freeBytesAfterPacked == 0 || remainingBytesOrCount < paletteIndexOrCount * 4) {
                 copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
@@ -940,9 +940,9 @@ TrueColorPackRegion:
               }
               packedPixelCursor = packedPixelCursor + -paletteIndexOrCount;
               packedPixelBytes = packedPixelBytes + paletteIndexOrCount * 4;
-              regionWidth = *(uint *)entryOrByteCursor;
-              fillRows = *(uint *)(entryOrByteCursor + 4);
-              regionCopyWidth = *(uint *)(entryOrByteCursor + 0x18);
+              regionWidth = *(uint32_t *)entryOrByteCursor;
+              fillRows = *(uint32_t *)(entryOrByteCursor + 4);
+              regionCopyWidth = *(uint32_t *)(entryOrByteCursor + 0x18);
               copyRemaining = regionCopyWidth;
               probeCursor = packedPixelCursor;
               trimProbe = rowCursor;
@@ -984,7 +984,7 @@ TrueColorPackRegion:
           entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
                     sourceWidthOrTableBytes + -0x28;
           for (; backgroundColorOrCount != 0; backgroundColorOrCount = backgroundColorOrCount - 1) {
-            *(uint *)entryOrByteCursor = *packedPixelCursor;
+            *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
             packedPixelCursor = packedPixelCursor + 1;
             entryOrByteCursor = entryOrByteCursor + 4;
           }
@@ -1044,20 +1044,20 @@ TrueColorPackRegion:
           copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
           remainingBytesOrCount = offsetOrColumnCount - paletteIndexOrCount;
           if (remainingBytesOrCount != 0 && paletteIndexOrCount <= offsetOrColumnCount) {
-            scanByteCursor = (byte *)((int)copyDestination + remainingBytesOrCount);
+            scanByteCursor = (uint8_t *)((int)copyDestination + remainingBytesOrCount);
             probeByteCursor = scanByteCursor;
             for (; paletteIndexOrCount != 0; paletteIndexOrCount = paletteIndexOrCount + -1) {
               *probeByteCursor = *entryOrByteCursor;
               entryOrByteCursor = entryOrByteCursor + 1;
               probeByteCursor = probeByteCursor + 1;
             }
-            matchedOrEdgeTransparent = (*(uint *)(decomposedAsset.assetOrError[1].common.buildMetadata.
-                                assetRelativeAddressAnchor28 + (uint)edgeIndex * 8 + -0x28) & 0xff000000
+            matchedOrEdgeTransparent = (*(uint32_t *)(decomposedAsset.assetOrError[1].common.buildMetadata.
+                                assetRelativeAddressAnchor28 + (uint32_t)edgeIndex * 8 + -0x28) & 0xff000000
                      ) == 0;
             entryOrByteCursor = decomposedAsset.assetOrError[1].common.buildMetadata.assetRelativeAddressAnchor28 +
-                      (uint)edgeIndex * 8 + -0x28;
-            *(uint *)entryOrByteCursor = *(uint *)entryOrByteCursor & 0xffffff;
-            packedPixelCursor = (uint *)((uint)scanByteCursor & 0xfffffffc);
+                      (uint32_t)edgeIndex * 8 + -0x28;
+            *(uint32_t *)entryOrByteCursor = *(uint32_t *)entryOrByteCursor & 0xffffff;
+            packedPixelCursor = (uint32_t *)((uint32_t)scanByteCursor & 0xfffffffc);
             packedPixelBytes = 0;
             copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
             freeBytesAfterPacked = remainingBytesOrCount + -3;
@@ -1103,10 +1103,10 @@ TrueColorPackRegion:
                   entryOrByteCursor[5] = 0;
                   entryOrByteCursor[6] = 0;
                   entryOrByteCursor[7] = 0;
-                  *(word *)((int)(entryOrByteCursor + 0x10) + 0) = 0;
-                  *(word *)((int)(entryOrByteCursor + 0x10) + 2) = 0;
-                  *(word *)((int)(entryOrByteCursor + 0x14) + 0) = 0;
-                  *(word *)((int)(entryOrByteCursor + 0x14) + 2) = 0;
+                  *(uint16_t *)((int)(entryOrByteCursor + 0x10) + 0) = 0;
+                  *(uint16_t *)((int)(entryOrByteCursor + 0x10) + 2) = 0;
+                  *(uint16_t *)((int)(entryOrByteCursor + 0x14) + 0) = 0;
+                  *(uint16_t *)((int)(entryOrByteCursor + 0x14) + 2) = 0;
                   ((AssetProducerSourceNames *)(entryOrByteCursor + 8))->producerName[0] = 0;
                   ((AssetProducerSourceNames *)(entryOrByteCursor + 8))->producerName[1] = 0;
                   paletteIndexOrCount = rowsRemaining;
@@ -1134,7 +1134,7 @@ TrueColorPackRegion:
                     if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimBottomRows;
                     probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                     *(int *)(entryOrByteCursor + 0x14) = *(int *)(entryOrByteCursor + 0x14) + 1;
-                    entryCounterField = (word *)(entryOrByteCursor + 0x1c);
+                    entryCounterField = (uint16_t *)(entryOrByteCursor + 0x1c);
                     *(int *)entryCounterField = *(int *)entryCounterField + -1;
                     bytesMatched = *(int *)entryCounterField == 0;
                   } while (!bytesMatched);
@@ -1145,7 +1145,7 @@ PalettedTrimBottomRows:
                   trimByteCursor = probeByteCursor + sourceWidthOrTableBytes * *(int *)(entryOrByteCursor + 0x1c);
                   do {
                     trimByteCursor = trimByteCursor + -sourceWidthOrTableBytes;
-                    bytesMatched = trimByteCursor == (byte *)0x0;
+                    bytesMatched = trimByteCursor == (uint8_t *)0x0;
                     paletteIndexOrCount = *(int *)entryOrByteCursor;
                     trimByteProbe = trimByteCursor;
                     do {
@@ -1155,14 +1155,14 @@ PalettedTrimBottomRows:
                       trimByteProbe = trimByteProbe + 1;
                     } while (bytesMatched);
                     if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimLeftColumns;
-                    entryCounterField = (word *)(entryOrByteCursor + 0x1c);
+                    entryCounterField = (uint16_t *)(entryOrByteCursor + 0x1c);
                     *(int *)entryCounterField = *(int *)entryCounterField + -1;
                   } while (*(int *)entryCounterField != 0);
                   *(int *)(entryOrByteCursor + 0x1c) = *(int *)(entryOrByteCursor + 0x1c) + 1;
 PalettedTrimLeftColumns:
                   paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
-                  regionStart = (uint *)probeByteCursor;
-                  scanCursor = (uint *)probeByteCursor;
+                  regionStart = (uint32_t *)probeByteCursor;
+                  scanCursor = (uint32_t *)probeByteCursor;
                   if (matchedOrEdgeTransparent) {
                     do {
                       do {
@@ -1173,11 +1173,11 @@ PalettedTrimLeftColumns:
                         scanCursor = regionStart;
                       } while (paletteIndexOrCount != 0);
                       *(int *)(entryOrByteCursor + 0x10) = *(int *)(entryOrByteCursor + 0x10) + 1;
-                      probeByteCursor = (byte *)((int)regionStart + 1);
+                      probeByteCursor = (uint8_t *)((int)regionStart + 1);
                       paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
-                      entryCounterField = (word *)(entryOrByteCursor + 0x18);
+                      entryCounterField = (uint16_t *)(entryOrByteCursor + 0x18);
                       *(int *)entryCounterField = *(int *)entryCounterField + -1;
-                      scanCursor = (uint *)probeByteCursor;
+                      scanCursor = (uint32_t *)probeByteCursor;
                     } while (*(int *)entryCounterField != 0);
                     *(int *)(entryOrByteCursor + 0x10) = *(int *)(entryOrByteCursor + 0x10) + -1;
                     *(int *)(entryOrByteCursor + 0x18) = *(int *)(entryOrByteCursor + 0x18) + 1;
@@ -1185,8 +1185,8 @@ PalettedTrimLeftColumns:
 PalettedTrimRightColumns:
                   scanCursor = regionStart;
                   paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
-                  probeByteCursor = (byte *)((int)regionStart + *(int *)(entryOrByteCursor + 0x18) + -1);
-                  regionStart = (uint *)probeByteCursor;
+                  probeByteCursor = (uint8_t *)((int)regionStart + *(int *)(entryOrByteCursor + 0x18) + -1);
+                  regionStart = (uint32_t *)probeByteCursor;
                   if (matchedOrEdgeTransparent) {
                     do {
                       do {
@@ -1195,10 +1195,10 @@ PalettedTrimRightColumns:
                         paletteIndexOrCount = paletteIndexOrCount + -1;
                       } while (paletteIndexOrCount != 0);
                       paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
-                      probeByteCursor = (byte *)((int)regionStart + -1);
-                      entryCounterField = (word *)(entryOrByteCursor + 0x18);
+                      probeByteCursor = (uint8_t *)((int)regionStart + -1);
+                      entryCounterField = (uint16_t *)(entryOrByteCursor + 0x18);
                       *(int *)entryCounterField = *(int *)entryCounterField + -1;
-                      regionStart = (uint *)probeByteCursor;
+                      regionStart = (uint32_t *)probeByteCursor;
                     } while (*(int *)entryCounterField != 0);
                     *(int *)(entryOrByteCursor + 0x18) = *(int *)(entryOrByteCursor + 0x18) + 1;
                   }
@@ -1210,21 +1210,21 @@ PalettedPackRegion:
                     copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
                     goto DecomposeFreeWorkBufferAndFail;
                   }
-                  packedPixelCursor = (uint *)((int)packedPixelCursor + -backgroundColorOrCount);
+                  packedPixelCursor = (uint32_t *)((int)packedPixelCursor + -backgroundColorOrCount);
                   packedPixelBytes = packedPixelBytes + backgroundColorOrCount;
                   remainingBytesOrCount = *(int *)entryOrByteCursor;
                   entryOffsetOrRows = *(int *)(entryOrByteCursor + 4);
                   regionCopyBytes = *(int *)(entryOrByteCursor + 0x18);
                   copyBytesRemaining = regionCopyBytes;
-                  entryOrByteCursor = (byte *)packedPixelCursor;
+                  entryOrByteCursor = (uint8_t *)packedPixelCursor;
                   rowCursor = scanCursor;
                   do {
                     for (; copyBytesRemaining != 0; copyBytesRemaining = copyBytesRemaining + -1) {
-                      *entryOrByteCursor = *(byte *)scanCursor;
-                      scanCursor = (uint *)((int)scanCursor + 1);
+                      *entryOrByteCursor = *(uint8_t *)scanCursor;
+                      scanCursor = (uint32_t *)((int)scanCursor + 1);
                       entryOrByteCursor = entryOrByteCursor + 1;
                     }
-                    scanCursor = (uint *)((int)rowCursor + sourceWidthOrTableBytes);
+                    scanCursor = (uint32_t *)((int)rowCursor + sourceWidthOrTableBytes);
                     paletteIndexOrCount = paletteIndexOrCount + -1;
                     fillBytesRemaining = remainingBytesOrCount;
                     copyBytesRemaining = regionCopyBytes;
@@ -1257,8 +1257,8 @@ PalettedPackRegion:
               entryOrByteCursor = decomposedAsset.assetOrError[5].common.buildMetadata.assetRelativeAddressAnchor28 +
                         sourceWidthOrTableBytes + -0x28;
               for (; backgroundColorOrCount != 0; backgroundColorOrCount = backgroundColorOrCount - 1) {
-                *(uint *)entryOrByteCursor = *packedPixelCursor;
-                packedPixelCursor = (uint *)((int)packedPixelCursor + 4);
+                *(uint32_t *)entryOrByteCursor = *packedPixelCursor;
+                packedPixelCursor = (uint32_t *)((int)packedPixelCursor + 4);
                 entryOrByteCursor = entryOrByteCursor + 4;
               }
               shrinkResult = (*g_MemoryApi.shrinkInPlace)
@@ -1304,7 +1304,7 @@ DecomposeFreeWorkBufferAndFail:
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
 GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_LoadPackageAsset(word *pathUtf16)
+GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteTextureSourceAsset *loadedPaletteTextureSource;
@@ -1340,7 +1340,7 @@ GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset)
 
 {
   GraphicsPaletteTextureSourceAsset *clonedAsset;
-  uint allocationSizeOrCount;
+  uint32_t allocationSizeOrCount;
   GraphicsPaletteTextureSourceAsset *cloneCursor;
   ArenaAllocEaxCf5 cloneAllocation;
   GraphicsPaletteTextureSourceEaxCf5 convertResult;
@@ -1381,7 +1381,7 @@ GraphicsTextureSource_ConvertPaletteEntries(GraphicsPaletteTextureSourceAsset *s
   GraphicsTexturePaletteEntry *paletteEntryCursor;
   GraphicsPaletteTextureSourceEaxCf5 successResult;
   GraphicsPaletteTextureSourceEaxCf5 failureResult;
-  uint argb8888;
+  uint32_t argb8888;
   
   if ((sourceAsset != (GraphicsPaletteTextureSourceAsset *)0x0) &&
      (sourceAsset->magic == GRAPHICS_PALETTE_TEXTURE_MAGIC_GFX)) {
@@ -1466,13 +1466,13 @@ GraphicsTextureSizeEaxEdxCf9
 GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  uint entryCount;
-  byte *firstSubresourceRecord;
+  uint32_t entryCount;
+  uint8_t *firstSubresourceRecord;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
 
   /* Failure (CF set): the original leaves EAX untouched and EDX = sourceAsset; no caller reads them then. */
   logicalSize.logicalWidthPixels = 0;
-  logicalSize.logicalHeightPixels = (dword)sourceAsset;
+  logicalSize.logicalHeightPixels = (uint32_t)sourceAsset;
   logicalSize.carry = true;
   if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
     entryCount = (sourceAsset->tableDescriptor).subresourceCount;
@@ -1480,8 +1480,8 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
       firstSubresourceRecord =
            (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
            ((sourceAsset->tableDescriptor).subresourceTableOffset - 0x28);
-      logicalSize.logicalWidthPixels = *(dword *)firstSubresourceRecord;
-      logicalSize.logicalHeightPixels = *(dword *)(firstSubresourceRecord + 4);
+      logicalSize.logicalWidthPixels = *(uint32_t *)firstSubresourceRecord;
+      logicalSize.logicalHeightPixels = *(uint32_t *)(firstSubresourceRecord + 4);
       logicalSize.carry = false;
     }
   }
@@ -1504,28 +1504,28 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
 {
   int offsetOrGreenTopBit;
   DDPIXELFORMAT *destinationFormat;
-  uint maskOrArgb;
-  uint greenMask;
-  uint blueMask;
+  uint32_t maskOrArgb;
+  uint32_t greenMask;
+  uint32_t blueMask;
   int blueTopBit;
-  byte paletteGreen;
-  byte paletteBlue;
-  byte paletteFlags;
+  uint8_t paletteGreen;
+  uint8_t paletteBlue;
+  uint8_t paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
   int paletteIndexOrCounter;
   DirectDrawPaletteEntry grayPaletteEntry;
-  byte *sourcePixel;
+  uint8_t *sourcePixel;
   GraphicsTextureSourceAsset *paletteSourceCursor;
-  ushort *destinationWord;
-  byte *byteCursorOrSourceRow;
+  uint16_t *destinationWord;
+  uint8_t *byteCursorOrSourceRow;
   DirectDrawPaletteEntry *paletteEntryCursor;
-  uint *destinationDword;
-  byte *sourceByteRow;
-  ushort *destinationWordRow;
-  byte *destinationByteRow;
-  uint *destinationDwordRow;
+  uint32_t *destinationDword;
+  uint8_t *sourceByteRow;
+  uint16_t *destinationWordRow;
+  uint8_t *destinationByteRow;
+  uint32_t *destinationDwordRow;
   IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
@@ -1541,7 +1541,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
   TH_LEGACY_LONG savedPitch;
   TH_LEGACY_LPVOID savedSurfaceBits;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -1682,15 +1682,15 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    maskOrArgb = *(uint *)sourcePixel;
-                    *destinationWord = (ushort)(((maskOrArgb & 0xff000000) >> ((byte)alphaShiftRight & 0x1f)) <<
-                                       ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    maskOrArgb = *(uint32_t *)sourcePixel;
+                    *destinationWord = (uint16_t)(((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
+                                       ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     sourcePixel = sourcePixel + 4;
                     paletteIndexOrCounter = paletteIndexOrCounter + -1;
                     destinationWord = destinationWord + 1;
@@ -1698,24 +1698,24 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   sourcePixel = byteCursorOrSourceRow + sourceWidth * 4;
                   rowsRemaining = rowsRemaining + -1;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   byteCursorOrSourceRow = sourcePixel;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                 } while (rowsRemaining != 0);
                 rowsRemaining = 0;
               }
               else {
                 do {
                   do {
-                    maskOrArgb = *(uint *)sourcePixel;
-                    *destinationDword = ((maskOrArgb & 0xff000000) >> ((byte)alphaShiftRight & 0x1f)) <<
-                               ((byte)alphaShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    maskOrArgb = *(uint32_t *)sourcePixel;
+                    *destinationDword = ((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
+                               ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     sourcePixel = sourcePixel + 4;
                     paletteIndexOrCounter = paletteIndexOrCounter + -1;
                     destinationDword = destinationDword + 1;
@@ -1723,9 +1723,9 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   sourcePixel = byteCursorOrSourceRow + sourceWidth * 4;
                   rowsRemaining = rowsRemaining + -1;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   byteCursorOrSourceRow = sourcePixel;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                 } while (rowsRemaining != 0);
                 rowsRemaining = 0;
               }
@@ -1761,10 +1761,10 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -1844,16 +1844,16 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    maskOrArgb = *(uint *)((paletteBank->common).buildMetadata.
-                                      assetRelativeAddressAnchor28 + (uint)*sourcePixel * 8 + -0x28);
-                    *destinationWord = (ushort)(((maskOrArgb & 0xff000000) >> ((byte)alphaShiftRight & 0x1f)) <<
-                                       ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((maskOrArgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    maskOrArgb = *(uint32_t *)((paletteBank->common).buildMetadata.
+                                      assetRelativeAddressAnchor28 + (uint32_t)*sourcePixel * 8 + -0x28);
+                    *destinationWord = (uint16_t)(((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
+                                       ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((maskOrArgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     sourcePixel = sourcePixel + 1;
                     paletteIndexOrCounter = paletteIndexOrCounter + -1;
                     destinationWord = destinationWord + 1;
@@ -1861,25 +1861,25 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   sourcePixel = byteCursorOrSourceRow + sourceWidth;
                   rowsRemaining = rowsRemaining + -1;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   byteCursorOrSourceRow = sourcePixel;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                 } while (rowsRemaining != 0);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
               }
               else {
                 do {
                   do {
-                    maskOrArgb = *(uint *)((paletteBank->common).buildMetadata.
-                                      assetRelativeAddressAnchor28 + (uint)*sourcePixel * 8 + -0x28);
-                    *destinationDword = ((maskOrArgb & 0xff000000) >> ((byte)alphaShiftRight & 0x1f)) <<
-                               ((byte)alphaShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((maskOrArgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    maskOrArgb = *(uint32_t *)((paletteBank->common).buildMetadata.
+                                      assetRelativeAddressAnchor28 + (uint32_t)*sourcePixel * 8 + -0x28);
+                    *destinationDword = ((maskOrArgb & 0xff000000) >> ((uint8_t)alphaShiftRight & 0x1f)) <<
+                               ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((maskOrArgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     sourcePixel = sourcePixel + 1;
                     paletteIndexOrCounter = paletteIndexOrCounter + -1;
                     destinationDword = destinationDword + 1;
@@ -1887,9 +1887,9 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                   sourcePixel = byteCursorOrSourceRow + sourceWidth;
                   rowsRemaining = rowsRemaining + -1;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   byteCursorOrSourceRow = sourcePixel;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                 } while (rowsRemaining != 0);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
               }
@@ -1921,41 +1921,41 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
 
 {
   DDPIXELFORMAT *destinationFormat;
-  uint redOrAlphaMask;
-  uint greenMask;
-  uint blueMask;
-  dword topLeftTexel;
-  dword topRightTexel;
-  dword bottomLeftTexel;
-  dword bottomRightTexel;
+  uint32_t redOrAlphaMask;
+  uint32_t greenMask;
+  uint32_t blueMask;
+  uint32_t topLeftTexel;
+  uint32_t topRightTexel;
+  uint32_t bottomLeftTexel;
+  uint32_t bottomRightTexel;
   bool hasMore;
   int blueTopBit;
-  byte paletteGreen;
-  byte paletteBlue;
-  byte paletteFlags;
+  uint8_t paletteGreen;
+  uint8_t paletteBlue;
+  uint8_t paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
   int paletteIndexOrCounter;
   DirectDrawPaletteEntry grayPaletteEntry;
   int offsetOrRemaining;
-  byte *byteCursor;
+  uint8_t *byteCursor;
   GraphicsTextureSourceAsset *paletteSourceCursor;
   AssetProducerSourceNames *sourceTexel;
-  byte *byteCursorOrRow;
-  ushort *destinationWord;
+  uint8_t *byteCursorOrRow;
+  uint16_t *destinationWord;
   DirectDrawPaletteEntry *paletteEntryCursor;
-  uint *destinationDword;
-  ushort averageBlue;
-  uint3 averageRgb;
-  ushort averageGreen;
-  ushort averageRed;
-  ushort averageAlpha;
-  byte *sourceByteRow;
+  uint32_t *destinationDword;
+  uint16_t averageBlue;
+  uint32_t averageRgb;
+  uint16_t averageGreen;
+  uint16_t averageRed;
+  uint16_t averageAlpha;
+  uint8_t *sourceByteRow;
   AssetProducerSourceNames *sourceTexelRow;
-  byte *destinationByteRow;
-  ushort *destinationWordRow;
-  uint *destinationDwordRow;
+  uint8_t *destinationByteRow;
+  uint16_t *destinationWordRow;
+  uint32_t *destinationDwordRow;
   IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
@@ -1971,7 +1971,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
   TH_LEGACY_LONG savedPitch;
   TH_LEGACY_LPVOID savedSurfaceBits;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -2016,7 +2016,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
             if (destinationFormat->dwRGBBitCount == 8) {
               do {
                 do {
-                  *byteCursor = *(byte *)((int)sourceTexel->producerName + 3);
+                  *byteCursor = *(uint8_t *)((int)sourceTexel->producerName + 3);
                   sourceTexel = (AssetProducerSourceNames *)((int)sourceTexel->producerName + 8);
                   offsetOrRemaining = paletteIndexOrCounter + -2;
                   hasMore = 1 < paletteIndexOrCounter;
@@ -2116,28 +2116,28 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    topLeftTexel = *(dword *)sourceTexel->producerName;
-                    topRightTexel = *(dword *)(sourceTexel->producerName + 2);
-                    bottomLeftTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2);
-                    bottomRightTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2 + 2);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                    topLeftTexel = *(uint32_t *)sourceTexel->producerName;
+                    topRightTexel = *(uint32_t *)(sourceTexel->producerName + 2);
+                    bottomLeftTexel = *(uint32_t *)(sourceTexel->producerName + sourceWidth * 2);
+                    bottomRightTexel = *(uint32_t *)(sourceTexel->producerName + sourceWidth * 2 + 2);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
                                            TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
                                          TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
                                            TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
-                                        ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    *destinationWord = (uint16_t)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
+                                        ((uint8_t)alphaShiftRight & 0x1f)) << ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     sourceTexel = (AssetProducerSourceNames *)(sourceTexel->producerName + 4);
                     offsetOrRemaining = paletteIndexOrCounter + -2;
                     hasMore = 1 < paletteIndexOrCounter;
@@ -2148,37 +2148,37 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   offsetOrRemaining = rowsRemaining + -2;
                   hasMore = 1 < rowsRemaining;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   sourceTexelRow = sourceTexel;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
               }
               else {
                 do {
                   do {
-                    topLeftTexel = *(dword *)sourceTexel->producerName;
-                    topRightTexel = *(dword *)(sourceTexel->producerName + 2);
-                    bottomLeftTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2);
-                    bottomRightTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2 + 2);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                    topLeftTexel = *(uint32_t *)sourceTexel->producerName;
+                    topRightTexel = *(uint32_t *)(sourceTexel->producerName + 2);
+                    bottomLeftTexel = *(uint32_t *)(sourceTexel->producerName + sourceWidth * 2);
+                    bottomRightTexel = *(uint32_t *)(sourceTexel->producerName + sourceWidth * 2 + 2);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
                                            TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
                                          TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
                                            TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
-                               << ((byte)alphaShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((uint8_t)alphaShiftRight & 0x1f))
+                               << ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     sourceTexel = (AssetProducerSourceNames *)(sourceTexel->producerName + 4);
                     offsetOrRemaining = paletteIndexOrCounter + -2;
                     hasMore = 1 < paletteIndexOrCounter;
@@ -2189,9 +2189,9 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   offsetOrRemaining = rowsRemaining + -2;
                   hasMore = 1 < rowsRemaining;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   sourceTexelRow = sourceTexel;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
               }
@@ -2231,10 +2231,10 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -2314,36 +2314,36 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    topLeftTexel = *(dword *)
+                    topLeftTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)*byteCursor * 8 + -0x28);
-                    topRightTexel = *(dword *)
+                             (uint32_t)*byteCursor * 8 + -0x28);
+                    topRightTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[1] * 8 + -0x28);
-                    bottomLeftTexel = *(dword *)
+                             (uint32_t)byteCursor[1] * 8 + -0x28);
+                    bottomLeftTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    bottomRightTexel = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    bottomRightTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                             (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
                                            TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
                                          TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
                                            TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
-                                        ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    *destinationWord = (uint16_t)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
+                                        ((uint8_t)alphaShiftRight & 0x1f)) << ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     byteCursor = byteCursor + 2;
                     offsetOrRemaining = paletteIndexOrCounter + -2;
                     hasMore = 1 < paletteIndexOrCounter;
@@ -2354,9 +2354,9 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   offsetOrRemaining = rowsRemaining + -2;
                   hasMore = 1 < rowsRemaining;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   byteCursorOrRow = byteCursor;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
@@ -2364,36 +2364,36 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    topLeftTexel = *(dword *)
+                    topLeftTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)*byteCursor * 8 + -0x28);
-                    topRightTexel = *(dword *)
+                             (uint32_t)*byteCursor * 8 + -0x28);
+                    topRightTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[1] * 8 + -0x28);
-                    bottomLeftTexel = *(dword *)
+                             (uint32_t)byteCursor[1] * 8 + -0x28);
+                    bottomLeftTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    bottomRightTexel = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    bottomRightTexel = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                             (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
                                           TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
                                            TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
                                          TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
                                            TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
-                               << ((byte)alphaShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((uint8_t)alphaShiftRight & 0x1f))
+                               << ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     byteCursor = byteCursor + 2;
                     offsetOrRemaining = paletteIndexOrCounter + -2;
                     hasMore = 1 < paletteIndexOrCounter;
@@ -2404,9 +2404,9 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                   offsetOrRemaining = rowsRemaining + -2;
                   hasMore = 1 < rowsRemaining;
                   paletteIndexOrCounter = sourceWidth;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   byteCursorOrRow = byteCursor;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = offsetOrRemaining;
                 } while (offsetOrRemaining != 0 && hasMore);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
@@ -2440,56 +2440,56 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
 {
   int offsetOrGreenTopBit;
   DDPIXELFORMAT *destinationFormat;
-  uint blueMask;
-  dword texel00;
-  dword texel01;
-  dword texel02;
-  dword texel03;
-  dword texel04;
-  dword texel05;
-  dword texel06;
-  dword texel07;
-  dword texel08;
-  dword texel09;
-  dword texel10;
-  dword texel11;
-  dword texel12;
-  dword texel13;
-  dword texel14;
-  dword texel15;
+  uint32_t blueMask;
+  uint32_t texel00;
+  uint32_t texel01;
+  uint32_t texel02;
+  uint32_t texel03;
+  uint32_t texel04;
+  uint32_t texel05;
+  uint32_t texel06;
+  uint32_t texel07;
+  uint32_t texel08;
+  uint32_t texel09;
+  uint32_t texel10;
+  uint32_t texel11;
+  uint32_t texel12;
+  uint32_t texel13;
+  uint32_t texel14;
+  uint32_t texel15;
   bool hasMore;
   int blueTopBit;
-  byte paletteGreen;
-  byte paletteBlue;
-  byte paletteFlags;
+  uint8_t paletteGreen;
+  uint8_t paletteBlue;
+  uint8_t paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
   int paletteIndexOrCounter;
   DirectDrawPaletteEntry grayPaletteEntry;
-  uint nextColumnsOrMask;
-  uint columnsOrMask;
-  byte *byteCursor;
+  uint32_t nextColumnsOrMask;
+  uint32_t columnsOrMask;
+  uint8_t *byteCursor;
   GraphicsTextureSourceAsset *paletteSourceCursor;
-  word *sourceTexel;
-  byte *byteCursorOrRow;
-  ushort *destinationWord;
+  uint16_t *sourceTexel;
+  uint8_t *byteCursorOrRow;
+  uint16_t *destinationWord;
   DirectDrawPaletteEntry *paletteEntryCursor;
-  uint *destinationDword;
-  ushort averageBlue;
-  uint3 averageRgb;
-  ushort averageGreen;
-  ushort averageRed;
-  ushort averageAlpha;
-  byte *sourceByteRow;
-  word *sourceTexelRow;
-  byte *destinationByteRow;
-  ushort *destinationWordRow;
-  uint *destinationDwordRow;
+  uint32_t *destinationDword;
+  uint16_t averageBlue;
+  uint32_t averageRgb;
+  uint16_t averageGreen;
+  uint16_t averageRed;
+  uint16_t averageAlpha;
+  uint8_t *sourceByteRow;
+  uint16_t *sourceTexelRow;
+  uint8_t *destinationByteRow;
+  uint16_t *destinationWordRow;
+  uint32_t *destinationDwordRow;
   IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
-  uint sourceWidth;
+  uint32_t sourceWidth;
   int alphaShiftRight;
   int blueShiftRight;
   int greenShiftRight;
@@ -2501,7 +2501,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
   TH_LEGACY_LONG savedPitch;
   TH_LEGACY_LPVOID savedSurfaceBits;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -2528,14 +2528,14 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
         savedSurfaceBits = g_SurfaceDesc.lpSurface;
         paletteIndexOrCounter = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                          offsetOrGreenTopBit + -0x20);
-        sourceWidth = *(uint *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+        sourceWidth = *(uint32_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                              offsetOrGreenTopBit + -0x10);
         rowsRemaining = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                             offsetOrGreenTopBit + -0xc);
         offsetOrGreenTopBit = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                         offsetOrGreenTopBit + -0x1c);
         if (paletteIndexOrCounter < 0) {
-          sourceTexel = (word *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
+          sourceTexel = (uint16_t *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                             offsetOrGreenTopBit + -0x28);
           if ((sourceWidth != 0) && (destinationFormat = texture->pixelFormat, rowsRemaining != 0)) {
             columnsOrMask = sourceWidth;
@@ -2545,7 +2545,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
             if (destinationFormat->dwRGBBitCount == 8) {
               do {
                 do {
-                  *byteCursor = *(byte *)((int)sourceTexel + 3);
+                  *byteCursor = *(uint8_t *)((int)sourceTexel + 3);
                   sourceTexel = sourceTexel + 8;
                   nextColumnsOrMask = columnsOrMask - 4;
                   hasMore = 3 < (int)columnsOrMask;
@@ -2645,24 +2645,24 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    texel00 = *(dword *)sourceTexel;
-                    texel01 = *(dword *)(sourceTexel + 2);
-                    texel02 = *(dword *)(sourceTexel + sourceWidth * 2);
-                    texel03 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel04 = *(dword *)(sourceTexel + 4);
-                    texel05 = *(dword *)(sourceTexel + 6);
-                    texel06 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel07 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
+                    texel00 = *(uint32_t *)sourceTexel;
+                    texel01 = *(uint32_t *)(sourceTexel + 2);
+                    texel02 = *(uint32_t *)(sourceTexel + sourceWidth * 2);
+                    texel03 = *(uint32_t *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel04 = *(uint32_t *)(sourceTexel + 4);
+                    texel05 = *(uint32_t *)(sourceTexel + 6);
+                    texel06 = *(uint32_t *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel07 = *(uint32_t *)(sourceTexel + (sourceWidth + 3) * 2);
                     sourceTexel = sourceTexel + sourceWidth * 4;
-                    texel08 = *(dword *)sourceTexel;
-                    texel09 = *(dword *)(sourceTexel + 2);
-                    texel10 = *(dword *)(sourceTexel + sourceWidth * 2);
-                    texel11 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel12 = *(dword *)(sourceTexel + 4);
-                    texel13 = *(dword *)(sourceTexel + 6);
-                    texel14 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel15 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                    texel08 = *(uint32_t *)sourceTexel;
+                    texel09 = *(uint32_t *)(sourceTexel + 2);
+                    texel10 = *(uint32_t *)(sourceTexel + sourceWidth * 2);
+                    texel11 = *(uint32_t *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel12 = *(uint32_t *)(sourceTexel + 4);
+                    texel13 = *(uint32_t *)(sourceTexel + 6);
+                    texel14 = *(uint32_t *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel15 = *(uint32_t *)(sourceTexel + (sourceWidth + 3) * 2);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
                                           TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
@@ -2670,7 +2670,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                           TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
                                           TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
                                           TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
                                            TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
                                            TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
                                            TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
@@ -2678,7 +2678,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
                                            TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
                                            TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
                                          TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
                                          TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
                                          TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
@@ -2686,7 +2686,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                          TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
                                          TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
                                          TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
                                            TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
                                            TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
                                            TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
@@ -2696,14 +2696,14 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
-                                        ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    *destinationWord = (uint16_t)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
+                                        ((uint8_t)alphaShiftRight & 0x1f)) << ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     sourceTexel = sourceTexel + (sourceWidth * -2 + 4) * 2;
                     nextColumnsOrMask = columnsOrMask - 4;
                     hasMore = 3 < (int)columnsOrMask;
@@ -2714,33 +2714,33 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   paletteIndexOrCounter = rowsRemaining + -4;
                   hasMore = 3 < rowsRemaining;
                   columnsOrMask = sourceWidth & 0xfffffff;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   sourceTexelRow = sourceTexel;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
               }
               else {
                 do {
                   do {
-                    texel00 = *(dword *)sourceTexel;
-                    texel01 = *(dword *)(sourceTexel + 2);
-                    texel02 = *(dword *)(sourceTexel + sourceWidth * 2);
-                    texel03 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel04 = *(dword *)(sourceTexel + 4);
-                    texel05 = *(dword *)(sourceTexel + 6);
-                    texel06 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel07 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
+                    texel00 = *(uint32_t *)sourceTexel;
+                    texel01 = *(uint32_t *)(sourceTexel + 2);
+                    texel02 = *(uint32_t *)(sourceTexel + sourceWidth * 2);
+                    texel03 = *(uint32_t *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel04 = *(uint32_t *)(sourceTexel + 4);
+                    texel05 = *(uint32_t *)(sourceTexel + 6);
+                    texel06 = *(uint32_t *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel07 = *(uint32_t *)(sourceTexel + (sourceWidth + 3) * 2);
                     sourceTexel = sourceTexel + sourceWidth * 4;
-                    texel08 = *(dword *)sourceTexel;
-                    texel09 = *(dword *)(sourceTexel + 2);
-                    texel10 = *(dword *)(sourceTexel + sourceWidth * 2);
-                    texel11 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel12 = *(dword *)(sourceTexel + 4);
-                    texel13 = *(dword *)(sourceTexel + 6);
-                    texel14 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel15 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                    texel08 = *(uint32_t *)sourceTexel;
+                    texel09 = *(uint32_t *)(sourceTexel + 2);
+                    texel10 = *(uint32_t *)(sourceTexel + sourceWidth * 2);
+                    texel11 = *(uint32_t *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel12 = *(uint32_t *)(sourceTexel + 4);
+                    texel13 = *(uint32_t *)(sourceTexel + 6);
+                    texel14 = *(uint32_t *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel15 = *(uint32_t *)(sourceTexel + (sourceWidth + 3) * 2);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
                                           TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
@@ -2748,7 +2748,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                           TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
                                           TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
                                           TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
                                            TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
                                            TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
                                            TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
@@ -2756,7 +2756,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
                                            TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
                                            TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
                                          TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
                                          TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
                                          TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
@@ -2764,7 +2764,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                          TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
                                          TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
                                          TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
                                            TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
                                            TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
                                            TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
@@ -2774,14 +2774,14 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
-                               << ((byte)alphaShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((uint8_t)alphaShiftRight & 0x1f))
+                               << ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     sourceTexel = sourceTexel + (sourceWidth * -2 + 4) * 2;
                     nextColumnsOrMask = columnsOrMask - 4;
                     hasMore = 3 < (int)columnsOrMask;
@@ -2792,9 +2792,9 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   paletteIndexOrCounter = rowsRemaining + -4;
                   hasMore = 3 < rowsRemaining;
                   columnsOrMask = sourceWidth & 0xfffffff;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   sourceTexelRow = sourceTexel;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
               }
@@ -2834,10 +2834,10 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(uint8_t *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(uint8_t *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -2917,56 +2917,56 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    texel00 = *(dword *)
+                    texel00 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)*byteCursor * 8 + -0x28);
-                    texel01 = *(dword *)
+                             (uint32_t)*byteCursor * 8 + -0x28);
+                    texel01 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[1] * 8 + -0x28);
-                    texel02 = *(dword *)
+                             (uint32_t)byteCursor[1] * 8 + -0x28);
+                    texel02 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel03 = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    texel03 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel04 = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    texel04 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[2] * 8 + -0x28);
-                    texel05 = *(dword *)
+                             (uint32_t)byteCursor[2] * 8 + -0x28);
+                    texel05 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[3] * 8 + -0x28);
-                    texel06 = *(dword *)
+                             (uint32_t)byteCursor[3] * 8 + -0x28);
+                    texel06 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel07 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 2] * 8 + -0x28);
+                    texel07 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
+                              (uint32_t)byteCursor[sourceWidth + 3] * 8 + -0x28);
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(dword *)
+                    texel08 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)*byteCursor * 8 + -0x28);
-                    texel09 = *(dword *)
+                              (uint32_t)*byteCursor * 8 + -0x28);
+                    texel09 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[1] * 8 + -0x28);
-                    texel10 = *(dword *)
+                              (uint32_t)byteCursor[1] * 8 + -0x28);
+                    texel10 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel11 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    texel11 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel12 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    texel12 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[2] * 8 + -0x28);
-                    texel13 = *(dword *)
+                              (uint32_t)byteCursor[2] * 8 + -0x28);
+                    texel13 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[3] * 8 + -0x28);
-                    texel14 = *(dword *)
+                              (uint32_t)byteCursor[3] * 8 + -0x28);
+                    texel14 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel15 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 2] * 8 + -0x28);
+                    texel15 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                              (uint32_t)byteCursor[sourceWidth + 3] * 8 + -0x28);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
                                           TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
@@ -2974,7 +2974,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                           TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
                                           TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
                                           TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
                                            TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
                                            TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
                                            TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
@@ -2982,7 +2982,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
                                            TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
                                            TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
                                          TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
                                          TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
                                          TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
@@ -2990,7 +2990,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                          TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
                                          TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
                                          TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
                                            TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
                                            TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
                                            TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
@@ -3000,14 +3000,14 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
-                                        ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                                       ((byte)blueShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                                       ((byte)greenShiftLeft & 0x1f)) |
-                               (ushort)(((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                                       ((byte)redShiftLeft & 0x1f));
+                    *destinationWord = (uint16_t)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
+                                        ((uint8_t)alphaShiftRight & 0x1f)) << ((uint8_t)alphaShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                                       ((uint8_t)blueShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                                       ((uint8_t)greenShiftLeft & 0x1f)) |
+                               (uint16_t)(((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                                       ((uint8_t)redShiftLeft & 0x1f));
                     byteCursor = byteCursor + sourceWidth * -2 + 4;
                     nextColumnsOrMask = columnsOrMask - 4;
                     hasMore = 3 < (int)columnsOrMask;
@@ -3018,9 +3018,9 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   paletteIndexOrCounter = rowsRemaining + -4;
                   hasMore = 3 < rowsRemaining;
                   columnsOrMask = sourceWidth;
-                  destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   byteCursorOrRow = byteCursor;
-                  destinationWordRow = (ushort *)((int)destinationWordRow + destinationPitch);
+                  destinationWordRow = (uint16_t *)((int)destinationWordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
@@ -3028,56 +3028,56 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    texel00 = *(dword *)
+                    texel00 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)*byteCursor * 8 + -0x28);
-                    texel01 = *(dword *)
+                             (uint32_t)*byteCursor * 8 + -0x28);
+                    texel01 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[1] * 8 + -0x28);
-                    texel02 = *(dword *)
+                             (uint32_t)byteCursor[1] * 8 + -0x28);
+                    texel02 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel03 = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    texel03 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel04 = *(dword *)
+                             (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    texel04 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[2] * 8 + -0x28);
-                    texel05 = *(dword *)
+                             (uint32_t)byteCursor[2] * 8 + -0x28);
+                    texel05 = *(uint32_t *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                             (uint)byteCursor[3] * 8 + -0x28);
-                    texel06 = *(dword *)
+                             (uint32_t)byteCursor[3] * 8 + -0x28);
+                    texel06 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel07 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 2] * 8 + -0x28);
+                    texel07 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
+                              (uint32_t)byteCursor[sourceWidth + 3] * 8 + -0x28);
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(dword *)
+                    texel08 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)*byteCursor * 8 + -0x28);
-                    texel09 = *(dword *)
+                              (uint32_t)*byteCursor * 8 + -0x28);
+                    texel09 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[1] * 8 + -0x28);
-                    texel10 = *(dword *)
+                              (uint32_t)byteCursor[1] * 8 + -0x28);
+                    texel10 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel11 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth] * 8 + -0x28);
+                    texel11 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel12 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 1] * 8 + -0x28);
+                    texel12 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[2] * 8 + -0x28);
-                    texel13 = *(dword *)
+                              (uint32_t)byteCursor[2] * 8 + -0x28);
+                    texel13 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[3] * 8 + -0x28);
-                    texel14 = *(dword *)
+                              (uint32_t)byteCursor[3] * 8 + -0x28);
+                    texel14 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel15 = *(dword *)
+                              (uint32_t)byteCursor[sourceWidth + 2] * 8 + -0x28);
+                    texel15 = *(uint32_t *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
-                              (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                              (uint32_t)byteCursor[sourceWidth + 3] * 8 + -0x28);
+                    averageBlue = (uint16_t)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
                                           TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
                                           TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
                                           TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
@@ -3085,7 +3085,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                           TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
                                           TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
                                           TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
-                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                    averageGreen = (uint16_t)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
                                            TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
                                            TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
                                            TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
@@ -3093,7 +3093,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
                                            TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
                                            TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
-                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                    averageRed = (uint16_t)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
                                          TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
                                          TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
                                          TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
@@ -3101,7 +3101,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                          TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
                                          TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
                                          TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
-                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                    averageAlpha = (uint16_t)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
                                            TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
                                            TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
                                            TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
@@ -3111,14 +3111,14 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                            TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
                     averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
                                  TEXTURE_SATURATE_TO_BYTE(averageBlue);
-                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
-                               << ((byte)alphaShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
-                               ((byte)blueShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff00) >> ((byte)greenShiftRight & 0x1f)) <<
-                               ((byte)greenShiftLeft & 0x1f) |
-                               ((averageRgb & 0xff0000) >> ((byte)redShiftRight & 0x1f)) <<
-                               ((byte)redShiftLeft & 0x1f);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((uint8_t)alphaShiftRight & 0x1f))
+                               << ((uint8_t)alphaShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff) >> ((uint8_t)blueShiftRight & 0x1f)) <<
+                               ((uint8_t)blueShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff00) >> ((uint8_t)greenShiftRight & 0x1f)) <<
+                               ((uint8_t)greenShiftLeft & 0x1f) |
+                               ((averageRgb & 0xff0000) >> ((uint8_t)redShiftRight & 0x1f)) <<
+                               ((uint8_t)redShiftLeft & 0x1f);
                     byteCursor = byteCursor + sourceWidth * -2 + 4;
                     nextColumnsOrMask = columnsOrMask - 4;
                     hasMore = 3 < (int)columnsOrMask;
@@ -3129,9 +3129,9 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                   paletteIndexOrCounter = rowsRemaining + -4;
                   hasMore = 3 < rowsRemaining;
                   columnsOrMask = sourceWidth;
-                  destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   byteCursorOrRow = byteCursor;
-                  destinationDwordRow = (uint *)((int)destinationDwordRow + destinationPitch);
+                  destinationDwordRow = (uint32_t *)((int)destinationDwordRow + destinationPitch);
                   rowsRemaining = paletteIndexOrCounter;
                 } while (paletteIndexOrCounter != 0 && hasMore);
                 (*stagingSurface3->lpVtbl->Unlock)(stagingSurface3,surfaceBits);
@@ -3166,22 +3166,22 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
   GraphicsTextureSourceAsset *textureSource;
   GraphicsSubresourceIndex textureSubresource;
   DDPIXELFORMAT *destinationFormat;
-  byte rotateShift;
+  uint8_t rotateShift;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
   int restoreResultOrWidth;
-  byte alphaShift;
-  uint rgbMaskBits;
-  byte *maskCursor;
-  ushort *destinationWord;
-  uint *destinationDword;
+  uint8_t alphaShift;
+  uint32_t rgbMaskBits;
+  uint8_t *maskCursor;
+  uint16_t *destinationWord;
+  uint32_t *destinationDword;
   int offsetOrCounter;
-  ushort *destinationWordRow;
-  uint *destinationDwordRow;
+  uint16_t *destinationWordRow;
+  uint32_t *destinationDwordRow;
   int rowsRemaining;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -3228,13 +3228,13 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
             do {
               do {
                 rotateShift = alphaShift & 0x1f;
-                *destinationWord = (ushort)*maskCursor << rotateShift | (ushort)(*maskCursor >> 0x20 - rotateShift) |
-                           (ushort)rgbMaskBits;
+                *destinationWord = (uint16_t)*maskCursor << rotateShift | (uint16_t)(*maskCursor >> 0x20 - rotateShift) |
+                           (uint16_t)rgbMaskBits;
                 maskCursor = maskCursor + 1;
                 offsetOrCounter = offsetOrCounter + -1;
                 destinationWord = destinationWord + 1;
               } while (offsetOrCounter != 0);
-              destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
               rowsRemaining = rowsRemaining + -1;
               offsetOrCounter = restoreResultOrWidth;
               destinationWordRow = destinationWord;
@@ -3244,13 +3244,13 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
             do {
               do {
                 rotateShift = alphaShift & 0x1f;
-                *destinationDword = (uint)*maskCursor << rotateShift | (uint)(*maskCursor >> 0x20 - rotateShift) | rgbMaskBits;
+                *destinationDword = (uint32_t)*maskCursor << rotateShift | (uint32_t)(*maskCursor >> 0x20 - rotateShift) | rgbMaskBits;
                 maskCursor = maskCursor + 1;
                 offsetOrCounter = offsetOrCounter + -1;
                 /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint *)((int)destinationDword + 2);
+                destinationDword = (uint32_t *)((int)destinationDword + 2);
               } while (offsetOrCounter != 0);
-              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
               rowsRemaining = rowsRemaining + -1;
               offsetOrCounter = restoreResultOrWidth;
               destinationDwordRow = destinationDword;
@@ -3287,21 +3287,21 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
   bool hasMore;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
-  byte partialSumOrShift;
-  ushort maskSum;
+  uint8_t partialSumOrShift;
+  uint16_t maskSum;
   TH_LEGACY_HRESULT hresult;
   int restoreResultOrWidth;
-  byte alphaShift;
-  uint rgbMaskBits;
-  byte *maskCursor;
-  ushort *destinationWord;
-  uint *destinationDword;
+  uint8_t alphaShift;
+  uint32_t rgbMaskBits;
+  uint8_t *maskCursor;
+  uint16_t *destinationWord;
+  uint32_t *destinationDword;
   int offsetOrCounter;
-  ushort *destinationWordRow;
-  uint *destinationDwordRow;
+  uint16_t *destinationWordRow;
+  uint32_t *destinationDwordRow;
   int rowsRemaining;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -3348,10 +3348,10 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
             do {
               do {
                 /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
-                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[1] + (ushort)maskCursor[restoreResultOrWidth] +
-                                   (ushort)maskCursor[restoreResultOrWidth + 1]);
+                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[1] + (uint16_t)maskCursor[restoreResultOrWidth] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth + 1]);
                 partialSumOrShift = alphaShift & 0x1f;
-                *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (ushort)rgbMaskBits;
+                *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (uint16_t)rgbMaskBits;
                 maskCursor = maskCursor + 2;
                 nextRemaining = offsetOrCounter + -2;
                 hasMore = 1 < offsetOrCounter;
@@ -3359,7 +3359,7 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
                 offsetOrCounter = nextRemaining;
               } while (nextRemaining != 0 && hasMore);
               maskCursor = maskCursor + restoreResultOrWidth;
-              destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
               nextRemaining = rowsRemaining + -2;
               hasMore = 1 < rowsRemaining;
               offsetOrCounter = restoreResultOrWidth;
@@ -3371,19 +3371,19 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
             do {
               do {
                 /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
-                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[1] + (ushort)maskCursor[restoreResultOrWidth] +
-                                   (ushort)maskCursor[restoreResultOrWidth + 1]);
+                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[1] + (uint16_t)maskCursor[restoreResultOrWidth] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth + 1]);
                 partialSumOrShift = alphaShift & 0x1f;
-                *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
+                *destinationDword = (uint32_t)maskSum << partialSumOrShift | (uint32_t)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
                 maskCursor = maskCursor + 2;
                 nextRemaining = offsetOrCounter + -2;
                 hasMore = 1 < offsetOrCounter;
                 /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint *)((int)destinationDword + 2);
+                destinationDword = (uint32_t *)((int)destinationDword + 2);
                 offsetOrCounter = nextRemaining;
               } while (nextRemaining != 0 && hasMore);
               maskCursor = maskCursor + restoreResultOrWidth;
-              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
               nextRemaining = rowsRemaining + -2;
               hasMore = 1 < rowsRemaining;
               offsetOrCounter = restoreResultOrWidth;
@@ -3422,21 +3422,21 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
   bool hasMore;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
-  byte partialSumOrShift;
-  ushort maskSum;
+  uint8_t partialSumOrShift;
+  uint16_t maskSum;
   TH_LEGACY_HRESULT hresult;
   int restoreResultOrWidth;
-  byte alphaShift;
-  uint rgbMaskBits;
-  byte *maskCursor;
-  ushort *destinationWord;
-  uint *destinationDword;
+  uint8_t alphaShift;
+  uint32_t rgbMaskBits;
+  uint8_t *maskCursor;
+  uint16_t *destinationWord;
+  uint32_t *destinationDword;
   int offsetOrCounter;
-  ushort *destinationWordRow;
-  uint *destinationDwordRow;
+  uint16_t *destinationWordRow;
+  uint32_t *destinationDwordRow;
   int rowsRemaining;
   IDirectDrawSurface3 *stagingSurface3;
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *sourceAsset;
   
   g_ActiveTextureUploads = g_ActiveTextureUploads + 1;
@@ -3483,11 +3483,11 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
             do {
               do {
                 /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
-                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[2] +
-                                   (ushort)maskCursor[restoreResultOrWidth * 2] +
-                                   (ushort)maskCursor[restoreResultOrWidth * 2 + 2]);
+                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[2] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth * 2] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth * 2 + 2]);
                 partialSumOrShift = alphaShift & 0x1f;
-                *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (ushort)rgbMaskBits;
+                *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (uint16_t)rgbMaskBits;
                 maskCursor = maskCursor + 4;
                 nextRemaining = offsetOrCounter + -4;
                 hasMore = 3 < offsetOrCounter;
@@ -3495,7 +3495,7 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
                 offsetOrCounter = nextRemaining;
               } while (nextRemaining != 0 && hasMore);
               maskCursor = maskCursor + restoreResultOrWidth * 3;
-              destinationWord = (ushort *)((int)destinationWordRow + destinationPitch);
+              destinationWord = (uint16_t *)((int)destinationWordRow + destinationPitch);
               nextRemaining = rowsRemaining + -4;
               hasMore = 3 < rowsRemaining;
               offsetOrCounter = restoreResultOrWidth;
@@ -3507,20 +3507,20 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
             do {
               do {
                 /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
-                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[2] +
-                                   (ushort)maskCursor[restoreResultOrWidth * 2] +
-                                   (ushort)maskCursor[restoreResultOrWidth * 2 + 2]);
+                maskSum = (uint16_t)((uint16_t)*maskCursor + (uint16_t)maskCursor[2] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth * 2] +
+                                   (uint16_t)maskCursor[restoreResultOrWidth * 2 + 2]);
                 partialSumOrShift = alphaShift & 0x1f;
-                *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
+                *destinationDword = (uint32_t)maskSum << partialSumOrShift | (uint32_t)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
                 maskCursor = maskCursor + 4;
                 nextRemaining = offsetOrCounter + -4;
                 hasMore = 3 < offsetOrCounter;
                 /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
-                destinationDword = (uint *)((int)destinationDword + 2);
+                destinationDword = (uint32_t *)((int)destinationDword + 2);
                 offsetOrCounter = nextRemaining;
               } while (nextRemaining != 0 && hasMore);
               maskCursor = maskCursor + restoreResultOrWidth * 3;
-              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              destinationDword = (uint32_t *)((int)destinationDwordRow + destinationPitch);
               nextRemaining = rowsRemaining + -4;
               hasMore = 3 < rowsRemaining;
               offsetOrCounter = restoreResultOrWidth;
@@ -3606,16 +3606,16 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
 
 {
   D3DDEVICEDESC_DX6 *deviceDesc;
-  uint largerExtent;
+  uint32_t largerExtent;
   TH_LEGACY_HRESULT hresult;
-  sdword handleResult;
+  int32_t handleResult;
   GraphicsTextureDownsampleShift effectiveShift;
   int dwordsRemaining;
   DDPIXELFORMAT *sourceFormatCursor;
   DDPIXELFORMAT *destinationFormatCursor;
   bool evictFailed;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
-  dword textureHandle;
+  uint32_t textureHandle;
   IDirect3DTexture2 *deviceTexture2;
   IDirectDrawSurface3 *deviceSurface3;
   IDirectDrawSurface *deviceSurfaceBase;
@@ -3643,7 +3643,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
   if (logicalSize.logicalWidthPixels < logicalSize.logicalHeightPixels) {
     largerExtent = logicalSize.logicalHeightPixels;
   }
-  g_SurfaceDesc.dwHeight = largerExtent >> ((byte)g_TextureDownsampleShift & 0x1f);
+  g_SurfaceDesc.dwHeight = largerExtent >> ((uint8_t)g_TextureDownsampleShift & 0x1f);
   effectiveShift = g_TextureDownsampleShift;
   do {
     if (0xf < (int)g_SurfaceDesc.dwHeight) break;
@@ -3730,13 +3730,13 @@ GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  dword widthLog2;
+  uint32_t widthLog2;
   int heightLog2;
   GraphicsPaletteTextureSourceAsset *convertedSource;
   GraphicsPaletteTextureSourceAsset *metadataOrError;
   int entryIndex;
   GraphicsPaletteTextureFormatVersion *entryFieldCursor;
-  byte *sourceEntry;
+  uint8_t *sourceEntry;
   GraphicsPaletteTextureSourceEaxCf5 convertResult;
   ArenaAllocEaxCf5 metadataAllocation;
   GraphicsTextureSetEaxCf5 failureResult;
@@ -3758,29 +3758,29 @@ GraphicsTextureSet_AllocateMetadata(GraphicsTextureSourceAsset *sourceAsset)
       entryIndex = 0;
       while( true ) {
         widthLog2 = 0x1f;
-        if (*(uint *)(sourceEntry + 0x18) != 0) {
-          for (; *(uint *)(sourceEntry + 0x18) >> widthLog2 == 0; widthLog2 = widthLog2 - 1) {
+        if (*(uint32_t *)(sourceEntry + 0x18) != 0) {
+          for (; *(uint32_t *)(sourceEntry + 0x18) >> widthLog2 == 0; widthLog2 = widthLog2 - 1) {
           }
         }
         *entryFieldCursor = 0;
         entryFieldCursor[5] = entryIndex;
         entryFieldCursor[1] = widthLog2;
-        if (1 << ((byte)widthLog2 & 0x1f) != *(int *)(sourceEntry + 0x18)) break;
+        if (1 << ((uint8_t)widthLog2 & 0x1f) != *(int *)(sourceEntry + 0x18)) break;
         entryFieldCursor[3] = (GraphicsPaletteTextureFormatVersion)convertedSource;
         heightLog2 = 0x1f;
-        if (*(uint *)(sourceEntry + 0x1c) != 0) {
-          for (; *(uint *)(sourceEntry + 0x1c) >> heightLog2 == 0; heightLog2 = heightLog2 + -1) {
+        if (*(uint32_t *)(sourceEntry + 0x1c) != 0) {
+          for (; *(uint32_t *)(sourceEntry + 0x1c) >> heightLog2 == 0; heightLog2 = heightLog2 + -1) {
           }
         }
         entryFieldCursor[4] = (GraphicsPaletteTextureFormatVersion)sourceEntry;
         entryFieldCursor[2] = heightLog2;
-        if (1 << ((byte)heightLog2 & 0x1f) != *(int *)(sourceEntry + 0x1c)) break;
+        if (1 << ((uint8_t)heightLog2 & 0x1f) != *(int *)(sourceEntry + 0x1c)) break;
         entryFieldCursor = entryFieldCursor + 8;
         sourceEntry = sourceEntry + 0x20;
         entryIndex = entryIndex + 1;
         entriesRemaining = entriesRemaining - 1;
         if (entriesRemaining == 0) {
-          return THANDOR_BITCAST(qword, GraphicsTextureSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, metadataAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+          return THANDOR_BITCAST(uint64_t, GraphicsTextureSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, metadataAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       }
       metadataOrError = (GraphicsPaletteTextureSourceAsset *)&k_LowAddressLiteral0000002F;
@@ -3822,7 +3822,7 @@ GraphicsTexture_EvictOldestDeviceTexture(GraphicsTextureResource *exclude)
 
 {
   GraphicsTextureResource *candidate;
-  dword evictedHandle;
+  uint32_t evictedHandle;
   int slotsRemaining;
   GraphicsResourceUsageSerial oldestUsage;
   GraphicsTextureResource *oldestTexture;
@@ -3911,7 +3911,7 @@ GraphicsTexture_SelectPixelFormat
   int entryOffset;
   DDPIXELFORMAT *selectedFormat;
   GraphicsTextureSourceAsset *paletteEntryCursor;
-  byte *pixelCursor;
+  uint8_t *pixelCursor;
   int paletteIndexOrCount;
   
   entryOffset = subresourceIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
@@ -3926,7 +3926,7 @@ GraphicsTexture_SelectPixelFormat
             *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 + entryOffset + -0xc
                     );
     do {
-      if (*(uint *)pixelCursor < 0xff000000) {
+      if (*(uint32_t *)pixelCursor < 0xff000000) {
         return (DDPIXELFORMAT *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       }
       pixelCursor = pixelCursor + 4;
@@ -3961,7 +3961,7 @@ GraphicsTextureResource * __thandor_eax_preserve_ecx_edx
 GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
 
 {
-  uint largerExtent;
+  uint32_t largerExtent;
   TH_LEGACY_HRESULT hresult;
   GraphicsTextureDownsampleShift effectiveShift;
   int dwordsRemaining;
@@ -3986,7 +3986,7 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
     if (logicalSize.logicalWidthPixels < logicalSize.logicalHeightPixels) {
       largerExtent = logicalSize.logicalHeightPixels;
     }
-    g_SurfaceDesc.dwHeight = largerExtent >> ((byte)g_TextureDownsampleShift & 0x1f);
+    g_SurfaceDesc.dwHeight = largerExtent >> ((uint8_t)g_TextureDownsampleShift & 0x1f);
     effectiveShift = g_TextureDownsampleShift;
     do {
       if (0xf < (int)g_SurfaceDesc.dwHeight) break;
@@ -4056,7 +4056,7 @@ GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture)
   IDirectDrawSurface3 *stagingSurface3;
   IDirectDrawSurface *currentBaseSurface;
   IDirectDrawSurface *stagingSurfaceBase;
-  dword releasedTextureHandle;
+  uint32_t releasedTextureHandle;
   
   currentTexture2 = texture->deviceTexture2;
   if (currentTexture2 != (IDirect3DTexture2 *)0x0) {

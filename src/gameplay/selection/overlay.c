@@ -33,12 +33,12 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
   int *classRecord;
   ArmyRuntimeSlot *armySlot;
   EffectRuntimeSlot *effectSlot;
-  sdword pendingPlacementAsset;
+  int32_t pendingPlacementAsset;
   ArmyPlacementCandidateCount acceptedCandidateCount;
   GameEntityRuntime *entityRuntime;
   Q12 worldXQ12;
   Q12 worldYQ12;
-  uint indexOrCount;
+  uint32_t indexOrCount;
   int recordOrCount;
   Q12 validatedWorldYQ12;
   Q12 worldXQ12Unused;
@@ -217,7 +217,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
                   if (0x7f < g_InGameCommandTargetTransientEffectMarkerCount) {
                     return;
                   }
-                } while (indexOrCount < *(uint *)((entityRuntime->common).reservedA4_B7 + 4));
+                } while (indexOrCount < *(uint32_t *)((entityRuntime->common).reservedA4_B7 + 4));
               }
             }
             if ((((entityRuntime->common).commandTarget.targetFlags & 2) != 0) &&
@@ -386,7 +386,7 @@ SelectionOverlay_DrawBoundsFrame
   int edgeY;
   UiPixelCoordinate originalCoordinate0B;
   UiPixelCoordinate originalCoordinate1B;
-  dword cornerWidth;
+  uint32_t cornerWidth;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
   
@@ -457,15 +457,15 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
           FieldGridAsset *fieldGrid)
 
 {
-  longlong packedCoordinate1;
-  longlong packedCoordinate0;
+  int64_t packedCoordinate1;
+  int64_t packedCoordinate0;
   int screenX;
   int screenY;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
   FieldGridNearestPointRegsCf13 terrainPoint;
-  dword blitTextureId;
+  uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
   
@@ -473,11 +473,11 @@ SelectionOverlay_DrawMarkerADForFieldGridTerrainPoints
     accessFailed = (*g_GraphicsFramebufferBeginAccess)();
     if (!accessFailed) {
       do {
-        packedCoordinate1 = (longlong)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
-        packedCoordinate0 = (longlong)gridCoordinatePairs[1] * -1999;
+        packedCoordinate1 = (int64_t)(gridCoordinatePairs[1] + *gridCoordinatePairs * 2) * 0x901;
+        packedCoordinate0 = (int64_t)gridCoordinatePairs[1] * -1999;
         terrainPoint = FieldGrid_GetNearestTerrainPoint
-                          ((int)((ulonglong)packedCoordinate0 >> 0x20) << 0x14 | (uint)packedCoordinate0 >> 0xc,
-                           (int)((ulonglong)packedCoordinate1 >> 0x20) << 0x13 | (uint)packedCoordinate1 >> 0xd,fieldGrid);
+                          ((int)((uint64_t)packedCoordinate0 >> 0x20) << 0x14 | (uint32_t)packedCoordinate0 >> 0xc,
+                           (int)((uint64_t)packedCoordinate1 >> 0x20) << 0x13 | (uint32_t)packedCoordinate1 >> 0xd,fieldGrid);
         if (!terrainPoint.carry) {
           g_GraphicsTransformScratchMatrix3x4.basisRow0[0] = terrainPoint.eax;
           g_GraphicsTransformScratchMatrix3x4.basisRow0[1] = terrainPoint.ecx;
@@ -524,9 +524,9 @@ SelectionOverlay_DrawMarkerACForWorldSurfacePoint
           Q12 worldCoordinate1Q12,FieldGridAsset *fieldGrid)
 
 {
-  dword pointX;
-  dword pointY;
-  dword pointZ;
+  uint32_t pointX;
+  uint32_t pointY;
+  uint32_t pointZ;
   bool accessFailed;
   GraphicsProjectedPointPair projectedPoint;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
@@ -583,20 +583,20 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
           UiPixelCoordinate clipRight,FieldGridAsset *fieldGrid)
 
 {
-  uint gridColumns;
+  uint32_t gridColumns;
   int screenX;
-  uint columnCount;
-  uint columnsRemaining;
-  uint rowsRemaining;
+  uint32_t columnCount;
+  uint32_t columnsRemaining;
+  uint32_t rowsRemaining;
   int screenY;
-  byte *vertexCursor;
+  uint8_t *vertexCursor;
   int coordinateOffset;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
-  dword blitTextureId;
+  uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
-  byte *rowStart;
+  uint8_t *rowStart;
   
   accessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!accessFailed) {
@@ -612,7 +612,7 @@ SelectionOverlay_DrawMarkerAEForVisibleProjectedGridVertices
     }
     do {
       do {
-        if ((*(uint *)(vertexCursor + 0x50) & 0x200000) == 0) {
+        if ((*(uint32_t *)(vertexCursor + 0x50) & 0x200000) == 0) {
           screenX = *(int *)(vertexCursor + coordinateOffset + 0xc) >> 0xc;
           screenY = *(int *)(vertexCursor + coordinateOffset + 0x10) >> 0xc;
           blitTextureId = 0xae;
@@ -656,12 +656,12 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
   FieldGridCell *cellCursor;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
-  dword receiverTextureId;
+  uint32_t receiverTextureId;
   GraphicsTextureSourceAsset *receiverTextureSource;
   SoftwareFramebufferAccess *receiverFramebuffer;
   int savedScreenY;
   int savedScreenX;
-  dword sourceTextureId;
+  uint32_t sourceTextureId;
   GraphicsTextureSourceAsset *sourceTextureSource;
   SoftwareFramebufferAccess *sourceFramebuffer;
   FieldGridCell *rowStartCell;
@@ -726,7 +726,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,byte markerBitIndex,FieldGridAsset *fieldGrid)
+          UiPixelCoordinate clipRight,uint8_t markerBitIndex,FieldGridAsset *fieldGrid)
 
 {
   FieldGridDimension gridColumns;
@@ -738,12 +738,12 @@ SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
   FieldCellPackedFlagsAndMaterial markerFlagMask;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
-  dword flaggedTextureId;
+  uint32_t flaggedTextureId;
   GraphicsTextureSourceAsset *flaggedTextureSource;
   SoftwareFramebufferAccess *flaggedFramebuffer;
   int savedScreenY;
   int savedScreenX;
-  dword otherTextureId;
+  uint32_t otherTextureId;
   GraphicsTextureSourceAsset *otherTextureSource;
   SoftwareFramebufferAccess *otherFramebuffer;
   FieldGridCell *rowStartCell;
@@ -820,7 +820,7 @@ SelectionOverlay_DrawMarkerAFForProjectedVertexFlag8000
   FieldGridCell *cellCursor;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 markerSize;
-  dword blitTextureId;
+  uint32_t blitTextureId;
   GraphicsTextureSourceAsset *blitTextureSource;
   SoftwareFramebufferAccess *blitFramebuffer;
   FieldGridCell *rowStartCell;
@@ -988,7 +988,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
 {
   GraphicsWorldCoordinateQ12 *translationZ;
   ModelRuntimeNode *markerModelNode;
-  uint boundingRadius;
+  uint32_t boundingRadius;
   int markerSlotIndex;
   int remainingMarkers;
   int *markerCursor;
@@ -1021,7 +1021,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
       translationZ = &(markerModelNode->worldTransform).translation.z;
       *translationZ = *translationZ + 0x144;
       markerModelNode->runtimeFlags = markerModelNode->runtimeFlags | 0x800;
-      markerModelNode->modelScaleQ12 = (Q12)(((ulonglong)(uint)scaleQ12 * 0x1a00) / (ulonglong)boundingRadius);
+      markerModelNode->modelScaleQ12 = (Q12)(((uint64_t)(uint32_t)scaleQ12 * 0x1a00) / (uint64_t)boundingRadius);
     }
   }
   return;

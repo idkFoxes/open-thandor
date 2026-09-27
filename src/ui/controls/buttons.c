@@ -49,16 +49,16 @@ UiSpriteButtonControl_Relocate
 
 {
   UiSelectableStateFlags *stateFlagsField;
-  sdword *sequenceDescriptor;
-  sdword descriptorOffset;
+  int32_t *sequenceDescriptor;
+  int32_t descriptorOffset;
   GraphicsSubresourceEndIndex subresourceEnd;
-  dword randomValue;
-  uint normalFrameCount;
+  uint32_t randomValue;
+  uint32_t normalFrameCount;
   
   if (((control->selectable).stateFlags & 0x80) != 0) {
     control->animationFrameOffset = 0;
     if (((control->selectable).stateFlags & 0x100) != 0) {
-      sequenceDescriptor = (sdword *)control->normalSubresourceStartOrDescriptor;
+      sequenceDescriptor = (int32_t *)control->normalSubresourceStartOrDescriptor;
       descriptorOffset = sequenceDescriptor[1];
       (control->selectable).base.leftOffset = *sequenceDescriptor;
       (control->selectable).base.topOffset = descriptorOffset;
@@ -96,11 +96,11 @@ UiSpriteButtonControl_DrawClipped
           UiPixelCoordinate clipRight,UiSpriteButtonControl *control)
 
 {
-  sbyte drawOffsetX;
-  sbyte drawOffsetY;
+  int8_t drawOffsetX;
+  int8_t drawOffsetY;
   bool accessFailed;
-  dword underlaySubresource;
-  dword subresourceIndex;
+  uint32_t underlaySubresource;
+  uint32_t subresourceIndex;
   GraphicsTextureSourceAsset *textureSource;
   SoftwareFramebufferAccess *framebufferAccess;
   
@@ -419,10 +419,10 @@ UiImageActionControl_DrawImageAndChildren
 
 {
   int imageBottom;
-  uint sourceWidth;
+  uint32_t sourceWidth;
   int drawWidth;
-  dword scaledHeight;
-  uint horizontalMargin;
+  uint32_t scaledHeight;
+  uint32_t horizontalMargin;
   int imageLeft;
   int imageTop;
   bool accessFailed;
@@ -441,7 +441,7 @@ UiImageActionControl_DrawImageAndChildren
       else {
         sourceWidth = control->letterboxWidth;
         horizontalMargin = control->base.layoutWidth - sourceWidth;
-        if (((uint)control->base.layoutWidth < sourceWidth || horizontalMargin == 0) ||
+        if (((uint32_t)control->base.layoutWidth < sourceWidth || horizontalMargin == 0) ||
            ((control->displayFlags & 4) == 0)) {
           (*g_GraphicsTextureSourceStretchDirectColorBilinear)
                     (control->base.layoutHeight,control->base.layoutWidth,control->base.top,control->base.left,
@@ -450,8 +450,8 @@ UiImageActionControl_DrawImageAndChildren
           (*g_GraphicsFramebufferEndAccess)();
         }
         else {
-          scaledHeight = (dword)(((longlong)(int)sourceWidth * (longlong)control->base.layoutHeight) /
-                        (longlong)control->base.layoutWidth);
+          scaledHeight = (uint32_t)(((int64_t)(int)sourceWidth * (int64_t)control->base.layoutHeight) /
+                        (int64_t)control->base.layoutWidth);
           imageLeft = (horizontalMargin >> 1) + control->base.left;
           imageTop = (control->base.layoutHeight - scaledHeight >> 1) + control->base.top;
           drawWidth = control->letterboxWidth;
@@ -560,12 +560,12 @@ UiConditionalActionControl_DrawClipped
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control)
 
 {
-  dword tileEnd;
+  uint32_t tileEnd;
   int textLeft;
-  dword tileStart;
+  uint32_t tileStart;
   int drawX;
   int innerHeightOrBottom;
-  dword lineIndexOrCount;
+  uint32_t lineIndexOrCount;
   int innerWidthOrRight;
   bool accessFailed;
   RichTextExtentRegs textExtent;
@@ -722,8 +722,8 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSpriteButtonControl_AdvanceAnimation(UiSpriteButtonControl *control)
 
 {
-  dword subresourceStart;
-  uint subresourceEndExclusive;
+  uint32_t subresourceStart;
+  uint32_t subresourceEndExclusive;
   UiSelectableStateFlags *stateFlagsField;
   
   if (((control->selectable).stateFlags & 0x80) != 0) {

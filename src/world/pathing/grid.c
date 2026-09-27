@@ -29,20 +29,20 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
 {
   GraphicsFixedVec3 *entityTranslation;
   ModelRuntimeClassId runtimeClassId;
-  longlong wideProductXOrY;
-  longlong wideProductY;
+  int64_t wideProductXOrY;
+  int64_t wideProductY;
   WorldPositionXYEaxEdx8 targetWorldPosition;
   WorldPositionXYEaxEdx8 fallbackWorldPosition;
-  byte gridClassShift;
+  uint8_t gridClassShift;
   int startColumnOrScratch;
-  dword columnLimitOrWidth;
+  uint32_t columnLimitOrWidth;
   GridPathUnreachableReferenceColumn32 referenceColumn;
   FieldGridRegionMask callerBlockingMask;
-  uint scaledRowTerm;
+  uint32_t scaledRowTerm;
   int cellCoordOrStrideBytes;
   int gridY;
   int rawTargetRow;
-  dword rowLimit;
+  uint32_t rowLimit;
   GridPathUnreachableReferenceRow32 referenceRow;
   GridScratchCell *routeScratchCell;
   bool segmentClear;
@@ -59,10 +59,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   fallbackWorldPosition.worldYQ12 = targetWorldYQ12;
   fallbackWorldPosition.worldXQ12 = targetWorldXQ12;
   entityModelNode = (routeEntityRuntime->common).ownership.modelNode;
-  wideProductXOrY = (longlong)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
-  wideProductY = (longlong)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
-  scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
-  startColumnOrScratch = (int)((((int)((ulonglong)wideProductXOrY >> 0x20) << 0xc | (uint)wideProductXOrY >> 0x14) - scaledRowTerm) + 0x800)
+  wideProductXOrY = (int64_t)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
+  wideProductY = (int64_t)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
+  scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
+  startColumnOrScratch = (int)((((int)((uint64_t)wideProductXOrY >> 0x20) << 0xc | (uint32_t)wideProductXOrY >> 0x14) - scaledRowTerm) + 0x800)
           >> 10;
   cellCoordOrStrideBytes = (int)(scaledRowTerm * 2 + 0x800) >> 10;
   if (startColumnOrScratch < 1) {
@@ -81,10 +81,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   }
   startColumnOrScratch = columnLimitOrWidth - 2;
   gridY = rowLimit - 2;
-  scaledRowTerm = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-           (uint)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
-  cellCoordOrStrideBytes = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                  (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
+  scaledRowTerm = (int)((uint64_t)((int64_t)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+           (uint32_t)((int64_t)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
+  cellCoordOrStrideBytes = (int)((((int)((uint64_t)((int64_t)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                  (uint32_t)((int64_t)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
            10;
   rawTargetRow = (int)(scaledRowTerm * 2 + 0x800) >> 10;
   if (cellCoordOrStrideBytes < 1) {
@@ -115,11 +115,11 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   armyRuntime = (routeEntityRuntime->common).ownership.runtimeLink;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove[runtimeClassId])
             (routeEntityRuntime);
-  g_GridPathEntityClassMask = 1 << ((byte)armyRuntime->factionIndex & 0x1f);
-  gridClassShift = (byte)modelDefinition->gridClassification260;
+  g_GridPathEntityClassMask = 1 << ((uint8_t)armyRuntime->factionIndex & 0x1f);
+  gridClassShift = (uint8_t)modelDefinition->gridClassification260;
   g_GridPathHighCostMask = 0x10000 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
-       0x100 << (gridClassShift & 0x1f) | 0x1000000 << ((byte)modelDefinition->gridClassification264 & 0x1f);
+       0x100 << (gridClassShift & 0x1f) | 0x1000000 << ((uint8_t)modelDefinition->gridClassification264 & 0x1f);
   nearestCell = GridPathCost_FindNearestUnblockedCell(gridY,startColumnOrScratch);
   columnLimitOrWidth = g_GridScratchWidth;
   if (nearestCell.carry) {
@@ -132,11 +132,11 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
     }
     else {
       startColumnOrScratch = nearestCell.selectedRow * 0x400 + -0x600;
-      wideProductXOrY = (longlong)(startColumnOrScratch + (nearestCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-      wideProductY = (longlong)startColumnOrScratch * -1999;
+      wideProductXOrY = (int64_t)(startColumnOrScratch + (nearestCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+      wideProductY = (int64_t)startColumnOrScratch * -1999;
       primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                         ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
-                          (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
+                         ((int)((uint64_t)wideProductY >> 0x20) << 0x14 | (uint32_t)wideProductY >> 0xc,
+                          (int)((uint64_t)wideProductXOrY >> 0x20) << 0x13 | (uint32_t)wideProductXOrY >> 0xd,
                           routeEntityRuntime,worldRuntime);
     }
   }
@@ -158,10 +158,10 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
            (0x7ffffffe < routeScratchCell[columnLimitOrWidth * 2].pathCost)))))) {
         reachableRegionCell = GridPathRegion_MarkUnreachableFromCell(referenceRow,referenceColumn,gridY,startColumnOrScratch);
         cellCoordOrStrideBytes = reachableRegionCell.selectedRow * 0x400 + -0x600;
-        wideProductXOrY = (longlong)(cellCoordOrStrideBytes + (reachableRegionCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-        targetWorldXQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd;
-        wideProductXOrY = (longlong)cellCoordOrStrideBytes * -1999;
-        targetWorldYQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x14 | (uint)wideProductXOrY >> 0xc;
+        wideProductXOrY = (int64_t)(cellCoordOrStrideBytes + (reachableRegionCell.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+        targetWorldXQ12 = (int)((uint64_t)wideProductXOrY >> 0x20) << 0x13 | (uint32_t)wideProductXOrY >> 0xd;
+        wideProductXOrY = (int64_t)cellCoordOrStrideBytes * -1999;
+        targetWorldYQ12 = (int)((uint64_t)wideProductXOrY >> 0x20) << 0x14 | (uint32_t)wideProductXOrY >> 0xc;
         GridScratch_ResetTraversalFlagsAndCosts();
         GridPathCost_PropagateWeightedHexNeighbors
                   (6,routeScratchCell,reachableRegionCell.selectedRow,reachableRegionCell.selectedColumn);
@@ -174,7 +174,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       targetWorldPosition.worldYQ12 = targetWorldYQ12;
       targetWorldPosition.worldXQ12 = targetWorldXQ12;
       callerBlockingMask = g_GridPathHighCostMask;
-      if ((*(uint *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0x18) & 2) != 0) {
+      if ((*(uint32_t *)((int)(routeEntityRuntime->common).ownership.runtimeLink + 0x18) & 2) != 0) {
         callerBlockingMask = 0;
       }
       backtrackResult = GridPathCost_BacktrackBestHexRoute
@@ -183,21 +183,21 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
       if (!backtrackResult.carry) {
         if (backtrackResult.routeStateMask == 0) {
           startColumnOrScratch = backtrackResult.selectedRow * 0x400 + -0x600;
-          wideProductXOrY = (longlong)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-          wideProductY = (longlong)startColumnOrScratch * -1999;
+          wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+          wideProductY = (int64_t)startColumnOrScratch * -1999;
           primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
-                              (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
+                             ((int)((uint64_t)wideProductY >> 0x20) << 0x14 | (uint32_t)wideProductY >> 0xc,
+                              (int)((uint64_t)wideProductXOrY >> 0x20) << 0x13 | (uint32_t)wideProductXOrY >> 0xd,
                               routeEntityRuntime,worldRuntime);
           fallbackWorldPosition = targetWorldPosition;
         }
         else {
           startColumnOrScratch = backtrackResult.selectedRow * 0x400 + -0x600;
-          wideProductXOrY = (longlong)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
-          wideProductY = (longlong)startColumnOrScratch * -1999;
+          wideProductXOrY = (int64_t)(startColumnOrScratch + (backtrackResult.selectedColumn * 0x400 + -0x600) * 2) * 0x901;
+          wideProductY = (int64_t)startColumnOrScratch * -1999;
           primaryWorldPosition = EntityPathing_RebuildOverlappingGroupRoutes
-                             ((int)((ulonglong)wideProductY >> 0x20) << 0x14 | (uint)wideProductY >> 0xc,
-                              (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd,
+                             ((int)((uint64_t)wideProductY >> 0x20) << 0x14 | (uint32_t)wideProductY >> 0xc,
+                              (int)((uint64_t)wideProductXOrY >> 0x20) << 0x13 | (uint32_t)wideProductXOrY >> 0xd,
                               routeEntityRuntime,worldRuntime);
         }
         goto EntityPathing_ResolveDestinationAndRebuildRoutes_RestoreGridInfluenceAndReturn;
@@ -244,12 +244,12 @@ GridReachability_RebuildConnectedRegionAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  dword scratchWidth;
-  uint cellsRemainingOrRowTerm;
+  uint32_t scratchWidth;
+  uint32_t cellsRemainingOrRowTerm;
   int columnOrCellsRemaining;
   int cellRow;
   GridScratchCell *scratchCursor;
-  dword rowStrideBytes;
+  uint32_t rowStrideBytes;
   bool moreBlocksRemain;
   
   cellsRemainingOrRowTerm = g_GridScratchWidth * g_GridScratchHeight;
@@ -293,10 +293,10 @@ GridReachability_RebuildConnectedRegionAroundWorldPoint
   } while (moreBlocksRemain && cellsRemainingOrRowTerm != 0);
   GridFootprint_ClearTraversalFlagsAroundWorldPoint(radiusMetric * 3,worldYQ12,worldXQ12);
   scratchWidth = g_GridScratchWidth;
-  cellsRemainingOrRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  columnOrCellsRemaining = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - cellsRemainingOrRowTerm) + 0x800) >> 10;
+  cellsRemainingOrRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  columnOrCellsRemaining = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - cellsRemainingOrRowTerm) + 0x800) >> 10;
   if ((((columnOrCellsRemaining < 0) || (cellRow = (int)(cellsRemainingOrRowTerm * 2 + 0x800) >> 10, cellRow < 0)) ||
       ((int)g_GridScratchWidth <= columnOrCellsRemaining)) || ((int)g_GridScratchHeight <= cellRow)) {
     return true;
@@ -370,15 +370,15 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
 {
   FieldGridDimension fieldGridWidth;
   FieldCellPackedFlagsAndMaterial cellFlags;
-  longlong wideProductX;
-  longlong wideProductY;
-  dword scratchWidth;
-  dword scratchStride;
+  int64_t wideProductX;
+  int64_t wideProductY;
+  uint32_t scratchWidth;
+  uint32_t scratchStride;
   int countOrWaterDeltaOrColumn;
   GridScratchStateMask cellClassMask;
   FieldGridDimension columnsRemaining;
   int angleOrCountOrRow;
-  uint scaledRowTerm;
+  uint32_t scaledRowTerm;
   int triangle0Angle;
   FieldGridCell *fieldCell;
   GridScratchCell *promoteCursor;
@@ -418,13 +418,13 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
   scratchCursor = g_GridScratchPrimary;
   do {
     do {
-      cellClassMask = ((uint)((fieldCell->occupancyMask & 0xf900) != 0) +
-              ((uint)((fieldCell->occupancyMask & 0xf90000) != 0) +
-              ((uint)((fieldCell->occupancyMask & 0xf9000000) != 0) +
-              ((uint)((fieldCell->occupancyMask & 0xf900000000) != 0) +
-              ((uint)((fieldCell->occupancyMask & 0xf90000000000) != 0) +
-              ((uint)((fieldCell->occupancyMask & 0xf9000000000000) != 0) +
-              (uint)((fieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2) * 2) *
+      cellClassMask = ((uint32_t)((fieldCell->occupancyMask & 0xf900) != 0) +
+              ((uint32_t)((fieldCell->occupancyMask & 0xf90000) != 0) +
+              ((uint32_t)((fieldCell->occupancyMask & 0xf9000000) != 0) +
+              ((uint32_t)((fieldCell->occupancyMask & 0xf900000000) != 0) +
+              ((uint32_t)((fieldCell->occupancyMask & 0xf90000000000) != 0) +
+              ((uint32_t)((fieldCell->occupancyMask & 0xf9000000000000) != 0) +
+              (uint32_t)((fieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2) * 2) *
               2) * 2;
       countOrWaterDeltaOrColumn = fieldCell->waterSurfaceDelta;
       triangle0Angle = (int)fieldCell->triangle0NormalAngles >> 0x10;
@@ -566,10 +566,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
          (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
-        wideProductX = (longlong)ownerNode->worldXQ12 * 0x1c6e9c;
-        wideProductY = (longlong)ownerNode->worldYQ12 * -0x20c8cc;
-        scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
-        countOrWaterDeltaOrColumn = (int)((((int)((ulonglong)wideProductX >> 0x20) << 0xc | (uint)wideProductX >> 0x14) - scaledRowTerm) +
+        wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
+        wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
+        scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
+        countOrWaterDeltaOrColumn = (int)((((int)((uint64_t)wideProductX >> 0x20) << 0xc | (uint32_t)wideProductX >> 0x14) - scaledRowTerm) +
                      0x800) >> 10;
         if (((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
            ((countOrWaterDeltaOrColumn < (int)g_GridScratchWidth && (angleOrCountOrRow < (int)g_GridScratchHeight)))) {
@@ -600,10 +600,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
          (*(int *)(*(int *)ownerNode->runtimePayload + 0x278) != 1)) {
-        wideProductX = (longlong)ownerNode->worldXQ12 * 0x1c6e9c;
-        wideProductY = (longlong)ownerNode->worldYQ12 * -0x20c8cc;
-        scaledRowTerm = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
-        countOrWaterDeltaOrColumn = (int)((((int)((ulonglong)wideProductX >> 0x20) << 0xc | (uint)wideProductX >> 0x14) - scaledRowTerm) +
+        wideProductX = (int64_t)ownerNode->worldXQ12 * 0x1c6e9c;
+        wideProductY = (int64_t)ownerNode->worldYQ12 * -0x20c8cc;
+        scaledRowTerm = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
+        countOrWaterDeltaOrColumn = (int)((((int)((uint64_t)wideProductX >> 0x20) << 0xc | (uint32_t)wideProductX >> 0x14) - scaledRowTerm) +
                      0x800) >> 10;
         if ((((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
             (countOrWaterDeltaOrColumn < (int)g_GridScratchWidth)) && (angleOrCountOrRow < (int)g_GridScratchHeight)) {
@@ -649,8 +649,8 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
   targetModelDefinition = (ModelDefinitionRuntimeSemanticView280 *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   unreachable = GridScratch_TestWorldPointReachabilityCf
-                    (0x100 << ((byte)targetModelDefinition->gridClassification260 & 0x1f) |
-                     0x1000000 << ((byte)targetModelDefinition->gridClassification264 & 0x1f),
+                    (0x100 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
+                     0x1000000 << ((uint8_t)targetModelDefinition->gridClassification264 & 0x1f),
                      sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.y,
                      (targetRuntimePair->modelNodeRuntime->worldTransform).translation.x);
@@ -672,15 +672,15 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
 {
   GridScratchCell *previousSecondaryScratchBuffer;
   GridScratchCell **previousCostQueueBuffer;
-  dword *newScratchBuffer;
-  dword *newSecondaryScratchBuffer;
+  uint32_t *newScratchBuffer;
+  uint32_t *newSecondaryScratchBuffer;
   void *newAuxiliaryBuffer;
-  dword bytes;
+  uint32_t bytes;
   bool allocationSizeOverflow;
   ArenaAllocEaxCf5 allocResult;
   ArenaFreeEaxCf5 freeResult;
   GridScratchAllocEaxCf5 failureResult;
-  longlong scratchAllocationByteCountProduct;
+  int64_t scratchAllocationByteCountProduct;
   GridScratchCell *previousScratchBuffer;
   
   g_GridScratchWidth = fieldGrid->gridWidth * 4;
@@ -688,7 +688,7 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
   bytes = fieldGrid->gridWidth * 0x20 * g_GridScratchHeight;
   allocResult = (*g_MemoryApi.alloc)(bytes);
   previousScratchBuffer = g_GridScratchPrimary;
-  newScratchBuffer = (dword *)allocResult.eax;
+  newScratchBuffer = (uint32_t *)allocResult.eax;
   if (!allocResult.carry) {
     LOCK();
     UNLOCK();
@@ -696,7 +696,7 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
     (*g_MemoryApi.free)(previousScratchBuffer);
     allocResult = (*g_MemoryApi.alloc)(bytes);
     previousSecondaryScratchBuffer = g_GridScratchSecondary;
-    newSecondaryScratchBuffer = (dword *)allocResult.eax;
+    newSecondaryScratchBuffer = (uint32_t *)allocResult.eax;
     newScratchBuffer = newSecondaryScratchBuffer;
     if (!allocResult.carry) {
       LOCK();
@@ -711,12 +711,12 @@ GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
         g_GridPathCostQueueEnd = (GridScratchCell **)((int)newAuxiliaryBuffer + 0x180000);
         g_GridPathCostQueueBegin = newAuxiliaryBuffer;
         freeResult = (*g_MemoryApi.free)(previousCostQueueBuffer);
-        return THANDOR_BITCAST(qword, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, qword, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, GridScratchAllocEaxCf5, ((THANDOR_BITCAST(ArenaFreeEaxCf5, uint64_t, freeResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
   failureResult.carry = true;
-  failureResult.eax = (dword)newScratchBuffer;
+  failureResult.eax = (uint32_t)newScratchBuffer;
   return failureResult;
 }
 
@@ -749,16 +749,16 @@ void __thandor_void_preserve_eax_ecx_edx
 GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 
 {
-  uint *lowerScratchCursor;
+  uint32_t *lowerScratchCursor;
   FieldGridDimension columnsRemaining;
   FieldGridCell *currentFieldCell;
-  dword *scratchCellCursor;
-  uint *propagatedScratchCursor;
+  uint32_t *scratchCellCursor;
+  uint32_t *propagatedScratchCursor;
   FieldGridDimension rowsRemaining;
   FieldGridDimension gridWidth;
-  uint propagatedOccupancyGroupMask;
-  dword scratchWidth;
-  uint *nextScratchCellCursor;
+  uint32_t propagatedOccupancyGroupMask;
+  uint32_t scratchWidth;
+  uint32_t *nextScratchCellCursor;
   FieldGridCell *nextFieldCell;
   
   scratchWidth = g_GridScratchWidth;
@@ -773,13 +773,13 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
       nextScratchCellCursor = scratchCellCursor + 8;
       if ((currentFieldCell->flagsAndMaterial & 0x88006000) == 0) {
         propagatedOccupancyGroupMask =
-             ((uint)((currentFieldCell->occupancyMask & 0xf900) != 0) +
-             ((uint)((currentFieldCell->occupancyMask & 0xf90000) != 0) +
-             ((uint)((currentFieldCell->occupancyMask & 0xf9000000) != 0) +
-             ((uint)((currentFieldCell->occupancyMask & 0xf900000000) != 0) +
-             ((uint)((currentFieldCell->occupancyMask & 0xf90000000000) != 0) +
-             ((uint)((currentFieldCell->occupancyMask & 0xf9000000000000) != 0) +
-             (uint)((currentFieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2)
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf900) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf90000) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf9000000) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf900000000) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf90000000000) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask & 0xf9000000000000) != 0) +
+             (uint32_t)((currentFieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2)
              * 2) * 2) * 2;
         scratchCellCursor[scratchWidth * -4 + 4] =
              scratchCellCursor[scratchWidth * -4 + 4] | propagatedOccupancyGroupMask;
@@ -870,18 +870,18 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestProjectedCellMaskBandsCf
-          (Q12 worldYQ12,Q12 worldXQ12,byte lowBandIndex,byte highBandIndex)
+          (Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
   GridScratchStateMask cellStateMask;
   int cellColumn;
-  uint scaledRowTerm;
+  uint32_t scaledRowTerm;
   int cellRow;
   
-  scaledRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  cellColumn = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10;
+  scaledRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  cellColumn = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10;
   if ((((-1 < cellColumn) && (cellRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < cellRow)) &&
       (cellColumn < (int)g_GridScratchWidth)) && (cellRow < (int)g_GridScratchHeight)) {
     cellStateMask = g_GridScratchPrimary[cellRow * g_GridScratchWidth + cellColumn].stateMask;
@@ -912,21 +912,21 @@ EntityPathing_RebuildOverlappingGroupRoutes
           WorldRuntimeContext *worldRuntime)
 
 {
-  sdword swappedPriority;
+  int32_t swappedPriority;
   int entityWorldY;
   GameEntityRuntime *candidateEntity;
   void *candidateRecord;
   void *candidateDefinition;
-  sdword rootPriority;
+  int32_t rootPriority;
   EntityPathingPriorityPair *heapBase;
   DepthBinMask32 secondMaskHigh;
   DepthBinMask32 secondMaskLow;
   int searchRadius;
   DepthIntervalRadius32 intervalRadius;
   int entityWorldXOrScratch;
-  dword pairsRemaining;
-  dword routesRemaining;
-  uint heapSize;
+  uint32_t pairsRemaining;
+  uint32_t routesRemaining;
+  uint32_t heapSize;
   WorldOwnerListNode100 *ownerNode;
   int deltaY;
   EntityPathingPriorityPair *influencePair;
@@ -987,11 +987,11 @@ EntityPathing_RebuildOverlappingGroupRoutes
     do {
       candidateRecord = (pairCursor->entity->common).ownership.runtimeLink;
       candidateDefinition = (pairCursor->entity->common).ownership.definitionOrClassRecord;
-      if ((((*(uint *)((int)candidateRecord + 0x18) & 2) == 0) &&
+      if ((((*(uint32_t *)((int)candidateRecord + 0x18) & 2) == 0) &&
           (pairCursor->priority = pairCursor->priority + 1,
           entityWorldXOrScratch == *(int *)((int)candidateRecord + 0xc))) &&
          (pairCursor->priority = pairCursor->priority + 1,
-         (*(uint *)((int)candidateRecord + 0x18) & 1) == 0)) {
+         (*(uint32_t *)((int)candidateRecord + 0x18) & 1) == 0)) {
         pairCursor->priority = pairCursor->priority + *(int *)((int)candidateDefinition + 0xc);
       }
       heapBase = g_EntityPathingPriorityPairs;
@@ -1082,13 +1082,13 @@ GridFootprint_ClearTraversalFlagsAroundWorldPoint
           (FieldGridRadiusUnits radiusWorldUnits,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong wideProduct;
+  int64_t wideProduct;
   int radiusColumnOrWalkerY;
-  uint currentY;
-  uint rowTermOrWalkerY;
+  uint32_t currentY;
+  uint32_t rowTermOrWalkerY;
   int rowOrWalkerY;
-  uint cellCenterCoord;
-  uint currentX;
+  uint32_t cellCenterCoord;
+  uint32_t currentX;
   int walkerResult;
   GridScratchCell *centerCellCursor;
   GridScratchCell *oppositeWalkCursor;
@@ -1096,18 +1096,18 @@ GridFootprint_ClearTraversalFlagsAroundWorldPoint
   
   radiusColumnOrWalkerY = radiusWorldUnits + g_GridInfluenceRadiusOffset6 + 499;
   g_GridInfluenceSquaredThreshold6 = radiusColumnOrWalkerY * radiusColumnOrWalkerY;
-  rowTermOrWalkerY = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  radiusColumnOrWalkerY = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrWalkerY) + 0x800) >> 10;
+  rowTermOrWalkerY = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  radiusColumnOrWalkerY = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrWalkerY) + 0x800) >> 10;
   if ((((-1 < radiusColumnOrWalkerY) && (rowOrWalkerY = (int)(rowTermOrWalkerY * 2 + 0x800) >> 10, -1 < rowOrWalkerY)) &&
       (radiusColumnOrWalkerY < (int)g_GridScratchWidth)) && (rowOrWalkerY < (int)g_GridScratchHeight)) {
     centerCellCursor = g_GridScratchPrimary + g_GridScratchWidth * rowOrWalkerY + radiusColumnOrWalkerY;
     rowOrWalkerY = rowOrWalkerY * 0x400 + -0x600;
-    wideProduct = (longlong)(rowOrWalkerY + (radiusColumnOrWalkerY * 0x400 + -0x600) * 2) * 0x901;
-    cellCenterCoord = (int)((ulonglong)wideProduct >> 0x20) << 0x13 | (uint)wideProduct >> 0xd;
-    wideProduct = (longlong)rowOrWalkerY * -1999;
-    currentX = (int)((ulonglong)wideProduct >> 0x20) << 0x14 | (uint)wideProduct >> 0xc;
+    wideProduct = (int64_t)(rowOrWalkerY + (radiusColumnOrWalkerY * 0x400 + -0x600) * 2) * 0x901;
+    cellCenterCoord = (int)((uint64_t)wideProduct >> 0x20) << 0x13 | (uint32_t)wideProduct >> 0xd;
+    wideProduct = (int64_t)rowOrWalkerY * -1999;
+    currentX = (int)((uint64_t)wideProduct >> 0x20) << 0x14 | (uint32_t)wideProduct >> 0xc;
     rowTermOrWalkerY = cellCenterCoord;
     walkCursor = centerCellCursor;
     if ((centerCellCursor->stateMask & 0x80000000) == 0) {
@@ -1186,17 +1186,17 @@ EntityPathing_UpdateRouteSegment
 
 {
   ArmyMovementRuntime *entityMovement;
-  longlong wideProductXOrY;
-  longlong wideProductY;
+  int64_t wideProductXOrY;
+  int64_t wideProductY;
   UQ12 segmentWorldXQ12;
-  byte gridClassShift;
+  uint8_t gridClassShift;
   int startColumnOrDeltaX;
   int targetColumn;
-  dword columnLimitOrRadius;
-  uint rowTermOrSubdivisions;
+  uint32_t columnLimitOrRadius;
+  uint32_t rowTermOrSubdivisions;
   int startRowOrDeltaY;
   int targetRow;
-  dword rowLimit;
+  uint32_t rowLimit;
   UQ12 entityWorldYOrMidpoint;
   bool segmentClear;
   WorldPositionXYEaxEdx8 resolvedTarget;
@@ -1209,10 +1209,10 @@ EntityPathing_UpdateRouteSegment
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceRemove
     [routeEntityRuntime->modelDefinition->runtimeClassId4C])
             ((GameEntityRuntime *)routeEntityRuntime);
-  wideProductXOrY = (longlong)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
-  wideProductY = (longlong)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
-  rowTermOrSubdivisions = (int)((ulonglong)wideProductY >> 0x20) << 0xb | (uint)wideProductY >> 0x15;
-  startColumnOrDeltaX = (int)((((int)((ulonglong)wideProductXOrY >> 0x20) << 0xc | (uint)wideProductXOrY >> 0x14) - rowTermOrSubdivisions) + 0x800) >>
+  wideProductXOrY = (int64_t)(entityModelNode->worldTransform).translation.x * 0x1c6e9c;
+  wideProductY = (int64_t)(entityModelNode->worldTransform).translation.y * -0x20c8cc;
+  rowTermOrSubdivisions = (int)((uint64_t)wideProductY >> 0x20) << 0xb | (uint32_t)wideProductY >> 0x15;
+  startColumnOrDeltaX = (int)((((int)((uint64_t)wideProductXOrY >> 0x20) << 0xc | (uint32_t)wideProductXOrY >> 0x14) - rowTermOrSubdivisions) + 0x800) >>
           10;
   startRowOrDeltaY = (int)(rowTermOrSubdivisions * 2 + 0x800) >> 10;
   if (startColumnOrDeltaX < 1) {
@@ -1236,10 +1236,10 @@ EntityPathing_UpdateRouteSegment
     targetWorldXQ12 = entityMovement->movementWorldXQ12;
     targetWorldYQ12 = entityMovement->movementWorldYQ12;
   }
-  rowTermOrSubdivisions = (int)((ulonglong)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
-  targetColumn = (int)((((int)((ulonglong)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrSubdivisions) + 0x800) >> 10;
+  rowTermOrSubdivisions = (int)((uint64_t)((int64_t)(int)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)(int)targetWorldYQ12 * -0x20c8cc) >> 0x15;
+  targetColumn = (int)((((int)((uint64_t)((int64_t)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)(int)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - rowTermOrSubdivisions) + 0x800) >> 10;
   targetRow = (int)(rowTermOrSubdivisions * 2 + 0x800) >> 10;
   if (targetColumn < 1) {
     targetColumn = 1;
@@ -1255,12 +1255,12 @@ EntityPathing_UpdateRouteSegment
   if ((int)g_GridScratchHeight < (int)(targetRow + 2U)) {
     rowLimit = g_GridScratchHeight;
   }
-  g_GridPathEntityClassMask = 1 << ((byte)entityMovement->factionIndex & 0x1f);
-  gridClassShift = (byte)routeEntityRuntime->modelDefinition->gridClassification260;
+  g_GridPathEntityClassMask = 1 << ((uint8_t)entityMovement->factionIndex & 0x1f);
+  gridClassShift = (uint8_t)routeEntityRuntime->modelDefinition->gridClassification260;
   g_GridPathHighCostMask = 0x10000 << (gridClassShift & 0x1f);
   g_GridPathBlockingMask =
        0x100 << (gridClassShift & 0x1f) |
-       0x1000000 << ((byte)routeEntityRuntime->modelDefinition->gridClassification264 & 0x1f);
+       0x1000000 << ((uint8_t)routeEntityRuntime->modelDefinition->gridClassification264 & 0x1f);
   nearestCell = GridPathCost_FindNearestUnblockedCell(startRowOrDeltaY,startColumnOrDeltaX);
   targetColumn = nearestCell.selectedColumn;
   targetRow = nearestCell.selectedRow;
@@ -1270,10 +1270,10 @@ EntityPathing_UpdateRouteSegment
                           g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
      targetColumn = columnLimitOrRadius - 2, targetRow = rowLimit - 2, segmentClear)) {
     startColumnOrDeltaX = targetRow * 0x400 + -0x600;
-    wideProductXOrY = (longlong)(startColumnOrDeltaX + (targetColumn * 0x400 + -0x600) * 2) * 0x901;
-    targetWorldXQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x13 | (uint)wideProductXOrY >> 0xd;
-    wideProductXOrY = (longlong)startColumnOrDeltaX * -1999;
-    targetWorldYQ12 = (int)((ulonglong)wideProductXOrY >> 0x20) << 0x14 | (uint)wideProductXOrY >> 0xc;
+    wideProductXOrY = (int64_t)(startColumnOrDeltaX + (targetColumn * 0x400 + -0x600) * 2) * 0x901;
+    targetWorldXQ12 = (int)((uint64_t)wideProductXOrY >> 0x20) << 0x13 | (uint32_t)wideProductXOrY >> 0xd;
+    wideProductXOrY = (int64_t)startColumnOrDeltaX * -1999;
+    targetWorldYQ12 = (int)((uint64_t)wideProductXOrY >> 0x20) << 0x14 | (uint32_t)wideProductXOrY >> 0xc;
   }
   columnLimitOrRadius = routeEntityRuntime->modelDefinition->placementRadiusOrClearanceDC;
   {
@@ -1336,33 +1336,33 @@ EntityPathing_UpdateRouteSegment
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestWorldPointReachabilityCf
-          (uint traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
+          (uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
           GraphicsWorldCoordinateQ12 targetWorldXQ12)
 
 {
   GridScratchCell *sourceCell;
-  dword scratchWidth;
+  uint32_t scratchWidth;
   int cellsRemaining;
-  uint scaledRowTerm;
+  uint32_t scaledRowTerm;
   GridScratchCell *targetCell;
   GridScratchCell *clearCursor;
   bool unreachable;
   
   scratchWidth = g_GridScratchWidth;
-  scaledRowTerm = (int)((ulonglong)((longlong)sourceWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)sourceWorldYQ12 * -0x20c8cc) >> 0x15;
+  scaledRowTerm = (int)((uint64_t)((int64_t)sourceWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)sourceWorldYQ12 * -0x20c8cc) >> 0x15;
   sourceCell = g_GridScratchPrimary +
                ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-               ((int)((((int)((ulonglong)((longlong)sourceWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                       (uint)((longlong)sourceWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
+               ((int)((((int)((uint64_t)((int64_t)sourceWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                       (uint32_t)((int64_t)sourceWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >> 10
                );
-  scaledRowTerm = (int)((ulonglong)((longlong)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)targetWorldYQ12 * -0x20c8cc) >> 0x15;
+  scaledRowTerm = (int)((uint64_t)((int64_t)targetWorldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)targetWorldYQ12 * -0x20c8cc) >> 0x15;
   targetCell = g_GridScratchPrimary +
                 ((int)(scaledRowTerm * 2 + 0x800) >> 10) * g_GridScratchWidth +
-                ((int)((((int)((ulonglong)((longlong)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                        (uint)((longlong)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
+                ((int)((((int)((uint64_t)((int64_t)targetWorldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                        (uint32_t)((int64_t)targetWorldXQ12 * 0x1c6e9c) >> 0x14) - scaledRowTerm) + 0x800) >>
                 10);
   cellsRemaining = g_GridScratchHeight * g_GridScratchWidth;
   clearCursor = g_GridScratchPrimary;
@@ -1408,10 +1408,10 @@ GridPathCost_BacktrackBestHexRoute
           FieldGridCellCoordinate targetColumn,GridScratchCell *startCell)
 
 {
-  dword scratchWidth;
+  uint32_t scratchWidth;
   GridScratchCell *currentCell;
-  uint selectedCellIndex;
-  uint bestNeighborCost;
+  uint32_t selectedCellIndex;
+  uint32_t bestNeighborCost;
   GridScratchCell *rowAboveCell;
   GridScratchCell *bestNeighborCell;
   bool segmentClear;
@@ -1465,7 +1465,7 @@ GridPathCost_BacktrackBestHexRoute
     }
   }
   if (currentCell->pathCost != 0) {
-    selectedCellIndex = (uint)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
+    selectedCellIndex = (uint32_t)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
     selectedCell.selectedRow = selectedCellIndex / g_GridScratchWidth;
     selectedCell.selectedColumn = selectedCellIndex % g_GridScratchWidth;
     selectedCell.routeStateMask = callerBlockingMask;
@@ -1495,7 +1495,7 @@ GridPathRegion_MarkUnreachableFromCell
           FieldGridCellCoordinate column)
 
 {
-  ulonglong markedCellIndex;
+  uint64_t markedCellIndex;
   int rowBaseIndex;
   GridPathMarkedRegionCellRegisterResult markedCell;
   GridPathUnreachableRecursiveEdiEdx8 recursionResult;
@@ -1506,9 +1506,9 @@ GridPathRegion_MarkUnreachableFromCell
   recursionResult = GridPathRegion_MarkUnreachableRecursive
                     (g_GridScratchWidth << 3,g_GridScratchPrimary + rowBaseIndex + column,0x7fffffff
                      ,(rowBaseIndex + column) * 8);
-  markedCellIndex = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, ulonglong, recursionResult) >> 3 & 0x1fffffff;
+  markedCellIndex = THANDOR_BITCAST(GridPathUnreachableRecursiveEdiEdx8, uint64_t, recursionResult) >> 3 & 0x1fffffff;
   markedCell.selectedRow = (FieldGridCellCoordinate)(markedCellIndex / g_GridScratchWidth);
-  markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (ulonglong)g_GridScratchWidth);
+  markedCell.selectedColumn = (FieldGridCellCoordinate)(markedCellIndex % (uint64_t)g_GridScratchWidth);
   return markedCell;
 }
 
@@ -1523,8 +1523,8 @@ void __cdecl GridScratch_CopyPrimaryToSecondary(void)
 
 {
   int scratchDwordsRemaining;
-  dword *primaryReadCursor;
-  dword *secondaryWriteCursor;
+  uint32_t *primaryReadCursor;
+  uint32_t *secondaryWriteCursor;
   
   scratchDwordsRemaining = g_GridScratchWidth * g_GridScratchHeight * 2;
   primaryReadCursor = &g_GridScratchPrimary->stateMask;
@@ -1561,7 +1561,7 @@ void __thandor_preserve_eax GridScratch_SwapPrimarySecondary(void)
 */
 void __thandor_void_preserve_eax_ecx_edx
 GridScratch_FloodFillConnectedCellsRegs
-          (GridScratchStateMask traversalMask,dword rowStrideBytes,GridScratchCell *currentCell)
+          (GridScratchStateMask traversalMask,uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
   GridScratchCell *spanLeftOrPrevRowCursor;
@@ -1604,13 +1604,13 @@ GridScratch_FloodFillConnectedCellsRegs
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GridScratch_TestConnectedReachabilityRecursiveCfRegs
-          (dword traversalMask,dword rowStrideBytes,dword *currentCell,dword *targetCell)
+          (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell)
 
 {
-  dword *secondRowCursor;
-  uint *spanLeftBoundary;
-  uint *spanLeftCell;
-  dword *firstRowCursor;
+  uint32_t *secondRowCursor;
+  uint32_t *spanLeftBoundary;
+  uint32_t *spanLeftCell;
+  uint32_t *firstRowCursor;
   bool subRegionUnreachable;
   
   *currentCell = *currentCell | 1;
@@ -1636,18 +1636,18 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
     *currentCell = *currentCell | 1;
   }
   if (targetCell <= spanLeftBoundary) {
-    secondRowCursor = (dword *)(rowStrideBytes + (int)spanLeftBoundary);
-    firstRowCursor = (dword *)((int)spanLeftBoundary + (8 - rowStrideBytes));
+    secondRowCursor = (uint32_t *)(rowStrideBytes + (int)spanLeftBoundary);
+    firstRowCursor = (uint32_t *)((int)spanLeftBoundary + (8 - rowStrideBytes));
     while (((*firstRowCursor & traversalMask) != 0 ||
            (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
                               (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
       firstRowCursor = firstRowCursor + 2;
-      if ((dword *)((int)currentCell - rowStrideBytes) < firstRowCursor) {
+      if ((uint32_t *)((int)currentCell - rowStrideBytes) < firstRowCursor) {
         while (((*secondRowCursor & traversalMask) != 0 ||
                (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
                                   (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
           secondRowCursor = secondRowCursor + 2;
-          if ((dword *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= secondRowCursor) {
+          if ((uint32_t *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= secondRowCursor) {
             return true;
           }
         }
@@ -1656,18 +1656,18 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
     }
     return false;
   }
-  secondRowCursor = (dword *)((int)spanLeftCell - rowStrideBytes);
-  firstRowCursor = (dword *)((int)spanLeftBoundary + rowStrideBytes);
+  secondRowCursor = (uint32_t *)((int)spanLeftCell - rowStrideBytes);
+  firstRowCursor = (uint32_t *)((int)spanLeftBoundary + rowStrideBytes);
   while (((*firstRowCursor & traversalMask) != 0 ||
          (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
                             (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
     firstRowCursor = firstRowCursor + 2;
-    if ((dword *)((int)currentCell + rowStrideBytes) <= firstRowCursor) {
+    if ((uint32_t *)((int)currentCell + rowStrideBytes) <= firstRowCursor) {
       while (((*secondRowCursor & traversalMask) != 0 ||
              (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
                                 (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
         secondRowCursor = secondRowCursor + 2;
-        if ((dword *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < secondRowCursor) {
+        if ((uint32_t *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < secondRowCursor) {
           return true;
         }
       }
@@ -1693,8 +1693,8 @@ GridPathCost_PropagateWeightedHexNeighbors
 {
   GridPathCost currentCost;
   GridScratchStateMask neighborState;
-  dword scratchWidth;
-  uint neighborCost;
+  uint32_t scratchWidth;
+  uint32_t neighborCost;
   GridScratchCell **queueReadCursor;
   GridScratchCell *neighborCell;
   GridScratchCell *secondaryNeighborCell;
@@ -1863,8 +1863,8 @@ GridPathCost_PropagateWeightedHexNeighbors
 void GridScratch_ResetTraversalFlagsAndCosts(void)
 
 {
-  uint cellsRemaining;
-  dword *scratchRecordCursor;
+  uint32_t cellsRemaining;
+  uint32_t *scratchRecordCursor;
   bool fullRecordBlockRemaining;
   
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
@@ -1917,16 +1917,16 @@ void GridScratch_ResetTraversalFlagsAndCosts(void)
 */
 GridPathUnreachableRecursiveEdiEdx8 __thandor_eax_edx_cf_preserve_ecx
 GridPathRegion_MarkUnreachableRecursive
-          (dword rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
-          dword bestCellByteOffset)
+          (uint32_t rowStrideBytes,GridScratchCell *currentCell,GridPathCost bestCost,
+          uint32_t bestCellByteOffset)
 
 {
   GridScratchStateMask cellState;
-  uint spanByteOffset;
+  uint32_t spanByteOffset;
   GridPathCost referenceDistance;
   GridScratchCell *probeOrRightEndCell;
   int spanLength;
-  uint spanColumn;
+  uint32_t spanColumn;
   int columnDelta;
   GridPathCost columnDistance;
   GridScratchCell *leftEndCell;
@@ -1963,7 +1963,7 @@ GridPathRegion_MarkUnreachableRecursive
   }
   /* recurse into the adjacent rows along the span */
   spanByteOffset = (int)leftEndCell + (8 - (int)g_GridScratchPrimary);
-  spanLength = ((uint)((int)probeOrRightEndCell - (int)leftEndCell) >> 3) - 2;
+  spanLength = ((uint32_t)((int)probeOrRightEndCell - (int)leftEndCell) >> 3) - 2;
   spanColumn = (spanByteOffset >> 3) % g_GridScratchWidth;
   referenceDistance = (spanByteOffset >> 3) / g_GridScratchWidth - g_GridPathUnreachableRegionReferenceRow;
   if ((int)referenceDistance < 0) {
@@ -2046,7 +2046,7 @@ GridPathRegion_MarkUnreachableRecursive
 int __thandor_void_preserve_eax_ecx_edx
 GridFootprint_ClearTraversalFlagsDiagonalNegative
           (FieldGridCellCoordinate centerX,FieldGridCellCoordinate centerY,
-          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint *scratchRecord)
+          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint32_t *scratchRecord)
 
 {
   int nextCount;
@@ -2058,7 +2058,7 @@ GridFootprint_ClearTraversalFlagsDiagonalNegative
   do {
     visitedCount = nextCount;
     if (g_GridInfluenceSquaredThreshold6 <
-        (uint)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
+        (uint32_t)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
       return visitedCount;
     }
     *scratchRecord = *scratchRecord & 0x7ffffffe;
@@ -2084,7 +2084,7 @@ GridFootprint_ClearTraversalFlagsDiagonalNegative
 int __thandor_void_preserve_eax_ecx_edx
 GridFootprint_ClearTraversalFlagsDiagonalPositive
           (FieldGridCellCoordinate centerX,FieldGridCellCoordinate centerY,
-          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint *scratchRecord)
+          FieldGridCellCoordinate currentX,FieldGridCellCoordinate currentY,uint32_t *scratchRecord)
 
 {
   int nextCount;
@@ -2096,7 +2096,7 @@ GridFootprint_ClearTraversalFlagsDiagonalPositive
   do {
     visitedCount = nextCount;
     if (g_GridInfluenceSquaredThreshold6 <
-        (uint)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
+        (uint32_t)(squaredXDistanceMetric + (currentY - centerY) * (currentY - centerY))) {
       return visitedCount;
     }
     currentX = currentX + 999;
@@ -2116,7 +2116,7 @@ GridFootprint_ClearTraversalFlagsDiagonalPositive
    and influence-mask test. Expansion follows the six-neighbor staggered-grid topology.
 */
 void __thandor_void_preserve_eax_ecx_edx
-GridReachability_MarkOpenRegionRecursive(dword rowStrideBytes,GridScratchCell *currentCell)
+GridReachability_MarkOpenRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
   GridScratchCell *unusedScanCell;
@@ -2158,7 +2158,7 @@ GridReachability_MarkOpenRegionRecursive(dword rowStrideBytes,GridScratchCell *c
    the same six-neighbor topology.
 */
 void __thandor_void_preserve_eax_ecx_edx
-GridReachability_ClearCostedRegionRecursive(dword rowStrideBytes,GridScratchCell *currentCell)
+GridReachability_ClearCostedRegionRecursive(uint32_t rowStrideBytes,GridScratchCell *currentCell)
 
 {
   GridScratchCell *unusedScanCell;
@@ -2215,11 +2215,11 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
   int cellIndexOrMinColumn;
   int scanColumn;
   int hexDistance;
-  dword maxColumn;
+  uint32_t maxColumn;
   int scanWidth;
   int columnsRemaining;
   GridScratchStateMask blockedMask;
-  dword maxRow;
+  uint32_t maxRow;
   int bestHexDistance;
   int searchRow;
   int rowDelta;
@@ -2345,7 +2345,7 @@ GridPathLine_TestHexSegmentClearCf
 
 {
   GridScratchStateMask cellState;
-  uint endCellIndex;
+  uint32_t endCellIndex;
   int rowDelta;
   int thresholdOrColumnsLeft;
   int columnDelta;
@@ -2355,7 +2355,7 @@ GridPathLine_TestHexSegmentClearCf
   GridScratchCell *columnScanCell;
   GridScratchCell *columnEndCell;
   
-  endCellIndex = (uint)((int)endCell - (int)g_GridScratchPrimary) >> 3;
+  endCellIndex = (uint32_t)((int)endCell - (int)g_GridScratchPrimary) >> 3;
   rowDelta = endCellIndex / g_GridScratchWidth - startRow;
   columnDelta = endCellIndex % g_GridScratchWidth - startColumn;
   lineCursor = startCell;

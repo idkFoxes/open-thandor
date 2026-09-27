@@ -23,15 +23,15 @@ void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_AdvancePatternByPercentTick(SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  uint phaseTicks;
+  uint32_t phaseTicks;
   int previousTick;
-  uint radiusStep;
+  uint32_t radiusStep;
   UiBooleanState32 reverseRows;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   
   previousTick = maskRuntime->tickCounter;
   maskRuntime->tickCounter = maskRuntime->tickCounter + 1;
-  if (maskRuntime->maskPixels != (byte *)0x0) {
+  if (maskRuntime->maskPixels != (uint8_t *)0x0) {
     SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(maskRuntime);
     phaseTicks = previousTick + 0x14;
     radiusStep = phaseTicks % 100;
@@ -209,7 +209,7 @@ SoftwareRenderer_DrawQueueAuxiliary
   GraphicsPrimitivePacket *packet;
   GraphicsPrimitivePacket *currentPacket;
   GraphicsPrimitivePacketEaxCf5 queueCursor;
-  uint textureSubresourceIndex;
+  uint32_t textureSubresourceIndex;
   
   g_SoftwareAuxiliaryTargetBase = targetBase;
   queueCursor = GraphicsPrimitiveQueue_Begin(queue);
@@ -283,16 +283,16 @@ void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void)
 */
 DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoftwarePixelFormat_BaseDisplayModeHook
-          (dword modeArg0,dword modeArg1,FrontendDisplayDimensionPixels height,
+          (uint32_t modeArg0,uint32_t modeArg1,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width)
 
 {
   DisplayModeEaxCf5 hookResult;
   SoftwarePixelPackTables *packTables;
-  uint blueUnpackScale;
-  byte redBits;
-  byte greenBits;
-  byte blueBits;
+  uint32_t blueUnpackScale;
+  uint8_t redBits;
+  uint8_t greenBits;
+  uint8_t blueBits;
   ArenaAllocEaxCf5 tableAllocation;
   DisplayModeEaxCf5 failureResult;
   
@@ -308,9 +308,9 @@ SoftwarePixelFormat_BaseDisplayModeHook
   }
   g_SoftwarePixelPackTables = packTables;
   (*g_SoftwareBuildPixelPackTables)(g_SoftwareColorScaleQ16,g_SoftwareColorBiasQ16);
-  redBits = (byte)g_SoftwarePixelFormatConfig.redBitCount;
-  greenBits = (byte)g_SoftwarePixelFormatConfig.greenBitCount;
-  blueBits = (byte)g_SoftwarePixelFormatConfig.blueBitCount;
+  redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
+  greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
+  blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
   blueUnpackScale = 1 << (('\x10' - (char)g_SoftwarePixelFormatConfig.blueShift) - blueBits & 0x1f);
   hookResult.carry = false;
   hookResult.eax = blueUnpackScale;
@@ -358,7 +358,7 @@ SoftwareFramebuffer_Create
 
 {
   GraphicsPixelDimension *headerCursor;
-  uint pixelBytesOrWordsLeft;
+  uint32_t pixelBytesOrWordsLeft;
   ArenaAllocEaxCf5 frameAllocation;
   SoftwareFramebufferEaxCf5 createResult;
   
@@ -375,7 +375,7 @@ SoftwareFramebuffer_Create
       *headerCursor = 0;
       headerCursor = headerCursor + 1;
     }
-    frameAllocation = THANDOR_BITCAST(qword, ArenaAllocEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, frameAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+    frameAllocation = THANDOR_BITCAST(uint64_t, ArenaAllocEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, frameAllocation) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   createResult.framebuffer = (SoftwareFramebufferAccess *)frameAllocation.eax;
   createResult.carry = frameAllocation.carry;
@@ -405,8 +405,8 @@ SoftwarePixelFormat_BuildChannelPackTables
           (SoftwareColorTransformQ16 colorScaleQ16,SoftwareColorTransformQ16 colorBiasQ16)
 
 {
-  uint transformedChannelValueQ16;
-  uint channelIndex;
+  uint32_t transformedChannelValueQ16;
+  uint32_t channelIndex;
   SoftwarePixelPackTables *packTableCursor;
   
   channelIndex = 0;
@@ -422,15 +422,15 @@ SoftwarePixelFormat_BuildChannelPackTables
     packTableCursor->blue[0] =
          (transformedChannelValueQ16 >>
          (0x18U - (char)g_SoftwarePixelFormatConfig.blueBitCount & 0x1f)) <<
-         ((byte)g_SoftwarePixelFormatConfig.blueShift & 0x1f);
+         ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & 0x1f);
     packTableCursor->green[0] =
          (transformedChannelValueQ16 >>
          (0x18U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f)) <<
-         ((byte)g_SoftwarePixelFormatConfig.greenShift & 0x1f);
+         ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f);
     packTableCursor->red[0] =
          (transformedChannelValueQ16 >>
          (0x18U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f)) <<
-         ((byte)g_SoftwarePixelFormatConfig.redShift & 0x1f);
+         ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f);
     channelIndex = channelIndex + 1;
     packTableCursor = (SoftwarePixelPackTables *)(packTableCursor->blue + 1);
   } while (channelIndex < 0x100);
@@ -465,23 +465,23 @@ SoftwareTextureSource_BlitSourceAlpha16
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       if (region.palette != NULL) {
-        dword converted = Blit_PalettePixel(&region, *texel);
+        uint32_t converted = Blit_PalettePixel(&region, *texel);
         if (Blit_IsTransparent(converted)) {
           continue;
         }
-        *pixel = Blit_IsOpaque(converted) ? (word)converted
+        *pixel = Blit_IsOpaque(converted) ? (uint16_t)converted
                                           : Blit_BlendArgb16(Blit_PaletteColor(&region, *texel), *pixel);
       }
       else {
-        dword argb = *(const dword *)texel;
+        uint32_t argb = *(const uint32_t *)texel;
         if (Blit_IsTransparent(argb)) {
           continue;
         }
-        *pixel = Blit_IsOpaque(argb) ? (word)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
+        *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
       }
     }
   }
@@ -516,10 +516,10 @@ SoftwareTextureSource_BlitSourceAlpha32
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -556,10 +556,10 @@ SoftwareTextureSource_BlitHalfSourceRgb16
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const dword *)texel;
+      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(argb)) {
         continue;
       }
@@ -599,10 +599,10 @@ SoftwareTextureSource_BlitHalfSourceRgb32
   }
   sourceShift = region.palette != NULL ? 3 : 2;
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -637,52 +637,52 @@ SoftwareTextureSource_StretchDirectColorBilinear16
      setup fills for 555 or 565. */
   const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
   const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
-  const word *quantizeMask = (const word *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0x8);
+  const uint16_t *quantizeMask = (const uint16_t *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0x8);
   const short *packWeights = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwarePixelMmxConstants,0);
-  byte *asset = (byte *)sourceAsset;
-  byte *entry;
-  byte *sourceBase;
-  byte *sourceRow;
-  word *destinationRow;
-  dword pitchPixels;
-  dword sourceWidth;
-  dword sourceHeight;
-  dword stepX;
-  dword stepY;
-  dword fy;
-  dword row;
-  dword pair;
+  uint8_t *asset = (uint8_t *)sourceAsset;
+  uint8_t *entry;
+  uint8_t *sourceBase;
+  uint8_t *sourceRow;
+  uint16_t *destinationRow;
+  uint32_t pitchPixels;
+  uint32_t sourceWidth;
+  uint32_t sourceHeight;
+  uint32_t stepX;
+  uint32_t stepY;
+  uint32_t fy;
+  uint32_t row;
+  uint32_t pair;
 
-  if ((*(dword *)asset != 0x786667) || (subresourceIndex >= *(dword *)(asset + 0xb0))) {
+  if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
     return;
   }
-  entry = asset + *(dword *)(asset + 0xb8) + subresourceIndex * 0x20;
-  if ((*(dword *)((byte *)framebuffer + 8) != 2) || (*(sdword *)(entry + 8) != -1)) {
+  entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
+  if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 2) || (*(int32_t *)(entry + 8) != -1)) {
     return;
   }
-  pitchPixels = *(dword *)framebuffer;
-  destinationRow = (word *)*(byte **)((byte *)framebuffer + 0xc) +
+  pitchPixels = *(uint32_t *)framebuffer;
+  destinationRow = (uint16_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(dword *)(entry + 0x18);
-  sourceHeight = *(dword *)(entry + 0x1c);
+  sourceWidth = *(uint32_t *)(entry + 0x18);
+  sourceHeight = *(uint32_t *)(entry + 0x1c);
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(dword *)(entry + 0xc);
+  sourceBase = asset + *(uint32_t *)(entry + 0xc);
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
-    dword fx = 0;
-    dword *out = (dword *)destinationRow;
+    uint32_t fx = 0;
+    uint32_t *out = (uint32_t *)destinationRow;
     for (pair = destinationWidth >> 1; pair != 0; pair--) {
-      word packed[2];
+      uint16_t packed[2];
       int half;
       for (half = 0; half < 2; half++) {
-        dword x = fx >> 8;
-        const byte *p00 = sourceRow + x * 4;
-        const byte *p10 = sourceRow + sourceWidth * 4 + x * 4;
-        dword wx = fx & 0xff;
-        dword wy = fy & 0xff;
-        word lanes[4];
+        uint32_t x = fx >> 8;
+        const uint8_t *p00 = sourceRow + x * 4;
+        const uint8_t *p10 = sourceRow + sourceWidth * 4 + x * 4;
+        uint32_t wx = fx & 0xff;
+        uint32_t wy = fy & 0xff;
+        uint16_t lanes[4];
         int lane;
         unsigned long long madd;
         for (lane = 0; lane < 4; lane++) {
@@ -697,16 +697,16 @@ SoftwareTextureSource_StretchDirectColorBilinear16
           int value = (unsigned short)mixed >> 2;
           if (value > 0xff) value = 0xff;
           /* PUNPCKLBW x,x; PSLLW 4; PAND quantize mask */
-          lanes[lane] = (word)(((value * 0x101) << 4) & quantizeMask[lane]);
+          lanes[lane] = (uint16_t)(((value * 0x101) << 4) & quantizeMask[lane]);
         }
         /* PMADDWD: two signed dword sums, then the two shifted copies are added per word. */
-        madd = (unsigned long long)(dword)((short)lanes[0] * packWeights[0] + (short)lanes[1] * packWeights[1]) |
-               ((unsigned long long)(dword)((short)lanes[2] * packWeights[2] +
+        madd = (unsigned long long)(uint32_t)((short)lanes[0] * packWeights[0] + (short)lanes[1] * packWeights[1]) |
+               ((unsigned long long)(uint32_t)((short)lanes[2] * packWeights[2] +
                                             (short)lanes[3] * packWeights[3]) << 32);
-        packed[half] = (word)((word)(madd >> 8) + (word)(madd >> 40));
+        packed[half] = (uint16_t)((uint16_t)(madd >> 8) + (uint16_t)(madd >> 40));
         fx = fx + stepX;
       }
-      *out = (dword)packed[0] | ((dword)packed[1] << 16);
+      *out = (uint32_t)packed[0] | ((uint32_t)packed[1] << 16);
       out = out + 1;
     }
     destinationRow = destinationRow + pitchPixels;
@@ -739,50 +739,50 @@ SoftwareTextureSource_StretchDirectColorBilinear32
   const short *forward = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearInverseFactors,0);
   const short *inverse = (const short *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearForwardFactors,0);
   const unsigned long long clampMask = *(const unsigned long long *)(uintptr_t)THANDOR_ADDR(g_SoftwareBilinearPackedByteClampMask,0);
-  byte *asset = (byte *)sourceAsset;
-  byte *entry;
-  byte *sourceBase;
-  byte *sourceRow;
-  dword *destinationRow;
-  dword pitchPixels;
-  dword sourceWidth;
-  dword sourceHeight;
-  dword stepX;
-  dword stepY;
-  dword fy;
-  dword row;
-  dword pair;
+  uint8_t *asset = (uint8_t *)sourceAsset;
+  uint8_t *entry;
+  uint8_t *sourceBase;
+  uint8_t *sourceRow;
+  uint32_t *destinationRow;
+  uint32_t pitchPixels;
+  uint32_t sourceWidth;
+  uint32_t sourceHeight;
+  uint32_t stepX;
+  uint32_t stepY;
+  uint32_t fy;
+  uint32_t row;
+  uint32_t pair;
 
-  if ((*(dword *)asset != 0x786667) || (subresourceIndex >= *(dword *)(asset + 0xb0))) {
+  if ((*(uint32_t *)asset != 0x786667) || (subresourceIndex >= *(uint32_t *)(asset + 0xb0))) {
     return;
   }
-  entry = asset + *(dword *)(asset + 0xb8) + subresourceIndex * 0x20;
-  if ((*(dword *)((byte *)framebuffer + 8) != 4) || (*(sdword *)(entry + 8) != -1)) {
+  entry = asset + *(uint32_t *)(asset + 0xb8) + subresourceIndex * 0x20;
+  if ((*(uint32_t *)((uint8_t *)framebuffer + 8) != 4) || (*(int32_t *)(entry + 8) != -1)) {
     return;
   }
-  pitchPixels = *(dword *)framebuffer;
-  destinationRow = (dword *)*(byte **)((byte *)framebuffer + 0xc) +
+  pitchPixels = *(uint32_t *)framebuffer;
+  destinationRow = (uint32_t *)*(uint8_t **)((uint8_t *)framebuffer + 0xc) +
                    (destinationY * pitchPixels + destinationX);
-  sourceWidth = *(dword *)(entry + 0x18);
-  sourceHeight = *(dword *)(entry + 0x1c);
+  sourceWidth = *(uint32_t *)(entry + 0x18);
+  sourceHeight = *(uint32_t *)(entry + 0x1c);
   stepX = ((sourceWidth - 1) * 0x100) / (destinationWidth - 1);
   stepY = ((sourceHeight - 1) * 0x100) / (destinationHeight - 1);
-  sourceBase = asset + *(dword *)(entry + 0xc);
+  sourceBase = asset + *(uint32_t *)(entry + 0xc);
   sourceRow = sourceBase;
   fy = 0;
   for (row = destinationHeight; row != 0; row--) {
-    dword fx = 0;
-    dword *out = destinationRow;
+    uint32_t fx = 0;
+    uint32_t *out = destinationRow;
     for (pair = destinationWidth >> 1; pair != 0; pair--) {
-      dword pixels[2];
+      uint32_t pixels[2];
       int half;
       for (half = 0; half < 2; half++) {
-        dword x = fx >> 8;
-        const byte *p00 = sourceRow + x * 4;
-        const byte *p10 = sourceRow + sourceWidth * 4 + x * 4;
-        dword wx = fx & 0xff;
-        dword wy = fy & 0xff;
-        dword pixel = 0;
+        uint32_t x = fx >> 8;
+        const uint8_t *p00 = sourceRow + x * 4;
+        const uint8_t *p10 = sourceRow + sourceWidth * 4 + x * 4;
+        uint32_t wx = fx & 0xff;
+        uint32_t wy = fy & 0xff;
+        uint32_t pixel = 0;
         int lane;
         for (lane = 0; lane < 4; lane++) {
           int a = ((p00[lane] * 0x101) >> 2);
@@ -795,7 +795,7 @@ SoftwareTextureSource_StretchDirectColorBilinear32
                                 ((bottom * inverse[wy * 4 + lane]) >> 16));
           int value = (unsigned short)mixed >> 2;
           if (value > 0xff) value = 0xff;
-          pixel |= (dword)value << (lane * 8);
+          pixel |= (uint32_t)value << (lane * 8);
         }
         pixels[half] = pixel;
         fx = fx + stepX;
@@ -835,8 +835,8 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
 
 {
   BlitScaledImage image;
-  const byte *sourceRow;
-  dword sourceRowsLeft;
+  const uint8_t *sourceRow;
+  uint32_t sourceRowsLeft;
   int y;
 
   if (!Blit_SetupScaled(sourceAsset, subresourceIndex, framebuffer, 2, integerScale, drawX, drawY, clipMaxY,
@@ -847,28 +847,28 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha16
   y = image.top;
   sourceRowsLeft = image.height;
   do {
-    dword repeatRowsLeft = integerScale;
+    uint32_t repeatRowsLeft = integerScale;
     do {
       if (BlitScaled_RowVisible(&image, y)) {
-        const byte *texel = sourceRow;
-        dword columnsLeft = image.width;
+        const uint8_t *texel = sourceRow;
+        uint32_t columnsLeft = image.width;
         int x = image.left;
         do {
-          dword blendColor;
-          dword color = BlitScaled_TexelColor(&image, texel, &blendColor);
+          uint32_t blendColor;
+          uint32_t color = BlitScaled_TexelColor(&image, texel, &blendColor);
           if (Blit_IsTransparent(color)) {
             x += (int)integerScale;
           }
           else {
-            dword repeatColumnsLeft = integerScale;
+            uint32_t repeatColumnsLeft = integerScale;
             do {
               if (BlitScaled_ColumnVisible(&image, x)) {
-                word *pixel = (word *)BlitScaled_Pixel(framebuffer, 2, x, y);
+                uint16_t *pixel = (uint16_t *)BlitScaled_Pixel(framebuffer, 2, x, y);
                 if (!Blit_IsOpaque(color)) {
                   *pixel = Blit_BlendArgb16(blendColor, *pixel);
                 }
                 else {
-                  *pixel = image.palette != NULL ? (word)color : (word)Blit_ConvertArgb(color);
+                  *pixel = image.palette != NULL ? (uint16_t)color : (uint16_t)Blit_ConvertArgb(color);
                 }
               }
               x++;
@@ -903,8 +903,8 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
 
 {
   BlitScaledImage image;
-  const byte *sourceRow;
-  dword sourceRowsLeft;
+  const uint8_t *sourceRow;
+  uint32_t sourceRowsLeft;
   int y;
 
   if (!Blit_SetupScaled(sourceAsset, subresourceIndex, framebuffer, 4, integerScale, drawX, drawY, clipMaxY,
@@ -915,23 +915,23 @@ SoftwareTextureSource_BlitIntegerScaledSourceAlpha32
   y = image.top;
   sourceRowsLeft = image.height;
   do {
-    dword repeatRowsLeft = integerScale;
+    uint32_t repeatRowsLeft = integerScale;
     do {
       if (BlitScaled_RowVisible(&image, y)) {
-        const byte *texel = sourceRow;
-        dword columnsLeft = image.width;
+        const uint8_t *texel = sourceRow;
+        uint32_t columnsLeft = image.width;
         int x = image.left;
         do {
-          dword blendColor;
-          dword color = BlitScaled_TexelColor(&image, texel, &blendColor);
+          uint32_t blendColor;
+          uint32_t color = BlitScaled_TexelColor(&image, texel, &blendColor);
           if (Blit_IsTransparent(color)) {
             x += (int)integerScale;
           }
           else {
-            dword repeatColumnsLeft = integerScale;
+            uint32_t repeatColumnsLeft = integerScale;
             do {
               if (BlitScaled_ColumnVisible(&image, x)) {
-                dword *pixel = (dword *)BlitScaled_Pixel(framebuffer, 4, x, y);
+                uint32_t *pixel = (uint32_t *)BlitScaled_Pixel(framebuffer, 4, x, y);
                 if (!Blit_IsOpaque(color)) {
                   *pixel = Blit_BlendArgb32(blendColor, *pixel);
                 }
@@ -981,26 +981,26 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank16
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
-    region.palette = (const byte *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
+    region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
       if (region.palette != NULL) {
-        dword converted = Blit_PalettePixel(&region, *texel);
+        uint32_t converted = Blit_PalettePixel(&region, *texel);
         if (Blit_IsTransparent(converted)) {
           continue;
         }
-        *pixel = Blit_IsOpaque(converted) ? (word)converted
+        *pixel = Blit_IsOpaque(converted) ? (uint16_t)converted
                                           : Blit_BlendArgb16(Blit_PaletteColor(&region, *texel), *pixel);
       }
       else {
-        dword argb = *(const dword *)texel;
+        uint32_t argb = *(const uint32_t *)texel;
         if (Blit_IsTransparent(argb)) {
           continue;
         }
-        *pixel = Blit_IsOpaque(argb) ? (word)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
+        *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
       }
     }
   }
@@ -1036,13 +1036,13 @@ SoftwareTextureSource_BlitSourceAlphaPaletteBank32
     if (paletteBankIndex >= sourceAsset->tableDescriptor.paletteBankCount) {
       return;
     }
-    region.palette = (const byte *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
+    region.palette = (const uint8_t *)sourceAsset + 0x200 + paletteBankIndex * 0x800;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      uint32_t color = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if (Blit_IsTransparent(color)) {
         continue;
       }
@@ -1078,10 +1078,10 @@ SoftwareTextureSource_BlitSaturatedAddRgb16
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const dword *)texel;
+      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & 0xffffff) != 0) {
         *pixel = Blit_AddArgb16(argb, *pixel, 0);
       }
@@ -1117,10 +1117,10 @@ SoftwareTextureSource_BlitSaturatedAddRgb32
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & 0xffffff) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 0);
       }
@@ -1154,10 +1154,10 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd16
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const dword *)texel;
+      uint32_t argb = region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & 0xffffff) != 0) {
         *pixel = Blit_AddArgb16(argb, *pixel, 1);
       }
@@ -1191,10 +1191,10 @@ SoftwareTextureSource_BlitHalfRgbSaturatedAdd32
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const dword *)texel;
+      uint32_t argb = region.palette != NULL ? Blit_PalettePixel(&region, *texel) : *(const uint32_t *)texel;
       if ((argb & 0xffffff) != 0) {
         *pixel = Blit_AddArgb32(argb, *pixel, 1);
       }
@@ -1231,15 +1231,15 @@ SoftwareTextureSource_BlitModulatedSourceAlpha16
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    word *pixel = (word *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint16_t *pixel = (uint16_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const dword *)texel,
+      uint32_t argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
                                  modulationArgb8888);
       if (Blit_IsTransparent(argb)) {
         continue;
       }
-      *pixel = Blit_IsOpaque(argb) ? (word)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
+      *pixel = Blit_IsOpaque(argb) ? (uint16_t)Blit_ConvertArgb(argb) : Blit_BlendArgb16(argb, *pixel);
     }
   }
   return false;
@@ -1271,10 +1271,10 @@ SoftwareTextureSource_BlitModulatedSourceAlpha32
     return false;
   }
   for (y = 0; y < region.height; y++) {
-    const byte *texel = region.texels + y * region.texelStride;
-    dword *pixel = (dword *)(region.pixels + y * region.pixelStride);
+    const uint8_t *texel = region.texels + y * region.texelStride;
+    uint32_t *pixel = (uint32_t *)(region.pixels + y * region.pixelStride);
     for (x = 0; x < region.width; x++, texel += region.texelBytes, pixel++) {
-      dword argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const dword *)texel,
+      uint32_t argb = Blit_Modulate(region.palette != NULL ? Blit_PaletteColor(&region, *texel) : *(const uint32_t *)texel,
                                  modulationArgb8888);
       if (Blit_IsTransparent(argb)) {
         continue;
@@ -1302,7 +1302,7 @@ SoftwareFramebuffer_FillRectArgb16
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  word opaque;
+  uint16_t opaque;
   int x;
   int y;
 
@@ -1312,9 +1312,9 @@ SoftwareFramebuffer_FillRectArgb16
       Blit_IsTransparent(argb8888)) {
     return;
   }
-  opaque = Blit_IsOpaque(argb8888) ? (word)Blit_ConvertArgb(argb8888) : 0;
+  opaque = Blit_IsOpaque(argb8888) ? (uint16_t)Blit_ConvertArgb(argb8888) : 0;
   for (y = rectMinY; y < rectMaxY; y++) {
-    word *pixel = (word *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
+    uint16_t *pixel = (uint16_t *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
     for (x = rectMinX; x < rectMaxX; x++, pixel++) {
       *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb16(argb8888, *pixel);
     }
@@ -1337,7 +1337,7 @@ SoftwareFramebuffer_FillRectArgb32
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  dword opaque;
+  uint32_t opaque;
   int x;
   int y;
 
@@ -1349,7 +1349,7 @@ SoftwareFramebuffer_FillRectArgb32
   }
   opaque = Blit_IsOpaque(argb8888) ? Blit_ConvertArgb(argb8888) : 0;
   for (y = rectMinY; y < rectMaxY; y++) {
-    dword *pixel = (dword *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
+    uint32_t *pixel = (uint32_t *)framebuffer->pixels + y * (int)framebuffer->width + rectMinX;
     for (x = rectMinX; x < rectMaxX; x++, pixel++) {
       *pixel = Blit_IsOpaque(argb8888) ? opaque : Blit_BlendArgb32(argb8888, *pixel);
     }
@@ -1374,13 +1374,13 @@ SoftwareFramebuffer_CopyRegionToOrigin
   SoftwareFramebufferPixelSize pixelBytes;
   int sourceStrideBytes;
   int destPixelOffset;
-  uint bytesOrWordsLeft;
+  uint32_t bytesOrWordsLeft;
   int sourceOffsetOrDestStride;
-  uint rowBytes;
-  byte *sourceRow;
-  byte *destRowStartOrSourceCursor;
-  byte *destRow;
-  byte *sourceRowStartOrDestCursor;
+  uint32_t rowBytes;
+  uint8_t *sourceRow;
+  uint8_t *destRowStartOrSourceCursor;
+  uint8_t *destRow;
+  uint8_t *sourceRowStartOrDestCursor;
   
   pixelBytes = source->bytesPerPixel;
   if (((pixelBytes == destination->bytesPerPixel) && ((int)copyWidth <= (int)destination->width)) &&
@@ -1438,7 +1438,7 @@ SoftwareFramebuffer_CopyRegionToOrigin
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
         for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
-          *(dword *)sourceRowStartOrDestCursor = *(dword *)destRowStartOrSourceCursor;
+          *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }
@@ -1469,13 +1469,13 @@ SoftwareFramebuffer_CopyOriginToRegion
   SoftwareFramebufferPixelSize pixelBytes;
   int destStrideBytes;
   int sourcePixelOffset;
-  uint bytesOrWordsLeft;
+  uint32_t bytesOrWordsLeft;
   int destOffsetOrSourceStride;
-  uint rowBytes;
-  byte *sourceRow;
-  byte *destRowStartOrSourceCursor;
-  byte *destRow;
-  byte *sourceRowStartOrDestCursor;
+  uint32_t rowBytes;
+  uint8_t *sourceRow;
+  uint8_t *destRowStartOrSourceCursor;
+  uint8_t *destRow;
+  uint8_t *sourceRowStartOrDestCursor;
   
   pixelBytes = destination->bytesPerPixel;
   if (((pixelBytes == source->bytesPerPixel) && ((int)copyWidth <= (int)source->width)) &&
@@ -1533,7 +1533,7 @@ SoftwareFramebuffer_CopyOriginToRegion
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
         for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
-          *(dword *)sourceRowStartOrDestCursor = *(dword *)destRowStartOrSourceCursor;
+          *(uint32_t *)sourceRowStartOrDestCursor = *(uint32_t *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }
@@ -1560,7 +1560,7 @@ static void Raster16_SpanTexturedOpaque(RasterSpan *span)
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_Modulate(span->color, texel), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -1602,10 +1602,10 @@ static void Raster16_SpanTexturedAlphaTested(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -1649,10 +1649,10 @@ static void Raster16_SpanTexturedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
         }
         RasterSpan_Next(span);
     }
@@ -1685,10 +1685,10 @@ static void Raster16_SpanTexturedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = Raster16_TexturedSource(span);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
         }
         RasterSpan_Next(span);
     }
@@ -1823,7 +1823,7 @@ static void Raster16_SpanShadedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(word *)span->pixel = Raster_ShadeToPixel16(span->color);
+            *(uint16_t *)span->pixel = Raster_ShadeToPixel16(span->color);
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -1851,10 +1851,10 @@ static void Raster16_SpanShadedAlphaBlendDepth(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -1903,10 +1903,10 @@ static void Raster16_SpanShadedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
         }
         RasterSpan_Next(span);
     }
@@ -1937,10 +1937,10 @@ static void Raster16_SpanShadedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack16(*(word *)span->pixel);
+            RasterColor destination = Raster_Unpack16(*(uint16_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(word *)span->pixel = Raster_Pack16(channel);
+            *(uint16_t *)span->pixel = Raster_Pack16(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2069,7 +2069,7 @@ static void Raster32_SpanTexturedOpaque(RasterSpan *span)
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_Modulate(span->color, texel), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -2116,11 +2116,11 @@ static void Raster32_SpanTexturedAlphaTested(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
             RasterColor source = Raster_Modulate(span->color, texel);
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
-            if ((word)source.lane[RASTER_LANE_ALPHA] >= 0x800) {
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
+            if ((uint16_t)source.lane[RASTER_LANE_ALPHA] >= 0x800) {
                 *span->depth = span->depthValue;
             }
         }
@@ -2148,10 +2148,10 @@ static void Raster32_SpanTexturedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(Raster_Modulate(span->color, texel), destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2177,10 +2177,10 @@ static void Raster32_SpanTexturedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(Raster_Modulate(span->color, texel), destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2289,7 +2289,7 @@ static void Raster32_SpanShadedOpaque(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(span->color, 6, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -2322,10 +2322,10 @@ static void Raster32_SpanShadedAlphaBlendDepth(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -2367,10 +2367,10 @@ static void Raster32_SpanShadedAlphaBlend(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(Raster_BlendAlpha(source, destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2400,10 +2400,10 @@ static void Raster32_SpanShadedAdd(RasterSpan *span)
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
-            RasterColor destination = Raster_Unpack32(*(dword *)span->pixel);
+            RasterColor destination = Raster_Unpack32(*(uint32_t *)span->pixel);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(RasterColor_Add(source, destination), 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2546,7 +2546,7 @@ typedef struct RasterAuxTexture {
 
 /* The textured pixel of the auxiliary family: nearest texel modulated by the colour, saturated to
    ARGB. */
-static __inline dword RasterAux_TexturedPixel(const RasterSpan *span)
+static __inline uint32_t RasterAux_TexturedPixel(const RasterSpan *span)
 {
     RasterColor texel = Raster_TexelLanes(Raster_FetchTexel(span->texture, span->u, span->v));
     int channel[RASTER_LANE_COUNT];
@@ -2559,7 +2559,7 @@ static void RasterAux_SpanTexturedOpaque(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(dword *)span->pixel = RasterAux_TexturedPixel(span);
+            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
             *span->depth = span->depthValue;
         }
         RasterSpan_Next(span);
@@ -2572,7 +2572,7 @@ static void RasterAux_SpanTexturedNoDepthWrite(RasterSpan *span)
 {
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(dword *)span->pixel = RasterAux_TexturedPixel(span);
+            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
         }
         RasterSpan_Next(span);
     }
@@ -2586,12 +2586,12 @@ static void RasterAux_SpanTexturedNoDepthWrite(RasterSpan *span)
 static void RasterAux_SpanTexturedPrestepDepth(RasterSpan *span)
 {
     const RasterAuxTexture *texture = (const RasterAuxTexture *)span->texture;
-    dword uPrestep = (dword)span->u - (dword)texture->edges->longU;
+    uint32_t uPrestep = (uint32_t)span->u - (uint32_t)texture->edges->longU;
     int writeDepth = uPrestep >= 0x800;
 
     for (; span->count > 0; span->count--) {
         if (span->depthValue <= *span->depth) {
-            *(dword *)span->pixel = RasterAux_TexturedPixel(span);
+            *(uint32_t *)span->pixel = RasterAux_TexturedPixel(span);
             if (writeDepth) {
                 *span->depth = span->depthValue;
             }
@@ -2815,7 +2815,7 @@ static void Raster32_SpanShadedOpaqueAlphaDepth(RasterSpan *span)
             RasterColor source = RasterColor_ShiftRight(span->color, 2);
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(source, 4, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
             if (Raster_AlphaWritesDepth(source)) {
                 *span->depth = span->depthValue;
             }
@@ -2845,7 +2845,7 @@ static void Raster32_SpanShadedWrite(RasterSpan *span)
         if (span->depthValue <= *span->depth) {
             int channel[RASTER_LANE_COUNT];
             Raster_LanesToBytes(span->color, 6, channel);
-            *(dword *)span->pixel = Raster_Pack32(channel);
+            *(uint32_t *)span->pixel = Raster_Pack32(channel);
         }
         RasterSpan_Next(span);
     }
@@ -2970,11 +2970,11 @@ SoftwareRenderer_DisplayModeHook
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
 {
-  sdword *memory;
-  uint blueUnpackScale;
-  byte redBits;
-  byte greenBits;
-  byte blueBits;
+  int32_t *memory;
+  uint32_t blueUnpackScale;
+  uint8_t redBits;
+  uint8_t greenBits;
+  uint8_t blueBits;
   DisplayModeEaxCf5 hookResult;
   
   hookResult = (*g_SoftwarePreviousDisplayModeHook)(modeArg0,modeArg1,height,width);
@@ -2991,16 +2991,16 @@ SoftwareRenderer_DisplayModeHook
     if (!hookResult.carry) {
       LOCK();
       UNLOCK();
-      g_SoftwareDepthBuffer = (sdword *)hookResult.eax;
+      g_SoftwareDepthBuffer = (int32_t *)hookResult.eax;
       (*g_MemoryApi.free)(memory);
       g_SoftwareDepthEpoch = 0;
-      redBits = (byte)g_SoftwarePixelFormatConfig.redBitCount;
+      redBits = (uint8_t)g_SoftwarePixelFormatConfig.redBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.red =
            (SoftwareColorLaneFixed16)((1 << (redBits & 0x1f)) + -1 << (0xc - redBits & 0x1f));
-      greenBits = (byte)g_SoftwarePixelFormatConfig.greenBitCount;
+      greenBits = (uint8_t)g_SoftwarePixelFormatConfig.greenBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.green =
            (SoftwareColorLaneFixed16)((1 << (greenBits & 0x1f)) + -1 << (0xc - greenBits & 0x1f));
-      blueBits = (byte)g_SoftwarePixelFormatConfig.blueBitCount;
+      blueBits = (uint8_t)g_SoftwarePixelFormatConfig.blueBitCount;
       g_SoftwarePixelMmxConstants.quantizeMasksQ12.blue =
            (SoftwareColorLaneFixed16)((1 << (blueBits & 0x1f)) + -1 << (0xc - blueBits & 0x1f));
       g_SoftwarePixelMmxConstants.packWeights.red =
@@ -3042,7 +3042,7 @@ SoftwareRenderer_DisplayModeHook
 StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 
 {
-  sdword *allocatedDepthBuffer;
+  int32_t *allocatedDepthBuffer;
   bool framebufferPixelFormatTooNarrow;
   ArenaAllocEaxCf5 depthAllocation;
   
@@ -3058,7 +3058,7 @@ StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
     g_SoftwareDrawQueueProc = SoftwareRenderer_DrawQueueNon16Bit;
   }
   depthAllocation = (*g_MemoryApi.alloc)(g_SoftwareDepthRowStrideBytes * g_FramebufferHeight);
-  allocatedDepthBuffer = (sdword *)depthAllocation.eax;
+  allocatedDepthBuffer = (int32_t *)depthAllocation.eax;
   if (!depthAllocation.carry) {
     g_SoftwareDepthBuffer = allocatedDepthBuffer;
     g_SoftwareDepthEpoch = 0;
@@ -3071,14 +3071,14 @@ StatusValueEaxCf5 __cdecl SoftwareRenderer_InstallDisplayModeHook(void)
 /* One byte of the cross-fade in SoftwareTexture_BilinearBlendScaleSubresources: both images and the
    factor are widened to (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), then
    (b * (unity - f) + a * f) >> 16 per product (PMULHW), >> 4 (PSRLW) and saturated (PACKUSWB). */
-static byte SoftwareTexture_CrossFadeByte(byte a, byte b, byte factor, short unity)
+static uint8_t SoftwareTexture_CrossFadeByte(uint8_t a, uint8_t b, uint8_t factor, short unity)
 {
     short wideA = (short)((a * 0x101) >> 2);
     short wideB = (short)((b * 0x101) >> 2);
     short wideFactor = (short)((factor * 0x101) >> 2);
-    word sum = (word)(Raster_MulHigh(wideB, (short)(unity - wideFactor)) + Raster_MulHigh(wideA, wideFactor));
-    sum = (word)(sum >> 4);
-    return (byte)(sum > 0xff ? 0xff : sum);
+    uint16_t sum = (uint16_t)(Raster_MulHigh(wideB, (short)(unity - wideFactor)) + Raster_MulHigh(wideA, wideFactor));
+    sum = (uint16_t)(sum >> 4);
+    return (uint8_t)(sum > 0xff ? 0xff : sum);
 }
 
 /* Fills g_SoftwarePixelIntensityToNativeColorLut256 with native grey pixels of the current
@@ -3086,9 +3086,9 @@ static byte SoftwareTexture_CrossFadeByte(byte a, byte b, byte factor, short uni
 static void SoftwareTexture_BuildIntensityLut(void)
 {
     const SoftwarePixelFormatConfig *format = &g_SoftwarePixelFormatConfig;
-    dword entry;
+    uint32_t entry;
     for (entry = 0; entry < 256; entry++) {
-        dword intensity = 255 - entry;
+        uint32_t intensity = 255 - entry;
         g_SoftwarePixelIntensityToNativeColorLut256[entry] =
             ((intensity >> ((8 - format->redBitCount) & 31)) << (format->redShift & 31)) |
             ((intensity >> ((8 - format->greenBitCount) & 31)) << (format->greenShift & 31)) |
@@ -3100,17 +3100,17 @@ static void SoftwareTexture_BuildIntensityLut(void)
    below it. Horizontal: the two neighbours, widened like SoftwareTexture_CrossFadeByte, weighted by
    g_SoftwareBilinearPackedInterpolationWeights256[fraction] (PMADDWD, high half kept). Vertical:
    the two results times the first lane of the row weights (PMULHW), summed, >> 2, clamped to 255. */
-static dword SoftwareTexture_SampleIntensity(const byte *row, dword sourceWidth, dword xFixed, short upperWeight,
+static uint32_t SoftwareTexture_SampleIntensity(const uint8_t *row, uint32_t sourceWidth, uint32_t xFixed, short upperWeight,
                                              short lowerWeight)
 {
     const short *weights = (const short *)(&g_SoftwareBilinearPackedInterpolationWeights256 + (xFixed & 0xff) * 8);
-    const byte *upper = row + (xFixed >> 8);
-    const byte *lower = upper + sourceWidth;
-    dword upperSum = (dword)(((upper[0] * 0x101) >> 2) * weights[0] + ((upper[1] * 0x101) >> 2) * weights[1]);
-    dword lowerSum = (dword)(((lower[0] * 0x101) >> 2) * weights[0] + ((lower[1] * 0x101) >> 2) * weights[1]);
-    word sum = (word)(Raster_MulHigh((short)(upperSum >> 16), upperWeight) +
+    const uint8_t *upper = row + (xFixed >> 8);
+    const uint8_t *lower = upper + sourceWidth;
+    uint32_t upperSum = (uint32_t)(((upper[0] * 0x101) >> 2) * weights[0] + ((upper[1] * 0x101) >> 2) * weights[1]);
+    uint32_t lowerSum = (uint32_t)(((lower[0] * 0x101) >> 2) * weights[0] + ((lower[1] * 0x101) >> 2) * weights[1]);
+    uint16_t sum = (uint16_t)(Raster_MulHigh((short)(upperSum >> 16), upperWeight) +
                       Raster_MulHigh((short)(lowerSum >> 16), lowerWeight));
-    dword intensity = (dword)(sum >> 2);
+    uint32_t intensity = (uint32_t)(sum >> 2);
     return intensity > 0xff ? 0xff : intensity;
 }
 
@@ -3134,7 +3134,7 @@ void __thandor_void_preserve_eax_ecx_edx
 SoftwareTexture_BilinearBlendScaleSubresources
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
-          qword *blendedSourcePixels,qword *blendFactorPixels,
+          uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,
           GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
           int *framebufferAccess)
@@ -3145,18 +3145,18 @@ SoftwareTexture_BilinearBlendScaleSubresources
   const GraphicsTextureSourceEntry *entries;
   const GraphicsTextureSourceEntry *entryA;
   const GraphicsTextureSourceEntry *entryB;
-  const byte *sourceA;
-  const byte *sourceB;
-  const byte *factor;
-  byte *blended;
-  byte *destinationRow;
-  dword sourceWidth;
-  dword sourceHeight;
-  dword blocks;
-  dword stepX;
-  dword stepY;
-  dword yFixed;
-  dword rowsLeft;
+  const uint8_t *sourceA;
+  const uint8_t *sourceB;
+  const uint8_t *factor;
+  uint8_t *blended;
+  uint8_t *destinationRow;
+  uint32_t sourceWidth;
+  uint32_t sourceHeight;
+  uint32_t blocks;
+  uint32_t stepX;
+  uint32_t stepY;
+  uint32_t yFixed;
+  uint32_t rowsLeft;
   int pixelBytes;
   int lane;
 
@@ -3165,7 +3165,7 @@ SoftwareTexture_BilinearBlendScaleSubresources
       sourceSubresourceIndexA >= asset->tableDescriptor.subresourceCount) {
     return;
   }
-  entries = (const GraphicsTextureSourceEntry *)((const byte *)asset +
+  entries = (const GraphicsTextureSourceEntry *)((const uint8_t *)asset +
                                                  asset->tableDescriptor.subresourceTableOffset);
   entryA = &entries[sourceSubresourceIndexA];
   entryB = &entries[sourceSubresourceIndexB];
@@ -3176,10 +3176,10 @@ SoftwareTexture_BilinearBlendScaleSubresources
   sourceHeight = entryB->pixelHeight;
 
   /* 1. cross-fade B -> A */
-  sourceA = (const byte *)asset + entryA->dataOffset;
-  sourceB = (const byte *)asset + entryB->dataOffset;
-  factor = (const byte *)blendFactorPixels;
-  blended = (byte *)blendedSourcePixels;
+  sourceA = (const uint8_t *)asset + entryA->dataOffset;
+  sourceB = (const uint8_t *)asset + entryB->dataOffset;
+  factor = (const uint8_t *)blendFactorPixels;
+  blended = (uint8_t *)blendedSourcePixels;
   blocks = (sourceHeight * sourceWidth) >> 3;
   do {
     for (lane = 0; lane < 8; lane++) {
@@ -3195,27 +3195,27 @@ SoftwareTexture_BilinearBlendScaleSubresources
   SoftwareTexture_BuildIntensityLut();
 
   /* 3. bilinear scale into the framebuffer */
-  stepX = (dword)(((unsigned long long)(sourceWidth - 1) << 8) / (dword)(destinationWidth - 1));
-  stepY = (dword)(((unsigned long long)(sourceHeight - 1) << 8) / (dword)(destinationHeight - 1));
+  stepX = (uint32_t)(((unsigned long long)(sourceWidth - 1) << 8) / (uint32_t)(destinationWidth - 1));
+  stepY = (uint32_t)(((unsigned long long)(sourceHeight - 1) << 8) / (uint32_t)(destinationHeight - 1));
   /* framebuffer->width is the row pitch in pixels; anything but 2 bytes per pixel is drawn as 4 */
   pixelBytes = framebuffer->bytesPerPixel == 2 ? 2 : 4;
   destinationRow = framebuffer->pixels + (destinationTop * (int)framebuffer->width + destinationLeft) * pixelBytes;
   yFixed = 0;
   rowsLeft = destinationHeight;
   do {
-    const byte *row = (const byte *)blendedSourcePixels + (yFixed >> 8) * sourceWidth;
+    const uint8_t *row = (const uint8_t *)blendedSourcePixels + (yFixed >> 8) * sourceWidth;
     short upperWeight = (short)g_SoftwareBilinearInverseFactors[yFixed & 0xff].blue;
     short lowerWeight = (short)g_SoftwareBilinearForwardFactors[yFixed & 0xff].blue;
-    dword xFixed = 0;
-    dword column = 0;
+    uint32_t xFixed = 0;
+    uint32_t column = 0;
     do {
-      dword color = g_SoftwarePixelIntensityToNativeColorLut256[
+      uint32_t color = g_SoftwarePixelIntensityToNativeColorLut256[
           SoftwareTexture_SampleIntensity(row, sourceWidth, xFixed, upperWeight, lowerWeight)];
       if (pixelBytes == 2) {
-        ((word *)destinationRow)[column] = (word)color;
+        ((uint16_t *)destinationRow)[column] = (uint16_t)color;
       }
       else {
-        ((dword *)destinationRow)[column] = color;
+        ((uint32_t *)destinationRow)[column] = color;
       }
       xFixed += stepX;
     } while (++column != destinationWidth);
@@ -3234,10 +3234,10 @@ void __thandor_void_preserve_eax_ecx SoftwareRenderer_AdvanceDepthEpoch(void)
 
 {
   int pixelsRemaining;
-  sdword *depthValueCursor;
+  int32_t *depthValueCursor;
   bool depthEpochWrapped;
   
-  depthEpochWrapped = (uint)g_SoftwareDepthEpoch < 0x1000000;
+  depthEpochWrapped = (uint32_t)g_SoftwareDepthEpoch < 0x1000000;
   g_SoftwareDepthEpoch = g_SoftwareDepthEpoch + -0x1000000;
   if (depthEpochWrapped || g_SoftwareDepthEpoch == 0) {
     depthValueCursor = g_SoftwareDepthBuffer;
@@ -3263,13 +3263,13 @@ void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_Clear(SoftwareMaskRuntimeView *maskControl)
 
 {
-  qword *maskQwordWriteCursor;
-  uint qwordBlocksRemaining;
-  qword maskLogicalSizePair;
+  uint64_t *maskQwordWriteCursor;
+  uint32_t qwordBlocksRemaining;
+  uint64_t maskLogicalSizePair;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   
-  maskQwordWriteCursor = (qword *)maskControl->maskPixels;
-  if (maskQwordWriteCursor != (qword *)0x0) {
+  maskQwordWriteCursor = (uint64_t *)maskControl->maskPixels;
+  if (maskQwordWriteCursor != (uint64_t *)0x0) {
     logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
     qwordBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 6;
     do {
@@ -3301,8 +3301,8 @@ void __thandor_void_preserve_eax_ecx_edx
 SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  byte *mask;
-  dword blocksLeft;
+  uint8_t *mask;
+  uint32_t blocksLeft;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   int i;
 
@@ -3315,7 +3315,7 @@ SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31(SoftwareMaskRuntimeView *mas
   do {
     for (i = 0; i < 32; i++) {
       if (mask[i] != 0) {
-        mask[i] = (byte)(mask[i] < 0xff - 0x1f ? mask[i] + 0x1f : 0xff);
+        mask[i] = (uint8_t)(mask[i] < 0xff - 0x1f ? mask[i] + 0x1f : 0xff);
       }
     }
     mask += 32;
@@ -3338,12 +3338,12 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
           SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  uint maskWidth;
+  uint32_t maskWidth;
   int radiusPixels;
   int rowDistanceSquared;
-  dword rowsRemaining;
-  uint columnX;
-  byte *maskCursor;
+  uint32_t rowsRemaining;
+  uint32_t columnX;
+  uint8_t *maskCursor;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   int rowY;
   
@@ -3361,7 +3361,7 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
   if (invertSelection == 0) {
     do {
       do {
-        if ((columnX - centerX) * (columnX - centerX) + rowDistanceSquared <= (uint)(radiusPixels * radiusPixels)) {
+        if ((columnX - centerX) * (columnX - centerX) + rowDistanceSquared <= (uint32_t)(radiusPixels * radiusPixels)) {
           *maskCursor = *maskCursor | 1;
         }
         columnX = columnX + 1;
@@ -3376,7 +3376,7 @@ SoftwareMaskBuffer_ApplyCircularRegionBit
   }
   do {
     do {
-      if ((uint)(radiusPixels * radiusPixels) <= (columnX - centerX) * (columnX - centerX) + rowDistanceSquared) {
+      if ((uint32_t)(radiusPixels * radiusPixels) <= (columnX - centerX) * (columnX - centerX) + rowDistanceSquared) {
         *maskCursor = *maskCursor | 1;
       }
       columnX = columnX + 1;
@@ -3406,13 +3406,13 @@ SoftwareMaskBuffer_ApplyDiagonalHalfPlaneBit
           SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  dword maskWidth;
-  dword columnsRemaining;
+  uint32_t maskWidth;
+  uint32_t columnsRemaining;
   int thresholdSum;
   int rowY;
-  dword rowsRemaining;
+  uint32_t rowsRemaining;
   int diagonalSum;
-  byte *maskCursor;
+  uint8_t *maskCursor;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
@@ -3472,13 +3472,13 @@ void __thandor_preserve_eax_edx
 SoftwareMaskBuffer_SetAllPixelsBit(SoftwareMaskRuntimeView *maskControl)
 
 {
-  uint maskBlocksRemaining;
-  uint *maskWordCursor;
-  qword maskLogicalSizePair;
+  uint32_t maskBlocksRemaining;
+  uint32_t *maskWordCursor;
+  uint64_t maskLogicalSizePair;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskControl->textureSource);
-  maskWordCursor = (uint *)maskControl->maskPixels;
+  maskWordCursor = (uint32_t *)maskControl->maskPixels;
   maskBlocksRemaining = logicalSize.logicalHeightPixels * logicalSize.logicalWidthPixels >> 4;
   do {
     *maskWordCursor = *maskWordCursor | 0x1010101;
@@ -3506,13 +3506,13 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
           SoftwareMaskRuntimeView *maskRuntime)
 
 {
-  uint bandBytesOrBlocksLeft;
+  uint32_t bandBytesOrBlocksLeft;
   int bandRow;
-  uint *maskWordCursor;
+  uint32_t *maskWordCursor;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
   
   logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,maskRuntime->textureSource);
-  if ((uint)bandIndex < 0x19) {
+  if ((uint32_t)bandIndex < 0x19) {
     bandBytesOrBlocksLeft = logicalSize.logicalWidthPixels * 0xf;
     if (reverseRows == 0) {
       bandRow = bandIndex + -1;
@@ -3523,7 +3523,7 @@ SoftwareMaskBuffer_ApplyHorizontalBandBit
     else {
       bandRow = 0x18 - bandIndex;
     }
-    maskWordCursor = (uint *)(maskRuntime->maskPixels + bandRow * bandBytesOrBlocksLeft);
+    maskWordCursor = (uint32_t *)(maskRuntime->maskPixels + bandRow * bandBytesOrBlocksLeft);
     bandBytesOrBlocksLeft = bandBytesOrBlocksLeft >> 4;
     do {
       *maskWordCursor = *maskWordCursor | 0x1010101;
@@ -3572,8 +3572,8 @@ SoftwareRenderer_PrepareTrianglePacket(GraphicsPrimitivePacket *packet)
   GraphicsPrimitiveDepthFixed savedDepth;
   GraphicsPrimitiveTextureCoordinateFixed savedTextureU;
   GraphicsPrimitiveTextureCoordinateFixed savedTextureV;
-  sdword depthEpoch;
-  byte texelShift;
+  int32_t depthEpoch;
+  uint8_t texelShift;
   GraphicsPrimitivePacket *swapTarget;
   GraphicsPrimitivePacket *swapSource;
   GraphicsPrimitivePacket *rotateSource;

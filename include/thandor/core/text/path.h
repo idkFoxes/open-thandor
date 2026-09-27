@@ -15,21 +15,21 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0040F240 */
-dword WidePath_GetExtensionCode(word *path);
+uint32_t WidePath_GetExtensionCode(uint16_t *path);
 
 /* 0x0040F2B0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,word *path);
+WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path);
 
 /* 0x0040F320 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path);
+WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path);
 
 /* 0x0040F3C0 */
 void __thandor_void_preserve_eax_ecx_edx
-WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory);
+WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory);
 
 /* 0x00531170 */
-dword __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(word *path);
+uint32_t __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path);
 
 #endif /* THANDOR_CORE_TEXT_PATH_H */

@@ -17,7 +17,7 @@
 /* 0x0056E3C0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
-          (dword keyboardStateMask,dword keyboardEventCode,UiRootNode *uiRoot);
+          (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);
 
 /* 0x0056BAD0 */
 void InGameSevenSlotCommand_SubmitAndClosePage(UiNodeBase *source);
@@ -59,8 +59,8 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *con
 /* 0x00569890 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameNotificationQueue_InsertPriorityRecord
-          (InGameNotificationPayloadKind payloadKind,dword payloadReserved10,
-          dword orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
+          (InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved10,
+          uint32_t orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
           Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId);
 
@@ -69,7 +69,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node);
 
 /* 0x0056A460 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 InGameMusic_ComputeTrackSuitabilityScore
           (MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime);
 
@@ -104,15 +104,15 @@ void __thandor_void_preserve_eax_ecx
 InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView);
 
 /* 0x0056F7F0 */
-dword InGameUiCommand_ResolveCursorCodeByMode
+uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
-                dword reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
+                uint32_t reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
                 WorldRuntimeContext *worldRuntime);
 
 /* 0x0056FA70 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_BeginInteractionByMode
-          (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,dword reservedArg3,
+          (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
           ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView170 *mapControl
           );
 
@@ -120,13 +120,13 @@ InGameUiCommand_BeginInteractionByMode
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_UpdateInteractionByMode
           (UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
-          GraphicsScreenCoordinate pointerY,dword reservedArg3,int optionalContext,
+          GraphicsScreenCoordinate pointerY,uint32_t reservedArg3,int optionalContext,
           WorldRuntimeExtendedMapControlView170 *mapControl);
 
 /* 0x00570D60 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_EndInteractionByMode
-          (dword callbackArg0,dword callbackArg1,dword callbackArg2,dword callbackArg3,
+          (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3,
           WorldOwnerListNode100 *worldNode,WorldRuntimeContext *worldRuntime);
 
 /* 0x00570F30 */
@@ -136,15 +136,15 @@ InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime);
 /* 0x005609F0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3);
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
 
 /* 0x005622F0 */
 void __thandor_preserve_eax
 InGameUiCommand_SaveFieldAndLevelAssetImages
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3);
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
 
 /* 0x00567040 */
-void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(word *text);
+void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text);
 
 /* 0x0056B850 */
 void __thandor_preserve_eax InGameSevenSlotCommand_ClosePage(UiNodeBase *source);

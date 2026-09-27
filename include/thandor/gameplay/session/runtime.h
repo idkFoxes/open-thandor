@@ -18,7 +18,7 @@
 InGameRuntimeRunEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
           (LevelAssetRuntimeImagePrefix370 *levelAsset,
-          FrontendBooleanState32 loadExistingSessionFlag,word *levelPathUtf16);
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16);
 
 /* 0x00566290 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -42,11 +42,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
 
 /* 0x005641D0 */
 InGameRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,word *levelMoviePath);
+InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath);
 
 /* 0x00564920 */
 InGameRuntimeLoadedInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeLoadedSession(word *savePackagePath);
+InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath);
 
 /* 0x005651D0 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResources(void);
@@ -71,7 +71,7 @@ InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot);
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void);
 
 /* 0x0050E0B0 */
-byte __thandor_cf_preserve_eax_ecx_edx
-InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(dword unusedArgument);
+uint8_t __thandor_cf_preserve_eax_ecx_edx
+InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(uint32_t unusedArgument);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_RUNTIME_H */

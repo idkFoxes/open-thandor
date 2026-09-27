@@ -17,13 +17,13 @@
 /* 0x0055F790 */
 void __thandor_void_preserve_eax_ecx
 GameFactionRuntime_AdvancePairwiseRelationState
-          (dword unusedRelationArgument0,dword unusedRelationArgument1,
+          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0055F910 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ResetPairwiseRelationState
-          (dword unusedRelationArgument0,dword unusedRelationArgument1,
+          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x00565320 */
@@ -39,7 +39,7 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
 /* 0x00513CA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRuntime_TestCapabilityBitClearCf
-          (dword capabilityBitIndex,FactionRuntimeIndex factionIndex);
+          (uint32_t capabilityBitIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513CD0 */
 FactionRelationState __thandor_eax_preserve_ecx_edx
@@ -86,31 +86,31 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
 /* 0x00560110 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RegisterArmyAssetPointers
-          (dword reservedDword0,FactionArmyAssetCount repetitionCount,
+          (uint32_t reservedDword0,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
 /* 0x00560160 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-          (dword reservedDword0,FactionArmyAssetCount requestedCount,
+          (uint32_t reservedDword0,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex);
 
 /* 0x00560400 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
-          (PlayerRuntimeId playerRuntimeId,dword reservedDword04,PckArmyAssetIdCatalog armyAssetId,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedDword04,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
 /* 0x00560620 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
-          (PlayerRuntimeId playerRuntimeId,dword unusedConsumeArgument0,dword unusedConsumeArgument1
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedConsumeArgument0,uint32_t unusedConsumeArgument1
           ,FactionRuntimeIndex factionIndex);
 
 /* 0x005606A0 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
-          (dword unusedSaleArgument0,dword unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
+          (uint32_t unusedSaleArgument0,uint32_t unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex);
 
 /* 0x00561F80 */
@@ -122,20 +122,20 @@ PlayerRuntime_ResolveAndStoreState8094
 /* 0x00561FF0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8090
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           PlayerState8090Value stateValue);
 
 /* 0x00562020 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8094
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           PlayerState8094Value stateValue);
 
 /* 0x005622C0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ClearState8094
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2);
 
 /* 0x00565590 */
 void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecords(void);

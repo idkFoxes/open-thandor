@@ -13,7 +13,7 @@
    each is guarded in case a translation unit includes the SDK header after all. */
 
 #ifndef MAKEINTRESOURCEA
-#define MAKEINTRESOURCEA(id) ((LPSTR)(uintptr_t)(word)(id))
+#define MAKEINTRESOURCEA(id) ((LPSTR)(uintptr_t)(uint16_t)(id))
 #endif
 
 /* SetPriorityClass / SetThreadPriority */

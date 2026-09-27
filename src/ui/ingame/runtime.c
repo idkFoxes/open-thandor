@@ -25,18 +25,18 @@
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
-          (dword keyboardStateMask,dword keyboardEventCode,UiRootNode *uiRoot)
+          (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot)
 
 {
   UiNodeVtable **stack;
-  sdword *counterField;
+  int32_t *counterField;
   wchar_t screenshotTensDigit;
   wchar_t screenshotOnesDigit;
   UiNodeVtable *modeGPreviewTexture;
-  dword mode4PreviewTexture;
+  uint32_t mode4PreviewTexture;
   UiCommandModeIndex materialIndex;
   int remainingSteps;
-  dword *dispatchRecord;
+  uint32_t *dispatchRecord;
   StatusValueEaxCf5 pageNotInListResult;
   ArmyRegistryIdEaxCf5_571b00 previousModeGArmy;
   ArmyRegistryIdEaxCf5_571d40 previousMode4Army;
@@ -52,7 +52,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   
   /* Records are {key code, required modifier mask, handler}; a zero mask matches only while no modifier in
      0x3C is held. The table ends with a zero key code. */
-  for (dispatchRecord = (dword *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0); ;
+  for (dispatchRecord = (uint32_t *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0); ;
       dispatchRecord = dispatchRecord + 3) {
     if (*dispatchRecord == 0) {
       return;
@@ -84,10 +84,10 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
     }
     break;
   case 0x56e670:
-    counterField = &INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,sdword);
+    counterField = &INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t);
     *counterField = *counterField + 1;
-    if (0x117 < (uint)INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,sdword)) {
-      INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,sdword) = 0x112;
+    if (0x117 < (uint32_t)INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t)) {
+      INGAME_UI_FIELD(uiRoot,worldViewCyclingInfoText,0x54,int32_t) = 0x112;
     }
     break;
   case 0x56e6a0:
@@ -151,7 +151,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -160,7 +160,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                            (g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = previousMode4Army.eax;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,sdword) = mode4PreviewTexture;
+        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
     }
     else {
@@ -207,7 +207,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -215,7 +215,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
         nextMode4Army = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = nextMode4Army.eax;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,sdword) = mode4PreviewTexture;
+        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
     }
     else {
@@ -263,7 +263,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -271,7 +271,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
         steppedForwardMode4Army = ArmyAssetRegistry_StepForwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedForwardMode4Army.eax;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,sdword) = mode4PreviewTexture;
+        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
     }
     else {
@@ -319,7 +319,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -327,7 +327,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
         steppedBackwardMode4Army = ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
         g_UiCommandMode4ArmyAssetId = steppedBackwardMode4Army.eax;
         mode4PreviewTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,sdword) = mode4PreviewTexture;
+        INGAME_UI_FIELD(uiRoot,objectPlacementPreviewImage,0x54,int32_t) = mode4PreviewTexture;
       }
     }
     else {
@@ -355,10 +355,10 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
     if (g_UiCommandModeG == 3) {
       g_UiCommandModeGOwnerFactionIndex = g_UiCommandModeGOwnerFactionIndex + 1;
       if (g_GameFactionRuntimeImage.tail.activeFactionCount <
-          (uint)g_UiCommandModeGOwnerFactionIndex) {
+          (uint32_t)g_UiCommandModeGOwnerFactionIndex) {
         g_UiCommandModeGOwnerFactionIndex = 1;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((dword)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
     }
     break;
   case 0x56edc0:
@@ -367,7 +367,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       if (g_UiCommandModeGOwnerFactionIndex == 0) {
         g_UiCommandModeGOwnerFactionIndex = g_GameFactionRuntimeImage.tail.activeFactionCount;
       }
-      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((dword)uiRoot);
+      ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected((uint32_t)uiRoot);
     }
     break;
   case 0x56ee00:
@@ -433,7 +433,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -447,7 +447,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -461,7 +461,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.eax;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -482,14 +482,14 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
     if (!capturedFramebuffer.carry) {
       FileSystem_WriteBufferToPathCf
                 (((capturedFramebuffer.eax)->common).allocationSizeBytes,capturedFramebuffer.eax,
-                 (word *)(u_Dscreen00_pcx_00572e3a + 1));
+                 (uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
       screenshotOnesDigit = u_Dscreen00_pcx_00572e3a[8];
       screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
       u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
-      if (0x39 < (ushort)u_Dscreen00_pcx_00572e3a[8]) {
+      if (0x39 < (uint16_t)u_Dscreen00_pcx_00572e3a[8]) {
         u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + L'\x01';
         u_Dscreen00_pcx_00572e3a[8] = screenshotOnesDigit + L'\xfff7';
-        if (0x39 < (ushort)u_Dscreen00_pcx_00572e3a[7]) {
+        if (0x39 < (uint16_t)u_Dscreen00_pcx_00572e3a[7]) {
           u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit + L'\xfff7';
         }
       }
@@ -545,11 +545,11 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
 
 {
   int remainingDwords;
-  uint slotIndex;
+  uint32_t slotIndex;
   CommandPayloadDword04 packedState;
-  uint slotBit;
+  uint32_t slotBit;
   int *phraseCursor;
-  word *textCursor;
+  uint16_t *textCursor;
   bool isMatch;
   UiSelectableNodeEaxEcxCf9 visibleSelection;
   
@@ -571,7 +571,7 @@ InGameUiAction1024_Handler(InGameCommandTextEntryPageTextEditPtr commandTextEdit
       if (isMatch) {
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags ^ 0x40000;
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80000;
-        InGameRecentTextHistory_InsertAndRebuild8((word *)u_Hmmm__na_gut________0056321e);
+        InGameRecentTextHistory_InsertAndRebuild8((uint16_t *)u_Hmmm__na_gut________0056321e);
       }
     }
     else {
@@ -711,20 +711,20 @@ bool __thandor_cf_preserve_eax_ecx_edx
 InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePath)
 
 {
-  word *timeTextDestination;
-  byte *destination;
+  uint16_t *timeTextDestination;
+  uint8_t *destination;
   InGameLevelConditionStorageView800 *sourceData;
   void *handle;
-  dword *modelSlotImage;
-  dword *oldUnitImage;
-  dword localeValue;
+  uint32_t *modelSlotImage;
+  uint32_t *oldUnitImage;
+  uint32_t localeValue;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   int remainingCount;
   PckDecodedByteCount unpackedSize;
-  dword *headerDwords;
+  uint32_t *headerDwords;
   FrontendPlayerRuntimeRecord *playerBlock;
-  dword *sourceCursor;
-  dword *destinationCursor;
+  uint32_t *sourceCursor;
+  uint32_t *destinationCursor;
   bool allZero;
   RuntimeImagePointerByteSizeEdxEax8 pointerImage;
   StatusValueEaxCf5 upsertStatus;
@@ -733,7 +733,7 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   FileSystemReadEaxCf5 readResult;
   FileSystemWriteEaxCf5 writeResult;
   ResourceRegistrationImagePair domainImagePair;
-  uint upsertFailed;
+  uint32_t upsertFailed;
   
   g_InGameResourceRegistrationBusyCount = g_InGameResourceRegistrationBusyCount + '\x01';
   playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -745,9 +745,9 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   upsertStatus = ResourceRegistration_OpenSourceCf(resourcePath);
   handle = (void *)upsertStatus.valueOrError;
   if (upsertStatus.carry) {
-    WidePath_SplitParentAndLeaf((word *)g_PackageScratchBuffer,(word *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),resourcePath);
+    WidePath_SplitParentAndLeaf((uint16_t *)g_PackageScratchBuffer,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0),resourcePath);
     upsertStatus = (*g_FileSystemCreateDirectoryRecursiveCf)
-                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(word *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
+                      (FILESYSTEM_CREATE_DIRECTORY_RECURSIVE,(uint16_t *)THANDOR_ADDR(g_ResourceRegistrationDirectoryUtf16,0));
     if (upsertStatus.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
     upsertStatus = ResourceRegistration_OpenSourceCf(resourcePath);
     handle = (void *)upsertStatus.valueOrError;
@@ -755,79 +755,79 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   }
   pointerImage = ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 0x20),
-                              (dword *)pointerImage,(word *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+                              (uint32_t *)pointerImage,(uint16_t *)u_army_hex_0050dfb4,(EngineFileHandle)handle);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   ArmyRuntimePool_RebaseAfterLoad();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   ModelRuntimePool_UnrebaseBeforeSave();
   /* The unrebase returns the model runtime slot image in EAX and its size (0x400000) in EDX;
      the decompiler lost both. */
-  modelSlotImage = (dword *)g_ModelRuntimeSlots;
+  modelSlotImage = (uint32_t *)g_ModelRuntimeSlots;
   unpackedSize = 0x400000;
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,unpackedSize,modelSlotImage,
-                              (word *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+                              (uint16_t *)u_modul_hex_0050dfee,(EngineFileHandle)handle);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   ModelRuntimePool_RebaseAfterLoad();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   domainImagePair = ResourceRegistration_QueryDomain2Pair();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (dword *)(domainImagePair >> 0x20),(word *)u_shot_hex_0050dfdc,
+                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_shot_hex_0050dfdc,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   ShotRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   domainImagePair = ResourceRegistration_QueryDomain1Pair();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (dword *)(domainImagePair >> 0x20),(word *)u_effect_hex_0050dfc6,
+                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_effect_hex_0050dfc6,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   EffectRuntime_RebaseSlotsAfterLoad();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   domainImagePair = ResourceRegistration_SelectDomainPair(runtimeBase);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (dword *)(domainImagePair >> 0x20),(word *)u_widget_hex_0050e02a,
+                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_widget_hex_0050e02a,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   ResourceRegistrationRuntime_RebaseLoadedRecords(runtimeBase);
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   pointerImage = RuntimeHexSegment_GetLightImageAndToggleFlagRegs();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)(pointerImage >> 0x20),
-                              (dword *)pointerImage,(word *)u_light_hex_0050e016,(EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+                              (uint32_t *)pointerImage,(uint16_t *)u_light_hex_0050e016,(EngineFileHandle)handle);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   RuntimeHexSegment_ToggleLightImageFlag();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   domainImagePair = RuntimeHexSegment_GetFieldImageRegs(runtimeBase);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (dword *)(domainImagePair >> 0x20),(word *)u_field_hex_0050e002,
+                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_field_hex_0050e002,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   RuntimeHexSegment_AfterFieldImageNoOp(runtimeBase);
   sourceData = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   ResourceRegistration_ResolveRuntimeRecord(runtimeBase);
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,
                               (sourceData->levelImage).header.resourceTables.
-                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(dword *)sourceData
-                              ,(word *)u_level_hex_0050e040,(EngineFileHandle)handle);
+                              runtimePrefixByteSizeAndInitialArmyPlacementOffset,(uint32_t *)sourceData
+                              ,(uint16_t *)u_level_hex_0050e040,(EngineFileHandle)handle);
   if (upsertStatus.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   domainImagePair = ResourceRegistration_QueryDomain0Pair();
   upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(PckDecodedByteCount)domainImagePair,
-                              (dword *)(domainImagePair >> 0x20),(word *)u_daten_hex_0050e054,
+                              (uint32_t *)(domainImagePair >> 0x20),(uint16_t *)u_daten_hex_0050e054,
                               (EngineFileHandle)handle);
-  upsertFailed = (uint)(upsertStatus.carry & 1);
+  upsertFailed = (uint32_t)(upsertStatus.carry & 1);
   GameFactionRuntime_RebaseLoadedArmyReferences();
   if ((upsertFailed & 1) != 0) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
-  if (g_FrontendLoadedCampaignAsset == (dword *)0x0) {
-    Package_DeleteEntry((word *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
+  if (g_FrontendLoadedCampaignAsset == (uint32_t *)0x0) {
+    Package_DeleteEntry((uint16_t *)u_campagne_hex_0050e068,(EngineFileHandle)handle);
   }
   else {
-    upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((dword *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
-                                g_FrontendLoadedCampaignAsset,(word *)u_campagne_hex_0050e068,
+    upsertStatus = Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,((uint32_t *)(uintptr_t)g_FrontendLoadedCampaignAsset)[1],
+                                g_FrontendLoadedCampaignAsset,(uint16_t *)u_campagne_hex_0050e068,
                                 (EngineFileHandle)handle);
     if (upsertStatus.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,0x38000,g_GameStatTableImage,
-                      (word *)u_stat_hex_0050e082,(EngineFileHandle)handle);
+                      (uint16_t *)u_stat_hex_0050e082,(EngineFileHandle)handle);
   /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
   allZero = false;
   if (g_OldUnitRecordCount == 0) {
@@ -842,12 +842,12 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
     } while (allZero);
   }
   if (allZero) {
-    Package_DeleteEntry((word *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
+    Package_DeleteEntry((uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
   }
   else {
     oldUnitAllocation = (*g_MemoryApi.alloc)(0x4104);
     sourceCursor = g_OldUnitPrimaryTable;
-    oldUnitImage = (dword *)oldUnitAllocation.eax;
+    oldUnitImage = (uint32_t *)oldUnitAllocation.eax;
     if (oldUnitAllocation.carry) goto InGameResourceRegistration_DecrementBusyCountAndReturn;
     *oldUnitImage = g_OldUnitRecordCount;
     destinationCursor = oldUnitImage;
@@ -862,27 +862,27 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
       destinationCursor = destinationCursor + 1;
     }
     Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,(int)destinationCursor - (int)oldUnitImage,oldUnitImage,
-                        (word *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
+                        (uint16_t *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
     (*g_MemoryApi.free)(oldUnitImage);
   }
   destination = g_PackageScratchBuffer;
-  headerDwords = (dword *)destination; /* EDX: the 0x200-byte package header just read */
+  headerDwords = (uint32_t *)destination; /* EDX: the 0x200-byte package header just read */
   seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,handle);
   if ((!seekResult.carry) &&
      (readResult = (*g_FileSystemReadExactCf)(0x200,destination,handle), !readResult.carry)){
     WidePath_SplitParentAndLeaf
-              ((word *)(destination + 0x100),(word *)(destination + 0x200),resourcePath);
+              ((uint16_t *)(destination + 0x100),(uint16_t *)(destination + 0x200),resourcePath);
     localeValue = (*g_LocaleGetPackedCurrentDate)();
-    *(dword *)(destination + 0x1f0) = localeValue;
+    *(uint32_t *)(destination + 0x1f0) = localeValue;
     localeValue = (*g_LocaleGetPackedCurrentTime)();
-    *(dword *)(destination + 500) = localeValue;
-    localeValue = (*g_LocaleFormatCurrentDateUtf16)((word *)(destination + 0x1c0));
-    timeTextDestination = (word *)(localeValue + 4 + (int)(destination + 0x1c0));
+    *(uint32_t *)(destination + 500) = localeValue;
+    localeValue = (*g_LocaleFormatCurrentDateUtf16)((uint16_t *)(destination + 0x1c0));
+    timeTextDestination = (uint16_t *)(localeValue + 4 + (int)(destination + 0x1c0));
     timeTextDestination[-2] = 0x2c; /* ", " between date and time */
     timeTextDestination[-1] = 0x20;
     (*g_LocaleFormatCurrentTimeUtf16)(timeTextDestination);
     localeValue = g_InGameLevelCampaignAssociationIndex;
-    if (g_FrontendLoadedCampaignAsset == (dword *)0x0) {
+    if (g_FrontendLoadedCampaignAsset == (uint32_t *)0x0) {
       localeValue = 0xffffffff;
     }
     headerDwords[0x5c] = g_InGameLevelTitleTextResourceIndex;
@@ -913,18 +913,18 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 mapControl)
 
 {
-  longlong scaledProduct;
+  int64_t scaledProduct;
   int xDelta;
   int yComponent;
   
   yComponent = *(int *)(mapControl + 0x6c);
   *(int *)(mapControl + 0x50) = *(int *)(mapControl + 0x68);
   *(int *)(mapControl + 0x54) = yComponent;
-  scaledProduct = (longlong)(yComponent + *(int *)(mapControl + 0x68) * 2) * 0x901;
-  xDelta = ((int)((ulonglong)scaledProduct >> 0x20) << 0x13 | (uint)scaledProduct >> 0xd) -
+  scaledProduct = (int64_t)(yComponent + *(int *)(mapControl + 0x68) * 2) * 0x901;
+  xDelta = ((int)((uint64_t)scaledProduct >> 0x20) << 0x13 | (uint32_t)scaledProduct >> 0xd) -
           *(int *)(mapControl + -0x8f6c);
-  yComponent = ((int)((ulonglong)((longlong)yComponent * -1999) >> 0x20) << 0x14 |
-          (uint)((longlong)yComponent * -1999) >> 0xc) - *(int *)(mapControl + -0x8f68);
+  yComponent = ((int)((uint64_t)((int64_t)yComponent * -1999) >> 0x20) << 0x14 |
+          (uint32_t)((int64_t)yComponent * -1999) >> 0xc) - *(int *)(mapControl + -0x8f68);
   *(int *)(mapControl + -0x8f6c) = *(int *)(mapControl + -0x8f6c) + xDelta;
   *(int *)(mapControl + -0x8f68) = *(int *)(mapControl + -0x8f68) + yComponent;
   *(int *)(mapControl + -0x8f8c) = *(int *)(mapControl + -0x8f8c) + xDelta;
@@ -947,7 +947,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
 
 {
-  sdword *sdwordField;
+  int32_t *sdwordField;
   UiAnchorFractionQ31 *anchorField;
   UiNodeFlags *nodeFlagsField;
   UiNodeBase **nodePointerField;
@@ -955,16 +955,16 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
   UiRootFlags rootFlagsValue;
   UiNodeFlags nodeFlagsValue;
   UiRootCallbacks *callbacksValue;
-  sdword subresourceWidth;
+  int32_t subresourceWidth;
   UiAnchorFractionQ31 firstAnchorValue;
   UiAnchorFractionQ31 secondAnchorValue;
   int detailControlOffset;
   GraphicsTextureSourceAsset *textureSourceValue;
-  sdword subresource23Height;
+  int32_t subresource23Height;
   DirectSoundVoiceSet *buttonVoiceSet;
   UiRootNode *columnOffset;
   UiNodeVtable *sharedLayoutValue;
-  word *stream;
+  uint16_t *stream;
   int cellLeft;
   TextResourceId resourceId;
   int columnsRemaining;
@@ -973,8 +973,8 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
   int stepOffset;
   UiNodeBase *paddedIconHeight;
   int cellTop;
-  uint techTextureHeight;
-  uint detailIndex;
+  uint32_t techTextureHeight;
+  uint32_t detailIndex;
   GraphicsTextureSourceLoadEaxCf5 loadedTexture;
   TextResourceResolveEaxCf5 resolvedText;
   StatusValueEaxCf5 initStatus;
@@ -988,9 +988,9 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)0x6;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x28,struct UiRootNode *) = (UiRootNode *)0x5e;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x2C,struct UiNodeBase *) = (UiNodeBase *)0xd;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,dword) = 0x24;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,dword) = 0x11;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,dword) = 0x5e;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,uint32_t) = 0x24;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,uint32_t) = 0x11;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,uint32_t) = 0x5e;
     INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x18;
     INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x24;
     INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x1c;
@@ -1008,9 +1008,9 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)0x9;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x28,struct UiRootNode *) = (UiRootNode *)0x6e;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x2C,struct UiNodeBase *) = (UiNodeBase *)0x10;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,dword) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,dword) = 0x17;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,dword) = 0x6e;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,uint32_t) = 0x2c;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,uint32_t) = 0x17;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,uint32_t) = 0x6e;
     INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x1e;
     INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x2c;
     INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x25;
@@ -1028,9 +1028,9 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)0x9;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x28,struct UiRootNode *) = (UiRootNode *)0x6e;
     INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x2C,struct UiNodeBase *) = (UiNodeBase *)0x10;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,dword) = 0x2c;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,dword) = 0x17;
-    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,dword) = 0x6e;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x20,uint32_t) = 0x2c;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x24,uint32_t) = 0x17;
+    INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x28,uint32_t) = 0x6e;
     INGAME_UI(inGameRoot,tritiumGauge)->bottomOffset = 0x1e;
     INGAME_UI(inGameRoot,energyGauge)->leftOffset = 0x2c;
     INGAME_UI(inGameRoot,energyGauge)->topOffset = 0x25;
@@ -1041,7 +1041,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI(inGameRoot,xeniteAmountText)->rightOffset = 0x27;
     INGAME_UI(inGameRoot,xeniteAmountText)->bottomOffset = 0xf;
   }
-  loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_panel0_gfx_005630d0);
+  loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
   textureSourceValue = g_InGamePanelTextureSource;
   loadedTextureSource = loadedTexture.eax;
   if (!loadedTexture.carry) {
@@ -1105,99 +1105,99 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     textureSourceValue = g_InGamePanelTextureSource;
     g_InGamePanelTextureSubresource32Height = logicalSize.logicalHeightPixels;
     INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x24,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x2C,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x24,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x2C,uint32_t) = 0;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x20,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x24,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x2C,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x20,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x24,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x2C,uint32_t) = 0;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x54,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x24,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x28,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x24,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x28,uint32_t) = 0;
     INGAME_UI(inGameRoot,sidePanelFrameTopCap)->bottomOffset = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,uint32_t) = 0;
     INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->rightOffset = 0;
     INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->bottomOffset = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,uint32_t) = 0;
     INGAME_UI(inGameRoot,sidePanelFrameInfoSection)->topOffset = 0;
     INGAME_UI(inGameRoot,sidePanelFrameInfoSection)->rightOffset = 0;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x2C,enum UiNodeFlags) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI(inGameRoot,sidePanelFrameBottomCap)->leftOffset = 0;
     INGAME_UI(inGameRoot,sidePanelFrameBottomCap)->topOffset = 0;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x28,enum UiNodeFlags) = 0;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x2C,enum UiRootFlags) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,uint32_t) = 0;
     INGAME_UI(inGameRoot,resourcePanel)->topOffset = 0;
     INGAME_UI(inGameRoot,resourcePanel)->rightOffset = 0;
     INGAME_UI_FIELD(inGameRoot,resourcePanel,0x2C,enum UiNodeFlags) = 0;
-    INGAME_UI_FIELD(inGameRoot,resourcePanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorTabStripA,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,resourcePanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorTabStripA,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x20,enum UiNodeFlags) = 0;
     INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x24,enum UiRootFlags) = 0;
     INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)0x0;
     INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x2C,struct UiRootNode *) = (UiRootNode *)0x0;
-    INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorTabStripB,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8Popup,0x50,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorTabStripB,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8Popup,0x50,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle9Popup,0x50,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyFrame,0x50,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogFrame,0x50,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyFrame,0x50,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogFrame,0x50,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogFrame,0x50,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockFrame,0x50,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockFrame,0x50,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainHeight,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle9,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainMaterial,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle9,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainMaterial,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,resourcePanelIconButton,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainSmoothing,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,missionObjectivesButton,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainSmoothing,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,missionObjectivesButton,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x54,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyPanel,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorModeTabRegion,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogPanel,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,editorModeTabUnitPlacement,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogPanel,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorModeTabRegion,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogPanel,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,editorModeTabUnitPlacement,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogPanel,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,editorModeTabObjectPlacement,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockPanel,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton0,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton2,0x54,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton4,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton4,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x54,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,heightToolOption1,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,heightToolOption2,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,heightToolOption3,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,heightToolOption2,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,heightToolOption3,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption2,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption2,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x54,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,smoothingToolOption1,0x54,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,smoothingRelaxLandButton,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementOption0,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementOption2,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementOption0,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementOption2,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption2,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption2,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x54,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,regionToolOption0,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,regionToolOption0,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,regionToolOption1,0x54,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,minimapView,0x20,dword) = 0;
+    INGAME_UI_FIELD(inGameRoot,minimapView,0x20,uint32_t) = 0;
     INGAME_UI(inGameRoot,minimapView)->topOffset = 0;
     INGAME_UI(inGameRoot,minimapView)->rightOffset = 0;
     INGAME_UI_FIELD(inGameRoot,minimapView,0x2C,enum UiNodeFlags) = 0;
@@ -1208,163 +1208,163 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     ((UiImageActionControl *)INGAME_UI(inGameRoot,notificationTargetButton))->textureSource = textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,heightToolPreview,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,smoothingToolPreview,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,regionToolPreview,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x28,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,singleSelectionUpgradeButton,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,selectionDetailPanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,heightToolPanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,materialPalettePanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingToolPanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementPanel,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementPanel,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,regionToolPanel,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry00,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,regionToolPreview,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x28,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,singleSelectionUpgradeButton,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,selectionDetailPanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,heightToolPanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,materialPalettePanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingToolPanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementPanel,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementPanel,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,regionToolPanel,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry00,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry02,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry04,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x74,struct UiRootCallbacks *) = (UiRootCallbacks *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry09,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry11,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry09,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry11,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry13,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry15,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x74,struct UiRootCallbacks *) = (UiRootCallbacks *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry20,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry22,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry20,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry22,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry24,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry26,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x74,struct UiRootCallbacks *) = (UiRootCallbacks *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry31,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry33,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry31,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry33,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry35,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry37,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x74,struct UiRootCallbacks *) = (UiRootCallbacks *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry42,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry44,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry42,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry44,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry46,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry00,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry02,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry00,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry02,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry04,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry06,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x74,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x74,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry11,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry13,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry11,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry13,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry15,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry17,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x74,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x74,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry22,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry24,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry22,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry24,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry26,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry28,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x74,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x74,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry33,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry35,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry33,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry35,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry37,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry39,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x74,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot01,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x74,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot06,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot06,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot08,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot11,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot11,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot13,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x74,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot16,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot16,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot18,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x74,struct UiRootCallbacks *) = (UiRootCallbacks *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot21,0x74,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot21,0x74,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot23,0x74,struct UiNodeVtable *) = (UiNodeVtable *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow1RelationButton,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow1RelationButton,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationButton,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow1RelationButton,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationButton,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationButton,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x74,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x54,sdword) = (sdword)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationButton,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x54,int32_t) = (int32_t)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationButton,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationButton,0x54,enum UiRootFlags) = (UiRootFlags)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x74,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x54,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x74,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x54,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow6RelationButton,0x74,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow6RelationButton,0x54,dword) = (UiAnchorFractionQ31)textureSourceValue;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow7RelationButton,0x74,sdword) = (sdword)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow6RelationButton,0x54,uint32_t) = (UiAnchorFractionQ31)textureSourceValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow7RelationButton,0x74,int32_t) = (int32_t)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow7RelationButton,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
     subresourceWidth = g_InGamePanelTextureSubresource01Width;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
     *sdwordField = *sdwordField - g_InGamePanelTextureSubresource01Width;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x28,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->rightOffset;
     *sdwordField = *sdwordField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameInfoSection)->rightOffset;
     *sdwordField = *sdwordField - subresourceWidth;
@@ -1372,45 +1372,45 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *sdwordField = *sdwordField - subresourceWidth;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x28,enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,minimapView,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,minimapView,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,minimapView)->rightOffset;
     *sdwordField = *sdwordField - subresourceWidth;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x20,struct UiRootNode *) = (UiRootNode *)((int)INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x20,struct UiRootNode *) - subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x28,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)*nodePointerField - subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x28,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource02Width;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
     *sdwordField = *sdwordField - g_InGamePanelTextureSubresource02Width;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameLeftEdge,0x28,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameTopCap,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameBottomCap)->leftOffset;
     *sdwordField = *sdwordField - subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,minimapView,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,minimapView,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x20,struct UiRootNode *) = (UiRootNode *)((int)INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x20,struct UiRootNode *) - subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x20,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
     *sdwordField = *sdwordField - g_InGamePanelTextureSubresource00Width;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,uint32_t);
     *anchorField = *anchorField - g_InGamePanelTextureSubresource06Width;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x20,enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField - g_InGamePanelTextureSubresource07Width;
     subresourceWidth = g_InGamePanelTextureSubresource02Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameTopCap)->bottomOffset;
     *sdwordField = *sdwordField + g_InGamePanelTextureSubresource02Height;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->bottomOffset;
     *sdwordField = *sdwordField + subresourceWidth;
@@ -1426,10 +1426,10 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
          (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x24,struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x2C,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource36Height;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,uint32_t);
     *anchorField = *anchorField + g_InGamePanelTextureSubresource36Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->bottomOffset;
     *sdwordField = *sdwordField + subresourceWidth;
@@ -1443,7 +1443,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
          (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x24,struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x2C,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource03Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->bottomOffset;
@@ -1456,7 +1456,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
          (UiNodeBase *)((int)&(INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x24,struct UiNodeBase *))->nextSibling + subresourceWidth);
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x2C,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource37Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameInfoSection)->topOffset;
@@ -1465,80 +1465,80 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *nodeFlagsField = *nodeFlagsField + subresourceWidth;
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x2C,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->nextSibling + subresourceWidth);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource04Height;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x2C,enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField + g_InGamePanelTextureSubresource04Height;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x24,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource00Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameBottomCap)->topOffset;
     *sdwordField = *sdwordField + g_InGamePanelTextureSubresource00Height;
     INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x2C,enum UiRootFlags) = INGAME_UI_FIELD(inGameRoot,sidePanelFrameBottomCap,0x2C,enum UiRootFlags) + subresourceWidth;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,uint32_t);
     *anchorField = *anchorField + subresourceWidth;
     subresourceWidth = g_InGamePanelTextureSubresource05Height;
     sdwordField = &INGAME_UI(inGameRoot,sidePanelFrameBottomCap)->topOffset;
     *sdwordField = *sdwordField - g_InGamePanelTextureSubresource05Height;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,modeDetailPageStack,0x2C,uint32_t);
     *anchorField = *anchorField - subresourceWidth;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,resourcePanel,0x2C,enum UiNodeFlags);
     *nodeFlagsField = *nodeFlagsField + g_InGamePanelTextureSubresource06Height;
     INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x24,enum UiRootFlags) =
          INGAME_UI_FIELD(inGameRoot,gamePanelsArea,0x24,enum UiRootFlags) - g_InGamePanelTextureSubresource07Height;
-    rootFlagsValue = INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,dword);
+    rootFlagsValue = INGAME_UI_FIELD(inGameRoot,sidePanelFrameMenuBar,0x24,uint32_t);
     columnOffset = (UiRootNode *)INGAME_UI(inGameRoot,sidePanelFrameMenuBar)->bottomOffset;
     INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x24,enum UiRootFlags) = rootFlagsValue;
     INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x2C,struct UiRootNode *) = columnOffset;
     INGAME_UI(inGameRoot,missionObjectivesButton)->topOffset = rootFlagsValue;
-    INGAME_UI(inGameRoot,missionObjectivesButton)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x24,dword) = rootFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x2C,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,missionObjectivesButton)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x24,uint32_t) = rootFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x2C,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     nodeFlagsValue = INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
-    callbacksValue = (UiRootCallbacks *)INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,dword);
+    callbacksValue = (UiRootCallbacks *)INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,uint32_t);
     INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x20,enum UiNodeFlags) = nodeFlagsValue;
     INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x28,struct UiRootCallbacks *) = callbacksValue;
     INGAME_UI(inGameRoot,missionObjectivesButton)->leftOffset = nodeFlagsValue;
-    INGAME_UI(inGameRoot,missionObjectivesButton)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x20,dword) = nodeFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x28,dword) = (UiAnchorFractionQ31)callbacksValue;
+    INGAME_UI(inGameRoot,missionObjectivesButton)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x20,uint32_t) = nodeFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,countdownDisplayPanel,0x28,uint32_t) = (UiAnchorFractionQ31)callbacksValue;
     sharedLayoutValue = (UiNodeVtable *)INGAME_UI(inGameRoot,sidePanelFrameInfoSection)->topOffset;
     columnOffset = (UiRootNode *)INGAME_UI_FIELD(inGameRoot,sidePanelFrameInfoSection,0x2C,enum UiNodeFlags);
-    INGAME_UI(inGameRoot,selectionGroupButton0)->topOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,selectionGroupButton0)->bottomOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,selectionGroupButton0)->topOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,selectionGroupButton0)->bottomOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x24,enum UiRootFlags) = (UiRootFlags)sharedLayoutValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x2C,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,selectionGroupButton2)->topOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,selectionGroupButton2)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,selectionGroupButton3)->topOffset = (sdword)sharedLayoutValue;
+    INGAME_UI(inGameRoot,selectionGroupButton2)->topOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,selectionGroupButton2)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,selectionGroupButton3)->topOffset = (int32_t)sharedLayoutValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x2C,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,selectionGroupButton4)->topOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,selectionGroupButton4)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x24,dword) = (UiAnchorFractionQ31)sharedLayoutValue;
-    INGAME_UI(inGameRoot,selectionGroupButton5)->bottomOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,selectionGroupButton4)->topOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,selectionGroupButton4)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x24,uint32_t) = (UiAnchorFractionQ31)sharedLayoutValue;
+    INGAME_UI(inGameRoot,selectionGroupButton5)->bottomOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x24,struct UiNodeVtable *) = sharedLayoutValue;
-    INGAME_UI(inGameRoot,selectionGroupButton6)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,dword) = (UiAnchorFractionQ31)sharedLayoutValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x2C,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,selectionGroupButton6)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,uint32_t) = (UiAnchorFractionQ31)sharedLayoutValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x2C,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     offsetValue = (UiNodeBase *)INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
-    callbacksValue = (UiRootCallbacks *)INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,dword);
-    INGAME_UI(inGameRoot,selectionGroupButton0)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,selectionGroupButton0)->rightOffset = (sdword)callbacksValue;
+    callbacksValue = (UiRootCallbacks *)INGAME_UI_FIELD(inGameRoot,sidePanelFrameRightEdge,0x28,uint32_t);
+    INGAME_UI(inGameRoot,selectionGroupButton0)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,selectionGroupButton0)->rightOffset = (int32_t)callbacksValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x20,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x28,struct UiRootCallbacks *) = callbacksValue;
-    INGAME_UI(inGameRoot,selectionGroupButton2)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,selectionGroupButton2)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,selectionGroupButton3)->leftOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,selectionGroupButton2)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,selectionGroupButton2)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,selectionGroupButton3)->leftOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x28,enum UiNodeFlags) = (UiNodeFlags)callbacksValue;
-    INGAME_UI(inGameRoot,selectionGroupButton4)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,selectionGroupButton4)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,selectionGroupButton5)->rightOffset = (sdword)callbacksValue;
+    INGAME_UI(inGameRoot,selectionGroupButton4)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,selectionGroupButton4)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,selectionGroupButton5)->rightOffset = (int32_t)callbacksValue;
     INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x20,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,selectionGroupButton6)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x28,dword) = (UiAnchorFractionQ31)callbacksValue;
+    INGAME_UI(inGameRoot,selectionGroupButton6)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x28,uint32_t) = (UiAnchorFractionQ31)callbacksValue;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton0)->leftOffset;
     *sdwordField = *sdwordField + 5;
     nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x20,enum UiNodeFlags);
@@ -1549,11 +1549,11 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *sdwordField = *sdwordField + 0x61;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton4)->leftOffset;
     *sdwordField = *sdwordField + 5;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x20,uint32_t);
     *anchorField = *anchorField + 0x24;
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x20,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)&(*nodePointerField)->layoutWidth + 2);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,uint32_t);
     *anchorField = *anchorField + 0x61;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton0)->topOffset;
     *sdwordField = *sdwordField + 0x11;
@@ -1564,494 +1564,494 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *sdwordField = *sdwordField + 0x11;
     sdwordField = &INGAME_UI(inGameRoot,selectionGroupButton4)->topOffset;
     *sdwordField = *sdwordField + 0x28;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x24,uint32_t);
     *anchorField = *anchorField + 0x28;
     vtablePointerField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x24,struct UiNodeVtable *);
     *vtablePointerField = (UiNodeVtable *)&(*vtablePointerField)->pointerMove;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,uint32_t);
     *anchorField = *anchorField + 0x28;
     sharedLayoutValue = (UiNodeVtable *)INGAME_UI(inGameRoot,sidePanelFrameLeftEdge)->leftOffset;
     INGAME_UI_FIELD(inGameRoot,worldViewArea,0x20,struct UiNodeBase *) = (UiNodeBase *)0x0;
     INGAME_UI_FIELD(inGameRoot,worldViewArea,0x24,struct UiNodeBase *) = (UiNodeBase *)0x0;
     INGAME_UI_FIELD(inGameRoot,worldViewArea,0x28,struct UiNodeVtable *) = sharedLayoutValue;
     INGAME_UI(inGameRoot,worldViewArea)->bottomOffset = 0;
-    INGAME_UI(inGameRoot,sidePanelStack)->leftOffset = (sdword)sharedLayoutValue;
-    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x24,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x28,dword) = 0;
-    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x2C,dword) = 0;
+    INGAME_UI(inGameRoot,sidePanelStack)->leftOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x24,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x28,uint32_t) = 0;
+    INGAME_UI_FIELD(inGameRoot,sidePanelStack,0x2C,uint32_t) = 0;
     columnOffset = (UiRootNode *)-g_InGamePanelTextureSubresource28Width;
     rowOffset = (UiRootNode *)-g_InGamePanelTextureSubresource31Height;
-    INGAME_UI(inGameRoot,buildCatalogEntry00)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry00)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry00)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry00)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry02)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry03)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry02)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry03)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry04,0x28,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x28,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry12)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry20)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry24)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry12)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry20)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry24)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry36)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry42)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry36)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry42)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x2C,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x2C,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry16)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry28)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry16)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry28)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot01)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot02)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot01)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot02)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot04)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot04)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot08,0x28,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot12)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot16)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot12)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot16)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     columnOffset = (UiRootNode *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     rowOffset = (UiRootNode *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI(inGameRoot,buildCatalogEntry00)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry00)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry01)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry01)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry02)->topOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry00)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry00)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry01)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry01)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry02)->topOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry04,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry04)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry04)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x20,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry09)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry13)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry16)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry09)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry13)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry16)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry20)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry20)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry24)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry25)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry24)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry25)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry31)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry37)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry42)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry31)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry37)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry42)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry00)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x24,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry03)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry05)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry05)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry06)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry03)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry05)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry05)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry06)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x20,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry17)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry20)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry17)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry20)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x28,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry28,0x24,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->topOffset = (sdword)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x2C,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot00)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot00)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x24,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot01)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot01)->topOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot01)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot01)->topOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot04)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot04)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x2C,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot06)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot07)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot06)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot07)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot08,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot13)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot16)->leftOffset = (sdword)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot13)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot16)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x28,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x20,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot21)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot21)->rightOffset = (int32_t)columnOffset;
     columnOffset = (UiRootNode *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     offsetValue = (UiNodeBase *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry02)->rightOffset = (sdword)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry02)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry04,0x24,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry05)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry05)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x24,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry07)->topOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry07)->topOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x2C,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry09)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry09)->bottomOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry09)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry09)->bottomOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry11)->bottomOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry11)->bottomOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry13,0x20,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x20,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry18)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry21)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry22)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry26)->bottomOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry31)->topOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry18)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry21)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry22)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry26)->bottomOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry31)->topOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry37,0x24,struct UiNodeBase *) = offsetValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x2C,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x2C,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x24,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry44)->bottomOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry44)->bottomOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x20,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->topOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry06)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry04)->topOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry06)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry06,0x24,struct UiNodeVtable *) = (UiNodeVtable *)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry09)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x2C,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry09)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x2C,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x2C,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->bottomOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->bottomOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x28,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry17,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry25)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry25)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry36)->topOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->bottomOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot01)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot04)->topOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry36)->topOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->bottomOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot01)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot04)->topOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x20,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x24,enum UiRootFlags) = (UiRootFlags)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot06)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot06)->topOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot08)->bottomOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot09)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x2C,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot06)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot06)->topOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot08)->bottomOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot09)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x2C,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x28,struct UiRootNode *) = columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x2C,struct UiNodeBase *) = offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot11)->bottomOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot11)->bottomOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot13,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot17)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot18)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot21)->leftOffset = (sdword)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot17)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot18)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot21)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
     columnOffset = (UiRootNode *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     rowOffset = (UiRootNode *)((int)offsetValue - g_InGamePanelTextureSubresource34Height);
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry02,0x20,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x20,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry07)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry07)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry09)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry10)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry09)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry10)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x24,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry11)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry11)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry11)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry11)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry13)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry14)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry13)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry14)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry15,0x28,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry15)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry18)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry15)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry18)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x28,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry22)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry23)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry22)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry23)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry26,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x24,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry33)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry33)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry44)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry44)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry02)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x28,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry06,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry09)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry09)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x24,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x2C,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry14)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry14)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x2C,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry27)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry27)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry38)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry38)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot06)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot07)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot06)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot07)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot08,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot09)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot09)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x20,enum UiRootFlags) = (UiRootFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot11)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot11)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot11)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot11)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot13)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot14)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot13)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot14)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot18,0x20,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot22)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot23)->rightOffset = (sdword)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot22)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,armyStockSlot23)->rightOffset = (int32_t)columnOffset;
     offsetValue = (UiNodeBase *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     rowOffset = (UiRootNode *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry07)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry11)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry12)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry13)->topOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry07)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry11)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry12)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry13)->topOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry15,0x20,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry15,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x20,enum UiRootFlags) = (UiRootFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry24)->rightOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry24)->rightOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry26,0x28,struct UiNodeVtable *) = (UiNodeVtable *)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x28,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry29)->rightOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry33)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry29)->rightOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry33)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry45)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry46)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry03)->leftOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->leftOffset = (sdword)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry45)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry46)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry03)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry11)->leftOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x24,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry14)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry16)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry17)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry13)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry14)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry15)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry16)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry17)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x20,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x20,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry28)->rightOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry28)->rightOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x28,struct UiNodeBase *) = offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry31)->topOffset = (sdword)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry31)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x28,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->rightOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->rightOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry39)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry39)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x20,struct UiNodeBase *) = offsetValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot11)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,armyStockSlot12)->topOffset = (sdword)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot11)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot12)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot13,0x24,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x24,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot16)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot16)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x2C,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot18)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot23)->leftOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,armyStockSlot18)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot23)->leftOffset = (int32_t)offsetValue;
     columnOffset = (UiRootNode *)((int)offsetValue - g_InGamePanelTextureSubresource34Width);
     rowOffset = (UiRootNode *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry18)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry18)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry20)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry20)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry22)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry22)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x2C,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry24,0x20,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry26,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry27)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry27)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x20,struct UiRootNode *) = columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry29)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry29)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x28,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry31)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry31)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry33)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry34)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry34)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry35)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry35)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry40)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry33)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry34)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry34)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry35)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry35)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry40)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry46)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry47)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry46)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry47)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry17,0x24,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x2C,struct UiRootNode *) = rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry28,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry31)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry31)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x24,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x20,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x28,enum UiNodeFlags) = (UiNodeFlags)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry38)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry39)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry38)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry39)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry39,0x24,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x2C,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x2C,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,armyStockSlot16)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot17)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot18)->topOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot16)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot17)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot18)->topOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x2C,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot21)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot21)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x2C,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot23)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot23)->bottomOffset = (int32_t)rowOffset;
     columnOffset = (UiRootNode *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     rowOffset = (UiRootNode *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI(inGameRoot,buildCatalogEntry20)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry20)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x24,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry22)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry23)->topOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry29)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry22)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry23)->topOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry29)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x20,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry31)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry32)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry33)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry31)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry32)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry33)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry35,0x20,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry35)->topOffset = (sdword)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry35)->topOffset = (int32_t)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry37,0x28,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x28,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry40)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry40)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x28,struct UiRootNode *) = columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x24,struct UiRootCallbacks *) = (UiRootCallbacks *)rowOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry20)->topOffset = (sdword)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry20)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x24,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry22)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x24,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->bottomOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->bottomOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x2C,enum UiRootFlags) = (UiRootFlags)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry27)->bottomOffset = (sdword)rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry27)->bottomOffset = (int32_t)rowOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry33)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x2C,struct UiRootNode *) = rowOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry36)->leftOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->leftOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry35)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry36)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry37)->leftOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry39,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x24,dword) = (UiAnchorFractionQ31)rowOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x24,uint32_t) = (UiAnchorFractionQ31)rowOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x24,struct UiNodeBase *) = (UiNodeBase *)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot21)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot21)->topOffset = (int32_t)rowOffset;
     INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x24,enum UiNodeFlags) = (UiNodeFlags)rowOffset;
-    INGAME_UI(inGameRoot,armyStockSlot23)->topOffset = (sdword)rowOffset;
+    INGAME_UI(inGameRoot,armyStockSlot23)->topOffset = (int32_t)rowOffset;
     columnOffset = (UiRootNode *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
     offsetValue = (UiNodeBase *)((int)rowOffset - g_InGamePanelTextureSubresource34Height);
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x20,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x20,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry37,0x20,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry38)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry38)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x20,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry40)->leftOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry40)->leftOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x20,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry42)->rightOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry42)->rightOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x28,enum UiRootFlags) = (UiRootFlags)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry44)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry45)->rightOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,buildCatalogEntry46)->rightOffset = (sdword)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x28,dword) = (UiAnchorFractionQ31)columnOffset;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->topOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry25)->topOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->topOffset = (sdword)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x24,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry44)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry45)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,buildCatalogEntry46)->rightOffset = (int32_t)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x28,uint32_t) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry24)->topOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry25)->topOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,specialBuildCatalogEntry26)->topOffset = (int32_t)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x24,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x24,enum UiRootFlags) = (UiRootFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x24,struct UiNodeBase *) = offsetValue;
     sharedLayoutValue = (UiNodeVtable *)((int)columnOffset - g_InGamePanelTextureSubresource34Width);
-    INGAME_UI(inGameRoot,buildCatalogEntry42)->leftOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry43)->leftOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,buildCatalogEntry44)->leftOffset = (sdword)sharedLayoutValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x20,dword) = (UiAnchorFractionQ31)sharedLayoutValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry42)->leftOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry43)->leftOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,buildCatalogEntry44)->leftOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x20,uint32_t) = (UiAnchorFractionQ31)sharedLayoutValue;
     INGAME_UI_FIELD(inGameRoot,buildCatalogEntry46,0x20,struct UiNodeVtable *) = sharedLayoutValue;
-    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x20,dword) = (UiAnchorFractionQ31)sharedLayoutValue;
+    INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x20,uint32_t) = (UiAnchorFractionQ31)sharedLayoutValue;
     subresourceWidth = g_InGamePanelTextureSubresource34Width;
     sdwordField = &INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset;
     *sdwordField = *sdwordField + g_InGamePanelTextureSubresource34Width;
@@ -2113,10 +2113,10 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *nodeFlagsField = (int)&offsetValue->nextSibling + *nodeFlagsField;
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow1FactionLabel)->rightOffset;
     *sdwordField = (int)&offsetValue->nextSibling + *sdwordField;
-    INGAME_UI(inGameRoot,diplomacyRow2RelationButton)->leftOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,diplomacyRow2RelationButton)->leftOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow2PlayerNumberLabel,0x28,struct UiRootCallbacks *) = (UiRootCallbacks *)((int)INGAME_UI_FIELD(inGameRoot,diplomacyRow2PlayerNumberLabel,0x28,struct UiRootCallbacks *) + (int)offsetValue)
     ;
-    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationLabel,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationLabel,0x28,uint32_t);
     *anchorField = (int)&offsetValue->nextSibling + *anchorField;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow2PlayerNameLabel,0x28,enum UiRootFlags) = (int)&offsetValue->nextSibling + INGAME_UI_FIELD(inGameRoot,diplomacyRow2PlayerNameLabel,0x28,enum UiRootFlags);
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow2FactionLabel)->rightOffset;
@@ -2124,25 +2124,25 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x20,enum UiRootFlags) = (UiRootFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow3PlayerNumberLabel,0x28,struct UiRootNode *) =
          (UiRootNode *)((int)INGAME_UI_FIELD(inGameRoot,diplomacyRow3PlayerNumberLabel,0x28,struct UiRootNode *) + (int)offsetValue);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationLabel,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationLabel,0x28,uint32_t);
     *anchorField = (int)&offsetValue->nextSibling + *anchorField;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow3PlayerNameLabel,0x28,struct UiRootCallbacks *) =
          (UiRootCallbacks *)((int)INGAME_UI_FIELD(inGameRoot,diplomacyRow3PlayerNameLabel,0x28,struct UiRootCallbacks *) + (int)offsetValue);
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow3FactionLabel)->rightOffset;
     *sdwordField = (int)&offsetValue->nextSibling + *sdwordField;
-    INGAME_UI(inGameRoot,diplomacyRow4RelationButton)->leftOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,diplomacyRow4RelationButton)->leftOffset = (int32_t)offsetValue;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow4PlayerNumberLabel,0x28,struct UiNodeBase *) =
          (UiNodeBase *)((int)&offsetValue->nextSibling + (int)INGAME_UI_FIELD(inGameRoot,diplomacyRow4PlayerNumberLabel,0x28,struct UiNodeBase *));
-    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationLabel,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationLabel,0x28,uint32_t);
     *anchorField = (int)&offsetValue->nextSibling + *anchorField;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow4PlayerNameLabel,0x28,struct UiRootNode *) =
          (UiRootNode *)((int)INGAME_UI_FIELD(inGameRoot,diplomacyRow4PlayerNameLabel,0x28,struct UiRootNode *) + (int)offsetValue);
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow4FactionLabel)->rightOffset;
     *sdwordField = (int)&offsetValue->nextSibling + *sdwordField;
-    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     nodePointerField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow5PlayerNumberLabel,0x28,struct UiNodeBase *);
     *nodePointerField = (UiNodeBase *)((int)*nodePointerField + (int)offsetValue);
-    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationLabel,0x28,dword);
+    anchorField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationLabel,0x28,uint32_t);
     *anchorField = (int)&offsetValue->nextSibling + *anchorField;
     INGAME_UI_FIELD(inGameRoot,diplomacyRow5PlayerNameLabel,0x28,struct UiNodeBase *) =
          (UiNodeBase *)((int)&offsetValue->nextSibling + (int)INGAME_UI_FIELD(inGameRoot,diplomacyRow5PlayerNameLabel,0x28,struct UiNodeBase *));
@@ -2157,7 +2157,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     *nodePointerField = (UiNodeBase *)((int)*nodePointerField + (int)offsetValue);
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow6FactionLabel)->rightOffset;
     *sdwordField = (int)&offsetValue->nextSibling + *sdwordField;
-    INGAME_UI(inGameRoot,diplomacyRow7RelationButton)->leftOffset = (sdword)offsetValue;
+    INGAME_UI(inGameRoot,diplomacyRow7RelationButton)->leftOffset = (int32_t)offsetValue;
     vtablePointerField = &INGAME_UI_FIELD(inGameRoot,diplomacyRow7PlayerNumberLabel,0x28,struct UiNodeVtable *);
     *vtablePointerField = (UiNodeVtable *)((int)*vtablePointerField + (int)offsetValue);
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow7RelationLabel)->rightOffset;
@@ -2167,7 +2167,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     sdwordField = &INGAME_UI(inGameRoot,diplomacyRow7FactionLabel)->rightOffset;
     *sdwordField = (int)&offsetValue->nextSibling + *sdwordField;
     subresourceWidth = INGAME_UI(inGameRoot,resourcePanel)->topOffset;
-    INGAME_UI(inGameRoot,editorTabStripA)->leftOffset = INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,dword);
+    INGAME_UI(inGameRoot,editorTabStripA)->leftOffset = INGAME_UI_FIELD(inGameRoot,resourcePanel,0x20,uint32_t);
     INGAME_UI(inGameRoot,editorTabStripA)->topOffset = subresourceWidth;
     rootFlagsValue = INGAME_UI_FIELD(inGameRoot,resourcePanel,0x2C,enum UiNodeFlags);
     INGAME_UI_FIELD(inGameRoot,editorTabStripA,0x28,enum UiNodeFlags) = INGAME_UI(inGameRoot,resourcePanel)->rightOffset;
@@ -2180,12 +2180,12 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     columnOffset = (UiRootNode *)INGAME_UI(inGameRoot,selectionGroupButton0)->topOffset;
     INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x20,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x24,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
-    INGAME_UI(inGameRoot,materialToolOption0)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,materialToolOption0)->topOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,materialToolOption0)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,materialToolOption0)->topOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
     INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x24,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,unitPlacementOption0)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,unitPlacementOption0)->topOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,unitPlacementOption0)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,unitPlacementOption0)->topOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x20,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x24,enum UiRootFlags) = (UiRootFlags)columnOffset;
     INGAME_UI_FIELD(inGameRoot,regionToolOption0,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)offsetValue;
@@ -2194,8 +2194,8 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     columnOffset = (UiRootNode *)INGAME_UI(inGameRoot,selectionGroupButton0)->bottomOffset;
     INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x28,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x2C,struct UiNodeVtable *) = (UiNodeVtable *)columnOffset;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x2C,dword) = (UiAnchorFractionQ31)columnOffset;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x2C,uint32_t) = (UiAnchorFractionQ31)columnOffset;
     INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x28,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x2C,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     INGAME_UI_FIELD(inGameRoot,unitPlacementOption0,0x28,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
@@ -2206,44 +2206,44 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,regionToolOption0,0x2C,struct UiNodeBase *) = (UiNodeBase *)columnOffset;
     offsetValue = (UiNodeBase *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x20,enum UiNodeFlags);
     sharedLayoutValue = (UiNodeVtable *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x24,enum UiRootFlags);
-    INGAME_UI(inGameRoot,heightToolOption1)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,heightToolOption1)->topOffset = (sdword)sharedLayoutValue;
+    INGAME_UI(inGameRoot,heightToolOption1)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,heightToolOption1)->topOffset = (int32_t)sharedLayoutValue;
     INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x20,enum UiNodeFlags) = (UiNodeFlags)offsetValue;
     INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x24,enum UiRootFlags) = (UiRootFlags)sharedLayoutValue;
-    INGAME_UI(inGameRoot,smoothingToolOption1)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,smoothingToolOption1)->topOffset = (sdword)sharedLayoutValue;
+    INGAME_UI(inGameRoot,smoothingToolOption1)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,smoothingToolOption1)->topOffset = (int32_t)sharedLayoutValue;
     INGAME_UI_FIELD(inGameRoot,unitPlacementOption2,0x20,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,unitPlacementOption2,0x24,struct UiNodeVtable *) = sharedLayoutValue;
-    INGAME_UI(inGameRoot,objectPlacementOption2)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,objectPlacementOption2)->topOffset = (sdword)sharedLayoutValue;
-    INGAME_UI(inGameRoot,regionToolOption1)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,regionToolOption1)->topOffset = (sdword)sharedLayoutValue;
+    INGAME_UI(inGameRoot,objectPlacementOption2)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,objectPlacementOption2)->topOffset = (int32_t)sharedLayoutValue;
+    INGAME_UI(inGameRoot,regionToolOption1)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,regionToolOption1)->topOffset = (int32_t)sharedLayoutValue;
     callbacksValue = INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x28,struct UiRootCallbacks *);
     columnOffset = INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x2C,struct UiRootNode *);
-    INGAME_UI(inGameRoot,heightToolOption1)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,heightToolOption1)->bottomOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,heightToolOption1)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,heightToolOption1)->bottomOffset = (int32_t)columnOffset;
     INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x28,struct UiRootCallbacks *) = callbacksValue;
     INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x2C,struct UiRootNode *) = columnOffset;
-    INGAME_UI(inGameRoot,smoothingToolOption1)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,smoothingToolOption1)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,unitPlacementOption2)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,unitPlacementOption2)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,objectPlacementOption2)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,objectPlacementOption2)->bottomOffset = (sdword)columnOffset;
-    INGAME_UI(inGameRoot,regionToolOption1)->rightOffset = (sdword)callbacksValue;
-    INGAME_UI(inGameRoot,regionToolOption1)->bottomOffset = (sdword)columnOffset;
+    INGAME_UI(inGameRoot,smoothingToolOption1)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,smoothingToolOption1)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,unitPlacementOption2)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,unitPlacementOption2)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,objectPlacementOption2)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,objectPlacementOption2)->bottomOffset = (int32_t)columnOffset;
+    INGAME_UI(inGameRoot,regionToolOption1)->rightOffset = (int32_t)callbacksValue;
+    INGAME_UI(inGameRoot,regionToolOption1)->bottomOffset = (int32_t)columnOffset;
     firstAnchorValue = INGAME_UI(inGameRoot,selectionGroupButton2)->leftOffset;
     secondAnchorValue = INGAME_UI(inGameRoot,selectionGroupButton2)->topOffset;
     INGAME_UI(inGameRoot,heightToolOption2)->leftOffset = firstAnchorValue;
     INGAME_UI(inGameRoot,heightToolOption2)->topOffset = secondAnchorValue;
     INGAME_UI(inGameRoot,materialToolOption2)->leftOffset = firstAnchorValue;
     INGAME_UI(inGameRoot,materialToolOption2)->topOffset = secondAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x20,dword) = firstAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x24,dword) = secondAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x20,uint32_t) = firstAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x24,uint32_t) = secondAnchorValue;
     INGAME_UI(inGameRoot,unitPlacementOption1)->leftOffset = firstAnchorValue;
     INGAME_UI(inGameRoot,unitPlacementOption1)->topOffset = secondAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x20,dword) = firstAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x24,dword) = secondAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x20,uint32_t) = firstAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x24,uint32_t) = secondAnchorValue;
     nodeFlagsValue = INGAME_UI(inGameRoot,selectionGroupButton2)->rightOffset;
     rootFlagsValue = INGAME_UI(inGameRoot,selectionGroupButton2)->bottomOffset;
     INGAME_UI_FIELD(inGameRoot,heightToolOption2,0x28,enum UiNodeFlags) = nodeFlagsValue;
@@ -2252,30 +2252,30 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI(inGameRoot,materialToolOption2)->bottomOffset = rootFlagsValue;
     INGAME_UI(inGameRoot,smoothingToolOption2)->rightOffset = nodeFlagsValue;
     INGAME_UI(inGameRoot,smoothingToolOption2)->bottomOffset = rootFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x28,dword) = nodeFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x2C,dword) = rootFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x28,dword) = nodeFlagsValue;
-    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x2C,dword) = rootFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x28,uint32_t) = nodeFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x2C,uint32_t) = rootFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x28,uint32_t) = nodeFlagsValue;
+    INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x2C,uint32_t) = rootFlagsValue;
     offsetValue = (UiNodeBase *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x24,struct UiNodeVtable *);
     INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x20,struct UiNodeBase *) = INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x20,struct UiNodeBase *);
     INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x24,struct UiNodeBase *) = offsetValue;
     sharedLayoutValue = (UiNodeVtable *)INGAME_UI(inGameRoot,selectionGroupButton6)->bottomOffset;
     INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x28,struct UiNodeBase *) = (UiNodeBase *)INGAME_UI(inGameRoot,selectionGroupButton6)->rightOffset;
     INGAME_UI_FIELD(inGameRoot,smoothingRelaxGatedButton,0x2C,struct UiNodeVtable *) = sharedLayoutValue;
-    offsetValue = (UiNodeBase *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,dword);
-    sharedLayoutValue = (UiNodeVtable *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,dword);
+    offsetValue = (UiNodeBase *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x20,uint32_t);
+    sharedLayoutValue = (UiNodeVtable *)INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x24,uint32_t);
     INGAME_UI_FIELD(inGameRoot,heightToolOption3,0x20,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,heightToolOption3,0x24,struct UiNodeVtable *) = sharedLayoutValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x20,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x24,dword) = (UiAnchorFractionQ31)sharedLayoutValue;
-    INGAME_UI(inGameRoot,smoothingRelaxLandButton)->leftOffset = (sdword)offsetValue;
-    INGAME_UI(inGameRoot,smoothingRelaxLandButton)->topOffset = (sdword)sharedLayoutValue;
-    firstAnchorValue = INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x28,dword);
-    secondAnchorValue = INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x2C,dword);
+    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x20,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x24,uint32_t) = (UiAnchorFractionQ31)sharedLayoutValue;
+    INGAME_UI(inGameRoot,smoothingRelaxLandButton)->leftOffset = (int32_t)offsetValue;
+    INGAME_UI(inGameRoot,smoothingRelaxLandButton)->topOffset = (int32_t)sharedLayoutValue;
+    firstAnchorValue = INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x28,uint32_t);
+    secondAnchorValue = INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x2C,uint32_t);
     INGAME_UI(inGameRoot,heightToolOption3)->rightOffset = firstAnchorValue;
     INGAME_UI(inGameRoot,heightToolOption3)->bottomOffset = secondAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x28,dword) = firstAnchorValue;
-    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x2C,dword) = secondAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x28,uint32_t) = firstAnchorValue;
+    INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x2C,uint32_t) = secondAnchorValue;
     INGAME_UI(inGameRoot,smoothingRelaxLandButton)->rightOffset = firstAnchorValue;
     INGAME_UI(inGameRoot,smoothingRelaxLandButton)->bottomOffset = secondAnchorValue;
     subresourceWidth = g_InGamePanelTextureSubresource34Height;
@@ -2285,23 +2285,23 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,singleSelectionMetrics,0x2C,struct UiNodeBase *) = paddedIconHeight;
     INGAME_UI_FIELD(inGameRoot,singleSelectionMetrics,0x20,struct UiRootNode *) = (UiRootNode *)0x2;
     INGAME_UI_FIELD(inGameRoot,singleSelectionMetrics,0x24,struct UiNodeBase *) = (UiNodeBase *)0x2;
-    INGAME_UI_FIELD(inGameRoot,hoverItemIcon,0x28,dword) = (UiAnchorFractionQ31)offsetValue;
-    INGAME_UI_FIELD(inGameRoot,hoverItemIcon,0x2C,dword) = (UiAnchorFractionQ31)paddedIconHeight;
+    INGAME_UI_FIELD(inGameRoot,hoverItemIcon,0x28,uint32_t) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,hoverItemIcon,0x2C,uint32_t) = (UiAnchorFractionQ31)paddedIconHeight;
     INGAME_UI(inGameRoot,hoverItemIcon)->leftOffset = 2;
     INGAME_UI(inGameRoot,hoverItemIcon)->topOffset = 2;
     offsetValue = (UiNodeBase *)(g_InGamePanelTextureSubresource02Width - 4);
     INGAME_UI_FIELD(inGameRoot,singleSelectionStatsText,0x20,struct UiNodeBase *) = (UiNodeBase *)0x2;
     INGAME_UI_FIELD(inGameRoot,singleSelectionStatsText,0x24,struct UiNodeBase *) = (UiNodeBase *)(subresourceWidth + 4);
     INGAME_UI_FIELD(inGameRoot,singleSelectionStatsText,0x28,struct UiNodeVtable *) = (UiNodeVtable *)0xfffffffe;
-    INGAME_UI_FIELD(inGameRoot,singleSelectionStatsText,0x50,dword) = (UiAnchorFractionQ31)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,singleSelectionStatsText,0x50,uint32_t) = (UiAnchorFractionQ31)offsetValue;
     INGAME_UI(inGameRoot,hoverItemStatsText)->leftOffset = 2;
-    INGAME_UI_FIELD(inGameRoot,hoverItemStatsText,0x24,dword) = (UiAnchorFractionQ31)(subresourceWidth + 4);
-    INGAME_UI_FIELD(inGameRoot,hoverItemStatsText,0x28,dword) = 0xfffffffe;
+    INGAME_UI_FIELD(inGameRoot,hoverItemStatsText,0x24,uint32_t) = (UiAnchorFractionQ31)(subresourceWidth + 4);
+    INGAME_UI_FIELD(inGameRoot,hoverItemStatsText,0x28,uint32_t) = 0xfffffffe;
     INGAME_UI_FIELD(inGameRoot,hoverItemStatsText,0x50,struct UiNodeBase *) = offsetValue;
     INGAME_UI_FIELD(inGameRoot,unitPlacementStatsText,0x20,struct UiRootCallbacks *) = (UiRootCallbacks *)0x2;
     INGAME_UI_FIELD(inGameRoot,unitPlacementStatsText,0x24,struct UiRootNode *) = (UiRootNode *)0x2;
     INGAME_UI_FIELD(inGameRoot,unitPlacementStatsText,0x28,struct UiNodeBase *) = (UiNodeBase *)0xfffffffe;
-    INGAME_UI_FIELD(inGameRoot,unitPlacementStatsText,0x50,sdword) = (sdword)offsetValue;
+    INGAME_UI_FIELD(inGameRoot,unitPlacementStatsText,0x50,int32_t) = (int32_t)offsetValue;
     resourceId = 0x18002c;
     do {
       resolvedText = TextResource_Resolve(resourceId);
@@ -2324,7 +2324,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
       RichTextCommandStream_PatchPayloadBySelector(9,g_InGameSelectionDetailTextSlot09Utf16,stream);
     } while (resourceId < 0x18004f);
     columnsRemaining = 3;
-    stepOffset = (int)((ulonglong)(longlong)g_InGamePanelTextureSubresource02Width / 3);
+    stepOffset = (int)((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
     detailIndex = 0;
     cellLeft = 0;
     cellTop = 0;
@@ -2346,7 +2346,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
         cellTop = cellTop - stepOffset;
       }
     } while (detailIndex < 0xc);
-    loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_diagram0_gfx_00563120);
+    loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_diagram0_gfx_00563120);
     textureSourceValue = g_InGameDiagramTextureSource;
     loadedTextureSource = loadedTexture.eax;
     if (!loadedTexture.carry) {
@@ -2354,10 +2354,10 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
       UNLOCK();
       g_InGameDiagramTextureSource = loadedTextureSource;
       (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
-      INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x58,sdword) = (sdword)loadedTextureSource;
-      INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x58,sdword) = (sdword)loadedTextureSource;
+      INGAME_UI_FIELD(inGameRoot,xeniteGauge,0x58,int32_t) = (int32_t)loadedTextureSource;
+      INGAME_UI_FIELD(inGameRoot,tritiumGauge,0x58,int32_t) = (int32_t)loadedTextureSource;
       INGAME_UI_FIELD(inGameRoot,energyGauge,0x58,struct UiRootNode *) = (UiRootNode *)loadedTextureSource;
-      loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_window_gfx_0056318e);
+      loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_window_gfx_0056318e);
       textureSourceValue = g_InGameWindowTextureSource;
       loadedTextureSource = loadedTexture.eax;
       if (!loadedTexture.carry) {
@@ -2367,13 +2367,13 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
         (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)(textureSourceValue);
         INGAME_UI_FIELD(inGameRoot,technologyWindow,0x54,struct UiRootCallbacks *) = (UiRootCallbacks *)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,messageWindow,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
-        INGAME_UI_FIELD(inGameRoot,gameMenuWindow,0x54,dword) = (UiAnchorFractionQ31)loadedTextureSource;
-        INGAME_UI_FIELD(inGameRoot,quitGameWindow,0x54,dword) = (UiAnchorFractionQ31)loadedTextureSource;
-        INGAME_UI_FIELD(inGameRoot,saveGameWindow,0x54,sdword) = (sdword)loadedTextureSource;
-        INGAME_UI_FIELD(inGameRoot,graphicsSettingsWindow,0x54,sdword) = (sdword)loadedTextureSource;
+        INGAME_UI_FIELD(inGameRoot,gameMenuWindow,0x54,uint32_t) = (UiAnchorFractionQ31)loadedTextureSource;
+        INGAME_UI_FIELD(inGameRoot,quitGameWindow,0x54,uint32_t) = (UiAnchorFractionQ31)loadedTextureSource;
+        INGAME_UI_FIELD(inGameRoot,saveGameWindow,0x54,int32_t) = (int32_t)loadedTextureSource;
+        INGAME_UI_FIELD(inGameRoot,graphicsSettingsWindow,0x54,int32_t) = (int32_t)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,audioSettingsWindow,0x54,enum UiNodeFlags) = (UiNodeFlags)loadedTextureSource;
         INGAME_UI_FIELD(inGameRoot,missionHelpWindow,0x54,enum UiRootFlags) = (UiRootFlags)loadedTextureSource;
-        loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_tech_gfx_005630fa);
+        loadedTexture = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_tech_gfx_005630fa);
         textureSourceValue = g_InGameTechnologyTextureSource;
         loadedTextureSource = loadedTexture.eax;
         if (!loadedTexture.carry) {
@@ -2385,16 +2385,16 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab2Icon,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab3Icon,0x54,struct UiNodeBase *) = (UiNodeBase *)loadedTextureSource;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab4Icon,0x54,struct UiNodeVtable *) = (UiNodeVtable *)loadedTextureSource;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab5Icon,0x54,sdword) = (sdword)loadedTextureSource;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab6Icon,0x54,sdword) = (sdword)loadedTextureSource;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab7Icon,0x54,sdword) = (sdword)loadedTextureSource;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab5Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab6Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab7Icon,0x54,int32_t) = (int32_t)loadedTextureSource;
           logicalSize = (*g_GraphicsTextureSourceGetLogicalSize)(0,loadedTextureSource);
           techTextureHeight = logicalSize.logicalHeightPixels;
           sdwordField = &INGAME_UI(inGameRoot,technologyAreaTab1)->topOffset;
           *sdwordField = *sdwordField - techTextureHeight;
           sdwordField = &INGAME_UI(inGameRoot,technologyAreaTab2)->topOffset;
           *sdwordField = *sdwordField - techTextureHeight;
-          anchorField = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x24,dword);
+          anchorField = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x24,uint32_t);
           *anchorField = *anchorField - techTextureHeight;
           nodeFlagsField = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x24,enum UiNodeFlags);
           *nodeFlagsField = *nodeFlagsField - techTextureHeight;
@@ -2420,258 +2420,258 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
                ((INGAME_UI(inGameRoot,technologyWindow)->rightOffset - INGAME_UI(inGameRoot,technologyWindow)->leftOffset) + -0x18 +
                (INGAME_UI_FIELD(inGameRoot,technologyDescriptionScroll,0x28,enum UiRootFlags) - INGAME_UI(inGameRoot,technologyDescriptionScroll)->leftOffset));
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[0];
-          INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8,0x68,sdword) = (sdword)g_UiButtonSoundVoiceSets7[0];
+          INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle8,0x68,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[0];
           INGAME_UI_FIELD(inGameRoot,resourcePanelImageToggle9,0x68,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resourcePanelIconButton,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyPanel,0x68,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogPanel,0x68,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resourcePanelIconButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyPanel,0x68,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogPanel,0x68,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogPanel,0x68,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockPanel,0x68,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainHeight,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainMaterial,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockPanel,0x68,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainHeight,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainMaterial,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,editorModeTabTerrainSmoothing,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,editorModeTabRegion,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,editorModeTabRegion,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,editorModeTabUnitPlacement,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,editorModeTabObjectPlacement,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,editorModeTabObjectPlacement,0x70,int32_t) = (int32_t)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[1];
-          INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x70,sdword) = (sdword)g_UiButtonSoundVoiceSets7[1];
+          INGAME_UI_FIELD(inGameRoot,inGameMenuButton,0x70,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[1];
           INGAME_UI_FIELD(inGameRoot,missionObjectivesButton,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[2];
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton0,0x70,sdword) = (sdword)g_UiButtonSoundVoiceSets7[2];
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton2,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton0,0x70,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[2];
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton1,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton2,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton3,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,selectionGroupButton4,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton5,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,selectionGroupButton6,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,selectionGroupButton7,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,heightToolOption0,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,heightToolOption1,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,heightToolOption2,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,heightToolOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,heightToolOption2,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,heightToolOption3,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,materialToolOption0,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,materialToolOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,materialToolOption2,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,materialToolOption3,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,smoothingToolOption0,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,smoothingToolOption1,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,smoothingRelaxLandButton,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,unitPlacementOption0,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,smoothingToolOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,smoothingToolOption2,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,smoothingRelaxLandButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,unitPlacementOption0,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,unitPlacementOption2,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,unitPlacementOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,objectPlacementOption0,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,objectPlacementOption2,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,objectPlacementOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,regionToolOption0,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,regionToolOption1,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,regionToolOption1,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,singleSelectionUpgradeButton,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,diplomacyRow1RelationButton,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationButton,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationButton,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyRow2RelationButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyRow3RelationButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyRow4RelationButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyRow5RelationButton,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,diplomacyRow6RelationButton,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,diplomacyRow7RelationButton,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,diplomacyRow7RelationButton,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry00,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry01,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry02,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry03,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry04,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry05,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry06,0x70,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry09,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry07,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry08,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry09,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry10,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry11,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry12,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry13,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry14,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry15,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry16,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry17,0x70,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry20,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry18,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry19,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry20,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry21,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry22,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry23,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry24,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry25,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry26,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry27,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry28,0x70,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry31,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry29,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry30,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry31,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry32,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry33,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry34,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry35,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry36,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry37,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry38,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry39,0x70,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry42,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry40,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry41,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry42,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry43,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry44,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry45,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,buildCatalogEntry46,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry00,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry02,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,buildCatalogEntry47,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry00,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry01,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry02,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry03,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry04,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry05,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry06,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry07,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry08,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry09,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry10,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry11,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry13,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry11,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry12,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry13,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry14,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry15,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry16,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry17,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry18,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry19,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry20,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry21,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry22,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry24,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry22,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry23,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry24,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry25,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry26,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry27,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry28,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry29,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry30,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry31,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry32,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry33,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry35,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry33,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry34,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry35,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry36,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry37,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry38,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry39,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry40,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,specialBuildCatalogEntry41,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot00,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot01,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot02,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot03,0x70,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot04,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot05,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot06,0x70,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot07,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot08,0x70,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot11,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot09,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot10,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot11,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot12,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot13,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot14,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot15,0x70,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot16,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot16,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot17,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot18,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x70,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot19,0x70,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot20,0x70,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot21,0x70,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x70,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot21,0x70,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,armyStockSlot22,0x70,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,armyStockSlot23,0x70,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[3];
           INGAME_UI_FIELD(inGameRoot,resultsTabMilitary,0x5C,struct UiNodeBase *) = (UiNodeBase *)g_UiButtonSoundVoiceSets7[3];
-          INGAME_UI_FIELD(inGameRoot,resultsTabEconomy,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resultsTabThird,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resultsContinueButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resultsSecondaryExitButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resultsChartModeButtonA,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,resultsChartModeButtonB,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,gameMenuSaveButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,gameMenuGraphicsButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,gameMenuQuitButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsTabEconomy,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsTabThird,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsContinueButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsSecondaryExitButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsChartModeButtonA,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,resultsChartModeButtonB,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,gameMenuSaveButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,gameMenuGraphicsButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,gameMenuQuitButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,gameMenuAudioButton,0x5C,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,gameMenuCloseButton,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,gameMenuCloseButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,saveGameBackButton,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,saveGameSaveButton,0x5C,struct UiRootNode *) = (UiRootNode *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,saveGameDeleteButton,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,quitMenuBackButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,quitMenuAbortMissionButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,quitMenuSurrenderButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,quitMenuRestartMissionButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,graphicsOptionsBackButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,soundOptionsBackButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageSendButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageSendAndCloseButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageCancelButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,technologyResearchButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,technologyCloseButton,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,quitMenuBackButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,quitMenuAbortMissionButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,quitMenuSurrenderButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,quitMenuRestartMissionButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,graphicsOptionsBackButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,soundOptionsBackButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageSendButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageSendAndCloseButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageCancelButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,technologyResearchButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,technologyCloseButton,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,missionHelpCloseButton,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[4];
-          INGAME_UI_FIELD(inGameRoot,autoZoomOffCheckbox,0x5C,sdword) = (sdword)g_UiButtonSoundVoiceSets7[4];
-          INGAME_UI_FIELD(inGameRoot,autoRotationOffCheckbox,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,linkRotationZoomCheckbox,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,linkRotationTiltCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,hidePanelCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,autoZoomOffCheckbox,0x5C,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[4];
+          INGAME_UI_FIELD(inGameRoot,autoRotationOffCheckbox,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,linkRotationZoomCheckbox,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,linkRotationTiltCheckbox,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,hidePanelCheckbox,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,shadingEnabledCheckbox,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,textureQualityLowButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,textureQualityMediumButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,textureQualityHighButton,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,musicEnabledCheckbox,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,effectsEnabledCheckbox,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,textureQualityLowButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,textureQualityMediumButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,textureQualityHighButton,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,musicEnabledCheckbox,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,effectsEnabledCheckbox,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,reverseStereoCheckbox,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,shadingLevel32x32Button,0x5C,enum UiRootFlags) = (UiRootFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,shadingLevel32x64Button,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,shadingLevel32x128Button,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,shadingLevel64x64Button,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,shadingLevel64x128Button,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,shadingLevel128x128Button,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,shadingLevel32x128Button,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,shadingLevel64x64Button,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,shadingLevel64x128Button,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,shadingLevel128x128Button,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientPlayersTab,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientAllTab,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientGroupsTab,0x5C,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox1,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox1,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox2,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox3,0x5C,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox4,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox5,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox6,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox7,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox6,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageRecipientCheckbox7,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x5C,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x5C,dword) = (UiAnchorFractionQ31)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x5C,uint32_t) = (UiAnchorFractionQ31)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x5C,enum UiNodeFlags) = (UiNodeFlags)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,technologyAreaTab7,0x5C,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,missionHelpBriefingTab,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,missionHelpKeyboardTab,0x5C,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,missionHelpMouseTab,0x5C,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,missionHelpBriefingTab,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,missionHelpKeyboardTab,0x5C,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,missionHelpMouseTab,0x5C,int32_t) = (int32_t)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[5];
-          INGAME_UI_FIELD(inGameRoot,modelDetailSlider,0x64,sdword) = (sdword)g_UiButtonSoundVoiceSets7[5];
+          INGAME_UI_FIELD(inGameRoot,modelDetailSlider,0x64,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[5];
           INGAME_UI_FIELD(inGameRoot,effectsVolumeSlider,0x64,struct UiNodeVtable *) = (UiNodeVtable *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,movieVolumeSlider,0x64,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,musicVolumeSlider,0x64,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,movieVolumeSlider,0x64,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,musicVolumeSlider,0x64,int32_t) = (int32_t)buttonVoiceSet;
           INGAME_UI_FIELD(inGameRoot,messageMovieVolumeSlider,0x64,struct UiNodeBase *) = (UiNodeBase *)buttonVoiceSet;
           buttonVoiceSet = g_UiButtonSoundVoiceSets7[6];
-          INGAME_UI_FIELD(inGameRoot,saveNameEdit,0x68,sdword) = (sdword)g_UiButtonSoundVoiceSets7[6];
+          INGAME_UI_FIELD(inGameRoot,saveNameEdit,0x68,int32_t) = (int32_t)g_UiButtonSoundVoiceSets7[6];
           INGAME_UI_FIELD(inGameRoot,saveGameList,0x68,struct UiRootCallbacks *) = (UiRootCallbacks *)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,messageTextEdit,0x68,sdword) = (sdword)buttonVoiceSet;
-          INGAME_UI_FIELD(inGameRoot,chatInputTextEdit,0x68,sdword) = (sdword)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,messageTextEdit,0x68,int32_t) = (int32_t)buttonVoiceSet;
+          INGAME_UI_FIELD(inGameRoot,chatInputTextEdit,0x68,int32_t) = (int32_t)buttonVoiceSet;
           loadedTexture.carry = false;
           loadedTexture.eax = (GraphicsTextureSourceAsset *)buttonVoiceSet;
         }
       }
     }
   }
-  initStatus.valueOrError = (dword)loadedTexture.eax;
+  initStatus.valueOrError = (uint32_t)loadedTexture.eax;
   initStatus.carry = loadedTexture.carry;
   return initStatus;
 }
@@ -2690,18 +2690,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
 
 {
   SelectionPlayerRuntimeBlock *selectionBlock;
-  uint stepTicks;
-  ulonglong elapsedSeconds;
-  dword value;
-  word *stream;
-  uint frameOrFactionIndex;
+  uint32_t stepTicks;
+  uint64_t elapsedSeconds;
+  uint32_t value;
+  uint16_t *stream;
+  uint32_t frameOrFactionIndex;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   WorldRuntimeContext *world;
   FrontendPlayerRuntimeRecord *playerBlock;
   int factionRecordAddress;
   int rosterCount;
-  word *rosterCursor;
-  word *destination;
+  uint16_t *rosterCursor;
+  uint16_t *destination;
   RichTextCopyExpandedEaxCf5 copiedText;
   TextResourceResolveEaxCf5 resolvedText;
   TextResourceResolveEaxCf5 statusTemplate;
@@ -2799,9 +2799,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
   WideNumber_FormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_HEXADECIMAL,0,10,1,value,
              g_FrontendDebugOverlayTextSlot12Utf16);
-  elapsedSeconds = (ulonglong)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
+  elapsedSeconds = (uint64_t)(g_GameFactionRuntimeImage.tail.simulationTick + 0x4af) / 0x4b0;
   (*g_LocaleFormatTimeFieldsUtf16)
-            ((dword)(elapsedSeconds / 0x3c),(dword)(elapsedSeconds % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
+            ((uint32_t)(elapsedSeconds / 0x3c),(uint32_t)(elapsedSeconds % 0x3c),g_FrontendDebugOverlayTextSlot13Utf16);
   frameOrFactionIndex = 1;
   factionRecordAddress = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
   destination = g_InGameFactionStatusTextScratchUtf16;
@@ -2811,7 +2811,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
         FACTION_RUNTIME_LIFECYCLE_ENDED_OR_TRANSITIONED)) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),(word *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
+                 *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),(uint16_t *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
       rosterCount = 0;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -2829,7 +2829,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
             copiedText = RichTextCommandStream_CopyExpandedCf
                                (0x28,rosterCursor,(playerBlock->playerName).textUtf16);
             if (!copiedText.carry) {
-              rosterCursor = (word *)((int)rosterCursor + copiedText.eax);
+              rosterCursor = (uint16_t *)((int)rosterCursor + copiedText.eax);
               selectionBlock = g_SelectionPlayerRuntimeBlockPointers[playerBlock->playerRuntimeId];
               stepTicks = selectionBlock->simulationStepTicks;
               if ((selectionBlock->sessionFlags & 1) != 0) {
@@ -2842,7 +2842,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
               if (1 < stepTicks) {
                 rosterCursor[0] = 0x20;
                 rosterCursor[1] = 0x20;
-                *(uint *)(rosterCursor + 2) = stepTicks * 0x10000 + 0x300078;
+                *(uint32_t *)(rosterCursor + 2) = stepTicks * 0x10000 + 0x300078;
                 rosterCursor = rosterCursor + 4;
               }
               if ((selectionBlock->sessionFlags & 2) != 0) {
@@ -2879,7 +2879,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
       RichTextCommandStream_PatchPayloadBySelector(2,(void *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0),stream);
       copiedText = RichTextCommandStream_CopyExpandedCf(0x400,destination,stream);
       if (!copiedText.carry) {
-        destination = (word *)((int)destination + copiedText.eax);
+        destination = (uint16_t *)((int)destination + copiedText.eax);
       }
     }
     frameOrFactionIndex = frameOrFactionIndex + 1;
@@ -2924,7 +2924,7 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
     windowTextureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
     replacementPayload = &firstPlayerRecord->playerName;
     textExtent = RichTextCommandStream_MeasureRegs
-                      (g_UiTextStyleNormal,(word *)u_gfx_panel_panel0_gfx_005630d0);
+                      (g_UiTextStyleNormal,(uint16_t *)u_gfx_panel_panel0_gfx_005630d0);
     panelHalfHeight = (textExtent.heightPixels * remainingPlayers >> 1) + windowTextureSize.logicalHeightPixels;
     destination = g_InGamePlayerStatusTextSlots;
     /* playerStatusBox is the multiplayer player status box: one text line per player */
@@ -2970,15 +2970,15 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
 {
   /* Rewritten from the assembly (0x005678C0-0x00568204). The decompiled version jumped to the
      continuation labels inside the original machine code. EBX is the in-game runtime root. */
-  byte *rt = (byte *)inGameRuntime;
+  uint8_t *rt = (uint8_t *)inGameRuntime;
   UiCommandDispatchRecord *record = g_InGameCommandDispatchRecords_00_Code00030073_Modifier33;
-  dword target = 0;
+  uint32_t target = 0;
   bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
   bool commandsBlocked = (g_UiCommandRuntimeFlags & 0x101) != 0;
 
-#define RT_DWORD(offset) (*(dword *)(rt + (offset)))
+#define RT_DWORD(offset) (*(uint32_t *)(rt + (offset)))
   for (;; record++) {
-    uint flags = record->modifierClassFlags;
+    uint32_t flags = record->modifierClassFlags;
     if (record->commandCode == 0) {
       return;
     }
@@ -3008,7 +3008,7 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
         if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
       }
     }
-    target = (dword)record->continuationEntryAddress;
+    target = (uint32_t)record->continuationEntryAddress;
     break;
   }
   switch (target) {
@@ -3016,8 +3016,8 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
   case 0x567d10: /* with shift-class modifier: mode 2 */
   case 0x567d60: /* mode 1 */
   case 0x567db0: { /* mode 3 */
-    dword mode = (target == 0x567cc0) ? 0 : (target == 0x567d10) ? 2 : (target == 0x567d60) ? 1 : 3;
-    dword group = commandCode - 0x30031;
+    uint32_t mode = (target == 0x567cc0) ? 0 : (target == 0x567d10) ? 2 : (target == 0x567d60) ? 1 : 3;
+    uint32_t group = commandCode - 0x30031;
     if (commandsBlocked) {
       break;
     }
@@ -3059,19 +3059,19 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
     break;
   }
   case 0x567ed0: { /* camera to the faction's headquarters (class 0x0B) */
-    byte *node = *(byte **)(rt + 0xd8);
-    dword faction = RT_DWORD(0x50);
-    for (; node != (byte *)0; node = *(byte **)(node + 4)) {
-      byte *payload;
-      if (*(dword *)(node + 0xa4) != 0) {
+    uint8_t *node = *(uint8_t **)(rt + 0xd8);
+    uint32_t faction = RT_DWORD(0x50);
+    for (; node != (uint8_t *)0; node = *(uint8_t **)(node + 4)) {
+      uint8_t *payload;
+      if (*(uint32_t *)(node + 0xa4) != 0) {
         continue;
       }
-      payload = *(byte **)(node + 0x48);
-      if ((faction == *(dword *)(*(byte **)(payload + 8) + 0xc)) &&
-          (*(dword *)(*(byte **)payload + 0x4c) == 0xb)) {
+      payload = *(uint8_t **)(node + 0x48);
+      if ((faction == *(uint32_t *)(*(uint8_t **)(payload + 8) + 0xc)) &&
+          (*(uint32_t *)(*(uint8_t **)payload + 0x4c) == 0xb)) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
-                  (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x7c),*(dword *)(node + 0x9c),
-                   *(dword *)(node + 0x98),*(dword *)(node + 0x94),inGameRuntime);
+                  (RT_DWORD(0x74),RT_DWORD(0x70),RT_DWORD(0x7c),*(uint32_t *)(node + 0x9c),
+                   *(uint32_t *)(node + 0x98),*(uint32_t *)(node + 0x94),inGameRuntime);
         break;
       }
     }
@@ -3081,7 +3081,7 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
   case 0x567fc0:
   case 0x568020:
   case 0x568130: {
-    static const dword queued[4] = {0xe10,0xe30,0xe50,0xe70};
+    static const uint32_t queued[4] = {0xe10,0xe30,0xe50,0xe70};
     int which = (target == 0x567f60) ? 0 : (target == 0x567fc0) ? 1 : (target == 0x568020) ? 2 : 3;
     if (commandsBlocked || SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(RT_DWORD(0x50))) {
       break;
@@ -3104,14 +3104,14 @@ InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
     break;
   }
   case 0x568080: { /* selection page toggle */
-    byte *button = rt + 0x969c;
+    uint8_t *button = rt + 0x969c;
     if (commandsBlocked || ((RT_DWORD(0x96e4) & 8) != 0)) {
       break;
     }
     if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)(rt + 0x957c)).valueOrError != 1) {
       break;
     }
-    if (((*(dword *)(button + 0x4c) & 0x200) != 0) && (*(dword *)(button + 0x70) != 0)) {
+    if (((*(uint32_t *)(button + 0x4c) & 0x200) != 0) && (*(uint32_t *)(button + 0x70) != 0)) {
       (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,*(DirectSoundVoiceSet **)(button + 0x70));
     }
     InGameSelectionPage_ToggleAndRefreshPage2((UiNodeBase *)rt);
@@ -3239,24 +3239,24 @@ void InGameUiRuntime_DispatchWorldContextActionCallback(WorldRuntimeContext *con
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameNotificationQueue_InsertPriorityRecord
-          (InGameNotificationPayloadKind payloadKind,dword payloadReserved10,
-          dword orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
+          (InGameNotificationPayloadKind payloadKind,uint32_t payloadReserved10,
+          uint32_t orientationOrPresentationValue0C,AngleTurn32 primaryOrientationAngle08,
           Q12 secondaryWorldCoordinateQ12_04,Q12 primaryWorldCoordinateQ12_00,
           InGameNotificationPriority priority,InGameNotificationMovieId notificationMovieId)
 
 {
   Q12 *secondaryCoordinateSlot;
   AngleTurn32 *orientationAngleSlot;
-  dword *payloadDwordSlot;
+  uint32_t *payloadDwordSlot;
   InGameNotificationPayloadKind *payloadKindSlot;
   InGameNotificationPayloadKind carriedPayloadKind;
-  dword carriedReserved10;
-  dword carriedOrientationValue;
+  uint32_t carriedReserved10;
+  uint32_t carriedOrientationValue;
   AngleTurn32 carriedOrientationAngle;
   Q12 carriedSecondaryCoordinate;
   Q12 carriedPrimaryCoordinate;
   InGameNotificationMovieId displacedMovieId;
-  uint displacedPriority;
+  uint32_t displacedPriority;
   InGameNotificationMovieId remainingSlots;
   InGameNotificationQueueRecord20 *queueSlot;
   
@@ -3345,18 +3345,18 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
 
 {
-  uint *controlFlags;
+  uint32_t *controlFlags;
   UiNodeBase *ancestorParent;
   SessionNetworkRoleFlags remainingNetworkPlayers;
   UiControlCount nextRemainingCount;
   int factionIndexOrRecord;
-  uint candidateFactionIndex;
-  dword remainingFactions;
+  uint32_t candidateFactionIndex;
+  uint32_t remainingFactions;
   int controlOffset;
-  uint relationState;
+  uint32_t relationState;
   SessionNetworkRoleFlags remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint slotIndex;
+  uint32_t slotIndex;
   UiGridDimensionsEdxEax8 gridDimensions;
   UiControlCount otherActiveCount;
   
@@ -3370,7 +3370,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
   remainingFactions = g_GameFactionRuntimeImage.tail.activeFactionCount;
   do {
     if (((g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndexOrRecord] ==
-          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (factionIndexOrRecord != INGAME_UI_FIELD(node,worldView,0x50,sdword))) &&
+          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (factionIndexOrRecord != INGAME_UI_FIELD(node,worldView,0x50,int32_t))) &&
        ((g_UiCommandRuntimeFlags & 0x100) == 0)) {
       otherActiveCount = otherActiveCount + 1;
     }
@@ -3407,7 +3407,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
     factionIndexOrRecord = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     do {
       nextRemainingCount = otherActiveCount + 1;
-      if ((candidateFactionIndex != INGAME_UI_FIELD(node,worldView,0x50,sdword)) &&
+      if ((candidateFactionIndex != INGAME_UI_FIELD(node,worldView,0x50,int32_t)) &&
          (g_GameFactionRuntimeImage.tail.factionLifecycleStates[candidateFactionIndex] ==
           FACTION_RUNTIME_LIFECYCLE_ACTIVE)) {
         g_UiAction1012TargetPlayerIndices[slotIndex] = candidateFactionIndex;
@@ -3415,22 +3415,22 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
                   (0,(UiPageStackControl *)
                      ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[slotIndex]));
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
-             (word *)(*(int *)(factionIndexOrRecord + 0x38) + 0x2173);
+             (uint16_t *)(*(int *)(factionIndexOrRecord + 0x38) + 0x2173);
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
-             (word *)(candidateFactionIndex + 0x2190);
-        relationState = g_GameFactionRuntimeImage.records[INGAME_UI_FIELD(node,worldView,0x50,sdword)].packedRelationStates >>
-                ((byte)(candidateFactionIndex << 2) & 0x1f) & 0xf;
+             (uint16_t *)(candidateFactionIndex + 0x2190);
+        relationState = g_GameFactionRuntimeImage.records[INGAME_UI_FIELD(node,worldView,0x50,int32_t)].packedRelationStates >>
+                ((uint8_t)(candidateFactionIndex << 2) & 0x1f) & 0xf;
         candidateFactionIndex = candidateFactionIndex & 0x3fffffff;
         ((UiSingleLineTextControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
-             (word *)(relationState + 0x21a3);
+             (uint16_t *)(relationState + 0x21a3);
         controlOffset = g_UiAction1012IconImageOffsets[slotIndex];
-        ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (word *)&g_EmptyFrontendPlayerNameUtf16;
+        ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (uint16_t *)&g_EmptyFrontendPlayerNameUtf16;
         playerBlock = g_FrontendPlayerRuntimeBlocks;
         remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
         remainingNetworkPlayers = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
         while (remainingNetworkPlayers != SESSION_NETWORK_ROLE_LOCAL) {
           if ((playerBlock->factionAssignment).factionAssignmentIndex == candidateFactionIndex) {
-            ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (word *)&playerBlock->playerName;
+            ((UiSingleLineTextControl *)((int)node + controlOffset))->text = (uint16_t *)&playerBlock->playerName;
             break;
           }
           playerBlock = playerBlock + 1;
@@ -3440,7 +3440,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
         controlOffset = g_UiAction1012ControlOffsets[slotIndex];
         remainingFactions = g_UiAction1012SubresourceByState[relationState];
         slotIndex = slotIndex + 1;
-        controlFlags = (uint *)((int)&node->nodeFlags + controlOffset);
+        controlFlags = (uint32_t *)((int)&node->nodeFlags + controlOffset);
         *controlFlags = *controlFlags & 0xfffffff7;
         ((UiCommandSpriteButtonControl *)((int)node + controlOffset))->sprite.normalSubresourceStartOrDescriptor =
              remainingFactions;
@@ -3449,7 +3449,7 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
            ((7 < relationState ||
             (((g_GameFactionRuntimeImage.tail.relationUiFlags & 2) != 0 &&
              ((3 < relationState || ((g_GameFactionRuntimeImage.tail.relationUiFlags & 4) != 0)))))))) {
-          controlFlags = (uint *)((int)&node->nodeFlags + controlOffset);
+          controlFlags = (uint32_t *)((int)&node->nodeFlags + controlOffset);
           *controlFlags = *controlFlags | 8;
         }
       }
@@ -3479,13 +3479,13 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 InGameMusic_ComputeTrackSuitabilityScore
           (MusicTrackClassId trackClassId,WorldRuntimeContext *worldRuntime)
 
 {
   int activeFactionIndex;
-  dword suitabilityScore;
+  uint32_t suitabilityScore;
   ArmyAssetRuntimeSemanticView80 *armyDefinition;
   int modelRuntimeOrBonus;
   int registryWeight;
@@ -3511,7 +3511,7 @@ InGameMusic_ComputeTrackSuitabilityScore
         armyDefinition = (ArmyAssetRuntimeSemanticView80 *)foundArmyAsset.eax;
         if (!foundArmyAsset.carry) {
           registryWeight = 1;
-          if ((*(uint *)(modelRuntimeOrBonus + 0x2c) & 1) != 0) {
+          if ((*(uint32_t *)(modelRuntimeOrBonus + 0x2c) & 1) != 0) {
             registryWeight = 3;
           }
           class70Sum = class70Sum + armyDefinition->definitionClassValue70;
@@ -3797,15 +3797,15 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
 
 {
-  uint *controlFlags;
+  uint32_t *controlFlags;
   UiNodeBase *ancestorParent;
   UiNodeBase *uiRootNode;
   int factionNameIndex;
-  word *stream;
+  uint16_t *stream;
   TextResourceId resourceId;
-  uint factionIndexCursor;
+  uint32_t factionIndexCursor;
   int factionRecordAddress;
-  uint filledSlotCount;
+  uint32_t filledSlotCount;
   TextResourceResolveEaxCf5 resolvedText;
   
   ancestorParent = source->parent;
@@ -3829,7 +3829,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
       stream = resolvedText.eax;
       factionNameIndex = *(int *)(factionRecordAddress + 0x38);
       resourceId = resourceId + 1;
-      controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
+      controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
       *controlFlags = *controlFlags & 0xfffffff7;
       filledSlotCount = filledSlotCount + 1;
       resolvedText = TextResource_Resolve(factionNameIndex + 0x2173);
@@ -3844,7 +3844,7 @@ InGameSelectionPage_RebuildActivePlayerEntries(UiNodeBase *source)
   UiScrollableControl_ClampOffsetsToViewport
             (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
-    controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
+    controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
     *controlFlags = *controlFlags | 8;
   }
   return;
@@ -3866,12 +3866,12 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
 
 {
-  uint *controlFlags;
+  uint32_t *controlFlags;
   UiNodeBase *ancestorParent;
   UiNodeBase *uiRootNode;
   SelectionPlayerRuntimeBlock *selectionBlock;
   TextResourceId resourceId;
-  uint filledSlotCount;
+  uint32_t filledSlotCount;
   TextResourceResolveEaxCf5 resolvedText;
   
   ancestorParent = source->parent;
@@ -3892,7 +3892,7 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
     selectionBlock = g_SelectionPlayerRuntimeBlockPointers
              [g_FrontendPlayerRuntimeBlocks[filledSlotCount].playerRuntimeId];
     resourceId = resourceId + 1;
-    controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
+    controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
     *controlFlags = *controlFlags & 0xfffffff7;
     filledSlotCount = filledSlotCount + 1;
     RichTextCommandStream_PatchPayloadBySelector(0,selectionBlock->reserved80B0_8117 + 0x40,resolvedText.eax);
@@ -3904,7 +3904,7 @@ InGameSelectionPage_RebuildRuntimeRecordEntries(UiNodeBase *source)
   UiScrollableControl_ClampOffsetsToViewport
             (0,0,0,0,(UiScrollableControl *)INGAME_UI(uiRootNode,messageRecipientScroll));
   for (; filledSlotCount < 7; filledSlotCount = filledSlotCount + 1) {
-    controlFlags = (uint *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
+    controlFlags = (uint32_t *)((int)&uiRootNode->nodeFlags + g_UiSevenSlotSelectionControlOffsets[filledSlotCount]);
     *controlFlags = *controlFlags | 8;
   }
   return;
@@ -3953,7 +3953,7 @@ void __thandor_void_preserve_eax_ecx
 InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
 
 {
-  uint currentEntryCount;
+  uint32_t currentEntryCount;
   
   for (currentEntryCount = (historyView->recentTextPointerList).count; 4 < currentEntryCount;
       currentEntryCount = currentEntryCount - 1) {
@@ -3976,14 +3976,14 @@ InGameRecentText_TrimHistoryToThree(RecentTextHistoryView *historyView)
    ArmyRuntimeNode_DispatchTypedCallback [gameplay/army/runtime], ArmyRuntime_DestroyInstanceAndRefreshUi
    [gameplay/army/runtime].
 */
-dword InGameUiCommand_ResolveCursorCodeByMode
+uint32_t InGameUiCommand_ResolveCursorCodeByMode
                 (UiPointerRegionCode pointerRegionCode,Q12 pointerWorldXQ12,Q12 pointerWorldYQ12,
-                dword reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
+                uint32_t reservedArg3,ArmyRuntimeSlot *armyRuntimeUnderPointer,
                 WorldRuntimeContext *worldRuntime)
 
 {
   SelectionPlayerRuntimeBlock *localSelectionBlock;
-  dword cursorCodeOrSubMode;
+  uint32_t cursorCodeOrSubMode;
   bool callbackAccepted;
   ArmyRuntimeCreateEaxCf5 previewArmyRuntime;
   
@@ -4098,20 +4098,20 @@ dword InGameUiCommand_ResolveCursorCodeByMode
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_BeginInteractionByMode
-          (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,dword reservedArg3,
+          (UiPointerRegionCode pointerRegionCode,Q12 pointerX,Q12 pointerY,uint32_t reservedArg3,
           ArmyRuntimeSlot *armyRuntimeUnderPointer,WorldRuntimeExtendedMapControlView170 *mapControl
           )
 
 {
   FieldGridAsset *mapFieldGrid;
-  longlong scaledGridX;
-  longlong scaledGridY;
+  int64_t scaledGridX;
+  int64_t scaledGridY;
   PckArmyAssetIdCatalog lookupToken;
-  dword placementSubMode;
+  uint32_t placementSubMode;
   CommandPayloadDword04 commandPayload;
   int cellX;
-  uint snappedWorldY;
-  uint worldCoordinateTerm;
+  uint32_t snappedWorldY;
+  uint32_t worldCoordinateTerm;
   int cellY;
   FieldGridNearestPointRegsCf13 nearestTerrainPoint;
   
@@ -4131,11 +4131,11 @@ InGameUiCommand_BeginInteractionByMode
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
       g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       g_UiCommandDragAnchorWorldXQ12 =
-           (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
+           (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
            0xfffff000;
       g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4155,11 +4155,11 @@ InGameUiCommand_BeginInteractionByMode
       g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
       g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       g_UiCommandDragAnchorWorldXQ12 =
-           (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
+           (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
            0xfffff000;
       g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4187,10 +4187,10 @@ InGameUiCommand_BeginInteractionByMode
           return;
         }
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-        snappedWorldY = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-        worldCoordinateTerm = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+        worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
                 0xfffff000;
         snappedWorldY = snappedWorldY * 2 + 0x3ff & 0xfffff000;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4214,10 +4214,10 @@ InGameUiCommand_BeginInteractionByMode
       }
       if (pointerRegionCode != 0x7fffffff) {
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-        snappedWorldY = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-        worldCoordinateTerm = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        snappedWorldY = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+        worldCoordinateTerm = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - snappedWorldY) + 0x3ff &
                 0xfffff000;
         snappedWorldY = snappedWorldY * 2 + 0x3ff & 0xfffff000;
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4239,11 +4239,11 @@ InGameUiCommand_BeginInteractionByMode
         g_UiCommandDragStartScreenX = mapControl->extendedCoordinate160;
         g_UiCommandDragStartScreenY = mapControl->extendedCoordinate164;
         nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-        scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-        scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-        worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+        scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+        scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+        worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
         g_UiCommandDragAnchorWorldXQ12 =
-             (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
+             (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff &
              0xfffff000;
         g_UiCommandDragAnchorWorldYQ12 = worldCoordinateTerm * 2 + 0x3ff & 0xfffff000;
         return;
@@ -4256,11 +4256,11 @@ InGameUiCommand_BeginInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
       mapFieldGrid = mapControl->fieldGrid;
-      cellX = (int)((((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff
+      cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff
                    ) >> 0xc;
       if (cellX < 0) {
         g_UiCommandTerrainMaskToggleValue = 0x20000000;
@@ -4288,11 +4288,11 @@ InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     mapFieldGrid = mapControl->fieldGrid;
-    cellX = (int)((((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
+    cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
             >> 0xc;
     if (cellX < 0) {
       g_UiCommandTerrainMaskToggleValue = 0x40000000;
@@ -4403,11 +4403,11 @@ InGameUiCommand_BeginInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     mapFieldGrid = mapControl->fieldGrid;
-    cellX = (int)((((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
+    cellX = (int)((((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm) + 0x3ff)
             >> 0xc;
     if (cellX < 0) {
       g_UiCommandCallerMaskHighBit = 0;
@@ -4424,7 +4424,7 @@ InGameUiCommand_BeginInteractionByMode
         return;
       }
       if ((mapFieldGrid->cells[cellY * mapFieldGrid->gridWidth + cellX].flagsAndMaterial &
-          0x800 << ((byte)g_UiCommandModeF & 0x1f)) != 0) {
+          0x800 << ((uint8_t)g_UiCommandModeF & 0x1f)) != 0) {
         g_UiCommandCallerMaskHighBit = 0x80000000;
         return;
       }
@@ -4446,11 +4446,11 @@ InGameUiCommand_BeginInteractionByMode
       }
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    worldCoordinateTerm = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    worldCoordinateTerm = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
     g_UiCommandSelectionAnchorWorldXQ12 =
-         ((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - worldCoordinateTerm;
+         ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - worldCoordinateTerm;
     g_UiCommandSelectionAnchorWorldYQ12 = worldCoordinateTerm * 2;
     g_UiCommandSelectionCurrentWorldXQ12 = g_UiCommandSelectionAnchorWorldXQ12;
     g_UiCommandSelectionCurrentWorldYQ12 = g_UiCommandSelectionAnchorWorldYQ12;
@@ -4476,24 +4476,24 @@ InGameUiCommand_BeginInteractionByMode
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_UpdateInteractionByMode
           (UiPointerRegionCode pointerRegionCode,GraphicsScreenCoordinate pointerX,
-          GraphicsScreenCoordinate pointerY,dword reservedArg3,int optionalContext,
+          GraphicsScreenCoordinate pointerY,uint32_t reservedArg3,int optionalContext,
           WorldRuntimeExtendedMapControlView170 *mapControl)
 
 {
-  longlong scaledGridX;
-  longlong scaledGridY;
-  dword placementSubMode;
+  int64_t scaledGridX;
+  int64_t scaledGridY;
+  uint32_t placementSubMode;
   int boundWorldX;
   CommandPayloadDword04 payloadDword04;
   int boundWorldY;
   int workValue;
-  uint encodedValue;
+  uint32_t encodedValue;
   int upperWorldY;
   CommandPayloadDword08 rowOrDeltaValue;
-  uint columnValue;
+  uint32_t columnValue;
   int lowerWorldY;
   InGameCommandPayloadTripletValue32 payloadValue;
-  dword *tripletClearCursor;
+  uint32_t *tripletClearCursor;
   WorldOwnerListNode100 *runtimeNode;
   CommandPayloadDword04 *tripletEntry;
   bool conditionResult;
@@ -4501,7 +4501,7 @@ InGameUiCommand_UpdateInteractionByMode
   GameEntityRuntime *entry;
   
   if ((mapControl->runtimeFlags & 0x80) != 0) {
-    tripletClearCursor = (dword *)&g_InGameSelectionInsertTripletDwords;
+    tripletClearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
     for (workValue = 0x1a; workValue != 0; workValue = workValue + -1) {
       *tripletClearCursor = 0;
       tripletClearCursor = tripletClearCursor + 1;
@@ -4628,10 +4628,10 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      columnValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-      encodedValue = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - columnValue) + 0x3ff &
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
       columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -4659,10 +4659,10 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      columnValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-      encodedValue = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - columnValue) + 0x3ff &
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
       columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -4706,10 +4706,10 @@ InGameUiCommand_UpdateInteractionByMode
         return;
       }
       nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-      scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-      scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-      columnValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-      encodedValue = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - columnValue) + 0x3ff &
+      scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+      scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+      columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+      encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
               0xfffff000;
       columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -4726,10 +4726,10 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    columnValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-    encodedValue = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - columnValue) + 0x3ff &
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
             0xfffff000;
     columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -4787,10 +4787,10 @@ InGameUiCommand_UpdateInteractionByMode
       return;
     }
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    columnValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-    encodedValue = (((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - columnValue) + 0x3ff &
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    columnValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    encodedValue = (((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - columnValue) + 0x3ff &
             0xfffff000;
     columnValue = columnValue * 2 + 0x3ff & 0xfffff000;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -4805,10 +4805,10 @@ InGameUiCommand_UpdateInteractionByMode
   }
   if ((pointerRegionCode != 0x7fffffff) && (g_UiCommandSelectionAnchorWorldXQ12 != 0x7fffffff)) {
     nearestTerrainPoint = FieldGrid_GetNearestTerrainPoint(pointerX,pointerY,mapControl->fieldGrid);
-    scaledGridX = (longlong)(int)nearestTerrainPoint.eax * 0x1c6e9c;
-    scaledGridY = (longlong)(int)nearestTerrainPoint.ecx * -0x20c8cc;
-    encodedValue = (int)((ulonglong)scaledGridY >> 0x20) << 0xb | (uint)scaledGridY >> 0x15;
-    boundWorldY = ((int)((ulonglong)scaledGridX >> 0x20) << 0xc | (uint)scaledGridX >> 0x14) - encodedValue;
+    scaledGridX = (int64_t)(int)nearestTerrainPoint.eax * 0x1c6e9c;
+    scaledGridY = (int64_t)(int)nearestTerrainPoint.ecx * -0x20c8cc;
+    encodedValue = (int)((uint64_t)scaledGridY >> 0x20) << 0xb | (uint32_t)scaledGridY >> 0x15;
+    boundWorldY = ((int)((uint64_t)scaledGridX >> 0x20) << 0xc | (uint32_t)scaledGridX >> 0x14) - encodedValue;
     workValue = encodedValue * 2;
     LOCK();
     UNLOCK();
@@ -4882,12 +4882,12 @@ InGameUiCommand_UpdateInteractionByMode
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommand_EndInteractionByMode
-          (dword callbackArg0,dword callbackArg1,dword callbackArg2,dword callbackArg3,
+          (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3,
           WorldOwnerListNode100 *worldNode,WorldRuntimeContext *worldRuntime)
 
 {
-  dword activeMode;
-  dword placementSubMode;
+  uint32_t activeMode;
+  uint32_t placementSubMode;
 
   activeMode = g_UiCommandModeG;
   worldRuntime->runtimeFlags = worldRuntime->runtimeFlags & 0xffffff7f;
@@ -5001,16 +5001,16 @@ InGameUiCommand_ResetInteractionByMode(WorldRuntimeContext *worldRuntime)
 
 void __thandor_void_preserve_eax_ecx_edx
 InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
   WorldRuntimeContext *node;
   GraphicsTextureSet *materialTextureSet;
   ArmyAssetRecordPrefix *armyAsset;
-  byte *pageStackBlock;
+  uint8_t *pageStackBlock;
   InGameRuntimeRootImageC3E4 *root;
-  dword modeOrValue;
+  uint32_t modeOrValue;
   int remainingCount;
   GraphicsTextureSourceAsset *textureSourceValue;
   InGameNotificationQueueRecord20 *queueSlotCursor;
@@ -5079,7 +5079,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
         root->sessionNotificationInteractionState9B4C = NOTIFICATION_INTERACTION_NONE;
       }
       materialTextureSet = g_TerrainMaterialTextureSets[modeOrValue];
-      root->observedSessionNotificationValue9B50 = (dword)textureSourceValue;
+      root->observedSessionNotificationValue9B50 = (uint32_t)textureSourceValue;
       textureSourceValue = (GraphicsTextureSourceAsset *)0x0;
       if (materialTextureSet != (GraphicsTextureSet *)0x0) {
         textureSourceValue = materialTextureSet->entries[0].sourceAsset;
@@ -5090,11 +5090,11 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       normalizedModeGArmy = ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(g_UiCommandModeGArmyAssetId);
       g_UiCommandModeGArmyAssetId = normalizedModeGArmy.eax;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
-      *(dword *)(root->opaque9B58_9E3F + 0x1cc) = modeOrValue;
+      *(uint32_t *)(root->opaque9B58_9E3F + 0x1cc) = modeOrValue;
       normalizedMode4Army = ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(g_UiCommandMode4ArmyAssetId);
       g_UiCommandMode4ArmyAssetId = normalizedMode4Army.eax;
       modeOrValue = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-      *(dword *)(root->opaque9B58_9E3F + 0x284) = modeOrValue;
+      *(uint32_t *)(root->opaque9B58_9E3F + 0x284) = modeOrValue;
       FieldGrid_SetOccupancyMaskByteBit0AllCells
                 ((root->worldRuntime0A30).activeFactionRuntimeIndex,
                  (root->worldRuntime0A30).fieldGrid);
@@ -5208,7 +5208,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
 */
 void __thandor_preserve_eax
 InGameUiCommand_SaveFieldAndLevelAssetImages
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
@@ -5216,7 +5216,7 @@ InGameUiCommand_SaveFieldAndLevelAssetImages
   
   runtimeRoot = g_InGameRuntimeRoot;
   saveStatus = FieldGrid_SaveAssetImageFromRuntimeStateCf
-                    ((dword *)(g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid);
+                    ((uint32_t *)(g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid);
   if (saveStatus.carry) {
     (*g_FatalErrorRuntimeDispatchCf)(saveStatus.valueOrError,true);
   }
@@ -5236,7 +5236,7 @@ InGameUiCommand_SaveFieldAndLevelAssetImages
    Cross-module calls: RecentTextHistory_Insert [ui/support/runtime], RecentTextHistory_SortAndBuildPointerList
    [ui/support/runtime].
 */
-void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(word *text)
+void __thandor_void_preserve_eax_ecx_edx InGameRecentTextHistory_InsertAndRebuild8(uint16_t *text)
 
 {
   RecentTextHistoryPointerList *output;
@@ -5287,13 +5287,13 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
 
 {
-  sdword *formBase;
+  int32_t *formBase;
   int *controlOffsetEntry;
   UiNodeBase *ancestorParent;
   int offsetOrCount;
-  uint slotIndex;
+  uint32_t slotIndex;
   CommandPayloadDword04 packedState;
-  uint slotBit;
+  uint32_t slotBit;
   UiAnchorFractionQ31 *textCursor;
   bool isSelected;
   UiSelectableNodeEaxEcxCf9 visibleSelection;
@@ -5303,7 +5303,7 @@ InGameSevenSlotCommand_SubmitTextAndSelectionMask(UiNodeBase *source)
     source = source->parent;
     ancestorParent = source->parent;
   }
-  formBase = (sdword *)INGAME_UI(source,messageTextEdit);
+  formBase = (int32_t *)INGAME_UI(source,messageTextEdit);
   RichTextCommandStream_CopyToNarrowCf
             (0x30,g_UiSevenSlotCommandPayloadText.textBytes,((UiTextEditControl *)INGAME_UI(source,messageTextEdit))->textPrefix6C);
   visibleSelection = UiSelectableGroup_NoneVisibleSelectedCf(3,
@@ -5436,16 +5436,16 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
 
 {
   UiPageStackControl *stack;
-  byte *clearedControlBytes;
+  uint8_t *clearedControlBytes;
   GraphicsTextureSourceAsset *hoverTextureSource;
-  uint buildDuration;
+  uint32_t buildDuration;
   ModelRuntimeSlot *attachedModelRuntime;
   UiCommandRuntimeRecordPrefix *definitionNode;
   int selectedCountOrCounter;
-  dword detailValue;
+  uint32_t detailValue;
   EnergyDemandQ4 displayedEnergy;
-  word *sourceText;
-  uint metricValue;
+  uint16_t *sourceText;
+  uint32_t metricValue;
   ArmyAssetRecordPrefix *linkedArmyAsset;
   int slotCounterOrOffset;
   int workValue;
@@ -5455,7 +5455,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
   GameEntityRuntime *lastSelectedEntity;
   int *recordCursor;
   GameEntityRuntime **entitySlot;
-  word *destinationText;
+  uint16_t *destinationText;
   bool conditionResult;
   ArmyRegistryEaxCf5_51b6d0 foundArmyAsset;
   FatalErrorEaxCf5 armyAssetResult;
@@ -5513,9 +5513,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         }
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
         ;
-        armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
+        armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.eax,foundArmyAsset.carry);
         UiPageStack_SetActiveIndex(1,stack);
-        detailValue = *(dword *)(armyAssetResult.eax + 0x1c);
+        detailValue = *(uint32_t *)(armyAssetResult.eax + 0x1c);
         workValue = ModelRuntimeHierarchy_SumMetric3C((int *)lastSelectedEntity);
         rootCursor->selectionDetailArmyAssetValueA060 = detailValue;
         rootCursor->selectionDetailEntityA068 = lastSelectedEntity;

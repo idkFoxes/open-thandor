@@ -57,7 +57,7 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
 
 /* 0x0051D6B0 */
 ArmyRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePath);
+ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBasePath);
 
 /* 0x00528330 */
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView200 *modelRuntime);
@@ -211,7 +211,7 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
           SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext);
 
 /* 0x005271A0 */
-uint __thandor_void_preserve_eax_ecx
+uint32_t __thandor_void_preserve_eax_ecx
 ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
           (ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
@@ -253,7 +253,7 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051DBA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestWorldPointAllowedDefaultCf(dword arg0,dword arg1,dword arg2);
+ArmyRuntime_TestWorldPointAllowedDefaultCf(uint32_t arg0,uint32_t arg1,uint32_t arg2);
 
 /* 0x0051B8F0 */
 ArmyRuntimeCreateEaxCf5 __thandor_eax_cf_preserve_ecx_edx

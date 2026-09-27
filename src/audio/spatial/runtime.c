@@ -87,10 +87,10 @@ SpatialSound_PlayPositionedOneShot
           GraphicsFixedVec3 *worldPosition,DirectSoundVoiceSet **voiceSetRef)
 
 {
-  longlong scaledProduct;
-  uint distanceOrPannedGain;
-  uint azimuthOrLeftGainQ15;
-  uint volumeOrRightGainQ15;
+  int64_t scaledProduct;
+  uint32_t distanceOrPannedGain;
+  uint32_t azimuthOrLeftGainQ15;
+  uint32_t volumeOrRightGainQ15;
   FixedLengthAnglesEaxEcxEdx12 lengthAngles;
   
   volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
@@ -103,22 +103,22 @@ SpatialSound_PlayPositionedOneShot
     azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
     distanceOrPannedGain = lengthAngles.lengthQ12;
     if ((distanceOrPannedGain < maximumDistanceQ12) &&
-       (scaledProduct = (longlong)
+       (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((ulonglong)distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
-                (longlong)(int)volumeOrRightGainQ15,
-       volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
+                [(int)(((uint64_t)distanceOrPannedGain << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                (int64_t)(int)volumeOrRightGainQ15,
+       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
       if (azimuthOrLeftGainQ15 < 0x8000) {
-        distanceOrPannedGain = (uint)((ulonglong)
-                       ((longlong)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
-                       (longlong)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
+        distanceOrPannedGain = (uint32_t)((uint64_t)
+                       ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
+                       (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
         azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
-        scaledProduct = (longlong)
+        scaledProduct = (int64_t)
                 (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
-                (longlong)(int)volumeOrRightGainQ15;
-        azimuthOrLeftGainQ15 = (uint)scaledProduct >> 0x1d | (int)((ulonglong)scaledProduct >> 0x20) << 3;
+                (int64_t)(int)volumeOrRightGainQ15;
+        azimuthOrLeftGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
         distanceOrPannedGain = volumeOrRightGainQ15;
       }
       volumeOrRightGainQ15 = distanceOrPannedGain;
@@ -153,10 +153,10 @@ SpatialSound_UpdateDesiredPositionedGains
           GraphicsFixedVec3 *worldPosition,SpatialSoundSlot *slot)
 
 {
-  longlong scaledProduct;
-  uint distanceOrPannedGain;
-  uint azimuthOrLeftGainQ15;
-  uint volumeOrRightGainQ15;
+  int64_t scaledProduct;
+  uint32_t distanceOrPannedGain;
+  uint32_t azimuthOrLeftGainQ15;
+  uint32_t volumeOrRightGainQ15;
   FixedLengthAnglesEaxEcxEdx12 lengthAngles;
   
   volumeOrRightGainQ15 = gainQ15 * g_SoundEffectsGainQ15 >> 0xf;
@@ -169,22 +169,22 @@ SpatialSound_UpdateDesiredPositionedGains
     azimuthOrLeftGainQ15 = lengthAngles.azimuthAngle;
     distanceOrPannedGain = lengthAngles.lengthQ12;
     if ((distanceOrPannedGain < maximumDistanceQ12) &&
-       (scaledProduct = (longlong)
+       (scaledProduct = (int64_t)
                 g_FixedCosQ28
-                [(int)(((ulonglong)distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
-                (longlong)(int)volumeOrRightGainQ15,
-       volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
+                [(int)(((uint64_t)distanceOrPannedGain << 0xe) / (uint64_t)maximumDistanceQ12)] *
+                (int64_t)(int)volumeOrRightGainQ15,
+       volumeOrRightGainQ15 = (int)((uint64_t)scaledProduct >> 0x20) << 4 | (uint32_t)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
       if (azimuthOrLeftGainQ15 < 0x8000) {
-        distanceOrPannedGain = (uint)((ulonglong)
-                       ((longlong)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
-                       (longlong)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
+        distanceOrPannedGain = (uint32_t)((uint64_t)
+                       ((int64_t)(g_FixedCosQ28[azimuthOrLeftGainQ15 * 2] + 0x10000000) *
+                       (int64_t)(int)(volumeOrRightGainQ15 << 3)) >> 0x20);
         azimuthOrLeftGainQ15 = volumeOrRightGainQ15;
       }
       else {
-        scaledProduct = (longlong)
+        scaledProduct = (int64_t)
                 (*(int *)(&k_SpatialSoundStereoCosineSecondHalfBaseBias + azimuthOrLeftGainQ15 * 8) + 0x10000000) *
-                (longlong)(int)volumeOrRightGainQ15;
-        azimuthOrLeftGainQ15 = (uint)scaledProduct >> 0x1d | (int)((ulonglong)scaledProduct >> 0x20) << 3;
+                (int64_t)(int)volumeOrRightGainQ15;
+        azimuthOrLeftGainQ15 = (uint32_t)scaledProduct >> 0x1d | (int)((uint64_t)scaledProduct >> 0x20) << 3;
         distanceOrPannedGain = volumeOrRightGainQ15;
       }
       volumeOrRightGainQ15 = distanceOrPannedGain;

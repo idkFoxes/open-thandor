@@ -22,9 +22,9 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           UiPixelCoordinate clipRight,UiPanelControl *control)
 
 {
-  dword cornerWidth;
+  uint32_t cornerWidth;
   GraphicsSubresourceIndex subresource;
-  dword cornerHeight;
+  uint32_t cornerHeight;
   int bottomEdgeY;
   int rightEdgeX;
   bool beginAccessFailed;
@@ -118,8 +118,8 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
           UiPixelCoordinate clipRight,UiResizableWindowControl *control)
 
 {
-  dword cornerWidthOrSubresource;
-  dword cornerHeight;
+  uint32_t cornerWidthOrSubresource;
+  uint32_t cornerHeight;
   int edgeOffset;
   int rightEdgeX;
   bool beginAccessFailed;
@@ -236,10 +236,10 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
           UiPixelCoordinate clipRight,UiTitledWindowControl *control)
 
 {
-  dword cornerWidth;
-  word *commandStream;
+  uint32_t cornerWidth;
+  uint16_t *commandStream;
   int bottomEdgeY;
-  dword titleCapX;
+  uint32_t titleCapX;
   int rightEdgeOrCursorX;
   bool beginAccessFailed;
   RichTextExtentRegs titleExtent;
@@ -405,10 +405,10 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           UiResizableWindowControl *control)
 
 {
-  sdword topOrRight;
-  sdword rightOrBottom;
-  sdword restoredBottom;
-  dword framebufferHeight;
+  int32_t topOrRight;
+  int32_t rightOrBottom;
+  int32_t restoredBottom;
+  uint32_t framebufferHeight;
   
   if ((control->root.rootFlags & 0x2000) != 0) {
     (*g_GraphicsCursorSetFrame)(0);
@@ -463,10 +463,10 @@ UiResizableWindowControl_HandleWindowHotkeysCf
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
-  sdword topOrRight;
-  sdword rightOrBottom;
-  sdword restoredBottom;
-  dword framebufferHeight;
+  int32_t topOrRight;
+  int32_t rightOrBottom;
+  int32_t restoredBottom;
+  uint32_t framebufferHeight;
   bool delegateResult;
   
   if ((keyboardStateMask & 0x30) != 0) {
@@ -522,26 +522,26 @@ void __thandor_void_preserve_eax_ecx_edx
 UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
 
 {
-  longlong edgeAnchorPixelProductQ31;
+  int64_t edgeAnchorPixelProductQ31;
   UiRootNode *oldFrontRoot;
-  longlong currentAnchorPixelProductQ31;
-  longlong anchorPixelProductQ31;
+  int64_t currentAnchorPixelProductQ31;
+  int64_t anchorPixelProductQ31;
   
-  anchorPixelProductQ31 = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).rightAnchorQ31;
+  anchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
   (root->base).right =
-       ((int)((ulonglong)anchorPixelProductQ31 >> 0x20) << 1 | (uint)anchorPixelProductQ31 >> 0x1f)
+       ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f)
        + (root->base).rightOffset;
   currentAnchorPixelProductQ31 =
-       (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).bottomAnchorQ31;
+       (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).bottomAnchorQ31;
   (root->base).bottom =
-       ((int)((ulonglong)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-       (uint)currentAnchorPixelProductQ31 >> 0x1f) + (root->base).bottomOffset;
-  edgeAnchorPixelProductQ31 = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).leftAnchorQ31;
+       ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
+       (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + (root->base).bottomOffset;
+  edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).leftAnchorQ31;
   (root->base).left =
-       ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + (root->base).leftOffset;
-  edgeAnchorPixelProductQ31 = (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).topAnchorQ31;
+       ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (root->base).leftOffset;
+  edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).topAnchorQ31;
   (root->base).top =
-       ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + (root->base).topOffset;
+       ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (root->base).topOffset;
   root->callbacks = callbacks;
   (root->base).nextSibling = (UiNodeBase *)0xffffffff;
   UiSerializedTree_Relocate((SerializedImageRelocationDelta)root,&root->base);
@@ -642,10 +642,10 @@ void __thandor_void_preserve_eax_ecx_edx
 UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control)
 
 {
-  dword leftInset;
-  dword titleHeightOrRightInset;
-  dword topInset;
-  dword bottomInset;
+  uint32_t leftInset;
+  uint32_t titleHeightOrRightInset;
+  uint32_t topInset;
+  uint32_t bottomInset;
   RichTextExtentRegs titleExtent;
   TextResourceResolveEaxCf5 titleText;
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
@@ -712,15 +712,15 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
           UiPixelCoordinate clipRight,UiHorizontalGaugeControl *control)
 
 {
-  ulonglong scaledFillProduct;
-  dword leftCapWidth;
-  dword clampedValue;
-  uint progressOrRange;
+  uint64_t scaledFillProduct;
+  uint32_t leftCapWidth;
+  uint32_t clampedValue;
+  uint32_t progressOrRange;
   int rightCapXOrFillMin;
-  uint rangeProgressOrPercent;
+  uint32_t rangeProgressOrPercent;
   int fillEndX;
-  uint divisionRemainder;
-  word *commandStream;
+  uint32_t divisionRemainder;
+  uint16_t *commandStream;
   bool beginAccessFailed;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   
@@ -745,14 +745,14 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
     progressOrRange = clampedValue - control->minimumValue;
     rangeProgressOrPercent = 0;
     if (progressOrRange != 0 && (int)control->minimumValue <= (int)clampedValue) {
-      scaledFillProduct = (ulonglong)progressOrRange * (ulonglong)(rightCapXOrFillMin - leftCapWidth);
+      scaledFillProduct = (uint64_t)progressOrRange * (uint64_t)(rightCapXOrFillMin - leftCapWidth);
       rangeProgressOrPercent = control->maximumValue - control->minimumValue;
       if (rangeProgressOrPercent == 0) {
         rangeProgressOrPercent = 1;
       }
-      divisionRemainder = (uint)(scaledFillProduct % (ulonglong)rangeProgressOrPercent);
+      divisionRemainder = (uint32_t)(scaledFillProduct % (uint64_t)rangeProgressOrPercent);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x7f,g_UiWindowTextureSource);
-      fillEndX = ((int)(scaledFillProduct / rangeProgressOrPercent) + (uint)CARRY4(divisionRemainder,divisionRemainder) + leftCapWidth) -
+      fillEndX = ((int)(scaledFillProduct / rangeProgressOrPercent) + (uint32_t)CARRY4(divisionRemainder,divisionRemainder) + leftCapWidth) -
                   textureSize.logicalWidthPixels;
       rightCapXOrFillMin = textureSize.logicalWidthPixels + leftCapWidth;
       rangeProgressOrPercent = progressOrRange;
@@ -772,8 +772,8 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       if (progressOrRange == 0) {
         progressOrRange = 1;
       }
-      divisionRemainder = (uint)(((ulonglong)rangeProgressOrPercent * 100) % (ulonglong)progressOrRange);
-      rangeProgressOrPercent = (int)(((ulonglong)rangeProgressOrPercent * 100) / (ulonglong)progressOrRange) + (uint)CARRY4(divisionRemainder,divisionRemainder);
+      divisionRemainder = (uint32_t)(((uint64_t)rangeProgressOrPercent * 100) % (uint64_t)progressOrRange);
+      rangeProgressOrPercent = (int)(((uint64_t)rangeProgressOrPercent * 100) / (uint64_t)progressOrRange) + (uint32_t)CARRY4(divisionRemainder,divisionRemainder);
       if (rangeProgressOrPercent == 100) {
         g_UiWindowPercentTextUtf16[0] = 0x31;
         g_UiWindowPercentTextUtf16[1] = 0x30;
@@ -782,8 +782,8 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
         g_UiWindowPercentTextUtf16[4] = 0;
       }
       else {
-        g_UiWindowPercentTextUtf16[1] = (short)((ulonglong)rangeProgressOrPercent % 10) + 0x30;
-        g_UiWindowPercentTextUtf16[0] = (short)((ulonglong)rangeProgressOrPercent / 10) + 0x30;
+        g_UiWindowPercentTextUtf16[1] = (short)((uint64_t)rangeProgressOrPercent % 10) + 0x30;
+        g_UiWindowPercentTextUtf16[0] = (short)((uint64_t)rangeProgressOrPercent / 10) + 0x30;
         g_UiWindowPercentTextUtf16[2] = 0x25;
         g_UiWindowPercentTextUtf16[3] = 0;
       }
@@ -794,7 +794,7 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_UiHorizontalGaugeLabelTextStyle,
                  commandStream,g_UiHorizontalGaugeLabelTopInset + control->base.top,
-                 ((uint)control->base.layoutWidth >> 1) + control->base.left);
+                 ((uint32_t)control->base.layoutWidth >> 1) + control->base.left);
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -974,9 +974,9 @@ UiResizableWindowControl_UpdateMoveOrResize
           UiResizableWindowControl *control)
 
 {
-  uint interactionFlags;
-  sdword newRight;
-  sdword newBottom;
+  uint32_t interactionFlags;
+  int32_t newRight;
+  int32_t newBottom;
   int offsetXOrEdge;
   int newLeftOrOldBottom;
   int offsetYOrEdge;
@@ -1119,15 +1119,15 @@ void __thandor_void_preserve_eax_ecx_edx
 UiImageControl_LayoutChildrenToParent(UiImageControl *control)
 
 {
-  sdword *edgeField;
+  int32_t *edgeField;
   int savedLeft;
   int savedTop;
   int savedRight;
   int savedBottom;
   UiNodeBase *parentNode;
-  sdword parentTop;
-  sdword parentRight;
-  sdword parentBottom;
+  int32_t parentTop;
+  int32_t parentRight;
+  int32_t parentBottom;
   
   parentNode = (control->selectable).base.parent;
   parentTop = parentNode->top;
@@ -1254,13 +1254,13 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
   FatalErrorEaxCf5 checkedResult;
   TextResourceLoadEaxCf5 pageLoadResult;
   
-  loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_engine_win_gfx_004b0f06);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadResult.eax,loadResult.carry);
+  loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_engine_win_gfx_004b0f06);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.eax,loadResult.carry);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)(u_engine_winclass_gfx_004b0eb8);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadResult.eax,loadResult.carry);
+  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.eax,loadResult.carry);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.eax;
-  pageLoadResult = TextResourcePage_Load(1,(word *)u_texte_winclass_str_004b0ee0);
+  pageLoadResult = TextResourcePage_Load(1,(uint16_t *)u_texte_winclass_str_004b0ee0);
   (*g_FatalErrorPrimaryDispatchCf)(pageLoadResult.errorOrValue,pageLoadResult.carry);
   UiActionHandlers_SetPageCf(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = (UiRootNode *)0xffffffff;
@@ -1276,29 +1276,29 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
 void __thandor_preserve_eax_edx UiRootStack_Relayout(void)
 
 {
-  longlong edgeAnchorPixelProductQ31;
+  int64_t edgeAnchorPixelProductQ31;
   UiRootNode *rootNode;
-  longlong currentAnchorPixelProductQ31;
-  longlong anchorPixelProductQ31;
+  int64_t currentAnchorPixelProductQ31;
+  int64_t anchorPixelProductQ31;
   
   rootNode = g_UiRootNode;
   do {
     anchorPixelProductQ31 =
-         (ulonglong)g_FramebufferWidth * (ulonglong)(rootNode->base).rightAnchorQ31;
+         (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).rightAnchorQ31;
     (rootNode->base).right =
-         ((int)((ulonglong)anchorPixelProductQ31 >> 0x20) << 1 | (uint)anchorPixelProductQ31 >> 0x1f
+         ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f
          ) + (rootNode->base).rightOffset;
     currentAnchorPixelProductQ31 =
-         (ulonglong)g_FramebufferHeight * (ulonglong)(rootNode->base).bottomAnchorQ31;
+         (uint64_t)g_FramebufferHeight * (uint64_t)(rootNode->base).bottomAnchorQ31;
     (rootNode->base).bottom =
-         ((int)((ulonglong)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-         (uint)currentAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).bottomOffset;
-    edgeAnchorPixelProductQ31 = (ulonglong)g_FramebufferWidth * (ulonglong)(rootNode->base).leftAnchorQ31;
+         ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
+         (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).bottomOffset;
+    edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferWidth * (uint64_t)(rootNode->base).leftAnchorQ31;
     (rootNode->base).left =
-         ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).leftOffset;
-    edgeAnchorPixelProductQ31 = (ulonglong)g_FramebufferHeight * (ulonglong)(rootNode->base).topAnchorQ31;
+         ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).leftOffset;
+    edgeAnchorPixelProductQ31 = (uint64_t)g_FramebufferHeight * (uint64_t)(rootNode->base).topAnchorQ31;
     (rootNode->base).top =
-         ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).topOffset;
+         ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + (rootNode->base).topOffset;
     (*((rootNode->base).vtable)->layout)(&rootNode->base);
     rootNode = rootNode->previousRoot;
   } while (rootNode != (UiRootNode *)0xffffffff);
@@ -1360,8 +1360,8 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
 
 {
   int localX;
-  uint localY;
-  uint resizeFlags;
+  uint32_t localY;
+  uint32_t resizeFlags;
   int extentLimit;
   bool hitOpaque;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
@@ -1487,8 +1487,8 @@ UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
 
 {
-  dword columnCount;
-  uint rowCount;
+  uint32_t columnCount;
+  uint32_t rowCount;
   
   rowCount = 1;
   columnCount = itemCount;
@@ -1646,7 +1646,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control)
 
 {
-  dword headerHeight;
+  uint32_t headerHeight;
   GraphicsTextureSizeEaxEdxCf9 headerSize;
   
   if ((control->root.rootFlags & 4) == 0) {
@@ -1676,7 +1676,7 @@ UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *contr
 void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessageCode)
 
 {
-  dword ticksToRun;
+  uint32_t ticksToRun;
   UiRootNode *frontRoot;
   UiRootCallbacks *rootCallbacks;
 
@@ -1928,38 +1928,38 @@ void __thandor_void_preserve_eax_ecx_edx UiContainer_LayoutChildren(UiNodeBase *
 
 {
   UiNodeBase *childNode;
-  longlong edgeAnchorPixelProductQ31;
+  int64_t edgeAnchorPixelProductQ31;
   int computedEdgeCoordinate;
   int currentEdgeCoordinate;
   int edgeCoordinate;
-  longlong currentAnchorPixelProductQ31;
-  longlong anchorPixelProductQ31;
+  int64_t currentAnchorPixelProductQ31;
+  int64_t anchorPixelProductQ31;
   
   childNode = control->firstChild;
   control->layoutWidth = control->right - control->left;
   control->layoutHeight = control->bottom - control->top;
   for (; childNode != (UiNodeBase *)0xffffffff; childNode = childNode->nextSibling) {
     anchorPixelProductQ31 =
-         (ulonglong)(uint)control->layoutWidth * (ulonglong)childNode->rightAnchorQ31;
+         (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->rightAnchorQ31;
     computedEdgeCoordinate =
-         ((int)((ulonglong)anchorPixelProductQ31 >> 0x20) << 1 | (uint)anchorPixelProductQ31 >> 0x1f
+         ((int)((uint64_t)anchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)anchorPixelProductQ31 >> 0x1f
          ) + childNode->rightOffset + control->left;
     childNode->right = computedEdgeCoordinate;
     childNode->layoutWidth = computedEdgeCoordinate;
     currentAnchorPixelProductQ31 =
-         (ulonglong)(uint)control->layoutHeight * (ulonglong)childNode->bottomAnchorQ31;
+         (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->bottomAnchorQ31;
     currentEdgeCoordinate =
-         ((int)((ulonglong)currentAnchorPixelProductQ31 >> 0x20) << 1 |
-         (uint)currentAnchorPixelProductQ31 >> 0x1f) + childNode->bottomOffset + control->top;
+         ((int)((uint64_t)currentAnchorPixelProductQ31 >> 0x20) << 1 |
+         (uint32_t)currentAnchorPixelProductQ31 >> 0x1f) + childNode->bottomOffset + control->top;
     childNode->bottom = currentEdgeCoordinate;
     childNode->layoutHeight = currentEdgeCoordinate;
-    edgeAnchorPixelProductQ31 = (ulonglong)(uint)control->layoutWidth * (ulonglong)childNode->leftAnchorQ31;
-    edgeCoordinate = ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->leftOffset +
+    edgeAnchorPixelProductQ31 = (uint64_t)(uint32_t)control->layoutWidth * (uint64_t)childNode->leftAnchorQ31;
+    edgeCoordinate = ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->leftOffset +
             control->left;
     childNode->left = edgeCoordinate;
     childNode->layoutWidth = childNode->layoutWidth - edgeCoordinate;
-    edgeAnchorPixelProductQ31 = (ulonglong)(uint)control->layoutHeight * (ulonglong)childNode->topAnchorQ31;
-    edgeCoordinate = ((int)((ulonglong)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->topOffset +
+    edgeAnchorPixelProductQ31 = (uint64_t)(uint32_t)control->layoutHeight * (uint64_t)childNode->topAnchorQ31;
+    edgeCoordinate = ((int)((uint64_t)edgeAnchorPixelProductQ31 >> 0x20) << 1 | (uint32_t)edgeAnchorPixelProductQ31 >> 0x1f) + childNode->topOffset +
             control->top;
     childNode->top = edgeCoordinate;
     childNode->layoutHeight = childNode->layoutHeight - edgeCoordinate;

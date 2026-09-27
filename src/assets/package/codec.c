@@ -19,7 +19,7 @@
 */
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeFieldGrid
-          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
+          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
           PckDecodedByteCount sourceImageSizeBytes,FieldGridAsset *sourceGrid)
 
 {
@@ -27,8 +27,8 @@ PckCodec_EncodeFieldGrid
   AssetMagic *encodedSizeOrError;
   AssetMagic *compactFieldImageBase;
   PckHeaderDwordCount headerDwordCount;
-  uint cellCount;
-  dword bytes;
+  uint32_t cellCount;
+  uint32_t bytes;
   PckCompactFieldImageByteCount compactImageSizeBytes;
   AssetMagic *compactWriteCursor;
   ArenaAllocEaxCf5 allocResult;
@@ -62,14 +62,14 @@ PckCodec_EncodeFieldGrid
       compactWriteCursor = compactWriteCursor + 4;
       cellCount = cellCount - 1;
     } while (cellCount != 0);
-    *(dword *)destination = bytes;
+    *(uint32_t *)destination = bytes;
     encodeResult = PckCodec_EncodeHuffmanRle
                       (destinationCapacityBytes - 0x10,destination + 0x10,bytes,
-                       (byte *)compactFieldImageBase);
+                       (uint8_t *)compactFieldImageBase);
     encodedSizeOrError = (AssetMagic *)encodeResult.eax;
     if (!encodeResult.carry) {
       (*g_MemoryApi.free)(compactFieldImageBase);
-      successResult.eax = (dword)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
+      successResult.eax = (uint32_t)encodedSizeOrError + 0x10; /* packed size plus the 0x10-byte prefix */
       successResult.carry = false;
       return successResult;
     }
@@ -77,7 +77,7 @@ PckCodec_EncodeFieldGrid
     compactFieldImageBase = encodedSizeOrError;
   }
   encodeResult.carry = true;
-  encodeResult.eax = (dword)compactFieldImageBase;
+  encodeResult.eax = (uint32_t)compactFieldImageBase;
   return encodeResult;
 }
 
@@ -94,10 +94,10 @@ PckCodec_EncodeFieldGrid
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeFieldGrid
           (PckOutputCapacityBytes destinationCapacityBytes,FieldGridAsset *destinationGrid,
-          PckStoredByteCount sourceSizeBytes,byte *source)
+          PckStoredByteCount sourceSizeBytes,uint8_t *source)
 
 {
-  dword bytes;
+  uint32_t bytes;
   AssetMagic pendingCellDword;
   AssetMagic *compactFieldImageBase;
   int countOrRowStartX;
@@ -114,12 +114,12 @@ PckCodec_DecodeFieldGrid
   ArenaFreeEaxCf5 freeResult;
   FieldGridDimension gridWidth;
   
-  bytes = *(dword *)source;
+  bytes = *(uint32_t *)source;
   allocResult = (*g_MemoryApi.alloc)(bytes);
   compactFieldImageBase = (AssetMagic *)allocResult.eax;
   if (!allocResult.carry) {
     decodeResult = PckCodec_DecodeHuffmanRle
-                      (bytes,(byte *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
+                      (bytes,(uint8_t *)compactFieldImageBase,sourceSizeBytes - 0x10,source + 0x10);
     if (!decodeResult.carry) {
       cellCountOrWorldX = compactFieldImageBase[0x2e] * compactFieldImageBase[0x2f];
       compactReadCursor = compactFieldImageBase;
@@ -174,14 +174,14 @@ PckCodec_DecodeFieldGrid
       freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
       /* EAX is whatever the free left in it (callers only test CF), CF clear. */
       decodeResult.carry = false;
-      decodeResult.eax = (dword)freeResult.eax;
+      decodeResult.eax = (uint32_t)freeResult.eax;
       return decodeResult;
     }
     freeResult = (*g_MemoryApi.free)(compactFieldImageBase);
     compactFieldImageBase = (AssetMagic *)freeResult.eax;
   }
   decodeResult.carry = true;
-  decodeResult.eax = (dword)compactFieldImageBase;
+  decodeResult.eax = (uint32_t)compactFieldImageBase;
   return decodeResult;
 }
 
@@ -193,8 +193,8 @@ PckCodec_DecodeFieldGrid
 */
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeStored
-          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-          PckDecodedByteCount sourceSizeBytes,byte *source)
+          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckDecodedByteCount sourceSizeBytes,uint8_t *source)
 
 {
   PckDwordCopyCount dwordCopyCount;
@@ -204,7 +204,7 @@ PckCodec_EncodeStored
   if (sourceSizeBytes <= destinationCapacityBytes) {
     for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
         dwordCopyCount = dwordCopyCount - 1) {
-      *(dword *)destination = *(dword *)source;
+      *(uint32_t *)destination = *(uint32_t *)source;
       source = source + 4;
       destination = destination + 4;
     }
@@ -225,8 +225,8 @@ PckCodec_EncodeStored
 */
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeStored
-          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-          PckStoredByteCount sourceSizeBytes,byte *source)
+          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckStoredByteCount sourceSizeBytes,uint8_t *source)
 
 {
   PckDwordCopyCount dwordCopyCount;
@@ -234,7 +234,7 @@ PckCodec_DecodeStored
   
   for (dwordCopyCount = sourceSizeBytes >> 2; dwordCopyCount != 0;
       dwordCopyCount = dwordCopyCount - 1) {
-    *(dword *)destination = *(dword *)source;
+    *(uint32_t *)destination = *(uint32_t *)source;
     source = source + 4;
     destination = destination + 4;
   }
@@ -253,33 +253,33 @@ PckCodec_DecodeStored
 */
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_EncodeHuffmanRle
-          (PckOutputCapacityBytes destinationCapacityBytes,byte *destination,
-          PckDecodedByteCount sourceSizeBytes,byte *source)
+          (PckOutputCapacityBytes destinationCapacityBytes,uint8_t *destination,
+          PckDecodedByteCount sourceSizeBytes,uint8_t *source)
 
 {
   PckHuffmanNodePtr ancestorNode;
-  uint weightIndexOrSize;
+  uint32_t weightIndexOrSize;
   PckHuffmanBitOffset outputBitOffset;
   int countOrCodeLength;
   PckDecodedByteCount bytesRemaining;
-  uint secondWeightOrCode;
+  uint32_t secondWeightOrCode;
   PckHuffmanNode *lowestWeightNode;
-  byte *sourceByteCursor;
+  uint8_t *sourceByteCursor;
   PckHuffmanSymbolState *symbolState;
   PckHuffmanNode *scanNode;
-  byte *frequencyByteCursor;
-  dword *workspaceClearCursor;
+  uint8_t *frequencyByteCursor;
+  uint32_t *workspaceClearCursor;
   PckHuffmanNode *leafOrSecondLowestNode;
   PckHuffmanNodePtr currentLeafNode;
-  uint *outputClearCursor;
-  uint *outputWriteCursor;
+  uint32_t *outputClearCursor;
+  uint32_t *outputWriteCursor;
   PckCodecEaxCf5 successResult;
   PckCodecEaxCf5 errorResult;
   PckHuffmanNodePtr nextInternalNode;
-  byte currentSymbolByte;
+  uint8_t currentSymbolByte;
   PckHuffmanNodePtr parentNode;
   
-  workspaceClearCursor = (dword *)g_PckHuffmanSymbolWorkspace256;
+  workspaceClearCursor = (uint32_t *)g_PckHuffmanSymbolWorkspace256;
   for (countOrCodeLength = 0x900; bytesRemaining = sourceSizeBytes, sourceByteCursor = source, countOrCodeLength != 0; countOrCodeLength = countOrCodeLength + -1) {
     *workspaceClearCursor = 0;
     workspaceClearCursor = workspaceClearCursor + 1;
@@ -305,8 +305,8 @@ PckCodec_EncodeHuffmanRle
   if (countOrCodeLength != 0) {
     symbolState = g_PckHuffmanSymbolWorkspace256;
     do {
-      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((byte)countOrCodeLength & 0x1f)) + -1;
-      symbolState->frequencyCount = symbolState->frequencyCount >> ((byte)countOrCodeLength & 0x1f);
+      symbolState->frequencyCount = symbolState->frequencyCount + (1 << ((uint8_t)countOrCodeLength & 0x1f)) + -1;
+      symbolState->frequencyCount = symbolState->frequencyCount >> ((uint8_t)countOrCodeLength & 0x1f);
       symbolState = symbolState + 1;
     } while (symbolState < g_PckHuffmanLeafNodeWorkspace256);
   }
@@ -355,8 +355,8 @@ PckCodec_EncodeHuffmanRle
   }
   if (destinationCapacityBytes < 0x100) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
   countOrCodeLength = 0x100;
-  outputWriteCursor = (uint *)(destination + 0x100);
-  frequencyByteCursor = (byte *)g_PckHuffmanSymbolWorkspace256;
+  outputWriteCursor = (uint32_t *)(destination + 0x100);
+  frequencyByteCursor = (uint8_t *)g_PckHuffmanSymbolWorkspace256;
   do {
     *destination = *frequencyByteCursor;
     frequencyByteCursor = frequencyByteCursor + 4;
@@ -412,7 +412,7 @@ PckCodec_EncodeHuffmanRle
           *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 5 & 0x1f);
           for (outputBitOffset = outputBitOffset + 5 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
               outputBitOffset = outputBitOffset - 8) {
-            outputWriteCursor = (uint *)((int)outputWriteCursor + 1);
+            outputWriteCursor = (uint32_t *)((int)outputWriteCursor + 1);
             weightIndexOrSize = weightIndexOrSize + 1;
             destinationCapacityBytes = destinationCapacityBytes - 1;
             if (destinationCapacityBytes == 0) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
@@ -424,7 +424,7 @@ PckCodec_EncodeHuffmanRle
         *outputWriteCursor = *outputWriteCursor | (secondWeightOrCode & 0xffffff) << (outputBitOffset + 1 & 0x1f);
         for (outputBitOffset = outputBitOffset + 1 + (char)(secondWeightOrCode >> 0x18); 7 < outputBitOffset;
             outputBitOffset = outputBitOffset - 8) {
-          outputWriteCursor = (uint *)((int)outputWriteCursor + 1);
+          outputWriteCursor = (uint32_t *)((int)outputWriteCursor + 1);
           weightIndexOrSize = weightIndexOrSize + 1;
           destinationCapacityBytes = destinationCapacityBytes - 1;
           if (destinationCapacityBytes == 0) goto PckCodec_EncodeHuffmanRle_ReturnCapacityError;
@@ -455,23 +455,23 @@ PckCodec_EncodeHuffmanRle_ReturnCapacityError:
 */
 PckCodecEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 PckCodec_DecodeHuffmanRle
-          (PckDecodedByteCount outputSizeBytes,byte *destination,PckStoredByteCount sourceSizeBytes,
-          byte *source)
+          (PckDecodedByteCount outputSizeBytes,uint8_t *destination,PckStoredByteCount sourceSizeBytes,
+          uint8_t *source)
 
 {
   PckHuffmanSymbolState symbolState;
-  uint lowWeightOrBitWindow;
+  uint32_t lowWeightOrBitWindow;
   PckHuffmanRunLength runLength;
   PckHuffmanBitOffset nextBitOffset;
   PckHuffmanBitOffset inputBitOffset;
   int remainingCount;
-  uint secondWeightOrCodeBits;
+  uint32_t secondWeightOrCodeBits;
   PckHuffmanNode *lowestWeightNode;
   PckHuffmanNodePtr literalNode;
   PckHuffmanNodePtr currentHuffmanNode;
-  byte *frequencyByteCursor;
+  uint8_t *frequencyByteCursor;
   PckHuffmanNode *scanNode;
-  uint *inputCursor;
+  uint32_t *inputCursor;
   PckHuffmanSymbolState *symbolStateCursor;
   PckHuffmanNode *leafOrSecondLowestNode;
   PckCodecEaxCf5 huffmanResult;
@@ -539,7 +539,7 @@ PckCodec_DecodeHuffmanRle
     }
   }
   inputBitOffset = 0;
-  inputCursor = (uint *)(source + 0x100);
+  inputCursor = (uint32_t *)(source + 0x100);
   do {
     lowWeightOrBitWindow = *inputCursor >> (inputBitOffset & 0x1f);
     nextBitOffset = inputBitOffset + 1;
@@ -556,11 +556,11 @@ PckCodec_DecodeHuffmanRle
         runLength = runLength >> 1;
         nextBitOffset = nextBitOffset + 1;
       } while (literalNode->zeroChild != (PckHuffmanNodePtr)0x0);
-      *destination = (byte)(literalNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+      *destination = (uint8_t)(literalNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
       for (inputBitOffset = nextBitOffset; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8)
       {
-        inputCursor = (uint *)((int)inputCursor + 1);
+        inputCursor = (uint32_t *)((int)inputCursor + 1);
       }
       outputSizeBytes = outputSizeBytes - 1;
       continue;
@@ -579,11 +579,11 @@ PckCodec_DecodeHuffmanRle
       inputBitOffset = inputBitOffset + 1;
     } while (currentHuffmanNode->zeroChild != (PckHuffmanNodePtr)0x0);
     for (; 7 < inputBitOffset; inputBitOffset = inputBitOffset - 8) {
-      inputCursor = (uint *)((int)inputCursor + 1);
+      inputCursor = (uint32_t *)((int)inputCursor + 1);
     }
     runLength = (lowWeightOrBitWindow >> 1 & 0xf) + 3;
     do {
-      *destination = (byte)(currentHuffmanNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
+      *destination = (uint8_t)(currentHuffmanNode - g_PckHuffmanLeafNodeWorkspace256) /* symbol = leaf index */;
       destination = destination + 1;
       outputSizeBytes = outputSizeBytes - 1;
       if (outputSizeBytes == 0) break;

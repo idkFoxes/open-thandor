@@ -23,12 +23,12 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
 /* 0x00503F30 */
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
 TerrainVisualResources_LoadPrimary
-          (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field);
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
 
 /* 0x005041C0 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 TerrainVisualResources_LoadAndClearCellOverlayFlags
-          (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field);
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field);
 
 /* 0x00504470 */
 void __thandor_void_preserve_eax_ecx TerrainVisualResources_Shutdown(void);
@@ -45,7 +45,7 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void);
 /* 0x00561EA0 */
 void __thandor_preserve_eax_edx
 TerrainLighting_AdjustDirectionAndRecomputeField
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3);
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
 
 /* 0x0053D560 */
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void);

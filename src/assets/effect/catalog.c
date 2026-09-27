@@ -23,7 +23,7 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
 EffectAsset_PrepareEntries(EffectAssetHeader *asset)
 
 {
-  dword registrationStatusCode;
+  uint32_t registrationStatusCode;
   AssetRecordCount remainingEntryCount;
   EffectAssetHeader *definition;
   EffectDefinition *definitionCursor;
@@ -49,7 +49,7 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
     }
   }
   else {
-    Package_SetLastErrorPath((word *)asset);
+    Package_SetLastErrorPath((uint16_t *)asset);
   }
   failureResult.carry = true;
   failureResult.valueOrError = registrationStatusCode;
@@ -68,7 +68,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
 
 {
   StatusValueEaxCf5 successResult;
-  dword lastResolvedDefinition = 0; /* EAX: success returns the last resolved definition (caller's EAX if none);
+  uint32_t lastResolvedDefinition = 0; /* EAX: success returns the last resolved definition (caller's EAX if none);
                                        callers test CF only */
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
@@ -84,7 +84,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
       if (currentDefinition->linkedEffectPresent != 0) {
         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
-        lastResolvedDefinition = (dword)effectLookup.definitionOrError;
+        lastResolvedDefinition = (uint32_t)effectLookup.definitionOrError;
         if (effectLookup.carry) {
           return THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, StatusValueEaxCf5, effectLookup);
         }
@@ -93,7 +93,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
       if (currentDefinition->linkedShotPresent != 0) {
         shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
-        lastResolvedDefinition = (dword)shotLookup.definitionOrError;
+        lastResolvedDefinition = (uint32_t)shotLookup.definitionOrError;
         if (shotLookup.carry) {
           return THANDOR_BITCAST(ShotDefinitionLookupEaxCf5, StatusValueEaxCf5, shotLookup);
         }
@@ -166,7 +166,7 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
           asset = existingSpriteAsset;
         }
         successResult.carry = false;
-        successResult.valueOrError = (dword)asset;
+        successResult.valueOrError = (uint32_t)asset;
         return successResult;
       }
       registrySlotCursor = registrySlotCursor + 1;
@@ -182,7 +182,7 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
   }
 EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError:
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)asset;
+  failureResult.valueOrError = (uint32_t)asset;
   return failureResult;
 }
 

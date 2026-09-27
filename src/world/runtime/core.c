@@ -11,28 +11,28 @@
 /* Implementation ownership: world/runtime/core. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword WorldLighting_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t WorldLighting_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* One lighting color pair: PUNPCKLBW/PSRLW 6 of both colors, PMULHW by the forward and inverse blend
    factors, PADDW, PACKUSWB (low dword). */
-static __inline dword WorldLighting_BlendColors
-          (dword color,dword alternateColor,SoftwareBgraWordLanes forwardFactors,
+static __inline uint32_t WorldLighting_BlendColors
+          (uint32_t color,uint32_t alternateColor,SoftwareBgraWordLanes forwardFactors,
           SoftwareBgraWordLanes inverseFactors)
 
 {
   ThandorMmx forwardTerm;
   ThandorMmx inverseTerm;
-  dword packed;
+  uint32_t packed;
   short sum;
   int lane;
 
@@ -41,7 +41,7 @@ static __inline dword WorldLighting_BlendColors
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     sum = (short)(forwardTerm.sw[lane] + inverseTerm.sw[lane]);
-    packed = packed | (dword)(sum < 0 ? 0 : (0xff < sum ? 0xff : sum)) << (lane * 8);
+    packed = packed | (uint32_t)(sum < 0 ? 0 : (0xff < sum ? 0xff : sum)) << (lane * 8);
   }
   return packed;
 }
@@ -63,20 +63,20 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
   PackedArgb32 alternateColorA;
   PackedArgb32 alternateColorB;
   InGameLevelConditionStorageView800 *levelConditions;
-  dword mixedColor0A;
-  dword mixedColor0B;
-  dword mixedColor1A;
-  dword mixedColor1B;
-  dword mixedColor2A;
-  dword mixedColor2B;
-  dword mixedColor3A;
-  dword mixedColor3B;
-  uint cycleDurationOrPhase;
+  uint32_t mixedColor0A;
+  uint32_t mixedColor0B;
+  uint32_t mixedColor1A;
+  uint32_t mixedColor1B;
+  uint32_t mixedColor2A;
+  uint32_t mixedColor2B;
+  uint32_t mixedColor3A;
+  uint32_t mixedColor3B;
+  uint32_t cycleDurationOrPhase;
   int primaryOriginXWeighted;
   int primaryWidthWeighted;
-  uint phaseByteOrAlternateSize;
-  uint blendIndexOrPrimaryValue;
-  uint alternateOriginOrBlendWeight;
+  uint32_t phaseByteOrAlternateSize;
+  uint32_t blendIndexOrPrimaryValue;
+  uint32_t alternateOriginOrBlendWeight;
   int alternateOriginXWeighted;
   int alternateWidthWeighted;
   WorldRuntimeContext *worldRuntime;
@@ -145,8 +145,8 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                terrainRampColor12CArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
     phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
-    blendIndexOrPrimaryValue = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
-    alternateOriginOrBlendWeight = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
+    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
+    alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            alternatePackedFieldRegionOriginYHigh16XLow16;
     if (phaseByteOrAlternateSize < 0x80) {
       if (alternateOriginOrBlendWeight < blendIndexOrPrimaryValue) {
@@ -164,10 +164,10 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
     }
     alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 0x15;
     inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
-    blendIndexOrPrimaryValue = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
+    blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            packedFieldRegionHeightHigh16WidthLow16;
     cycleDurationOrPhase = cycleDurationOrPhase >> 8;
-    phaseByteOrAlternateSize = (uint)(ushort)(levelConditions->levelImage).runtimeTail2E0.
+    phaseByteOrAlternateSize = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            alternatePackedFieldRegionHeightHigh16WidthLow16;
     if (cycleDurationOrPhase < 0x80) {
       if (phaseByteOrAlternateSize < blendIndexOrPrimaryValue) {
@@ -184,19 +184,19 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
       alternateWidthWeighted = phaseByteOrAlternateSize * (0x80 - (cycleDurationOrPhase - 0x80));
     }
     WorldRuntime_RecomputeFieldRegionNormalsAndLighting
-              ((int)((uint)*(ushort *)
+              ((int)((uint32_t)*(uint16_t *)
                             ((int)&(levelConditions->levelImage).runtimeTail2E0.
                                    alternatePackedFieldRegionHeightHigh16WidthLow16 + 2) * inverseBlendWeight +
-                    (uint)*(ushort *)
+                    (uint32_t)*(uint16_t *)
                            ((int)&(levelConditions->levelImage).runtimeTail2E0.
                                   packedFieldRegionHeightHigh16WidthLow16 + 2) * (0x100 - inverseBlendWeight))
-               >> 8,(uint)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
-               (int)((uint)*(ushort *)
+               >> 8,(uint32_t)(primaryWidthWeighted + alternateWidthWeighted) >> 7 & 0xffff,
+               (int)((uint32_t)*(uint16_t *)
                             ((int)&(levelConditions->levelImage).runtimeTail2E0.
                                    alternatePackedFieldRegionOriginYHigh16XLow16 + 2) * inverseBlendWeight +
-                    *(ushort *)
+                    *(uint16_t *)
                      ((int)&(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16
-                     + 2) * alternateOriginOrBlendWeight) >> 8,(uint)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
+                     + 2) * alternateOriginOrBlendWeight) >> 8,(uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
   }
   return;
 }
@@ -214,7 +214,7 @@ WorldRuntime_SetPosition60AndDistanceFromPosition80
           (Q12 positionZ,Q12 positionY,Q12 positionX,WorldRuntimeContext *runtime)
 
 {
-  dword targetDistanceQ12;
+  uint32_t targetDistanceQ12;
   
   (runtime->motion).positionXQ12 = positionX;
   (runtime->motion).positionYQ12 = positionY;
@@ -367,7 +367,7 @@ WorldRuntime_AttachFieldGridAsset(FieldGridAsset *asset,WorldRuntimeContext *wor
 */
 void __thandor_preserve_eax_edx
 WorldRuntime_AdjustFieldOriginWrappedClamped
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,Q12 deltaWorldY,Q12 deltaWorldX)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,Q12 deltaWorldY,Q12 deltaWorldX)
 
 {
   FieldGridDimensionCells gridHeight;
@@ -437,11 +437,11 @@ Q12 WorldRuntime_InterpolateWaterSurfaceHeightOrSentinel
    no field grid.
    Cross-module calls: FieldGrid_InterpolateTopSurfaceHeight [world/terrain/grid].
 */
-dword WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
+uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
                 (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  dword topSurfaceHeightQ12;
+  uint32_t topSurfaceHeightQ12;
   FieldGridHeightEaxCf5 heightResult;
   
   topSurfaceHeightQ12 = 0x7ffff000;
@@ -487,7 +487,7 @@ WorldRuntimeNode_IsPositionInsideBoundsCf
   boundsMinY = boundsControl->extendedCoordinate164;
   boundsSecondY = boundsControl->extendedCoordinate16C;
   projectedGridX = (int)projectedPositionPair >> 0xc;
-  projectedGridY = (int)((longlong)projectedPositionPair >> 0x2c);
+  projectedGridY = (int)((int64_t)projectedPositionPair >> 0x2c);
   boundsMaxX = boundsSecondX;
   if (boundsSecondX < boundsMinX) {
     boundsMaxX = boundsMinX;
@@ -713,7 +713,7 @@ FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world)
    Ownership: world/runtime/core.
    Purpose: Returns the dword at context offset 0x5C without modifying it.
 */
-dword WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
+uint32_t WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
 
 {
   return world->pendingToken;
@@ -723,10 +723,10 @@ dword WorldRuntime_GetPendingToken(WorldRuntimeContext *world)
    Ownership: world/runtime/core.
    Purpose: Atomically exchanges the dword at context offset 0x5C with zero and returns the previous value in EAX.
 */
-dword WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
+uint32_t WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
 
 {
-  dword pendingToken;
+  uint32_t pendingToken;
   
   LOCK();
   pendingToken = world->pendingToken;
@@ -742,7 +742,7 @@ dword WorldRuntime_TakePendingToken(WorldRuntimeContext *world)
 */
 void __thandor_void_preserve_eax_ecx
 WorldRuntime_AttachAndClearDwordArray
-          (WorldWorkspaceElementCount count,dword *array,WorldRuntimeContext *world)
+          (WorldWorkspaceElementCount count,uint32_t *array,WorldRuntimeContext *world)
 
 {
   world->dwordArray = array;
@@ -759,7 +759,7 @@ WorldRuntime_AttachAndClearDwordArray
    Ownership: world/runtime/core.
    Purpose: Returns the dword-array pointer stored at context offset 0xC0.
 */
-dword * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
+uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
 
 {
   return world->dwordArray;
@@ -888,7 +888,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl RuntimeHexSegment_GetLightImageAndTog
   g_GraphicsShadingRuntimeRecords[0].serializationToggleDword =
        ~g_GraphicsShadingRuntimeRecords[0].serializationToggleDword;
   /* EDX:EAX = byte size 0x4000, shading runtime records */
-  return ((qword)0x4000 << 32) | (dword)(uintptr_t)g_GraphicsShadingRuntimeRecords;
+  return ((uint64_t)0x4000 << 32) | (uint32_t)(uintptr_t)g_GraphicsShadingRuntimeRecords;
 }
 
 /* Address: 0x0050ECA0.
@@ -914,8 +914,8 @@ RuntimeHexSegment_GetFieldImageRegs(InGameFieldImageSaveContext58 *fieldImageCon
 
 {
   /* The pair is stored as {low: byte count (EDX), high: image (EAX)}, as the caller reads it. */
-  return (qword)(uintptr_t)fieldImageContext->fieldGridAsset << 0x20 |
-         (qword)(dword)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
+  return (uint64_t)(uintptr_t)fieldImageContext->fieldGridAsset << 0x20 |
+         (uint64_t)(uint32_t)(fieldImageContext->fieldGridAsset->common).allocationSizeBytes;
 }
 
 /* Address: 0x0050ECD0.
@@ -947,18 +947,18 @@ WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwn
     ModelRuntimeHierarchy_ClearMatchingTargetRecursive((RuntimeToken)releasedObject,modelRuntime);
     linkedRuntimeStateAddress = modelRuntime[2];
     if (releasedObject == *(void **)(linkedRuntimeStateAddress + 0x98)) {
-      *(dword *)(linkedRuntimeStateAddress + 0x98) = 0;
+      *(uint32_t *)(linkedRuntimeStateAddress + 0x98) = 0;
     }
-    if (((*(uint *)(linkedRuntimeStateAddress + 0x2c) & 1) != 0) &&
+    if (((*(uint32_t *)(linkedRuntimeStateAddress + 0x2c) & 1) != 0) &&
        (releasedObject == *(void **)(linkedRuntimeStateAddress + 0x1c))) {
-      *(dword *)(linkedRuntimeStateAddress + 0x1c) = 0;
-      *(uint *)(linkedRuntimeStateAddress + 0x2c) =
-           *(uint *)(linkedRuntimeStateAddress + 0x2c) & 0xfffffff2;
+      *(uint32_t *)(linkedRuntimeStateAddress + 0x1c) = 0;
+      *(uint32_t *)(linkedRuntimeStateAddress + 0x2c) =
+           *(uint32_t *)(linkedRuntimeStateAddress + 0x2c) & 0xfffffff2;
     }
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) &&
           (releasedObject == *(void **)((int)node->runtimePayload + 0x1c))) {
-    *(dword *)((int)node->runtimePayload + 0x1c) = 0;
+    *(uint32_t *)((int)node->runtimePayload + 0x1c) = 0;
   }
   return;
 }
@@ -974,13 +974,13 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
           (void *sourceRuntime,WorldRuntimeContext *worldRuntime)
 
 {
-  dword overlayBaseOffset;
+  uint32_t overlayBaseOffset;
   TerrainClassOverlayCallback *overlayCallback;
   int modelOverlayBase;
   ModelDefinitionRecordPrefix *definitionRecord;
   WorldOwnerListNode100 *ownerNode;
   ModelDefinitionLookupEaxCf5 definitionLookup;
-  dword overlayExtent;
+  uint32_t overlayExtent;
   
   if (sourceRuntime != (void *)0x0) {
     definitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
@@ -992,7 +992,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
       overlayBaseOffset = definitionRecord[0x23].flags;
       if (ownerNode != (WorldOwnerListNode100 *)0x0) {
         if (definitionRecord[6].flags == 0xe) {
-          overlayExtent = 0x800 << ((byte)definitionRecord[0x10].byteSize & 0x1f);
+          overlayExtent = 0x800 << ((uint8_t)definitionRecord[0x10].byteSize & 0x1f);
         }
         overlayCallback = g_TerrainClassPlacementAndOverlayCallbacks10.overlayCallbacks
                  [definitionRecord[0x34].definitionId];
@@ -1070,7 +1070,7 @@ void UnifiedRuntimeDefault_TwoArgNoOpB
    Ownership: world/runtime/core.
    Purpose: Exact one-argument default that clears EAX and returns zero with ret 0x04.
 */
-dword __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context)
+uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(void *context)
 
 {
   return 0;
@@ -1118,7 +1118,7 @@ WorldRuntimeNode_ClearDetachedEntityReferencesCallback
   
   if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     if (detachedObject == *(void **)((int)node->runtimePayload + 0x1c)) {
-      *(dword *)((int)node->runtimePayload + 0x1c) = 0;
+      *(uint32_t *)((int)node->runtimePayload + 0x1c) = 0;
     }
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -1133,7 +1133,7 @@ WorldRuntimeNode_ClearDetachedEntityReferencesCallback
   }
   else if ((node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) &&
           (detachedObject == *(void **)((int)node->runtimePayload + 0x14))) {
-    *(dword *)((int)node->runtimePayload + 0x14) = 0;
+    *(uint32_t *)((int)node->runtimePayload + 0x14) = 0;
   }
   return;
 }
@@ -1156,11 +1156,11 @@ WorldRuntimeNode_ReleaseShutdownBindingsCallback
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_SHOT) {
     node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
-    *(dword *)((int)node->runtimePayload + 0x10) = 0;
+    *(uint32_t *)((int)node->runtimePayload + 0x10) = 0;
   }
   else if (node->ownerClassId == WORLD_OWNER_RUNTIME_EFFECT) {
     node->runtimeFlags = node->runtimeFlags & 0x3fffffff;
-    *(dword *)((int)node->runtimePayload + 4) = 0;
+    *(uint32_t *)((int)node->runtimePayload + 4) = 0;
   }
   return;
 }
@@ -1182,7 +1182,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
 {
   AngleTurn32 currentPitchAngle;
   UQ12 scale;
-  dword endpointDistanceQ12;
+  uint32_t endpointDistanceQ12;
   int rayLengthOrOffsetY;
   FixedSinCosEdxEax8 groundOffsetXY;
   FieldGridRaycastEaxEdxCf9 raycastResult;
@@ -1221,8 +1221,8 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
     groundOffsetXY = FixedMath_SinCosScaled
                       ((worldRuntime->motion).headingAngle,
                        (FixedMathScale32)
-                       (((longlong)(worldRuntime->motion).positionZQ12 *
-                        (longlong)g_FixedCosQ28[-currentPitchAngle]) / (longlong)g_FixedSinQ28[-currentPitchAngle]));
+                       (((int64_t)(worldRuntime->motion).positionZQ12 *
+                        (int64_t)g_FixedCosQ28[-currentPitchAngle]) / (int64_t)g_FixedSinQ28[-currentPitchAngle]));
     rayLengthOrOffsetY = (int)(groundOffsetXY >> 0x20);
     (worldRuntime->motion).targetPositionXQ12 = (int)groundOffsetXY + (worldRuntime->motion).positionXQ12;
     (worldRuntime->motion).targetPositionYQ12 = rayLengthOrOffsetY + (worldRuntime->motion).positionYQ12;

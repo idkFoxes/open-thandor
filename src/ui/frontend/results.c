@@ -39,13 +39,13 @@ FrontendResultsTable_DrawColumnSequenceByType
   UiPixelCoordinate drawY;
   SoftwareFramebufferAccess *framebufferAccess;
   void *statTableImage;
-  word *colourResource;
-  uint pixelColumn;
-  dword remainingColumns;
+  uint16_t *colourResource;
+  uint32_t pixelColumn;
+  uint32_t remainingColumns;
   int drawXOrCount;
-  uint historySampleCount;
+  uint32_t historySampleCount;
   int factionRecordAddress;
-  dword *columnTypeOrColorCursor;
+  uint32_t *columnTypeOrColorCursor;
   bool accessFailed;
   TextResourceResolveEaxCf5 resolvedText;
   
@@ -174,14 +174,14 @@ FrontendResultsTable_DrawColumnSequenceByType
     do {
       resolvedText = TextResource_Resolve(*(int *)(factionRecordAddress + 0x38) + 0x2173);
       colourResource = resolvedText.eax;
-      *columnTypeOrColorCursor = (((byte)colourResource[8] & 0xf) << 0x18 | (uint)(byte)colourResource[7] << 0x1c) +
+      *columnTypeOrColorCursor = (((uint8_t)colourResource[8] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[7] << 0x1c) +
                 *(int *)((int)g_SoftwarePixelPackTables->red +
-                        ((((byte)colourResource[6] & 0xf) << 0x18 | (uint)(byte)colourResource[5] << 0x1c) >> 0x16))
+                        ((((uint8_t)colourResource[6] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[5] << 0x1c) >> 0x16))
                 + *(int *)((int)g_SoftwarePixelPackTables->green +
-                          ((((byte)colourResource[4] & 0xf) << 0x18 | (uint)(byte)colourResource[3] << 0x1c) >> 0x16
+                          ((((uint8_t)colourResource[4] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[3] << 0x1c) >> 0x16
                           )) +
                 g_SoftwarePixelPackTables->blue
-                [(((byte)colourResource[2] & 0xf) << 0x18 | (uint)(byte)colourResource[1] << 0x1c) >> 0x18];
+                [(((uint8_t)colourResource[2] & 0xf) << 0x18 | (uint32_t)(uint8_t)colourResource[1] << 0x1c) >> 0x18];
       statTableImage = g_GameStatTableImage;
       framebufferAccess = g_FramebufferAccess;
       factionRecordAddress = factionRecordAddress + 0x740;
@@ -200,8 +200,8 @@ FrontendResultsTable_DrawColumnSequenceByType
         (*control->factionWeightRaster)
                   ((control->base).bottom,(control->base).top,pixelColumn + (control->base).left,
                    (FrontendResultsFactionWeightPair8 *)
-                   ((int)(((ulonglong)pixelColumn * (ulonglong)historySampleCount) /
-                         (ulonglong)(uint)(control->base).layoutWidth) * 0x38 + (int)statTableImage));
+                   ((int)(((uint64_t)pixelColumn * (uint64_t)historySampleCount) /
+                         (uint64_t)(uint32_t)(control->base).layoutWidth) * 0x38 + (int)statTableImage));
         pixelColumn = pixelColumn + 1;
         drawXOrCount = drawXOrCount + -1;
       } while (drawXOrCount != 0);
@@ -236,14 +236,14 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword packedColor;
+  uint32_t packedColor;
   SoftwareFramebufferAccess *framebufferAccess;
-  uint weightTotal;
-  uint factionIndex;
-  byte *pixelCursor;
+  uint32_t weightTotal;
+  uint32_t factionIndex;
+  uint8_t *pixelCursor;
   int drawnHeight;
   int segmentHeight;
-  uint cumulativeWeight;
+  uint32_t cumulativeWeight;
   
   framebufferAccess = g_FramebufferAccess;
   weightTotal = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
@@ -269,8 +269,8 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
   drawnHeight = 0;
   do {
     cumulativeWeight = cumulativeWeight + factionWeights->lane0 + factionWeights->lane1;
-    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)weightTotal) - drawnHeight;
+    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
+                     (uint64_t)weightTotal) - drawnHeight;
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
@@ -299,14 +299,14 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword packedColor;
+  uint32_t packedColor;
   SoftwareFramebufferAccess *framebufferAccess;
-  uint factionIndex;
-  byte *pixelCursor;
+  uint32_t factionIndex;
+  uint8_t *pixelCursor;
   int drawnHeight;
-  uint weightTotal;
+  uint32_t weightTotal;
   int segmentHeight;
-  uint cumulativeWeight;
+  uint32_t cumulativeWeight;
   
   framebufferAccess = g_FramebufferAccess;
   weightTotal = (*factionWeights).lane0 + factionWeights[1].lane0 + factionWeights[2].lane0 +
@@ -329,8 +329,8 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
   drawnHeight = 0;
   do {
     cumulativeWeight = cumulativeWeight + factionWeights->lane0;
-    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)weightTotal) - drawnHeight;
+    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
+                     (uint64_t)weightTotal) - drawnHeight;
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
@@ -359,14 +359,14 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
           FrontendResultsFactionWeightPair8 *factionWeights)
 
 {
-  dword packedColor;
+  uint32_t packedColor;
   SoftwareFramebufferAccess *framebufferAccess;
-  uint factionIndex;
-  byte *pixelCursor;
+  uint32_t factionIndex;
+  uint8_t *pixelCursor;
   int drawnHeight;
-  uint weightTotal;
+  uint32_t weightTotal;
   int segmentHeight;
-  uint cumulativeWeight;
+  uint32_t cumulativeWeight;
   
   framebufferAccess = g_FramebufferAccess;
   weightTotal = (*factionWeights).lane1 + factionWeights[1].lane1 + factionWeights[2].lane1 +
@@ -389,8 +389,8 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
   drawnHeight = 0;
   do {
     cumulativeWeight = cumulativeWeight + factionWeights->lane1;
-    segmentHeight = (int)(((ulonglong)cumulativeWeight * (ulonglong)(uint)(spanEndY - spanStartY)) /
-                     (ulonglong)weightTotal) - drawnHeight;
+    segmentHeight = (int)(((uint64_t)cumulativeWeight * (uint64_t)(uint32_t)(spanEndY - spanStartY)) /
+                     (uint64_t)weightTotal) - drawnHeight;
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
@@ -427,7 +427,7 @@ FrontendResultsTable_DrawColourColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   int factionRecordAddress;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
@@ -473,7 +473,7 @@ FrontendResultsTable_DrawFactionColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
   
@@ -519,8 +519,8 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
-  byte *factionFieldCursor;
+  uint32_t factionIndex;
+  uint8_t *factionFieldCursor;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
   
@@ -536,8 +536,8 @@ FrontendResultsTable_DrawFormattedFactionFieldColumn
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(sdword *)factionFieldCursor,
-                 (word *)&g_FrontendResultsValueTextUtf16);
+                (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,*(int32_t *)factionFieldCursor,
+                 (uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(valueFormatResourceId);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
@@ -569,7 +569,7 @@ FrontendResultsTable_DrawPointsColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   int factionRecordAddress;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
@@ -588,7 +588,7 @@ FrontendResultsTable_DrawPointsColumn
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),
-                 (word *)&g_FrontendResultsValueTextUtf16);
+                 (uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(0x21c4);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
@@ -620,7 +620,7 @@ FrontendResultsTable_DrawEconomyColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   int factionRecordAddress;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
@@ -638,7 +638,7 @@ FrontendResultsTable_DrawEconomyColumn
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(sdword *)(factionRecordAddress + 0x90),(word *)&g_FrontendResultsValueTextUtf16);
+                 *(int32_t *)(factionRecordAddress + 0x90),(uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(0x21c4);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
@@ -670,7 +670,7 @@ FrontendResultsTable_DrawMilitaryColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   int factionRecordAddress;
   int baselineY;
   TextResourceResolveEaxCf5 resolvedText;
@@ -688,7 +688,7 @@ FrontendResultsTable_DrawMilitaryColumn
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] != 0) {
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
-                 *(sdword *)(factionRecordAddress + 0x94),(word *)&g_FrontendResultsValueTextUtf16);
+                 *(int32_t *)(factionRecordAddress + 0x94),(uint16_t *)&g_FrontendResultsValueTextUtf16);
       resolvedText = TextResource_Resolve(0x21c4);
       RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendResultsValueTextUtf16,resolvedText.eax);
       RichTextCommandStream_DrawSingleLine
@@ -720,7 +720,7 @@ FrontendResultsTable_DrawPlayerColumn
 
 {
   int offsetOrRowY;
-  uint factionIndex;
+  uint32_t factionIndex;
   FrontendPlayerNameUtf16_28 *commandStream;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   int nameDrawX;
@@ -728,7 +728,7 @@ FrontendResultsTable_DrawPlayerColumn
   TextResourceResolveEaxCf5 resolvedText;
   UiPixelCoordinate nameClipLeft;
   UiPixelCoordinate nameClipRight;
-  uint namesDrawn;
+  uint32_t namesDrawn;
   int rowBottomY;
   int rowTopY;
   

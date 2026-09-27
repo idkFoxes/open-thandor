@@ -23,12 +23,12 @@
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRomActionTable_ExecuteRecord
-          (dword reservedZero0,dword reservedZero1,FrontendBooleanState32 suppressActivationSound,
+          (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
           RomRecordTableIndex recordIndex)
 
 {
   RomAssetRecordPrefix *record;
-  dword copiedDword;
+  uint32_t copiedDword;
   RomRecordByteSize copiedByteSize;
   RomRecordId copiedRecordId;
   int frontendRootNode;
@@ -41,7 +41,7 @@ FrontendRomActionTable_ExecuteRecord
   RomRecordId recordId;
   
   frontendRootNode = g_FrontendRootNode;
-  if (recordIndex < *(uint *)(g_FrontendActiveRomRecordTable + 0x3c)) {
+  if (recordIndex < *(uint32_t *)(g_FrontendActiveRomRecordTable + 0x3c)) {
     record = (RomAssetRecordPrefix *)(recordIndex * 0x200 + 0x200 + g_FrontendActiveRomRecordTable);
     source = FRONTEND_UI(g_FrontendRootNode,menuRoomModelView);
     recordId = record[3].rootNodeOffsetOrPointer;
@@ -74,9 +74,9 @@ FrontendRomActionTable_ExecuteRecord
         /* Snapshot of the menu room camera: WorldRuntimeContext.motion (+0x60) of menuRoomModelView,
            positionX/Y/Z, positionMagnitude, headingAngle, pitchAngle. */
         actionOrCopiedValue = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x64,RomRecordId);
-        record[5].rootNodeOffsetOrPointer = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x60,dword);
+        record[5].rootNodeOffsetOrPointer = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x60,uint32_t);
         record[5].recordId = actionOrCopiedValue;
-        copiedDword = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x6C,dword);
+        copiedDword = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x6C,uint32_t);
         record[6].byteSize = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x68,RomRecordByteSize);
         record[6].rootNodeOffsetOrPointer = copiedDword;
         copiedByteSize = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x74,RomRecordByteSize);
@@ -91,11 +91,11 @@ FrontendRomActionTable_ExecuteRecord
           *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x40) = targetRecord[2].recordId;
           *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x44) = copiedByteSize;
           copiedRecordId = targetRecord[3].recordId;
-          *(dword *)((int)record + transitionSlotIndex * 0x20 + 0x48) = targetRecord[3].rootNodeOffsetOrPointer;
+          *(uint32_t *)((int)record + transitionSlotIndex * 0x20 + 0x48) = targetRecord[3].rootNodeOffsetOrPointer;
           *(RomRecordId *)((int)record + transitionSlotIndex * 0x20 + 0x4c) = copiedRecordId;
           copiedDword = targetRecord[4].rootNodeOffsetOrPointer;
           *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x50) = targetRecord[4].byteSize;
-          *(dword *)((int)record + transitionSlotIndex * 0x20 + 0x54) = copiedDword;
+          *(uint32_t *)((int)record + transitionSlotIndex * 0x20 + 0x54) = copiedDword;
           FrontendRomTransition_InitializeFromRecord(recordId,record);
           visibilityLookupFailed = RomRuntime_UpdateRecordVisibilityAndDescriptorsCf(actionOrCopiedValue,recordId);
           if (visibilityLookupFailed) {
@@ -120,7 +120,7 @@ FrontendRomActionTable_ExecuteRecord
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomAssetHeader *asset)
 
 {
-  dword registrationStatusCode;
+  uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   RomAssetHeader *record;
   StatusValueEaxCf5 registerResult;
@@ -147,7 +147,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx RomAsset_PrepareRecords(RomA
     }
   }
   else {
-    Package_SetLastErrorPath((word *)u_engine_zentrale_rom_00545aa4);
+    Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
   }
   failureResult.carry = true;
   failureResult.valueOrError = registrationStatusCode;
@@ -239,21 +239,21 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNest
 {
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  byte *node;
+  uint8_t *node;
 
   slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
   do {
     if ((slotCursor->record != (RomAssetRecordPrefix *)0x0) &&
-       (node = (byte *)slotCursor->record->rootNodeOffsetOrPointer, node != (byte *)0x0)) {
+       (node = (uint8_t *)slotCursor->record->rootNodeOffsetOrPointer, node != (uint8_t *)0x0)) {
       /* Rewritten from the assembly (0x00547432-0x00547474): depth-first walk over the relocated sprite-node
          tree, releasing every node's sprite asset (+0x2C). The original keeps {remaining, nextChild, node}
          frames on the machine stack (EBX = depth); child pointers are at +0x14, the child count at +0x10.
          The same tree is walked by RomAssetRecord_RegisterAndRelocate. */
-      struct { byte *node; dword nextChild; dword remaining; } frames[64];
+      struct { uint8_t *node; uint32_t nextChild; uint32_t remaining; } frames[64];
       int depth = 0;
       for (;;) {
-        frames[depth].remaining = *(dword *)(node + 0x10);
+        frames[depth].remaining = *(uint32_t *)(node + 0x10);
         frames[depth].nextChild = 0;
         Resource_Release(*(void **)(node + 0x2c));
         frames[depth].node = node;
@@ -261,7 +261,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNest
         while ((frames[depth - 1].remaining == 0) && (--depth != 0)) {
         }
         if (depth == 0) break;
-        node = *((byte **)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild);
+        node = *((uint8_t **)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild);
         frames[depth - 1].nextChild++;
         frames[depth - 1].remaining--;
       }
@@ -319,7 +319,7 @@ RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue)
    Purpose: Reverse lookup for the ROM registry: returns the secondary slot value paired with a record pointer, or
    zero when the record is absent.
 */
-dword RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
+uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
 
 {
   int slotsRemaining;
@@ -329,7 +329,7 @@ dword RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record)
   slotCursor = g_RomRegistrySlots;
   do {
     if (record == slotCursor->record) {
-      return (dword)slotCursor->runtimeRootNode;
+      return (uint32_t)slotCursor->runtimeRootNode;
     }
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
@@ -409,11 +409,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
-  uint *slotNodeFlags;
+  uint32_t *slotNodeFlags;
   WorldRuntimeNodeFlags *nodeFlags;
   RomAssetRecordPrefix *recordCursor;
   WorldRuntimeNode *rootNode;
-  uint transitionContextValue;
+  uint32_t transitionContextValue;
   RomRecordTableIndex entryIndex;
   RomRecordByteSize companionsRemaining;
   RomRecordId descriptorsRemaining;
@@ -434,7 +434,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
         companionsRemaining = companionsRemaining - 1) {
       statusResult = RomRegistry_FindSlotValueByRecordIdCf(recordCursor[0x2d].byteSize);
       if (!statusResult.carry) {
-        slotNodeFlags = (uint *)(statusResult.valueOrError + 0x4c);
+        slotNodeFlags = (uint32_t *)(statusResult.valueOrError + 0x4c);
         *slotNodeFlags = *slotNodeFlags | 0x20;
       }
       recordCursor = (RomAssetRecordPrefix *)&recordCursor[0x2a].recordId;
@@ -447,7 +447,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
       if ((recordCursor != (RomAssetRecordPrefix *)0x0) &&
          ((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, activeRecordResult.valueOrError == recordCursor
           || (((&((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[1].rootNodeOffsetOrPointer)[recordCursor->recordId >> 5] &
-              1 << ((byte)recordCursor->recordId & 0x1f)) != 0)))) {
+              1 << ((uint8_t)recordCursor->recordId & 0x1f)) != 0)))) {
         nodeFlags = &rootNode->runtimeFlags;
         *nodeFlags = *nodeFlags & 0xffffffbf;
         entryIndex = 0;
@@ -503,7 +503,7 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
   WorldRuntimeNode *rootNode;
   RomRecordTableIndex entryIndex;
   int slotsRemaining;
-  uint maskWordIndex;
+  uint32_t maskWordIndex;
   RomRecordId descriptorsRemaining;
   RomRegistrySlot *slotCursor;
   RomRecordLookupEaxCf5 recordLookup;
@@ -531,7 +531,7 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
          (((nodeFlags = &rootNode->runtimeFlags, *nodeFlags = *nodeFlags | 0x40, record == recordLookup.recordOrError
            || (record == g_FrontendActiveRomRecordTable)) ||
           (maskWordIndex = record->recordId >> 5,
-          (1 << ((byte)record->recordId & 0x1f) &
+          (1 << ((uint8_t)record->recordId & 0x1f) &
           ((&recordLookup.recordOrError[1].rootNodeOffsetOrPointer)[maskWordIndex] |
           (&((RomAssetRecordPrefix *)(uintptr_t)g_FrontendActiveRomRecordTable)[1].rootNodeOffsetOrPointer)[maskWordIndex])) != 0)))) {
         nodeFlags = &rootNode->runtimeFlags;
@@ -567,12 +567,12 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
 
 {
   int *unusedCounter;
-  dword rootNodeOffset;
+  uint32_t rootNodeOffset;
   RomAssetHeader *asset;
   SpriteAssetHeader *existingSprite;
   int slotsRemaining;
   RomRegistrySlot *slotCursor;
-  byte *rootSerializedNode;
+  uint8_t *rootSerializedNode;
   bool unusedFlag;
   StatusValueEaxCf5 failureResult;
   PackageLoadEntryEaxCf5 loadResult;
@@ -587,11 +587,11 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
       slotCursor->record = record;
       if (rootNodeOffset == 0) {
         successResult.carry = false;
-        successResult.valueOrError = (dword)assetBase;
+        successResult.valueOrError = (uint32_t)assetBase;
         return successResult;
       }
       record->rootNodeOffsetOrPointer =
-           (dword)((assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
+           (uint32_t)((assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28
                   + (record->rootNodeOffsetOrPointer - 0x28));
       rootSerializedNode = (assetBase->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                (rootNodeOffset - 0x28);
@@ -600,19 +600,19 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
          (EBX = depth), which Ghidra could only show as unaffected ESI/EBP registers. Child offsets are
          relative to assetBase and are relocated in place while walking. */
       {
-        struct { byte *node; dword nextChild; dword remaining; } frames[64];
+        struct { uint8_t *node; uint32_t nextChild; uint32_t remaining; } frames[64];
         int depth = 0;
-        byte *node = rootSerializedNode;
+        uint8_t *node = rootSerializedNode;
         for (;;) {
-          WidePath_SetExtensionCode(0x727073,(word *)(node + 0x34)); /* ".spr"; never sets CF */
-          loadResult = Package_LoadEntry((word *)(node + 0x34));
+          WidePath_SetExtensionCode(0x727073,(uint16_t *)(node + 0x34)); /* ".spr"; never sets CF */
+          loadResult = Package_LoadEntry((uint16_t *)(node + 0x34));
           if (loadResult.carry) {
             failureResult.carry = true;
-            failureResult.valueOrError = (dword)loadResult.bufferOrError;
+            failureResult.valueOrError = (uint32_t)loadResult.bufferOrError;
             return failureResult;
           }
           asset = loadResult.bufferOrError;
-          existingSprite = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((byte *)asset + 0xb8));
+          existingSprite = SpriteAssetRegistry_FindById(*(SpriteAssetId *)((uint8_t *)asset + 0xb8));
           if (existingSprite != (SpriteAssetHeader *)0x0) {
             *(SpriteAssetHeader **)(node + 0x2c) = existingSprite;
             Resource_Release(asset);
@@ -623,28 +623,28 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
             registerResult = SpriteAsset_RegisterAndRelocatePointers((SpriteAssetHeader *)asset);
             if (registerResult.carry) {
               failureResult.carry = true;
-              failureResult.valueOrError = (dword)registerResult.assetOrError;
+              failureResult.valueOrError = (uint32_t)registerResult.assetOrError;
               return failureResult;
             }
           }
           frames[depth].node = node;
           frames[depth].nextChild = 0;
-          frames[depth].remaining = *(dword *)(node + 0x10);
+          frames[depth].remaining = *(uint32_t *)(node + 0x10);
           depth++;
           while (frames[depth - 1].remaining == 0) {
             depth--;
             if (depth == 0) {
               successResult.carry = false;
-              successResult.valueOrError = (dword)assetBase;
+              successResult.valueOrError = (uint32_t)assetBase;
               return successResult;
             }
           }
           {
-            dword *child = (dword *)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild;
-            *child = *child + (dword)assetBase;
+            uint32_t *child = (uint32_t *)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild;
+            *child = *child + (uint32_t)assetBase;
             frames[depth - 1].nextChild++;
             frames[depth - 1].remaining--;
-            node = (byte *)*child;
+            node = (uint8_t *)*child;
           }
         }
       }
@@ -652,10 +652,10 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-  Package_SetLastErrorPath((word *)u_engine_zentrale_rom_00545aa4);
+  Package_SetLastErrorPath((uint16_t *)u_engine_zentrale_rom_00545aa4);
   asset = (RomAssetHeader *)0x3b;
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)asset;
+  failureResult.valueOrError = (uint32_t)asset;
   return failureResult;
 }
 
@@ -681,15 +681,15 @@ RomRuntime_BuildNodeTreeRecursive
   AngleTurn32 rotationAngle2;
   ModelResourceHitTestAndRenderView210 *spriteModelResource;
   Q12 boundingRadius;
-  uint translationY;
-  uint translationZ;
+  uint32_t translationY;
+  uint32_t translationZ;
   GraphicsTextureSet *centralTextureSet;
   ModelRuntimeNode *newNode;
   ModelRuntimeNode *resultOrChildNode;
   ModelPackedLookupTableEntryCount lookupEntriesRemaining;
-  dword childSlotsRemaining;
-  uint childIndex;
-  byte *lookupEntry;
+  uint32_t childSlotsRemaining;
+  uint32_t childIndex;
+  uint8_t *lookupEntry;
   WorldObjectRecordEaxCf5 allocResult;
   ModelNodeCreateEaxCf5 createResult;
   
@@ -717,10 +717,10 @@ RomRuntime_BuildNodeTreeRecursive
   (newNode->modelPayload).worldRotationAngle2 = rotationAngle2;
   (newNode->modelPayload).meshGroupMask = 0xffffffff;
   newNode->runtimeFlags = newNode->runtimeFlags | 1;
-  *(byte *)&newNode->textureSubresourceBaseIndex = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
   newNode->tintArgb = stateTintArgb;
   centralTextureSet = g_FrontendCentralTextureSet;
   spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
@@ -731,7 +731,7 @@ RomRuntime_BuildNodeTreeRecursive
   (newNode->modelPayload).modelResource = spriteModelResource;
   newNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
   newNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
-  newNode->runtimeStateA0 = (dword)&spriteModelResource->firstMeshGroupRelativeOffset;
+  newNode->runtimeStateA0 = (uint32_t)&spriteModelResource->firstMeshGroupRelativeOffset;
   childSlotsRemaining = romNodeRecord->childCount;
   spriteModelResource = (romNodeRecord->spriteAssetReference).modelResource;
   childIndex = 0;
@@ -740,7 +740,7 @@ RomRuntime_BuildNodeTreeRecursive
   for (; childSlotsRemaining != 0; childSlotsRemaining = childSlotsRemaining - 1) {
     lookupEntry = spriteModelResource->reserved00_AF + spriteModelResource->packedLookupTableRelativeOffset;
     for (lookupEntriesRemaining = spriteModelResource->packedLookupTableEntryCount; lookupEntriesRemaining != 0; lookupEntriesRemaining = lookupEntriesRemaining - 1) {
-      if (((*(uint *)lookupEntry & 0xf) == 0) && (childIndex == *(uint *)lookupEntry >> 4)) break;
+      if (((*(uint32_t *)lookupEntry & 0xf) == 0) && (childIndex == *(uint32_t *)lookupEntry >> 4)) break;
       lookupEntry = lookupEntry + 0x10;
     }
     if (lookupEntriesRemaining == 0) {
@@ -757,9 +757,9 @@ RomRuntime_BuildNodeTreeRecursive
     resultOrChildNode = createResult.modelNode;
     newNode->childNodes[childIndex] = resultOrChildNode;
     resultOrChildNode->parentNode = newNode;
-    translationY = *(uint *)(lookupEntry + 8);
-    translationZ = *(uint *)(lookupEntry + 0xc);
-    (resultOrChildNode->modelPayload).localTranslationXQ12 = *(uint *)(lookupEntry + 4);
+    translationY = *(uint32_t *)(lookupEntry + 8);
+    translationZ = *(uint32_t *)(lookupEntry + 0xc);
+    (resultOrChildNode->modelPayload).localTranslationXQ12 = *(uint32_t *)(lookupEntry + 4);
     (resultOrChildNode->modelPayload).localTranslationYQ12 = translationY;
     (resultOrChildNode->modelPayload).localTranslationZQ12 = translationZ;
     childIndex = childIndex + 1;
@@ -824,7 +824,7 @@ RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId)
     }
   }
   foundResult.carry = false;
-  foundResult.valueOrError = (dword)slotCursor->runtimeRootNode;
+  foundResult.valueOrError = (uint32_t)slotCursor->runtimeRootNode;
   return foundResult;
 }
 
@@ -841,8 +841,8 @@ void __thandor_void_preserve_eax_ecx_edx
 RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordPrefix *record)
 
 {
-  uint descriptorsRemaining;
-  uint *descriptorCursor;
+  uint32_t descriptorsRemaining;
+  uint32_t *descriptorCursor;
   PackedRgb24 *descriptorColorPair;
   int modelRuntimeNodeBaseAddress;
   
@@ -850,8 +850,8 @@ RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordP
     modelRuntimeNodeBaseAddress = *(int *)(record->rootNodeOffsetOrPointer + 0x2c);
     descriptorColorPair = (PackedRgb24 *)(entryIndex * 0x10 + 0x50 + (int)record);
     descriptorCursor =
-         (uint *)(modelRuntimeNodeBaseAddress + *(int *)(modelRuntimeNodeBaseAddress + 0xe4));
-    for (descriptorsRemaining = *(uint *)(modelRuntimeNodeBaseAddress + 0xe8);
+         (uint32_t *)(modelRuntimeNodeBaseAddress + *(int *)(modelRuntimeNodeBaseAddress + 0xe4));
+    for (descriptorsRemaining = *(uint32_t *)(modelRuntimeNodeBaseAddress + 0xe8);
         descriptorsRemaining != 0; descriptorsRemaining = descriptorsRemaining - 1) {
       if (((*descriptorCursor & 0xf) == 4) && (*descriptorCursor >> 4 == (entryIndex & 0xfffffff)))
       {

@@ -32,14 +32,14 @@ ShotDefinition_ComputeLaunchAnglesRegs
           ShotDefinition *definition);
 
 /* 0x0052BCE0 */
-dword ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
+uint32_t ShotDefinition_ComputeSelectionRange(ShotDefinition *definition);
 
 /* 0x0052BD50 */
 ShotModeRangeLimitEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
 ShotDefinition_GetModeRangeLimitEbx(ShotDefinition *definition);
 
 /* 0x0052BD80 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition);
 
 /* 0x0052B350 */

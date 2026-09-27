@@ -32,22 +32,22 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeClass21UpdateView200 *modelRuntime)
 
 {
-  dword *stateField;
+  uint32_t *stateField;
   GraphicsFixedVec3 *translationVec;
   GraphicsWorldCoordinateQ12 *translationY;
   ModelRuntimeArmyLinkOrState4 *armyLinkState;
   ArmyRuntimeClassUpdate21DefinitionView27C *currentDefinition;
   ModelRuntimeSlot *armyRuntime;
-  dword durationValue;
+  uint32_t durationValue;
   void *modelPointSource;
   ModelRuntimeNode *childNode;
   ModelRuntimeSlot *linkedDefinitionSlot;
   ModelDefinitionRuntimeSemanticView280 *semanticDefinition;
-  longlong product64;
-  dword stateValue;
+  int64_t product64;
+  uint32_t stateValue;
   int stepValue;
   ArmyRuntimeSlot *armySlot2;
-  uint headingOrDelta;
+  uint32_t headingOrDelta;
   int maxTerrainHeight;
   int sampleCoord;
   Q12 childHeightZ;
@@ -101,19 +101,19 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
     break;
   case 2:
     stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (longlong)(int)stateValue * (longlong)(int)stateValue;
+    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
     modelNode1 = modelNode1->childNodes[0];
-    product64 = (longlong)(int)(currentDefinition->arcCoefficient14 * g_InGameSimulationStepTicks) *
-             (longlong)(int)((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc);
+    product64 = (int64_t)(int)(currentDefinition->arcCoefficient14 * g_InGameSimulationStepTicks) *
+             (int64_t)(int)((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc);
     (modelNode1->modelPayload).localRotationAngle0 = 0x8000;
     stateValue = (modelRuntime->classLinkState).classState7C;
     (modelNode1->modelPayload).localTranslationZQ12 =
-         ((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc) +
+         ((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc) +
          (modelRuntime->classLinkState).classState80;
-    product64 = (longlong)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (longlong)currentDefinition->arcCoefficient14;
+    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
+             (int64_t)currentDefinition->arcCoefficient14;
     stateValue = FixedMath_Atan2Angle16
-                       ((int)((ulonglong)product64 >> 0x20) << 0x15 | (uint)product64 >> 0xb,0x1000);
+                       ((int)((uint64_t)product64 >> 0x20) << 0x15 | (uint32_t)product64 >> 0xb,0x1000);
     stepValue = currentDefinition->movementStepQ12_0C * g_InGameSimulationStepTicks;
     stateField = &(modelRuntime->classLinkState).classState7C;
     *stateField = *stateField + stepValue;
@@ -132,9 +132,9 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
       linkedDefinitionSlot = (ModelRuntimeSlot *)(armyRuntime->definitionOrSavedId).savedIdOrOffset;
       (armyRuntime->classState).classStateB0 = 4;
       ArmyRuntimeSpawner_PlayCreationSound((ArmyRuntimeSlot *)armyRuntime,worldRuntime);
-      stepValue = (int)(((longlong)(int)armyRuntime->definitionValue60_3C *
-                     (longlong)currentDefinition->healthOrScaleQ12_60) /
-                    (longlong)(linkedDefinitionSlot->classLinkState).modelLinkOrState60.signedScalarState);
+      stepValue = (int)(((int64_t)(int)armyRuntime->definitionValue60_3C *
+                     (int64_t)currentDefinition->healthOrScaleQ12_60) /
+                    (int64_t)(linkedDefinitionSlot->classLinkState).modelLinkOrState60.signedScalarState);
       headingOrDelta = stepValue - modelRuntime->definitionValue60_3C;
       if (headingOrDelta != 0 && (int)modelRuntime->definitionValue60_3C <= stepValue) {
         ArmyRuntime_ApplyDamageAndPropagateToParent(headingOrDelta >> 1,(ArmyRuntimeSlot *)armyRuntime);
@@ -143,19 +143,19 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
     break;
   case 3:
     stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (longlong)(int)stateValue * (longlong)(int)stateValue;
+    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
     modelNode1 = modelNode1->childNodes[0];
-    product64 = (longlong)(int)(currentDefinition->arcCoefficient14 * g_InGameSimulationStepTicks) *
-             (longlong)(int)((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc);
+    product64 = (int64_t)(int)(currentDefinition->arcCoefficient14 * g_InGameSimulationStepTicks) *
+             (int64_t)(int)((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc);
     (modelNode1->modelPayload).localRotationAngle0 = 0x8000;
     stateValue = (modelRuntime->classLinkState).classState7C;
     (modelNode1->modelPayload).localTranslationZQ12 =
-         ((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc) +
+         ((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc) +
          (modelRuntime->classLinkState).classState80;
-    product64 = (longlong)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (longlong)currentDefinition->arcCoefficient14;
+    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
+             (int64_t)currentDefinition->arcCoefficient14;
     stateValue = FixedMath_Atan2Angle16
-                       ((int)((ulonglong)product64 >> 0x20) << 0x15 | (uint)product64 >> 0xb,0x1000);
+                       ((int)((uint64_t)product64 >> 0x20) << 0x15 | (uint32_t)product64 >> 0xb,0x1000);
     stepValue = currentDefinition->movementStepQ12_0C * g_InGameSimulationStepTicks;
     stateField = &(modelRuntime->classLinkState).classState7C;
     *stateField = *stateField + stepValue;
@@ -232,20 +232,20 @@ ArmyRuntimeClassUpdateSlot21_DispatchByClassId
                         (modelNode1->worldTransform).translation.x,worldRuntime->fieldGrid);
     classUpdate21Definition = modelRuntime->modelDefinition;
     stateValue = (modelRuntime->classLinkState).classState7C;
-    product64 = (longlong)(int)stateValue * (longlong)(int)stateValue;
+    product64 = (int64_t)(int)stateValue * (int64_t)(int)stateValue;
     modelNode1 = modelNode1->childNodes[0];
-    product64 = (longlong)
+    product64 = (int64_t)
              (int)(classUpdate21Definition->verticalArcCoefficientCC * g_InGameSimulationStepTicks)
-             * (longlong)(int)((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc);
+             * (int64_t)(int)((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc);
     (modelNode1->modelPayload).localRotationAngle0 = 0x8000;
     stateValue = (modelRuntime->classLinkState).classState7C;
     (modelNode1->modelPayload).localTranslationZQ12 =
-         (((int)((ulonglong)product64 >> 0x20) << 0x14 | (uint)product64 >> 0xc) +
+         (((int)((uint64_t)product64 >> 0x20) << 0x14 | (uint32_t)product64 >> 0xc) +
          (modelRuntime->class21State84).trajectoryTerrainReferenceHeightQ12_84) - terrainHeight.heightQ12;
-    product64 = (longlong)(int)(stateValue * g_InGameSimulationStepTicks) *
-             (longlong)classUpdate21Definition->verticalArcCoefficientCC;
+    product64 = (int64_t)(int)(stateValue * g_InGameSimulationStepTicks) *
+             (int64_t)classUpdate21Definition->verticalArcCoefficientCC;
     stateValue = FixedMath_Atan2Angle16
-                       ((int)((ulonglong)product64 >> 0x20) << 0x15 | (uint)product64 >> 0xb,0x1000);
+                       ((int)((uint64_t)product64 >> 0x20) << 0x15 | (uint32_t)product64 >> 0xb,0x1000);
     stateField = &(modelRuntime->classLinkState).classState7C;
     *stateField = *stateField + classUpdate21Definition->movementStepQ12_0C * g_InGameSimulationStepTicks;
     (modelNode1->modelPayload).localRotationAngle1 = 0x4000 - stateValue & 0xffff;
@@ -451,13 +451,13 @@ ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode
 {
   FactionArmyAssetCount *assetCountField;
   FactionRelationCounter *relationCounter;
-  byte *pendingSpawnCount;
+  uint8_t *pendingSpawnCount;
   Q12 *childTranslationZ;
   int *ownerPayload;
-  dword candidateAsset;
-  dword selectedAssetValue;
+  uint32_t candidateAsset;
+  uint32_t selectedAssetValue;
   int factionIndexOrLimit;
-  uint completedAssetValue;
+  uint32_t completedAssetValue;
   PckArmyAssetIdCatalog secondaryAssetId;
   ModelRuntimeNode *modelNodeRuntime;
   DirectSoundVoiceSet **soundVoiceSet;
@@ -468,9 +468,9 @@ ArmyRuntimeClass_UpdateLinkedModelFlagsAndDispatchTerrainContactMode
   FactionArmyAssetCount remainingAssetCount;
   int linkedChildReverseSlotIndex;
   int reverseSlotIndex;
-  uint tickOrSoundIndex;
+  uint32_t tickOrSoundIndex;
   WorldRuntimeNode *ownerNodeCursor;
-  dword *dwordCursor;
+  uint32_t *dwordCursor;
   bool testResult;
   ArmyRegistryEaxCf5_51b6d0 assetLookup;
   ModelDefinitionLookupEaxCf5 definitionLookup;
@@ -514,13 +514,13 @@ ArmyRuntimeClass_SelectAffordableSecondaryArmyAssetLoop:
                     // ECX,[EDX+0x50F340]; ECX is the +0x28 secondary Army Xenite cost and memory is
                     // faction xeniteCurrentQ4. Both are scalar resource values; pointer casts are
                     // presentation-only.
-          if (((*(uint *)(candidateAsset + 0x14) & 8) == 0) ||
-             (g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 < *(uint *)(candidateAsset + 0x28)))
+          if (((*(uint32_t *)(candidateAsset + 0x14) & 8) == 0) ||
+             (g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 < *(uint32_t *)(candidateAsset + 0x28)))
           goto ArmyRuntimeClass_AdvanceSecondaryArmyAssetCandidate;
           g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 =
-               g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 - *(uint *)(candidateAsset + 0x28);
-          tickOrSoundIndex = *(uint *)(candidateAsset + 0x24);
-          selectedAssetValue = *(dword *)(candidateAsset + 0x2c);
+               g_GameFactionRuntimeImage.records[factionIndexOrLimit].xeniteCurrentQ4 - *(uint32_t *)(candidateAsset + 0x28);
+          tickOrSoundIndex = *(uint32_t *)(candidateAsset + 0x24);
+          selectedAssetValue = *(uint32_t *)(candidateAsset + 0x2c);
           if ((g_UiCommandRuntimeFlags & 0x100000) != 0) {
             tickOrSoundIndex = (tickOrSoundIndex >> 4) + 1;
           }
@@ -631,7 +631,7 @@ ArmyRuntimeClass_DispatchLinkedChildSpawnAndDamageEffectState:
       modelRuntime->linkedChildTransitionStateB0 = 2;
       tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex270;
       if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-         (worldRuntime->dwordArray != (dword *)0x0)) {
+         (worldRuntime->dwordArray != (uint32_t *)0x0)) {
         soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
         if ((soundVoiceSet != (DirectSoundVoiceSet **)0x0) &&
            (testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -672,7 +672,7 @@ ArmyRuntimeClass_DispatchLinkedChildSpawnAndDamageEffectState:
     if (modelRuntime->linkedChildTransitionStateB0 == 5) {
       tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex26C;
       if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-         (worldRuntime->dwordArray != (dword *)0x0)) {
+         (worldRuntime->dwordArray != (uint32_t *)0x0)) {
         soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
         if ((soundVoiceSet != (DirectSoundVoiceSet **)0x0) &&
            (testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -715,7 +715,7 @@ ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect:
           modelRuntime->linkedChildTransitionStateB0 = 1;
           tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex26C;
           if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != (dword *)0x0)) {
+             (worldRuntime->dwordArray != (uint32_t *)0x0)) {
             soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
             if ((soundVoiceSet != (DirectSoundVoiceSet **)0x0) &&
                (testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -743,7 +743,7 @@ ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect:
           modelRuntime->linkedChildTransitionStateB0 = 1;
           tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex26C;
           if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != (dword *)0x0)) {
+             (worldRuntime->dwordArray != (uint32_t *)0x0)) {
             soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
             if ((soundVoiceSet != (DirectSoundVoiceSet **)0x0) &&
                (testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -771,7 +771,7 @@ ArmyRuntimeClass_ProcessPendingLinkedChildSpawnsAndDamageEffect:
           modelRuntime->linkedChildTransitionStateB0 = 1;
           tickOrSoundIndex = linkedChildDefinition->linkedChildTransitionSoundAssetIndex26C;
           if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-             (worldRuntime->dwordArray != (dword *)0x0)) {
+             (worldRuntime->dwordArray != (uint32_t *)0x0)) {
             soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[tickOrSoundIndex];
             if ((soundVoiceSet != (DirectSoundVoiceSet **)0x0) &&
                (testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -816,9 +816,9 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
-  byte *reservedFlags;
+  uint8_t *reservedFlags;
   FactionRelationCounter *relationCounter;
-  dword *derivedValue;
+  uint32_t *derivedValue;
   FactionArmyAssetCount *assetCountField;
   ModelRuntimeNode *rootNode;
   ModelDefinitionRuntimeSemanticView280 *semanticDefinition;
@@ -829,16 +829,16 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
   int nodeHeading;
   DirectSoundVoiceSet **soundVoiceSet;
   ModelRuntimeSlotLinkOrState4 selectedAssetLink;
-  dword stateValue;
+  uint32_t stateValue;
   ArmyRuntimeSlot *armySlot1;
   Q12 targetWorldXQ12;
-  dword secondaryValue;
+  uint32_t secondaryValue;
   Q12 worldXQ12;
   GraphicsFixedVec3 *translationVec;
   FactionArmyAssetCount remainingAssetCount;
   Q12 worldYQ12;
-  uint tickOrSoundIndex;
-  dword *dwordCursor;
+  uint32_t tickOrSoundIndex;
+  uint32_t *dwordCursor;
   bool cellMasked;
   ModelLookupEntryEaxCf5 lookupEntry;
   ArmyRuntimeCreateEaxCf5 createResult;
@@ -847,14 +847,14 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
   ArmyRuntimeSlot *entityRuntime1;
   
   rootNode = modelRuntime->rootModelNode;
-  if ((*(uint *)(modelRuntime->classState).reservedBC_BF & 1) != 0) {
+  if ((*(uint32_t *)(modelRuntime->classState).reservedBC_BF & 1) != 0) {
     lookupEntry = ModelLookupTable_ContainsPackedKeyCf(1,5,(rootNode->modelPayload).modelResource);
     if (!lookupEntry.carry) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,rootNode);
       (modelRuntime->classLinkState).classState78 = localPoint.eax;
       (modelRuntime->classLinkState).classState7C = localPoint.ecx;
       reservedFlags = (modelRuntime->classState).reservedBC_BF;
-      *(uint *)reservedFlags = *(uint *)reservedFlags & 0xfffffffe;
+      *(uint32_t *)reservedFlags = *(uint32_t *)reservedFlags & 0xfffffffe;
     }
   }
   stateValue = (modelRuntime->classState).classStateB8;
@@ -873,15 +873,15 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
         dwordCursor = g_GameFactionRuntimeImage.records[factionOrNodeValue].secondaryArmyAssetPointersOrIds;
         if (remainingAssetCount != 0) {
           do {
-            if (((*(uint *)(*dwordCursor + 0x14) &
-                 *(uint *)(modelRuntime->modelDefinition->reserved0C0_0DB + 4)) != 0) &&
-               (tickOrSoundIndex = *(uint *)(*dwordCursor + 0x28),
+            if (((*(uint32_t *)(*dwordCursor + 0x14) &
+                 *(uint32_t *)(modelRuntime->modelDefinition->reserved0C0_0DB + 4)) != 0) &&
+               (tickOrSoundIndex = *(uint32_t *)(*dwordCursor + 0x28),
                tickOrSoundIndex <= g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4)) {
               stateValue = *dwordCursor;
               g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4 =
                    g_GameFactionRuntimeImage.records[factionOrNodeValue].xeniteCurrentQ4 - tickOrSoundIndex;
-              tickOrSoundIndex = *(uint *)(stateValue + 0x24);
-              secondaryValue = *(dword *)(stateValue + 0x2c);
+              tickOrSoundIndex = *(uint32_t *)(stateValue + 0x24);
+              secondaryValue = *(uint32_t *)(stateValue + 0x2c);
               if ((g_UiCommandRuntimeFlags & 0x100000) != 0) {
                 tickOrSoundIndex = (tickOrSoundIndex >> 4) + 1;
               }
@@ -944,9 +944,9 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
               *relationCounter = *relationCounter + 1;
               semanticDefinition = modelRuntime->modelDefinition;
               armySlot1->movementStateFlags = armySlot1->movementStateFlags | 0x402;
-              tickOrSoundIndex = *(uint *)semanticDefinition->reserved26C_277;
+              tickOrSoundIndex = *(uint32_t *)semanticDefinition->reserved26C_277;
               if (((tickOrSoundIndex != 0) && (tickOrSoundIndex < worldRuntime->dwordArrayCount)) &&
-                 (worldRuntime->dwordArray != (dword *)0x0)) {
+                 (worldRuntime->dwordArray != (uint32_t *)0x0)) {
                 rootNode = modelRuntime->rootModelNode;
                 soundVoiceSet = *(DirectSoundVoiceSet ***)
                             ((rootNode->modelPayload).reserved2C_33 + tickOrSoundIndex * 4 + -0x38);
@@ -1023,9 +1023,9 @@ ArmyRuntimeClassUpdateSlot13_PrepareModelAndDispatchByClassId
       semanticDefinition = modelRuntime->modelDefinition;
       (modelRuntime->classState).classStateB8 = 4;
       (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime = (ArmyRuntimeSlot *)0x0;
-      tickOrSoundIndex = *(uint *)semanticDefinition->reserved26C_277;
+      tickOrSoundIndex = *(uint32_t *)semanticDefinition->reserved26C_277;
       if ((tickOrSoundIndex != 0) &&
-         ((tickOrSoundIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
+         ((tickOrSoundIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (uint32_t *)0x0)))) {
         rootNode = modelRuntime->rootModelNode;
         soundVoiceSet = *(DirectSoundVoiceSet ***)
                     ((rootNode->modelPayload).reserved2C_33 + tickOrSoundIndex * 4 + -0x38);
@@ -1077,18 +1077,18 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
-  dword *derivedValue;
+  uint32_t *derivedValue;
   FactionArmyAssetCount *assetCountField;
-  dword assetEnergyValue;
+  uint32_t assetEnergyValue;
   ModelRuntimeSlotLinkOrState4 selectedAssetLink;
   int factionIndex;
-  dword candidateValue;
+  uint32_t candidateValue;
   int activeFactionIndex;
   AngleTurn32 headingAngle;
   ModelDefinitionRecordPrefix *modelDefinition1;
   FactionArmyAssetCount remainingAssetCount;
-  uint tickOrCount;
-  dword *dwordCursor;
+  uint32_t tickOrCount;
+  uint32_t *dwordCursor;
   ArmyRegistryEaxCf5_51b6d0 assetLookup;
   ModelDefinitionLookupEaxCf5 definitionLookup;
   PckModelDefinitionIdCatalog notificationMovieId;
@@ -1105,13 +1105,13 @@ ArmyRuntimeClassUpdateSlot11_DispatchByClassId
         for (remainingAssetCount = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount; remainingAssetCount != 0;
             remainingAssetCount = remainingAssetCount - 1) {
           candidateValue = *dwordCursor;
-          if (((*(uint *)(candidateValue + 0x14) & 0x10) != 0) &&
-             (*(uint *)(candidateValue + 0x28) <= g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4))
+          if (((*(uint32_t *)(candidateValue + 0x14) & 0x10) != 0) &&
+             (*(uint32_t *)(candidateValue + 0x28) <= g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4))
           {
             g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
-                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - *(uint *)(candidateValue + 0x28);
-            tickOrCount = *(uint *)(candidateValue + 0x24);
-            assetEnergyValue = *(dword *)(candidateValue + 0x2c);
+                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 - *(uint32_t *)(candidateValue + 0x28);
+            tickOrCount = *(uint32_t *)(candidateValue + 0x24);
+            assetEnergyValue = *(uint32_t *)(candidateValue + 0x2c);
             if ((g_UiCommandRuntimeFlags & 0x100000) != 0) {
               tickOrCount = (tickOrCount >> 4) + 1;
             }
@@ -1229,11 +1229,11 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
     if ((0 < cellColumnOrIndex) && (0 < cellRow)) {
       if ((cellColumnOrIndex + 1 < (int)fieldGrid1->gridWidth) && (cellRow + 1 < (int)fieldGrid1->gridHeight)) {
         cellColumnOrIndex = cellRow * fieldGrid1->gridWidth + cellColumnOrIndex;
-        supportFlagMask = 0x800 << ((byte)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f
+        supportFlagMask = 0x800 << ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f
                          );
         fieldGrid1->cells[cellColumnOrIndex].resourceExtractionDescriptor7C =
              modelRuntime->ownerArmyRuntime->factionIndex << 0xd | supportFlagMask |
-             *(int *)((byte *)modelRuntime->modelDefinition + 0xc8) << 0x18;
+             *(int *)((uint8_t *)modelRuntime->modelDefinition + 0xc8) << 0x18;
         if ((fieldGrid1->cells[cellColumnOrIndex].flagsAndMaterial & supportFlagMask) != 0) {
           fieldGrid1->cells[cellColumnOrIndex].armyRuntimeSavedOffset6C =
                (int)modelRuntime - g_ModelRuntimeRebaseDelta;
@@ -1267,10 +1267,10 @@ ArmyRuntime_ClassCommandHandlerGroupACf
 {
   ModelRuntimeNode *referenceNode;
   ArmyRuntimeSlot *candidateArmy;
-  longlong deltaYSquared;
-  longlong remainingRadiusSquared;
-  dword angleOrRadius;
-  byte *proximityRadius;
+  int64_t deltaYSquared;
+  int64_t remainingRadiusSquared;
+  uint32_t angleOrRadius;
+  uint8_t *proximityRadius;
   int axisDelta;
   ModelRuntimeNode *modelNode1;
   bool proximityHit;
@@ -1331,13 +1331,13 @@ ArmyRuntime_ClassCommandHandlerGroupACf
         proximityRadius = ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->attachments140[3].
                   parentModelNodeOrSavedOffset08)->modelPayload).reserved2C_33 + (angleOrRadius - 0x38);
         axisDelta = (referenceNode->worldTransform).translation.x - (modelNode1->worldTransform).translation.x;
-        remainingRadiusSquared = (longlong)(int)proximityRadius * (longlong)(int)proximityRadius - (longlong)axisDelta * (longlong)axisDelta;
+        remainingRadiusSquared = (int64_t)(int)proximityRadius * (int64_t)(int)proximityRadius - (int64_t)axisDelta * (int64_t)axisDelta;
         if ((-1 < remainingRadiusSquared) &&
            (axisDelta = (referenceNode->worldTransform).translation.y -
                     (modelNode1->worldTransform).translation.y,
-           deltaYSquared = (longlong)axisDelta * (longlong)axisDelta,
-           -1 < (int)(((int)((ulonglong)remainingRadiusSquared >> 0x20) - (int)((ulonglong)deltaYSquared >> 0x20)) -
-                     (uint)((uint)remainingRadiusSquared < (uint)deltaYSquared)))) {
+           deltaYSquared = (int64_t)axisDelta * (int64_t)axisDelta,
+           -1 < (int)(((int)((uint64_t)remainingRadiusSquared >> 0x20) - (int)((uint64_t)deltaYSquared >> 0x20)) -
+                     (uint32_t)((uint32_t)remainingRadiusSquared < (uint32_t)deltaYSquared)))) {
           candidateArmy = (modelNode1->runtimePayload).armyRuntime;
           nextNearbyCount = nearbyCount + 1;
           if ((((candidateArmy->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0x12) &&
@@ -1468,11 +1468,11 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
    [assets/resource/runtime].
 */
 ArmyRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePath)
+ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBasePath)
 
 {
-  word pathChar;
-  uint factionGraphicsVariant;
+  uint16_t pathChar;
+  uint32_t factionGraphicsVariant;
   ArmyAssetRecordPrefix *armyAsset;
   ArmyRuntimeSlot *armySlot1;
   GraphicsPaletteAsset *paletteOrResult;
@@ -1484,8 +1484,8 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
   bool loadFactionGraphics;
   int frontendPlayerRuntimeId;
   ArmyAssetRecordPrefix **registryCursor;
-  word *pathCursor;
-  word *pathEnd;
+  uint16_t *pathCursor;
+  uint16_t *pathEnd;
   ArenaAllocEaxCf5 allocResult;
   PackageLoadEntryEaxCf5 packageResult;
   GraphicsTextureSetEaxCf5 textureSetResult;
@@ -1526,7 +1526,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
         paletteOrResult = (GraphicsPaletteAsset *)(frontendPlayerRuntimeId * 0x740);
         MoviePlayback_AdvanceScheduledFrameAndTick();
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frontendPlayerRuntimeId] != 0) {
-          factionGraphicsVariant = *(uint *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
+          factionGraphicsVariant = *(uint32_t *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
           g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + -1;
           if (factionGraphicsVariant < 10) {
             factionSuffixChar = factionGraphicsVariant + 0x30;
@@ -1554,7 +1554,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
           UNLOCK();
           Resource_Release(textureSourceAsset);
           initResult.carry = true;
-          initResult.errorOrValue = (dword)loadedTextureSet;
+          initResult.errorOrValue = (uint32_t)loadedTextureSet;
           return initResult;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -1586,10 +1586,10 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
                             ownerContext);
         paletteOrResult = (GraphicsPaletteAsset *)previewResult.previewTexture;
         if (!previewResult.carry) {
-          armyAsset[1].rootNodeOffsetOrPointer = (dword)paletteOrResult;
+          armyAsset[1].rootNodeOffsetOrPointer = (uint32_t)paletteOrResult;
           previewHeight =
                (GraphicsPixelDimension)
-               ((ulonglong)(longlong)g_InGamePanelTextureSubresource02Width / 3);
+               ((uint64_t)(int64_t)g_InGamePanelTextureSubresource02Width / 3);
           previewResult = ArmyRuntime_RenderPreviewTextureCf
                              (previewHeight,previewHeight,
                               *(FactionRuntimeIndex *)((int)ownerContext + 0x50),armyAsset->registryId,
@@ -1604,7 +1604,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
     allocResult.carry = false;
-    allocResult.eax = (dword)paletteOrResult;
+    allocResult.eax = (uint32_t)paletteOrResult;
   }
   finalResult.errorOrValue = allocResult.eax;
   finalResult.carry = allocResult.carry;
@@ -1793,14 +1793,14 @@ ArmyRuntime_ResolveShotAimPointCf
 {
   int *targetDefinitionRecord;
   int targetClassRecord;
-  longlong deltaYSquared;
-  longlong remainingRangeSquared;
-  uint visibilityMask;
-  dword distanceOrAngle;
+  int64_t deltaYSquared;
+  int64_t remainingRangeSquared;
+  uint32_t visibilityMask;
+  uint32_t distanceOrAngle;
   int leadDistance;
   int definitionOrDelta;
   int aimWorldX;
-  dword directionY;
+  uint32_t directionY;
   int aimWorldY;
   int aimWorldZ;
   ModelRuntimeNode *modelNode1;
@@ -1827,9 +1827,9 @@ ArmyRuntime_ResolveShotAimPointCf
   else {
     entityRuntime1 = (targetState->common).commandTarget.targetEntity;
     if (entityRuntime1 != (GameEntityRuntime *)0x0) {
-      visibilityMask = 2u << ((byte)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
+      visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
       modelNode1 = (entityRuntime1->common).ownership.modelNode;
-      if ((*(uint *)((entityRuntime1->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
+      if ((*(uint32_t *)((entityRuntime1->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
         if (*(int *)(*(int *)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x4c) == 0x15) {
           modelNode1 = modelNode1->childNodes[0];
         }
@@ -1839,12 +1839,12 @@ ArmyRuntime_ResolveShotAimPointCf
         aimWorldY = (modelNode1->worldTransform).translation.y;
         aimWorldZ = (modelNode1->worldTransform).translation.z + *(int *)(definitionOrDelta + 0x50);
         targetClassRecord = targetDefinitionRecord[2];
-        if ((*(int *)(definitionOrDelta + 0x18) != 0) && ((*(uint *)(targetClassRecord + 0x18) & 4) == 0)) {
+        if ((*(int *)(definitionOrDelta + 0x18) != 0) && ((*(uint32_t *)(targetClassRecord + 0x18) & 4) == 0)) {
           distanceOrAngle = FixedMath_Length3(aimWorldZ - sourceWorldZQ12,aimWorldY - sourceWorldYQ12,
                                     aimWorldX - sourceWorldXQ12);
           rangeLimit = ShotDefinition_GetModeRangeLimitEbx(shotDefinition);
-          leadDistance = (int)(((longlong)(int)distanceOrAngle * (longlong)*(int *)(definitionOrDelta + 0xc)) /
-                       (longlong)rangeLimit.rangeLimitQ12);
+          leadDistance = (int)(((int64_t)(int)distanceOrAngle * (int64_t)*(int *)(definitionOrDelta + 0xc)) /
+                       (int64_t)rangeLimit.rangeLimitQ12);
           distanceOrAngle = ShotDefinition_ComputeMode3LeadAdjustment(shotDefinition);
           leadDistance = leadDistance + distanceOrAngle * *(int *)(definitionOrDelta + 0xc);
           distanceOrAngle = FixedMath_Atan2Angle16
@@ -1857,14 +1857,14 @@ ArmyRuntime_ResolveShotAimPointCf
           definitionOrDelta = (entityRuntime1->common).damageState.trackedCoordinate0Q12;
           if (definitionOrDelta == (entityRuntime1->common).pathCoordinate0Q12) {
             definitionOrDelta = definitionOrDelta - (modelNode1->worldTransform).translation.x;
-            remainingRangeSquared = ((longlong)(int)directionY * (longlong)(int)directionY +
-                    (longlong)(int)distanceOrAngle * (longlong)(int)distanceOrAngle) - (longlong)definitionOrDelta * (longlong)definitionOrDelta
+            remainingRangeSquared = ((int64_t)(int)directionY * (int64_t)(int)directionY +
+                    (int64_t)(int)distanceOrAngle * (int64_t)(int)distanceOrAngle) - (int64_t)definitionOrDelta * (int64_t)definitionOrDelta
             ;
             if (((-1 < remainingRangeSquared) &&
                 (definitionOrDelta = (entityRuntime1->common).damageState.trackedCoordinate1Q12,
                 definitionOrDelta == (entityRuntime1->common).pathCoordinate1Q12)) &&
                (definitionOrDelta = definitionOrDelta - (modelNode1->worldTransform).translation.y,
-               deltaYSquared = (longlong)definitionOrDelta * (longlong)definitionOrDelta,
+               deltaYSquared = (int64_t)definitionOrDelta * (int64_t)definitionOrDelta,
                -1 < remainingRangeSquared - deltaYSquared)) {
               /* The target is standing still within lead range: aim at its path position directly. */
               position.worldXQ12 = (entityRuntime1->common).pathCoordinate0Q12;
@@ -1909,10 +1909,10 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 {
   int armyRecord;
-  uint relationStates;
+  uint32_t relationStates;
   int activeFactionIndex;
-  ulonglong visibilityMask;
-  ulonglong factionMaskByte;
+  uint64_t visibilityMask;
+  uint64_t factionMaskByte;
   Q12 worldXQ12;
   Q12 worldYQ12;
   int occupancyByteOffset;
@@ -1926,7 +1926,7 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
       occupancyByteOffset = *(int *)(armyRecord + 0xc);
       fieldGrid = worldRuntime->fieldGrid;
       relationStates = g_GameFactionRuntimeImage.records[occupancyByteOffset].packedRelationStates;
-      factionMaskByte = (ulonglong)*(uint *)(armyRecord + 0x9c);
+      factionMaskByte = (uint64_t)*(uint32_t *)(armyRecord + 0x9c);
       visibilityMask = 0;
       if ((relationStates & 0x80000000) != 0) {
         visibilityMask = factionMaskByte;
@@ -1960,7 +1960,7 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
                 (visibilityMask << 8,*(FieldGridRadiusUnits *)(armyRecord + 0x44),
                  node->worldZQ12 + *(int *)(armyRecord + 0x48),worldXQ12,worldYQ12,
                  worldRuntime->fieldGrid);
-      if ((relationStates >> ((byte)(activeFactionIndex << 2) & 0x1f) & 8) != 0) {
+      if ((relationStates >> ((uint8_t)(activeFactionIndex << 2) & 0x1f) & 8) != 0) {
         TerrainOccupancyBit2_MarkAroundWorldPoint
                   (*(FieldGridRadiusUnits *)(armyRecord + 0x90),worldXQ12,worldYQ12,occupancyByteOffset,
                    fieldGrid);
@@ -2089,7 +2089,7 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntime_ShutdownPoolAndGraphics(voi
 RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffsetsForSaveRegs(void)
 
 {
-  dword runtimeState98Offset;
+  uint32_t runtimeState98Offset;
   ModelRuntimeSlot *savedModelRuntimeOffset;
   int clearWordsRemaining;
   int slotsRemaining;
@@ -2109,7 +2109,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
       slotsRemaining = slotsRemaining + -1;
       if (slotsRemaining == 0) {
         /* EDX = pool byte size, EAX = pool base. */
-        return (qword)0x48000 << 32 | (dword)g_ArmyRuntimeSlots;
+        return (uint64_t)0x48000 << 32 | (uint32_t)g_ArmyRuntimeSlots;
       }
     }
     savedModelRuntimeOffset = (ModelRuntimeSlot *)
@@ -2130,7 +2130,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
     armySlot2 = armySlot2 + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-  return (qword)0x48000 << 32 | (dword)g_ArmyRuntimeSlots;
+  return (uint64_t)0x48000 << 32 | (uint32_t)g_ArmyRuntimeSlots;
 }
 
 
@@ -2142,7 +2142,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntimePool_RebaseAfterLoad(void)
 
 {
-  dword savedRuntimeState98Offset;
+  uint32_t savedRuntimeState98Offset;
   void *rebasedDefinition;
   int runtimeSlotsRemaining;
   ArmyRuntimeSlot *rebasedCommandTarget;
@@ -2197,7 +2197,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantA
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
-  uint soundSlotIndex;
+  uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
   GraphicsFixedVec3 *worldPosition;
   ModelRuntimeGroundMovementPositionedSoundView200 *soundModelRuntime;
@@ -2213,7 +2213,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantA
   else {
     soundSlotIndex = (soundModelRuntime->positionedSoundClassState84).positionedSoundSlotIndex1D8;
     if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
-       (worldRuntime->dwordArray != (dword *)0x0)) {
+       (worldRuntime->dwordArray != (uint32_t *)0x0)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != (SpatialSoundSlot *)0x0) {
         worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2233,7 +2233,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantA
   }
   soundSlotIndex = (soundModelRuntime->positionedSoundClassState84).positionedSoundSlotIndex0D0;
   if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
-     (worldRuntime->dwordArray != (dword *)0x0)) {
+     (worldRuntime->dwordArray != (uint32_t *)0x0)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2266,18 +2266,18 @@ ArmyRuntimeClass_NoOpUpdate(WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *a
 
 /* Depth-first over a model runtime tree (count +0x0C, children +0x140 + 32*i, null slots skipped):
    the last node whose definition (+0x00) has class value 10 at +0x4C, or null. */
-static byte *ArmyRuntimeClass_FindLastClass10Node(byte *node)
+static uint8_t *ArmyRuntimeClass_FindLastClass10Node(uint8_t *node)
 {
-  byte *found = (byte *)0x0;
+  uint8_t *found = (uint8_t *)0x0;
   int i;
-  if (*(int *)(*(byte **)node + 0x4c) == 10) {
+  if (*(int *)(*(uint8_t **)node + 0x4c) == 10) {
     found = node;
   }
   for (i = 0; i < *(int *)(node + 0xc); i++) {
-    byte *child = *(byte **)(node + 0x140 + i * 0x20);
-    if (child != (byte *)0x0) {
-      byte *match = ArmyRuntimeClass_FindLastClass10Node(child);
-      if (match != (byte *)0x0) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
+    if (child != (uint8_t *)0x0) {
+      uint8_t *match = ArmyRuntimeClass_FindLastClass10Node(child);
+      if (match != (uint8_t *)0x0) {
         found = match;
       }
     }
@@ -2297,8 +2297,8 @@ ArmyRuntimeClass_SelectProjectileTargetNode
           WorldOwnerListNode100 *candidateNode)
 
 {
-  longlong deltaYSquared;
-  longlong remainingRangeSquared;
+  int64_t deltaYSquared;
+  int64_t remainingRangeSquared;
   int deltaX;
   int candidateValue;
   ModelRuntimeSlot *targetModelRuntime;
@@ -2307,18 +2307,18 @@ ArmyRuntimeClass_SelectProjectileTargetNode
     candidateValue = ((modelRuntime->modelDefinition->shotDefinitionReference2C).definition)->
             mode2SelectionRangeQ12;
     deltaX = candidateNode->worldXQ12 - (modelRuntime->rootModelNode->worldTransform).translation.x;
-    remainingRangeSquared = (longlong)candidateValue * (longlong)candidateValue - (longlong)deltaX * (longlong)deltaX;
+    remainingRangeSquared = (int64_t)candidateValue * (int64_t)candidateValue - (int64_t)deltaX * (int64_t)deltaX;
     if ((((-1 < remainingRangeSquared) &&
          (candidateValue = candidateNode->worldYQ12 -
                   (modelRuntime->rootModelNode->worldTransform).translation.y,
-         deltaYSquared = (longlong)candidateValue * (longlong)candidateValue,
-         -1 < (int)(((int)((ulonglong)remainingRangeSquared >> 0x20) - (int)((ulonglong)deltaYSquared >> 0x20)) -
-                   (uint)((uint)remainingRangeSquared < (uint)deltaYSquared)))) &&
+         deltaYSquared = (int64_t)candidateValue * (int64_t)candidateValue,
+         -1 < (int)(((int)((uint64_t)remainingRangeSquared >> 0x20) - (int)((uint64_t)deltaYSquared >> 0x20)) -
+                   (uint32_t)((uint32_t)remainingRangeSquared < (uint32_t)deltaYSquared)))) &&
         (candidateValue = *(int *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
         candidateValue != modelRuntime->ownerArmyRuntime->factionIndex)) && (candidateValue != 0)) {
       /* Rewritten from the assembly (0x00523F09-0x00523F7C): pick the last node, depth-first, whose
          definition has class 10 (+0x4C); the walk kept its frames on the machine stack. */
-      targetModelRuntime = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((byte *)candidateNode->runtimePayload);
+      targetModelRuntime = (ModelRuntimeSlot *)ArmyRuntimeClass_FindLastClass10Node((uint8_t *)candidateNode->runtimePayload);
       if ((targetModelRuntime != (ModelRuntimeSlot *)0x0) && (((targetModelRuntime->classState).classStateEC & 8) == 0)) {
         (modelRuntime->timedTargetLinkState).selectedTargetModelRuntime60 = targetModelRuntime;
       }
@@ -2421,7 +2421,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantB
           ArmyRuntimeGroundMovementPositionedSoundView120 *armyRuntime)
 
 {
-  uint soundSlotIndex;
+  uint32_t soundSlotIndex;
   SpatialSoundSlot *soundSlot;
   GraphicsFixedVec3 *worldPosition;
   ModelRuntimeGroundMovementPositionedSoundView200 *soundModelRuntime;
@@ -2437,7 +2437,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantB
   else {
     soundSlotIndex = (soundModelRuntime->positionedSoundClassState84).positionedSoundSlotIndex1D8;
     if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
-       (worldRuntime->dwordArray != (dword *)0x0)) {
+       (worldRuntime->dwordArray != (uint32_t *)0x0)) {
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != (SpatialSoundSlot *)0x0) {
         worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2454,7 +2454,7 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantB
   }
   soundSlotIndex = (soundModelRuntime->positionedSoundClassState84).positionedSoundSlotIndex0D0;
   if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
-     (worldRuntime->dwordArray != (dword *)0x0)) {
+     (worldRuntime->dwordArray != (uint32_t *)0x0)) {
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2483,9 +2483,9 @@ ArmyRuntime_QueryMetric6CAndDefinitionC4Regs(ArmyRuntimeSlot *armyRuntime)
 {
   ArmyMetric6CDefinitionC4Regs8 metricRegs;
   
-  metricRegs.ecx = *(dword *)(((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
+  metricRegs.ecx = *(uint32_t *)(((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).
                         reservedC4_C7;
-  metricRegs.ebx = (dword)armyRuntime->linkedArmyRuntimeOrSavedOffset;
+  metricRegs.ebx = (uint32_t)armyRuntime->linkedArmyRuntimeOrSavedOffset;
   return metricRegs;
 }
 
@@ -2500,7 +2500,7 @@ ArmyRuntime_AccumulateAttachmentEffectVariantMaskRegs(ArmyRuntimeSlot *armyRunti
 {
   int attachmentAssetId;
   int attachmentEffectSlotsRemaining;
-  uint variantMask;
+  uint32_t variantMask;
   
   variantMask = 0;
   attachmentEffectSlotsRemaining = 0xd;
@@ -2536,7 +2536,7 @@ ArmyRuntime_UpdateLoopingPositionedSound
 {
   GraphicsFixedVec3 *worldPosition;
   ModelRuntimeSlot *linkedModelRuntime;
-  uint soundSlotIndex;
+  uint32_t soundSlotIndex;
   SpatialSoundSlot *slot;
   bool cellMasked;
   
@@ -2544,7 +2544,7 @@ ArmyRuntime_UpdateLoopingPositionedSound
   soundSlotIndex = linkedModelRuntime->attachments140[3].childNodeIndex0C;
   if (((((armyRuntime->runtimeFlags & 1) == 0) && (soundSlotIndex != 0)) &&
       (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
-     ((worldRuntime->dwordArray != (dword *)0x0 &&
+     ((worldRuntime->dwordArray != (uint32_t *)0x0 &&
       (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex], slot != (SpatialSoundSlot *)0x0))
      )) {
     worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2576,11 +2576,11 @@ ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
           (WorldRuntimeContext *worldRuntime,ModelRuntimeVerticalDeploymentView200 *modelRuntime)
 
 {
-  dword *classStateField;
+  uint32_t *classStateField;
   Q12 *childTranslationZ;
   ModelDefinitionVerticalDeploymentView280 *deploymentDefinition;
   ArmyRuntimeSlot *armyRuntime;
-  uint soundAssetIndex;
+  uint32_t soundAssetIndex;
   DirectSoundVoiceSet **soundVoiceSet;
   int travelLimitOrStep;
   bool testResult;
@@ -2595,7 +2595,7 @@ ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
       if ((modelRuntime->deploymentState60).deploymentTravelQ12_60 <= travelLimitOrStep) {
         soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex26C;
         if (((soundAssetIndex != 0) && (soundAssetIndex < worldRuntime->dwordArrayCount)) &&
-           (worldRuntime->dwordArray != (dword *)0x0)) {
+           (worldRuntime->dwordArray != (uint32_t *)0x0)) {
           soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
           if (soundVoiceSet != (DirectSoundVoiceSet **)0x0) {
             testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -2652,7 +2652,7 @@ ArmyRuntimeClass_UpdateVerticalDeploymentAndCollisionState
       if ((modelRuntime->deploymentState60).deploymentTravelQ12_60 == 0) {
         soundAssetIndex = deploymentDefinition->deploymentSoundAssetIndex26C;
         if (((soundAssetIndex != 0) && (soundAssetIndex < worldRuntime->dwordArrayCount)) &&
-           (worldRuntime->dwordArray != (dword *)0x0)) {
+           (worldRuntime->dwordArray != (uint32_t *)0x0)) {
           soundVoiceSet = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
           if (soundVoiceSet != (DirectSoundVoiceSet **)0x0) {
             testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -2749,8 +2749,8 @@ ArmyRuntime_UpdateActivationMetricAndPlayStartSound
   ModelRuntimeSlot *linkedModelRuntime;
   AngleTurn32 rotationAngle1;
   DirectSoundVoiceSet **voiceSetRef;
-  uint angleOrAdvance;
-  uint advanceOrSoundIndex;
+  uint32_t angleOrAdvance;
+  uint32_t advanceOrSoundIndex;
   bool cellMasked;
   ModelRuntimeNode *modelNode1;
   
@@ -2776,9 +2776,9 @@ ArmyRuntime_UpdateActivationMetricAndPlayStartSound
   (armyRuntime->movementControl).movementAdvancePerTickQ12 = advanceOrSoundIndex;
   UNLOCK();
   if ((previousAdvance == 0) && (advanceOrSoundIndex != 0)) {
-    advanceOrSoundIndex = *(uint *)(linkedModelRuntime->classState).reservedD4_DB;
+    advanceOrSoundIndex = *(uint32_t *)(linkedModelRuntime->classState).reservedD4_DB;
     if ((advanceOrSoundIndex != 0) &&
-       ((advanceOrSoundIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
+       ((advanceOrSoundIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (uint32_t *)0x0)))) {
       voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[advanceOrSoundIndex];
       worldPosition = &(modelNode1->worldTransform).translation;
       if (voiceSetRef != (DirectSoundVoiceSet **)0x0) {
@@ -2814,7 +2814,7 @@ ArmyRuntime_HandleCollisionPartner
 
 {
   Q12 *fallbackPositionField;
-  dword impactAngle;
+  uint32_t impactAngle;
   
   if (collisionPartnerArmyRuntime != (ArmyRuntimeSlot *)0x0) {
     if (((collisionPartnerArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
@@ -2861,7 +2861,7 @@ ArmyRuntime_HandleCollisionPartner
 */
 /* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
 #define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
-  ((ulonglong)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * 0x101u >> 4) << ((byteIndex) * 16))
+  ((uint64_t)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * 0x101u >> 4) << ((byteIndex) * 16))
 #define ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixel) \
   (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
    ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
@@ -2873,12 +2873,12 @@ ArmyRuntime_RenderPreviewTextureCf
           WorldRuntimeContext *worldRuntime)
 
 {
-  ulonglong alphaReciprocal;
+  uint64_t alphaReciprocal;
   ModelRuntimeNode *rootNodeOrSize;
-  uint pixelTopLeft;
-  uint pixelTopRight;
-  uint pixelBottomLeft;
-  uint pixelBottomRight;
+  uint32_t pixelTopLeft;
+  uint32_t pixelTopRight;
+  uint32_t pixelBottomLeft;
+  uint32_t pixelBottomRight;
   GraphicsPixelDimension savedPreviewWidth;
   GameEntityRuntime *entityRuntime1;
   int boundsSpanY;
@@ -2888,18 +2888,18 @@ ArmyRuntime_RenderPreviewTextureCf
   int maxBoundsSpan;
   Q12 *sourcePixels;
   Q12 *destinationPixels;
-  ushort topLeftAlphaOrSum0;
-  ushort topRightAlphaOrClamp0;
-  ushort bottomLeftAlphaOrSum1;
-  ushort bottomRightAlphaOrClamp1;
-  ushort channelSum2;
-  ushort channelClamp2;
-  ulonglong mm0PackedValue0;
-  ushort channelSum3;
-  ushort channelClamp3;
-  ulonglong mm1PackedValue0;
-  ulonglong mm2PackedValue0;
-  ulonglong mm3PackedValue0;
+  uint16_t topLeftAlphaOrSum0;
+  uint16_t topRightAlphaOrClamp0;
+  uint16_t bottomLeftAlphaOrSum1;
+  uint16_t bottomRightAlphaOrClamp1;
+  uint16_t channelSum2;
+  uint16_t channelClamp2;
+  uint64_t mm0PackedValue0;
+  uint16_t channelSum3;
+  uint16_t channelClamp3;
+  uint64_t mm1PackedValue0;
+  uint64_t mm2PackedValue0;
+  uint64_t mm3PackedValue0;
   ArmyRuntimeCreateEaxCf5 createResult;
   GraphicsOffscreenAllocationEaxCf5 offscreenResult;
   ArmyPreviewTextureEaxCf5 successResult;
@@ -2945,7 +2945,7 @@ ArmyRuntime_RenderPreviewTextureCf
     g_ArmyPreviewViewAngle0 = 0xffff8000;
     g_ArmyPreviewViewAngle1 = 0;
     g_ArmyPreviewProjectionShift = 4;
-    g_ArmyPreviewModelNodePointer = (dword)rootNodeOrSize;
+    g_ArmyPreviewModelNodePointer = (uint32_t)rootNodeOrSize;
     offscreenResult = (*g_GraphicsOffscreenRenderModelListToTextureSourceCf)
                        ((GraphicsOffscreenSceneExtents *)&g_ArmyPreviewPrimaryColorArgb,
                         &g_ArmyPreviewAuxiliaryOrientation0,
@@ -2967,48 +2967,48 @@ ArmyRuntime_RenderPreviewTextureCf
           /* PUNPCKLBW mm,mm; PSRLW mm,4: each pixel byte b becomes the 16-bit lane (b * 0x101) >> 4. */
           mm0PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopLeft),
-                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopLeft >> 0x18]);
+                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopLeft >> 0x18]);
           mm1PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopRight),
-                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopRight >> 0x18]);
+                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopRight >> 0x18]);
           mm2PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomLeft),
-                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomLeft >> 0x18]);
+                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomLeft >> 0x18]);
           mm3PackedValue0 =
                pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomRight),
-                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomRight >> 0x18]);
+                      ((uint64_t *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomRight >> 0x18]);
           alphaReciprocal =
-               ((ulonglong *)&g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
+               ((uint64_t *)&g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
                [(pixelTopLeft >> 0x18) + (pixelTopRight >> 0x18) + (pixelBottomLeft >> 0x18) +
                 (pixelBottomRight >> 0x18) >> 2];
           topLeftAlphaOrSum0 = ((short)mm0PackedValue0 + (short)mm1PackedValue0 +
                     (short)mm2PackedValue0 + (short)mm3PackedValue0 +
                    (short)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx) * (short)alphaReciprocal;
-          bottomLeftAlphaOrSum1 = ((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                    (short)((ulonglong)mm1PackedValue0 >> 0x10) +
-                    (short)((ulonglong)mm2PackedValue0 >> 0x10) +
-                    (short)((ulonglong)mm3PackedValue0 >> 0x10) +
-                   (short)((ulonglong)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x10)) *
-                   (short)((ulonglong)alphaReciprocal >> 0x10);
-          channelSum2 = ((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                    (short)((ulonglong)mm1PackedValue0 >> 0x20) +
-                    (short)((ulonglong)mm2PackedValue0 >> 0x20) +
-                    (short)((ulonglong)mm3PackedValue0 >> 0x20) +
-                   (short)((ulonglong)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x20)) *
-                   (short)((ulonglong)alphaReciprocal >> 0x20);
-          channelSum3 = ((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                    (short)((ulonglong)mm1PackedValue0 >> 0x30) +
-                    (short)((ulonglong)mm2PackedValue0 >> 0x30) +
-                    (short)((ulonglong)mm3PackedValue0 >> 0x30) +
-                   (short)((ulonglong)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x30)) *
-                   (short)((ulonglong)alphaReciprocal >> 0x30);
+          bottomLeftAlphaOrSum1 = ((short)((uint64_t)mm0PackedValue0 >> 0x10) +
+                    (short)((uint64_t)mm1PackedValue0 >> 0x10) +
+                    (short)((uint64_t)mm2PackedValue0 >> 0x10) +
+                    (short)((uint64_t)mm3PackedValue0 >> 0x10) +
+                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x10)) *
+                   (short)((uint64_t)alphaReciprocal >> 0x10);
+          channelSum2 = ((short)((uint64_t)mm0PackedValue0 >> 0x20) +
+                    (short)((uint64_t)mm1PackedValue0 >> 0x20) +
+                    (short)((uint64_t)mm2PackedValue0 >> 0x20) +
+                    (short)((uint64_t)mm3PackedValue0 >> 0x20) +
+                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x20)) *
+                   (short)((uint64_t)alphaReciprocal >> 0x20);
+          channelSum3 = ((short)((uint64_t)mm0PackedValue0 >> 0x30) +
+                    (short)((uint64_t)mm1PackedValue0 >> 0x30) +
+                    (short)((uint64_t)mm2PackedValue0 >> 0x30) +
+                    (short)((uint64_t)mm3PackedValue0 >> 0x30) +
+                   (short)((uint64_t)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx >> 0x30)) *
+                   (short)((uint64_t)alphaReciprocal >> 0x30);
           topRightAlphaOrClamp0 = topLeftAlphaOrSum0 >> 8;
           bottomRightAlphaOrClamp1 = bottomLeftAlphaOrSum1 >> 8;
           channelClamp2 = channelSum2 >> 8;
           channelClamp3 = channelSum3 >> 8;
           /* PSRLW 8 leaves every lane <= 0xFF, so PACKUSWB never saturates: it just packs the low bytes. */
-          *destinationPixels = (dword)(byte)channelClamp3 << 24 | (dword)(byte)channelClamp2 << 16 |
-                               (dword)(byte)bottomRightAlphaOrClamp1 << 8 | (dword)(byte)topRightAlphaOrClamp0;
+          *destinationPixels = (uint32_t)(uint8_t)channelClamp3 << 24 | (uint32_t)(uint8_t)channelClamp2 << 16 |
+                               (uint32_t)(uint8_t)bottomRightAlphaOrClamp1 << 8 | (uint32_t)(uint8_t)topRightAlphaOrClamp0;
           sourcePixels = sourcePixels + 2;
           destinationPixels = destinationPixels + 1;
           previewWidth = previewWidth - 1;
@@ -3025,7 +3025,7 @@ ArmyRuntime_RenderPreviewTextureCf
       memory[1].common.ownership.modelNode = (ModelRuntimeNode *)entityRuntime1;
       rootNodeOrSize = (ModelRuntimeNode *)((int)halvedWidth * (int)entityRuntime1 * 4 + 0x220);
       (memory->common).ownership.modelNode = rootNodeOrSize;
-      (*g_MemoryApi.shrinkInPlace)((dword)rootNodeOrSize,memory);
+      (*g_MemoryApi.shrinkInPlace)((uint32_t)rootNodeOrSize,memory);
       successResult.carry = false;
       successResult.previewTexture = (GraphicsTextureResource *)memory;
       return successResult;
@@ -3055,16 +3055,16 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
           (WorldRuntimeContext *worldRuntime,ModelRuntimeSlot *modelRuntime)
 
 {
-  dword *classStateField;
-  dword previousHealth;
+  uint32_t *classStateField;
+  uint32_t previousHealth;
   ModelRuntimeNode *rootNode;
   int energyRequirement;
   ModelRuntimeSlot *tickCursor;
-  uint clampedHealth;
+  uint32_t clampedHealth;
   ModelRuntimeSlot *tickCountOrChild;
   int factionOrProgress;
-  dword definitionOrCount;
-  uint limitOrFlags;
+  uint32_t definitionOrCount;
+  uint32_t limitOrFlags;
   
   definitionOrCount = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
   (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.runtimeUpdate[*(int *)(definitionOrCount + 0x4c)])
@@ -3110,8 +3110,8 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
      ((*(int *)(definitionOrCount + 0x60) != 0 && (0 < (int)modelRuntime->definitionValue60_3C)))) {
     factionOrProgress = ((modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime)->factionIndex;
     g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 =
-         g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 + (*(uint *)(definitionOrCount + 0x184) >> 5);
-    limitOrFlags = *(uint *)(definitionOrCount + 0x60);
+         g_GameFactionRuntimeImage.records[factionOrProgress].xeniteCurrentQ4 + (*(uint32_t *)(definitionOrCount + 0x184) >> 5);
+    limitOrFlags = *(uint32_t *)(definitionOrCount + 0x60);
     if (*(int *)(definitionOrCount + 0x4c) == 0x16) {
       clampedHealth = ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
                         ((ArmyRuntimeLinkedChildMaskSlotView *)modelRuntime);
@@ -3236,7 +3236,7 @@ ArmyRuntimeSpawner_CreateLinkedChildInstanceCf
   int *childModelRuntime;
   ModelRuntimeNode *parentRootNode;
   int remainingSlots;
-  uint slotBit;
+  uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
   ArmyRuntimeCreateEaxCf5 createResult;
   ModelRuntimeNode *modelNode1;
@@ -3278,8 +3278,8 @@ ArmyRuntimeSpawner_CreateLinkedChildInstanceCf
   (modelNode1->childNodes[0]->modelPayload).localTranslationZQ12 =
        (parentRootNode->childNodes[0]->modelPayload).localTranslationZQ12;
   ModelNodeRuntime_RebuildTransformsFromRoot(modelNode1);
-  childModelRuntime[0xf] = (int)(((longlong)armyRuntime->actionVector2Q12 * (longlong)*(int *)(*childModelRuntime + 0x60))
-                     / (longlong)*(int *)((int)armyRuntime->definitionOrAsset + 0x60));
+  childModelRuntime[0xf] = (int)(((int64_t)armyRuntime->actionVector2Q12 * (int64_t)*(int *)(*childModelRuntime + 0x60))
+                     / (int64_t)*(int *)((int)armyRuntime->definitionOrAsset + 0x60));
   return false;
 }
 
@@ -3394,7 +3394,7 @@ ArmyRuntime_TestClass13ProximityCandidateCf
 {
   ModelRuntimeSlot *attachmentChildRuntime;
   ModelRuntimeNode *modelNodeRuntime;
-  dword anchorDistance;
+  uint32_t anchorDistance;
   ModelLookupEntryEaxCf5 lookupEntry;
   ModelLocalPointRegs12 anchorPoint;
   ModelRuntimeNode *modelNode1;
@@ -3433,23 +3433,23 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
 {
   DirectSoundVoiceSet **voiceSetRef;
   FieldGridDimension gridWidthCells;
-  dword capabilityBitIndex;
+  uint32_t capabilityBitIndex;
   int cellColumn;
-  uint projectedRow;
+  uint32_t projectedRow;
   int cellRow;
   bool capabilityClear;
   FieldGridAsset *fieldGrid1;
   
-  if ((((soundAssetIndex != 0) && (worldContext->dwordArray != (dword *)0x0)) &&
+  if ((((soundAssetIndex != 0) && (worldContext->dwordArray != (uint32_t *)0x0)) &&
       (soundAssetIndex < worldContext->dwordArrayCount)) &&
      (voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex],
      voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
     fieldGrid1 = worldContext->fieldGrid;
-    projectedRow = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-            (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
+    projectedRow = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+            (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
     gridWidthCells = fieldGrid1->gridWidth;
-    cellColumn = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                   (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - projectedRow) + 0x800) >> 0xc;
+    cellColumn = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                   (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - projectedRow) + 0x800) >> 0xc;
     if (((-1 < cellColumn) && (cellRow = (int)(projectedRow * 2 + 0x800) >> 0xc, -1 < cellRow)) &&
        ((cellColumn < (int)gridWidthCells && (cellRow < (int)fieldGrid1->gridHeight)))) {
       capabilityBitIndex = worldContext->activeFactionRuntimeIndex;
@@ -3476,15 +3476,15 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
    Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog],
    ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
 */
-uint __thandor_void_preserve_eax_ecx
+uint32_t __thandor_void_preserve_eax_ecx
 ArmyRuntimeSpawner_ComputeRemainingLinkedAssetMetric
           (ArmyRuntimeLinkedChildMaskSlotView *armyRuntime)
 
 {
   FactionRuntimeIndex factionIndex;
   int remainingSlots;
-  uint metricSum;
-  uint slotBit;
+  uint32_t metricSum;
+  uint32_t slotBit;
   ArmyRuntimeLinkedChildMaskSlotView *slotCursor;
   ArmyRegistryEaxCf5_51b6d0 assetLookup;
   ModelDefinitionLookupEaxCf5 definitionLookup;
@@ -3525,7 +3525,7 @@ ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeCo
 {
   ModelRuntimeSlot *linkedModelRuntime;
   ModelRuntimeNode *rootNode;
-  uint soundAssetIndex;
+  uint32_t soundAssetIndex;
   DirectSoundVoiceSet **voiceSetRef;
   bool cellMasked;
   
@@ -3533,7 +3533,7 @@ ArmyRuntimeSpawner_PlayCreationSound(ArmyRuntimeSlot *armyRuntime,WorldRuntimeCo
   rootNode = armyRuntime->modelNodeRuntime;
   soundAssetIndex = linkedModelRuntime[1].classLinkState.classState70;
   if (((soundAssetIndex != 0) && (soundAssetIndex < worldRuntime->dwordArrayCount)) &&
-     (worldRuntime->dwordArray != (dword *)0x0)) {
+     (worldRuntime->dwordArray != (uint32_t *)0x0)) {
     voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundAssetIndex];
     if (voiceSetRef != (DirectSoundVoiceSet **)0x0) {
       cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -3563,7 +3563,7 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
 {
   ModelRuntimeSlot *linkedModelRuntime;
   ModelRuntimeNode *rootNode;
-  uint soundAssetIndex;
+  uint32_t soundAssetIndex;
   DirectSoundVoiceSet **voiceSetRef;
   bool cellMasked;
   
@@ -3571,7 +3571,7 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
   rootNode = armyRuntime->modelNodeRuntime;
   soundAssetIndex = linkedModelRuntime[1].classLinkState.armyLinkOrState6C.classState;
   if (((soundAssetIndex != 0) && (soundAssetIndex < worldContext->dwordArrayCount)) &&
-     (worldContext->dwordArray != (dword *)0x0)) {
+     (worldContext->dwordArray != (uint32_t *)0x0)) {
     voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex];
     if (voiceSetRef != (DirectSoundVoiceSet **)0x0) {
       cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
@@ -3601,22 +3601,22 @@ ArmyRuntime_TestPositionDistanceWithinCombinedRadiusCf
 {
   int currentAxisDeltaQ12;
   int axisDeltaYQ12;
-  longlong remainingRadiusSquaredAfterXQ24;
-  longlong yDistanceSquaredQ24;
+  int64_t remainingRadiusSquaredAfterXQ24;
+  int64_t yDistanceSquaredQ24;
   
   currentAxisDeltaQ12 =
        *(int *)((int)sourcePositionRuntime + 0x94) - *(int *)((int)candidatePositionRuntime + 0x94);
   remainingRadiusSquaredAfterXQ24 =
-       (longlong)(int)(sourceRadiusQ12 + candidateRadiusQ12) *
-       (longlong)(int)(sourceRadiusQ12 + candidateRadiusQ12) -
-       (longlong)currentAxisDeltaQ12 * (longlong)currentAxisDeltaQ12;
+       (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) *
+       (int64_t)(int)(sourceRadiusQ12 + candidateRadiusQ12) -
+       (int64_t)currentAxisDeltaQ12 * (int64_t)currentAxisDeltaQ12;
   if ((-1 < remainingRadiusSquaredAfterXQ24) &&
      (axisDeltaYQ12 = *(int *)((int)sourcePositionRuntime + 0x98) -
               *(int *)((int)candidatePositionRuntime + 0x98),
-     yDistanceSquaredQ24 = (longlong)axisDeltaYQ12 * (longlong)axisDeltaYQ12,
-     -1 < (int)(((int)((ulonglong)remainingRadiusSquaredAfterXQ24 >> 0x20) -
-                (int)((ulonglong)yDistanceSquaredQ24 >> 0x20)) -
-               (uint)((uint)remainingRadiusSquaredAfterXQ24 < (uint)yDistanceSquaredQ24)))) {
+     yDistanceSquaredQ24 = (int64_t)axisDeltaYQ12 * (int64_t)axisDeltaYQ12,
+     -1 < (int)(((int)((uint64_t)remainingRadiusSquaredAfterXQ24 >> 0x20) -
+                (int)((uint64_t)yDistanceSquaredQ24 >> 0x20)) -
+               (uint32_t)((uint32_t)remainingRadiusSquaredAfterXQ24 < (uint32_t)yDistanceSquaredQ24)))) {
     return false;
   }
   return true;
@@ -3646,17 +3646,17 @@ ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   ArmyRuntimeSlot *sourceArmyRuntime;
   ArmyRuntimeSlot *candidateArmyRuntime;
   Q12 candidateWorldZ;
-  uint candidateScore;
-  dword candidateDistance;
+  uint32_t candidateScore;
+  uint32_t candidateDistance;
   int x;
-  uint currentBestScore;
+  uint32_t currentBestScore;
   int y;
   int radiusOrCount;
   WorldOwnerListNode100 *worldNode1;
   ModelPackedPointRecord *localPointRecord;
   ModelLocalPointRegs12 localPoint;
   WorldOwnerListNode100 *worldNode2;
-  uint pointOffsetMask;
+  uint32_t pointOffsetMask;
   
   worldNode2 = (WorldOwnerListNode100 *)0x0;
   worldNode1 = worldContext->ownerListHead;
@@ -3666,11 +3666,11 @@ ArmyRuntime_SpawnIndexedModelPointEffectNearCandidate
   do {
     if ((((worldNode1->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) && (worldNode1 != sourceRuntime))
         && (candidateArmyRuntime = *(ArmyRuntimeSlot **)((int)worldNode1->runtimePayload + 8),
-           (*(uint *)((int)worldNode1->runtimePayload + 0xec) & 8) == 0)) &&
+           (*(uint32_t *)((int)worldNode1->runtimePayload + 0xec) & 8) == 0)) &&
        ((candidateArmyRuntime->factionIndex != 0 &&
         (candidateArmyRuntime->factionIndex != sourceArmyRuntime->factionIndex)))) {
       sourceArmyRuntime->runtimeState4C =
-           *(dword *)((((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
+           *(uint32_t *)((((candidateArmyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                       definitionOrSavedId).savedIdOrOffset + 0xdc);
       candidateScore = AiCombatTarget_EvaluateCandidateScore
                         (currentBestScore,1,0xffffffff,0xffffffff,candidateArmyRuntime,
@@ -3730,10 +3730,10 @@ ArmyRuntime_ProcessReadyAttachmentChannels
 
 {
   ModelRuntimeSlot *childModelRuntime;
-  uint channelIndex;
+  uint32_t channelIndex;
   Q12 worldXQ12;
   Q12 childWorldXQ12;
-  dword remainingAttachments;
+  uint32_t remainingAttachments;
   int recordCountOrTable;
   int tableOrRecordCount;
   ModelPackedPointRecord *pointRecord;
@@ -3776,7 +3776,7 @@ ArmyRuntime_ProcessReadyAttachmentChannels
   channelIndex = 0;
   if ((*(int *)(tableOrRecordCount + 0x14) != 0) &&
      (tableOrRecordCount = *(int *)(tableOrRecordCount + 0x18), recordCountOrTable = *(int *)(tableOrRecordCount + 0x30),
-     (*(uint *)(tableOrRecordCount + 4) & 0xf) == 0)) {
+     (*(uint32_t *)(tableOrRecordCount + 4) & 0xf) == 0)) {
     do {
       if (*(int *)(modelRuntime->reserved10_37 + channelIndex * 4 + 0x30) == 0) {
         tableOrRecordCount = *(int *)(recordCountOrTable + 0xe8);
@@ -3855,7 +3855,7 @@ void __thandor_void_preserve_eax_ecx
 ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
 
 {
-  byte *metricBytes;
+  uint8_t *metricBytes;
   int metricIndex;
   
   armyRuntime->runtimeState90 = 0;
@@ -3885,7 +3885,7 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime)
    point.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestWorldPointAllowedDefaultCf(dword allowedContext,dword worldYQ12,dword worldXQ12)
+ArmyRuntime_TestWorldPointAllowedDefaultCf(uint32_t allowedContext,uint32_t worldYQ12,uint32_t worldXQ12)
 
 {
   return false;
@@ -3919,13 +3919,13 @@ ArmyRuntime_CreateInstanceFromAssetCf
   ArmyAssetRecordPrefix *armyAssetRecord;
   GraphicsTextureSet *textureSet;
   GraphicsPaletteAsset *paletteAsset;
-  dword rootNodeOrClassValue;
+  uint32_t rootNodeOrClassValue;
   PckArmyAssetIdCatalog classValue88;
   GameEntityRuntime *linkedEntity;
   ModelRuntimeNode *modelNodeRuntime;
   PckModelDefinitionIdCatalog modelDefinitionId;
   ModelRuntimeNode *resultOrModelNode;
-  uint armySlotsRemaining;
+  uint32_t armySlotsRemaining;
   int remainingOrDefinition;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyRuntimeSlot *armyRuntime;
@@ -3934,12 +3934,12 @@ ArmyRuntime_CreateInstanceFromAssetCf
   ModelDefinitionLookupEaxCf5 definitionLookup;
   ModelNodeCreateEaxCf5 modelCreateResult;
   ArmyRuntimeCreateEaxCf5 successResult;
-  dword slotScanContinueValue;
+  uint32_t slotScanContinueValue;
   ArmyAssetRuntimeSemanticView80 *definitionNode;
   
   armySlotsRemaining = 0x400;
   armyRuntime = g_ArmyRuntimeSlots;
-  slotScanContinueValue = (dword)g_ArmyRuntimeSlots;
+  slotScanContinueValue = (uint32_t)g_ArmyRuntimeSlots;
   while (resultOrModelNode = (ModelRuntimeNode *)0x14, slotScanContinueValue != 0) {
     if (armyRuntime->modelNodeRuntime == (ModelRuntimeNode *)0x0) {
       registryCursor = g_ArmyAssetRecordRegistry;
@@ -3965,7 +3965,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
                           (factionIndex,armyAssetRecord->rootNodeOffsetOrPointer);
         definitionLookup.modelDefinition[0x24].byteSize = definitionLookup.modelDefinition[0x24].byteSize + 1;
       }
-      if (7 < (uint)factionIndex) {
+      if (7 < (uint32_t)factionIndex) {
         factionIndex = 7;
       }
       armyRuntime->factionIndex = factionIndex;
@@ -3997,7 +3997,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
       resultOrModelNode = modelCreateResult.modelNode;
       if (!modelCreateResult.carry) {
         modelNodeRuntime = (ModelRuntimeNode *)(resultOrModelNode->common).nextNode;
-        (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (dword)resultOrModelNode;
+        (armyRuntime->modelRuntimeOrSavedOffset).savedIdOrOffset = (uint32_t)resultOrModelNode;
         armyRuntime->modelNodeRuntime = modelNodeRuntime;
         (modelNodeRuntime->worldTransform).translation.x = worldYQ12;
         (modelNodeRuntime->worldTransform).translation.y = worldXQ12;
@@ -4053,7 +4053,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
           UiModelControl_RefreshStateTint(modelNodeRuntime);
           ArmyRuntime_RebuildDerivedSelectionMetrics(armyRuntime);
           successResult.carry = false;
-          successResult.eax = (dword)armyRuntime;
+          successResult.eax = (uint32_t)armyRuntime;
           return successResult;
         }
       }
@@ -4065,7 +4065,7 @@ ArmyRuntime_CreateInstanceFromAsset_ScanAssetDefinitionRegistry:
   resultOrModelNode = (ModelRuntimeNode *)0x41;
 ArmyRuntime_CreateInstanceFromAsset_ReturnCreationFailure:
   failureResult.carry = true;
-  failureResult.eax = (dword)resultOrModelNode;
+  failureResult.eax = (uint32_t)resultOrModelNode;
   return failureResult;
 }
 
@@ -4081,20 +4081,20 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
                (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
 {
-  uint occupancyRuntimeFlags;
-  ulonglong neighborhoodClassificationPair;
+  uint32_t occupancyRuntimeFlags;
+  uint64_t neighborhoodClassificationPair;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   ModelRuntimeNode *modelNode;
   void *definition;
   
-  THANDOR_PART(dword, neighborhoodClassificationPair, 4) =
+  THANDOR_PART(uint32_t, neighborhoodClassificationPair, 4) =
        TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
                  (*(Q12 *)((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                            definitionOrSavedId).savedIdOrOffset + 0xdc),
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                   (armyRuntime->modelNodeRuntime->worldTransform).translation.x,
                   worldRuntime->fieldGrid);
-  armyRuntime->terrainOccupancyMask0 = THANDOR_PART(dword, neighborhoodClassificationPair, 4);
+  armyRuntime->terrainOccupancyMask0 = THANDOR_PART(uint32_t, neighborhoodClassificationPair, 4);
   modelNode = armyRuntime->modelNodeRuntime;
   resolvedMasks = TerrainOccupancyMask_ResolveRuntimeClassFlags
                     (modelNode->runtimeFlags,armyRuntime->terrainOccupancyMask1,
@@ -4106,7 +4106,7 @@ void ArmyRuntime_InitializeTerrainOccupancyFlags
   armyRuntime->terrainOccupancyMask1 = resolvedMasks.secondaryOccupancyMask;
   definition = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   modelNode->runtimeFlags = modelNode->runtimeFlags | occupancyRuntimeFlags;
-  if ((*(uint *)((int)definition + 0xec) & 0x200) != 0) {
+  if ((*(uint32_t *)((int)definition + 0xec) & 0x200) != 0) {
     modelNode->runtimeFlags = modelNode->runtimeFlags | 0x1000;
   }
   return;
@@ -4130,7 +4130,7 @@ ArmyRuntime_UpdateAnimatedModelSubnodes
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
-  dword *classStateField;
+  uint32_t *classStateField;
   ModelRuntimeNode *modelNodeRuntime;
   ModelDefinitionRuntimeSemanticView280 *animationDefinition;
   Q12 updatedChildTranslationZQ12;
@@ -4218,19 +4218,19 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
           (WorldRuntimeContext *worldRuntime,ModelRuntimeUpdateView200 *modelRuntime)
 
 {
-  dword *emitterTimer;
+  uint32_t *emitterTimer;
   ModelDefinitionRuntimeSemanticView280 *emitterDefinition;
   int modelResourceAddress;
-  dword nodeOrWorldX;
-  uint pointSelector;
-  sdword waterDelta;
-  dword randomValue;
+  uint32_t nodeOrWorldX;
+  uint32_t pointSelector;
+  int32_t waterDelta;
+  uint32_t randomValue;
   int remainingRecords;
-  dword worldY;
+  uint32_t worldY;
   AngleTurn32 orientationAngle0;
-  uint randomOrPointCount;
-  uint *pointRecordCursor;
-  dword worldZQ12;
+  uint32_t randomOrPointCount;
+  uint32_t *pointRecordCursor;
+  uint32_t worldZQ12;
   AngleTurn32 orientationAngle1;
   ModelRuntimeNode *modelNode1;
   EffectDefinition *effectDefinition1;
@@ -4255,7 +4255,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
     randomOrPointCount = 0;
     if (*(int *)(emitterDefinition->reserved16C_173 + 4) != 0) {
       nodeOrWorldX = (*g_RandomGeneratorState.next)();
-      randomOrPointCount = nodeOrWorldX % *(uint *)(emitterDefinition->reserved16C_173 + 4);
+      randomOrPointCount = nodeOrWorldX % *(uint32_t *)(emitterDefinition->reserved16C_173 + 4);
     }
     shotDefinition = (emitterDefinition->shotDefinitionReference168).definition;
     modelNode1 = modelRuntime->rootModelNode;
@@ -4283,12 +4283,12 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters
   randomOrPointCount = 0;
   if (*(int *)(emitterDefinition->reserved178_187 + 4) != 0) {
     nodeOrWorldX = (*g_RandomGeneratorState.next)();
-    randomOrPointCount = nodeOrWorldX % *(uint *)(emitterDefinition->reserved178_187 + 4);
+    randomOrPointCount = nodeOrWorldX % *(uint32_t *)(emitterDefinition->reserved178_187 + 4);
   }
   (modelRuntime->classState).enabledStateE8 = randomOrPointCount + *(int *)emitterDefinition->reserved178_187;
   nodeOrWorldX = emitterDefinition->serializedNodeOffsetOrPointer64;
   if (emitterDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-    nodeOrWorldX = *(dword *)(nodeOrWorldX + 0x18);
+    nodeOrWorldX = *(uint32_t *)(nodeOrWorldX + 0x18);
   }
   modelResourceAddress = *(int *)(nodeOrWorldX + 0x30);
   remainingRecords = *(int *)(modelResourceAddress + 0xe8);
@@ -4302,7 +4302,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
   }
   else {
     randomOrPointCount = 0;
-    pointRecordCursor = (uint *)(modelResourceAddress + *(int *)(modelResourceAddress + 0xe4));
+    pointRecordCursor = (uint32_t *)(modelResourceAddress + *(int *)(modelResourceAddress + 0xe4));
     do {
       if (((*pointRecordCursor & 0xf) == 6) && (randomOrPointCount <= *pointRecordCursor >> 4)) {
         randomOrPointCount = (*pointRecordCursor >> 4) + 1;
@@ -4318,7 +4318,7 @@ ArmyRuntime_UpdateTimedShotAndEffectEmitters_UseModelWorldPositionForEffectEmitt
     }
     nodeOrWorldX = emitterDefinition->serializedNodeOffsetOrPointer64;
     if (emitterDefinition->runtimeClassId4C == MODEL_RUNTIME_CLASS_21_AIRCRAFT) {
-      nodeOrWorldX = *(dword *)(nodeOrWorldX + 0x18);
+      nodeOrWorldX = *(uint32_t *)(nodeOrWorldX + 0x18);
     }
     lookupEntry = ModelLookupTable_ContainsPackedKeyCf
                        (pointSelector % randomOrPointCount,6,*(ModelResourceHitTestAndRenderView210 **)(nodeOrWorldX + 0x30));

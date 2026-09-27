@@ -50,7 +50,7 @@ FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12);
 
 /* 0x004849D0 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z);
 
@@ -98,11 +98,11 @@ void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input);
 
 /* 0x004856B0 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right);
 
 /* 0x004856F0 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right);
 
 /* 0x00485730 */
@@ -127,10 +127,10 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector);
 FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform);
 
 /* 0x00484AC0 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector);
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector);
 
 /* 0x00484CF0 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y);
 
 /* 0x00484770 */
@@ -170,15 +170,15 @@ FixedTransform_BuildRotationBasis
           (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,AngleTurn32 angle2);
 
 /* 0x00484BA0 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x);
 
 /* 0x00484700 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low);
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low);
 
 
 /* 0x004846A0 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue);
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint32_t inputValue);
 
 /* Not in the original: fills g_FixedSinBeforeZeroQ28, g_FixedSinQ28 and g_FixedCosQ28 (the original shipped them precomputed). */
 void FixedMath_BuildSinCosTables(void);

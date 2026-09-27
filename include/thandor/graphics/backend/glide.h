@@ -34,7 +34,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
 /* 0x0057F7B0 */
 void __thandor_void_preserve_eax_ecx_edx
 Glide3_DrawPrimitiveQueue
-          (sdword coordinate0,sdword coordinate1,sdword coordinate2,sdword coordinate3,
+          (int32_t coordinate0,int32_t coordinate1,int32_t coordinate2,int32_t coordinate3,
           GraphicsPrimitiveQueue *queue);
 
 /* 0x005802F0 */

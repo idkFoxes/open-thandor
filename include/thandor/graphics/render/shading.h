@@ -76,11 +76,11 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *modelNode);
 
 /* 0x004CD9F0 */
-dword
+uint32_t
 GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshGroup);
 
 /* 0x004CDAB0 */
-dword
+uint32_t
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode);
 
 /* 0x004CDB80 */

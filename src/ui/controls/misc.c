@@ -24,15 +24,15 @@ UiDisplaySettingsRoot_RefreshModeSelection(UiRootNode *root)
   UiAnchorFractionQ31 colorBiasQ16;
   UiAnchorFractionQ31 colorScaleQ16;
   
-  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorBiasSlider,0x58,sdword);
-  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorScaleSlider,0x58,sdword);
-  if ((colorBiasQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword)) || (colorScaleQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword))) {
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword) = colorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword) = colorScaleQ16;
+  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorBiasSlider,0x58,int32_t);
+  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(root,colorScaleSlider,0x58,int32_t);
+  if ((colorBiasQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,uint32_t)) || (colorScaleQ16 != DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,uint32_t))) {
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,uint32_t) = colorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,uint32_t) = colorScaleQ16;
     (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
     UiDisplayModeSelection_RefreshEnumeratedOptions
-              (DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword),(UiNodeBase *)DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword),
-               DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword),DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword),&root->base);
+              (DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,uint32_t),(UiNodeBase *)DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,uint32_t),
+               DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,int32_t),DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,int32_t),&root->base);
     UiRuntime_FormatSignedValues140And144(root);
   }
   return;
@@ -122,19 +122,19 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode)
 
 {
-  longlong scaledAnchor;
+  int64_t scaledAnchor;
   UiRootNode *root;
   DisplayModeEaxCf5 modeResult;
-  dword adapterIndex;
-  dword bitsPerPixel;
-  dword modeHeight;
-  dword modeWidth;
+  uint32_t adapterIndex;
+  uint32_t bitsPerPixel;
+  uint32_t modeHeight;
+  uint32_t modeWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  modeWidth = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,sdword);
-  modeHeight = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,sdword);
-  bitsPerPixel = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,sdword);
-  adapterIndex = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,sdword);
+  modeWidth = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t);
+  modeHeight = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t);
+  bitsPerPixel = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t);
+  adapterIndex = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t);
   UiRootStack_PopCf(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
@@ -142,18 +142,18 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   (*g_FatalErrorPrimaryDispatchCf)(modeResult.eax,modeResult.carry);
   root = g_UiRootNode;
   do {
-    scaledAnchor = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).rightAnchorQ31;
+    scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
     (root->base).right =
-         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).rightOffset;
-    scaledAnchor = (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).bottomAnchorQ31;
+         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).rightOffset;
+    scaledAnchor = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).bottomAnchorQ31;
     (root->base).bottom =
-         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).bottomOffset;
-    scaledAnchor = (ulonglong)g_FramebufferWidth * (ulonglong)(root->base).leftAnchorQ31;
+         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).bottomOffset;
+    scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).leftAnchorQ31;
     (root->base).left =
-         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).leftOffset;
-    scaledAnchor = (ulonglong)g_FramebufferHeight * (ulonglong)(root->base).topAnchorQ31;
+         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).leftOffset;
+    scaledAnchor = (uint64_t)g_FramebufferHeight * (uint64_t)(root->base).topAnchorQ31;
     (root->base).top =
-         ((int)((ulonglong)scaledAnchor >> 0x20) << 1 | (uint)scaledAnchor >> 0x1f) + (root->base).topOffset;
+         ((int)((uint64_t)scaledAnchor >> 0x20) << 1 | (uint32_t)scaledAnchor >> 0x1f) + (root->base).topOffset;
     (*((root->base).vtable)->layout)(&root->base);
     root = root->previousRoot;
   } while (root != (UiRootNode *)0xffffffff);
@@ -278,25 +278,25 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
 
 {
-  dword pendingBitsPerPixel;
-  dword pendingAdapterIndex;
+  uint32_t pendingBitsPerPixel;
+  uint32_t pendingAdapterIndex;
   UiRootNode *root;
-  dword pendingModeWidth;
-  dword pendingModeHeight;
-  dword currentBitsPerPixel;
+  uint32_t pendingModeWidth;
+  uint32_t pendingModeHeight;
+  uint32_t currentBitsPerPixel;
   DisplayModeEaxCf5 pendingModeResult;
   DisplayModeEaxCf5 restoreModeResult;
-  uint currentAdapterIndex;
-  dword pendingWidthOrCurrentHeight;
-  dword pendingHeightOrCurrentWidth;
+  uint32_t currentAdapterIndex;
+  uint32_t pendingWidthOrCurrentHeight;
+  uint32_t pendingHeightOrCurrentWidth;
   
   root = (UiRootNode *)UiNode_GetRoot(sourceNode);
-  pendingWidthOrCurrentHeight = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword);
-  pendingHeightOrCurrentWidth = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword);
-  pendingBitsPerPixel = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword);
+  pendingWidthOrCurrentHeight = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,int32_t);
+  pendingHeightOrCurrentWidth = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,int32_t);
+  pendingBitsPerPixel = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,uint32_t);
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
-  pendingAdapterIndex = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword);
+  pendingAdapterIndex = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,uint32_t);
   UiRootStack_PopCf(root);
   if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
@@ -335,13 +335,13 @@ void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
 
 {
-  sdword colorBiasQ16;
-  sdword colorScaleQ16;
+  int32_t colorBiasQ16;
+  int32_t colorScaleQ16;
   UiNodeBase *displaySettingsRoot;
   
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
-  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x84,sdword);
-  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x88,sdword);
+  colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x84,int32_t);
+  colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x88,int32_t);
   UiRootStack_PopCf((UiRootNode *)sourceNode);
   (*g_SoftwareBuildPixelPackTables)(colorScaleQ16,colorBiasQ16);
   return;
@@ -358,13 +358,13 @@ void __thandor_void_preserve_eax_ecx_edx
 UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
 
 {
-  sdword *countdownTicksField;
+  int32_t *countdownTicksField;
   UiNodeVtable **countdownNumberField;
   
-  countdownTicksField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,sdword);
+  countdownTicksField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,int32_t);
   *countdownTicksField = *countdownTicksField + -1;
   if (*countdownTicksField == 0) {
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,sdword) = 0x14;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x60,int32_t) = 0x14;
     countdownNumberField = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *);
     *countdownNumberField = (UiNodeVtable *)((int)&(*countdownNumberField)[-1].pointerWheel + 3);
     if (*countdownNumberField == (UiNodeVtable *)0x0) {
@@ -372,8 +372,8 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
     }
     else {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *),
-                 (word *)&FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,sdword));
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,struct UiNodeVtable *),
+                 (uint16_t *)&FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t));
     }
   }
   return;
@@ -392,13 +392,13 @@ UiRangeSliderControl_DrawTrackAndThumb
           UiPixelCoordinate clipRight,UiRangeSliderControl *control)
 
 {
-  sdword rangeMax;
-  ulonglong scaledOffset;
-  uint rangeOrValueOffset;
-  sdword clampedValue;
-  dword subresourceBase;
+  int32_t rangeMax;
+  uint64_t scaledOffset;
+  uint32_t rangeOrValueOffset;
+  int32_t clampedValue;
+  uint32_t subresourceBase;
   int edgeLength;
-  uint valueOffsetOrRange;
+  uint32_t valueOffsetOrRange;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   
@@ -437,10 +437,10 @@ UiRangeSliderControl_DrawTrackAndThumb
       if ((control->sliderFlags & 8) == 0) {
         valueOffsetOrRange = rangeOrValueOffset - valueOffsetOrRange;
       }
-      scaledOffset = (ulonglong)valueOffsetOrRange * (ulonglong)(control->base.layoutHeight - textureSize.logicalHeightPixels);
+      scaledOffset = (uint64_t)valueOffsetOrRange * (uint64_t)(control->base.layoutHeight - textureSize.logicalHeightPixels);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,
-                 (int)(scaledOffset / rangeOrValueOffset) + (uint)(rangeOrValueOffset < (uint)((int)(scaledOffset % (ulonglong)rangeOrValueOffset) * 2))
+                 (int)(scaledOffset / rangeOrValueOffset) + (uint32_t)(rangeOrValueOffset < (uint32_t)((int)(scaledOffset % (uint64_t)rangeOrValueOffset) * 2))
                  + control->base.top,control->base.left,subresourceBase + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
                 );
       (*g_GraphicsFramebufferEndAccess)();
@@ -474,10 +474,10 @@ UiRangeSliderControl_DrawTrackAndThumb
     if ((control->sliderFlags & 8) != 0) {
       rangeOrValueOffset = valueOffsetOrRange - rangeOrValueOffset;
     }
-    scaledOffset = (ulonglong)rangeOrValueOffset * (ulonglong)(control->base.layoutWidth - textureSize.logicalWidthPixels);
+    scaledOffset = (uint64_t)rangeOrValueOffset * (uint64_t)(control->base.layoutWidth - textureSize.logicalWidthPixels);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
               (clipTop,clipLeft,clipBottom,clipRight,control->base.top,
-               (int)(scaledOffset / valueOffsetOrRange) + (uint)(valueOffsetOrRange < (uint)((int)(scaledOffset % (ulonglong)valueOffsetOrRange) * 2)) +
+               (int)(scaledOffset / valueOffsetOrRange) + (uint32_t)(valueOffsetOrRange < (uint32_t)((int)(scaledOffset % (uint64_t)valueOffsetOrRange) * 2)) +
                control->base.left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -762,8 +762,8 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
 
 {
   UiTransferPayloadByteCount receivedTotal;
-  dword minimumProgress;
-  dword receivedDone;
+  uint32_t minimumProgress;
+  uint32_t receivedDone;
   int remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
 
@@ -822,20 +822,20 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
 {
   DisplayModeScratchWord adapterOption1Or4;
   DisplayModeScratchWord adapterOption2;
-  dword framebufferWidth;
-  dword framebufferHeight;
+  uint32_t framebufferWidth;
+  uint32_t framebufferHeight;
   UiRootFlags activeAdapterIndex;
-  sdword colorScaleQ16;
-  sdword colorBiasQ16;
+  int32_t colorScaleQ16;
+  int32_t colorBiasQ16;
   UiRootNode *root;
-  uint insertValueA;
-  uint insertValueB;
+  uint32_t insertValueA;
+  uint32_t insertValueB;
   int copyCountOrRgBits;
   UiNodeFlags colorDepthBits;
   GraphicsDisplayModeCount remainingModes;
-  dword *copyCursor;
-  dword lowWordValue;
-  dword *templateCursor;
+  uint32_t *copyCursor;
+  uint32_t lowWordValue;
+  uint32_t *templateCursor;
   GraphicsDisplayMode *displayMode;
   ArenaAllocEaxCf5 allocResult;
   
@@ -845,8 +845,8 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     if (allocResult.carry) {
       return;
     }
-    templateCursor = (dword *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
-    copyCursor = (dword *)root;
+    templateCursor = (uint32_t *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
+    copyCursor = (uint32_t *)root;
     for (copyCountOrRgBits = 0x2f5; activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
         framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits = copyCountOrRgBits + -1) {
       *copyCursor = *templateCursor;
@@ -856,27 +856,27 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     colorDepthBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
              g_SoftwarePixelFormatConfig.blueBitCount;
     /* applyButton tail: selected mode tuple (+0x5C..+0x70) and the original one (+0x74..+0x88). */
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword) = g_FramebufferWidth;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword) = framebufferHeight;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword) = colorDepthBits;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword) = activeAdapterIndex;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x74,sdword) = framebufferWidth;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x78,sdword) = framebufferHeight;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x7C,dword) = colorDepthBits;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x80,dword) = activeAdapterIndex;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,int32_t) = g_FramebufferWidth;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,int32_t) = framebufferHeight;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,uint32_t) = colorDepthBits;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,uint32_t) = activeAdapterIndex;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x74,int32_t) = framebufferWidth;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x78,int32_t) = framebufferHeight;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x7C,uint32_t) = colorDepthBits;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x80,uint32_t) = activeAdapterIndex;
     colorBiasQ16 = g_SoftwareColorBiasQ16;
     colorScaleQ16 = g_SoftwareColorScaleQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword) = g_SoftwareColorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword) = colorScaleQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x84,sdword) = colorBiasQ16;
-    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x88,sdword) = colorScaleQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,uint32_t) = g_SoftwareColorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,uint32_t) = colorScaleQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x84,int32_t) = colorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x88,int32_t) = colorScaleQ16;
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
     ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
     /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
-         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,word);
+         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,uint16_t);
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
-         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,word);
+         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,uint16_t);
     UiRuntime_FormatSignedValues140And144(root);
     UiActionHandlers_SetPageCf(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
     UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
@@ -924,10 +924,10 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     } while (remainingModes != 0);
     /* Each option button's mode value(s) sit in the dwords just before the button (read back by the
        action callbacks as sourceNode[-1].layoutHeight / .layoutWidth). */
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption2,-8,dword) = g_UiDisplayModeDistinctValueScratch1;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption3,-8,dword) = g_UiDisplayModeDistinctValueScratch2;
-    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption2,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch1;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption3,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch2;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1007,25 +1007,25 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Resolution buttons: width at -8, height at -0xC. */
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-0xC,dword) = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-8,dword) = g_UiDisplayModeDistinctValueScratch1 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-0xC,dword) = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-8,dword) = g_UiDisplayModeDistinctValueScratch2 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-0xC,dword) = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-0xC,dword) = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-8,dword) = g_UiDisplayModeDistinctValueScratch4 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-0xC,dword) = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch1 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch2 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch4 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-0xC,uint32_t) = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
     insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-8,dword) = g_UiDisplayModeDistinctValueScratch5 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-0xC,dword) = insertValueA;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch5 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-0xC,uint32_t) = insertValueA;
     lowWordValue = g_UiDisplayModeDistinctValueScratch6 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-8,dword) = g_UiDisplayModeDistinctValueScratch6 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-0xC,dword) = lowWordValue;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch6 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-0xC,uint32_t) = lowWordValue;
     lowWordValue = g_UiDisplayModeDistinctValueScratch7 & 0xffff;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-8,dword) = g_UiDisplayModeDistinctValueScratch7 >> 0x10;
-    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-0xC,dword) = lowWordValue;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch7 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-0xC,uint32_t) = lowWordValue;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1080,13 +1080,13 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
     /* Adapter buttons: adapter index at -8. */
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption2,-8,dword) = adapterOption1Or4;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption3,-8,dword) = adapterOption2;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption1,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch0;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption2,-8,uint32_t) = adapterOption1Or4;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption3,-8,uint32_t) = adapterOption2;
     adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch4;
     copyCountOrRgBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3;
-    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption5,-8,dword) = adapterOption1Or4;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption4,-8,uint32_t) = g_UiDisplayModeDistinctValueScratch3;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption5,-8,uint32_t) = adapterOption1Or4;
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (g_ActiveGraphicsAdapterIndex,
                (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight
@@ -1169,15 +1169,15 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
   static const unsigned depthButtons[4] = {0x280,0x2e8,0x350,0x3b8};
   static const unsigned sizeButtons[8] = {0x420,0x488,0x4f0,0x558,0x5c0,0x628,0x690,0x6f8};
   static const unsigned adapterButtons[5] = {0x760,0x7c8,0x830,0x898,0x900};
-  byte *root = (byte *)displaySettingsRoot;
-  dword bitsPerPixel = (dword)(uintptr_t)selectedModeValue;
+  uint8_t *root = (uint8_t *)displaySettingsRoot;
+  uint32_t bitsPerPixel = (uint32_t)(uintptr_t)selectedModeValue;
   void *selected = (void *)0;
   bool enumerated;
   int i;
 
-#define DISPLAY_MODE_FIELD(offset) (*(dword *)(root + (offset)))
+#define DISPLAY_MODE_FIELD(offset) (*(uint32_t *)(root + (offset)))
   for (i = 0; i < 4; i++) {
-    dword depth = DISPLAY_MODE_FIELD(depthButtons[i] - 8);
+    uint32_t depth = DISPLAY_MODE_FIELD(depthButtons[i] - 8);
     enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,depth,modeHeight,modeWidth);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x201 + i,displaySettingsRoot);
@@ -1196,8 +1196,8 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,colorDepthOption1));
   for (i = 0; i < 8; i++) {
-    dword height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
-    dword width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
+    uint32_t height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
+    uint32_t width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
     enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,bitsPerPixel,height,width);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x205 + i,displaySettingsRoot);
@@ -1219,7 +1219,7 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption2),
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption1));
   for (i = 0; i < 5; i++) {
-    dword adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
+    uint32_t adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
     enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapter,bitsPerPixel,modeHeight,modeWidth);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x20f + i,displaySettingsRoot);

@@ -68,13 +68,13 @@ GameFactionRelations_MaybeResetPairState
 /* 0x00560EB0 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertUnique
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey);
 
 /* 0x00560F50 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveFirstMatch
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey);
 
 #endif /* THANDOR_GAMEPLAY_FACTION_RELATIONS_H */

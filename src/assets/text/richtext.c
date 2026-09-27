@@ -23,10 +23,10 @@
 */
 RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
 RichTextCommandStream_MeasureWrappedBlockRegs
-          (dword packedStyle,word *commandStream,UiPixelExtent maximumWidth)
+          (uint32_t packedStyle,uint16_t *commandStream,UiPixelExtent maximumWidth)
 
 {
-  uint colorPaletteIndex;
+  uint32_t colorPaletteIndex;
   int totalHeight;
   RichTextExtentRegs blockExtent;
   RichTextLineAdvanceEaxCf5 lineResult;
@@ -62,11 +62,11 @@ RichTextCommandStream_MeasureWrappedBlockRegs
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_DrawWrappedBlockCf
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,dword packedStyle,word *commandStream,
+          UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
 
 {
-  uint colorPaletteIndex;
+  uint32_t colorPaletteIndex;
   RichTextLineAdvanceEaxCf5 lineResult;
   
   RichTextCommandStream_FlattenNestedToRuntimeBuffer(commandStream);
@@ -100,19 +100,19 @@ RichTextCommandStream_DrawWrappedBlockCf
 bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_DrawSingleLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,word *commandStream,
+          UiPixelCoordinate clipRight,UiPackedTextStyle packedStyle,uint16_t *commandStream,
           UiPixelCoordinate lineTopY,UiPixelCoordinate penX)
 
 {
   int lineBaselineY;
-  uint alignShiftOrPaletteIndex;
+  uint32_t alignShiftOrPaletteIndex;
   GraphicsSubresourceIndex glyphSubresource;
   int glyphAdvance;
-  dword imageWidth;
-  word *commandCursor;
+  uint32_t imageWidth;
+  uint16_t *commandCursor;
   RichTextExtentRegs lineExtent;
   GraphicsTextureSizeEaxEdxCf9 imageSize;
-  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
   lineExtent = RichTextCommandStream_MeasureRegs(packedStyle,commandStream);
@@ -139,7 +139,7 @@ RichTextCommandStream_DrawSingleLine
       if (nestedDepth == 0) {
         return false;
       }
-      commandStream = (word *)((byte *)nestedReturnStack[--nestedDepth] + 8);
+      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + 8);
       continue;
     }
     if (-1 < (int)glyphSubresource) {
@@ -175,10 +175,10 @@ RichTextCommandStream_DrawSingleLine
       break;
     case 6:
       g_RichTextCurrentColorArgb =
-           ((((((((byte)commandCursor[2] & 0xf) << 0x18 | (uint)(byte)*commandStream << 0x1c) >> 4 |
-               (uint)(byte)commandCursor[4] << 0x1c) >> 4 | (uint)(byte)commandCursor[3] << 0x1c) >> 4 |
-             (uint)(byte)commandCursor[6] << 0x1c) >> 4 | (uint)(byte)commandCursor[5] << 0x1c) >> 4 |
-           (uint)(byte)commandCursor[8] << 0x1c) >> 4 | (uint)(byte)commandCursor[7] << 0x1c;
+           ((((((((uint8_t)commandCursor[2] & 0xf) << 0x18 | (uint32_t)(uint8_t)*commandStream << 0x1c) >> 4 |
+               (uint32_t)(uint8_t)commandCursor[4] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[3] << 0x1c) >> 4 |
+             (uint32_t)(uint8_t)commandCursor[6] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[5] << 0x1c) >> 4 |
+           (uint32_t)(uint8_t)commandCursor[8] << 0x1c) >> 4 | (uint32_t)(uint8_t)commandCursor[7] << 0x1c;
       commandStream = commandCursor + 9;
       break;
     case 8:
@@ -208,18 +208,18 @@ RichTextCommandStream_DrawSingleLine
         return false;
       }
       nestedReturnStack[nestedDepth++] = commandStream;
-      commandStream = *(word **)commandStream;
+      commandStream = *(uint16_t **)commandStream;
       break;
     case 0x19:
-      commandStream = *(word **)commandStream;
+      commandStream = *(uint16_t **)commandStream;
       break;
     case 0x1a:
       imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
-                        (*(dword *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
+                        (*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream);
       imageWidth = imageSize.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,lineBaselineY - imageSize.logicalHeightPixels,
-                 penX,*(dword *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
+                 penX,*(uint32_t *)(commandCursor + 3),*(GraphicsTextureSourceAsset **)commandStream,
                  g_FramebufferAccess);
       penX = penX + imageWidth;
       commandStream = commandCursor + 5;
@@ -237,11 +237,11 @@ RichTextCommandStream_DrawSingleLine
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchPayloadBySelector
-          (RichTextCommandSelector selector,void *replacementPayload,word *stream)
+          (RichTextCommandSelector selector,void *replacementPayload,uint16_t *stream)
 
 {
-  ushort commandCodeUnit;
-  ushort *commandCursor;
+  uint16_t commandCodeUnit;
+  uint16_t *commandCursor;
   
   while( true ) {
     commandCursor = stream;
@@ -279,12 +279,12 @@ RichTextCommandStream_PatchPayloadBySelector
    Purpose: Handles rich text command stream bind texture source.
 */
 void __thandor_void_preserve_eax_ecx
-RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,word *stream)
+RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSource,uint16_t *stream)
 
 {
-  ushort *commandCursor;
-  word *streamCursor;
-  ushort commandCodeUnit;
+  uint16_t *commandCursor;
+  uint16_t *streamCursor;
+  uint16_t commandCodeUnit;
   
   streamCursor = stream;
   while( true ) {
@@ -328,12 +328,12 @@ RichTextCommandStream_BindTextureSource(GraphicsTextureSourceAsset *textureSourc
 bool __thandor_cf_preserve_eax_ecx_edx
 RichTextCommandStream_FindNthCommandPayloadPair
           (RichTextCommandOrdinal commandOrdinal,RichTextCommandPayload32 payloadValue,
-          ushort *commandStream)
+          uint16_t *commandStream)
 
 {
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   int remainingCount;
-  ushort *commandCursor;
+  uint16_t *commandCursor;
   
   remainingCount = commandOrdinal + 1;
   do {
@@ -379,16 +379,16 @@ RichTextCommandStream_FindNthCommandPayloadPair
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchNestedStreamPointerPayloads
-          (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,ushort *commandStream)
+          (RichTextNestedStreamPointerValue32 nestedStreamPointerValue,uint16_t *commandStream)
 
 {
-  ushort *commandCursor;
+  uint16_t *commandCursor;
   RichTextNestedStreamPointerValue32 *streamCursor;
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   
   streamCursor = (RichTextNestedStreamPointerValue32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)streamCursor;
+    commandCursor = (uint16_t *)streamCursor;
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextNestedStreamPointerValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
@@ -427,16 +427,16 @@ RichTextCommandStream_PatchNestedStreamPointerPayloads
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchOpcode1APayloadPair
           (RichTextOpcode1APayloadValue32 opcode1APayloadValue,
-          RichTextCommandPayload32 leadingPayloadValue,ushort *commandStream)
+          RichTextCommandPayload32 leadingPayloadValue,uint16_t *commandStream)
 
 {
-  ushort *commandCursor;
+  uint16_t *commandCursor;
   RichTextCommandPayload32 *streamCursor;
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   
   streamCursor = (RichTextCommandPayload32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)streamCursor;
+    commandCursor = (uint16_t *)streamCursor;
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextCommandPayload32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
@@ -475,16 +475,16 @@ RichTextCommandStream_PatchOpcode1APayloadPair
 */
 void __thandor_void_preserve_eax_ecx_edx
 RichTextCommandStream_PatchInlinePayloads
-          (RichTextInlinePayloadValue32 inlinePayloadValue,ushort *commandStream)
+          (RichTextInlinePayloadValue32 inlinePayloadValue,uint16_t *commandStream)
 
 {
-  ushort *commandCursor;
+  uint16_t *commandCursor;
   RichTextInlinePayloadValue32 *streamCursor;
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   
   streamCursor = (RichTextInlinePayloadValue32 *)commandStream;
   while( true ) {
-    commandCursor = (ushort *)streamCursor;
+    commandCursor = (uint16_t *)streamCursor;
     commandCodeUnit = *commandCursor;
     streamCursor = (RichTextInlinePayloadValue32 *)(commandCursor + 1);
     if (commandCodeUnit == 0) break;
@@ -520,34 +520,34 @@ RichTextCommandStream_PatchInlinePayloads
    executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,uint *commandStream)
+RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint32_t flagBits,uint32_t *commandStream)
 
 {
-  uint *streamCursor;
+  uint32_t *streamCursor;
   int remainingCount;
-  uint *commandCursor;
-  ushort commandCodeUnit;
+  uint32_t *commandCursor;
+  uint16_t commandCodeUnit;
   
   remainingCount = commandOrdinal + 1;
   streamCursor = commandStream;
   do {
     do {
       commandCursor = streamCursor;
-      commandCodeUnit = (ushort)*commandCursor;
+      commandCodeUnit = (uint16_t)*commandCursor;
       if (commandCodeUnit == 0) {
         return true;
       }
-      streamCursor = (uint *)((int)commandCursor + 2);
+      streamCursor = (uint32_t *)((int)commandCursor + 2);
     } while (-1 < (short)commandCodeUnit);
     switch(commandCodeUnit & 0x1f) {
     case 6:
-      streamCursor = (uint *)((int)commandCursor + 0x12);
+      streamCursor = (uint32_t *)((int)commandCursor + 0x12);
       break;
     case 0x14:
     case 0x15:
     case 0x16:
       remainingCount = remainingCount + -1;
-      streamCursor = (uint *)((int)commandCursor + 6);
+      streamCursor = (uint32_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
         *commandCursor = *commandCursor & 0xffff8014;
         *commandCursor = *commandCursor | flagBits;
@@ -557,7 +557,7 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,u
     case 0x18:
     case 0x19:
     case 0x1a:
-      streamCursor = (uint *)((int)commandCursor + 10);
+      streamCursor = (uint32_t *)((int)commandCursor + 10);
     }
   } while( true );
 }
@@ -572,36 +572,36 @@ RichTextCommandStream_FindNthCommandFlagsPair(int commandOrdinal,uint flagBits,u
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,ushort *commandStream)
+RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandStream)
 
 {
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   int remainingCount;
-  uint *commandCursor;
+  uint32_t *commandCursor;
   StatusValueEaxCf5 foundResult;
   StatusValueEaxCf5 endResult;
   
   remainingCount = commandOrdinal + 1;
   do {
     do {
-      commandCursor = (uint *)commandStream;
-      commandCodeUnit = (ushort)*commandCursor;
+      commandCursor = (uint32_t *)commandStream;
+      commandCodeUnit = (uint16_t)*commandCursor;
       if (commandCodeUnit == 0) {
         endResult.valueOrError = 0;
         endResult.carry = true;
         return endResult;
       }
-      commandStream = (ushort *)((int)commandCursor + 2);
+      commandStream = (uint16_t *)((int)commandCursor + 2);
     } while (-1 < (short)commandCodeUnit);
     switch(commandCodeUnit & 0x1f) {
     case 6:
-      commandStream = (ushort *)((int)commandCursor + 0x12);
+      commandStream = (uint16_t *)((int)commandCursor + 0x12);
       break;
     case 0x14:
     case 0x15:
     case 0x16:
       remainingCount = remainingCount + -1;
-      commandStream = (ushort *)((int)commandCursor + 6);
+      commandStream = (uint16_t *)((int)commandCursor + 6);
       if (remainingCount == 0) {
         foundResult.valueOrError = *commandCursor & 3;
         foundResult.carry = false;
@@ -611,7 +611,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,ushort *commandStr
     case 0x18:
     case 0x19:
     case 0x1a:
-      commandStream = (ushort *)((int)commandCursor + 10);
+      commandStream = (uint16_t *)((int)commandCursor + 10);
     }
   } while( true );
 }
@@ -626,19 +626,19 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,ushort *commandStr
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_CopyToNarrowCf
-          (TextOutputCapacityBytes capacityBytes,byte *destination,word *source)
+          (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
-  word *readCursor;
-  dword remainingCapacityBytes;
-  ushort *commandCursor;
-  word *streamCursor;
+  uint16_t *readCursor;
+  uint32_t remainingCapacityBytes;
+  uint16_t *commandCursor;
+  uint16_t *streamCursor;
   bool newlineCapacityUnderflow;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 errorResult;
-  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
-  ushort commandOrCodeUnit;
+  uint16_t commandOrCodeUnit;
   
   nestedDepth = 0;
   remainingCapacityBytes = capacityBytes;
@@ -682,10 +682,10 @@ RichTextCommandStream_CopyToNarrowCf
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
           goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
           nestedReturnStack[nestedDepth++] = streamCursor;
-          readCursor = *(ushort **)streamCursor;
+          readCursor = *(uint16_t **)streamCursor;
           break;
         case 0x19:
-          readCursor = *(ushort **)streamCursor;
+          readCursor = *(uint16_t **)streamCursor;
           break;
         case 0x1a:
           readCursor = commandCursor + 5;
@@ -697,14 +697,14 @@ RichTextCommandStream_CopyToNarrowCf
           remainingCapacityBytes = remainingCapacityBytes - 1;
           if (remainingCapacityBytes == 0)
           goto RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError;
-          *destination = (byte)commandOrCodeUnit;
+          *destination = (uint8_t)commandOrCodeUnit;
           destination = destination + 1;
           readCursor = streamCursor;
         }
       }
     }
     if (nestedDepth == 0) break;
-    readCursor = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
+    readCursor = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (0 < (int)remainingCapacityBytes) {
     *destination = 0;
@@ -729,31 +729,31 @@ RichTextCommandStream_CopyToNarrow_TerminateOutputAndReturnCapacityError:
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 RichTextStringAssetEaxCf5 __thandor_eax_cf_preserve_edx
-RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
+RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes)
 
 {
   /* Unreachable: nothing in the original image calls 0x0041BCB0 or stores its address (a leftover
      of the TXT2STR converter). The stack slots below were never recovered; the body is kept
      only for completeness. */
-  byte thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
-  byte markupByte;
-  ushort codeUnit;
+  uint8_t thandor_stack_frame[0x100]; /* unrecovered Ghidra stack slots (stack0x...), entry ESP at index 0x80 */
+  uint8_t markupByte;
+  uint16_t codeUnit;
   wchar_t *memory;
-  uint spanSizeOrDwordCount;
-  uint remainingCapacityBytes;
+  uint32_t spanSizeOrDwordCount;
+  uint32_t remainingCapacityBytes;
   int groupKeyOrIndex;
   int *offsetTableCursor;
   int entryIndexOrOffset;
   int entryEndOrIndex;
   short codeUnitBias;
-  byte *stackSlot;
-  byte *callStackSlot;
-  byte *tokenStart;
-  byte *markupCursor;
+  uint8_t *stackSlot;
+  uint8_t *callStackSlot;
+  uint8_t *tokenStart;
+  uint8_t *markupCursor;
   int *copySource;
   wchar_t *outputCursor;
   int *groupHeader;
-  dword assetSizeOrTimestamp;
+  uint32_t assetSizeOrTimestamp;
   int *assetWriteCursor;
   bool capacityUnderflow;
   bool insideTagOrUnderflow;
@@ -763,7 +763,7 @@ RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
   RichTextStringAssetEaxCf5 stringAsset;
   ArenaLargestAllocationEaxEcxCf9 largestBlock;
   WideNumberFormatFlags aWStackY_44 [2];
-  dword dStackY_3c;
+  uint32_t dStackY_3c;
   int assetGroupCount;
   int tagCount;
   
@@ -778,7 +778,7 @@ RichTextMarkup_ParseAndBuildStringAsset(byte *markupBytes)
     insideTagOrUnderflow = false;
 RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte:
     tokenStart = markupCursor;
-    codeUnit = (ushort)*tokenStart;
+    codeUnit = (uint16_t)*tokenStart;
     markupCursor = tokenStart + 1;
     switch(*tokenStart) {
     case 0:
@@ -838,7 +838,7 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
       goto RichTextMarkup_ParseAndBuildStringAsset_ParseNextByte;
     case 0x23:
       markupByte = *markupCursor;
-      codeUnit = (ushort)markupByte;
+      codeUnit = (uint16_t)markupByte;
       markupCursor = tokenStart + 2;
       switch(markupByte) {
       default:
@@ -890,30 +890,30 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                       assetSizeOrTimestamp = (int)groupHeader - (int)stringAsset.assetOrError;
                       (*g_MemoryApi.shrinkInPlace)(assetSizeOrTimestamp,stringAsset.assetOrError);
                       tagCount = tagCount * 8;
-                      *(dword *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
+                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[0x2c] = assetGroupCount;
                       ((int *)stringAsset.assetOrError)[1] = assetSizeOrTimestamp;
                       *(int *)stringAsset.assetOrError = 0x727473;
                       ((int *)stringAsset.assetOrError)[2] = 1;
                       ((int *)stringAsset.assetOrError)[3] = 0;
                       stackSlot = &thandor_stack_frame[0x80 - 0x30] + tagCount;
-                      *(dword *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c7b5;
+                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c7b5;
                       assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentTime)();
                       ((int *)stringAsset.assetOrError)[4] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[6] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[8] = assetSizeOrTimestamp;
                       callStackSlot = stackSlot + -4;
-                      *(dword *)(stackSlot + -4) = 0x41c7cd;
+                      *(uint32_t *)(stackSlot + -4) = 0x41c7cd;
                       assetSizeOrTimestamp = (*g_LocaleGetPackedCurrentDate)();
                       ((int *)stringAsset.assetOrError)[5] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[7] = assetSizeOrTimestamp;
                       ((int *)stringAsset.assetOrError)[9] = assetSizeOrTimestamp;
                       *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0xc;
-                      *(dword *)(callStackSlot + -8) = 0x41c7ec;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(callStackSlot + -4));
+                      *(uint32_t *)(callStackSlot + -8) = 0x41c7ec;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(uint16_t **)(callStackSlot + -4));
                       *(int **)(callStackSlot + -4) = (int *)stringAsset.assetOrError + 0x1c;
-                      *(dword *)(callStackSlot + -8) = 0x41c7f9;
-                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(word **)(callStackSlot + -4));
+                      *(uint32_t *)(callStackSlot + -8) = 0x41c7f9;
+                      (*g_LocaleCopyDefaultComputerLabelUtf16)(*(uint16_t **)(callStackSlot + -4));
                       stringAsset.carry = false;
                       return stringAsset;
                     }
@@ -945,10 +945,10 @@ RichTextMarkup_ParseAndBuildStringAsset_EmitLiteralCodeUnit:
                   entryEndOrIndex = tagCount;
                   do {
                     if (groupKeyOrIndex == *(int *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8)) {
-                      *(dword *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8) = 0xffffffff;
+                      *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + entryEndOrIndex * 8) = 0xffffffff;
                       entryIndexOrOffset = (int)assetWriteCursor - (int)groupHeader;
                       copySource = *(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8);
-                      for (spanSizeOrDwordCount = (uint)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + entryEndOrIndex * 8) -
+                      for (spanSizeOrDwordCount = (uint32_t)(*(int *)(&thandor_stack_frame[0x80 - 0x34] + entryEndOrIndex * 8) -
                                          (int)*(int **)(&thandor_stack_frame[0x80 - 0x2c] + entryEndOrIndex * 8)) >> 2;
                           spanSizeOrDwordCount != 0; spanSizeOrDwordCount = spanSizeOrDwordCount - 1) {
                         *assetWriteCursor = *copySource;
@@ -970,7 +970,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreeTemporaryExpansionBufferBeforeCapaci
 RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
           tagCount = tagCount * 8;
           *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount) = memory;
-          *(dword *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
+          *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + tagCount) = 0x41c5e3;
           (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + tagCount));
           capacityErrorResult.carry = true;
           capacityErrorResult.assetOrError = (void *)0x14;
@@ -999,7 +999,7 @@ RichTextMarkup_ParseAndBuildStringAsset_FreePrimaryBufferAndReturnCapacityError:
       case 0x3e:
         if (!insideTagOrUnderflow) goto RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter;
         insideTagOrUnderflow = false;
-        if (((uint)outputCursor & 2) == 0) {
+        if (((uint32_t)outputCursor & 2) == 0) {
           insideTagOrUnderflow = remainingCapacityBytes < 4;
           remainingCapacityBytes = remainingCapacityBytes - 4;
           if (insideTagOrUnderflow || remainingCapacityBytes == 0)
@@ -1093,19 +1093,19 @@ RichTextMarkup_ParseAndBuildStringAsset_ReturnError:
 RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
   groupKeyOrIndex = tagCount * 8;
   *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = memory;
-  *(dword *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
+  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = 0x41c5a2;
   (*g_MemoryApi.free)(*(void **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
   *(wchar_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex) = u_error__TXT2STR__unknown_characte_0041afac + 0x26;
   *(int *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex) = (int)markupCursor - (int)markupBytes;
-  *(dword *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex) = 1;
-  *(dword *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex) = 10;
+  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex) = 1;
+  *(uint32_t *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex) = 10;
   (&dStackY_3c)[tagCount * 2] = 0;
   aWStackY_44[tagCount * 2 + 1] = 0x40;
   aWStackY_44[tagCount * 2] = 0x41c5bb;
   (*g_WideNumberFormatUtf16)
             (aWStackY_44[tagCount * 2 + 1],(&dStackY_3c)[tagCount * 2],
-             *(dword *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex),*(dword *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex),
-             *(sdword *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex),*(word **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
+             *(uint32_t *)(&thandor_stack_frame[0x80 - 0x38] + groupKeyOrIndex),*(uint32_t *)(&thandor_stack_frame[0x80 - 0x34] + groupKeyOrIndex),
+             *(int32_t *)(&thandor_stack_frame[0x80 - 0x30] + groupKeyOrIndex),*(uint16_t **)(&thandor_stack_frame[0x80 - 0x2c] + groupKeyOrIndex));
   memory = u_error__TXT2STR__unknown_characte_0041afac;
   goto RichTextMarkup_ParseAndBuildStringAsset_ReturnError;
 }
@@ -1120,17 +1120,17 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
 */
 RichTextCopyExpandedEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 RichTextCommandStream_CopyExpandedCf
-          (TextOutputCapacityBytes capacityBytes,word *destination,word *source)
+          (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source)
 
 {
-  ushort commandCodeUnit;
+  uint16_t commandCodeUnit;
   int wordsRemaining;
-  ushort *nextSource;
-  ushort *destinationCursor;
+  uint16_t *nextSource;
+  uint16_t *destinationCursor;
   bool capacityUnderflow;
   RichTextCopyExpandedEaxCf5 successResult;
   RichTextCopyExpandedEaxCf5 errorResult;
-  word *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
   int nestedDepth;
   
   nestedDepth = 0;
@@ -1179,10 +1179,10 @@ RichTextCommandStream_CopyExpandedCf
           if (nestedDepth == RICHTEXT_NESTING_LIMIT)
           goto RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError;
           nestedReturnStack[nestedDepth++] = nextSource;
-          source = *(word **)nextSource;
+          source = *(uint16_t **)nextSource;
           break;
         case 0x19:
-          source = *(word **)nextSource;
+          source = *(uint16_t **)nextSource;
           break;
         case 0x1a:
           capacityUnderflow = capacityBytes < 10;
@@ -1207,7 +1207,7 @@ RichTextCommandStream_CopyExpandedCf
       }
     }
     if (nestedDepth == 0) break;
-    source = (ushort *)((byte *)nestedReturnStack[--nestedDepth] + 8);
+    source = (uint16_t *)((uint8_t *)nestedReturnStack[--nestedDepth] + 8);
   }
   if (1 < (int)capacityBytes) {
     *destinationCursor = 0;
@@ -1232,18 +1232,18 @@ RichTextCommandStream_CopyExpanded_TerminateOutputAndReturnCapacityError:
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
 */
 RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
-RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,word *commandStream)
+RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *commandStream)
 
 {
   /* Rewritten from the assembly (0x0041CF30-0x0041D0E0). Command 0x18 enters a nested stream and pushes
      the return position on the machine stack; its terminator pops it and resumes 8 bytes later.
      Ghidra turned that stack into a counter, so nested text was measured forever. */
-  word *returnStack[RICHTEXT_NESTING_LIMIT];
+  uint16_t *returnStack[RICHTEXT_NESTING_LIMIT];
   int nesting = 0;
   RichTextExtentRegs extent;
   FontGlyphSizeEaxEdxCf9 glyphSize;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
-  word *command;
+  uint16_t *command;
   int value;
 
   extent.widthPixels = 0;
@@ -1257,7 +1257,7 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,word *commandStr
       if (nesting == 0) {
         return extent;
       }
-      commandStream = (word *)((byte *)returnStack[--nesting] + 8);
+      commandStream = (uint16_t *)((uint8_t *)returnStack[--nesting] + 8);
       continue;
     }
     if (value > 0) {
@@ -1301,14 +1301,14 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,word *commandStr
         return extent;
       }
       returnStack[nesting++] = commandStream;
-      commandStream = *(word **)commandStream;
+      commandStream = *(uint16_t **)commandStream;
       break;
     case 0x19:
-      commandStream = *(word **)commandStream;
+      commandStream = *(uint16_t **)commandStream;
       break;
     case 0x1a:
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
-                              (*(dword *)(command + 3),*(GraphicsTextureSourceAsset **)commandStream);
+                              (*(uint32_t *)(command + 3),*(GraphicsTextureSourceAsset **)commandStream);
       extent.widthPixels = extent.widthPixels + textureSize.logicalWidthPixels;
       commandStream = command + 5;
       if (extent.heightPixels < textureSize.logicalHeightPixels) {
@@ -1333,18 +1333,18 @@ RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
 
 {
   GraphicsSubresourceIndex glyphSubresource;
-  uint lineWidth;
-  uint maxLineHeight;
-  byte *commandCursor;
-  byte *readCursor;
+  uint32_t lineWidth;
+  uint32_t maxLineHeight;
+  uint8_t *commandCursor;
+  uint8_t *readCursor;
   RichTextLineAdvanceEaxCf5 lineResult;
   FontGlyphSizeEaxEdxCf9 glyphSize;
   GraphicsTextureSizeEaxEdxCf9 imageSize;
-  byte *wrapPoint;
+  uint8_t *wrapPoint;
 
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
   lineWidth = 0;
-  wrapPoint = (byte *)0x0;
+  wrapPoint = (uint8_t *)0x0;
   maxLineHeight = glyphSize.lineHeight;
   readCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
   for (;;) {
@@ -1409,7 +1409,7 @@ RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
       goto RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary;
     case 0x1a:
       imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
-                        (*(dword *)(commandCursor + 6),*(GraphicsTextureSourceAsset **)readCursor);
+                        (*(uint32_t *)(commandCursor + 6),*(GraphicsTextureSourceAsset **)readCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       readCursor = commandCursor + 10;
       if (maxLineHeight < imageSize.logicalHeightPixels) {
@@ -1418,10 +1418,10 @@ RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
     }
   }
 RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
-  if (wrapPoint == (byte *)0x0) {
+  if (wrapPoint == (uint8_t *)0x0) {
     wrapPoint = readCursor;
   }
-  g_RichTextRuntimeBufferUsedWords = (uint)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
+  g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)wrapPoint - (int)g_FontRuntimeBuffer) >> 1;
   lineResult.carry = *(short *)(wrapPoint + -2) == 0;
   lineResult.lineAdvancePixels = maxLineHeight;
   return lineResult;
@@ -1449,22 +1449,22 @@ RichTextCommandStream_DrawNextWrappedLineCf
   int lineBottom;
   GraphicsSubresourceIndex glyphSubresource;
   int glyphAdvance;
-  dword fontIndexOrImageWidth;
-  uint lineWidth;
-  uint lineTop;
-  byte *measureCommand;
-  byte *scanCursor;
-  byte *drawCursor;
+  uint32_t fontIndexOrImageWidth;
+  uint32_t lineWidth;
+  uint32_t lineTop;
+  uint8_t *measureCommand;
+  uint8_t *scanCursor;
+  uint8_t *drawCursor;
   RichTextLineAdvanceEaxCf5 moreLinesResult;
   RichTextLineAdvanceEaxCf5 endResult;
   FontGlyphSizeEaxEdxCf9 glyphSize;
   GraphicsTextureSizeEaxEdxCf9 imageSize;
-  byte *wrapPoint;
+  uint8_t *wrapPoint;
   
   glyphSize = FontGlyph_GetLogicalSizeActiveRegs(0);
   lineWidth = 0;
   drawCursor = g_FontRuntimeBuffer + g_RichTextRuntimeBufferUsedWords * 2;
-  wrapPoint = (byte *)0x0;
+  wrapPoint = (uint8_t *)0x0;
   lineTop = glyphSize.lineHeight;
   scanCursor = drawCursor;
   fontIndexOrImageWidth = g_ActiveFontIndex;
@@ -1529,7 +1529,7 @@ RichTextCommandStream_DrawNextWrappedLineCf
       goto RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing;
     case 0x1a:
       imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
-                         (*(dword *)(measureCommand + 6),*(GraphicsTextureSourceAsset **)scanCursor);
+                         (*(uint32_t *)(measureCommand + 6),*(GraphicsTextureSourceAsset **)scanCursor);
       lineWidth = lineWidth + imageSize.logicalWidthPixels;
       scanCursor = measureCommand + 10;
       if (lineTop < imageSize.logicalHeightPixels) {
@@ -1539,7 +1539,7 @@ RichTextCommandStream_DrawNextWrappedLineCf
   }
 RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
   g_ActiveFontIndex = fontIndexOrImageWidth;
-  if (wrapPoint == (byte *)0x0) {
+  if (wrapPoint == (uint8_t *)0x0) {
     wrapPoint = scanCursor;
   }
   lineBottom = drawY + lineTop;
@@ -1549,7 +1549,7 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
     glyphSubresource = (GraphicsSubresourceIndex)*(short *)scanCursor;
     drawCursor = scanCursor + 2;
     if (glyphSubresource == 0) {
-      g_RichTextRuntimeBufferUsedWords = (uint)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
+      g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
       endResult.carry = true;
       endResult.lineAdvancePixels = lineTop;
       return endResult;
@@ -1594,10 +1594,10 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
       break;
     case 6:
       g_RichTextCurrentColorArgb =
-           (((((((scanCursor[4] & 0xf) << 0x18 | (uint)*drawCursor << 0x1c) >> 4 | (uint)scanCursor[8] << 0x1c) >>
-               4 | (uint)scanCursor[6] << 0x1c) >> 4 | (uint)scanCursor[0xc] << 0x1c) >> 4 |
-            (uint)scanCursor[10] << 0x1c) >> 4 | (uint)scanCursor[0x10] << 0x1c) >> 4 |
-           (uint)scanCursor[0xe] << 0x1c;
+           (((((((scanCursor[4] & 0xf) << 0x18 | (uint32_t)*drawCursor << 0x1c) >> 4 | (uint32_t)scanCursor[8] << 0x1c) >>
+               4 | (uint32_t)scanCursor[6] << 0x1c) >> 4 | (uint32_t)scanCursor[0xc] << 0x1c) >> 4 |
+            (uint32_t)scanCursor[10] << 0x1c) >> 4 | (uint32_t)scanCursor[0x10] << 0x1c) >> 4 |
+           (uint32_t)scanCursor[0xe] << 0x1c;
       drawCursor = scanCursor + 0x12;
       break;
     case 8:
@@ -1627,17 +1627,17 @@ RichTextCommandStream_DrawNextWrappedLine_CommitWrapBoundaryAndBeginDrawing:
       goto RichTextCommandStream_DrawNextWrappedLine_EndLine;
     case 0x1a:
       imageSize = (*g_GraphicsTextureSourceGetLogicalSize)
-                         (*(dword *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
+                         (*(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor);
       fontIndexOrImageWidth = imageSize.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,lineBottom - imageSize.logicalHeightPixels,drawX,
-                 *(dword *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
+                 *(uint32_t *)(scanCursor + 6),*(GraphicsTextureSourceAsset **)drawCursor,g_FramebufferAccess);
       drawX = drawX + fontIndexOrImageWidth;
       drawCursor = scanCursor + 10;
     }
   }
 RichTextCommandStream_DrawNextWrappedLine_EndLine:
-  g_RichTextRuntimeBufferUsedWords = (uint)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
+  g_RichTextRuntimeBufferUsedWords = (uint32_t)((int)drawCursor - (int)g_FontRuntimeBuffer) >> 1;
   moreLinesResult.carry = false;
   moreLinesResult.lineAdvancePixels = lineTop;
   return moreLinesResult;
@@ -1650,19 +1650,19 @@ RichTextCommandStream_DrawNextWrappedLine_EndLine:
    and image commands, follows nested stream pointers, writes a terminator, and resets the shared word index.
 */
 void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
+RichTextCommandStream_FlattenNestedToRuntimeBuffer(uint16_t *commandStream)
 
 {
-  ushort commandCodeUnit;
-  uint remainingWords;
+  uint16_t commandCodeUnit;
+  uint32_t remainingWords;
   int nestedDepth;
-  ushort *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
-  ushort *commandCursor;
-  ushort *outputCursor;
+  uint16_t *nestedReturnStack[RICHTEXT_NESTING_LIMIT]; /* the original's machine-stack chain */
+  uint16_t *commandCursor;
+  uint16_t *outputCursor;
   
   remainingWords = 0x2000;
   nestedDepth = 0;
-  outputCursor = (ushort *)g_FontRuntimeBuffer;
+  outputCursor = (uint16_t *)g_FontRuntimeBuffer;
   for (;;) {
     commandCursor = commandStream;
     commandCodeUnit = *commandCursor;
@@ -1674,7 +1674,7 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
         return;
       }
       nestedDepth = nestedDepth + -1;
-      commandStream = (ushort *)((byte *)nestedReturnStack[nestedDepth] + 8);
+      commandStream = (uint16_t *)((uint8_t *)nestedReturnStack[nestedDepth] + 8);
       continue;
     }
     /* Plain code units take the same path as command 0 (copy one word). */
@@ -1690,10 +1690,10 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
       if (9 < remainingWords) {
         *outputCursor = commandCodeUnit;
         remainingWords = remainingWords - 9;
-        *(dword *)(outputCursor + 1) = *(dword *)commandStream;
-        *(dword *)(outputCursor + 3) = *(dword *)(commandCursor + 3);
-        *(dword *)(outputCursor + 5) = *(dword *)(commandCursor + 5);
-        *(dword *)(outputCursor + 7) = *(dword *)(commandCursor + 7);
+        *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
+        *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
+        *(uint32_t *)(outputCursor + 5) = *(uint32_t *)(commandCursor + 5);
+        *(uint32_t *)(outputCursor + 7) = *(uint32_t *)(commandCursor + 7);
         outputCursor = outputCursor + 9;
         commandStream = commandCursor + 9;
       }
@@ -1718,14 +1718,14 @@ RichTextCommandStream_FlattenNestedToRuntimeBuffer(word *commandStream)
       nestedDepth = nestedDepth + 1;
       /* fall through: enter the nested stream */
     case 0x19:
-      commandStream = *(ushort **)commandStream;
+      commandStream = *(uint16_t **)commandStream;
       break;
     case 0x1a:
       if (5 < remainingWords) {
         *outputCursor = commandCodeUnit;
         remainingWords = remainingWords - 5;
-        *(dword *)(outputCursor + 1) = *(dword *)commandStream;
-        *(dword *)(outputCursor + 3) = *(dword *)(commandCursor + 3);
+        *(uint32_t *)(outputCursor + 1) = *(uint32_t *)commandStream;
+        *(uint32_t *)(outputCursor + 3) = *(uint32_t *)(commandCursor + 3);
         outputCursor = outputCursor + 5;
         commandStream = commandCursor + 5;
       }

@@ -159,7 +159,7 @@ void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *s
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
-          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           int stepDelta)
 
 {
@@ -260,7 +260,7 @@ InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
   UiPageStackControl *stack;
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -324,7 +324,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -356,7 +356,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -390,7 +390,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -431,7 +431,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -471,7 +471,7 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
   WorldRuntimeFlags *runtimeFlagsField;
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -509,8 +509,8 @@ InGameGraphicsSettings_OpenAndSynchronize(UiNodeBase *graphicsButton)
 
 {
   UiNodeBase *firstNode;
-  dword settingValue;
-  dword storedSubresourceCount;
+  uint32_t settingValue;
+  uint32_t storedSubresourceCount;
   int scaledSubresourceCount;
   UiNodeBase *parentOrSelectedRow;
   
@@ -599,8 +599,8 @@ InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr
 
 {
   UiNodeBase *parentCursor;
-  dword audioFlags;
-  dword gainQ15;
+  uint32_t audioFlags;
+  uint32_t gainQ15;
   
   UiPageStack_SetActiveIndex(7,&THANDOR_CONTAINER_OF(settingsSourceNode, InGamePersistentSettingsPage3508, sourceNode)->settingsPageStack);
   audioFlags = PersistentSettings_ReadDword(3,0x20);
@@ -658,7 +658,7 @@ InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr
 void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
-  byte selectedState;
+  uint8_t selectedState;
   UiNodeBase *parentCursor;
   
   selectedState = UiSelectableControl_IsSelectedCf(control);
@@ -697,19 +697,19 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
   UiNodeBase *settingsRoot;
-  uint subresourceCount;
+  uint32_t subresourceCount;
   int scaledSubresourceCount;
-  dword textureDimension;
-  dword gridHalfSize;
-  dword storedSubresourceCount;
+  uint32_t textureDimension;
+  uint32_t gridHalfSize;
+  uint32_t storedSubresourceCount;
   PersistentSettingsDwordValue newGridHalfSize;
   PersistentSettingsDwordValue newTextureDimension;
   UiNodeBase *selectedControl;
   StatusValueEaxCf5 initStatus;
   FatalErrorEaxCf5 fatalResult;
-  uint value;
+  uint32_t value;
   
-  subresourceCount = (uint)((UiNumericPairTextButton *)control)->secondValue >> 2;
+  subresourceCount = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
   value = subresourceCount;
   /* The option control stores the grid half size at +0x60 (ECX); the texture dimension is twice
      that (EDX). The decompile passed both as uninitialized locals. */
@@ -839,7 +839,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  dword audioFlags;
+  uint32_t audioFlags;
   AudioMixerGainQ15 effectsGainQ15;
   MovieAudioGainQ15 movieDefaultGainQ15;
   MovieAudioGainQ15 movieAlternateGainQ15;
@@ -852,7 +852,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   }
   isEnabled = isEnabled;
   audioFlags = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword((uint)isEnabled | audioFlags & 0xfffffffe,0x20);
+  PersistentSettings_WriteDword((uint32_t)isEnabled | audioFlags & 0xfffffffe,0x20);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -914,8 +914,8 @@ InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  dword audioFlags;
-  uint musicEnabledBit;
+  uint32_t audioFlags;
+  uint32_t musicEnabledBit;
   bool isEnabled;
   
   musicEnabledBit = 0;
@@ -972,9 +972,9 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
-  dword currentAudioFlags;
-  uint reverseStereoBit;
-  sdword reverseStereoMask;
+  uint32_t currentAudioFlags;
+  uint32_t reverseStereoBit;
+  int32_t reverseStereoMask;
   bool isSelected;
   
   reverseStereoBit = 0;
@@ -1002,7 +1002,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetEffectsGain(UiSettingsValueCo
 
 {
   PersistentSettingsDwordValue value;
-  dword effectsGainQ15;
+  uint32_t effectsGainQ15;
   
   value = control->boundValue;
   PersistentSettings_WriteDword(value,0x24);
@@ -1042,7 +1042,7 @@ void __thandor_preserve_eax InGameAudioSettings_SetMusicGain(UiSettingsValueCont
 
 {
   PersistentSettingsDwordValue value;
-  dword musicGainQ15;
+  uint32_t musicGainQ15;
   
   value = control->boundValue;
   PersistentSettings_WriteDword(value,0x2c);
@@ -1090,7 +1090,7 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
 {
   UiNodeBase *parentCursor;
   UiNodeBase *uiRoot;
-  dword settingValue;
+  uint32_t settingValue;
   bool isSelected;
   
   parentCursor = (settingsToggle->base).parent;

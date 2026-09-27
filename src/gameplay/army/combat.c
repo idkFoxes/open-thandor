@@ -31,7 +31,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
 
 {
   ModelRuntimeFlags *nodeRuntimeFlags;
-  dword *remainingTicks;
+  uint32_t *remainingTicks;
   ModelMeshGroupMask *nodeMeshMask;
   ArmyWeaponDefinitionView68 *weaponDefinitionView;
   ModelRuntimeNode *pitchNode;
@@ -187,7 +187,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
                            weaponDefinitionView->postLaunchVector0Q12,modelRuntime->ownerArmyRuntime);
                 nodeMeshMask = &(modelRuntime->rootModelNode->childNodes[0]->childNodes[0]->modelPayload).
                           meshGroupMask;
-                *nodeMeshMask = *nodeMeshMask & -2 << ((byte)attachmentSelectorOrdinal & 0x1f);
+                *nodeMeshMask = *nodeMeshMask & -2 << ((uint8_t)attachmentSelectorOrdinal & 0x1f);
                 break;
               }
               modelRuntime->attachmentReloadTicks[attachmentSelectorOrdinal] = 0xffffffff;
@@ -230,10 +230,10 @@ ArmyRuntimeClass_UpdateTransformAndDamageEffect
   childNode = rootModelNodeRuntime->childNodes[0];
   if ((rootModelNodeRuntime->childCount != 0) && (childNode != (ModelRuntimeNode *)0x0)) {
     (childNode->modelPayload).localTranslationZQ12 =
-         (int)(((longlong)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
-               (longlong)
+         (int)(((int64_t)(int)(classDefinition->runtimeValue28 - classDefinition->runtimeValue24) *
+               (int64_t)
                *(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -0x78)) /
-              (longlong)*(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -0x74)
+              (int64_t)*(int *)(g_GameFactionRuntimeImage.records[0].reserved78_87 + factionRecordByteOffset + -0x74)
               ) + classDefinition->runtimeValue24;
     childNode->runtimeFlags = childNode->runtimeFlags | 1;
     ModelNodeRuntime_RebuildTransformsFromRoot(rootModelNodeRuntime);
@@ -288,7 +288,7 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
   Q12 *healthField;
   FactionRelationCounter *relationCounter;
   int maxHealth;
-  dword classId;
+  uint32_t classId;
   int healthOrOwnerIndex;
   bool rotateToImpact;
   ModelRuntimeNode *parentModelNode;
@@ -445,16 +445,16 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
 {
   ModelRuntimeSlot *ownModelRuntime;
   int *shotDefinitionWords;
-  longlong discriminant;
+  int64_t discriminant;
   int deltaXOrScaledLength;
   int minAngleOwnerOrDistance;
   int deltaYOrSpeedSquared;
   AngleTurn32 azimuthAngle;
   int deltaZ;
   AngleTurn32 elevationAngle;
-  dword angleOrDistance;
+  uint32_t angleOrDistance;
   int maxAngleOrRange;
-  uint distanceDifference;
+  uint32_t distanceDifference;
   FixedLengthAngleEaxEdx8 horizontalVector;
   FieldGridRaycastEaxEdxCf9 terrainHit;
   ModelRaycastNearestHitEaxEdxCf9 modelHit;
@@ -481,12 +481,12 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
     horizontalVector = FixedMath_Vector2AngleAndLengthRegs(deltaYOrSpeedSquared,deltaXOrScaledLength);
     deltaYOrSpeedSquared = shotDefinitionWords[3] * shotDefinitionWords[3];
     deltaXOrScaledLength = horizontalVector.length * shotDefinitionWords[0x37];
-    discriminant = (longlong)(deltaYOrSpeedSquared + shotDefinitionWords[0x37] * deltaZ * -2) * (longlong)deltaYOrSpeedSquared -
-            (longlong)deltaXOrScaledLength * (longlong)deltaXOrScaledLength;
+    discriminant = (int64_t)(deltaYOrSpeedSquared + shotDefinitionWords[0x37] * deltaZ * -2) * (int64_t)deltaYOrSpeedSquared -
+            (int64_t)deltaXOrScaledLength * (int64_t)deltaXOrScaledLength;
     if (discriminant < 0) {
       return true;
     }
-    angleOrDistance = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)discriminant >> 0x20),(UInt64Half32)discriminant);
+    angleOrDistance = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)discriminant >> 0x20),(UInt64Half32)discriminant);
     if ((-0x1000 < deltaZ) && (deltaZ < 0x1000)) {
       angleOrDistance = -angleOrDistance;
     }
@@ -657,13 +657,13 @@ ArmyRuntime_EmitDamageThresholdEffect
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  dword randomOrPointX;
+  uint32_t randomOrPointX;
   ModelPackedPointRecord *localPointRecord;
-  dword definitionOrRandom;
-  dword randomValue;
-  dword worldXQ12;
-  uint randomOffset;
-  dword worldZQ12;
+  uint32_t definitionOrRandom;
+  uint32_t randomValue;
+  uint32_t worldXQ12;
+  uint32_t randomOffset;
+  uint32_t worldZQ12;
   AngleTurn32 orientationAngle0;
   ModelLookupEntryEaxCf5 lookupResult;
   ModelLocalPointRegs12 transformedPoint;
@@ -686,7 +686,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   randomOffset = 0;
   if (*(int *)(definitionOrRandom + 0x25c) != 0) {
     randomOrPointX = (*g_RandomGeneratorState.next)();
-    randomOffset = randomOrPointX % *(uint *)(definitionOrRandom + 0x25c);
+    randomOffset = randomOrPointX % *(uint32_t *)(definitionOrRandom + 0x25c);
   }
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
   armyRuntime->selectionMetric3 = randomOffset + *(int *)(definitionOrRandom + 600);

@@ -20,20 +20,20 @@
 void __thandor_void_preserve_eax_ecx_edx
 FrontendNetwork_HandleHandshakeAndPlayerStatePackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          dword unusedDispatchArg)
+          uint32_t unusedDispatchArg)
 
 {
   NetworkIpv4AddressNetworkOrder senderAddress;
   UiTransferSenderContext packetSenderContext;
   UiTransferJoinAvailability packetChunkOffset;
-  uint sequenceTokenOrPlayerIndex;
+  uint32_t sequenceTokenOrPlayerIndex;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   int dwordCount;
   FrontendPlayerRuntimeRecord *playerRecord;
-  dword *sourceDword;
+  uint32_t *sourceDword;
   FrontendCommandPacketRecord *commandRecord;
   FrontendPacket30005PlayerSnapshot *snapshotCursor;
-  byte *payloadCursor;
+  uint8_t *payloadCursor;
   
   sequenceTokenOrPlayerIndex = (packet->packet10000Handshake).header.sequenceToken;
   senderAddress = senderEndpoint->ipv4AddressNetworkOrder;
@@ -132,7 +132,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
       playerRecord->snapshotChunkOffset = playerRecord->snapshotChunkOffset + 0xe0;
     }
     for (; dwordCount != 0; dwordCount = dwordCount + -1) {
-      *(dword *)payloadCursor = *sourceDword;
+      *(uint32_t *)payloadCursor = *sourceDword;
       sourceDword = sourceDword + 1;
       payloadCursor = payloadCursor + 4;
     }
@@ -157,15 +157,15 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetwork_HostTickCommandAndSnapshotTransfer(dword callbackArg)
+FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
 
 {
   FrontendSnapshotTransferFlags playerFlags;
-  uint commandHandlerIndex;
+  uint32_t commandHandlerIndex;
   int loopCount;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
-  uint packedCommandOrDwordCount;
-  uint commandCountOrBufferSize;
+  uint32_t packedCommandOrDwordCount;
+  uint32_t commandCountOrBufferSize;
   FrontendPlayerRuntimeBlockCount remainingPlayerCount;
   FrontendSnapshotTransferFlags scratchSizeBytes;
   FrontendSnapshotTransferFlags sourceSizeBytes;
@@ -173,7 +173,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(dword callbackArg)
   UiTransferEndpointDescriptor *peerEndpoint;
   FrontendPlayerRuntimeRecord *transferPlayer;
   FrontendPlayerRuntimeRecord *playerRecord;
-  byte *payloadCursor;
+  uint8_t *payloadCursor;
   FrontendSnapshotTransferFlags *scratchCursor;
   FrontendCommandPacketRecord *batchCursor;
   FrontendSnapshotTransferFlags *outgoingCursor;
@@ -308,7 +308,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(dword callbackArg)
         scratchSizeBytes = sourceSizeBytes;
       } while (remainingPlayerCount != 0);
       encodeResult = PckCodec_EncodeHuffmanRle
-                         (0x7ffffc - sourceSizeBytes,(byte *)(scratchCursor + 1),sourceSizeBytes,
+                         (0x7ffffc - sourceSizeBytes,(uint8_t *)(scratchCursor + 1),sourceSizeBytes,
                           g_PackageScratchBuffer);
       if (!encodeResult.carry) {
         *scratchCursor = sourceSizeBytes;
@@ -344,7 +344,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(dword callbackArg)
 void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndResetSession(void)
 
 {
-  uint *frontendRootFlags;
+  uint32_t *frontendRootFlags;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
   int frontendRootBase;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
@@ -362,7 +362,7 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     if ((g_FrontendRuntimeFlags & 0x10) != 0) {
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-      frontendRootFlags = &FRONTEND_UI_FIELD(frontendRootBase,menuRoomModelView,0x4C,uint);
+      frontendRootFlags = &FRONTEND_UI_FIELD(frontendRootBase,menuRoomModelView,0x4C,uint32_t);
       *frontendRootFlags = *frontendRootFlags & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
@@ -426,8 +426,8 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
 
 {
   UiTransferSenderContext packetSenderContext;
-  uint commandHandlerIndex;
-  uint remainingCommands;
+  uint32_t commandHandlerIndex;
+  uint32_t remainingCommands;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   int dwordCount;
   FrontendPlayerRuntimeRecord *nextPlayerRecord;
@@ -512,7 +512,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
    Ownership: network/backend/runtime.
    Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
 */
-dword __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
+uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D10(void)
 
 {
   return 0;
@@ -532,7 +532,7 @@ void __thandor_void_preserve_eax_ecx_edx Unreferenced_NoOpPreserveRegs_00583D30(
    Ownership: network/backend/runtime.
    Purpose: Proven unreferenced trivial stub that preserves its recovered register set and returns zero.
 */
-dword __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
+uint32_t __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D40(void)
 
 {
   return 0;
@@ -543,7 +543,7 @@ dword __thandor_eax_preserve_ecx_edx Unreferenced_ReturnZeroPreserveRegs_00583D4
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime].
 */
-dword __cdecl Network_Init(void)
+uint32_t __cdecl Network_Init(void)
 
 {
   HINSTANCE module;
@@ -819,7 +819,7 @@ dword __cdecl Network_Init(void)
       }
     }
   }
-  return (dword)resultOrError;
+  return (uint32_t)resultOrError;
 }
 
 
@@ -870,7 +870,7 @@ NetworkBackend_SetSessionContextCf(void *this,NetworkBackendSessionReturnValue32
    Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
    callable entry.
 */
-bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(dword instanceIndex)
+bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex)
 
 {
   NetworkBackendInstanceDescriptorPrefix *selectedBackendDescriptor;

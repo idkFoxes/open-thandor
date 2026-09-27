@@ -16,10 +16,8 @@ LEV file offsets and the loaded LevelAsset overlay are separate representations.
 Faction runtime index, frontend player index, player-runtime ID, ARM ID, MDL ID and TEC ID are separate identity domains.
 */
 
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned int dword;
-typedef unsigned long long qword;
+#include <stdint.h>
+
 typedef int Q12;
 typedef unsigned int UQ12;
 
@@ -58,7 +56,7 @@ or to other layout-compatible structs, which C only allows through a union.
 #include <thandor/generated/imports.h>
 
 /* EAX + CF results: CF clear with a value, or CF set with an engine error code in EAX. */
-static __inline StatusValueEaxCf5 StatusValue_Ok(dword value)
+static __inline StatusValueEaxCf5 StatusValue_Ok(uint32_t value)
 {
     StatusValueEaxCf5 result;
     result.valueOrError = value;
@@ -66,7 +64,7 @@ static __inline StatusValueEaxCf5 StatusValue_Ok(dword value)
     return result;
 }
 
-static __inline StatusValueEaxCf5 StatusValue_Fail(dword errorCode)
+static __inline StatusValueEaxCf5 StatusValue_Fail(uint32_t errorCode)
 {
     StatusValueEaxCf5 result;
     result.valueOrError = errorCode;
@@ -76,11 +74,11 @@ static __inline StatusValueEaxCf5 StatusValue_Fail(dword errorCode)
 
 /* Variadic UiSelectableGroup_* helpers take the group's controls as extra stack arguments, which
    the decompiler dropped at every call site. The original addresses them as base + byte offset. */
-#define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((byte *)(uintptr_t)(base) + (int)(offset)))
+#define THANDOR_UI_AT(base, offset) ((UiNodeBase *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* A field of a UI node inside a template image copy (root + byte offset), for bytes past the node's
    UiNodeBase; the node offsets are those of the template in src/generated/image_data.c. */
-#define THANDOR_UI_FIELD(base, offset, type) (*(type *)((byte *)(uintptr_t)(base) + (int)(offset)))
+#define THANDOR_UI_FIELD(base, offset, type) (*(type *)((uint8_t *)(uintptr_t)(base) + (int)(offset)))
 
 /* Node `node` of a UI template copy, reached from `self`, which is template node `selfNode` of the same
    copy (ImageType is the template struct, e.g. InGameUiImage): the nodes' fixed distance in the template. */

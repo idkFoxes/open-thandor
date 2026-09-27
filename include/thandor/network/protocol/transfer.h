@@ -27,16 +27,16 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
-          dword unusedDispatchArg);
+          uint32_t unusedDispatchArg);
 
 /* 0x00545640 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_MarkUnavailableIfModeBit0Callback(dword arg0,dword arg1,dword arg2,dword arg3);
+FrontendTransfer_MarkUnavailableIfModeBit0Callback(uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t arg3);
 
 /* 0x00545660 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
-          (int playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3);
+          (int playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x0054E230 */
 bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931Cf(void);
@@ -101,13 +101,13 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagCf(v
 /* 0x00407160 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTransfer_TransformPacketBlocks
-          (dword *roundKeys16,dword *outputBlocks,UiTransferPayloadByteCount byteCount,
-          dword *inputBlocks);
+          (uint32_t *roundKeys16,uint32_t *outputBlocks,UiTransferPayloadByteCount byteCount,
+          uint32_t *inputBlocks);
 
 /* 0x004072F0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTransferBlock_Transform64BitBlocksWithRoundKeys16
-          (dword *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source);
+          (uint32_t *roundKeys16,void *destination,UiTransferPayloadByteCount byteCount,void *source);
 
 /* 0x004AF140 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_MarkUnavailable(void);

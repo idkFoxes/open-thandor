@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0050D050 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050C7F0 */
@@ -65,7 +65,7 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
 /* 0x0050C770 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_TranslateCameraByScreenDelta
-          (CameraScreenDeltaPixels screenDeltaX,dword screenDeltaY,WorldRuntimeContext *worldRuntime
+          (CameraScreenDeltaPixels screenDeltaX,uint32_t screenDeltaY,WorldRuntimeContext *worldRuntime
           );
 
 #endif /* THANDOR_WORLD_MOTION_RUNTIME_H */

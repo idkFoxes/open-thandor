@@ -155,7 +155,7 @@ SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice)
    Ownership: audio/backend/runtime.
    Purpose: Disabled-backend query placeholder. Returns EDX:EAX equal to zero.
 */
-qword SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
+uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice)
 
 {
   return 0;
@@ -191,7 +191,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
   DynDllLoadEaxCf5 dllLoadResult;
   DynApiResolveEaxCf5 resolveResult;
   ArenaAllocEaxCf5 registryAlloc;
-  sdword failedStage;
+  int32_t failedStage;
   
   failedStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_4);
@@ -202,10 +202,10 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
      ((resolveResult = DynAPI_Resolve(&pDirectSoundCaptureCreate,module,dynapi_22), !resolveResult.carry &&
       (resolveResult = DynAPI_Resolve(&pDirectSoundCaptureEnumerateA,module,dynapi_23), !resolveResult.carry)))) {
     directSoundResult = (*pDirectSoundCreate)((TH_LEGACY_GUID *)0x0,&g_DirectSound,(TH_LEGACY_LPVOID)0x0);
-    Thandor_Log("DirectSoundCreate -> 0x%08X", (dword)directSoundResult);
+    Thandor_Log("DirectSoundCreate -> 0x%08X", (uint32_t)directSoundResult);
     if (directSoundResult != 0) {
       /* no DirectSound device: not an error, the game runs silent */
-      return StatusValue_Ok((dword)directSoundResult);
+      return StatusValue_Ok((uint32_t)directSoundResult);
     }
     directSoundResult = (*g_DirectSound->lpVtbl->SetCooperativeLevel)(g_DirectSound,g_MainWindow,3);
     if (directSoundResult == 0) {
@@ -274,13 +274,13 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
         }
       }
     }
-    Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (dword)directSoundResult);
+    Thandor_Log("DirectSound_Init failed at stage %d, HRESULT 0x%08X", failedStage, (uint32_t)directSoundResult);
     (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,failedStage,g_PackageLastErrorPath);
     return StatusValue_Fail(0x29); /* DirectSound failed at stage <g_PackageLastErrorPath> */
   }
   Thandor_Log("DirectSound_Init: DSOUND.DLL or an export could not be resolved");
-  return StatusValue_Fail(dllLoadResult.carry ? (dword)dllLoadResult.moduleOrError
-                                              : (dword)resolveResult.procedureOrError);
+  return StatusValue_Fail(dllLoadResult.carry ? (uint32_t)dllLoadResult.moduleOrError
+                                              : (uint32_t)resolveResult.procedureOrError);
 }
 
 
@@ -298,8 +298,8 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
   TH_LEGACY_HRESULT directSoundResult;
-  dword encodedBlockSize;
-  uint remainingBlocks;
+  uint32_t encodedBlockSize;
+  uint32_t remainingBlocks;
   int remainingCount;
   int registryRemaining;
   IDirectSoundBuffer **voiceSetOrErrorCode;
@@ -310,10 +310,10 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
   ArenaAllocEaxCf5 voiceSetAlloc;
   SoundCreateSampleVoiceSetEaxCf5 successResult;
   SoundCreateSampleVoiceSetEaxCf5 failureResult;
-  sdword failedStage;
+  int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
-  uint lockedByteCount;
+  uint32_t lockedByteCount;
   short *lockedPcm;
   IDirectSoundBuffer *soundBuffer;
   
@@ -325,7 +325,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
   if ((sampleAsset->magic == ASSET_MAGIC_SAM) && (sampleAsset->formatVersion == 0x10000)) {
     WaveFormat_PCM_22050_Stereo16.wFormatTag = WAVE_FORMAT_PCM;
     WaveFormat_PCM_22050_Stereo16.nChannels = 2;
-    THANDOR_PART(word, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 0x5622;
+    THANDOR_PART(uint16_t, WaveFormat_PCM_22050_Stereo16.nSamplesPerSec, 0) = 0x5622;
     WaveFormat_PCM_22050_Stereo16.nAvgBytesPerSec = 0x15888;
     WaveFormat_PCM_22050_Stereo16.nBlockAlign = 4;
     WaveFormat_PCM_22050_Stereo16.wBitsPerSample = 0x10;
@@ -347,7 +347,7 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
         remainingBlocks = lockedByteCount >> 10;
         outputStereoPcm = lockedPcm;
         do {
-          encodedBlockSize = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(byte *)encodedBlock);
+          encodedBlockSize = SoundSample_DecodePackedCoefficientBlock((short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0),(uint8_t *)encodedBlock);
           SoundSample_DecodeCoefficientBlockToPcmMmx(outputStereoPcm,(short *)THANDOR_ADDR(g_SoundSampleCoefficientBlock,0));
           encodedBlock = (SoundSampleAsset *)(encodedBlock->reserved04_0B + (encodedBlockSize - 4));
           outputStereoPcm = outputStereoPcm + 0x200;
@@ -450,26 +450,26 @@ SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          dword *pcmData)
+          uint32_t *pcmData)
 
 {
-  sdword pendingStage;
-  uint blockAlignOrDwordCount;
+  int32_t pendingStage;
+  uint32_t blockAlignOrDwordCount;
   TH_LEGACY_HRESULT directSoundResult;
   int remainingCount;
   int registryRemaining;
   IDirectSoundBuffer **voiceSetOrErrorCode;
   IDirectSoundBuffer **voiceCursor;
-  dword *destCursor;
+  uint32_t *destCursor;
   DirectSoundVoiceSet **registryCursor;
   ArenaAllocEaxCf5 voiceSetAlloc;
   SoundCreatePcmVoiceSetEaxCf5 successResult;
   SoundCreatePcmVoiceSetEaxCf5 failureResult;
-  sdword failedStage;
+  int32_t failedStage;
   TH_LEGACY_DWORD wrapByteCount;
   TH_LEGACY_LPVOID wrapRegion;
-  uint lockedByteCount;
-  dword *lockedData;
+  uint32_t lockedByteCount;
+  uint32_t *lockedData;
   IDirectSoundBuffer *soundBuffer;
   
   soundBuffer = (IDirectSoundBuffer *)0x0;
@@ -603,8 +603,8 @@ static void DirectSound_ApplyChannelGains
           (SpatialSoundGainQ15 leftChannelGainQ15,SpatialSoundGainQ15 rightChannelGainQ15,
           IDirectSoundBuffer *voice)
 {
-  sdword leftAttenuation = g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
-  sdword rightAttenuation = g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
+  int32_t leftAttenuation = g_DirectSoundGainAttenuation[leftChannelGainQ15 >> 8];
+  int32_t rightAttenuation = g_DirectSoundGainAttenuation[rightChannelGainQ15 >> 8];
   (*voice->lpVtbl->SetVolume)
             (voice,rightChannelGainQ15 < leftChannelGainQ15 ? leftAttenuation : rightAttenuation);
   (*voice->lpVtbl->SetPan)(voice,leftAttenuation - rightAttenuation);
@@ -766,7 +766,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void)
    Purpose: Consumes one voice pointer and returns EDX:EAX equal to zero. No executable call site references this
    service slot, so the higher-level query semantics remain unresolved.
 */
-qword DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
+uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice)
 
 {
   return 0;

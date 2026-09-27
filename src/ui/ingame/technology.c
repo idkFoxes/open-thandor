@@ -61,32 +61,32 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
 
 {
-  sdword *flagSlot;
+  int32_t *flagSlot;
   UiNodeBase **parentFlagSlot;
   UiAnchorFractionQ31 *anchorFlagSlot;
   UiNodeFlags *nodeFlagsSlot;
-  uint *rowFlags;
+  uint32_t *rowFlags;
   int *entityDefinition;
   GameEntityRuntime *firstSelectedEntity;
   int technologyCursor;
   int remainingCount;
-  uint areaIndex;
+  uint32_t areaIndex;
   
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,worldView,0x48,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,worldView,0x48,int32_t);
   *flagSlot = *flagSlot | 8;
   UiKeyboardFocus_ReleaseNode((UiNodeBase *)INGAME_UI(inGameRoot,worldView));
   firstSelectedEntity = SelectionInfo_GetFirstEntry();
   entityDefinition = (firstSelectedEntity->common).ownership.definitionOrClassRecord;
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x4C,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab1,0x4C,int32_t);
   *flagSlot = *flagSlot & 0xfffffffd;
-  INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint)INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) & 0xfffffffd);
+  INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) = (UiRootCallbacks *)((uint32_t)INGAME_UI_FIELD(inGameRoot,technologyAreaTab2,0x4C,struct UiRootCallbacks *) & 0xfffffffd);
   parentFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab3,0x4C,struct UiNodeBase *);
-  *parentFlagSlot = (UiNodeBase *)((uint)*parentFlagSlot & 0xfffffffd);
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x4C,sdword);
+  *parentFlagSlot = (UiNodeBase *)((uint32_t)*parentFlagSlot & 0xfffffffd);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab4,0x4C,int32_t);
   *flagSlot = *flagSlot & 0xfffffffd;
-  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x4C,sdword);
+  flagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab5,0x4C,int32_t);
   *flagSlot = *flagSlot & 0xfffffffd;
-  anchorFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x4C,dword);
+  anchorFlagSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab6,0x4C,uint32_t);
   *anchorFlagSlot = *anchorFlagSlot & 0xfffffffd;
   nodeFlagsSlot = &INGAME_UI_FIELD(inGameRoot,technologyAreaTab7,0x4C,enum UiNodeFlags);
   *nodeFlagsSlot = *nodeFlagsSlot & ~UI_NODE_PREFERRED_FOCUS_TARGET;
@@ -100,7 +100,7 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
         areaIndex = 0;
       }
       if (*(int *)(technologyCursor + 0x1c8) == entityDefinition[0x40]) {
-        rowFlags = (uint *)((int)&inGameRoot->rootFlags + *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0)));
+        rowFlags = (uint32_t *)((int)&inGameRoot->rootFlags + *(int *)(areaIndex * 4 + THANDOR_ADDR(g_TechnologyPanelRowFlagOffsets,0)));
         *rowFlags = *rowFlags | 2;
         break;
       }
@@ -130,14 +130,14 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   UiNodeFlags *gridNodeFlags;
   WorldOwnerListNode100 *ownerNode;
   UiCommandRuntimeRecordPrefix *catalogRecord;
-  sdword *offsetSlotOrTable;
+  int32_t *offsetSlotOrTable;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
-  uint capabilityFlagsOrSlotIndex;
+  uint32_t capabilityFlagsOrSlotIndex;
   ArmyAssetRecordPrefix *armyAssetRecord;
-  dword columnCount;
+  uint32_t columnCount;
   GraphicsTextureSourceAsset *textureAsset;
   int modelOrCounterOrOffset;
-  uint itemCount;
+  uint32_t itemCount;
   int factionIndex;
   int panelHeight;
   UiCommandRuntimeRecordPrefix **recordCursor;
@@ -150,7 +150,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   ownerNode = (inGameUiGridView->worldRuntime0A30).ownerListHead;
   /* The original loads EDX = root[+0xA80] (the local faction) before the call, which preserves it;
      the decompiler lost that load. */
-  factionIndex = *(int *)((byte *)inGameUiGridView + 0xa80);
+  factionIndex = *(int *)((uint8_t *)inGameUiGridView + 0xa80);
   capabilityFlagsOrSlotIndex = SelectionInfo_CollectCapabilityFlags();
   if (capabilityFlagsOrSlotIndex == 0) {
     for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
@@ -161,7 +161,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
           capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | 8;
         }
         else if (*(int *)(modelOrCounterOrOffset + 0x4c) == 0xd) {
-          capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | *(uint *)(modelOrCounterOrOffset + 0xc4);
+          capabilityFlagsOrSlotIndex = capabilityFlagsOrSlotIndex | *(uint32_t *)(modelOrCounterOrOffset + 0xc4);
         }
       }
     }
@@ -178,12 +178,12 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
   do {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
     if ((((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
-           ((*(uint *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
+           ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
           (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
                               (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult)
-          ) && (((*(uint *)((int)catalogRecord->reserved0C_1B + 8) & 0xee) != 0 &&
+          ) && (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0xee) != 0 &&
                 (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))) &&
-        ((itemCount < 0x30 && ((*(uint *)((int)catalogRecord->reserved0C_1B + 8) & capabilityFlagsOrSlotIndex) != 0)))) &&
+        ((itemCount < 0x30 && ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & capabilityFlagsOrSlotIndex) != 0)))) &&
        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructureCf
                             (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
         (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
@@ -196,7 +196,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
     modelOrCounterOrOffset = modelOrCounterOrOffset + -1;
   } while (modelOrCounterOrOffset != 0);
   gridDimensions = UiGrid_ComputeDimensionsPacked(6,itemCount);
-  columnCount = (dword)gridDimensions;
+  columnCount = (uint32_t)gridDimensions;
   if (8 < columnCount) {
     columnCount = 8;
   }
@@ -236,14 +236,14 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
     modelOrCounterOrOffset = offsetSlotOrTable[capabilityFlagsOrSlotIndex];
     catalogRecord = *recordCursor;
     if (capabilityFlagsOrSlotIndex < itemCount) {
-      *(uint *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
-           *(uint *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) & 0xfffffff7;
+      *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) & 0xfffffff7;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
-      *(uint *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
-           *(uint *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) | 8;
+      *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) =
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + modelOrCounterOrOffset + -0x10) | 8;
       xeniteCost = 0;
       textureAsset = (GraphicsTextureSourceAsset *)0x0;
     }
@@ -273,15 +273,15 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
   UiNodeFlags *gridNodeFlags;
   WorldOwnerListNode100 *ownerNode;
   UiCommandRuntimeRecordPrefix *catalogRecord;
-  sdword *offsetSlotOrTable;
+  int32_t *offsetSlotOrTable;
   InGameRuntimeUiGridViewC3E4 *inGameUiGridView;
   ArmyAssetRecordPrefix *armyAssetRecord;
-  dword columnCount;
+  uint32_t columnCount;
   int factionOrExtentOrOffset;
   GraphicsTextureSourceAsset *textureAsset;
   int remainingCount;
-  uint itemCount;
-  uint slotIndex;
+  uint32_t itemCount;
+  uint32_t slotIndex;
   int structureCountOrHeight;
   UiCommandRuntimeRecordPrefix **recordCursor;
   ArmyAssetRecordPrefix **registryCursor;
@@ -312,10 +312,10 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
   do {
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
     if (((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
-          ((*(uint *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
+          ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
          ((checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
                               (factionOrExtentOrOffset,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult &&
-          (((*(uint *)((int)catalogRecord->reserved0C_1B + 8) & 0x10) != 0 &&
+          (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0x10) != 0 &&
            (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))))) && (itemCount < 0x2a)) &&
        ((structureCountOrHeight != 0 &&
         ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructureCf
@@ -330,7 +330,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
     remainingCount = remainingCount + -1;
   } while (remainingCount != 0);
   gridDimensions = UiGrid_ComputeDimensionsPacked(7,itemCount);
-  columnCount = (dword)gridDimensions;
+  columnCount = (uint32_t)gridDimensions;
   if (6 < columnCount) {
     columnCount = 6;
   }
@@ -381,14 +381,14 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
     factionOrExtentOrOffset = offsetSlotOrTable[slotIndex];
     catalogRecord = *recordCursor;
     if (slotIndex < itemCount) {
-      *(uint *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
-           *(uint *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) & 0xfffffff7;
+      *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) & 0xfffffff7;
       xeniteCost = catalogRecord->buildXeniteCostQ4;
       textureAsset = catalogRecord->textureSource;
     }
     else {
-      *(uint *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
-           *(uint *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) | 8;
+      *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) =
+           *(uint32_t *)(inGameUiGridView->opaque0058_017B + factionOrExtentOrOffset + -0x10) | 8;
       xeniteCost = 0;
       textureAsset = (GraphicsTextureSourceAsset *)0x0;
     }
@@ -416,7 +416,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
 {
   int parentLink;
   GameEntityRuntime *firstSelectedEntity;
-  uint doubledTechnologyId;
+  uint32_t doubledTechnologyId;
   CommandPayloadDword04 modelOffset;
   UiSelectableNodeEaxEcxCf9 selectedArea;
   
@@ -443,7 +443,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
       INGAME_UI(source,technologyAreaTab1));
     if (!selectedArea.carry) {
       /* the dword 8 bytes before the selected area tab (see InGameTechnologyPanel_Rebuild) */
-      doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,sdword) - 0x300000;
+      doubledTechnologyId = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t) - 0x300000;
     }
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -483,14 +483,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
   TechnologyAsset *technologyAsset;
   PckTechnologyIdCatalog previousTechnologyId;
   GameEntityRuntime *firstSelectedEntity;
-  word *labelText;
+  uint16_t *labelText;
   PckTechnologyIdCatalog selectedTechnologyId;
-  dword writtenBytes;
+  uint32_t writtenBytes;
   UiNodeBase *resourceId;
   int remainingCount;
   int definitionOrEnergyCost;
-  uint packedEnergyColor;
-  uint costColor;
+  uint32_t packedEnergyColor;
+  uint32_t costColor;
   int areaIndex;
   bool isAvailable;
   RichTextExtentRegs textExtent;
@@ -498,10 +498,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
   TextResourceResolveEaxCf5 resolvedName;
   ArmyRegistryEaxCf5_51b6d0 armyRecord;
   UiSelectableNodeEaxEcxCf9 selectedArea;
-  word *formatBuffer;
-  word *formattedText;
-  word *stream;
-  word *source;
+  uint16_t *formatBuffer;
+  uint16_t *formattedText;
+  uint16_t *stream;
+  uint16_t *source;
   UiActionId actionId;
   UiRootNode *firstNode;
   
@@ -555,7 +555,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         source = labelText;
         resolvedText = TextResource_Resolve(THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -8,TextResourceId));
         RichTextCommandStream_PatchPayloadBySelector(0,resolvedText.eax,labelText);
-        labelText = THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -4,word *);
+        labelText = THANDOR_UI_FIELD(inGameRoot,rowFlagOffset + -4,uint16_t *);
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                    (int)g_TechnologyAsset->records[*(int *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4)].
@@ -582,7 +582,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       playerBlock = g_SelectionPlayerRuntimeBlockPointers
                     [((WorldRuntimeContext *)INGAME_UI(inGameRoot,worldView))->selection.activePlayerRuntimeId];
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (word *)0x217f;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)0x217f;
       ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x2180;
       INGAME_UI(inGameRoot,technologyDescriptionText)->rightOffset = 6;
       INGAME_UI(inGameRoot,technologyDescriptionText)->bottomOffset = 6;
@@ -596,7 +596,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     else {
       ((UiTextButtonControl *)INGAME_UI(inGameRoot,technologyResearchButton))->textResourceId = 0x217e;
       technologyAsset = g_TechnologyAsset;
-      definitionOrEnergyCost = THANDOR_UI_FIELD(selectedArea.node,-8,sdword);
+      definitionOrEnergyCost = THANDOR_UI_FIELD(selectedArea.node,-8,int32_t);
       resourceId = (UiNodeBase *)(definitionOrEnergyCost + 1);
       selectedTechnologyId = definitionOrEnergyCost - 0x300000U >> 1;
       xeniteCost = g_TechnologyAsset->records[selectedTechnologyId].xeniteCostQ4;
@@ -610,18 +610,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       writtenBytes = (*g_WideNumberFormatUtf16)
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
                           g_InGameTechnologyXeniteCostTextUtf16);
-      *(dword *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
+      *(uint32_t *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionOrEnergyCost,g_InGameTechnologyEnergyCostTextUtf16);
       packedEnergyColor = definitionOrEnergyCost << 0x10 | costColor >> 0x10;
-      g_InGameTechnologyCostColorWords8[1] = (word)costColor;
-      g_InGameTechnologyCostColorWords8[5] = (word)(costColor >> 0x10);
-      g_InGameTechnologyCostColorWords8[0] = (word)(costColor >> 4);
-      g_InGameTechnologyCostColorWords8[4] = (word)(packedEnergyColor >> 4);
-      g_InGameTechnologyCostColorWords8[3] = (word)(costColor >> 8);
-      g_InGameTechnologyCostColorWords8[7] = (word)(packedEnergyColor >> 8);
-      g_InGameTechnologyCostColorWords8[2] = (word)(costColor >> 0xc);
-      g_InGameTechnologyCostColorWords8[6] = (word)(packedEnergyColor >> 0xc);
+      g_InGameTechnologyCostColorWords8[1] = (uint16_t)costColor;
+      g_InGameTechnologyCostColorWords8[5] = (uint16_t)(costColor >> 0x10);
+      g_InGameTechnologyCostColorWords8[0] = (uint16_t)(costColor >> 4);
+      g_InGameTechnologyCostColorWords8[4] = (uint16_t)(packedEnergyColor >> 4);
+      g_InGameTechnologyCostColorWords8[3] = (uint16_t)(costColor >> 8);
+      g_InGameTechnologyCostColorWords8[7] = (uint16_t)(packedEnergyColor >> 8);
+      g_InGameTechnologyCostColorWords8[2] = (uint16_t)(costColor >> 0xc);
+      g_InGameTechnologyCostColorWords8[6] = (uint16_t)(packedEnergyColor >> 0xc);
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                  (int)technologyAsset->records[selectedTechnologyId].researchDurationQ5 >> 5,
@@ -642,7 +642,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
         UiScrollableControl_RebuildViewportAndScrollbars(scrollableControl);
         UiScrollableControl_ClampOffsetsToViewport(0,0,0,0,scrollableControl);
       }
-      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (word *)resourceId;
+      ((UiWrappedTextControl *)INGAME_UI(inGameRoot,technologyDescriptionText))->text = (uint16_t *)resourceId;
     }
   }
   return;

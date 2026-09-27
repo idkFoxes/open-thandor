@@ -56,15 +56,15 @@ ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId);
 /* 0x0051B770 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
-          (FactionRuntimeIndex factionIndex,dword requiredDefinitionFlags,
+          (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord);
 
 /* 0x00571E40 */
 void __thandor_void_preserve_eax_ecx
-ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyAssetRegistryId);
+ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedArmyAssetRegistryId);
 
 /* 0x0051C170 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode);
 
@@ -87,25 +87,25 @@ ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase);
 
 /* 0x00571D90 */
-dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryId);
+uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetRegistryId);
 
 /* 0x0051B6D0 */
 ArmyRegistryEaxCf5_51b6d0 __thandor_eax_cf_preserve_ecx_edx
 ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId);
 
 /* 0x00571910 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId);
 
 /* 0x00571B50 */
-byte __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId);
+uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId);
 
 /* 0x00571980 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId);
 
 /* 0x00571BC0 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId);
 
 #endif /* THANDOR_ASSETS_ARMY_CATALOG_H */

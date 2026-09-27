@@ -25,30 +25,30 @@ SelectionPanel_RenderArmyRuntimeMetrics
 /* 0x0055FA20 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSelection_RebuildOwnedClass16Selection
-          (PlayerRuntimeId playerRuntimeId,dword callbackArg1,dword callbackArg2,dword callbackArg3);
+          (PlayerRuntimeId playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x0055FB30 */
 void __thandor_preserve_eax
 InGamePlayerSelection_ReplaceWithArmyRuntimeIndex
-          (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FE70 */
 void __thandor_preserve_eax_edx
 InGamePlayerSelection_ApplyPositionCommandVariantB
-          (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
           CommandPayloadDword0C payloadDword0C);
 
 /* 0x0055FEA0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGamePlayerSelection_ApplyPositionCommand
-          (PlayerRuntimeId playerId,dword payloadDword04,CommandPayloadDword08 payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,CommandPayloadDword08 payloadDword08,
           CommandPayloadDword0C payloadDword0C);
 
 /* 0x0055FED0 */
 void __thandor_preserve_eax
 InGamePlayerSelection_SelectArmyRuntimeIndex
-          (PlayerRuntimeId playerId,dword payloadDword04,dword payloadDword08,
+          (PlayerRuntimeId playerId,uint32_t payloadDword04,uint32_t payloadDword08,
           RuntimeToken armyRuntimeIndex);
 
 /* 0x0055FF10 */
@@ -96,12 +96,12 @@ InGameSelection_ApplyType16MarkerCoordinatesVariant2
 /* 0x00562050 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_ReissuePrimarySelectionPosition
-          (PlayerRuntimeId playerRuntimeId,dword reserved,Q12 deltaYQ12,Q12 deltaXQ12);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reserved,Q12 deltaYQ12,Q12 deltaXQ12);
 
 /* 0x00562220 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_AdvancePrimarySelectionCycle
-          (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,AngleTurn32 angleDelta);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,AngleTurn32 angleDelta);
 
 /* 0x0052CEE0 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
@@ -153,16 +153,16 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
 bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntryCf(GameEntityRuntime *entry);
 
 /* 0x00530770 */
-dword __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void);
+uint32_t __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void);
 
 /* 0x005307C0 */
-dword __cdecl SelectionInfo_CollectCapabilityFlags(void);
+uint32_t __cdecl SelectionInfo_CollectCapabilityFlags(void);
 
 /* 0x00561000 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerRuntime_ClearTerrainEditSelectionState
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2);
 
 /* 0x00571020 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -253,7 +253,7 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
 /* 0x00530190 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_ApplyTargetPositionCommand
-          (Q12 coordinateA,dword coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection);
+          (Q12 coordinateA,uint32_t coordinateB,Q12 coordinateC,SelectionPointerArray32 *selection);
 
 /* 0x00530540 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -304,7 +304,7 @@ SelectionPanel_DrawHorizontalNumberTextCappedBar
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelCoordinate fixedCoordinate,
           UiPixelCoordinate spanEndCoordinate,UiPixelCoordinate spanStartCoordinate,
-          word *commandStream,SelectionPanelCellIndex cellIndex);
+          uint16_t *commandStream,SelectionPanelCellIndex cellIndex);
 
 /* 0x0052D9A0 */
 void __thandor_void_preserve_eax_ecx_edx

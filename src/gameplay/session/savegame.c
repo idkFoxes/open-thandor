@@ -45,7 +45,7 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
   selectedIndex = selectionResult.rowIndex;
   selectedRowRecord = rowSlotArray[selectedIndex];
   if (selectionResult.carry) {
-    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),saveNameEntryStack);
+    UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
     if (selectedIndex != lastRowIndex) {
       InGameSaveGame_SaveSelectedOrTypedName
                 (THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameSaveButton));
@@ -53,14 +53,14 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
     }
   }
   else {
-    UiPageStack_SetActiveIndex((uint)(selectedIndex == lastRowIndex),saveNameEntryStack);
-    descriptionBox->text = (word *)0x215d;
+    UiPageStack_SetActiveIndex((uint32_t)(selectedIndex == lastRowIndex),saveNameEntryStack);
+    descriptionBox->text = (uint16_t *)0x215d;
     if (selectedIndex != lastRowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = *(TextResourceId *)((int)selectedRowRecord + 0x70);
         descriptionText = TextResource_Resolve(resourceId);
         *descriptionText.eax = 0x8000;
-        descriptionBox->text = (word *)resourceId;
+        descriptionBox->text = (uint16_t *)resourceId;
       }
       else {
         descriptionText = TextResource_Resolve(0x215e);
@@ -69,7 +69,7 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,descriptionText.eax);
         fieldText = TextResource_Resolve(*(TextResourceId *)((int)selectedRowRecord + 0x90));
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,descriptionText.eax);
-        descriptionBox->text = (word *)0x215e;
+        descriptionBox->text = (uint16_t *)0x215e;
       }
       firstNode = UiNode_GetRoot(&saveNameEntryStack->base);
       UiNodeList_UnsuppressActionId(0x1219,firstNode);
@@ -104,9 +104,9 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
           (InGameSaveGamePageControlAddress32 saveGamePageControl)
 
 {
-  word *leaf;
+  uint16_t *leaf;
   int rowOrdinal;
-  dword errorOrValue;
+  uint32_t errorOrValue;
   bool carryIn;
   UiListRowIndexEaxCf5 selectionResult;
   
@@ -115,15 +115,15 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
   rowOrdinal = selectionResult.rowIndex + 1;
   if (rowOrdinal != *(int *)(saveGamePageControl + 0x144)) {
-    leaf = *(word **)(*(int *)(saveGamePageControl + 0x140) + -4 + rowOrdinal * 4);
+    leaf = *(uint16_t **)(*(int *)(saveGamePageControl + 0x140) + -4 + rowOrdinal * 4);
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
-               (word *)&g_ExecutableDirectoryUtf16);
+              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+               (uint16_t *)&g_ExecutableDirectoryUtf16);
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-               (word *)&g_ScenarioCatalogPathScratchUtf16);
-    carryIn = WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
-    errorOrValue = (*g_FileSystemDeleteCf)(0,(word *)&g_ScenarioCatalogPathScratchUtf16);
+              ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
+               (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    carryIn = WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    errorOrValue = (*g_FileSystemDeleteCf)(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,carryIn);
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
@@ -157,9 +157,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
   TextResourceId resourceId;
   ScenarioCatalogHeader *rowPointerCursor;
   void *handle;
-  dword remainingCount;
+  uint32_t remainingCount;
   int clearCount;
-  word *leaf;
+  uint16_t *leaf;
   ScenarioCatalogByteOffset *destination;
   ScenarioCatalogByteOffset *clearCursor;
   ArenaAllocEaxCf5 allocResult;
@@ -169,11 +169,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
   TextResourceResolveEaxCf5 fieldText;
   FileSystemEnumerationEaxEcxCf9 enumResult;
   void *closeHandle;
-  dword rowCount;
+  uint32_t rowCount;
   
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save___sve_0050d9c8,
-             (word *)&g_ExecutableDirectoryUtf16);
+            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
   enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
@@ -189,18 +189,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
     destination = &rowPointerCursor->campaignRecordsOffset + remainingCount;
     g_ScenarioCatalog = rowPointerCursor;
     rowCount = remainingCount;
-    leaf = (word *)g_PackageScratchBuffer;
+    leaf = (uint16_t *)g_PackageScratchBuffer;
     for (; remainingCount != 0; remainingCount = remainingCount - 1) {
       rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
       *destination = 0;
       WidePath_CombineDirectoryAndLeaf
-                ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
-                 (word *)&g_ExecutableDirectoryUtf16);
+                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+                 (uint16_t *)&g_ExecutableDirectoryUtf16);
       WidePath_CombineDirectoryAndLeaf
-                ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-                 (word *)&g_ScenarioCatalogPathScratchUtf16);
+                ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
+                 (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       openResult = (*g_FileSystemOpenCf)
-                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(word *)&g_ScenarioCatalogPathScratchUtf16);
+                        (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       handle = (void *)openResult.eax;
       if (!openResult.carry) {
         closeHandle = handle;
@@ -212,7 +212,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       }
       rowPointerCursor = (ScenarioCatalogHeader *)&rowPointerCursor->campaignRecordsOffset;
       destination = destination + 0x40;
-      leaf = (word *)((int)leaf + enumResult.recordSizeBytes);
+      leaf = (uint16_t *)((int)leaf + enumResult.recordSizeBytes);
     }
     rowPointerCursor->levelRecordsOffset = (ScenarioCatalogByteOffset)destination;
     clearCursor = destination;
@@ -221,7 +221,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       clearCursor = clearCursor + 1;
     }
     resolvedText = TextResource_Resolve(0x2151);
-    RichTextCommandStream_CopyExpandedCf(0x100,(word *)destination,resolvedText.eax);
+    RichTextCommandStream_CopyExpandedCf(0x100,(uint16_t *)destination,resolvedText.eax);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
@@ -247,13 +247,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
     selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
     selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
     /* The description text holds a TextResourceId (labelFlags & 0x10 clear). */
-    descriptionText->text = (word *)0x215d;
+    descriptionText->text = (uint16_t *)0x215d;
     if (listRowCount - 1 != selectionResult.rowIndex) {
       if (g_FrontendLoadedCampaignAsset == 0) {
         resourceId = selectedRecord->localizedStringId70;
         resolvedText = TextResource_Resolve(resourceId);
         *resolvedText.eax = 0x8000;
-        descriptionText->text = (word *)resourceId;
+        descriptionText->text = (uint16_t *)resourceId;
       }
       else {
         resolvedText = TextResource_Resolve(0x215e);
@@ -262,7 +262,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
         RichTextCommandStream_PatchPayloadBySelector(1,fieldText.eax,resolvedText.eax);
         fieldText = TextResource_Resolve(selectedRecord->optionalLocalizedStringId90);
         RichTextCommandStream_PatchPayloadBySelector(0,fieldText.eax,resolvedText.eax);
-        descriptionText->text = (word *)0x215e;
+        descriptionText->text = (uint16_t *)0x215e;
       }
     }
   }
@@ -283,11 +283,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
 {
   /* saveButton is the save page's saveGameSaveButton node of the in-game UI copy. */
   UiPointerListControl *saveList;
-  dword errorOrValue;
-  word *leaf;
-  byte saveStatus;
+  uint32_t errorOrValue;
+  uint16_t *leaf;
+  uint8_t saveStatus;
   UiListRowIndexEaxCf5 selectionResult;
-  uint saveCarry;
+  uint32_t saveCarry;
   
   (*g_GraphicsCursorSetFrame)(6);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
@@ -297,20 +297,20 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->
          textPrefix6C;
   if (errorOrValue != saveList->rowCount) {
-    leaf = (word *)saveList->rowSlots[errorOrValue - 1];
+    leaf = (uint16_t *)saveList->rowSlots[errorOrValue - 1];
   }
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_ScenarioCatalogPathScratchUtf16,(word *)u_save_0050daa2,
-             (word *)&g_ExecutableDirectoryUtf16);
+            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save_0050daa2,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_ScenarioCatalogPathScratchUtf16,leaf,
-             (word *)&g_ScenarioCatalogPathScratchUtf16);
-  WidePath_SetExtensionCode(0x657673,(word *)&g_ScenarioCatalogPathScratchUtf16);
+            ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
+             (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+  WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
   /* The error check below uses the save routine's CF, not the extension helper's. */
   saveStatus = InGameUiAction1210_ResourceRegistrationHelper
                     (THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,worldView),
                      &g_ScenarioCatalogPathScratchUtf16);
-  saveCarry = (uint)(saveStatus & 1);
+  saveCarry = (uint32_t)(saveStatus & 1);
   (*g_GraphicsCursorSetFrame)(0);
   (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected
@@ -335,11 +335,11 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 {
   UiNodeBase *parentWalk;
   UiNodeBase *firstNode;
-  dword remainingLength;
-  uint scanRemaining;
-  uint nameLength;
-  sdword *scanEnd;
-  sdword *charCursor;
+  uint32_t remainingLength;
+  uint32_t scanRemaining;
+  uint32_t nameLength;
+  int32_t *scanEnd;
+  int32_t *charCursor;
   bool matched;
   
   parentWalk = nameControl->parent;
@@ -351,105 +351,105 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
   if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
     remainingLength = ((UiTextEditControl *)nameControl)->valueOrCapacity58;
     matched = true;
-    charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
     do {
       scanEnd = charCursor;
       if (remainingLength == 0) break;
       remainingLength = remainingLength - 1;
-      scanEnd = (sdword *)((int)charCursor + 2);
+      scanEnd = (int32_t *)((int)charCursor + 2);
       matched = (short)*charCursor == 0;
       charCursor = scanEnd;
     } while (!matched);
     if (matched) {
-      nameLength = (uint)-((int)(sdword *)((UiTextEditControl *)nameControl)->textPrefix6C - (int)scanEnd) >> 1;
+      nameLength = (uint32_t)-((int)(int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C - (int)scanEnd) >> 1;
       matched = nameLength == 0;
       scanRemaining = nameLength;
-      charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
       do {
         if (scanRemaining == 0) break;
         scanRemaining = scanRemaining - 1;
         matched = (short)*charCursor == 0x2a;
-        charCursor = (sdword *)((int)charCursor + 2);
+        charCursor = (int32_t *)((int)charCursor + 2);
       } while (!matched);
       if (!matched) {
         scanRemaining = nameLength;
-        charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
         do {
           if (scanRemaining == 0) break;
           scanRemaining = scanRemaining - 1;
           matched = (short)*charCursor == 0x2e;
-          charCursor = (sdword *)((int)charCursor + 2);
+          charCursor = (int32_t *)((int)charCursor + 2);
         } while (!matched);
         if (!matched) {
           scanRemaining = nameLength;
-          charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+          charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
           do {
             if (scanRemaining == 0) break;
             scanRemaining = scanRemaining - 1;
             matched = (short)*charCursor == 0x5c;
-            charCursor = (sdword *)((int)charCursor + 2);
+            charCursor = (int32_t *)((int)charCursor + 2);
           } while (!matched);
           if (!matched) {
             scanRemaining = nameLength;
-            charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+            charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
             do {
               if (scanRemaining == 0) break;
               scanRemaining = scanRemaining - 1;
               matched = (short)*charCursor == 0x3f;
-              charCursor = (sdword *)((int)charCursor + 2);
+              charCursor = (int32_t *)((int)charCursor + 2);
             } while (!matched);
             if (!matched) {
               scanRemaining = nameLength;
-              charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+              charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
               do {
                 if (scanRemaining == 0) break;
                 scanRemaining = scanRemaining - 1;
                 matched = (short)*charCursor == 0x3c;
-                charCursor = (sdword *)((int)charCursor + 2);
+                charCursor = (int32_t *)((int)charCursor + 2);
               } while (!matched);
               if (!matched) {
                 scanRemaining = nameLength;
-                charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                 do {
                   if (scanRemaining == 0) break;
                   scanRemaining = scanRemaining - 1;
                   matched = (short)*charCursor == 0x3e;
-                  charCursor = (sdword *)((int)charCursor + 2);
+                  charCursor = (int32_t *)((int)charCursor + 2);
                 } while (!matched);
                 if (!matched) {
                   scanRemaining = nameLength;
-                  charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                  charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                   do {
                     if (scanRemaining == 0) break;
                     scanRemaining = scanRemaining - 1;
                     matched = (short)*charCursor == 0x3a;
-                    charCursor = (sdword *)((int)charCursor + 2);
+                    charCursor = (int32_t *)((int)charCursor + 2);
                   } while (!matched);
                   if (!matched) {
                     scanRemaining = nameLength;
-                    charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                    charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                     do {
                       if (scanRemaining == 0) break;
                       scanRemaining = scanRemaining - 1;
                       matched = (short)*charCursor == 0x22;
-                      charCursor = (sdword *)((int)charCursor + 2);
+                      charCursor = (int32_t *)((int)charCursor + 2);
                     } while (!matched);
                     if (!matched) {
                       scanRemaining = nameLength;
-                      charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                      charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                       do {
                         if (scanRemaining == 0) break;
                         scanRemaining = scanRemaining - 1;
                         matched = (short)*charCursor == 0x7c;
-                        charCursor = (sdword *)((int)charCursor + 2);
+                        charCursor = (int32_t *)((int)charCursor + 2);
                       } while (!matched);
                       if (!matched) {
-                        charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
+                        charCursor = (int32_t *)((UiTextEditControl *)nameControl)->textPrefix6C;
                         do {
                           if (nameLength == 0) break;
                           nameLength = nameLength - 1;
                           matched = (short)*charCursor == 0x2f;
-                          charCursor = (sdword *)((int)charCursor + 2);
+                          charCursor = (int32_t *)((int)charCursor + 2);
                         } while (!matched);
                         if (!matched) {
                           UiNodeList_UnsuppressActionId(0x1210,firstNode);

@@ -36,7 +36,7 @@ EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)registryDefinition,g_PackageLastErrorPath);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.carry = true;
       failureResult.definitionOrError = (EffectDefinition *)0x48;
       return failureResult;
@@ -54,7 +54,7 @@ EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
    [movie/runtime/playback].
 */
-StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(word *mutableBasePath)
+StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
 {
   EffectRuntimeSlot *runtimeSlotCursor;
@@ -76,7 +76,7 @@ StatusValueEaxCf5 EffectRuntime_InitGraphicsResources(word *mutableBasePath)
       loadOrAllocResult = (*g_MemoryApi.alloc)(0x40000);
       runtimeSlotCursor = (EffectRuntimeSlot *)loadOrAllocResult.eax;
       if (!loadOrAllocResult.carry) {
-        g_EffectRuntimeRebaseBaseMinusOne = (byte *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3)
+        g_EffectRuntimeRebaseBaseMinusOne = (uint8_t *)((int)&runtimeSlotCursor[-1].effectAgeTicks + 3)
         ;
         g_EffectRuntimeSlots = runtimeSlotCursor;
         for (runtimeSlotsRemaining = 0x10000; runtimeSlotsRemaining != 0;
@@ -236,7 +236,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   EffectShadingCountdownTicks shadingStopTicks;
   DirectSoundVoiceSet **voiceSetRef;
   EffectModelRuntimeNodeClassView100 *effectModelNode;
-  dword randomOrRuntimeValue;
+  uint32_t randomOrRuntimeValue;
   GraphicsTextureSet *chosenTextureSet;
   int slotsRemaining;
   GraphicsPaletteAsset *chosenPalette;
@@ -250,7 +250,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   ModelLocalPointRegs12 localPoint;
   TerrainOccupancyResolvedMasksRegs12 occupancyMasks;
   char runtimeClassIndex;
-  uint soundTableIndex;
+  uint32_t soundTableIndex;
   
   effectModelNode = (EffectModelRuntimeNodeClassView100 *)0x14; /* error code: no free slot */
   effectRuntimeCursor = g_EffectRuntimeSlots;
@@ -361,7 +361,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
         effectModelNode->runtimeFlags = effectModelNode->runtimeFlags | occupancyMasks.runtimeFlags | 0x10;
         effectModelNode->tintArgb = 0xffffff;
         if ((((soundTableIndex != 0) && (soundTableIndex < worldRuntime->dwordArrayCount)) &&
-            (worldRuntime->dwordArray != (dword *)0x0)) &&
+            (worldRuntime->dwordArray != (uint32_t *)0x0)) &&
            (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex],
            voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
           worldPosition = &(effectModelNode->worldTransform).translation;

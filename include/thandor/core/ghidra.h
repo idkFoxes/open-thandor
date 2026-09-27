@@ -48,14 +48,14 @@ low 8 bytes, which matches every use where the result lands in a register or qwo
 
 /* SUBxy(v, off): y bytes of the x-byte value v starting at byte off. */
 #define THANDOR_SUB(y, v, off) (((unsigned long long)(v) >> ((off) * 8)) & THANDOR_MASK_BYTES(y))
-#define SUB41(v, off) ((byte)THANDOR_SUB(1, v, off))
-#define SUB42(v, off) ((word)THANDOR_SUB(2, v, off))
-#define SUB81(v, off) ((byte)THANDOR_SUB(1, v, off))
-#define SUB82(v, off) ((word)THANDOR_SUB(2, v, off))
-#define SUB84(v, off) ((dword)THANDOR_SUB(4, v, off))
+#define SUB41(v, off) ((uint8_t)THANDOR_SUB(1, v, off))
+#define SUB42(v, off) ((uint16_t)THANDOR_SUB(2, v, off))
+#define SUB81(v, off) ((uint8_t)THANDOR_SUB(1, v, off))
+#define SUB82(v, off) ((uint16_t)THANDOR_SUB(2, v, off))
+#define SUB84(v, off) ((uint32_t)THANDOR_SUB(4, v, off))
 
 /* ZEXTxy / SEXTxy: zero/sign extension from x bytes. */
-#define ZEXT48(v) ((unsigned long long)(dword)(v))
+#define ZEXT48(v) ((unsigned long long)(uint32_t)(v))
 #define ZEXT513(v) ((unsigned long long)(v) & THANDOR_MASK_BYTES(5)) /* TODO: 13-byte result truncated */
 #define SEXT48(v) ((long long)(int)(v))
 

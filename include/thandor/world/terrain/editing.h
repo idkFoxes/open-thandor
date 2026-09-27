@@ -35,30 +35,30 @@ TerrainMaterialEdit_SeedNonTargetRegionReplacement
 /* 0x005616D0 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CommitHeightDeltasAndRefreshLighting
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3);
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
 
 /* 0x00561830 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CopyCellMaterialBytes
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2);
 
 /* 0x00561930 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_SubtractCurrentCellMaterialBytes
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2);
 
 /* 0x005619A0 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_CommitFlagsAndMaterialDeltas
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3);
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3);
 
 /* 0x00561DC0 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainEditBuffer_ConvertHeightsToDeltas
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2);
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2);
 
 /* 0x00513790 */
 void __thandor_void_preserve_eax_ecx_edx

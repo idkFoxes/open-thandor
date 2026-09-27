@@ -15,7 +15,7 @@
    Purpose: Checks the exact little-endian fnc signature. CF clear returns header->bindingMode in EAX; CF set
    returns error code 0x62 when the signature is invalid.
 */
-dword FncModule_GetBindingModeCf(FncModuleHeader *module)
+uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module)
 
 {
   if (module->magic == ASSET_MAGIC_FNC) {
@@ -36,7 +36,7 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
   ArenaShrinkProc *arenaShrinkProc;
   LocaleGetPackedCurrentDateProc *packedDateProc;
   AssetMagic *moduleBaseOrError;
-  uint sizeOrDwordCount;
+  uint32_t sizeOrDwordCount;
   AssetMagic relocationsRemaining;
   AssetMagic *copyCursor;
   int *relocationCursor;
@@ -77,7 +77,7 @@ FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
           runtimeCallbackTableCursor[5] = packedDateProc;
           runtimeCallbackTableCursor[6] = g_LocaleCopyDefaultComputerLabelUtf16;
         }
-        return THANDOR_BITCAST(qword, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, qword, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FncModuleLoadEaxCf5, ((THANDOR_BITCAST(ArenaLinearReserveEaxCf5, uint64_t, reserveResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
   }
@@ -104,7 +104,7 @@ FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module)
   if (exportIndex < (module->exportBinding).exportCount) {
     successResult.carry = false;
     successResult.valueOrError =
-         *(uint *)(module->reserved10_AF +
+         *(uint32_t *)(module->reserved10_AF +
                   exportIndex * 4 + (module->exportBinding).exportTableOffset + -0x10);
     return successResult;
   }

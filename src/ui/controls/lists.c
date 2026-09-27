@@ -30,9 +30,9 @@ UiTimedListControl_HandleKeyboardNavigationCf
   UiTimedListTreeRecord16 *stepRecord;
   UiTimedListTreeRecord16 *previousSelection;
   UiTimedListTreeRecord16 *countRecord;
-  dword nestedRecordCount;
+  uint32_t nestedRecordCount;
   UiTimedListTreeRecord16 *lastRecord;
-  uint siblingIndex;
+  uint32_t siblingIndex;
   int rowAccumulator;
   int rowIndex;
   int stepCounter;
@@ -66,7 +66,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
       /* Page: one step less than the rows visible in the viewport (unsigned 32-bit DIV).
          NOTE: exactly one visible row gives 0 steps, which the do/while wraps like the original. */
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((dword)(contentSize >> 0x20) / control->rowHeight);
+      rowAccumulator = (int)((uint32_t)(contentSize >> 0x20) / control->rowHeight);
       stepCounter = rowAccumulator + -1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
@@ -100,7 +100,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
   case 0x10019:
     if (keyCode == 0x1001a) {
       contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
-      rowAccumulator = (int)((dword)(contentSize >> 0x20) / control->rowHeight);
+      rowAccumulator = (int)((uint32_t)(contentSize >> 0x20) / control->rowHeight);
       stepCounter = rowAccumulator + -1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
@@ -213,7 +213,7 @@ UiListControl_HandleKeyboardNavigationCf
   void **previousSelectedSlot;
   void **newSelectedSlot;
   int rowValue;
-  uint targetRowIndex;
+  uint32_t targetRowIndex;
   bool handled;
   UiScrollableContentDimensionsEdxEax8 contentSize;
   
@@ -232,8 +232,8 @@ UiListControl_HandleKeyboardNavigationCf
     else if (keyCode == 0x10012) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
-      rowValue = ((uint)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
-              ((int)((contentSize >> 0x20) / (ulonglong)control->rowHeight) + -1);
+      rowValue = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) -
+              ((int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) + -1);
       if (rowValue < 0) {
         rowValue = 0;
       }
@@ -242,8 +242,8 @@ UiListControl_HandleKeyboardNavigationCf
     else if (keyCode == 0x1001a) {
       contentSize = UiScrollableControl_QueryContentSizeRegs
                         ((UiScrollableControl *)(control->base).parent);
-      targetRowIndex = ((uint)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
-              (int)((contentSize >> 0x20) / (ulonglong)control->rowHeight) + -1;
+      targetRowIndex = ((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) +
+              (int)((contentSize >> 0x20) / (uint64_t)control->rowHeight) + -1;
       if (control->rowCount <= targetRowIndex) {
         targetRowIndex = control->rowCount - 1;
       }
@@ -255,7 +255,7 @@ UiListControl_HandleKeyboardNavigationCf
       }
     }
     else if (keyCode == 0x10019) {
-      if (((uint)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) + 1 <
+      if (((uint32_t)((int)control->selectedRowSlot - (int)control->rowSlots) >> 2) + 1 <
           control->rowCount) {
         control->selectedRowSlot = control->selectedRowSlot + 1;
       }
@@ -270,7 +270,7 @@ UiListControl_HandleKeyboardNavigationCf
          (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
         (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
       }
-      rowValue = ((uint)((int)newSelectedSlot - (int)control->rowSlots) >> 2) * control->rowHeight;
+      rowValue = ((uint32_t)((int)newSelectedSlot - (int)control->rowSlots) >> 2) * control->rowHeight;
       UiScrollableControl_ClampOffsetsToViewport
                 (rowValue + control->rowHeight + 1,(control->base).rightOffset,rowValue,0,
                  (UiScrollableControl *)(control->base).parent);
@@ -324,7 +324,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
           UiScrollableControl *control)
 
 {
-  dword trackStartOffset;
+  uint32_t trackStartOffset;
   int horizontalTrackEnd;
   int localY;
   int localXOrTrackBottom;
@@ -517,9 +517,9 @@ UiScrollableControl_UpdatePrimaryScrollDrag
 {
   int thumbOffsetOrLocalX;
   int anchorOrLocalY;
-  dword arrowSize;
+  uint32_t arrowSize;
   int trackLength;
-  dword arrowStart;
+  uint32_t arrowStart;
   int arrowEnd;
   bool inArrowBar;
   bool arrowHovered;
@@ -548,8 +548,8 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     }
     control->scrollOffsetX =
          (UiPixelOffset)
-         (((longlong)(int)(control->contentWidth - control->viewportWidth) * (longlong)thumbOffsetOrLocalX) /
-         (longlong)-((trackLength - control->horizontalThumbRight) + control->horizontalThumbLeft));
+         (((int64_t)(int)(control->contentWidth - control->viewportWidth) * (int64_t)thumbOffsetOrLocalX) /
+         (int64_t)-((trackLength - control->horizontalThumbRight) + control->horizontalThumbLeft));
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
     UiNode_InvalidateRoot(&control->base);
     return;
@@ -571,8 +571,8 @@ UiScrollableControl_UpdatePrimaryScrollDrag
     }
     control->scrollOffsetY =
          (UiPixelOffset)
-         (((longlong)(int)(control->contentHeight - control->viewportHeight) * (longlong)thumbOffsetOrLocalX) /
-         (longlong)-((trackLength - control->verticalThumbBottom) + control->verticalThumbTop));
+         (((int64_t)(int)(control->contentHeight - control->viewportHeight) * (int64_t)thumbOffsetOrLocalX) /
+         (int64_t)-((trackLength - control->verticalThumbBottom) + control->verticalThumbTop));
     UiScrollableControl_RefreshChildAndScrollThumbs(control);
     UiNode_InvalidateRoot(&control->base);
     return;
@@ -815,14 +815,14 @@ UiListControl_SelectRowFromPointer
           UiListControl *control)
 
 {
-  uint rowIndex;
+  uint32_t rowIndex;
   int clipBottom;
-  sdword *topEdgeField;
+  int32_t *topEdgeField;
   
   topEdgeField = &(control->base).top;
   if ((((*topEdgeField <= pointerY) && (pointerY - *topEdgeField < (control->base).layoutHeight)) &&
       ((control->base).left <= pointerX)) && (pointerX < (control->base).right)) {
-    rowIndex = (uint)(pointerY - *topEdgeField) / control->rowHeight;
+    rowIndex = (uint32_t)(pointerY - *topEdgeField) / control->rowHeight;
     if (rowIndex < control->rowCount) {
       control->listStateFlags = control->listStateFlags | UI_LIST_SELECTION_CONFIRMED;
       if ((((control->base).nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0) ||
@@ -860,8 +860,8 @@ UiPointerList_SortByDwordPairFieldDescending
 {
   void *swapEntry;
   void *selectedEntry;
-  uint leftKey;
-  uint rightKey;
+  uint32_t leftKey;
+  uint32_t rightKey;
   int innerCountOrRowTop;
   int outerCount;
   UiListRowCount rowsRemaining;
@@ -878,12 +878,12 @@ UiPointerList_SortByDwordPairFieldDescending
       do {
         do {
           scanSlot = scanSlot + 1;
-          leftKey = *(uint *)((int)*pivotSlot + fieldOffset);
-          rightKey = *(uint *)((int)*scanSlot + fieldOffset);
+          leftKey = *(uint32_t *)((int)*pivotSlot + fieldOffset);
+          rightKey = *(uint32_t *)((int)*scanSlot + fieldOffset);
           if ((leftKey <= rightKey) &&
              ((leftKey < rightKey ||
-              (((uint *)((int)*pivotSlot + fieldOffset))[1] <=
-               ((uint *)((int)*scanSlot + fieldOffset))[1])))) {
+              (((uint32_t *)((int)*pivotSlot + fieldOffset))[1] <=
+               ((uint32_t *)((int)*scanSlot + fieldOffset))[1])))) {
             LOCK();
             swapEntry = *scanSlot;
             *scanSlot = *pivotSlot;
@@ -951,7 +951,7 @@ UiPointerList_SortByDwordFieldAscending
       do {
         do {
           scanSlot = scanSlot + 1;
-          if (*(uint *)((int)*scanSlot + fieldOffset) <= *(uint *)((int)*pivotSlot + fieldOffset)) {
+          if (*(uint32_t *)((int)*scanSlot + fieldOffset) <= *(uint32_t *)((int)*pivotSlot + fieldOffset)) {
             LOCK();
             swapEntry = *scanSlot;
             *scanSlot = *pivotSlot;
@@ -1071,7 +1071,7 @@ UiTimedListControl_SelectRowFromPointer
   x = x - (int)list->observedDrawParameter84;
   if (x > 0) {
     RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
     x = x - (int)extent.widthPixels;
     if ((x > 0) && (x > 6)) {
       return;
@@ -1094,15 +1094,15 @@ UiTimedListControl_SelectRowFromPointer
    Purpose: Finds a timed-list tree record by label.
 */
 UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
-UiTimedListTree_FindRecordByLabel(word *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
+UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock)
 
 {
-  word labelChar;
+  uint16_t labelChar;
   int scanRemaining;
   int compareRemaining;
-  dword recordsRemaining;
-  word *recordLabelCursor;
-  word *queryLabelCursor;
+  uint32_t recordsRemaining;
+  uint16_t *recordLabelCursor;
+  uint16_t *queryLabelCursor;
   bool charsEqual;
   
   scanRemaining = 0x100;
@@ -1121,7 +1121,7 @@ UiTimedListTree_FindRecordByLabel(word *labelUtf16,UiTimedListTreeRecord16 *reco
     recordBlock = recordBlock + 1;
     charsEqual = false;
     compareRemaining = 0x100 - scanRemaining;
-    recordLabelCursor = (word *)recordBlock->recordCountOrRowPayload00;
+    recordLabelCursor = (uint16_t *)recordBlock->recordCountOrRowPayload00;
     queryLabelCursor = labelUtf16;
     do {
       if (compareRemaining == 0) break;
@@ -1142,27 +1142,27 @@ UiTimedListTree_FindRecordByLabel(word *labelUtf16,UiTimedListTreeRecord16 *reco
    Purpose: Builds a timed-list directory record block and exposes the recovered carry/error contract.
 */
 Recovered0040FFE0EaxCf5 __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
+UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
 
 {
-  dword *recordCursor;
-  dword leafCodeUnitPair;
-  dword *entryStride;
-  dword *scanCursor;
-  dword *outputRecords;
-  uint driveLetter;
+  uint32_t *recordCursor;
+  uint32_t leafCodeUnitPair;
+  uint32_t *entryStride;
+  uint32_t *scanCursor;
+  uint32_t *outputRecords;
+  uint32_t driveLetter;
   EngineDriveTypeCode driveType;
-  dword *remainingBytes;
+  uint32_t *remainingBytes;
   int scanRemaining;
-  dword *bytesAfterLabel;
-  uint scanValue;
-  dword directoryEntryCount;
-  byte *driveLetterCursor;
-  dword *leaf;
-  dword *labelWriteCursor;
-  uint *labelCursor;
-  uint *scanPointer;
-  uint *nextScanPointer;
+  uint32_t *bytesAfterLabel;
+  uint32_t scanValue;
+  uint32_t directoryEntryCount;
+  uint8_t *driveLetterCursor;
+  uint32_t *leaf;
+  uint32_t *labelWriteCursor;
+  uint32_t *labelCursor;
+  uint32_t *scanPointer;
+  uint32_t *nextScanPointer;
   bool mediaCheckResult;
   bool closeLabelEmpty;
   ArenaShrinkEaxCf5 shrinkResult;
@@ -1175,47 +1175,47 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
   
   if (*pathUtf16 == 0) {
     allocResult = (*g_MemoryApi.alloc)(0x220);
-    outputRecords = (dword *)allocResult.eax;
+    outputRecords = (uint32_t *)allocResult.eax;
     if (!allocResult.carry) {
       *outputRecords = 1;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
       outputRecords[3] = 0x80000000;
-      outputRecords[4] = (dword)(outputRecords + 8);
+      outputRecords[4] = (uint32_t)(outputRecords + 8);
       outputRecords[5] = 0x27;
       outputRecords[6] = 0;
       outputRecords[7] = 1;
-      (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputRecords + 8));
-      return THANDOR_BITCAST(qword, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+      (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputRecords + 8));
+      return THANDOR_BITCAST(uint64_t, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
     }
   }
   else if ((pathUtf16[3] == 0) || (pathUtf16[2] == 0)) {
-    driveEnum = (*g_FileSystemEnumerateDriveLetters)((byte *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
+    driveEnum = (*g_FileSystemEnumerateDriveLetters)((uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0));
     directoryEntryCount = driveEnum.driveCount;
     allocResult = (*g_MemoryApi.alloc)(driveEnum.driveCountMirror * 0x210 + 0x10);
-    outputRecords = (dword *)allocResult.eax;
+    outputRecords = (uint32_t *)allocResult.eax;
     if (!allocResult.carry) {
       result.recordBlockOrError = outputRecords + 4;
       *outputRecords = directoryEntryCount;
       outputRecords[1] = 0;
       outputRecords[2] = 0;
       outputRecords[3] = 0x80000000;
-      labelCursor = ((dword *)result.recordBlockOrError) + directoryEntryCount * 4;
-      driveLetterCursor = (byte *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
+      labelCursor = ((uint32_t *)result.recordBlockOrError) + directoryEntryCount * 4;
+      driveLetterCursor = (uint8_t *)THANDOR_ADDR(g_UiTimedListDriveLetters,0);
       do {
-        driveLetter = (uint)*driveLetterCursor;
-        *(dword *)result.recordBlockOrError = (dword)labelCursor;
+        driveLetter = (uint32_t)*driveLetterCursor;
+        *(uint32_t *)result.recordBlockOrError = (uint32_t)labelCursor;
         scanValue = driveLetter;
         driveType = (*g_FileSystemGetDriveTypeCode)(driveLetter);
-        ((dword *)result.recordBlockOrError)[1] = (dword)driveType;
-        ((dword *)result.recordBlockOrError)[2] = 0;
-        ((dword *)result.recordBlockOrError)[3] = 0;
+        ((uint32_t *)result.recordBlockOrError)[1] = (uint32_t)driveType;
+        ((uint32_t *)result.recordBlockOrError)[2] = 0;
+        ((uint32_t *)result.recordBlockOrError)[3] = 0;
         u________0040ff58[0] = (wchar_t)driveLetter;
         *labelCursor = driveLetter;
-        ((word *)((int)labelCursor + 2))[0] = 0x3a;
-        ((word *)((int)labelCursor + 2))[1] = 0x5b;
-        ((word *)((int)labelCursor + 6))[0] = 0x5d;
-        ((word *)((int)labelCursor + 6))[1] = 0;
+        ((uint16_t *)((int)labelCursor + 2))[0] = 0x3a;
+        ((uint16_t *)((int)labelCursor + 2))[1] = 0x5b;
+        ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+        ((uint16_t *)((int)labelCursor + 6))[1] = 0;
         /* Label "X:[<volume label>]"; any failure closes it as "X:[]" (a failing directory probe
            also truncates an already written volume label, as in the original). */
         mediaCheckResult = (*g_FileSystemCheckDriveMediaReady)(scanValue);
@@ -1223,12 +1223,12 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
         if (!closeLabelEmpty) {
           enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                              (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
-                              (byte *)((int)labelCursor + 6),(byte *)u________0040ff58);
+                              (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
           closeLabelEmpty = enumResult.carry;
           if (!closeLabelEmpty) {
             if (enumResult.entryCount == 0) {
-              ((word *)((int)labelCursor + 6))[0] = 0x5d;
-              ((word *)((int)labelCursor + 6))[1] = 0;
+              ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+              ((uint16_t *)((int)labelCursor + 6))[1] = 0;
             }
             else {
               scanRemaining = 0x100;
@@ -1237,33 +1237,33 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
                 nextScanPointer = scanPointer;
                 if (scanRemaining == 0) break;
                 scanRemaining = scanRemaining + -1;
-                nextScanPointer = (uint *)((int)scanPointer + 2);
+                nextScanPointer = (uint32_t *)((int)scanPointer + 2);
                 scanValue = *scanPointer;
                 scanPointer = nextScanPointer;
-              } while ((word)scanValue != 0);
-              ((word *)((int)nextScanPointer + -2))[0] = 0x5d;
-              ((word *)((int)nextScanPointer + -2))[1] = 0;
+              } while ((uint16_t)scanValue != 0);
+              ((uint16_t *)((int)nextScanPointer + -2))[0] = 0x5d;
+              ((uint16_t *)((int)nextScanPointer + -2))[1] = 0;
             }
             enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
-                                (byte *)g_UiTimedListRecordPathScratch.codeUnits,
-                                (byte *)u________0040ff58);
+                                (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
+                                (uint8_t *)u________0040ff58);
             closeLabelEmpty = enumResult.carry;
             if ((!closeLabelEmpty) && (enumResult.entryCount != 0)) {
-              ((dword *)result.recordBlockOrError)[3] = ((dword *)result.recordBlockOrError)[3] | 1;
+              ((uint32_t *)result.recordBlockOrError)[3] = ((uint32_t *)result.recordBlockOrError)[3] | 1;
             }
           }
         }
         if (closeLabelEmpty) {
-          ((word *)((int)labelCursor + 6))[0] = 0x5d;
-          ((word *)((int)labelCursor + 6))[1] = 0;
+          ((uint16_t *)((int)labelCursor + 6))[0] = 0x5d;
+          ((uint16_t *)((int)labelCursor + 6))[1] = 0;
         }
         labelCursor = labelCursor + 0x80;
-        result.recordBlockOrError = (dword *)((dword *)result.recordBlockOrError) + 4;
+        result.recordBlockOrError = (uint32_t *)((uint32_t *)result.recordBlockOrError) + 4;
         driveLetterCursor = driveLetterCursor + 1;
         directoryEntryCount = directoryEntryCount - 1;
         if (directoryEntryCount == 0) {
-          return THANDOR_BITCAST(qword, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+          return THANDOR_BITCAST(uint64_t, Recovered0040FFE0EaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
         }
       } while( true );
     }
@@ -1273,50 +1273,50 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
               (g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits,
                pathUtf16);
     WidePath_CombineDirectoryAndLeaf
-              (g_UiTimedListRecordPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
+              (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                g_UiTimedListCombinedPathScratch.codeUnits);
     largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
-    outputRecords = (dword *)largestBlock.allocationOrError;
+    outputRecords = (uint32_t *)largestBlock.allocationOrError;
     if (!largestBlock.carry) {
       enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                          (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
-                          (byte *)outputRecords,(byte *)g_UiTimedListRecordPathScratch.codeUnits);
+                          (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
-      entryStride = (dword *)enumResult.recordSizeBytes;
+      entryStride = (uint32_t *)enumResult.recordSizeBytes;
       result.recordBlockOrError = entryStride;
       if (!enumResult.carry) {
         shrinkResult = (*g_MemoryApi.shrinkInPlace)((int)entryStride * directoryEntryCount,outputRecords);
-        result.recordBlockOrError = (dword *)shrinkResult.scratchOrError;
+        result.recordBlockOrError = (uint32_t *)shrinkResult.scratchOrError;
         if (!shrinkResult.carry) {
           largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
-          result.recordBlockOrError = (dword *)largestBlock.allocationOrError;
+          result.recordBlockOrError = (uint32_t *)largestBlock.allocationOrError;
           if (!largestBlock.carry) {
             scanRemaining = directoryEntryCount + 1;
-            scanCursor = (dword *)0x14;
-            remainingBytes = (dword *)(largestBlock.blockSizeOrSentinel + scanRemaining * -0x10);
-            if ((uint)(scanRemaining * 0x10) <= largestBlock.blockSizeOrSentinel && remainingBytes != (dword *)0x0) {
-              *(dword *)result.recordBlockOrError = directoryEntryCount;
-              ((dword *)result.recordBlockOrError)[1] = 0;
-              ((dword *)result.recordBlockOrError)[2] = 0;
-              ((dword *)result.recordBlockOrError)[3] = 0x80000000;
-              labelWriteCursor = ((dword *)result.recordBlockOrError) + scanRemaining * 4;
+            scanCursor = (uint32_t *)0x14;
+            remainingBytes = (uint32_t *)(largestBlock.blockSizeOrSentinel + scanRemaining * -0x10);
+            if ((uint32_t)(scanRemaining * 0x10) <= largestBlock.blockSizeOrSentinel && remainingBytes != (uint32_t *)0x0) {
+              *(uint32_t *)result.recordBlockOrError = directoryEntryCount;
+              ((uint32_t *)result.recordBlockOrError)[1] = 0;
+              ((uint32_t *)result.recordBlockOrError)[2] = 0;
+              ((uint32_t *)result.recordBlockOrError)[3] = 0x80000000;
+              labelWriteCursor = ((uint32_t *)result.recordBlockOrError) + scanRemaining * 4;
               leaf = outputRecords;
               recordCursor = result.recordBlockOrError;
               for (; directoryEntryCount != 0; directoryEntryCount = directoryEntryCount - 1) {
-                recordCursor[4] = (dword)labelWriteCursor;
+                recordCursor[4] = (uint32_t)labelWriteCursor;
                 recordCursor[5] = 0x26;
                 recordCursor[6] = 0;
                 recordCursor[7] = 0;
                 WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListRecordPathScratch.codeUnits,(word *)leaf,
+                          (g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)leaf,
                            g_UiTimedListCombinedPathScratch.codeUnits);
                 WidePath_CombineDirectoryAndLeaf
-                          (g_UiTimedListSecondaryPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
+                          (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                            g_UiTimedListRecordPathScratch.codeUnits);
                 enumResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
-                                    (byte *)g_UiTimedListRecordPathScratch.codeUnits,
-                                    (byte *)g_UiTimedListSecondaryPathScratch.codeUnits);
+                                    (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
+                                    (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
                 if ((!enumResult.carry) && (enumResult.entryCount != 0)) {
                   recordCursor[7] = recordCursor[7] | 1;
                 }
@@ -1326,20 +1326,20 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
                   if (scanRemaining == 0) break;
                   scanRemaining = scanRemaining + -1;
                   leafCodeUnitPair = *scanCursor;
-                  scanCursor = (dword *)((int)scanCursor + 2);
-                } while ((word)leafCodeUnitPair != 0);
-                scanCursor = (dword *)(0x102U - scanRemaining & 0xfffffffe);
-                bytesAfterLabel = (dword *)((int)remainingBytes - (int)scanCursor);
-                if ((remainingBytes < scanCursor || bytesAfterLabel == (dword *)0x0) ||
-                   (remainingBytes = (dword *)((int)bytesAfterLabel - (int)scanCursor),
-                   bytesAfterLabel < scanCursor || remainingBytes == (dword *)0x0)) break;
+                  scanCursor = (uint32_t *)((int)scanCursor + 2);
+                } while ((uint16_t)leafCodeUnitPair != 0);
+                scanCursor = (uint32_t *)(0x102U - scanRemaining & 0xfffffffe);
+                bytesAfterLabel = (uint32_t *)((int)remainingBytes - (int)scanCursor);
+                if ((remainingBytes < scanCursor || bytesAfterLabel == (uint32_t *)0x0) ||
+                   (remainingBytes = (uint32_t *)((int)bytesAfterLabel - (int)scanCursor),
+                   bytesAfterLabel < scanCursor || remainingBytes == (uint32_t *)0x0)) break;
                 scanCursor = leaf;
                 for (scanValue = 0x102U - scanRemaining >> 1; scanValue != 0; scanValue = scanValue - 1) {
                   *labelWriteCursor = *scanCursor;
                   scanCursor = scanCursor + 1;
                   labelWriteCursor = labelWriteCursor + 1;
                 }
-                leaf = (dword *)((int)leaf + (int)entryStride);
+                leaf = (uint32_t *)((int)leaf + (int)entryStride);
                 recordCursor = recordCursor + 4;
               }
               /* The loop only ends early (entries left) when the labels no longer fit. */
@@ -1347,7 +1347,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
                 shrinkResult = (*g_MemoryApi.shrinkInPlace)
                                    ((int)labelWriteCursor + (0x200 - (int)result.recordBlockOrError),
                                     result.recordBlockOrError);
-                scanCursor = (dword *)shrinkResult.scratchOrError;
+                scanCursor = (uint32_t *)shrinkResult.scratchOrError;
                 if (!shrinkResult.carry) {
                   (*g_MemoryApi.free)(outputRecords);
                   result.carry = false;
@@ -1374,7 +1374,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16)
    Purpose: Builds the timed-list directory hierarchy.
 */
 UiTimedListDirectoryHierarchyEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
+UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
 
 {
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
@@ -1383,9 +1383,9 @@ UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
   UiTimedListTreeRecord16 *levelStack[0x202];
   int levelStackTop;
   int copyRemaining;
-  dword recordsRemaining;
+  uint32_t recordsRemaining;
   int levelCount;
-  word firstCodeUnit;
+  uint16_t firstCodeUnit;
   WidePathBuffer256 *pathCopyCursor;
   UiTimedListTreeRecord16 *levelBlock;
   UiTimedListTreeRecord16 *parentBlock;
@@ -1398,8 +1398,8 @@ UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
   while( true ) {
     pathCopyCursor = &g_UiTimedListHierarchyPathScratch;
     for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
-      pathCopyCursor->firstTwoCodeUnits = *(dword *)selectedPathUtf16;
-      selectedPathUtf16 = (word *)(selectedPathUtf16 + 2);
+      pathCopyCursor->firstTwoCodeUnits = *(uint32_t *)selectedPathUtf16;
+      selectedPathUtf16 = (uint16_t *)(selectedPathUtf16 + 2);
       pathCopyCursor = (WidePathBuffer256 *)(&pathCopyCursor->firstTwoCodeUnits + 1);
     }
     if ((g_UiTimedListHierarchyPathScratch.codeUnits[3] == 0) ||
@@ -1422,7 +1422,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
                    (g_UiTimedListRecordPathScratch.codeUnits,builtBlock.recordBlockOrError);
     levelStack[levelStackTop++] = builtBlock.recordBlockOrError;
     levelCount = levelCount + 1;
-    selectedPathUtf16 = (word *)&g_UiTimedListHierarchyParentPathScratch;
+    selectedPathUtf16 = (uint16_t *)&g_UiTimedListHierarchyParentPathScratch;
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
@@ -1431,7 +1431,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
   recordsRemaining = levelBlock->recordCountOrRowPayload00;
   firstCodeUnit = g_UiTimedListHierarchyPathScratch.codeUnits[0];
   recordCursor = levelBlock + 1;
-  while (((firstCodeUnit ^ *(word *)recordCursor->recordCountOrRowPayload00) & 0xdf) != 0) {
+  while (((firstCodeUnit ^ *(uint16_t *)recordCursor->recordCountOrRowPayload00) & 0xdf) != 0) {
     recordCursor = recordCursor + 1;
     recordsRemaining = recordsRemaining - 1;
     if (recordsRemaining == 0) {
@@ -1452,7 +1452,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16)
   do {
     levelBlock = levelStack[--levelStackTop];
     if (levelBlock != (UiTimedListTreeRecord16 *)0x0) {
-      levelBlock->rowPayload04 = (dword)parentBlock;
+      levelBlock->rowPayload04 = (uint32_t)parentBlock;
       levelBlock->nestedRecordBlockOrParentLink08 = recordCursor;
     }
     if (recordCursor != (UiTimedListTreeRecord16 *)0x0) {
@@ -1490,7 +1490,7 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
 
 {
   UiTimedListTreeRecord16 *recordCursor;
-  dword recordsRemaining;
+  uint32_t recordsRemaining;
   int containsCount;
   bool childContains;
   
@@ -1522,19 +1522,19 @@ bool __thandor_cf_preserve_ecx_edx
 UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
 
 {
-  dword *directory;
+  uint32_t *directory;
   UiTimedListTreeRecord16 *linkedRecord;
   int copyRemaining;
   UiTimedListTreeRecord16 *scanRecord;
   UiTimedListTreeRecord16 *previousRecord;
-  dword *recordPathSourceDwords;
-  dword *combinedPathSourceDwords;
-  dword *recordPathScratchDestDwords;
-  dword *combinedPathScratchDestDwords;
+  uint32_t *recordPathSourceDwords;
+  uint32_t *combinedPathSourceDwords;
+  uint32_t *recordPathScratchDestDwords;
+  uint32_t *combinedPathScratchDestDwords;
   Recovered0040FFE0EaxCf5 builtBlock;
   
-  recordPathSourceDwords = (dword *)record->recordCountOrRowPayload00;
-  recordPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+  recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
+  recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
   for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
     *recordPathScratchDestDwords = *recordPathSourceDwords;
     recordPathSourceDwords = recordPathSourceDwords + 1;
@@ -1546,7 +1546,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
       WidePath_CombineDirectoryAndLeaf
-                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                  g_UiTimedListRecordPathScratch.codeUnits);
     }
     else {
@@ -1559,13 +1559,13 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
         if (linkedRecord == (UiTimedListTreeRecord16 *)0x0) {
           return true;
         }
-        directory = (dword *)linkedRecord->recordCountOrRowPayload00;
-        if (*(word *)((int)directory + 2) == 0x3a) break;
+        directory = (uint32_t *)linkedRecord->recordCountOrRowPayload00;
+        if (*(uint16_t *)((int)directory + 2) == 0x3a) break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
-                   g_UiTimedListRecordPathScratch.codeUnits,(word *)directory);
-        combinedPathSourceDwords = (dword *)&g_UiTimedListCombinedPathScratch;
-        combinedPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
+        combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
+        combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
         for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
           combinedPathSourceDwords = combinedPathSourceDwords + 1;
@@ -1573,19 +1573,19 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      THANDOR_PART(dword, g_UiTimedListCombinedPathScratch, 4) = 0;
+      THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
                 );
       WidePath_CombineDirectoryAndLeaf
-                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(word *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
+                (g_UiTimedListHierarchyParentPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                  g_UiTimedListSecondaryPathScratch.codeUnits);
     }
   }
   else {
     g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061;
-    THANDOR_PART(dword, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
+    THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
   builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf
                     (g_UiTimedListHierarchyParentPathScratch.codeUnits);
@@ -1600,7 +1600,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
     scanRecord = record + -1;
     record = previousRecord;
   } while ((scanRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
-  linkedRecord->rowPayload04 = (dword)previousRecord;
+  linkedRecord->rowPayload04 = (uint32_t)previousRecord;
   return false;
 }
 
@@ -1647,30 +1647,30 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
    Purpose: Builds the recovered path for a timed-list tree record.
 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord16 *record)
+UiTimedListTree_BuildRecordPathCf(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
 
 {
-  dword *directory;
+  uint32_t *directory;
   int copyRemaining;
   UiTimedListTreeRecord16 *scanRecord;
-  dword *recordPathSourceDwords;
-  dword *combinedPathSourceDwords;
-  dword *recordPathScratchDestDwords;
-  dword *combinedPathScratchDestDwords;
+  uint32_t *recordPathSourceDwords;
+  uint32_t *combinedPathSourceDwords;
+  uint32_t *recordPathScratchDestDwords;
+  uint32_t *combinedPathScratchDestDwords;
   
-  recordPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
-  recordPathSourceDwords = (dword *)record->recordCountOrRowPayload00;
+  recordPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
+  recordPathSourceDwords = (uint32_t *)record->recordCountOrRowPayload00;
   copyRemaining = 0x80;
   if (((record[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
      (record[-1].rowPayload04 != 0)) {
     for (; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
       *recordPathScratchDestDwords = *recordPathSourceDwords;
-      recordPathSourceDwords = (dword *)(recordPathSourceDwords + 1);
+      recordPathSourceDwords = (uint32_t *)(recordPathSourceDwords + 1);
       recordPathScratchDestDwords = recordPathScratchDestDwords + 1;
     }
     if (g_UiTimedListRecordPathScratch.codeUnits[1] == 0x3a) {
       g_UiTimedListRecordPathScratch.codeUnits[2] = 0;
-      recordPathSourceDwords = (dword *)&g_UiTimedListRecordPathScratch;
+      recordPathSourceDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
     }
     else {
       while( true ) {
@@ -1682,13 +1682,13 @@ UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord1
         if (record == (UiTimedListTreeRecord16 *)0x0) {
           return true;
         }
-        directory = (dword *)record->recordCountOrRowPayload00;
-        if (*(word *)((int)directory + 2) == 0x3a) break;
+        directory = (uint32_t *)record->recordCountOrRowPayload00;
+        if (*(uint16_t *)((int)directory + 2) == 0x3a) break;
         WidePath_CombineDirectoryAndLeaf
                   (g_UiTimedListCombinedPathScratch.codeUnits,
-                   g_UiTimedListRecordPathScratch.codeUnits,(word *)directory);
-        combinedPathSourceDwords = (dword *)&g_UiTimedListCombinedPathScratch;
-        combinedPathScratchDestDwords = (dword *)&g_UiTimedListRecordPathScratch;
+                   g_UiTimedListRecordPathScratch.codeUnits,(uint16_t *)directory);
+        combinedPathSourceDwords = (uint32_t *)&g_UiTimedListCombinedPathScratch;
+        combinedPathScratchDestDwords = (uint32_t *)&g_UiTimedListRecordPathScratch;
         for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
           *combinedPathScratchDestDwords = *combinedPathSourceDwords;
           combinedPathSourceDwords = combinedPathSourceDwords + 1;
@@ -1696,17 +1696,17 @@ UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord1
         }
       }
       g_UiTimedListCombinedPathScratch.firstTwoCodeUnits = *directory;
-      THANDOR_PART(dword, g_UiTimedListCombinedPathScratch, 4) = 0;
+      THANDOR_PART(uint32_t, g_UiTimedListCombinedPathScratch, 4) = 0;
       WidePath_CombineDirectoryAndLeaf
                 (g_UiTimedListSecondaryPathScratch.codeUnits,
                  g_UiTimedListRecordPathScratch.codeUnits,g_UiTimedListCombinedPathScratch.codeUnits
                 );
-      recordPathSourceDwords = (dword *)&g_UiTimedListSecondaryPathScratch;
+      recordPathSourceDwords = (uint32_t *)&g_UiTimedListSecondaryPathScratch;
     }
   }
   for (copyRemaining = 0x80; copyRemaining != 0; copyRemaining = copyRemaining + -1) {
     *outputPathDwords = *recordPathSourceDwords;
-    recordPathSourceDwords = (dword *)(recordPathSourceDwords + 1);
+    recordPathSourceDwords = (uint32_t *)(recordPathSourceDwords + 1);
     outputPathDwords = outputPathDwords + 1;
   }
   return false;
@@ -1877,15 +1877,15 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
 
 {
   int controlAddress;
-  uint controlIndex;
+  uint32_t controlIndex;
   int controlPointerByteOffset;
   UiSelectableNodeEaxEcxCf9 noneSelectedResult;
   UiSelectableNodeEaxEcxCf9 selectedResult;
   
   controlPointerByteOffset = 0;
   controlIndex = 0;
-  while ((controlAddress = *(int *)((byte *)(&controlCount + 1) + controlPointerByteOffset),
-         (*(uint *)(controlAddress + 0x48) & 8) != 0 || ((*(uint *)(controlAddress + 0x4c) & 2) == 0))) {
+  while ((controlAddress = *(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset),
+         (*(uint32_t *)(controlAddress + 0x48) & 8) != 0 || ((*(uint32_t *)(controlAddress + 0x4c) & 2) == 0))) {
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
     if (controlCount <= controlIndex) {
@@ -1912,7 +1912,7 @@ UiSelectableGroupIndexEcxCf5 __thandor_eax_ecx_cf_preserve_edx
 UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...)
 
 {
-  uint controlIndex;
+  uint32_t controlIndex;
   int controlPointerByteOffset;
   UiSelectableGroupIndexEcxCf5 noneSelectedResult;
   UiSelectableGroupIndexEcxCf5 selectedResult;
@@ -1920,7 +1920,7 @@ UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...)
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
-    if ((*(uint *)(*(int *)((byte *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & 2) != 0) {
+    if ((*(uint32_t *)(*(int *)((uint8_t *)(&controlCount + 1) + controlPointerByteOffset) + 0x4c) & 2) != 0) {
       selectedResult.carryNoneSelected = false;
       selectedResult.selectedIndexOrCount = controlIndex;
       return selectedResult;
@@ -1946,13 +1946,13 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
 
 {
   UiSelectableControl *node;
-  uint controlIndex;
+  uint32_t controlIndex;
   int controlPointerByteOffset;
 
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
-    node = *(UiSelectableControl **)((byte *)(&selectedControl + 1) + controlPointerByteOffset);
+    node = *(UiSelectableControl **)((uint8_t *)(&selectedControl + 1) + controlPointerByteOffset);
     if (&node->base == selectedControl) {
       node->stateFlags = node->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
     }
@@ -1972,7 +1972,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
    Purpose: Tests one selectable control. CF=1 only when nodeFlags bit 0x08 is clear and stateFlags bit 0x02 is
    set; otherwise CF=0.
 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_IsSelectedCf(UiSelectableControl *control)
 
 {
@@ -2012,7 +2012,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
 
 {
-  uint pageIndex;
+  uint32_t pageIndex;
   bool notFound;
   StatusValueEaxCf5 result;
   
@@ -2068,10 +2068,10 @@ UiScrollableControl_DrawFrameContentAndScrollbars
           UiPixelCoordinate clipRight,UiScrollableControl *control)
 
 {
-  dword arrowLength;
+  uint32_t arrowLength;
   GraphicsSubresourceIndex subresource;
-  dword tileEnd;
-  dword horizontalBarLeft;
+  uint32_t tileEnd;
+  uint32_t horizontalBarLeft;
   int trackStart;
   int edgeScratch;
   int contentTop;
@@ -2081,7 +2081,7 @@ UiScrollableControl_DrawFrameContentAndScrollbars
   int trackEnd;
   bool accessFailed;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
-  dword capSize;
+  uint32_t capSize;
   
   accessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!accessFailed) {
@@ -2398,9 +2398,9 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
   UiNodeBase *contentChild;
   UiPixelExtent childWidth;
   UiPixelExtent childHeight;
-  uint minThumbLength;
-  dword arrowSize;
-  uint thumbLength;
+  uint32_t minThumbLength;
+  uint32_t arrowSize;
+  uint32_t thumbLength;
   UiPixelOffset offsetX;
   UiPixelOffset offsetY;
   UiPixelExtent availableHeight;
@@ -2588,31 +2588,31 @@ UiScrollableControl_RebuildViewportAndScrollbars(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      thumbLength = (uint)(((longlong)(int)control->viewportWidth * (longlong)horizontalExtent) /
-                    (longlong)(int)control->contentWidth);
+      thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
+                    (int64_t)(int)control->contentWidth);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
       }
       control->horizontalThumbRight = control->horizontalThumbRight + thumbLength;
-      horizontalExtent = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(horizontalExtent - thumbLength)) /
-                    (longlong)(int)(control->contentWidth - control->viewportWidth));
+      horizontalExtent = (int)(((int64_t)(int)-control->scrollOffsetX * (int64_t)(int)(horizontalExtent - thumbLength)) /
+                    (int64_t)(int)(control->contentWidth - control->viewportWidth));
       control->horizontalThumbLeft = control->horizontalThumbLeft + horizontalExtent;
       control->horizontalThumbRight = control->horizontalThumbRight + horizontalExtent;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      thumbLength = (uint)(((longlong)(int)control->viewportHeight * (longlong)verticalExtent) /
-                    (longlong)(int)control->contentHeight);
+      thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
+                    (int64_t)(int)control->contentHeight);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
       }
       control->verticalThumbBottom = control->verticalThumbBottom + thumbLength;
-      horizontalExtent = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(verticalExtent - thumbLength)) /
-                    (longlong)(int)(control->contentHeight - control->viewportHeight));
+      horizontalExtent = (int)(((int64_t)(int)-control->scrollOffsetY * (int64_t)(int)(verticalExtent - thumbLength)) /
+                    (int64_t)(int)(control->contentHeight - control->viewportHeight));
       control->verticalThumbTop = control->verticalThumbTop + horizontalExtent;
       control->verticalThumbBottom = control->verticalThumbBottom + horizontalExtent;
     }
@@ -2663,7 +2663,7 @@ UiScrollableControl_BeginSecondaryScrollInteraction
 {
   int localPointerX;
   int localPointerY;
-  dword cursorFrame;
+  uint32_t cursorFrame;
   
   g_CursorUseOverridePosition = g_CursorUseOverridePosition + 1;
   control->scrollStateFlags = control->scrollStateFlags | 0x1000;
@@ -2777,14 +2777,14 @@ UiListControl_DrawRowsAndSelection
 {
   int columnWidth;
   int rowTop;
-  byte *rowRecord;
-  dword lastRowIndex;
+  uint8_t *rowRecord;
+  uint32_t lastRowIndex;
   int columnX;
   void **lastRowSlot;
   int widthOrColumnCount;
   UiListColumn *column;
   void **rowSlot;
-  word *commandStream;
+  uint16_t *commandStream;
   bool accessFailed;
   RichTextExtentRegs textExtent;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
@@ -2796,7 +2796,7 @@ UiListControl_DrawRowsAndSelection
     }
     rowSlot = control->rowSlots + rowTop;
     lastRowIndex =
-         (dword)(((clipTop - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
+         (uint32_t)(((clipTop - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
     rowTop = rowTop * (int)control->rowHeight;
     if (control->rowCount <= lastRowIndex) {
       lastRowIndex = control->rowCount - 1;
@@ -2828,7 +2828,7 @@ UiListControl_DrawRowsAndSelection
             }
           }
           widthOrColumnCount = control->columnCount;
-          rowRecord = (byte *)*rowSlot;
+          rowRecord = (uint8_t *)*rowSlot;
           if (widthOrColumnCount != 0) {
             columnX = 3;
             column = control->columns;
@@ -2836,7 +2836,7 @@ UiListControl_DrawRowsAndSelection
               columnWidth = column->width;
               if (columnWidth < 0) {
                 columnX = columnX - columnWidth;
-                commandStream = (word *)(rowRecord + column->rowTextOffset);
+                commandStream = (uint16_t *)(rowRecord + column->rowTextOffset);
                 textExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,commandStream);
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,commandStream,
@@ -2847,7 +2847,7 @@ UiListControl_DrawRowsAndSelection
                 columnX = columnX + columnWidth;
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
-                           (word *)(rowRecord + column->rowTextOffset),
+                           (uint16_t *)(rowRecord + column->rowTextOffset),
                            rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
               }
               column = column + 1;
@@ -2936,7 +2936,7 @@ UiPointerList_InitializeColumnLayout
 {
   int columnWidth;
   UiNodeVtable *parentVtable;
-  dword columnsRemaining;
+  uint32_t columnsRemaining;
   UiNodeBase *parent;
   UiPixelExtent computedRowHeight;
   int totalWidth;
@@ -3016,10 +3016,10 @@ UiTimedListControl_DrawRowsAndSelection
   enum { TREE_DEPTH_LIMIT = 64 };
   UiTimedListRuntimeExtendedView88 *list = (UiTimedListRuntimeExtendedView88 *)control;
   UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
-  dword savedRemaining[TREE_DEPTH_LIMIT];
+  uint32_t savedRemaining[TREE_DEPTH_LIMIT];
   UiTimedListTreeRecord16 *header;
   UiTimedListTreeRecord16 *record;
-  dword remaining;
+  uint32_t remaining;
   int depth;
   int rowY;
   int x;
@@ -3070,7 +3070,7 @@ UiTimedListControl_DrawRowsAndSelection
       x = x + (int)list->observedDrawParameter84 - control->left;
       if (record == list->base.selectedRecord) {
         RichTextExtentRegs extent =
-             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+             RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
         int width = (int)extent.widthPixels + 6;
         if ((control->nodeFlags & 4) != 0) {
           GraphicsTextureSizeEaxEdxCf9 cap =
@@ -3093,7 +3093,7 @@ UiTimedListControl_DrawRowsAndSelection
       }
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
-                 (word *)record->recordCountOrRowPayload00,rowY + 1 + control->top,
+                 (uint16_t *)record->recordCountOrRowPayload00,rowY + 1 + control->top,
                  x + 3 + control->left);
       rowY = rowY + (int)list->base.rowHeight;
       record = record + 1;
@@ -3161,7 +3161,7 @@ UiWrappedTextControl_RelocateAndApplyDeferredOffset
 {
   UiContainer_RelocateChildren(relocationDelta,&control->base);
   if ((control->labelFlags & 0x20) != 0) {
-    control->text = (word *)((int)control->text + relocationDelta);
+    control->text = (uint16_t *)((int)control->text + relocationDelta);
     control->labelFlags = control->labelFlags & 0xffffffdf;
   }
   return;
@@ -3182,14 +3182,14 @@ UiCatalogEntryControl_DrawClipped
 
 {
   ArmyRuntimeSlot *slotArmyRuntime;
-  dword subresourceOrTextLength;
+  uint32_t subresourceOrTextLength;
   int recordIndexOrPercent;
   int assetCountOrPercent;
   FactionArmyAssetCount assetSlotIndex;
   int factionIndexOrPercent;
   bool accessFailed;
   RichTextExtentRegs textExtent;
-  dword backgroundSubresource;
+  uint32_t backgroundSubresource;
   GraphicsTextureSourceAsset *spriteTextureSource;
   SoftwareFramebufferAccess *framebuffer;
   PckArmyAssetIdCatalog catalogArmyAssetId;
@@ -3245,7 +3245,7 @@ UiCatalogEntryControl_DrawClipped
   subresourceOrTextLength = (*g_WideNumberFormatUtf16)
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,control->runtimeDisplayValueQ4 >> 4,
                      g_UiCatalogEntryRichTextScratchUtf16 + 1);
-  *(dword *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
+  *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
   textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
   RichTextCommandStream_DrawSingleLine
             (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -3271,7 +3271,7 @@ UiCatalogEntryControl_DrawClipped
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
         factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-        *(dword *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
+        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
                    g_UiCatalogEntryRichTextScratchUtf16,factionIndexOrPercent + 2,
@@ -3289,8 +3289,8 @@ UiCatalogEntryControl_DrawClipped
                (((((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex ==
                    (armyRuntime->linkedEntityRuntime->common).ownership.ownerIndex &&
                   (catalogArmyAssetId == armyRuntime->classState60)) &&
-                 (recordIndexOrPercent = (int)(((longlong)(int)armyRuntime->ownerValue64 * 100) /
-                               (longlong)(int)armyRuntime->ownerValue68), factionIndexOrPercent <= recordIndexOrPercent)) &&
+                 (recordIndexOrPercent = (int)(((int64_t)(int)armyRuntime->ownerValue64 * 100) /
+                               (int64_t)(int)armyRuntime->ownerValue68), factionIndexOrPercent <= recordIndexOrPercent)) &&
                 (overlayTextStyle = 0x1040000, factionIndexOrPercent = recordIndexOrPercent, (armyRuntime->runtimeFlags & 1) != 0)))))) {
           overlayTextStyle = 0x1050000;
         }
@@ -3300,8 +3300,8 @@ UiCatalogEntryControl_DrawClipped
         subresourceOrTextLength = (*g_WideNumberFormatUtf16)
                           (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,factionIndexOrPercent,
                            g_UiCatalogEntryRichTextScratchUtf16 + 1);
-        *(word *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
-        *(dword *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
+        *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
+        *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
         textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,
@@ -3338,7 +3338,7 @@ UiCatalogEntryControl_DrawClipped
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,assetCountOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
     factionIndexOrPercent = (control->command).sprite.selectable.base.top;
-    *(dword *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
+    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x20;
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
                factionIndexOrPercent + 2,(control->command).sprite.selectable.base.left);
@@ -3355,8 +3355,8 @@ UiCatalogEntryControl_DrawClipped
               ARMY_TERRAIN_CONTACT_ADVANCE_ACTIVE_CONTACT_AND_RELEASE) &&
             (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
            ((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-            ((assetCountOrPercent = (int)(((longlong)(int)slotArmyRuntime->ownerValue64 * 100) /
-                           (longlong)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent &&
+            ((assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
+                           (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent &&
              (overlayTextStyle = 0x1040000, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))))) {
           overlayTextStyle = 0x1050000;
         }
@@ -3365,8 +3365,8 @@ UiCatalogEntryControl_DrawClipped
                 && ((slotArmyRuntime->articulatedContact).fallbackPosition0Q12 == 1)) &&
                (factionIndexOrPercent == (slotArmyRuntime->linkedEntityRuntime->common).ownership.ownerIndex)) &&
               (((catalogArmyAssetId == slotArmyRuntime->classState60 &&
-                (assetCountOrPercent = (int)(((longlong)(int)slotArmyRuntime->ownerValue64 * 100) /
-                              (longlong)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent)) &&
+                (assetCountOrPercent = (int)(((int64_t)(int)slotArmyRuntime->ownerValue64 * 100) /
+                              (int64_t)(int)slotArmyRuntime->ownerValue68), recordIndexOrPercent <= assetCountOrPercent)) &&
                (overlayTextStyle = 0x1040000, recordIndexOrPercent = assetCountOrPercent, (slotArmyRuntime->runtimeFlags & 1) != 0)))) {
         overlayTextStyle = 0x1050000;
       }
@@ -3377,8 +3377,8 @@ UiCatalogEntryControl_DrawClipped
     subresourceOrTextLength = (*g_WideNumberFormatUtf16)
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,recordIndexOrPercent,
                        g_UiCatalogEntryRichTextScratchUtf16 + 1);
-    *(word *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
-    *(dword *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
+    *(uint16_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 2) = 0x25;
+    *(uint32_t *)((int)g_UiCatalogEntryRichTextScratchUtf16 + subresourceOrTextLength + 4) = 0x20;
     textExtent = RichTextCommandStream_MeasureRegs(0x1000000,g_UiCatalogEntryRichTextScratchUtf16);
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,overlayTextStyle,g_UiCatalogEntryRichTextScratchUtf16,
@@ -3449,7 +3449,7 @@ UiCatalogEntryControl_NonRightRelease
 
 {
   UiSelectableStateFlags *stateFlagsField;
-  dword activationInputState;
+  uint32_t activationInputState;
   
   activationInputState = g_KeyboardStateMask;
   if ((((control->command).sprite.selectable.base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
@@ -3480,7 +3480,7 @@ UiTimedListControl_SelectRecordAndScrollIntoView
           (UiTimedListTreeRecord16 *selectedRecord,UiTimedListRuntimeExtendedView88 *control)
 
 {
-  dword nestedRecordCount;
+  uint32_t nestedRecordCount;
   int rowAccumulator;
   int rowIndex;
   UiTimedListTreeRecord16 *previousRecord;
@@ -3592,13 +3592,13 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
      on the machine stack and descend; the decompiler kept only one level. */
   enum { TREE_DEPTH_LIMIT = 64 };
   UiTimedListTreeRecord16 *savedRecord[TREE_DEPTH_LIMIT];
-  dword savedRemaining[TREE_DEPTH_LIMIT];
+  uint32_t savedRemaining[TREE_DEPTH_LIMIT];
   UiTimedListTreeRecord16 *record;
   UiNodeBase *parent;
   FontGlyphSizeEaxEdxCf9 glyph;
-  dword remaining;
-  uint widest;
-  uint width;
+  uint32_t remaining;
+  uint32_t widest;
+  uint32_t width;
   int depth;
 
   glyph = FontGlyph_GetLogicalSizeActiveRegs(0);
@@ -3612,9 +3612,9 @@ UiTimedListControl_SetRecordTreeAndRecomputeLayout
   depth = 0;
   while (remaining != 0) {
     RichTextExtentRegs extent =
-         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(word *)record->recordCountOrRowPayload00);
+         RichTextCommandStream_MeasureRegs(g_UiListTextStyle,(uint16_t *)record->recordCountOrRowPayload00);
     width = extent.widthPixels + control->observedDrawParameter84 +
-            control->observedDrawParameter80 * (dword)depth;
+            control->observedDrawParameter80 * (uint32_t)depth;
     record = record + 1;
     remaining = remaining - 1;
     if (widest < width) {
@@ -3661,13 +3661,13 @@ UiTimedListTreeRecord16 * UiTimedListControl_GetRecordTree(UiTimedListControl *c
    Ownership: ui/controls/lists.
    Purpose: Handles ui timed list tree count record array and nested children.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock)
 
 {
-  dword nestedRecordCount;
-  dword totalCount;
-  dword recordsRemaining;
+  uint32_t nestedRecordCount;
+  uint32_t totalCount;
+  uint32_t recordsRemaining;
   
   totalCount = 0;
   if (recordBlock != (UiTimedListTreeRecord16 *)0x0) {
@@ -3700,9 +3700,9 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
   UiNodeBase *contentChild;
   UiPixelExtent childWidth;
   UiPixelExtent childHeight;
-  uint minThumbLength;
-  dword arrowSize;
-  uint thumbLength;
+  uint32_t minThumbLength;
+  uint32_t arrowSize;
+  uint32_t thumbLength;
   UiPixelOffset offsetX;
   UiPixelOffset offsetY;
   int horizontalExtent;
@@ -3793,31 +3793,31 @@ UiScrollableControl_RefreshChildAndScrollThumbs(UiScrollableControl *control)
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_HORIZONTAL_BAR_AT_BOTTOM|UI_SCROLL_HORIZONTAL_BAR_AT_TOP)) != 0) {
-      thumbLength = (uint)(((longlong)(int)control->viewportWidth * (longlong)horizontalExtent) /
-                    (longlong)(int)control->contentWidth);
+      thumbLength = (uint32_t)(((int64_t)(int)control->viewportWidth * (int64_t)horizontalExtent) /
+                    (int64_t)(int)control->contentWidth);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc0,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalWidthPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
       }
       control->horizontalThumbRight = control->horizontalThumbRight + thumbLength;
-      horizontalExtent = (int)(((longlong)(int)-control->scrollOffsetX * (longlong)(int)(horizontalExtent - thumbLength)) /
-                   (longlong)(int)(control->contentWidth - control->viewportWidth));
+      horizontalExtent = (int)(((int64_t)(int)-control->scrollOffsetX * (int64_t)(int)(horizontalExtent - thumbLength)) /
+                   (int64_t)(int)(control->contentWidth - control->viewportWidth));
       control->horizontalThumbLeft = control->horizontalThumbLeft + horizontalExtent;
       control->horizontalThumbRight = control->horizontalThumbRight + horizontalExtent;
     }
     if ((control->scrollStateFlags &
         (UI_SCROLL_VERTICAL_BAR_AT_RIGHT|UI_SCROLL_VERTICAL_BAR_AT_LEFT)) != 0) {
-      thumbLength = (uint)(((longlong)(int)control->viewportHeight * (longlong)verticalExtent) /
-                    (longlong)(int)control->contentHeight);
+      thumbLength = (uint32_t)(((int64_t)(int)control->viewportHeight * (int64_t)verticalExtent) /
+                    (int64_t)(int)control->contentHeight);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc2,g_UiWindowTextureSource);
       minThumbLength = textureSize.logicalHeightPixels * 2;
       if (thumbLength < minThumbLength) {
         thumbLength = minThumbLength;
       }
       control->verticalThumbBottom = control->verticalThumbBottom + thumbLength;
-      horizontalExtent = (int)(((longlong)(int)-control->scrollOffsetY * (longlong)(int)(verticalExtent - thumbLength)) /
-                   (longlong)(int)(control->contentHeight - control->viewportHeight));
+      horizontalExtent = (int)(((int64_t)(int)-control->scrollOffsetY * (int64_t)(int)(verticalExtent - thumbLength)) /
+                   (int64_t)(int)(control->contentHeight - control->viewportHeight));
       control->verticalThumbTop = control->verticalThumbTop + horizontalExtent;
       control->verticalThumbBottom = control->verticalThumbBottom + horizontalExtent;
     }

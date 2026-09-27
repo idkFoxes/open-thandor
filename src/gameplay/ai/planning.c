@@ -26,8 +26,8 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
   int remainingOrPressureValue;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint nextIndexOrFactionBit;
-  uint pressureIndexOrFaction;
+  uint32_t nextIndexOrFactionBit;
+  uint32_t pressureIndexOrFaction;
   GameFactionRuntimeRecord *factionRecordPressureTarget;
   GameFactionRuntimeRecord *factionRecordPlanning;
   GameFactionRuntimeRecord *factionRecordDecay;
@@ -90,7 +90,7 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
               factionRecordPressureTarget = g_GameFactionRuntimeImage.records;
               do {
                 factionRecordPressureTarget = factionRecordPressureTarget + 1;
-                if (((*(uint *)(factionIndexOrScratch + 0x50) & nextIndexOrFactionBit) != 0) && (pressureIndexOrFaction != *(uint *)(factionIndexOrScratch + 0xc))) {
+                if (((*(uint32_t *)(factionIndexOrScratch + 0x50) & nextIndexOrFactionBit) != 0) && (pressureIndexOrFaction != *(uint32_t *)(factionIndexOrScratch + 0xc))) {
                   factionRecordPressureTarget->aiPressureValues[remainingOrPressureValue] =
                        factionRecordPressureTarget->aiPressureValues[remainingOrPressureValue] + 0x100;
                 }
@@ -145,14 +145,14 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
 
 {
   ArmyAssetRuntimeSemanticView80 *armyAssetRecord;
-  dword assetDefinitionListAddress;
+  uint32_t assetDefinitionListAddress;
   ModelDefinitionRecordPrefix *modelDefinition;
   AiCandidateScore32 candidateScore;
   int registryEntriesRemaining;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
   bool technologyUnlocked;
   int compatibleAssetCount;
-  uint compatibleAssetScoreSum;
+  uint32_t compatibleAssetScoreSum;
   AiLinkedDefinitionListView *assetLinkedDefinitions;
   AiLinkedDefinitionListView *nestedLinkedDefinitions;
   PckModelDefinitionIdCatalog candidateModelDefinitionId;
@@ -196,7 +196,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                ((candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[6] &&
                 (candidateModelDefinitionId != nestedLinkedDefinitions->definitionIds[7])))) &&
               ((secondNestedLinkedDefinitions = *(AiLinkedDefinitionListView **)(assetDefinitionListAddress + 0x10),
-               *(uint *)(assetDefinitionListAddress + 8) < 2 ||
+               *(uint32_t *)(assetDefinitionListAddress + 8) < 2 ||
                (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[0] &&
                  (candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[1])) &&
                 (((candidateModelDefinitionId != secondNestedLinkedDefinitions->definitionIds[2] &&
@@ -221,7 +221,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
     candidateScore = 0;
     if (compatibleAssetCount != 0) {
       candidateScore = (AiCandidateScore32)
-              ((longlong)(ulonglong)compatibleAssetScoreSum / (longlong)compatibleAssetCount);
+              ((int64_t)(uint64_t)compatibleAssetScoreSum / (int64_t)compatibleAssetCount);
     }
   }
   return candidateScore;
@@ -239,11 +239,11 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
 {
   ModelRuntimeSlot *entityModelRuntime;
   int lowClassShift;
-  dword highClassShift;
-  uint maskClass0;
-  uint maskClass1;
-  uint maskClass2;
-  uint combinedMask;
+  uint32_t highClassShift;
+  uint32_t maskClass0;
+  uint32_t maskClass1;
+  uint32_t maskClass2;
+  uint32_t combinedMask;
   int remainingEntries;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
   
@@ -265,8 +265,8 @@ void __thandor_void_preserve_eax_ecx_edx AiPlanning_CollectActiveGridMaskClasses
       if ((*(int *)(entityModelRuntime->reserved10_37 + 8) != 0) && (-1 < lowClassShift)) {
         highClassShift = entityModelRuntime[1].classLinkState.classState64;
         if ((((-1 < (int)highClassShift) &&
-             ((((combinedMask = 0x100 << ((byte)lowClassShift & 0x1f) | 0x80000000U |
-                         0x1000000 << ((byte)highClassShift & 0x1f), combinedMask != maskClass0 && (combinedMask != maskClass1)) &&
+             ((((combinedMask = 0x100 << ((uint8_t)lowClassShift & 0x1f) | 0x80000000U |
+                         0x1000000 << ((uint8_t)highClassShift & 0x1f), combinedMask != maskClass0 && (combinedMask != maskClass1)) &&
                (combinedMask != maskClass2)) &&
               ((combinedMask != g_AiActiveGridMaskClass3 &&
                (g_AiActiveGridMaskClass0 = combinedMask, maskClass0 != 0xffffffff)))))) &&
@@ -316,7 +316,7 @@ AiRuntime_DispatchFactionPlanningPhase
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *inGameRuntime)
 
 {
-  uint planningPhaseDispatchIndex;
+  uint32_t planningPhaseDispatchIndex;
   FactionRuntimeIndex purchaseFactionIndexAfterCacheLoad;
   FactionRuntimeIndex spareFactionIndex0;
   FactionRuntimeIndex spareFactionIndex1;
@@ -485,7 +485,7 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
 
 {
   bool noCandidateApplied;
-  uint candidateCost;
+  uint32_t candidateCost;
   int remainingCandidates;
   XeniteAmountQ4 remainingXenite;
   AiCandidateWorkspaceEntry *entry;
@@ -656,9 +656,9 @@ AiArmyCandidate_AddBestScoredVariantA
 
 {
   AiCandidateScore32 candidateScore;
-  dword weightRange;
+  uint32_t weightRange;
   int remainingEntries;
-  uint pendingCountOrWeight;
+  uint32_t pendingCountOrWeight;
   int bestScore;
   ArmyAssetRecordPrefix *bestArmyAsset;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
@@ -728,7 +728,7 @@ AiStrategicClass_AddCandidate12DOr12FTo132
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  uint weightRange;
+  uint32_t weightRange;
   bool conditionMet;
   AiStrategicClassSelectionRegs8 classSelection;
   AiKnowledgeDataImage *knowledgeData;
@@ -786,7 +786,7 @@ AiStrategicClass_AddWeightedClassCandidate
 
 {
   AiKnowledgeDataImage *knowledgeData;
-  uint weightRange;
+  uint32_t weightRange;
   bool conditionMet;
   AiStrategicClassSelectionRegs8 classSelection;
   
@@ -886,7 +886,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
           workspaceDistanceOrScore = anchorDistanceX + anchorDistanceY + workspaceDistanceOrScore;
           if ((workspaceDistanceOrScore < bestScore) &&
              (placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                                (1,0,(uint)(ushort)candidateCell->triangle0NormalAngles,
+                                (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,
                                  candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
                                  (UiRootNode *)worldRuntime), !placementResult.carry)) {
             bestCell = candidateCell;
@@ -899,7 +899,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
     } while (remainingCells != 0);
     if (bestScore < 0x7fffffff) {
       createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
-                        (4,(uint)(ushort)bestCell->triangle0NormalAngles,bestCell->worldY,
+                        (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                          bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
       createdSlots = (ArmyRuntimeSlot **)createdInstance.eax;
       if (!createdInstance.carry) {
@@ -940,7 +940,7 @@ AiArmyCandidate_AddBestScoredVariantB
 
 {
   AiCandidateScore32 candidateScore;
-  dword weightRange;
+  uint32_t weightRange;
   int remainingEntries;
   int bestScore;
   ArmyAssetRecordPrefix *bestArmyAsset;
@@ -965,13 +965,13 @@ AiArmyCandidate_AddBestScoredVariantB
       remainingEntries = remainingEntries + -1;
     } while (remainingEntries != 0);
     if (0 < bestScore) {
-      weightRange = (dword)(((longlong)
+      weightRange = (uint32_t)(((int64_t)
                              (int)(100 - g_GameFactionRuntimeImage.records[factionIndex].
                                          exploredTerrainPercent) *
-                            (longlong)
+                            (int64_t)
                             (int)(g_AiKnowledgeData->parameters).
                                  armyVariantBUnexploredTerrainWeightCoefficient) /
-                           (longlong)(int)((g_AiWorkspace01Count + 1) * 0x20));
+                           (int64_t)(int)((g_AiWorkspace01Count + 1) * 0x20));
       if (g_AiWorkspace07Count != 0) {
         weightRange = weightRange >> 1;
       }
@@ -996,7 +996,7 @@ AiArmyCandidate_AddBestScoredVariantC
 
 {
   AiCandidateScore32 candidateScore;
-  uint weightRange;
+  uint32_t weightRange;
   int remainingEntries;
   int bestScore;
   ArmyAssetRecordPrefix *bestArmyAsset;
@@ -1046,11 +1046,11 @@ AiPurchaseCandidate_HasEligibleProducerCf
           (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
-  uint countOrClassMask;
+  uint32_t countOrClassMask;
   int *entitySlot;
-  uint remainingGuard;
+  uint32_t remainingGuard;
   int technologySlotIndex;
-  uint remainingEntries;
+  uint32_t remainingEntries;
   RuntimeToken technologyIndex;
   AiWorkspace00EntryView8 *workspaceEntry;
   bool technologyAvailable;
@@ -1090,7 +1090,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
             entitySlot = (int *)workspaceEntry->runtimeSlotAddressOrZero;
             if (((entitySlot != (int *)0x0) && (*(int *)(*entitySlot + 0x4c) == 0xd)) &&
                (((entitySlot[0x3b] & 0xc9U) == 0 &&
-                (((*(uint *)(*entitySlot + 0xc4) & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
+                (((*(uint32_t *)(*entitySlot + 0xc4) & countOrClassMask & 0xee) != 0 && (entitySlot[0x2e] == 0)))))) {
               return false;
             }
             workspaceEntry = workspaceEntry + 1;
@@ -1244,7 +1244,7 @@ AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionInde
     armySlot = runtimeWorkspaceEntry->armyRuntime;
     if ((((armySlot != (ArmyRuntimeSlot *)0x0) && (armySlot->factionIndex != 0)) &&
         ((armySlot[1].commandCoordinate0Q12 != 0 ||
-         ((1 < (uint)armySlot->factionIndex && (armySlot[1].runtimeState40 != 0)))))) &&
+         ((1 < (uint32_t)armySlot->factionIndex && (armySlot[1].runtimeState40 != 0)))))) &&
        (thresholdOrRemaining = thresholdOrRemaining + -1, thresholdOrRemaining == 0)) break;
     runtimeWorkspaceEntry = runtimeWorkspaceEntry + 1;
     remainingEntries = remainingEntries + -1;
@@ -1274,11 +1274,11 @@ AiStructureCandidate_AddWeightedId14BOr14CCandidate
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  uint storageLimit;
-  uint xeniteCurrent;
+  uint32_t storageLimit;
+  uint32_t xeniteCurrent;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   int remainingOrAssignedCount;
-  dword derivedWeight;
+  uint32_t derivedWeight;
   bool conditionMet;
   AiKnowledgeDataImage *knowledgeData;
   
@@ -1367,12 +1367,12 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
       energySurplus = energySupply - generationCapacity;
       if (energySurplus != 0 && generationCapacity <= energySupply) {
         AiCandidateWorkspace_AddOrAccumulateWeightedEntry
-                  (0x136,(dword)(((longlong)
-                                  (int)(((longlong)energySurplus * (longlong)energyDemand) / (longlong)generationCapacity) *
-                                 (longlong)
+                  (0x136,(uint32_t)(((int64_t)
+                                  (int)(((int64_t)energySurplus * (int64_t)energyDemand) / (int64_t)generationCapacity) *
+                                 (int64_t)
                                  (int)(g_AiKnowledgeData->parameters).
                                       resource136DeficitScoreNumerator) /
-                                (longlong)
+                                (int64_t)
                                 (int)(g_AiKnowledgeData->parameters).
                                      resource136DeficitScoreDenominator),1);
       }
@@ -1396,21 +1396,21 @@ AiStrategicClass_SelectBestCandidate12ETo132
 
 {
   GridScratchStateMask cellStateMask;
-  dword pendingExistingCount;
+  uint32_t pendingExistingCount;
   int freeBits25To27PercentOrScore;
   int freeBit24Percent;
   int freeBits28To30Percent;
-  uint cellCount;
-  uint remainingCellsOrTieBits;
-  uint freeBits25To27Cells;
+  uint32_t cellCount;
+  uint32_t remainingCellsOrTieBits;
+  uint32_t freeBits25To27Cells;
   int candidateScore;
-  uint freeBit24Cells;
+  uint32_t freeBit24Cells;
   GridScratchCell *scratchCell;
-  uint freeBits28To30Cells;
+  uint32_t freeBits28To30Cells;
   bool conditionMet;
   AiStrategicClassSelectionRegs8 selection;
-  dword existingClassCount;
-  uint randomizedTieBits;
+  uint32_t existingClassCount;
+  uint32_t randomizedTieBits;
   RuntimeToken selectedToken;
   int bestCandidateScore;
   
@@ -1436,9 +1436,9 @@ AiStrategicClass_SelectBestCandidate12ETo132
     scratchCell = scratchCell + 1;
     remainingCellsOrTieBits = remainingCellsOrTieBits - 1;
   } while (remainingCellsOrTieBits != 0);
-  freeBits25To27PercentOrScore = (int)(((ulonglong)freeBits25To27Cells * 100) / (ulonglong)cellCount);
-  freeBit24Percent = (int)(((ulonglong)freeBit24Cells * 100) / (ulonglong)cellCount);
-  freeBits28To30Percent = (int)(((ulonglong)freeBits28To30Cells * 100) / (ulonglong)cellCount);
+  freeBits25To27PercentOrScore = (int)(((uint64_t)freeBits25To27Cells * 100) / (uint64_t)cellCount);
+  freeBit24Percent = (int)(((uint64_t)freeBit24Cells * 100) / (uint64_t)cellCount);
+  freeBits28To30Percent = (int)(((uint64_t)freeBits28To30Cells * 100) / (uint64_t)cellCount);
   randomizedTieBits = (*g_RandomGeneratorState.next)();
   bestCandidateScore = 0;
   selectedToken = 0;
@@ -1543,27 +1543,27 @@ AiStrategicClass_SelectWeightedClass141To143
   int pressure2For141;
   int pressure3For141;
   int pressure4For141;
-  dword class141Coefficient1;
-  dword class141Coefficient2;
+  uint32_t class141Coefficient1;
+  uint32_t class141Coefficient2;
   int pressure2For142;
   int pressure3For142;
   int pressure4For142;
-  dword class142Coefficient0;
-  dword class142Coefficient1;
-  dword class142Coefficient2;
+  uint32_t class142Coefficient0;
+  uint32_t class142Coefficient1;
+  uint32_t class142Coefficient2;
   int pressure2For143;
   int pressure3For143;
   int pressure4For143;
-  dword class143Coefficient0;
-  dword class143Coefficient1;
-  dword class143Coefficient2;
-  dword randomBits;
+  uint32_t class143Coefficient0;
+  uint32_t class143Coefficient1;
+  uint32_t class143Coefficient2;
+  uint32_t randomBits;
   RuntimeToken selectedToken;
-  uint pressureSumPlusOne;
-  dword class141Coefficient0OrExistingCount;
-  uint class141Score;
-  uint bestScore;
-  uint class142Score;
+  uint32_t pressureSumPlusOne;
+  uint32_t class141Coefficient0OrExistingCount;
+  uint32_t class141Score;
+  uint32_t bestScore;
+  uint32_t class142Score;
   bool conditionMet;
   AiStrategicClassSelectionRegs8 selection;
   
@@ -1649,13 +1649,13 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           WorldRuntimeContext *worldRuntime)
 
 {
-  dword radiusMetric;
+  uint32_t radiusMetric;
   FieldGridCell *candidateCell;
   ArmyRuntimeSlot *modelNodeRuntime;
   ArmyRuntimeSlot *createdArmySlot;
   ModelRuntimeSlot *createdModelRuntime;
   int distanceXOrScore;
-  dword randomBits;
+  uint32_t randomBits;
   ArmyRuntimeSlot **createdSlots;
   int remainingCells;
   int distanceY;
@@ -1700,7 +1700,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           distanceXOrScore = distanceY + distanceXOrScore + (randomBits & 0xffff);
           if (distanceXOrScore < bestScore) {
             placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                               (1,0,(uint)(ushort)candidateCell->triangle0NormalAngles,candidateCell->worldY,
+                               (1,0,(uint32_t)(uint16_t)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                                 candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
             if (!placementResult.carry) {
               regionUnreachable = GridReachability_RebuildConnectedRegionAroundWorldPoint
@@ -1716,7 +1716,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
         } while (remainingCells != 0);
         if (bestScore < 0x7fffffff) {
           createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
-                             (4,(uint)(ushort)bestCell->triangle0NormalAngles,bestCell->worldY,
+                             (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                               bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
           createdSlots = (ArmyRuntimeSlot **)createdInstance.eax;
           if (!createdInstance.carry) {
@@ -1763,7 +1763,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   FactionRelationCounter *relationCounter;
   FactionArmyAssetCount *pendingAssetCount;
   FactionArmyAssetCount remainingAssets;
-  dword *assetPointerCursor;
+  uint32_t *assetPointerCursor;
   ArmyRegistryEaxCf5_51b6d0 armyAssetLookup;
   
   g_AiConstructionPendingAssetConsumedCount = g_AiConstructionPendingAssetConsumedCount + 1;
@@ -1796,7 +1796,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiFactionRuntime_TestPlanningCapacityExceededCf
-          (dword additionalPlanningCapacity,FactionRuntimeIndex factionIndex)
+          (uint32_t additionalPlanningCapacity,FactionRuntimeIndex factionIndex)
 
 {
   int supplyCapacity;
@@ -1830,16 +1830,16 @@ AiArmyCandidate_ComputeFactionWeightedScore
 {
   ModelDefinitionResolvePhaseView280 *selectedModelDefinition;
   ModelDefinitionResolvePhaseView280 *selectedChildModelDefinition0;
-  uint pressureWeightedDamage0;
-  uint pressureWeightedDamage1;
-  uint pressureWeightedDamage2;
-  uint pressureWeightedDamage3;
-  uint pressureWeightedDamage4;
-  uint pressureWeightedDamage5;
-  uint pressureWeightedDamage6;
-  uint pressureWeightedDamage7;
+  uint32_t pressureWeightedDamage0;
+  uint32_t pressureWeightedDamage1;
+  uint32_t pressureWeightedDamage2;
+  uint32_t pressureWeightedDamage3;
+  uint32_t pressureWeightedDamage4;
+  uint32_t pressureWeightedDamage5;
+  uint32_t pressureWeightedDamage6;
+  uint32_t pressureWeightedDamage7;
   ModelDefinitionResolvePhaseView280 *selectedChildModelDefinition1;
-  uint childCountOrWeightedDamage;
+  uint32_t childCountOrWeightedDamage;
   int weightedDefinitionScore;
   ModelDefinitionLookupEaxCf5 definitionLookup;
   AiLinkedDefinitionListView *linkedDefinitionList;
@@ -1861,13 +1861,13 @@ AiArmyCandidate_ComputeFactionWeightedScore
   }
   childCountOrWeightedDamage = linkedDefinitionList->childListCount;
   weightedDefinitionScore =
-       ((int)(((longlong)(int)selectedModelDefinition->runtimeValue0C *
-              (longlong)scoreWeights->definitionValue0CWeight) /
-             (longlong)(int)g_AiArmyCandidateFlaggedDefinitionValueMaximum) +
+       ((int)(((int64_t)(int)selectedModelDefinition->runtimeValue0C *
+              (int64_t)scoreWeights->definitionValue0CWeight) /
+             (int64_t)(int)g_AiArmyCandidateFlaggedDefinitionValueMaximum) +
        weightedDefinitionScore +
-       (int)(((longlong)(int)selectedModelDefinition->runtimeValue60 *
-             (longlong)scoreWeights->definitionValue60Weight) /
-            (longlong)
+       (int)(((int64_t)(int)selectedModelDefinition->runtimeValue60 *
+             (int64_t)scoreWeights->definitionValue60Weight) /
+            (int64_t)
             (&g_TechnologyCategoryMaximum0)[selectedModelDefinition->categoryMaximumIndex5C])) * 8;
   if (childCountOrWeightedDamage != 0) {
     definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
@@ -1881,79 +1881,79 @@ AiArmyCandidate_ComputeFactionWeightedScore
       definitionScaleDivisor30 = selectedChildModelDefinition0->runtimeValue30;
       if (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0) {
         pressureWeightedDamage0 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[0] *
-                           (longlong)scoreWeights->pressureCategoryWeights[0]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[0]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[0] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[0]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[0]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage1 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[1] *
-                           (longlong)scoreWeights->pressureCategoryWeights[1]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[1]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[1] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[1]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[1]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage2 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[2] *
-                           (longlong)scoreWeights->pressureCategoryWeights[2]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[2]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[2] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[2]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[2]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage3 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[3] *
-                           (longlong)scoreWeights->pressureCategoryWeights[3]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[3] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[3]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage4 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[4] *
-                           (longlong)scoreWeights->pressureCategoryWeights[4]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[4] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[4]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage5 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[5] *
-                           (longlong)scoreWeights->pressureCategoryWeights[5]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[5]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[5] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[5]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[5]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage6 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[6] *
-                           (longlong)scoreWeights->pressureCategoryWeights[6]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[6]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[6] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[6]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[6]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         pressureWeightedDamage7 =
-             (uint)(((longlong)
-                     (int)(((longlong)selectedShotDefinition->targetClassImpactDamageQ12[7] *
-                           (longlong)scoreWeights->pressureCategoryWeights[7]) /
-                          (longlong)definitionScaleDivisor30) *
-                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[7]) /
-                   (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+             (uint32_t)(((int64_t)
+                     (int)(((int64_t)selectedShotDefinition->targetClassImpactDamageQ12[7] *
+                           (int64_t)scoreWeights->pressureCategoryWeights[7]) /
+                          (int64_t)definitionScaleDivisor30) *
+                    (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[7]) /
+                   (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         weightedDefinitionScore =
              weightedDefinitionScore +
-             (int)((longlong)((ulonglong)pressureWeightedDamage0 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum0) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage1 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum1) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage2 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum2) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage3 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum3) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage4 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum4) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage5 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum5) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage6 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum6) +
-             (int)((longlong)((ulonglong)pressureWeightedDamage7 << 10) /
-                  (longlong)(int)g_TechnologyCategoryMaximum7);
+             (int)((int64_t)((uint64_t)pressureWeightedDamage0 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum0) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage1 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum1) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage2 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum2) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage3 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum3) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage4 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum4) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage5 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum5) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage6 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum6) +
+             (int)((int64_t)((uint64_t)pressureWeightedDamage7 << 10) /
+                  (int64_t)(int)g_TechnologyCategoryMaximum7);
       }
     }
     if (1 < childCountOrWeightedDamage) {
@@ -1967,80 +1967,80 @@ AiArmyCandidate_ComputeFactionWeightedScore
         secondChildShotDefinition = selectedChildModelDefinition1->shotDefinitionReference2C;
         secondChildScaleDivisor30 = selectedChildModelDefinition1->runtimeValue30;
         if (g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure != 0) {
-          childCountOrWeightedDamage = (uint)(((longlong)
-                          (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[0]
-                                * (longlong)scoreWeights->pressureCategoryWeights[0]) /
-                               (longlong)secondChildScaleDivisor30) *
-                         (longlong)
+          childCountOrWeightedDamage = (uint32_t)(((int64_t)
+                          (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[0]
+                                * (int64_t)scoreWeights->pressureCategoryWeights[0]) /
+                               (int64_t)secondChildScaleDivisor30) *
+                         (int64_t)
                          g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[0]) /
-                        (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure)
+                        (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure)
           ;
           pressureWeightedDamage0 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[1] *
-                             (longlong)scoreWeights->pressureCategoryWeights[1]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[1])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[1] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[1]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[1])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage1 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[2] *
-                             (longlong)scoreWeights->pressureCategoryWeights[2]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[2])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[2] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[2]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[2])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage2 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[3] *
-                             (longlong)scoreWeights->pressureCategoryWeights[3]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[3] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[3]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[3])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage3 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[4] *
-                             (longlong)scoreWeights->pressureCategoryWeights[4]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[4] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[4]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[4])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage4 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[5] *
-                             (longlong)scoreWeights->pressureCategoryWeights[5]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[5])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[5] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[5]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[5])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage5 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[6] *
-                             (longlong)scoreWeights->pressureCategoryWeights[6]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[6])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[6] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[6]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[6])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           pressureWeightedDamage6 =
-               (uint)(((longlong)
-                       (int)(((longlong)secondChildShotDefinition->targetClassImpactDamageQ12[7] *
-                             (longlong)scoreWeights->pressureCategoryWeights[7]) /
-                            (longlong)secondChildScaleDivisor30) *
-                      (longlong)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[7])
-                     / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
+               (uint32_t)(((int64_t)
+                       (int)(((int64_t)secondChildShotDefinition->targetClassImpactDamageQ12[7] *
+                             (int64_t)scoreWeights->pressureCategoryWeights[7]) /
+                            (int64_t)secondChildScaleDivisor30) *
+                      (int64_t)g_GameFactionRuntimeImage.records[factionIndex].aiPressureValues[7])
+                     / (int64_t)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           weightedDefinitionScore =
                weightedDefinitionScore +
-               (int)((longlong)((ulonglong)childCountOrWeightedDamage << 10) / (longlong)(int)g_TechnologyCategoryMaximum0) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage0 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum1) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage1 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum2) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage2 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum3) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage3 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum4) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage4 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum5) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage5 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum6) +
-               (int)((longlong)((ulonglong)pressureWeightedDamage6 << 10) /
-                    (longlong)(int)g_TechnologyCategoryMaximum7);
+               (int)((int64_t)((uint64_t)childCountOrWeightedDamage << 10) / (int64_t)(int)g_TechnologyCategoryMaximum0) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage0 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum1) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage1 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum2) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage2 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum3) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage3 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum4) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage4 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum5) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage5 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum6) +
+               (int)((int64_t)((uint64_t)pressureWeightedDamage6 << 10) /
+                    (int64_t)(int)g_TechnologyCategoryMaximum7);
         }
       }
     }

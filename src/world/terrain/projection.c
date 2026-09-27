@@ -12,31 +12,31 @@
 /* Implementation ownership: world/terrain/projection. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword TerrainProjection_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t TerrainProjection_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline dword TerrainProjection_PackWordsUnsignedSaturate(qword words)
+static __inline uint32_t TerrainProjection_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;
-  dword packed;
+  uint32_t packed;
   int lane;
 
   lanes.q = words;
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     packed = packed |
-             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
@@ -54,25 +54,25 @@ static __inline dword TerrainProjection_PackWordsUnsignedSaturate(qword words)
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
-          (ulonglong occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
+          (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
           Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid)
 
 {
-  uint baseColumn;
+  uint32_t baseColumn;
   int rowStrideBytes;
   int referenceHeight;
-  uint columnFraction;
-  uint fractionSumOrGridWidth;
-  uint rowFraction;
+  uint32_t columnFraction;
+  uint32_t fractionSumOrGridWidth;
+  uint32_t rowFraction;
   int centerCellIndex;
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
-  uint gridRow;
-  uint gridColumn;
+  uint32_t gridRow;
+  uint32_t gridColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
@@ -84,8 +84,8 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
     referenceHeight = g_TerrainScanReferenceHeight;
     baseColumn = gridCoordinates.columnQ12 >> 0xc;
     gridRow = gridCoordinates.rowQ12 >> 0xc;
-    columnFraction = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
@@ -158,21 +158,21 @@ FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
           FieldGridAsset *fieldGrid)
 
 {
-  uint baseColumn;
+  uint32_t baseColumn;
   int rowStrideBytes;
-  uint columnFraction;
-  uint fractionSumOrGridWidth;
-  uint rowFraction;
+  uint32_t columnFraction;
+  uint32_t fractionSumOrGridWidth;
+  uint32_t rowFraction;
   int centerCellIndex;
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCell *fieldCell;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
-  uint gridRow;
-  uint gridColumn;
+  uint32_t gridRow;
+  uint32_t gridColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
@@ -185,8 +185,8 @@ FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     baseColumn = gridCoordinates.columnQ12 >> 0xc;
     gridRow = gridCoordinates.rowQ12 >> 0xc;
-    columnFraction = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
@@ -256,21 +256,21 @@ FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
           FieldGridAsset *fieldGrid)
 
 {
-  uint baseColumn;
+  uint32_t baseColumn;
   int rowStrideBytes;
-  uint columnFraction;
-  uint fractionSumOrGridWidth;
-  uint rowFraction;
+  uint32_t columnFraction;
+  uint32_t fractionSumOrGridWidth;
+  uint32_t rowFraction;
   int centerCellIndex;
   FieldGridCell *wedgeCellA;
   FieldGridCell *wedgeCellB;
   FieldGridCell *fieldCell;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
-  uint gridRow;
-  uint gridColumn;
+  uint32_t gridRow;
+  uint32_t gridColumn;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
-    g_TerrainScanStepLimit = (uint)radiusWorldUnits / 0x240;
+    g_TerrainScanStepLimit = (uint32_t)radiusWorldUnits / 0x240;
     if (g_TerrainScanStepLimit == 0) {
       g_TerrainScanStepLimit = 1;
     }
@@ -283,8 +283,8 @@ FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
     fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
     baseColumn = gridCoordinates.columnQ12 >> 0xc;
     gridRow = gridCoordinates.rowQ12 >> 0xc;
-    columnFraction = (uint)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff);
-    rowFraction = (uint)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, ulonglong, gridCoordinates) & 0xfff00000fff) >> 0x20);
+    columnFraction = (uint32_t)(THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff);
+    rowFraction = (uint32_t)((THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, uint64_t, gridCoordinates) & 0xfff00000fff) >> 0x20);
     fractionSumOrGridWidth = rowFraction + columnFraction * 2;
     gridColumn = baseColumn;
     if (fractionSumOrGridWidth < 0x1000) {
@@ -502,15 +502,15 @@ TerrainProjectedGrid_TransformShadeAndQueue
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge0
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int heightOrRowStride;
   int neighborHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   FieldGridCell *adjacentCell;
   
@@ -522,9 +522,9 @@ TerrainProjectedOcclusion_TraceWedge0
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -537,19 +537,19 @@ TerrainProjectedOcclusion_TraceWedge0
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint *)((int)adjacentCell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)adjacentCell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
         return;
       }
       neighborHeight = *(int *)((int)adjacentCell + (0x48 - heightOrRowStride));
       if (0 < *(int *)((int)adjacentCell + (0x4c - heightOrRowStride))) {
         neighborHeight = neighborHeight + *(int *)((int)adjacentCell + (0x4c - heightOrRowStride));
       }
-      scaledHeightProduct = (longlong)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        *(ulonglong *)((int)adjacentCell + (0x70 - heightOrRowStride)) =
-             *(ulonglong *)((int)adjacentCell + (0x70 - heightOrRowStride)) | occupancyMaskBits;
+        *(uint64_t *)((int)adjacentCell + (0x70 - heightOrRowStride)) =
+             *(uint64_t *)((int)adjacentCell + (0x70 - heightOrRowStride)) | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       cell = (FieldGridCell *)((int)adjacentCell + (0x80 - heightOrRowStride));
@@ -578,15 +578,15 @@ TerrainProjectedOcclusion_TraceWedge0
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge1
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int heightOrRowStride;
   int neighborHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   FieldGridCell *adjacentCell;
   
@@ -598,9 +598,9 @@ TerrainProjectedOcclusion_TraceWedge1
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -613,19 +613,19 @@ TerrainProjectedOcclusion_TraceWedge1
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint *)((int)cell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)cell + (0x50 - heightOrRowStride)) & 0x88006000) != 0) {
         return;
       }
       neighborHeight = *(int *)((int)cell + (0x48 - heightOrRowStride));
       if (0 < *(int *)((int)cell + (0x4c - heightOrRowStride))) {
         neighborHeight = neighborHeight + *(int *)((int)cell + (0x4c - heightOrRowStride));
       }
-      scaledHeightProduct = (longlong)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        *(ulonglong *)((int)cell + (0x70 - heightOrRowStride)) =
-             *(ulonglong *)((int)cell + (0x70 - heightOrRowStride)) | occupancyMaskBits;
+        *(uint64_t *)((int)cell + (0x70 - heightOrRowStride)) =
+             *(uint64_t *)((int)cell + (0x70 - heightOrRowStride)) | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       adjacentCell = (FieldGridCell *)((int)cell + (-g_TerrainScanRowStrideBytes - heightOrRowStride));
@@ -654,15 +654,15 @@ TerrainProjectedOcclusion_TraceWedge1
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge2
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *adjacentCell;
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
@@ -673,9 +673,9 @@ TerrainProjectedOcclusion_TraceWedge2
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -694,9 +694,9 @@ TerrainProjectedOcclusion_TraceWedge2
       if (0 < cell[-1].waterSurfaceDelta) {
         cellHeight = cellHeight + cell[-1].waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
         cell[-1].occupancyMask = cell[-1].occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -727,16 +727,16 @@ TerrainProjectedOcclusion_TraceWedge2
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge3
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int rowStrideBytes;
   FieldCellPersistedAux cellHeight;
   int neighborHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   FieldGridCell *adjacentCell;
   
@@ -748,9 +748,9 @@ TerrainProjectedOcclusion_TraceWedge3
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(int)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(int)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -763,19 +763,19 @@ TerrainProjectedOcclusion_TraceWedge3
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
       neighborHeight = *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x18);
       if (0 < *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x14)) {
         neighborHeight = neighborHeight + *(int *)(adjacentCell->runtime60_6B + rowStrideBytes + -0x14);
       }
-      scaledHeightProduct = (longlong)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        *(ulonglong *)(adjacentCell->runtime60_6B + rowStrideBytes + 0x10) =
-             *(ulonglong *)(adjacentCell->runtime60_6B + rowStrideBytes + 0x10) | occupancyMaskBits;
+        *(uint64_t *)(adjacentCell->runtime60_6B + rowStrideBytes + 0x10) =
+             *(uint64_t *)(adjacentCell->runtime60_6B + rowStrideBytes + 0x10) | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       cell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + rowStrideBytes + -0xc);
@@ -804,16 +804,16 @@ TerrainProjectedOcclusion_TraceWedge3
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge4
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
-  byte *cellRuntimeBase;
+  int64_t scaledHeightProduct;
+  uint8_t *cellRuntimeBase;
   int heightOrRowStride;
   int neighborHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
@@ -824,9 +824,9 @@ TerrainProjectedOcclusion_TraceWedge4
       if (0 < cell->waterSurfaceDelta) {
         heightOrRowStride = heightOrRowStride + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(heightOrRowStride - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -839,19 +839,19 @@ TerrainProjectedOcclusion_TraceWedge4
       if (g_TerrainScanStepLimit <= projectedHeightOrStep) {
         return;
       }
-      if ((*(uint *)(cell->runtime60_6B + heightOrRowStride + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(cell->runtime60_6B + heightOrRowStride + -0x10) & 0x88006000) != 0) {
         return;
       }
       neighborHeight = *(int *)(cell->runtime60_6B + heightOrRowStride + -0x18);
       if (0 < *(int *)(cell->runtime60_6B + heightOrRowStride + -0x14)) {
         neighborHeight = neighborHeight + *(int *)(cell->runtime60_6B + heightOrRowStride + -0x14);
       }
-      scaledHeightProduct = (longlong)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(neighborHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
-        *(ulonglong *)(cell->runtime60_6B + heightOrRowStride + 0x10) =
-             *(ulonglong *)(cell->runtime60_6B + heightOrRowStride + 0x10) | occupancyMaskBits;
+        *(uint64_t *)(cell->runtime60_6B + heightOrRowStride + 0x10) =
+             *(uint64_t *)(cell->runtime60_6B + heightOrRowStride + 0x10) | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
       }
       cellRuntimeBase = cell->runtime0C_3F;
@@ -881,15 +881,15 @@ TerrainProjectedOcclusion_TraceWedge4
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge5
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
   FieldGridCell *adjacentCell;
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightOrStep;
+  uint32_t projectedHeightOrStep;
   TerrainProjectedHeightThresholdQ20 cellThreshold;
   
   cellThreshold = cell->terrainHeight - g_TerrainScanReferenceHeight;
@@ -900,9 +900,9 @@ TerrainProjectedOcclusion_TraceWedge5
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)cellThreshold <= (int)projectedHeightOrStep) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -921,9 +921,9 @@ TerrainProjectedOcclusion_TraceWedge5
       if (0 < cell[1].waterSurfaceDelta) {
         cellHeight = cellHeight + cell[1].waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
-      projectedHeightOrStep = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + projectedHeightOrStep * 4);
+      projectedHeightOrStep = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightOrStep) {
         cell[1].occupancyMask = cell[1].occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightOrStep;
@@ -970,13 +970,13 @@ FieldGridTerrainOverlayVariantA_ApplyWedge0
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)adjacentCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)adjacentCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)((int)adjacentCell + (0x50 - rowStrideBytes)) &
+      if (((*(uint32_t *)((int)adjacentCell + (0x50 - rowStrideBytes)) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)((int)adjacentCell + (0x4c - rowStrideBytes)) < 0)) {
-        *(dword *)((int)adjacentCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)((int)adjacentCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)((int)adjacentCell + (0x80 - rowStrideBytes));
       scanStep = scanStep + 7;
@@ -1019,13 +1019,13 @@ FieldGridTerrainOverlayVariantA_ApplyWedge1
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) &
+      if (((*(uint32_t *)((int)fieldCell + (0x50 - rowStrideBytes)) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)((int)fieldCell + (0x4c - rowStrideBytes)) < 0)) {
-        *(dword *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       adjacentCell = (FieldGridCell *)
                      ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
@@ -1114,13 +1114,13 @@ FieldGridTerrainOverlayVariantA_ApplyWedge3
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) &
+      if (((*(uint32_t *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x14) < 0)) {
-        *(dword *)(adjacentCell->runtime0C_3F + scanRowStrideBytes + -8) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)(adjacentCell->runtime0C_3F + scanRowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + scanRowStrideBytes + -0xc);
       scanStep = scanStep + 7;
@@ -1148,7 +1148,7 @@ FieldGridTerrainOverlayVariantA_ApplyWedge4
           (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  byte *currentCellRuntimeBase;
+  uint8_t *currentCellRuntimeBase;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
@@ -1165,13 +1165,13 @@ FieldGridTerrainOverlayVariantA_ApplyWedge4
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
-      if (((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) &
+      if (((*(uint32_t *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) &
            g_TerrainScanSharedSelectorValue.fieldCellFlagMask) != 0) &&
          (*(int *)(fieldCell->runtime60_6B + rowStrideBytes + -0x14) < 0)) {
-        *(dword *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
       currentCellRuntimeBase = fieldCell->runtime0C_3F;
       scanStep = scanStep + 7;
@@ -1263,11 +1263,11 @@ FieldGridTerrainOverlayVariantB_ApplyWedge0
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)adjacentCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)adjacentCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)((int)adjacentCell + (0x4c - rowStrideBytes))) {
-        *(dword *)((int)adjacentCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)((int)adjacentCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)((int)adjacentCell + (0x80 - rowStrideBytes));
       scanStep = scanStep + 7;
@@ -1309,11 +1309,11 @@ FieldGridTerrainOverlayVariantB_ApplyWedge1
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
+      if ((*(uint32_t *)((int)fieldCell + (0x50 - rowStrideBytes)) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)((int)fieldCell + (0x4c - rowStrideBytes))) {
-        *(dword *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)((int)fieldCell + (4 - rowStrideBytes)) = g_TerrainScanReferenceHeight;
       }
       adjacentCell = (FieldGridCell *)
                      ((int)fieldCell + (-g_TerrainScanRowStrideBytes - rowStrideBytes));
@@ -1399,11 +1399,11 @@ FieldGridTerrainOverlayVariantB_ApplyWedge3
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)(adjacentCell->runtime60_6B + scanRowStrideBytes + -0x14)) {
-        *(dword *)(adjacentCell->runtime0C_3F + scanRowStrideBytes + -8) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)(adjacentCell->runtime0C_3F + scanRowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
       fieldCell = (FieldGridCell *)(adjacentCell[-1].runtime0C_3F + scanRowStrideBytes + -0xc);
       scanStep = scanStep + 7;
@@ -1431,7 +1431,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge4
           (TerrainDirectionalScanStep scanStep,FieldGridCell *fieldCell)
 
 {
-  byte *currentCellRuntimeBase;
+  uint8_t *currentCellRuntimeBase;
   int rowStrideBytes;
   
   if (scanStep < g_TerrainScanStepLimit) {
@@ -1447,11 +1447,11 @@ FieldGridTerrainOverlayVariantB_ApplyWedge4
       if (g_TerrainScanStepLimit <= scanStep + 4) {
         return;
       }
-      if ((*(uint *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
+      if ((*(uint32_t *)(fieldCell->runtime60_6B + rowStrideBytes + -0x10) & 0x88006000) != 0) {
         return;
       }
       if (0 < *(int *)(fieldCell->runtime60_6B + rowStrideBytes + -0x14)) {
-        *(dword *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
+        *(uint32_t *)(fieldCell->runtime0C_3F + rowStrideBytes + -8) = g_TerrainScanReferenceHeight;
       }
       currentCellRuntimeBase = fieldCell->runtime0C_3F;
       scanStep = scanStep + 7;
@@ -1522,7 +1522,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge5
 */
 void __thandor_void_preserve_ecx_edx
 TerrainProjectedQuad_QueueAsTwoTrianglesRegs
-          (dword rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
+          (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
           FrontendModelPointerContextRuntimeState17C *renderContext)
 
 {
@@ -1558,10 +1558,10 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
   int offsetX;
   int offsetY;
   int offsetZ;
-  uint resultFlags;
-  uint pointAFlags;
+  uint32_t resultFlags;
+  uint32_t pointAFlags;
   MmxPackedValue64 lightingFactors;
-  qword shadedProduct;
+  uint64_t shadedProduct;
   GraphicsProjectedPointPair projectedPoint;
   
   resultFlags = vertex->projectionFlags & 0xe801ffff;
@@ -1664,10 +1664,10 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWo
   PackedArgb32 vertexColor;
   PackedArgb32 baseColor;
   int offsetZ;
-  uint maskedFlags;
-  uint resultFlags;
+  uint32_t maskedFlags;
+  uint32_t resultFlags;
   MmxPackedValue64 lightingFactors;
-  qword shadedProduct;
+  uint64_t shadedProduct;
   GraphicsProjectedPointPair projectedPoint;
   
   resultFlags = vertex->projectionFlags;
@@ -1747,23 +1747,23 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
 
 {
   GraphicsPrimitiveDispatchFlags *packetRenderFlags;
-  dword vertex0ViewDepth;
+  uint32_t vertex0ViewDepth;
   void *soilPacketTable;
-  uint flagsOrClampedDepth0;
+  uint32_t flagsOrClampedDepth0;
   int yOrTableIndexC;
   int yOrTableIndexA;
-  uint clampedDepth2;
+  uint32_t clampedDepth2;
   int yOrTableIndexB;
-  uint clampedDepth1;
+  uint32_t clampedDepth1;
   int materialOffset1;
   int materialOffset0;
   bool outsideTriangle;
   PackedArgb32 vertex0Color;
-  qword litProduct0;
+  uint64_t litProduct0;
   PackedArgb32 vertex1Color;
-  qword litProduct1;
+  uint64_t litProduct1;
   PackedArgb32 vertex2Color;
-  qword litProduct2;
+  uint64_t litProduct2;
   TriangleBarycentricWeightsQ12 barycentricWeights;
   GraphicsPrimitivePacketEaxCf5 queuedPacket;
   TerrainProjectedVertexWorkRecord *vertex2Projected;
@@ -1855,7 +1855,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex0Projected = vertex0;
       savedRenderContext = renderContext;
       queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                         ((dword *)((int)g_TerrainSoilPacketTablePayload +
+                         ((uint32_t *)((int)g_TerrainSoilPacketTablePayload +
                                    materialOffset0 + (vertex0->projectionFlags & 0x700)),vertex2Color,vertex1Color,vertex0Color
                           ,(GraphicsProjectedVertexSource *)vertex2,
                           (GraphicsProjectedVertexSource *)vertex1,
@@ -1864,7 +1864,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         if (materialOffset0 == materialOffset1) {
           if (materialOffset0 != yOrTableIndexC) {
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               ((dword *)((int)soilPacketTable + yOrTableIndexB + 0x20),vertex2Color,vertex1Color,vertex0Color,
+                               ((uint32_t *)((int)soilPacketTable + yOrTableIndexB + 0x20),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1876,7 +1876,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else if (materialOffset0 == yOrTableIndexC) {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((dword *)((int)soilPacketTable + yOrTableIndexA + 0x40),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x40),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1887,7 +1887,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else if (materialOffset1 == yOrTableIndexC) {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((dword *)((int)soilPacketTable + yOrTableIndexA + 0x60),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x60),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1898,7 +1898,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
         }
         else {
           queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                             ((dword *)((int)soilPacketTable + yOrTableIndexA + 0x80),vertex2Color,vertex1Color,vertex0Color,
+                             ((uint32_t *)((int)soilPacketTable + yOrTableIndexA + 0x80),vertex2Color,vertex1Color,vertex0Color,
                               (GraphicsProjectedVertexSource *)vertex2Projected,
                               (GraphicsProjectedVertexSource *)vertex1Projected,
                               (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1906,7 +1906,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
             packetRenderFlags = &(queuedPacket.packet)->renderFlags;
             *packetRenderFlags = *packetRenderFlags | 0x10020000;
             queuedPacket = GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-                               ((dword *)((int)soilPacketTable + yOrTableIndexB + 0xa0),vertex2Color,vertex1Color,vertex0Color,
+                               ((uint32_t *)((int)soilPacketTable + yOrTableIndexB + 0xa0),vertex2Color,vertex1Color,vertex0Color,
                                 (GraphicsProjectedVertexSource *)vertex2Projected,
                                 (GraphicsProjectedVertexSource *)vertex1Projected,
                                 (GraphicsProjectedVertexSource *)vertex0Projected,savedRenderContext);
@@ -1969,7 +1969,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
                            g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
-                ((dword *)(surfacePacketIndex * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
+                ((uint32_t *)(surfacePacketIndex * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
                  TerrainProjection_PackWordsUnsignedSaturate(litProduct2),
                  TerrainProjection_PackWordsUnsignedSaturate(litProduct1),
                  TerrainProjection_PackWordsUnsignedSaturate(litProduct0),
@@ -1990,9 +1990,9 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
           (FieldGridAsset *fieldGrid,GraphicsFixedVec3 *planeNormal)
 
 {
-  longlong fixedProduct;
+  int64_t fixedProduct;
   int boundOrCount;
-  uint columnEdgeQ12;
+  uint32_t columnEdgeQ12;
   int cutoffRow;
   FieldGridDimension rowsRemaining;
   int *spanBoundCursor;
@@ -2003,11 +2003,11 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
       if (planeNormal->y < 0) {
         boundOrCount = 0;
         if (-1 < planeNormal->z) {
-          boundOrCount = (int)(((longlong)g_ViewOriginFixed.z * (longlong)planeNormal->z) /
-                       (longlong)planeNormal->y);
+          boundOrCount = (int)(((int64_t)g_ViewOriginFixed.z * (int64_t)planeNormal->z) /
+                       (int64_t)planeNormal->y);
         }
-        fixedProduct = (longlong)(boundOrCount + g_ViewOriginFixed.y) * -0x20c8cc;
-        cutoffRow = (int)((int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14) >> 0xc;
+        fixedProduct = (int64_t)(boundOrCount + g_ViewOriginFixed.y) * -0x20c8cc;
+        cutoffRow = (int)((int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14) >> 0xc;
         boundOrCount = fieldGrid->gridHeight - cutoffRow;
         if ((boundOrCount != 0 && cutoffRow <= (int)fieldGrid->gridHeight) && (boundOrCount = boundOrCount + -1, boundOrCount != 0))
         {
@@ -2021,11 +2021,11 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
       else {
         boundOrCount = 0;
         if (-1 < planeNormal->z) {
-          boundOrCount = (int)(((longlong)g_ViewOriginFixed.z * (longlong)planeNormal->z) /
-                       (longlong)planeNormal->y);
+          boundOrCount = (int)(((int64_t)g_ViewOriginFixed.z * (int64_t)planeNormal->z) /
+                       (int64_t)planeNormal->y);
         }
-        fixedProduct = (longlong)(boundOrCount + g_ViewOriginFixed.y) * -0x20c8cc;
-        boundOrCount = (int)((int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14) >> 0xc;
+        fixedProduct = (int64_t)(boundOrCount + g_ViewOriginFixed.y) * -0x20c8cc;
+        boundOrCount = (int)((int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14) >> 0xc;
         if ((-1 < boundOrCount) && (boundOrCount != 0)) {
           spanCursor = g_TerrainProjectedRowSpans;
           for (boundOrCount = boundOrCount * 2; boundOrCount != 0; boundOrCount = boundOrCount + -1) {
@@ -2037,21 +2037,21 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
     }
   }
   else if (planeNormal->x < 0) {
-    fixedProduct = (longlong)planeNormal->y * (longlong)g_ViewOriginFixed.y +
-            (longlong)planeNormal->x * (longlong)g_ViewOriginFixed.x;
+    fixedProduct = (int64_t)planeNormal->y * (int64_t)g_ViewOriginFixed.y +
+            (int64_t)planeNormal->x * (int64_t)g_ViewOriginFixed.x;
     if (-1 < planeNormal->z) {
-      fixedProduct = fixedProduct + (longlong)planeNormal->z * (longlong)g_ViewOriginFixed.z;
+      fixedProduct = fixedProduct + (int64_t)planeNormal->z * (int64_t)g_ViewOriginFixed.z;
     }
-    fixedProduct = (longlong)(int)(fixedProduct / (longlong)planeNormal->x) * 0x1c6e9c;
-    columnEdgeQ12 = (int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14;
-    fixedProduct = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
+    fixedProduct = (int64_t)(int)(fixedProduct / (int64_t)planeNormal->x) * 0x1c6e9c;
+    columnEdgeQ12 = (int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14;
+    fixedProduct = (int64_t)(int)(((int64_t)planeNormal->y * 1999) / (int64_t)planeNormal->x) * 0x1c6e9c
     ;
     spanBoundCursor = (int *)THANDOR_ADDR(g_TerrainProjectedRowSpans,-8);
     rowsRemaining = fieldGrid->gridHeight;
     do {
       spanBoundCursor = spanBoundCursor + 2;
       boundOrCount = (int)(columnEdgeQ12 - 0x1000) >> 0xc;
-      columnEdgeQ12 = columnEdgeQ12 + (((int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14) - 0x800);
+      columnEdgeQ12 = columnEdgeQ12 + (((int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14) - 0x800);
       if (*spanBoundCursor < boundOrCount) {
         *spanBoundCursor = boundOrCount;
       }
@@ -2059,21 +2059,21 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
     } while (rowsRemaining != 0);
   }
   else {
-    fixedProduct = (longlong)planeNormal->y * (longlong)g_ViewOriginFixed.y +
-            (longlong)planeNormal->x * (longlong)g_ViewOriginFixed.x;
+    fixedProduct = (int64_t)planeNormal->y * (int64_t)g_ViewOriginFixed.y +
+            (int64_t)planeNormal->x * (int64_t)g_ViewOriginFixed.x;
     if (-1 < planeNormal->z) {
-      fixedProduct = fixedProduct + (longlong)planeNormal->z * (longlong)g_ViewOriginFixed.z;
+      fixedProduct = fixedProduct + (int64_t)planeNormal->z * (int64_t)g_ViewOriginFixed.z;
     }
-    fixedProduct = (longlong)(int)(fixedProduct / (longlong)planeNormal->x) * 0x1c6e9c;
-    columnEdgeQ12 = (int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14;
-    fixedProduct = (longlong)(int)(((longlong)planeNormal->y * 1999) / (longlong)planeNormal->x) * 0x1c6e9c
+    fixedProduct = (int64_t)(int)(fixedProduct / (int64_t)planeNormal->x) * 0x1c6e9c;
+    columnEdgeQ12 = (int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14;
+    fixedProduct = (int64_t)(int)(((int64_t)planeNormal->y * 1999) / (int64_t)planeNormal->x) * 0x1c6e9c
     ;
     spanBoundCursor = (int *)THANDOR_ADDR(g_TerrainProjectedRowSpans,-4);
     rowsRemaining = fieldGrid->gridHeight;
     do {
       spanBoundCursor = spanBoundCursor + 2;
       boundOrCount = (int)(columnEdgeQ12 + 0x1fff) >> 0xc;
-      columnEdgeQ12 = columnEdgeQ12 + (((int)((ulonglong)fixedProduct >> 0x20) << 0xc | (uint)fixedProduct >> 0x14) - 0x800);
+      columnEdgeQ12 = columnEdgeQ12 + (((int)((uint64_t)fixedProduct >> 0x20) << 0xc | (uint32_t)fixedProduct >> 0x14) - 0x800);
       if (boundOrCount < *spanBoundCursor) {
         *spanBoundCursor = boundOrCount;
       }
@@ -2094,14 +2094,14 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection0
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2112,9 +2112,9 @@ TerrainProjectedOcclusion_ScanDirection0
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
@@ -2137,14 +2137,14 @@ TerrainProjectedOcclusion_ScanDirection0
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection1
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2155,9 +2155,9 @@ TerrainProjectedOcclusion_ScanDirection1
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
@@ -2180,14 +2180,14 @@ TerrainProjectedOcclusion_ScanDirection1
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection2
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2198,9 +2198,9 @@ TerrainProjectedOcclusion_ScanDirection2
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
@@ -2223,14 +2223,14 @@ TerrainProjectedOcclusion_ScanDirection2
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection3
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2241,9 +2241,9 @@ TerrainProjectedOcclusion_ScanDirection3
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
@@ -2266,14 +2266,14 @@ TerrainProjectedOcclusion_ScanDirection3
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection4
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2284,9 +2284,9 @@ TerrainProjectedOcclusion_ScanDirection4
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;
@@ -2309,14 +2309,14 @@ TerrainProjectedOcclusion_ScanDirection4
 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection5
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell)
 
 {
-  longlong scaledHeightProduct;
+  int64_t scaledHeightProduct;
   int cellHeight;
-  uint projectedHeightQ20;
+  uint32_t projectedHeightQ20;
   
   if (scanStep < g_TerrainScanStepLimit) {
     do {
@@ -2327,9 +2327,9 @@ TerrainProjectedOcclusion_ScanDirection5
       if (0 < cell->waterSurfaceDelta) {
         cellHeight = cellHeight + cell->waterSurfaceDelta;
       }
-      scaledHeightProduct = (longlong)(cellHeight - (int)g_TerrainScanReferenceHeight) *
-              (longlong)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
-      projectedHeightQ20 = (int)((ulonglong)scaledHeightProduct >> 0x20) << 0x14 | (uint)scaledHeightProduct >> 0xc;
+      scaledHeightProduct = (int64_t)(cellHeight - (int)g_TerrainScanReferenceHeight) *
+              (int64_t)*(int *)(&g_TerrainHeightDeltaScaleByStepQ12 + scanStep * 4);
+      projectedHeightQ20 = (int)((uint64_t)scaledHeightProduct >> 0x20) << 0x14 | (uint32_t)scaledHeightProduct >> 0xc;
       if ((int)projectedHeightThresholdQ20 <= (int)projectedHeightQ20) {
         cell->occupancyMask = cell->occupancyMask | occupancyMaskBits;
         projectedHeightThresholdQ20 = projectedHeightQ20;

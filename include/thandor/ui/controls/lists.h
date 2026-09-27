@@ -122,7 +122,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...);
 
 /* 0x004B2DE0 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_IsSelectedCf(UiSelectableControl *control);
 
 /* 0x004B2E10 */
@@ -251,7 +251,7 @@ UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control);
 UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
 
 /* 0x004BC310 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 UiTimedListTree_CountRecordArrayAndNestedChildren(UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x004B9170 */
@@ -267,15 +267,15 @@ UiScrollableControl_ClampOffsetsToViewport
 
 /* 0x0040FF70 */
 UiTimedListTreeRecord16 * __thandor_eax_preserve_ecx_edx
-UiTimedListTree_FindRecordByLabel(word *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
+UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x0040FFE0 */
 Recovered0040FFE0EaxCf5 __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlockCf(word *pathUtf16);
+UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16);
 
 /* 0x00410380 */
 UiTimedListDirectoryHierarchyEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchyCf(word *selectedPathUtf16);
+UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16);
 
 /* 0x004104B0 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -293,7 +293,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
 
 /* 0x00410700 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPathCf(dword *outputPathDwords,UiTimedListTreeRecord16 *record);
+UiTimedListTree_BuildRecordPathCf(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
 
 /* 0x004BC1C0 */
 void __thandor_void_preserve_eax_ecx_edx

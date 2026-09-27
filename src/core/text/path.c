@@ -15,27 +15,27 @@
    Purpose: Returns up to four low-byte extension characters packed in EAX after the final path separator. EAX is
    zero when no extension exists; CF is clear on both paths.
 */
-dword WidePath_GetExtensionCode(word *path)
+uint32_t WidePath_GetExtensionCode(uint16_t *path)
 
 {
-  uint *extensionCursor;
+  uint32_t *extensionCursor;
   short currentCodeUnit;
   
   do {
-    extensionCursor = (uint *)0x0;
+    extensionCursor = (uint32_t *)0x0;
     while( true ) {
-      currentCodeUnit = (short)*(uint *)path;
+      currentCodeUnit = (short)*(uint32_t *)path;
       if (currentCodeUnit == 0) {
-        if (extensionCursor == (uint *)0x0) {
+        if (extensionCursor == (uint32_t *)0x0) {
           return 0;
         }
         return ((((extensionCursor[1] & 0xffffff) >> 0x10) << 8 | extensionCursor[1] & 0xff) << 8 |
                (*extensionCursor & 0xffffff) >> 0x10) << 8 | *extensionCursor & 0xff;
       }
-      path = (word *)((int)path + 2);
+      path = (uint16_t *)((int)path + 2);
       if (currentCodeUnit == 0x5c) break;
       if (currentCodeUnit == 0x2e) {
-        extensionCursor = (uint *)path;
+        extensionCursor = (uint32_t *)path;
       }
     }
   } while( true );
@@ -48,29 +48,29 @@ dword WidePath_GetExtensionCode(word *path)
    executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,word *path)
+WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,uint16_t *path)
 
 {
-  uint *extensionWriteCursor;
+  uint32_t *extensionWriteCursor;
   short currentCodeUnit;
   
   do {
-    extensionWriteCursor = (uint *)0x0;
+    extensionWriteCursor = (uint32_t *)0x0;
     while( true ) {
-      currentCodeUnit = (short)*(uint *)path;
+      currentCodeUnit = (short)*(uint32_t *)path;
       if (currentCodeUnit == 0) {
-        if (extensionWriteCursor == (uint *)0x0) {
+        if (extensionWriteCursor == (uint32_t *)0x0) {
           *path = 0x2e;
-          extensionWriteCursor = (uint *)((int)path + 2);
+          extensionWriteCursor = (uint32_t *)((int)path + 2);
         }
         *extensionWriteCursor = ((extensionCode & 0xff) << 8 | (extensionCode >> 8) << 0x18) >> 8;
         extensionWriteCursor[1] = extensionCode >> 0x10;
         return false;
       }
-      path = (word *)((int)path + 2);
+      path = (uint16_t *)((int)path + 2);
       if (currentCodeUnit == 0x5c) break;
       if (currentCodeUnit == 0x2e) {
-        extensionWriteCursor = (uint *)path;
+        extensionWriteCursor = (uint32_t *)path;
       }
     }
   } while( true );
@@ -83,7 +83,7 @@ WidePath_SetExtensionCode(PackedFileExtensionCode32 extensionCode,word *path)
    exists, parent receives the complete path and leaf is cleared.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
+WidePath_SplitParentAndLeaf(uint16_t *leafOut,uint16_t *parentOut,uint16_t *path)
 
 {
   /* Rewritten from the assembly (0x0040F320): the decompiler lost the start of the final component
@@ -93,7 +93,7 @@ WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
   int count;
   int remaining;
   int i;
-  word *leafStart;
+  uint16_t *leafStart;
 
   count = 0;
   while (count < 0x100) {
@@ -139,14 +139,14 @@ WidePath_SplitParentAndLeaf(word *leafOut,word *parentOut,word *path)
    destination.
 */
 void __thandor_void_preserve_eax_ecx_edx
-WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
+WidePath_CombineDirectoryAndLeaf(uint16_t *destination,uint16_t *leaf,uint16_t *directory)
 
 {
   int codeUnitsRemaining;
   int copyCodeUnitsRemaining;
   int leafCodeUnitsRemaining;
-  word *directoryScanCursor;
-  word *currentPathScanCursor;
+  uint16_t *directoryScanCursor;
+  uint16_t *currentPathScanCursor;
   bool terminatorFound;
   bool leafTerminatorFound;
   
@@ -199,17 +199,17 @@ WidePath_CombineDirectoryAndLeaf(word *destination,word *leaf,word *directory)
    contiguous decimal digits immediately preceding the extension. The parsed value is returned in ECX while EAX is
    preserved.
 */
-dword __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(word *path)
+uint32_t __thandor_preserve_eax_edx WidePath_ParseTrailingNumberBeforeExtensionRegs(uint16_t *path)
 
 {
-  dword parsedValue;
+  uint32_t parsedValue;
   int scanCountOrPlaceValue;
-  uint scannedCodeUnitCount;
-  uint digitValue;
-  word *terminatorCursor;
-  ushort *digitScanCursor;
-  word currentCodeUnit;
-  ushort digitCodeUnit;
+  uint32_t scannedCodeUnitCount;
+  uint32_t digitValue;
+  uint16_t *terminatorCursor;
+  uint16_t *digitScanCursor;
+  uint16_t currentCodeUnit;
+  uint16_t digitCodeUnit;
   
   scanCountOrPlaceValue = 0x20;
   do {

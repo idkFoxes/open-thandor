@@ -83,7 +83,7 @@ TerrainHeightBand_TestWedge2(TerrainDirectionalScanStep scanStep,FieldGridCell *
 
 /* 0x00507D60 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,byte *cell);
+TerrainHeightBand_TestWedge3(TerrainDirectionalScanStep scanStep,uint8_t *cell);
 
 /* 0x00507E40 */
 bool __thandor_cf_preserve_eax_ecx_edx

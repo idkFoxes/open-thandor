@@ -9,7 +9,7 @@
 #include <thandor/thandor.h>
 
 /* Two 32-bit MMX lanes as one qword (high lane in the upper half), as PUNPCKLDQ builds them. */
-#define SAM_PACK_LANE_PAIR(highLane, lowLane) ((ulonglong)(dword)(highLane) << 32 | (dword)(lowLane))
+#define SAM_PACK_LANE_PAIR(highLane, lowLane) ((uint64_t)(uint32_t)(highLane) << 32 | (uint32_t)(lowLane))
 
 /* Implementation ownership: audio/codec/sam. */
 
@@ -19,13 +19,13 @@
 */
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
-          (dword preservedIncomingEcx,dword preservedIncomingEdx,short *outputSamples,
+          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputSamples,
           SoundCoefficientBlock256 *coefficientBlock)
 
 {
   MmxPackedValue64 coefficientQuadHigh;
   /* The original preserves the caller's EAX (and EDX); the function has no callers, zero stands in for EAX. */
-  dword preservedIncomingEax = 0;
+  uint32_t preservedIncomingEax = 0;
   short *cosineBankCoefficients1;
   MmxPackedValue64 coefficientPairProducts91;
   MmxPackedValue64 coefficientPairProducts93;
@@ -947,7 +947,7 @@ SoundCoefficientTransform_ApplyCosineBanksMmx
     outputGroupsRemaining1 = outputGroupsRemaining1 + -1;
     outputSamples = outputSamples + 4;
   } while (outputGroupsRemaining1 != 0);
-  return ((qword)preservedIncomingEdx << 32) | preservedIncomingEax;
+  return ((uint64_t)preservedIncomingEdx << 32) | preservedIncomingEax;
 }
 
 
@@ -967,7 +967,7 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
   MmxPackedValue64 coefficientQuadLow;
   MmxPackedValue64 coefficientQuadHigh;
   short *cosineBankCursor;
-  word outputWord1;
+  uint16_t outputWord1;
   MmxPackedValue64 mm0PackedValue0;
   MmxPackedValue64 mm0PackedValue1;
   MmxPackedValue64 mm0PackedValue2;
@@ -1000,10 +1000,10 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
   MmxPackedValue64 mm0PackedValue29;
   MmxPackedValue64 mm0PackedValue30;
   MmxPackedValue64 mm0PackedValue31;
-  ulonglong packedOutputWords;
+  uint64_t packedOutputWords;
   MmxPackedValue64 mm0PackedValue32;
-  word outputWord2;
-  word outputWord3;
+  uint16_t outputWord2;
+  uint16_t outputWord3;
   MmxPackedValue64 mm1PackedValue0;
   MmxPackedValue64 mm1PackedValue1;
   MmxPackedValue64 mm1PackedValue2;
@@ -1553,88 +1553,88 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
     mm3PackedValue93 = pmaddwd(coefficientQuadLow,*(MmxPackedValue64 *)(cosineBankCursor + 0x1f8));
     mm2PackedValue94 = pmaddwd(coefficientQuadHigh,*(MmxPackedValue64 *)(cosineBankCursor + 0xfc));
     mm3PackedValue94 = pmaddwd(coefficientQuadHigh,*(MmxPackedValue64 *)(cosineBankCursor + 0x1fc));
-    bank0HighLaneSum = (int)((ulonglong)mm2PackedValue0 >> 0x20) + (int)((ulonglong)mm2PackedValue1 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue3 >> 0x20) + (int)((ulonglong)mm2PackedValue4 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue6 >> 0x20) + (int)((ulonglong)mm2PackedValue7 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue9 >> 0x20) + (int)((ulonglong)mm2PackedValue10 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue12 >> 0x20) + (int)((ulonglong)mm2PackedValue13 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue15 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue16 >> 0x20) + (int)((ulonglong)mm2PackedValue18 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue19 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue21 >> 0x20) + (int)((ulonglong)mm2PackedValue22 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue24 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue25 >> 0x20) + (int)((ulonglong)mm2PackedValue27 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue28 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue30 >> 0x20) + (int)((ulonglong)mm2PackedValue31 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue33 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue34 >> 0x20) + (int)((ulonglong)mm2PackedValue36 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue37 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue39 >> 0x20) + (int)((ulonglong)mm2PackedValue40 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue42 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue43 >> 0x20) + (int)((ulonglong)mm2PackedValue45 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue46 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue48 >> 0x20) + (int)((ulonglong)mm2PackedValue49 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue51 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue52 >> 0x20) + (int)((ulonglong)mm2PackedValue54 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue55 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue57 >> 0x20) + (int)((ulonglong)mm2PackedValue58 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue60 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue61 >> 0x20) + (int)((ulonglong)mm2PackedValue63 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue64 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue66 >> 0x20) + (int)((ulonglong)mm2PackedValue67 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue69 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue70 >> 0x20) + (int)((ulonglong)mm2PackedValue72 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue73 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue75 >> 0x20) + (int)((ulonglong)mm2PackedValue76 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue78 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue79 >> 0x20) + (int)((ulonglong)mm2PackedValue81 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue82 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue84 >> 0x20) + (int)((ulonglong)mm2PackedValue85 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue87 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue88 >> 0x20) + (int)((ulonglong)mm2PackedValue90 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue91 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue93 >> 0x20) + (int)((ulonglong)mm2PackedValue94 >> 0x20);
-    bank1HighLaneSum = (int)((ulonglong)mm3PackedValue0 >> 0x20) + (int)((ulonglong)mm3PackedValue1 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue3 >> 0x20) + (int)((ulonglong)mm3PackedValue4 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue6 >> 0x20) + (int)((ulonglong)mm3PackedValue7 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue9 >> 0x20) + (int)((ulonglong)mm3PackedValue10 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue12 >> 0x20) + (int)((ulonglong)mm3PackedValue13 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue15 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue16 >> 0x20) + (int)((ulonglong)mm3PackedValue18 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue19 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue21 >> 0x20) + (int)((ulonglong)mm3PackedValue22 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue24 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue25 >> 0x20) + (int)((ulonglong)mm3PackedValue27 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue28 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue30 >> 0x20) + (int)((ulonglong)mm3PackedValue31 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue33 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue34 >> 0x20) + (int)((ulonglong)mm3PackedValue36 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue37 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue39 >> 0x20) + (int)((ulonglong)mm3PackedValue40 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue42 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue43 >> 0x20) + (int)((ulonglong)mm3PackedValue45 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue46 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue48 >> 0x20) + (int)((ulonglong)mm3PackedValue49 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue51 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue52 >> 0x20) + (int)((ulonglong)mm3PackedValue54 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue55 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue57 >> 0x20) + (int)((ulonglong)mm3PackedValue58 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue60 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue61 >> 0x20) + (int)((ulonglong)mm3PackedValue63 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue64 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue66 >> 0x20) + (int)((ulonglong)mm3PackedValue67 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue69 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue70 >> 0x20) + (int)((ulonglong)mm3PackedValue72 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue73 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue75 >> 0x20) + (int)((ulonglong)mm3PackedValue76 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue78 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue79 >> 0x20) + (int)((ulonglong)mm3PackedValue81 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue82 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue84 >> 0x20) + (int)((ulonglong)mm3PackedValue85 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue87 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue88 >> 0x20) + (int)((ulonglong)mm3PackedValue90 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue91 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue93 >> 0x20) + (int)((ulonglong)mm3PackedValue94 >> 0x20);
+    bank0HighLaneSum = (int)((uint64_t)mm2PackedValue0 >> 0x20) + (int)((uint64_t)mm2PackedValue1 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue3 >> 0x20) + (int)((uint64_t)mm2PackedValue4 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue6 >> 0x20) + (int)((uint64_t)mm2PackedValue7 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue9 >> 0x20) + (int)((uint64_t)mm2PackedValue10 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue12 >> 0x20) + (int)((uint64_t)mm2PackedValue13 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue15 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue16 >> 0x20) + (int)((uint64_t)mm2PackedValue18 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue19 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue21 >> 0x20) + (int)((uint64_t)mm2PackedValue22 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue24 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue25 >> 0x20) + (int)((uint64_t)mm2PackedValue27 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue28 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue30 >> 0x20) + (int)((uint64_t)mm2PackedValue31 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue33 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue34 >> 0x20) + (int)((uint64_t)mm2PackedValue36 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue37 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue39 >> 0x20) + (int)((uint64_t)mm2PackedValue40 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue42 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue43 >> 0x20) + (int)((uint64_t)mm2PackedValue45 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue46 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue48 >> 0x20) + (int)((uint64_t)mm2PackedValue49 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue51 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue52 >> 0x20) + (int)((uint64_t)mm2PackedValue54 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue55 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue57 >> 0x20) + (int)((uint64_t)mm2PackedValue58 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue60 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue61 >> 0x20) + (int)((uint64_t)mm2PackedValue63 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue64 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue66 >> 0x20) + (int)((uint64_t)mm2PackedValue67 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue69 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue70 >> 0x20) + (int)((uint64_t)mm2PackedValue72 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue73 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue75 >> 0x20) + (int)((uint64_t)mm2PackedValue76 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue78 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue79 >> 0x20) + (int)((uint64_t)mm2PackedValue81 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue82 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue84 >> 0x20) + (int)((uint64_t)mm2PackedValue85 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue87 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue88 >> 0x20) + (int)((uint64_t)mm2PackedValue90 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue91 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue93 >> 0x20) + (int)((uint64_t)mm2PackedValue94 >> 0x20);
+    bank1HighLaneSum = (int)((uint64_t)mm3PackedValue0 >> 0x20) + (int)((uint64_t)mm3PackedValue1 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue3 >> 0x20) + (int)((uint64_t)mm3PackedValue4 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue6 >> 0x20) + (int)((uint64_t)mm3PackedValue7 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue9 >> 0x20) + (int)((uint64_t)mm3PackedValue10 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue12 >> 0x20) + (int)((uint64_t)mm3PackedValue13 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue15 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue16 >> 0x20) + (int)((uint64_t)mm3PackedValue18 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue19 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue21 >> 0x20) + (int)((uint64_t)mm3PackedValue22 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue24 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue25 >> 0x20) + (int)((uint64_t)mm3PackedValue27 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue28 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue30 >> 0x20) + (int)((uint64_t)mm3PackedValue31 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue33 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue34 >> 0x20) + (int)((uint64_t)mm3PackedValue36 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue37 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue39 >> 0x20) + (int)((uint64_t)mm3PackedValue40 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue42 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue43 >> 0x20) + (int)((uint64_t)mm3PackedValue45 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue46 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue48 >> 0x20) + (int)((uint64_t)mm3PackedValue49 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue51 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue52 >> 0x20) + (int)((uint64_t)mm3PackedValue54 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue55 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue57 >> 0x20) + (int)((uint64_t)mm3PackedValue58 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue60 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue61 >> 0x20) + (int)((uint64_t)mm3PackedValue63 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue64 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue66 >> 0x20) + (int)((uint64_t)mm3PackedValue67 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue69 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue70 >> 0x20) + (int)((uint64_t)mm3PackedValue72 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue73 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue75 >> 0x20) + (int)((uint64_t)mm3PackedValue76 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue78 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue79 >> 0x20) + (int)((uint64_t)mm3PackedValue81 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue82 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue84 >> 0x20) + (int)((uint64_t)mm3PackedValue85 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue87 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue88 >> 0x20) + (int)((uint64_t)mm3PackedValue90 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue91 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue93 >> 0x20) + (int)((uint64_t)mm3PackedValue94 >> 0x20);
     mm0PackedValue31 = pmaddwd(coefficientQuadLow,*(MmxPackedValue64 *)(cosineBankCursor + 0x2f8));
     mm1PackedValue31 = pmaddwd(coefficientQuadHigh,*(MmxPackedValue64 *)(cosineBankCursor + 0x2fc));
     mm2PackedValue95 = pmaddwd(coefficientQuadLow,*(MmxPackedValue64 *)(cosineBankCursor + 0x3f8));
@@ -1737,146 +1737,146 @@ SoundSample_DecodeCoefficientBlockToPcmMmx(short *outputStereoPcm,short *coeffic
                               (int)mm3PackedValue88 + (int)mm3PackedValue90 + (int)mm3PackedValue91
                               + (int)mm3PackedValue93 + (int)mm3PackedValue94) * 0x20) &
             g_SoundDecodeMmxWordLaneMask1 |
-            SAM_PACK_LANE_PAIR((bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue2 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue5 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue5 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue8 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue8 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue11 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue11 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue14 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue14 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue17 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue17 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue20 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue20 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue23 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue23 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue26 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue26 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue29 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue29 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue32 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue32 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue35 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue35 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue38 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue38 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue41 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue41 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue44 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue44 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue47 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue47 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue50 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue50 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue53 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue53 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue56 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue56 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue59 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue59 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue62 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue62 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue65 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue65 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue68 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue68 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue71 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue71 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue74 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue74 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue77 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue77 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue80 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue80 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue83 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue83 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue86 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue86 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue89 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue89 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue92 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue92 >> 0x20) +
-                               (int)((ulonglong)mm2PackedValue95 >> 0x20) +
-                               (int)((ulonglong)mm3PackedValue95 >> 0x20)) * 0x20,bank3LowLaneSum * 0x20) &
+            SAM_PACK_LANE_PAIR((bank3LowLaneSum + (int)((uint64_t)mm2PackedValue2 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue2 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue5 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue5 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue8 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue8 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue11 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue11 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue14 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue14 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue17 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue17 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue20 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue20 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue23 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue23 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue26 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue26 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue29 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue29 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue32 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue32 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue35 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue35 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue38 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue38 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue41 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue41 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue44 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue44 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue47 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue47 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue50 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue50 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue53 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue53 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue56 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue56 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue59 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue59 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue62 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue62 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue65 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue65 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue68 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue68 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue71 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue71 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue74 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue74 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue77 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue77 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue80 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue80 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue83 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue83 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue86 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue86 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue89 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue89 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue92 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue92 >> 0x20) +
+                               (int)((uint64_t)mm2PackedValue95 >> 0x20) +
+                               (int)((uint64_t)mm3PackedValue95 >> 0x20)) * 0x20,bank3LowLaneSum * 0x20) &
             g_SoundDecodeMmxWordLaneMask3 |
-            SAM_PACK_LANE_PAIR((bank2LowLaneSum + (int)((ulonglong)mm0PackedValue0 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue0 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue1 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue1 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue2 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue2 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue3 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue3 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue4 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue4 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue5 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue5 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue6 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue6 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue7 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue7 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue8 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue8 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue9 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue9 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue10 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue10 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue11 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue11 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue12 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue12 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue13 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue13 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue14 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue14 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue15 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue15 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue16 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue16 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue17 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue17 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue18 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue18 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue19 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue19 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue20 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue20 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue21 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue21 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue22 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue22 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue23 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue23 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue24 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue24 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue25 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue25 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue26 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue26 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue27 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue27 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue28 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue28 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue29 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue29 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue30 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue30 >> 0x20) +
-                               (int)((ulonglong)mm0PackedValue31 >> 0x20) +
-                               (int)((ulonglong)mm1PackedValue31 >> 0x20)) * 0x20,bank2LowLaneSum * 0x20) >>
+            SAM_PACK_LANE_PAIR((bank2LowLaneSum + (int)((uint64_t)mm0PackedValue0 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue0 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue1 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue1 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue2 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue2 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue3 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue3 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue4 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue4 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue5 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue5 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue6 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue6 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue7 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue7 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue8 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue8 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue9 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue9 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue10 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue10 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue11 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue11 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue12 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue12 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue13 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue13 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue14 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue14 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue15 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue15 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue16 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue16 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue17 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue17 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue18 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue18 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue19 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue19 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue20 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue20 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue21 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue21 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue22 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue22 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue23 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue23 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue24 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue24 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue25 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue25 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue26 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue26 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue27 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue27 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue28 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue28 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue29 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue29 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue30 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue30 >> 0x20) +
+                               (int)((uint64_t)mm0PackedValue31 >> 0x20) +
+                               (int)((uint64_t)mm1PackedValue31 >> 0x20)) * 0x20,bank2LowLaneSum * 0x20) >>
             0x10 & g_SoundDecodeMmxWordLaneMask2;
     mm0PackedValue32 = paddsw(packedOutputWords,packedOutputWords);
     cosineBankCursor = cosineBankCursor + 0x400;
-    outputWord1 = (word)((ulonglong)mm0PackedValue32 >> 0x10);
-    outputWord3 = (word)((ulonglong)mm0PackedValue32 >> 0x30);
-    outputWord2 = (word)((ulonglong)mm0PackedValue32 >> 0x20);
+    outputWord1 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x10);
+    outputWord3 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x30);
+    outputWord2 = (uint16_t)((uint64_t)mm0PackedValue32 >> 0x20);
     /* punpcklwd/punpckhwd with itself: every word becomes a left/right stereo pair (w * 0x10001 = w:w). */
-    *(ulonglong *)outputStereoPcm =
-         ((ulonglong)((dword)outputWord1 * 0x10001) << 32) | (dword)(word)mm0PackedValue32 * 0x10001;
-    *(ulonglong *)(outputStereoPcm + 4) =
-         ((ulonglong)((dword)outputWord3 * 0x10001) << 32) | (dword)outputWord2 * 0x10001;
+    *(uint64_t *)outputStereoPcm =
+         ((uint64_t)((uint32_t)outputWord1 * 0x10001) << 32) | (uint32_t)(uint16_t)mm0PackedValue32 * 0x10001;
+    *(uint64_t *)(outputStereoPcm + 4) =
+         ((uint64_t)((uint32_t)outputWord3 * 0x10001) << 32) | (uint32_t)outputWord2 * 0x10001;
     outputGroupsRemaining = outputGroupsRemaining + -1;
     outputStereoPcm = outputStereoPcm + 8;
   } while (outputGroupsRemaining != 0);
@@ -2540,88 +2540,88 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
     mm3PackedValue93 = pmaddwd(mm0PackedValue63,*(MmxPackedValue64 *)(cosineBankCursor + 0x1f8));
     mm2PackedValue94 = pmaddwd(mm1PackedValue62,*(MmxPackedValue64 *)(cosineBankCursor + 0xfc));
     mm3PackedValue94 = pmaddwd(mm1PackedValue62,*(MmxPackedValue64 *)(cosineBankCursor + 0x1fc));
-    bank0HighLaneSum = (int)((ulonglong)mm2PackedValue0 >> 0x20) + (int)((ulonglong)mm2PackedValue1 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue3 >> 0x20) + (int)((ulonglong)mm2PackedValue4 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue6 >> 0x20) + (int)((ulonglong)mm2PackedValue7 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue9 >> 0x20) + (int)((ulonglong)mm2PackedValue10 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue12 >> 0x20) + (int)((ulonglong)mm2PackedValue13 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue15 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue16 >> 0x20) + (int)((ulonglong)mm2PackedValue18 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue19 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue21 >> 0x20) + (int)((ulonglong)mm2PackedValue22 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue24 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue25 >> 0x20) + (int)((ulonglong)mm2PackedValue27 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue28 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue30 >> 0x20) + (int)((ulonglong)mm2PackedValue31 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue33 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue34 >> 0x20) + (int)((ulonglong)mm2PackedValue36 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue37 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue39 >> 0x20) + (int)((ulonglong)mm2PackedValue40 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue42 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue43 >> 0x20) + (int)((ulonglong)mm2PackedValue45 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue46 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue48 >> 0x20) + (int)((ulonglong)mm2PackedValue49 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue51 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue52 >> 0x20) + (int)((ulonglong)mm2PackedValue54 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue55 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue57 >> 0x20) + (int)((ulonglong)mm2PackedValue58 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue60 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue61 >> 0x20) + (int)((ulonglong)mm2PackedValue63 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue64 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue66 >> 0x20) + (int)((ulonglong)mm2PackedValue67 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue69 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue70 >> 0x20) + (int)((ulonglong)mm2PackedValue72 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue73 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue75 >> 0x20) + (int)((ulonglong)mm2PackedValue76 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue78 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue79 >> 0x20) + (int)((ulonglong)mm2PackedValue81 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue82 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue84 >> 0x20) + (int)((ulonglong)mm2PackedValue85 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue87 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue88 >> 0x20) + (int)((ulonglong)mm2PackedValue90 >> 0x20)
-            + (int)((ulonglong)mm2PackedValue91 >> 0x20) +
-            (int)((ulonglong)mm2PackedValue93 >> 0x20) + (int)((ulonglong)mm2PackedValue94 >> 0x20);
-    bank1HighLaneSum = (int)((ulonglong)mm3PackedValue0 >> 0x20) + (int)((ulonglong)mm3PackedValue1 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue3 >> 0x20) + (int)((ulonglong)mm3PackedValue4 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue6 >> 0x20) + (int)((ulonglong)mm3PackedValue7 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue9 >> 0x20) + (int)((ulonglong)mm3PackedValue10 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue12 >> 0x20) + (int)((ulonglong)mm3PackedValue13 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue15 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue16 >> 0x20) + (int)((ulonglong)mm3PackedValue18 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue19 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue21 >> 0x20) + (int)((ulonglong)mm3PackedValue22 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue24 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue25 >> 0x20) + (int)((ulonglong)mm3PackedValue27 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue28 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue30 >> 0x20) + (int)((ulonglong)mm3PackedValue31 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue33 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue34 >> 0x20) + (int)((ulonglong)mm3PackedValue36 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue37 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue39 >> 0x20) + (int)((ulonglong)mm3PackedValue40 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue42 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue43 >> 0x20) + (int)((ulonglong)mm3PackedValue45 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue46 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue48 >> 0x20) + (int)((ulonglong)mm3PackedValue49 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue51 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue52 >> 0x20) + (int)((ulonglong)mm3PackedValue54 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue55 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue57 >> 0x20) + (int)((ulonglong)mm3PackedValue58 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue60 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue61 >> 0x20) + (int)((ulonglong)mm3PackedValue63 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue64 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue66 >> 0x20) + (int)((ulonglong)mm3PackedValue67 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue69 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue70 >> 0x20) + (int)((ulonglong)mm3PackedValue72 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue73 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue75 >> 0x20) + (int)((ulonglong)mm3PackedValue76 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue78 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue79 >> 0x20) + (int)((ulonglong)mm3PackedValue81 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue82 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue84 >> 0x20) + (int)((ulonglong)mm3PackedValue85 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue87 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue88 >> 0x20) + (int)((ulonglong)mm3PackedValue90 >> 0x20)
-            + (int)((ulonglong)mm3PackedValue91 >> 0x20) +
-            (int)((ulonglong)mm3PackedValue93 >> 0x20) + (int)((ulonglong)mm3PackedValue94 >> 0x20);
+    bank0HighLaneSum = (int)((uint64_t)mm2PackedValue0 >> 0x20) + (int)((uint64_t)mm2PackedValue1 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue3 >> 0x20) + (int)((uint64_t)mm2PackedValue4 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue6 >> 0x20) + (int)((uint64_t)mm2PackedValue7 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue9 >> 0x20) + (int)((uint64_t)mm2PackedValue10 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue12 >> 0x20) + (int)((uint64_t)mm2PackedValue13 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue15 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue16 >> 0x20) + (int)((uint64_t)mm2PackedValue18 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue19 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue21 >> 0x20) + (int)((uint64_t)mm2PackedValue22 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue24 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue25 >> 0x20) + (int)((uint64_t)mm2PackedValue27 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue28 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue30 >> 0x20) + (int)((uint64_t)mm2PackedValue31 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue33 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue34 >> 0x20) + (int)((uint64_t)mm2PackedValue36 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue37 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue39 >> 0x20) + (int)((uint64_t)mm2PackedValue40 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue42 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue43 >> 0x20) + (int)((uint64_t)mm2PackedValue45 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue46 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue48 >> 0x20) + (int)((uint64_t)mm2PackedValue49 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue51 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue52 >> 0x20) + (int)((uint64_t)mm2PackedValue54 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue55 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue57 >> 0x20) + (int)((uint64_t)mm2PackedValue58 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue60 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue61 >> 0x20) + (int)((uint64_t)mm2PackedValue63 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue64 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue66 >> 0x20) + (int)((uint64_t)mm2PackedValue67 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue69 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue70 >> 0x20) + (int)((uint64_t)mm2PackedValue72 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue73 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue75 >> 0x20) + (int)((uint64_t)mm2PackedValue76 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue78 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue79 >> 0x20) + (int)((uint64_t)mm2PackedValue81 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue82 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue84 >> 0x20) + (int)((uint64_t)mm2PackedValue85 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue87 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue88 >> 0x20) + (int)((uint64_t)mm2PackedValue90 >> 0x20)
+            + (int)((uint64_t)mm2PackedValue91 >> 0x20) +
+            (int)((uint64_t)mm2PackedValue93 >> 0x20) + (int)((uint64_t)mm2PackedValue94 >> 0x20);
+    bank1HighLaneSum = (int)((uint64_t)mm3PackedValue0 >> 0x20) + (int)((uint64_t)mm3PackedValue1 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue3 >> 0x20) + (int)((uint64_t)mm3PackedValue4 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue6 >> 0x20) + (int)((uint64_t)mm3PackedValue7 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue9 >> 0x20) + (int)((uint64_t)mm3PackedValue10 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue12 >> 0x20) + (int)((uint64_t)mm3PackedValue13 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue15 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue16 >> 0x20) + (int)((uint64_t)mm3PackedValue18 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue19 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue21 >> 0x20) + (int)((uint64_t)mm3PackedValue22 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue24 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue25 >> 0x20) + (int)((uint64_t)mm3PackedValue27 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue28 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue30 >> 0x20) + (int)((uint64_t)mm3PackedValue31 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue33 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue34 >> 0x20) + (int)((uint64_t)mm3PackedValue36 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue37 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue39 >> 0x20) + (int)((uint64_t)mm3PackedValue40 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue42 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue43 >> 0x20) + (int)((uint64_t)mm3PackedValue45 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue46 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue48 >> 0x20) + (int)((uint64_t)mm3PackedValue49 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue51 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue52 >> 0x20) + (int)((uint64_t)mm3PackedValue54 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue55 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue57 >> 0x20) + (int)((uint64_t)mm3PackedValue58 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue60 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue61 >> 0x20) + (int)((uint64_t)mm3PackedValue63 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue64 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue66 >> 0x20) + (int)((uint64_t)mm3PackedValue67 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue69 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue70 >> 0x20) + (int)((uint64_t)mm3PackedValue72 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue73 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue75 >> 0x20) + (int)((uint64_t)mm3PackedValue76 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue78 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue79 >> 0x20) + (int)((uint64_t)mm3PackedValue81 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue82 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue84 >> 0x20) + (int)((uint64_t)mm3PackedValue85 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue87 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue88 >> 0x20) + (int)((uint64_t)mm3PackedValue90 >> 0x20)
+            + (int)((uint64_t)mm3PackedValue91 >> 0x20) +
+            (int)((uint64_t)mm3PackedValue93 >> 0x20) + (int)((uint64_t)mm3PackedValue94 >> 0x20);
     mm0PackedValue33 = pmaddwd(mm0PackedValue63,*(MmxPackedValue64 *)(cosineBankCursor + 0x2f8));
     mm1PackedValue63 = pmaddwd(mm1PackedValue62,*(MmxPackedValue64 *)(cosineBankCursor + 0x2fc));
     mm2PackedValue95 = pmaddwd(mm0PackedValue63,*(MmxPackedValue64 *)(cosineBankCursor + 0x3f8));
@@ -2738,135 +2738,135 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
                                       (int)mm3PackedValue90 + (int)mm3PackedValue91 +
                                       (int)mm3PackedValue93 + (int)mm3PackedValue94) &
                g_SoundDecodeMmxWordLaneMask1 |
-               SAM_PACK_LANE_PAIR(bank3LowLaneSum + (int)((ulonglong)mm2PackedValue2 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue2 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue5 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue5 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue8 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue8 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue11 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue11 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue14 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue14 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue17 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue17 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue20 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue20 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue23 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue23 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue26 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue26 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue29 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue29 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue32 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue32 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue35 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue35 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue38 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue38 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue41 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue41 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue44 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue44 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue47 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue47 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue50 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue50 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue53 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue53 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue56 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue56 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue59 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue59 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue62 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue62 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue65 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue65 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue68 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue68 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue71 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue71 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue74 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue74 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue77 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue77 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue80 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue80 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue83 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue83 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue86 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue86 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue89 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue89 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue92 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue92 >> 0x20) +
-                                (int)((ulonglong)mm2PackedValue95 >> 0x20) +
-                                (int)((ulonglong)mm3PackedValue95 >> 0x20),bank3LowLaneSum) &
+               SAM_PACK_LANE_PAIR(bank3LowLaneSum + (int)((uint64_t)mm2PackedValue2 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue2 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue5 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue5 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue8 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue8 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue11 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue11 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue14 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue14 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue17 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue17 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue20 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue20 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue23 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue23 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue26 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue26 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue29 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue29 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue32 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue32 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue35 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue35 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue38 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue38 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue41 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue41 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue44 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue44 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue47 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue47 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue50 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue50 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue53 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue53 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue56 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue56 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue59 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue59 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue62 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue62 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue65 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue65 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue68 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue68 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue71 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue71 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue74 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue74 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue77 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue77 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue80 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue80 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue83 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue83 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue86 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue86 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue89 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue89 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue92 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue92 >> 0x20) +
+                                (int)((uint64_t)mm2PackedValue95 >> 0x20) +
+                                (int)((uint64_t)mm3PackedValue95 >> 0x20),bank3LowLaneSum) &
                g_SoundDecodeMmxWordLaneMask3 |
-               SAM_PACK_LANE_PAIR(bank2LowLaneSum + (int)((ulonglong)mm0PackedValue1 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue1 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue3 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue3 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue4 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue5 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue5 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue7 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue6 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue9 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue7 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue11 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue8 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue13 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue9 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue15 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue10 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue17 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue11 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue19 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue12 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue21 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue13 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue23 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue14 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue25 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue15 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue27 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue16 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue29 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue17 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue31 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue18 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue33 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue19 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue35 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue20 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue37 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue21 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue39 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue22 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue41 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue23 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue43 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue24 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue45 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue25 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue47 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue26 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue49 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue27 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue51 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue28 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue53 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue29 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue55 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue30 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue57 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue31 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue59 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue32 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue61 >> 0x20) +
-                                (int)((ulonglong)mm0PackedValue33 >> 0x20) +
-                                (int)((ulonglong)mm1PackedValue63 >> 0x20),bank2LowLaneSum) >> 0x10 &
+               SAM_PACK_LANE_PAIR(bank2LowLaneSum + (int)((uint64_t)mm0PackedValue1 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue1 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue3 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue3 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue4 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue5 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue5 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue7 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue6 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue9 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue7 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue11 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue8 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue13 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue9 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue15 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue10 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue17 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue11 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue19 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue12 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue21 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue13 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue23 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue14 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue25 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue15 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue27 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue16 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue29 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue17 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue31 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue18 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue33 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue19 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue35 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue20 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue37 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue21 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue39 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue22 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue41 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue23 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue43 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue24 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue45 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue25 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue47 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue26 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue49 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue27 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue51 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue28 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue53 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue29 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue55 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue30 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue57 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue31 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue59 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue32 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue61 >> 0x20) +
+                                (int)((uint64_t)mm0PackedValue33 >> 0x20) +
+                                (int)((uint64_t)mm1PackedValue63 >> 0x20),bank2LowLaneSum) >> 0x10 &
                g_SoundDecodeMmxWordLaneMask2,3);
     outputGroupsRemaining = outputGroupsRemaining + -1;
     *(MmxPackedValue64 *)outputMonoPcm = mm0PackedValue64;
@@ -2880,25 +2880,25 @@ SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coeff
    Ownership: audio/codec/sam.
    Purpose: Encodes a packed sound-sample coefficient block.
 */
-dword __thandor_eax_preserve_ecx_edx
-SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoefficients)
+uint32_t __thandor_eax_preserve_ecx_edx
+SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients)
 
 {
-  uint coefficientValue;
-  byte bitShift;
-  uint pendingBitCount;
-  uint bitAccumulator;
-  uint *outputCursor;
+  uint32_t coefficientValue;
+  uint8_t bitShift;
+  uint32_t pendingBitCount;
+  uint32_t bitAccumulator;
+  uint32_t *outputCursor;
   int coefficientsRemaining;
   
   coefficientsRemaining = 0x100;
   pendingBitCount = 0;
   bitAccumulator = 0;
-  outputCursor = (uint *)encodedBlock;
+  outputCursor = (uint32_t *)encodedBlock;
   do {
-    coefficientValue = (uint)*inputCoefficients;
+    coefficientValue = (uint32_t)*inputCoefficients;
     if (((int)coefficientValue < -1) || (1 < (int)coefficientValue)) {
-      bitShift = (byte)pendingBitCount;
+      bitShift = (uint8_t)pendingBitCount;
       if (((int)coefficientValue < -4) || (3 < (int)coefficientValue)) {
         if (((int)coefficientValue < -0x20) || (0x1f < (int)coefficientValue)) {
           if ((int)coefficientValue < 0x800) {
@@ -2933,21 +2933,21 @@ SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoeffici
         if (7 < pendingBitCount) {
           *(char *)outputCursor = (char)bitAccumulator;
           bitAccumulator = bitAccumulator >> 8;
-          outputCursor = (uint *)((int)outputCursor + 1);
+          outputCursor = (uint32_t *)((int)outputCursor + 1);
           pendingBitCount = pendingBitCount - 8;
         }
       }
       else {
         *(short *)outputCursor = (short)bitAccumulator;
         bitAccumulator = bitAccumulator >> 0x10;
-        outputCursor = (uint *)((int)outputCursor + 2);
+        outputCursor = (uint32_t *)((int)outputCursor + 2);
         pendingBitCount = pendingBitCount - 0x10;
       }
     }
     else {
       *outputCursor = bitAccumulator;
       bitAccumulator = bitAccumulator >> 0x18;
-      outputCursor = (uint *)((int)outputCursor + 3);
+      outputCursor = (uint32_t *)((int)outputCursor + 3);
       pendingBitCount = pendingBitCount - 0x18;
     }
     inputCoefficients = inputCoefficients + 1;
@@ -2956,14 +2956,14 @@ SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoeffici
   if (pendingBitCount < 8) {
     if (pendingBitCount != 0) {
       *(char *)outputCursor = (char)bitAccumulator;
-      outputCursor = (uint *)((int)outputCursor + 1);
+      outputCursor = (uint32_t *)((int)outputCursor + 1);
     }
   }
   else {
     *(short *)outputCursor = (short)bitAccumulator;
-    outputCursor = (uint *)((int)outputCursor + 2);
+    outputCursor = (uint32_t *)((int)outputCursor + 2);
   }
-  return ((uint)((int)outputCursor + 3U) & 0xfffffffc) - (int)encodedBlock;
+  return ((uint32_t)((int)outputCursor + 3U) & 0xfffffffc) - (int)encodedBlock;
 }
 
 /* Address: 0x0041A430.
@@ -2973,23 +2973,23 @@ SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoeffici
    consumed pointer aligns DOWN to 4 (& 0xFFFFFFFC) — the alignment direction that broke the first Python port.
    Out-of-bounds refill reads behave as zero (portable decoder matches).
 */
-dword __thandor_eax_preserve_ecx_edx
-SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encodedBlock)
+uint32_t __thandor_eax_preserve_ecx_edx
+SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock)
 
 {
-  ushort refillWord;
+  uint16_t refillWord;
   int refillDword;
-  uint fieldBits;
-  uint bitAccumulator;
-  byte refillShift;
-  uint availableBitCount;
-  ushort *inputCursor;
+  uint32_t fieldBits;
+  uint32_t bitAccumulator;
+  uint8_t refillShift;
+  uint32_t availableBitCount;
+  uint16_t *inputCursor;
   int coefficientsRemaining;
   
   coefficientsRemaining = 0x100;
-  bitAccumulator = *(uint *)encodedBlock;
+  bitAccumulator = *(uint32_t *)encodedBlock;
   availableBitCount = 0x20;
-  inputCursor = (ushort *)(encodedBlock + 4);
+  inputCursor = (uint16_t *)(encodedBlock + 4);
   do {
     if ((bitAccumulator & 1) == 0) {
       *outputCoefficients = 0;
@@ -3014,10 +3014,10 @@ SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encoded
       availableBitCount = availableBitCount - 0xf;
       *outputCoefficients = (short)((int)(fieldBits << 0x14) >> 0x14);
     }
-    refillShift = (byte)availableBitCount;
+    refillShift = (uint8_t)availableBitCount;
     if (availableBitCount < 9) {
       refillDword = *(int *)inputCursor;
-      inputCursor = (ushort *)((int)inputCursor + 3);
+      inputCursor = (uint16_t *)((int)inputCursor + 3);
       availableBitCount = availableBitCount + 0x18;
       bitAccumulator = bitAccumulator | refillDword << (refillShift & 0x1f);
     }
@@ -3025,23 +3025,23 @@ SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encoded
       refillWord = *inputCursor;
       inputCursor = inputCursor + 1;
       availableBitCount = availableBitCount + 0x10;
-      bitAccumulator = bitAccumulator | (uint)refillWord << (refillShift & 0x1f);
+      bitAccumulator = bitAccumulator | (uint32_t)refillWord << (refillShift & 0x1f);
     }
     else if (availableBitCount < 0x19) {
       refillWord = *inputCursor;
-      inputCursor = (ushort *)((int)inputCursor + 1);
+      inputCursor = (uint16_t *)((int)inputCursor + 1);
       availableBitCount = availableBitCount + 8;
-      bitAccumulator = bitAccumulator | (uint)(byte)refillWord << (refillShift & 0x1f);
+      bitAccumulator = bitAccumulator | (uint32_t)(uint8_t)refillWord << (refillShift & 0x1f);
     }
     outputCoefficients = outputCoefficients + 1;
     coefficientsRemaining = coefficientsRemaining + -1;
   } while (coefficientsRemaining != 0);
   if (availableBitCount == 0x20) {
-    inputCursor = (ushort *)((int)inputCursor + -1);
+    inputCursor = (uint16_t *)((int)inputCursor + -1);
   }
   else if (availableBitCount < 0x18) {
-    inputCursor = (ushort *)((int)inputCursor + 1);
+    inputCursor = (uint16_t *)((int)inputCursor + 1);
   }
-  return ((uint)inputCursor & 0xfffffffc) - (int)encodedBlock;
+  return ((uint32_t)inputCursor & 0xfffffffc) - (int)encodedBlock;
 }
 

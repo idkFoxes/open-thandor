@@ -27,7 +27,7 @@ GraphicsTextureSet_Destroy(GraphicsTextureSet *set);
 
 /* 0x00485E40 */
 GraphicsTextureSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSet_LoadPackage(word *pathUtf16);
+GraphicsTextureSet_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x00485E80 */
 void __thandor_void_preserve_eax_ecx_edx GraphicsTextureSet_ReleasePackage(GraphicsTextureSet *set);
@@ -93,7 +93,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
 
 /* 0x004AD630 */
 GraphicsTextureSourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_LoadPackageAsset(word *pathUtf16);
+GraphicsTextureSource_LoadPackageAsset(uint16_t *pathUtf16);
 
 /* 0x004AD670 */
 GraphicsTextureSourceAsset * GraphicsTextureSource_CloneAsset(GraphicsTextureSourceAsset *sourceAsset);

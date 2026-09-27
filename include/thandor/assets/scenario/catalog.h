@@ -49,7 +49,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void);
 
 /* 0x00545290 */
 void __thandor_void_preserve_eax_ecx_edx
-ScenarioCatalog_RequestRomTransitionStopCallback(dword arg0,dword arg1,dword arg2,dword arg3);
+ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t arg3);
 
 /* 0x00547860 */
 void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void);
@@ -61,22 +61,22 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
 /* 0x00544AC0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestCampaignBundle
-          (dword arg0,dword arg1,dword arg2,dword selectedRecordIndex);
+          (uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t selectedRecordIndex);
 
 /* 0x00544DC0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildSaveRecordListPage
-          (dword argument1,dword argument2,dword argument3,dword argument4);
+          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4);
 
 /* 0x00544EA0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildLevelRecordListPage
-          (dword argument1,dword argument2,dword argument3,dword argument4);
+          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4);
 
 /* 0x00545020 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RebuildCampaignRecordListPage
-          (dword callbackArg0,dword callbackArg1,dword callbackArg2,dword callbackArg3);
+          (uint32_t callbackArg0,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x00549F70 */
 ScenarioCatalogRecordCount __thandor_void_preserve_eax_ecx
@@ -87,17 +87,17 @@ ScenarioCatalog_MergeRecordsByName
 /* 0x00544870 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendScenarioSession_LoadOrRequestLevelAsset
-          (dword arg0,dword arg1,dword arg2,dword selectedRecordIndex);
+          (uint32_t arg0,uint32_t arg1,uint32_t arg2,uint32_t selectedRecordIndex);
 
 /* 0x00545140 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordLocalizedText
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex);
+          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
 
 /* 0x00545240 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField50DisplayId
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex);
+          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
 
 /* 0x00549CC0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -107,6 +107,6 @@ FrontendScenarioSelection_ActivateSelectedRecord
 /* 0x005451F0 */
 void __thandor_void_preserve_eax_ecx_edx
 ScenarioCatalog_RefreshSelectedRecordField70DisplayId
-          (dword arg0,dword arg1,dword arg2,UiListRowIndex selectionIndex);
+          (uint32_t arg0,uint32_t arg1,uint32_t arg2,UiListRowIndex selectionIndex);
 
 #endif /* THANDOR_ASSETS_SCENARIO_CATALOG_H */

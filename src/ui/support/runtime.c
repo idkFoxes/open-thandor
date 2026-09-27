@@ -23,11 +23,11 @@ RecentTextHistory_SortAndBuildPointerList
           (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output)
 
 {
-  dword currentSerial;
+  uint32_t currentSerial;
   RecentTextHistorySlot *slotCursor;
   UiListRowIndex firstIndex;
   UiListRowIndex secondIndex;
-  uint outputIndex;
+  uint32_t outputIndex;
   int minimumRetainedSerial;
   
   secondIndex = 0;
@@ -72,14 +72,14 @@ RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
    of UTF-16 text into that slot.
    Cross-module calls: RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
 */
-void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(word *text)
+void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text)
 
 {
-  uint oldestSerial;
+  uint32_t oldestSerial;
   int slotsRemaining;
   int currentIndex;
   int oldestIndex;
-  dword *serialCursor;
+  uint32_t *serialCursor;
   
   serialCursor = g_RecentTextEntrySerials;
   oldestSerial = 0xffffffff;
@@ -111,11 +111,11 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(word *text)
 void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void)
 
 {
-  uint oldestSerial;
+  uint32_t oldestSerial;
   int entriesRemaining;
   int currentIndex;
   int oldestIndex;
-  dword *serialCursor;
+  uint32_t *serialCursor;
   
   serialCursor = g_RecentTextEntrySerials;
   oldestSerial = 0xffffffff;
@@ -150,26 +150,26 @@ void __thandor_void_preserve_eax_ecx_edx
 CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
 
 {
-  dword bytes;
+  uint32_t bytes;
   GraphicsTextureSourceLoadEaxCf5 textureLoadResult;
   ArenaAllocEaxCf5 bufferAllocResult;
   GraphicsTextureSizeEaxEdxCf9 textureSizeResult;
   
   (*g_GraphicsCursorSetFrame)(6);
   (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState54 = 0;
   (frontendCreditsView->creditsMaskRuntime).patternState58 = 0;
   (frontendCreditsView->creditsMaskRuntime).tickCounter = 0;
-  textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)u_gfx_panel_credits_gfx_00545c22);
+  textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_gfx_panel_credits_gfx_00545c22);
   if (!textureLoadResult.carry) {
     (frontendCreditsView->creditsMaskRuntime).textureSource = textureLoadResult.eax;
     textureSizeResult = (*g_GraphicsTextureSourceGetLogicalSize)(0,textureLoadResult.eax);
     bytes = textureSizeResult.logicalHeightPixels * textureSizeResult.logicalWidthPixels;
     bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
     if (!bufferAllocResult.carry) {
-      (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)bufferAllocResult.eax;
+      (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)bufferAllocResult.eax;
       bufferAllocResult = (*g_MemoryApi.alloc)(bytes);
       if (!bufferAllocResult.carry) {
         (frontendCreditsView->creditsMaskRuntime).unresolved64 = bufferAllocResult.eax;
@@ -186,7 +186,7 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
   (*g_MemoryApi.free)((frontendCreditsView->creditsMaskRuntime).maskPixels);
   (*g_MemoryApi.free)((void *)(frontendCreditsView->creditsMaskRuntime).unresolved64);
   (frontendCreditsView->creditsMaskRuntime).textureSource = (GraphicsTextureSourceAsset *)0x0;
-  (frontendCreditsView->creditsMaskRuntime).maskPixels = (byte *)0x0;
+  (frontendCreditsView->creditsMaskRuntime).maskPixels = (uint8_t *)0x0;
   (frontendCreditsView->creditsMaskRuntime).unresolved64 = 0;
   (*g_GraphicsCursorSetFrame)(0);
   return;
@@ -201,17 +201,17 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
    [core/text/path], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourcePath)
+PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sourcePath)
 
 {
-  word pathChar;
+  uint16_t pathChar;
   int headerOrPixelDataOffset;
   void *sourceBytes;
   void *memory;
   int dwordsRemaining;
-  dword *pcxDwordReadCursor;
-  dword *pixelDwordCursor;
-  word *sanitizedPathCursor;
+  uint32_t *pcxDwordReadCursor;
+  uint32_t *pixelDwordCursor;
+  uint16_t *sanitizedPathCursor;
   PcxDecodeEaxCf5 pcxDecodeResult;
   ResourceLoadEaxEcxCf9 resourceLoadResult;
   
@@ -229,10 +229,10 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourceP
     }
   }
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
-             (word *)&g_ExecutableDirectoryUtf16);
-  WidePath_SetExtensionCode(0x786370,(word *)&g_LevelResourcePathScratchUtf16);
-  resourceLoadResult = Resource_Load((word *)&g_LevelResourcePathScratchUtf16);
+            ((uint16_t *)&g_LevelResourcePathScratchUtf16,g_LevelEndingMovieSourcePath,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
+  WidePath_SetExtensionCode(0x786370,(uint16_t *)&g_LevelResourcePathScratchUtf16);
+  resourceLoadResult = Resource_Load((uint16_t *)&g_LevelResourcePathScratchUtf16);
   sourceBytes = (void *)resourceLoadResult.eax;
   if (!resourceLoadResult.carry) {
     pcxDecodeResult = (*g_PcxFunctionExport2)(g_PcxFunctionModule,resourceLoadResult.ecx,sourceBytes);
@@ -242,18 +242,18 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourceP
       if (((*(int *)((int)memory + headerOrPixelDataOffset + 8) == 0) &&
           (*(int *)((int)memory + headerOrPixelDataOffset + 0x18) == 0x40)) &&
          (*(int *)((int)memory + headerOrPixelDataOffset + 0x1c) == 0x40)) {
-        pcxDwordReadCursor = (dword *)((int)memory + 0x200);
+        pcxDwordReadCursor = (uint32_t *)((int)memory + 0x200);
         dwordsRemaining = 0x100;
         headerOrPixelDataOffset = *(int *)((int)memory + headerOrPixelDataOffset + 0xc);
         do {
-          *(dword *)outputPreview->paletteRgbTriplets256 = *pcxDwordReadCursor;
+          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *pcxDwordReadCursor;
           pcxDwordReadCursor = pcxDwordReadCursor + 2;
           outputPreview = (PcxPreview64 *)(outputPreview->paletteRgbTriplets256 + 1);
           dwordsRemaining = dwordsRemaining + -1;
         } while (dwordsRemaining != 0);
-        pixelDwordCursor = (dword *)((int)memory + headerOrPixelDataOffset);
+        pixelDwordCursor = (uint32_t *)((int)memory + headerOrPixelDataOffset);
         for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-          *(dword *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
+          *(uint32_t *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
           pixelDwordCursor = pixelDwordCursor + 1;
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
@@ -280,18 +280,18 @@ void __thandor_void_preserve_eax_ecx_edx
 RecentTextHistory_SwapSlots(UiListRowIndex firstIndex,UiListRowIndex secondIndex)
 
 {
-  dword firstHighDword;
-  dword serialOrFirstLowDword;
-  dword secondHighDword;
+  uint32_t firstHighDword;
+  uint32_t serialOrFirstLowDword;
+  uint32_t secondHighDword;
   int dwordPairsRemaining;
-  dword *firstSlotDwords;
-  dword *secondSlotDwords;
+  uint32_t *firstSlotDwords;
+  uint32_t *secondSlotDwords;
   
   serialOrFirstLowDword = g_RecentTextEntrySerials[secondIndex];
   g_RecentTextEntrySerials[secondIndex] = g_RecentTextEntrySerials[firstIndex];
   g_RecentTextEntrySerials[firstIndex] = serialOrFirstLowDword;
-  secondSlotDwords = (dword *)(g_RecentTextSlotStorage + secondIndex);
-  firstSlotDwords = (dword *)(g_RecentTextSlotStorage + firstIndex);
+  secondSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + secondIndex);
+  firstSlotDwords = (uint32_t *)(g_RecentTextSlotStorage + firstIndex);
   dwordPairsRemaining = 0x20;
   do {
     secondHighDword = secondSlotDwords[1];

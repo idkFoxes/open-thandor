@@ -49,7 +49,7 @@ DisplayModeTable_ContainsExactModeCf
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
 {
-  dword modesRemaining;
+  uint32_t modesRemaining;
   GraphicsDisplayMode *modeCursor;
   
   modesRemaining = g_GraphicsDisplayModeCount;
@@ -98,7 +98,7 @@ int __stdcall DirectDraw_EnumAdapterCallback
         adapterRecordCursor = (GraphicsAdapterRecord *)&(adapterRecordCursor->adapterGuid).Data2;
       }
     }
-    Text_CopyNarrowToUtf16Cf(0x28,adapterRecord->driverDescriptionUtf16,(byte *)driverDescription);
+    Text_CopyNarrowToUtf16Cf(0x28,adapterRecord->driverDescriptionUtf16,(uint8_t *)driverDescription);
     g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
   }
   return 1;
@@ -111,12 +111,12 @@ int __stdcall DirectDraw_EnumAdapterCallback
    explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-sdword __stdcall DirectDraw_EnumDisplayModeCallback
+int32_t __stdcall DirectDraw_EnumDisplayModeCallback
                  (DDSURFACEDESC_DX6 *surfaceDesc,FrontendDisplayAdapterIndex adapterIndex)
 
 {
-  uint pixelFormatFlags;
-  uint modeHeight;
+  uint32_t pixelFormatFlags;
+  uint32_t modeHeight;
   FrontendColorDepthBits modeBitsPerPixel;
   GraphicsDisplayMode *modeSlot;
   
@@ -205,12 +205,12 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
   D3DDEVICEDESC_DX6 *hardwareDeviceDesc;
   GraphicsAdapterRecord *adapterRecord;
   TH_LEGACY_HRESULT comResult;
-  sdword renderStateResult;
+  int32_t renderStateResult;
   int stageOrLoopCounter;
-  dword errorCodeOrCullMode;
-  dword *formatSource;
+  uint32_t errorCodeOrCullMode;
+  uint32_t *formatSource;
   GraphicsAdapterRecord *requestedGuidCursor;
-  dword *formatDest;
+  uint32_t *formatDest;
   GraphicsTextureResource **textureSlotCursor;
   bool guidMatchOrCarry;
   DisplayModeEaxCf5 displayModeResult;
@@ -247,41 +247,41 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
     g_LastViewportRect.x2 = 0;
     g_LastViewportRect.y2 = 0;
     if (g_Direct3DViewport2 != (IDirect3DViewport2 *)0x0) {
-      displayModeResult.eax = (dword)(*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
+      displayModeResult.eax = (uint32_t)(*g_Direct3DViewport2->lpVtbl->Release)(g_Direct3DViewport2);
       g_Direct3DViewport2 = (IDirect3DViewport2 *)0x0;
     }
     if (g_ZSurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (dword)(*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
+      displayModeResult.eax = (uint32_t)(*g_ZSurface3->lpVtbl->Release)(g_ZSurface3);
       g_ZSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_ZSurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (dword)(*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
+      displayModeResult.eax = (uint32_t)(*g_ZSurfaceBase->lpVtbl->Release)(g_ZSurfaceBase);
       g_ZSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_Direct3DDevice2 != (IDirect3DDevice2 *)0x0) {
-      displayModeResult.eax = (dword)(*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
+      displayModeResult.eax = (uint32_t)(*g_Direct3DDevice2->lpVtbl->Release)(g_Direct3DDevice2);
       g_Direct3DDevice2 = (IDirect3DDevice2 *)0x0;
     }
     if (g_Direct3D2 != (IDirect3D2 *)0x0) {
-      displayModeResult.eax = (dword)(*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
+      displayModeResult.eax = (uint32_t)(*g_Direct3D2->lpVtbl->Release)(g_Direct3D2);
       g_Direct3D2 = (IDirect3D2 *)0x0;
     }
     g_CursorCurrentVisibilityToken = -1;
     g_CursorAlternateVisibilityToken = -1;
     if (g_BackSurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (dword)(*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
+      displayModeResult.eax = (uint32_t)(*g_BackSurface3->lpVtbl->Release)(g_BackSurface3);
       g_BackSurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_BackSurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (dword)(*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
+      displayModeResult.eax = (uint32_t)(*g_BackSurfaceBase->lpVtbl->Release)(g_BackSurfaceBase);
       g_BackSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if (g_PrimarySurface3 != (IDirectDrawSurface3 *)0x0) {
-      displayModeResult.eax = (dword)(*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
+      displayModeResult.eax = (uint32_t)(*g_PrimarySurface3->lpVtbl->Release)(g_PrimarySurface3);
       g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
     }
     if (g_PrimarySurfaceBase != (IDirectDrawSurface *)0x0) {
-      displayModeResult.eax = (dword)(*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
+      displayModeResult.eax = (uint32_t)(*g_PrimarySurfaceBase->lpVtbl->Release)(g_PrimarySurfaceBase);
       g_PrimarySurfaceBase = (IDirectDrawSurface *)0x0;
     }
     /* REPE CMPSD over the 16-byte adapter GUIDs. */
@@ -299,11 +299,11 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
     if (!guidMatchOrCarry) {
       g_ActiveGraphicsAdapterIndex = -1;
       if (g_DirectDraw2 != (IDirectDraw2 *)0x0) {
-        displayModeResult.eax = (dword)(*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
+        displayModeResult.eax = (uint32_t)(*g_DirectDraw2->lpVtbl->Release)(g_DirectDraw2);
         g_DirectDraw2 = (IDirectDraw2 *)0x0;
       }
       if (g_DirectDraw != (IDirectDraw *)0x0) {
-        displayModeResult.eax = (dword)(*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
+        displayModeResult.eax = (uint32_t)(*g_DirectDraw->lpVtbl->Release)(g_DirectDraw);
         g_DirectDraw = (IDirectDraw *)0x0;
       }
     }
@@ -516,15 +516,15 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
                 (stageOrLoopCounter = completedStages + 0xd, g_Direct3DOpaqueTextureFormatBitsPerPixel == 0)) ||
                (stageOrLoopCounter = completedStages + 0xe, g_Direct3DAlphaTextureFormatBitsPerPixel == 0))
             goto GraphicsDirectDraw_ReleasePartialInitializationAfterFailure;
-            formatSource = (dword *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
-            formatDest = (dword *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
+            formatSource = (uint32_t *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+            formatDest = (uint32_t *)THANDOR_ADDR(g_Direct3DSelectedOpaqueTextureFormat,0);
             for (stageOrLoopCounter = 8; stageOrLoopCounter != 0; stageOrLoopCounter = stageOrLoopCounter + -1) {
               *formatDest = *formatSource;
               formatSource = formatSource + 1;
               formatDest = formatDest + 1;
             }
-            formatSource = (dword *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
-            formatDest = (dword *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
+            formatSource = (uint32_t *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
+            formatDest = (uint32_t *)THANDOR_ADDR(g_Direct3DSelectedAlphaTextureFormat,0);
             for (stageOrLoopCounter = 8; stageOrLoopCounter != 0; stageOrLoopCounter = stageOrLoopCounter + -1) {
               *formatDest = *formatSource;
               formatSource = formatSource + 1;
@@ -630,7 +630,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
           g_ActiveGraphicsAdapterIndex = adapterIndex;
           g_DisplayFramebufferAccess.width = width;
           g_DisplayFramebufferAccess.height = height;
-          g_DisplayFramebufferAccess.pixels = (byte *)0x0;
+          g_DisplayFramebufferAccess.pixels = (uint8_t *)0x0;
           g_FramebufferAccess = &g_DisplayFramebufferAccess;
           if (bitsPerPixel < 0x11) {
             g_DisplayFramebufferAccess.bytesPerPixel = SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT;
@@ -680,7 +680,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
           textureSlotCursor = g_GraphicsTextureSlots;
           do {
             if (*textureSlotCursor != (GraphicsTextureResource *)0x0) {
-              displayModeResult.eax = (dword)GraphicsTexture_CreateStagingTexture(*textureSlotCursor);
+              displayModeResult.eax = (uint32_t)GraphicsTexture_CreateStagingTexture(*textureSlotCursor);
             }
             textureSlotCursor = textureSlotCursor + 1;
             stageOrLoopCounter = stageOrLoopCounter + -1;

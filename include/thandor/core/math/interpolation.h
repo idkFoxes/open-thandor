@@ -21,7 +21,7 @@ WorldMotionSpline_EvaluateAndApplyAtTime
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x0053CBB0 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
@@ -70,7 +70,7 @@ CubicSpline_BackSubstituteRow
 void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(void);
 
 /* 0x0053D2E0 */
-sdword CubicSpline_EvaluateValueQ12 (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex, float *coefficients);
+int32_t CubicSpline_EvaluateValueQ12 (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex, float *coefficients);
 
 /* 0x0053D320 */
 float CubicSpline_EvaluateDerivativeQ12 (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex, float *coefficients);

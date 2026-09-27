@@ -63,7 +63,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelProjectedBounds_AccumulateNode(ModelProjectedBoundsPixels *bounds,ModelRuntimeNode *modelNode);
 
 /* 0x004BD7E0 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 ModelRender_ComputeFacingDotQ12(GraphicsTriangleInput *modelNodeRuntime);
 
 /* 0x004CC710 */

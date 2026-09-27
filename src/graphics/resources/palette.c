@@ -23,24 +23,24 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
 
 {
   int subresourceBank;
-  uint indexOrColor;
-  uint colorOrCombinedCount;
+  uint32_t indexOrColor;
+  uint32_t colorOrCombinedCount;
   int remainingCount;
   int remainingPixels;
-  uint secondIndex;
-  uint *entryCursor;
+  uint32_t secondIndex;
+  uint32_t *entryCursor;
   int cursorOrBankIndex;
-  uint *scanOrBankStart;
-  byte *pixelCursor;
+  uint32_t *scanOrBankStart;
+  uint8_t *pixelCursor;
   int *bankSlotCursor;
-  uint *bankCursor;
+  uint32_t *bankCursor;
   int bankIndex;
   bool emptyBankFound;
   bool banksMerged;
 
   remainingCount = *(int *)(textureSourceBase + 0xb4) << 8;
   if (remainingCount != 0) {
-    entryCursor = (uint *)(textureSourceBase + 0x200);
+    entryCursor = (uint32_t *)(textureSourceBase + 0x200);
     do {
       if ((*entryCursor & 0xff000000) == 0) {
         indexOrColor = 0x70707;
@@ -59,9 +59,9 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         subresourceBank = *(int *)(cursorOrBankIndex + 8);
         remainingPixels = *(int *)(cursorOrBankIndex + 0x18) * *(int *)(cursorOrBankIndex + 0x1c);
         if (subresourceBank != -1) {
-          pixelCursor = (byte *)(*(int *)(cursorOrBankIndex + 0xc) + textureSourceBase);
+          pixelCursor = (uint8_t *)(*(int *)(cursorOrBankIndex + 0xc) + textureSourceBase);
           for (; remainingPixels != 0; remainingPixels = remainingPixels + -1) {
-            entryCursor = (uint *)(textureSourceBase + 0x200 + subresourceBank * 0x800 + (uint)*pixelCursor * 8);
+            entryCursor = (uint32_t *)(textureSourceBase + 0x200 + subresourceBank * 0x800 + (uint32_t)*pixelCursor * 8);
             *entryCursor = *entryCursor & 0xfff8f8f8;
             pixelCursor = pixelCursor + 1;
           }
@@ -70,8 +70,8 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         remainingCount = remainingCount + -1;
       } while (remainingCount != 0);
       bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-      indexOrColor = *(uint *)(textureSourceBase + 0xb4);
-      entryCursor = (uint *)(textureSourceBase + 0x200);
+      indexOrColor = *(uint32_t *)(textureSourceBase + 0xb4);
+      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
       if (0x200 < indexOrColor) {
         indexOrColor = 0x200;
       }
@@ -110,7 +110,7 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
       }
       cursorOrBankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
-      entryCursor = (uint *)(textureSourceBase + 0x200);
+      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
       do {
         indexOrColor = 0;
         bankCursor = entryCursor;
@@ -142,7 +142,7 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
       indexOrColor = 0;
       for (;;) {
         secondIndex = indexOrColor + 1;
-        if (*(uint *)(textureSourceBase + 0xb4) <= secondIndex) break;
+        if (*(uint32_t *)(textureSourceBase + 0xb4) <= secondIndex) break;
         banksMerged = false;
         do {
           colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors
@@ -154,15 +154,15 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
             break;
           }
           secondIndex = secondIndex + 1;
-        } while (secondIndex < *(uint *)(textureSourceBase + 0xb4));
+        } while (secondIndex < *(uint32_t *)(textureSourceBase + 0xb4));
         if (!banksMerged) {
           indexOrColor = indexOrColor + 1;
-          if (*(uint *)(textureSourceBase + 0xb4) <= indexOrColor) break;
+          if (*(uint32_t *)(textureSourceBase + 0xb4) <= indexOrColor) break;
         }
       }
       bankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
-      entryCursor = (uint *)(textureSourceBase + 0x200);
+      entryCursor = (uint32_t *)(textureSourceBase + 0x200);
       do {
         secondIndex = 0;
         indexOrColor = 0;
@@ -216,7 +216,7 @@ void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset)
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
 GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_LoadPackage(word *pathUtf16)
+GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16)
 
 {
   GraphicsPaletteAsset *loadedPaletteAsset;
@@ -270,7 +270,7 @@ GraphicsPaletteAsset * GraphicsPaletteAsset_Clone(GraphicsPaletteAsset *paletteA
 
 {
   GraphicsPaletteAsset *clonedAsset;
-  uint sizeOrDwordCount;
+  uint32_t sizeOrDwordCount;
   GraphicsPaletteAsset *destinationCursor;
   ArenaAllocEaxCf5 allocResult;
   GraphicsPaletteAssetEaxCf5 validateResult;
@@ -363,16 +363,16 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
 {
   GraphicsPaletteBankCount appendedBankCount;
   GraphicsAssetAllocationByteSize baseAllocationSize;
-  dword bytes;
+  uint32_t bytes;
   int headerCountOrBaseBanks;
   int appendedPaletteBytesOrCount;
   int remainingDwords;
-  uint tailDwordCount;
+  uint32_t tailDwordCount;
   GraphicsAssetSubresourceCount remainingBaseSubresources;
   GraphicsAssetSubresourceCount appendedSubresourceCount;
   GraphicsPaletteTextureSourceAsset *sourceCursor;
   GraphicsTexturePaletteEntry *paletteEntryCursor;
-  byte *byteSourceCursor;
+  uint8_t *byteSourceCursor;
   GraphicsPaletteTextureSourceAsset *destinationCursor;
   ArenaAllocEaxCf5 allocResult;
   GraphicsPaletteTextureSourceEaxCf5 result;
@@ -462,7 +462,7 @@ GraphicsPaletteTextureSource_CombineAssetsAndRebaseOffsets
     byteSourceCursor = byteSourceCursor + 4;
     destinationCursor = (GraphicsPaletteTextureSourceAsset *)&destinationCursor->allocationSizeBytes;
   }
-  return THANDOR_BITCAST(qword, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+  return THANDOR_BITCAST(uint64_t, GraphicsPaletteTextureSourceEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
 }
 
 
@@ -477,19 +477,19 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
-  uint *destinationBankEntries;
-  uint packedColor;
-  uint destinationColorIndex;
+  uint32_t *destinationBankEntries;
+  uint32_t packedColor;
+  uint32_t destinationColorIndex;
   int remainingPixels;
-  uint sourceColorIndex;
+  uint32_t sourceColorIndex;
   AssetSubresourceCount remainingSubresources;
-  uint *sourceEntry;
-  word *subresourceEntry;
-  uint *destinationEntry;
-  byte *pixelCursor;
+  uint32_t *sourceEntry;
+  uint16_t *subresourceEntry;
+  uint32_t *destinationEntry;
+  uint8_t *pixelCursor;
   
-  sourceEntry = (uint *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
-  destinationBankEntries = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
+  sourceEntry = (uint32_t *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
+  destinationBankEntries = (uint32_t *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
   /* Build g_GraphicsPaletteRemapBytes: every used source color (marker bits 0x70707 clear) maps to an identical
      destination color, or else is copied into the first free destination entry (marker bits set). When the
      destination bank is full, that remap byte is left unchanged. */
@@ -522,7 +522,7 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
     sourceEntry = sourceEntry + 2;
   }
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
-  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+  subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   do {
     if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
@@ -532,7 +532,7 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
                 *(int *)(subresourceEntry + 6) + -0x28;
       remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
       do {
-        *pixelCursor = *(byte *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
+        *pixelCursor = *(uint8_t *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
         pixelCursor = pixelCursor + 1;
         remainingPixels = remainingPixels + -1;
       } while (remainingPixels != 0);
@@ -551,17 +551,17 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
-          (uint oldColorIndex,uint newColorIndex,GraphicsPaletteIndex paletteBank,
+          (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource)
 
 {
   int remainingPixels;
   AssetSubresourceCount remainingSubresources;
-  word *subresourceEntry;
-  byte *pixelCursor;
+  uint16_t *subresourceEntry;
+  uint8_t *pixelCursor;
   
   remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
-  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+  subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   if (newColorIndex != oldColorIndex) {
     do {
@@ -570,8 +570,8 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
                  *(int *)(subresourceEntry + 6) + -0x28;
         remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
         do {
-          if ((byte)oldColorIndex == *pixelCursor) {
-            *pixelCursor = (byte)newColorIndex;
+          if ((uint8_t)oldColorIndex == *pixelCursor) {
+            *pixelCursor = (uint8_t)newColorIndex;
           }
           pixelCursor = pixelCursor + 1;
           remainingPixels = remainingPixels + -1;
@@ -589,7 +589,7 @@ GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
    Ownership: graphics/resources/palette.
    Purpose: Handles graphics palette texture source count combined used colors.
 */
-uint __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource)
@@ -597,13 +597,13 @@ GraphicsPaletteTextureSource_CountCombinedUsedColors
 {
   int remainingCandidateEntries;
   int remainingEntries;
-  uint usedColorCount;
-  uint *destinationEntry;
-  uint *candidateEntry;
-  uint *candidateBankCursor;
+  uint32_t usedColorCount;
+  uint32_t *destinationEntry;
+  uint32_t *candidateEntry;
+  uint32_t *candidateBankCursor;
   
-  destinationEntry = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
-  candidateBankCursor = (uint *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
+  destinationEntry = (uint32_t *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
+  candidateBankCursor = (uint32_t *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
   usedColorCount = 0;
   /* Used destination colors that the candidate bank does not contain as well... */
   remainingEntries = 0x100;
@@ -648,17 +648,17 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
   AssetPaletteBankCount *paletteBankCountField;
   AssetRelativeOffset *subresourceTableOffsetField;
   AssetAllocationSizeBytes *allocationSizeField;
-  uint remainingDwords;
+  uint32_t remainingDwords;
   int bankOffsetOrCount;
-  dword *copyCursor;
-  word *subresourceEntry;
-  dword *sourceDwordCursor;
-  dword *destinationDwordCursor;
+  uint32_t *copyCursor;
+  uint16_t *subresourceEntry;
+  uint32_t *sourceDwordCursor;
+  uint32_t *destinationDwordCursor;
   AssetSubresourceCount remainingSubresources;
   
   bankOffsetOrCount = paletteIndex * 0x800 + 0x200;
-  destinationDwordCursor = (dword *)((int)textureSource + bankOffsetOrCount);
-  copyCursor = (dword *)(paletteIndex * 0x800 + 0xa00 + (int)textureSource);
+  destinationDwordCursor = (uint32_t *)((int)textureSource + bankOffsetOrCount);
+  copyCursor = (uint32_t *)(paletteIndex * 0x800 + 0xa00 + (int)textureSource);
   remainingDwords = ((textureSource->common).allocationSizeBytes - 0x800) - bankOffsetOrCount >> 2;
   if (remainingDwords != 0) {
     for (; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
@@ -673,7 +673,7 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
   *subresourceTableOffsetField = *subresourceTableOffsetField - 0x800;
   allocationSizeField = &(textureSource->common).allocationSizeBytes;
   *allocationSizeField = *allocationSizeField - 0x800;
-  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+  subresourceEntry = (uint16_t *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
                    ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   for (remainingSubresources = (textureSource->tableDescriptor).subresourceCount; remainingSubresources != 0; remainingSubresources = remainingSubresources - 1) {
     *(int *)(subresourceEntry + 6) = *(int *)(subresourceEntry + 6) + -0x800;
@@ -683,8 +683,8 @@ GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
     }
     subresourceEntry = subresourceEntry + 0x10;
   }
-  copyCursor = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
-  sourceDwordCursor = (dword *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0x4));
+  copyCursor = (uint32_t *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0));
+  sourceDwordCursor = (uint32_t *)(paletteIndex * 4 + THANDOR_ADDR(g_GraphicsPaletteBankSlots,0x4));
   bankOffsetOrCount = 0x1ff - paletteIndex;
   if (bankOffsetOrCount != 0) {
     for (; bankOffsetOrCount != 0; bankOffsetOrCount = bankOffsetOrCount + -1) {

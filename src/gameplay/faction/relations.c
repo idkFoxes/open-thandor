@@ -150,10 +150,10 @@ FactionActiveMask __thandor_eax_preserve_ecx_edx
 GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionIndex)
 
 {
-  dword relationStateNibble;
+  uint32_t relationStateNibble;
   int factionIndex;
-  uint eligibleFactionMask;
-  uint currentFactionBit;
+  uint32_t eligibleFactionMask;
+  uint32_t currentFactionBit;
   
   eligibleFactionMask = 0;
   currentFactionBit = 0x80;
@@ -186,14 +186,14 @@ GameFactionRelations_EvaluateTransitionRulesCf
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
-  byte tokenOrFactionIndex;
+  uint8_t tokenOrFactionIndex;
   InGameLevelConditionStorageView800 *levelConditionStorage;
-  uint currentActiveMask;
+  uint32_t currentActiveMask;
   int remainingCount;
-  uint currentFactionBit;
+  uint32_t currentFactionBit;
   InGameScheduledConditionKind kindOrStackValue;
-  byte *expressionCursor;
-  byte movieVariant;
+  uint8_t *expressionCursor;
+  uint8_t movieVariant;
   InGameConditionScheduleImageView480 *conditionCursor;
   InGameEndConditionTriggerRecord8ReferenceView *triggerCursor;
   
@@ -219,19 +219,19 @@ GameFactionRelations_EvaluateTransitionRulesCf
                     // WARNING: Switch is manually overridden
       switch(kindOrStackValue & 0xfe) {
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
-        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
           conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
           conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
-        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
           conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
@@ -241,7 +241,7 @@ GameFactionRelations_EvaluateTransitionRulesCf
         break;
       case 
       INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
-        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) != 0
            ) {
           conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
@@ -258,13 +258,13 @@ GameFactionRelations_EvaluateTransitionRulesCf
         conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         break;
       case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
-        if ((activeFactionMask & 1 << ((byte)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
+        if ((activeFactionMask & 1 << ((uint8_t)conditionCursor->conditions[0].payload.operands[0] & 0x1f)) == 0
            ) {
           conditionCursor->conditions[0].statusAndKind.kind = conditionCursor->conditions[0].statusAndKind.kind | 1;
         }
         break;
       case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-        expressionCursor = (byte *)((int)&conditionCursor->conditions[0].statusAndKind.kind + 1);
+        expressionCursor = (uint8_t *)((int)&conditionCursor->conditions[0].statusAndKind.kind + 1);
         kindOrStackValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
         while( true ) {
           while( true ) {
@@ -300,7 +300,7 @@ GameFactionRelations_EvaluateTransitionRulesCf
         if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[tokenOrFactionIndex] ==
             FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
           movieVariant = triggerCursor->movieVariantSelector;
-          if ((focalFactionIndex != (uint)tokenOrFactionIndex) && ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)
+          if ((focalFactionIndex != (uint32_t)tokenOrFactionIndex) && ((activeFactionMask & 1 << (tokenOrFactionIndex & 0x1f)) == 0)
              ) {
             movieVariant = movieVariant ^ 1;
           }
@@ -329,7 +329,7 @@ GameFactionRelations_IsResetEligibleStateCf
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  dword relationStateNibble;
+  uint32_t relationStateNibble;
   
   relationStateNibble =
        GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,targetFactionIndex);
@@ -352,9 +352,9 @@ GameFactionRelations_MaybeAdvancePairStateRare
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  uint pairPressure;
-  dword randomValue;
-  uint maskedRandom;
+  uint32_t pairPressure;
+  uint32_t randomValue;
+  uint32_t maskedRandom;
   
   randomValue = (*g_RandomGeneratorState.next)();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
@@ -390,9 +390,9 @@ GameFactionRelations_MaybeAdvancePairStateCommon
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  uint pairPressure;
-  dword randomValue;
-  uint maskedRandom;
+  uint32_t pairPressure;
+  uint32_t randomValue;
+  uint32_t maskedRandom;
   
   randomValue = (*g_RandomGeneratorState.next)();
   pairPressure = g_GameDataAuxState.pairPressureMatrix8x8[targetFactionIndex * 8 + sourceFactionIndex];
@@ -428,7 +428,7 @@ GameFactionRelations_MaybeResetPairState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
-  dword randomValue;
+  uint32_t randomValue;
   
   randomValue = (*g_RandomGeneratorState.next)();
   if ((randomValue & 0x180) == 0x80) {
@@ -449,14 +449,14 @@ GameFactionRelations_MaybeResetPairState
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_InsertUnique
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey)
 
 {
   SelectionPlayerPairRecord *pairRecordCursor;
-  uint recordsRemaining;
+  uint32_t recordsRemaining;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
-  dword appendRecordIndex;
+  uint32_t appendRecordIndex;
   InGameRuntimeRootImageC3E4 *inGameRuntimeRoot;
   
   inGameRuntimeRoot = g_InGameRuntimeRoot;
@@ -492,13 +492,13 @@ PlayerPairList_InsertUnique
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerPairList_RemoveFirstMatch
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero,SelectionPlayerPairValue pairValue,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero,SelectionPlayerPairValue pairValue,
           SelectionPlayerPairValue pairKey)
 
 {
   int trailingDwordsToMove;
   SelectionPlayerPairRecord *copySourceCursor;
-  uint recordsRemaining;
+  uint32_t recordsRemaining;
   SelectionPlayerPairRecord *pairRecordCursor;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
   InGameRuntimeRootImageC3E4 *inGameRuntimeRoot;

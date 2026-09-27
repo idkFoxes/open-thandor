@@ -45,12 +45,12 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsFramebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 
 {
-  uint adapterDeviceKind;
+  uint32_t adapterDeviceKind;
   SoftwareFramebufferAccess *savedCursorBackground;
-  sdword savedVisibilityToken;
-  sdword savedCursorDrawX;
-  sdword savedCursorDrawY;
-  sdword previousAccessState;
+  int32_t savedVisibilityToken;
+  int32_t savedCursorDrawX;
+  int32_t savedCursorDrawY;
+  int32_t previousAccessState;
   TH_LEGACY_HRESULT surfaceResult;
   int restoreResult;
 
@@ -160,19 +160,19 @@ GraphicsFramebuffer_CaptureRegion16Bit
 
 {
   TH_LEGACY_LPVOID lockedSurfacePixels;
-  dword packedTimestamp;
+  uint32_t packedTimestamp;
   TH_LEGACY_HRESULT surfaceResult;
   int restoreResultOrPixelOffset;
-  uint allocationSizeOrPixel;
+  uint32_t allocationSizeOrPixel;
   GraphicsCapturedTextureSourceAsset *capturedAsset;
-  uint remainingDwords;
+  uint32_t remainingDwords;
   GraphicsPixelDimension remainingColumns;
-  word *sourcePixel;
+  uint16_t *sourcePixel;
   GraphicsCapturedTextureSourceAsset *clearCursor;
-  dword *destinationPixel;
+  uint32_t *destinationPixel;
   ArenaAllocEaxCf5 allocResult;
   GraphicsFramebufferCaptureEaxCf5 captureResult;
-  word *sourceRowStart;
+  uint16_t *sourceRowStart;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
     captureResult = Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
@@ -228,38 +228,38 @@ GraphicsFramebuffer_CaptureRegion16Bit
       if (surfaceResult == 0) {
         destinationPixel = capturedAsset->argb8888Pixels;
         restoreResultOrPixelOffset = sourceY * g_FramebufferWidth + sourceX;
-        sourcePixel = (word *)((int)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset * 2);
+        sourcePixel = (uint16_t *)((int)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset * 2);
         remainingColumns = captureWidth;
         sourceRowStart = sourcePixel;
         do {
           do {
             /* The original loads the pixel into AX; the stale high word of EAX is masked away by the 16-bit
                channel masks. */
-            allocationSizeOrPixel = ((uint)restoreResultOrPixelOffset & 0xffff0000) | (uint)*sourcePixel;
-            *(byte *)((int)destinationPixel + 3) = 0xff;
+            allocationSizeOrPixel = ((uint32_t)restoreResultOrPixelOffset & 0xffff0000) | (uint32_t)*sourcePixel;
+            *(uint8_t *)((int)destinationPixel + 3) = 0xff;
             *(char *)((int)destinationPixel + 2) =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.redMask) >>
-                        ((byte)g_SoftwarePixelFormatConfig.redShift & 0x1f)) <<
+                        ((uint8_t)g_SoftwarePixelFormatConfig.redShift & 0x1f)) <<
                        (8U - (char)g_SoftwarePixelFormatConfig.redBitCount & 0x1f));
             *(char *)((int)destinationPixel + 1) =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.greenMask) >>
-                        ((byte)g_SoftwarePixelFormatConfig.greenShift & 0x1f)) <<
+                        ((uint8_t)g_SoftwarePixelFormatConfig.greenShift & 0x1f)) <<
                        (8U - (char)g_SoftwarePixelFormatConfig.greenBitCount & 0x1f));
             restoreResultOrPixelOffset = ((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.blueMask) >>
-                    ((byte)g_SoftwarePixelFormatConfig.blueShift & 0x1f)) <<
+                    ((uint8_t)g_SoftwarePixelFormatConfig.blueShift & 0x1f)) <<
                     (8U - (char)g_SoftwarePixelFormatConfig.blueBitCount & 0x1f);
             *(char *)destinationPixel = (char)restoreResultOrPixelOffset;
             sourcePixel = sourcePixel + 1;
             destinationPixel = destinationPixel + 1;
             remainingColumns = remainingColumns - 1;
           } while (remainingColumns != 0);
-          sourcePixel = (word *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
+          sourcePixel = (uint16_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
           captureHeight = captureHeight - 1;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(qword, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(capturedAsset);
@@ -286,21 +286,21 @@ GraphicsFramebuffer_CaptureRegion32Bit
           GraphicsScreenCoordinate sourceY,GraphicsScreenCoordinate sourceX)
 
 {
-  uint allocationSizeOrPixel;
+  uint32_t allocationSizeOrPixel;
   TH_LEGACY_LPVOID lockedSurfacePixels;
-  dword packedTimestamp;
+  uint32_t packedTimestamp;
   TH_LEGACY_HRESULT surfaceResult;
   int restoreResult;
   GraphicsCapturedTextureSourceAsset *capturedAsset;
-  uint remainingDwords;
+  uint32_t remainingDwords;
   GraphicsPixelDimension remainingColumns;
-  uint *sourcePixel;
+  uint32_t *sourcePixel;
   GraphicsCapturedTextureSourceAsset *clearCursor;
-  dword *destinationPair;
-  dword *destinationPixel;
+  uint32_t *destinationPair;
+  uint32_t *destinationPixel;
   ArenaAllocEaxCf5 allocResult;
   GraphicsFramebufferCaptureEaxCf5 captureResult;
-  uint *sourceRowStart;
+  uint32_t *sourceRowStart;
   
   allocationSizeOrPixel = captureWidth * captureHeight * 4 + 0x220;
   allocResult = (*g_MemoryApi.alloc)(allocationSizeOrPixel);
@@ -350,7 +350,7 @@ GraphicsFramebuffer_CaptureRegion32Bit
                          (TH_LEGACY_HANDLE)0x0);
       lockedSurfacePixels = g_SurfaceDesc.lpSurface;
       if (surfaceResult == 0) {
-        sourcePixel = (uint *)((int)g_SurfaceDesc.lpSurface +
+        sourcePixel = (uint32_t *)((int)g_SurfaceDesc.lpSurface +
                          (sourceY * g_FramebufferWidth + sourceX) * 4);
         remainingColumns = captureWidth;
         destinationPixel = capturedAsset->argb8888Pixels;
@@ -369,13 +369,13 @@ GraphicsFramebuffer_CaptureRegion32Bit
             *destinationPixel = *sourcePixel | 0xff000000;
             destinationPixel = destinationPair + 3;
           }
-          sourcePixel = (uint *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
+          sourcePixel = (uint32_t *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
           captureHeight = captureHeight - 1;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;
         } while (captureHeight != 0);
         (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,lockedSurfacePixels);
-        return THANDOR_BITCAST(qword, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, GraphicsFramebufferCaptureEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
     }
     (*g_MemoryApi.free)(capturedAsset);
@@ -423,10 +423,10 @@ bool __thandor_cf_preserve_eax_ecx_edx GraphicsFramebuffer_BeginAccess(void)
       if (lockResult == 0) {
         g_FramebufferRowStrideBytes = g_SurfaceDesc.lPitch;
         if (g_DisplayFramebufferAccess.bytesPerPixel == SOFTWARE_FRAMEBUFFER_PIXEL_BYTES_16BIT) {
-          g_DisplayFramebufferAccess.width = (uint)g_SurfaceDesc.lPitch >> 1;
+          g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 1;
         }
         else {
-          g_DisplayFramebufferAccess.width = (uint)g_SurfaceDesc.lPitch >> 2;
+          g_DisplayFramebufferAccess.width = (uint32_t)g_SurfaceDesc.lPitch >> 2;
         }
         g_DisplayFramebufferAccess.pixels = g_SurfaceDesc.lpSurface;
         return false;
@@ -451,7 +451,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsFramebuffer_EndAccess(void)
     return;
   }
   (*g_BackSurface3->lpVtbl->Unlock)(g_BackSurface3,g_DisplayFramebufferAccess.pixels);
-  g_DisplayFramebufferAccess.pixels = (byte *)0x0;
+  g_DisplayFramebufferAccess.pixels = (uint8_t *)0x0;
   return;
 }
 

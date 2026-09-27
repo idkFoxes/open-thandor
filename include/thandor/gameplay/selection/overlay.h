@@ -69,7 +69,7 @@ SelectionOverlay_DrawMarkerAFB0ForProjectedVertexStateFlags
 void __thandor_void_preserve_eax_ecx_edx
 SelectionOverlay_DrawMarkerB1B2ForProjectedVertexMask1800
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,byte markerBitIndex,FieldGridAsset *fieldGrid);
+          UiPixelCoordinate clipRight,uint8_t markerBitIndex,FieldGridAsset *fieldGrid);
 
 /* 0x0052FA20 */
 void __thandor_void_preserve_eax_ecx_edx

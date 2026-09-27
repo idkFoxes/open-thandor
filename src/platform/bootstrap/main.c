@@ -28,9 +28,9 @@ static void Thandor_SelfTestCodec(void)
         int noisy = t >= 3;
         unsigned capacity = 0x7ffc00;
         unsigned guard = 0x10000;
-        byte *source = (byte *)malloc(size);
-        byte *packed = (byte *)malloc(capacity + guard);
-        byte *unpacked = (byte *)malloc(size + guard);
+        uint8_t *source = (uint8_t *)malloc(size);
+        uint8_t *packed = (uint8_t *)malloc(capacity + guard);
+        uint8_t *unpacked = (uint8_t *)malloc(size + guard);
         unsigned i;
         unsigned seed = 12345;
         PckCodecEaxCf5 enc;
@@ -44,7 +44,7 @@ static void Thandor_SelfTestCodec(void)
         }
         for (i = 0; i < size; i++) {
             seed = seed * 1103515245u + 12345u;
-            source[i] = (noisy || (i % 4096) < 300) ? (byte)(seed >> 16) : 0;
+            source[i] = (noisy || (i % 4096) < 300) ? (uint8_t)(seed >> 16) : 0;
         }
         memset(packed, 0xCD, capacity + guard);
         memset(unpacked, 0xCD, size + guard);
@@ -76,16 +76,16 @@ static void Thandor_SelfTestPathSplit(void)
                                        L"C:\\Games\\ot-run\\save\\Mission 1.sve", L"C:\\"};
     int c;
     for (c = 0; c < 4; c++) {
-        word path[0x100];
-        word leaf[0x100];
-        word parent[0x100];
+        uint16_t path[0x100];
+        uint16_t leaf[0x100];
+        uint16_t parent[0x100];
         char leafA[0x100];
         char parentA[0x100];
         int i;
         memset(path, 0, sizeof path);
         memset(leaf, 0xAB, sizeof leaf);
         memset(parent, 0xAB, sizeof parent);
-        for (i = 0; cases[c][i] != 0; i++) path[i] = (word)cases[c][i];
+        for (i = 0; cases[c][i] != 0; i++) path[i] = (uint16_t)cases[c][i];
         WidePath_SplitParentAndLeaf(leaf, parent, path);
         for (i = 0; i < 0xff && leaf[i] != 0; i++) leafA[i] = (char)leaf[i];
         leafA[i] = 0;
@@ -99,11 +99,11 @@ static void Thandor_SelfTestPathSplit(void)
 static void Thandor_SelfTestStretch(void)
 {
     /* 4x2 ARGB source with a horizontal red ramp, stretched to 8x4. */
-    static dword asset[0x100];
-    static dword target[8 * 4];
-    dword framebuffer[4] = {8, 0, 4, 0};
-    dword *entry;
-    dword *pixels;
+    static uint32_t asset[0x100];
+    static uint32_t target[8 * 4];
+    uint32_t framebuffer[4] = {8, 0, 4, 0};
+    uint32_t *entry;
+    uint32_t *pixels;
     int x;
     int y;
     memset(asset, 0, sizeof asset);
@@ -118,10 +118,10 @@ static void Thandor_SelfTestStretch(void)
     pixels = asset + 0x200 / 4;
     for (y = 0; y < 2; y++) {
         for (x = 0; x < 4; x++) {
-            pixels[y * 4 + x] = 0xff000000u | ((dword)(x * 85) << 16) | ((dword)(y * 255) << 8);
+            pixels[y * 4 + x] = 0xff000000u | ((uint32_t)(x * 85) << 16) | ((uint32_t)(y * 255) << 8);
         }
     }
-    framebuffer[3] = (dword)(uintptr_t)target;
+    framebuffer[3] = (uint32_t)(uintptr_t)target;
     SoftwareTextureSource_StretchDirectColorBilinear32(4, 8, 0, 0, 0, (GraphicsTextureSourceAsset *)asset,
                                                        (SoftwareFramebufferAccess *)framebuffer);
     for (y = 0; y < 4; y++) {
@@ -139,7 +139,7 @@ void Thandor_SelfTestRasterCompare(void);
 void Thandor_SelfTestBlendScaleCompare(void);
 void Thandor_SelfTestBlitCompare(void);
 
-typedef void (__stdcall *OriginalStretchProc)(dword, dword, dword, dword, dword, void *, void *);
+typedef void (__stdcall *OriginalStretchProc)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, void *, void *);
 
 static void Thandor_SelfTestStretchCompare(void)
 {
@@ -164,20 +164,20 @@ static void Thandor_SelfTestStretchCompare(void)
     for (run = 0; run < 24; run++) {
         int bytesPerPixel = (run & 1) ? 4 : 2;
         int layout = (run >> 1) & 1;
-        dword srcW = 16 + (run * 37) % 300;
-        dword srcH = 9 + (run * 53) % 200;
-        dword dstW = 2 * (8 + (run * 71) % 400);
-        dword dstH = 4 + (run * 29) % 300;
-        dword pitch = dstW + 8;
-        dword assetBytes = 0x220 + (srcW * (srcH + 1) + 2) * 4;
-        byte *asset = (byte *)calloc(1, assetBytes);
-        byte *mine = (byte *)calloc(pitch * (dstH + 1), bytesPerPixel);
-        byte *theirs = (byte *)calloc(pitch * (dstH + 1), bytesPerPixel);
-        dword fbMine[4];
-        dword fbTheirs[4];
-        dword *entry;
-        dword *pixels;
-        dword i;
+        uint32_t srcW = 16 + (run * 37) % 300;
+        uint32_t srcH = 9 + (run * 53) % 200;
+        uint32_t dstW = 2 * (8 + (run * 71) % 400);
+        uint32_t dstH = 4 + (run * 29) % 300;
+        uint32_t pitch = dstW + 8;
+        uint32_t assetBytes = 0x220 + (srcW * (srcH + 1) + 2) * 4;
+        uint8_t *asset = (uint8_t *)calloc(1, assetBytes);
+        uint8_t *mine = (uint8_t *)calloc(pitch * (dstH + 1), bytesPerPixel);
+        uint8_t *theirs = (uint8_t *)calloc(pitch * (dstH + 1), bytesPerPixel);
+        uint32_t fbMine[4];
+        uint32_t fbTheirs[4];
+        uint32_t *entry;
+        uint32_t *pixels;
+        uint32_t i;
         size_t total = (size_t)pitch * (dstH + 1) * bytesPerPixel;
         if (!asset || !mine || !theirs) {
             Thandor_Log("stretchcmp: allocation failed");
@@ -185,21 +185,21 @@ static void Thandor_SelfTestStretchCompare(void)
         }
         *maskSlot = (bytesPerPixel == 2) ? quantize[layout][0] : savedMask;
         *weightSlot = (bytesPerPixel == 2) ? quantize[layout][1] : savedWeights;
-        *(dword *)asset = 0x786667;
-        *(dword *)(asset + 0xb0) = 1;
-        *(dword *)(asset + 0xb8) = 0x200;
-        entry = (dword *)(asset + 0x200);
+        *(uint32_t *)asset = 0x786667;
+        *(uint32_t *)(asset + 0xb0) = 1;
+        *(uint32_t *)(asset + 0xb8) = 0x200;
+        entry = (uint32_t *)(asset + 0x200);
         entry[2] = 0xffffffff;
         entry[3] = 0x220;
         entry[6] = srcW;
         entry[7] = srcH;
-        pixels = (dword *)(asset + 0x220);
+        pixels = (uint32_t *)(asset + 0x220);
         for (i = 0; i < srcW * (srcH + 1) + 2; i++) {
             seed = seed * 1103515245u + 12345u;
             pixels[i] = seed ^ (seed >> 13);
         }
-        fbMine[0] = pitch; fbMine[1] = 0; fbMine[2] = bytesPerPixel; fbMine[3] = (dword)(uintptr_t)mine;
-        fbTheirs[0] = pitch; fbTheirs[1] = 0; fbTheirs[2] = bytesPerPixel; fbTheirs[3] = (dword)(uintptr_t)theirs;
+        fbMine[0] = pitch; fbMine[1] = 0; fbMine[2] = bytesPerPixel; fbMine[3] = (uint32_t)(uintptr_t)mine;
+        fbTheirs[0] = pitch; fbTheirs[1] = 0; fbTheirs[2] = bytesPerPixel; fbTheirs[3] = (uint32_t)(uintptr_t)theirs;
         if (bytesPerPixel == 2) {
             SoftwareTextureSource_StretchDirectColorBilinear16(dstH, dstW, 0, 4, 0,
                 (GraphicsTextureSourceAsset *)asset, (SoftwareFramebufferAccess *)fbMine);
@@ -237,10 +237,10 @@ static void Thandor_SelfTestStretchCompare(void)
    scanaddr.txt: package, entry path, type tag, offset, value. Used to find assets that store
    original code or data addresses. */
 /* The arena is set up by ProcessEntry; decoders called before that allocate through these. */
-static ArenaAllocEaxCf5 SelfTest_Alloc(dword bytes)
+static ArenaAllocEaxCf5 SelfTest_Alloc(uint32_t bytes)
 {
     ArenaAllocEaxCf5 result;
-    result.eax = (dword)(uintptr_t)malloc(bytes);
+    result.eax = (uint32_t)(uintptr_t)malloc(bytes);
     result.carry = result.eax == 0;
     return result;
 }
@@ -255,13 +255,13 @@ static ArenaFreeEaxCf5 SelfTest_Free(void *memory)
 
 static void Thandor_SelfTestScanAddresses(void)
 {
-    ArenaAllocEaxCf5 (*savedAlloc)(dword) = g_MemoryApi.alloc;
+    ArenaAllocEaxCf5 (*savedAlloc)(uint32_t) = g_MemoryApi.alloc;
     ArenaFreeEaxCf5 (*savedFree)(void *) = g_MemoryApi.free;
     static const char *packages[] = {"DATEN.PCK", "ENGINE.PCK", "GRAPHIK.PCK", "LEVEL.PCK",
                                      "MODELLE.PCK", "PATCH00.PCK", "PATCH01.PCK", "SOUND.PCK"};
     unsigned p;
     FILE *out = fopen("scanaddr.txt", "w");
-    byte *packed = (byte *)malloc(0x800000);
+    uint8_t *packed = (uint8_t *)malloc(0x800000);
     unsigned totalEntries = 0;
     unsigned totalHits = 0;
     if (out == NULL || packed == NULL) {
@@ -297,16 +297,16 @@ static void Thandor_SelfTestScanAddresses(void)
         }
         for (;;) {
             PckEntryHeader header;
-            byte *unpacked;
+            uint8_t *unpacked;
             PckCodecEaxCf5 decoded;
             char name[247];
             int k;
-            dword i;
+            uint32_t i;
             if (fseek(pck, position, SEEK_SET) != 0 || fread(&header, sizeof header, 1, pck) != 1) {
                 break;
             }
             if (header.packedSize == 0 || header.packedSize > 0x800000 || header.unpackedSize > 0x4000000 ||
-                (dword)header.compressionMethod > 3) {
+                (uint32_t)header.compressionMethod > 3) {
                 break;
             }
             for (k = 0; k < 246 && header.path[k] != 0; k++) {
@@ -316,12 +316,12 @@ static void Thandor_SelfTestScanAddresses(void)
             if (fread(packed, 1, header.packedSize, pck) != header.packedSize) {
                 break;
             }
-            unpacked = (byte *)malloc(header.unpackedSize + 4);
+            unpacked = (uint8_t *)malloc(header.unpackedSize + 4);
             if (unpacked == NULL) {
                 break;
             }
             if (g_PckDecoderTable[header.compressionMethod] == NULL) {
-                fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (dword)header.compressionMethod);
+                fprintf(out, "%s %s NO-DECODER method %u\n", list[p], name, (uint32_t)header.compressionMethod);
                 free(unpacked);
                 position += 0x200 + (long)header.packedSize;
                 continue;
@@ -334,9 +334,9 @@ static void Thandor_SelfTestScanAddresses(void)
             }
             else {
                 for (i = 0; i + 4 <= header.unpackedSize; i += 4) {
-                    dword value = *(dword *)(unpacked + i);
+                    uint32_t value = *(uint32_t *)(unpacked + i);
                     if ((value >= 0x401000 && value < 0x58c000) || (value >= 0x10000000 && value < 0x10300000)) {
-                        fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (dword)header.typeTag, i, value);
+                        fprintf(out, "%s %s %08x %x %08x\n", list[p], name, (uint32_t)header.typeTag, i, value);
                         totalHits++;
                     }
                 }
@@ -358,18 +358,18 @@ static void Thandor_SelfTestScanAddresses(void)
    original address, C function -> original entry - and must equal the recorded original value;
    every other byte must equal the original. Bytes of original code inside a block are zero in
    the generated data and counted separately. */
-static dword ImageCompare_ToOriginal(dword generated, unsigned blocks)
+static uint32_t ImageCompare_ToOriginal(uint32_t generated, unsigned blocks)
 {
     unsigned k;
     for (k = 0; k < blocks; k++) {
         const ThandorImageBlock *block = &g_ThandorImageBlocks[k];
-        dword base = (dword)(uintptr_t)block->data;
+        uint32_t base = (uint32_t)(uintptr_t)block->data;
         if (generated >= base && generated < base + (block->end - block->start)) {
             return block->start + (generated - base);
         }
     }
     for (k = 0; k < g_ThandorFunctionMapCount; k++) {
-        if ((dword)(uintptr_t)g_ThandorFunctionMap[k].function == generated) {
+        if ((uint32_t)(uintptr_t)g_ThandorFunctionMap[k].function == generated) {
             return g_ThandorFunctionMap[k].originalAddress;
         }
     }
@@ -378,7 +378,7 @@ static dword ImageCompare_ToOriginal(dword generated, unsigned blocks)
 
 static void Thandor_SelfTestImageCompare(void)
 {
-    const byte *original = (const byte *)Thandor_LoadOriginalCodeCopy(0x401000, 0x18b000);
+    const uint8_t *original = (const uint8_t *)Thandor_LoadOriginalCodeCopy(0x401000, 0x18b000);
     unsigned blocks = sizeof g_ThandorImageBlocks / sizeof g_ThandorImageBlocks[0];
     unsigned pointerCount = sizeof g_ThandorImagePointers / sizeof g_ThandorImagePointers[0];
     unsigned b;
@@ -393,18 +393,18 @@ static void Thandor_SelfTestImageCompare(void)
     }
     for (b = 0; b < blocks; b++) {
         const ThandorImageBlock *block = &g_ThandorImageBlocks[b];
-        dword address;
+        uint32_t address;
         for (address = block->start; address < block->end; address++) {
-            byte generated = block->data[address - block->start];
-            byte expected = original[address - 0x401000];
+            uint8_t generated = block->data[address - block->start];
+            uint8_t expected = original[address - 0x401000];
             while (p < pointerCount && g_ThandorImagePointers[p].location + 4 <= address) {
                 p++;
             }
             if (p < pointerCount && g_ThandorImagePointers[p].location == address) {
-                dword value = *(const dword *)(block->data + (address - block->start));
-                dword translated = ImageCompare_ToOriginal(value, blocks);
+                uint32_t value = *(const uint32_t *)(block->data + (address - block->start));
+                uint32_t translated = ImageCompare_ToOriginal(value, blocks);
                 if (translated != g_ThandorImagePointers[p].originalValue ||
-                    translated != *(const dword *)(original + address - 0x401000)) {
+                    translated != *(const uint32_t *)(original + address - 0x401000)) {
                     if (pointerMismatches++ < 10) {
                         Thandor_Log("imagecmp: pointer at %08X is %08X (as original %08X), original %08X",
                                     address, value, translated, g_ThandorImagePointers[p].originalValue);

@@ -25,7 +25,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 
 {
   int remainingPairs;
-  word *textCursor;
+  uint16_t *textCursor;
   
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
@@ -125,7 +125,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
 */
 void __thandor_preserve_eax
 FrontendPlayerRuntime_AssignModelAndArmyTokensAndRefreshLocalPanel
-          (FrontendPlayerIndex playerIndex,dword reservedZero,RuntimeToken armyToken,
+          (FrontendPlayerIndex playerIndex,uint32_t reservedZero,RuntimeToken armyToken,
           RuntimeToken modelToken)
 
 {
@@ -160,9 +160,9 @@ void __thandor_preserve_eax
 FrontendPlayerConsensus_SubmitSelectedValue(FrontendConsensusSourceAddress32 source)
 
 {
-  uint consensusValue;
+  uint32_t consensusValue;
   
-  consensusValue = *(uint *)(source + 0x4c) & 2;
+  consensusValue = *(uint32_t *)(source + 0x4c) & 2;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     FrontendPlayerRuntime_SetConsensusValueAndRefresh(g_LocalPlayerRuntimeId,0,0,consensusValue);
@@ -342,7 +342,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 
 {
-  dword playerBlocksRemaining;
+  uint32_t playerBlocksRemaining;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   
   playerBlocksRemaining = g_FrontendPlayerRuntimeBlockCount;
@@ -371,7 +371,7 @@ FrontendPlayerRuntime_ClearAssignmentTokenFromAll(RuntimeToken assignmentToken)
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
-          (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
+          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -427,7 +427,7 @@ FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag08ById
-          (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
+          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -455,7 +455,7 @@ FrontendPlayerRuntime_MarkFlag08ById
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_XorStateMaskByPlayerId
-          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword stateMask)
+          (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t stateMask)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
@@ -485,7 +485,7 @@ FrontendPlayerRuntime_XorStateMaskByPlayerId
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag04ById
-          (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
+          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -517,7 +517,7 @@ FrontendPlayerRuntime_MarkFlag04ById
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_MarkFlag02ById
-          (PlayerRuntimeId playerId,dword argument1,dword argument2,dword argument3)
+          (PlayerRuntimeId playerId,uint32_t argument1,uint32_t argument2,uint32_t argument3)
 
 {
   FrontendRoleStateFlags *roleFlags;
@@ -585,10 +585,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendPlayerRuntime_InitializeFaction
 
 {
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
-  dword activeRemaining;
-  uint factionSlot;
+  uint32_t activeRemaining;
+  uint32_t factionSlot;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
-  dword assignableRemaining;
+  uint32_t assignableRemaining;
   FrontendPlayerRuntimeRecord *playerBlock;
   
   loadedLevel = g_FrontendLoadedLevelAsset;
@@ -642,7 +642,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
 {
   FrontendPlayerRuntimeRecord *firstPlayerBlock;
   FrontendPlayerRuntimeRecord *localPlayerRecord;
-  uint sessionTickInterval;
+  uint32_t sessionTickInterval;
   /* source is the frontend template's hostLobbyBackButton (+0x543C). */
   FrontendUiImage *frontendUi;
 
@@ -650,8 +650,8 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
   UiPageStack_SetActiveIndex(2,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   sessionTickInterval = g_SessionNetworkTickInterval;
   if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | 0x2000;
   }
   g_FrontendNetworkState = 0;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = sessionTickInterval >> 1;
@@ -688,7 +688,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
   labelText = TextResource_Resolve
                     ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
   RichTextCommandStream_CopyExpandedCf
-            (0x40,(word *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.eax);
+            (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.eax);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
   return;
 }
@@ -706,7 +706,7 @@ FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 
 {
   int flaggedCount;
-  uint remainingBlocks;
+  uint32_t remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
   flaggedCount = 0;
@@ -719,7 +719,7 @@ FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
     playerBlock = playerBlock + 1;
     remainingBlocks = remainingBlocks - 1;
   } while (remainingBlocks != 0);
-  if ((uint)(flaggedCount * 3) < g_FrontendPlayerRuntimeCount) {
+  if ((uint32_t)(flaggedCount * 3) < g_FrontendPlayerRuntimeCount) {
     UiNodeList_SuppressActionId(0x2006,g_FrontendRootNode);
   }
   else {
@@ -739,16 +739,16 @@ FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction(void)
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetReadyFlagById
-          (PlayerRuntimeId playerRuntimeId,dword reservedArg04,dword reservedArg08,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedArg04,uint32_t reservedArg08,
           FrontendReadyFlagMask readyFlagMask)
 
 {
-  byte *readyFlagsField;
+  uint8_t *readyFlagsField;
   SelectionPlayerRuntimeBlock *playerRuntimeBlock;
   
   playerRuntimeBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  readyFlagsField = (byte *)&playerRuntimeBlock->sessionFlags;
-  *(uint *)readyFlagsField = *(uint *)readyFlagsField & 0xfffffffd;
+  readyFlagsField = (uint8_t *)&playerRuntimeBlock->sessionFlags;
+  *(uint32_t *)readyFlagsField = *(uint32_t *)readyFlagsField & 0xfffffffd;
   playerRuntimeBlock->sessionFlags = playerRuntimeBlock->sessionFlags | readyFlagMask;
   return;
 }
@@ -818,7 +818,7 @@ FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(PlayerRuntimeId playerRun
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
-          (PlayerRuntimeId playerRuntimeId,dword reserved0,dword reserved1,dword reserved2)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reserved0,uint32_t reserved1,uint32_t reserved2)
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
@@ -986,7 +986,7 @@ FrontendPlayerSelection_RemoveThreeEntriesAndRefresh
 */
 void __thandor_preserve_eax
 FrontendPlayerSelection_ClearAndRefreshLocalPanels
-          (FrontendPlayerIndex playerIndex,dword callbackArg1,dword callbackArg2,dword callbackArg3)
+          (FrontendPlayerIndex playerIndex,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3)
 
 {
   SelectionPointerArray_Clear32(&g_SelectionPlayerRuntimeBlockPointers[playerIndex]->selection);
@@ -1135,7 +1135,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
-          (FrontendPlayerIndex playerIndex,dword unusedArg1,
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,
           TechnologyIndexOrRestoreCode technologyIndexOrRestore,ArmyRuntimeSavedOffset modelOffset)
 
 {
@@ -1168,7 +1168,7 @@ FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology
 */
 void __thandor_preserve_eax_edx
 FrontendPlayerTextCommand_SetPackedState
-          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,
           FrontendPackedTextCommandState packedState)
 
 {
@@ -1193,8 +1193,8 @@ FrontendPlayerTextCommand_AppendTripleClamped
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  uint writeOffset;
-  uint nextOffset;
+  uint32_t writeOffset;
+  uint32_t nextOffset;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   writeOffset = playerBlock->packedSelectionState809C & 0xff;
@@ -1222,11 +1222,11 @@ FrontendPlayerTextCommand_AppendTripleClamped
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerTextCommand_PublishConditionalRichText
-          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,dword unusedArg3)
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  word *stream;
+  uint16_t *stream;
   TextResourceResolveEaxCf5 messageText;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
@@ -1239,7 +1239,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
     Text_CopyNarrowToUtf16Cf
-              (0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
+              (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
     messageText = TextResource_Resolve(0xff07);
     stream = messageText.eax;
     RichTextCommandStream_PatchPayloadBySelector(0,playerBlock->reserved80B0_8117 + 0x40,stream);
@@ -1261,7 +1261,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerSelection_ApplyEntryOrAll
-          (FrontendPlayerIndex playerIndex,dword reservedZero0,dword reservedZero1,
+          (FrontendPlayerIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
           RuntimeToken selectionEntryToken)
 
 {
@@ -1302,7 +1302,7 @@ FrontendPlayerSelection_ApplyEntryOrAll
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
-          (PlayerRuntimeId playerId,dword argument2,dword argument3,dword argument4)
+          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,uint32_t argument4)
 
 {
   FrontendPlayerRuntimeBlockCount searchRemaining;
@@ -1377,13 +1377,13 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_SetConsensusValueAndRefresh
-          (PlayerRuntimeId playerId,dword argument2,dword argument3,
+          (PlayerRuntimeId playerId,uint32_t argument2,uint32_t argument3,
           FrontendConsensusValue consensusValue)
 
 {
   UiNodeFlags *nextButtonFlags;
   UiRootNode *taskAssignmentRoot;
-  uint combinedConsensus;
+  uint32_t combinedConsensus;
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   
@@ -1429,15 +1429,15 @@ FrontendPlayerRuntime_SetConsensusValueAndRefresh
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
-          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword unusedArg3)
+          (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  dword *messageBuffer;
+  uint32_t *messageBuffer;
 
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = (dword *)(uintptr_t)g_FrontendPlayerMessageBuffers;
+  messageBuffer = (uint32_t *)(uintptr_t)g_FrontendPlayerMessageBuffers;
   if ((g_FrontendNetworkState == 3) ||
      (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;
@@ -1513,13 +1513,13 @@ FrontendPlayerMessageBuffer_AppendTripleById
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerMessageBuffer_PublishTextById
-          (PlayerRuntimeId playerId,dword unusedArg1,dword unusedArg2,dword unusedArg3)
+          (PlayerRuntimeId playerId,uint32_t unusedArg1,uint32_t unusedArg2,uint32_t unusedArg3)
 
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
   int messageBuffer;
-  word *stream;
+  uint16_t *stream;
   TextResourceResolveEaxCf5 messageText;
   
   playerBlock = g_FrontendPlayerRuntimeBlocks;
@@ -1537,7 +1537,7 @@ FrontendPlayerMessageBuffer_PublishTextById
     playerBlock = playerBlock + 1;
     messageBuffer = messageBuffer + 100;
   }
-  Text_CopyNarrowToUtf16Cf(0x60,(word *)&g_FrontendPlayerMessageScratchUtf16,(byte *)(messageBuffer + 4));
+  Text_CopyNarrowToUtf16Cf(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,(uint8_t *)(messageBuffer + 4));
   messageText = TextResource_Resolve(0xff07);
   stream = messageText.eax;
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);
@@ -1616,7 +1616,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
     } while (blocksRemaining != 0);
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(frontendRoot->playerRuntimeList).rowCount,
-               (word *)&g_FrontendNetworkRuntimeCountTextUtf16);
+               (uint16_t *)&g_FrontendNetworkRuntimeCountTextUtf16);
     UiPointerList_RefreshSelectionAndQueueAction(&frontendRoot->playerRuntimeList);
   }
   return;
@@ -1633,7 +1633,7 @@ FrontendPlayerRuntime_DecrementExpiryAndCompactBlocks
 */
 void __thandor_preserve_eax
 FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
-          (FactionRuntimeIndex playerIndex,dword reservedZero0,dword reservedZero1,
+          (FactionRuntimeIndex playerIndex,uint32_t reservedZero0,uint32_t reservedZero1,
           RuntimeToken modelToken)
 
 {
@@ -1665,20 +1665,20 @@ FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection
 */
 void __thandor_void_preserve_eax_ecx
 FrontendPlayerRuntime_AssignArmyTokenAndCaptureFlag80
-          (FrontendPlayerIndex playerIndex,dword unusedArg1,dword unusedArg2,ArmyRuntimeSavedOffset modelOffset)
+          (FrontendPlayerIndex playerIndex,uint32_t unusedArg1,uint32_t unusedArg2,ArmyRuntimeSavedOffset modelOffset)
 
 {
   SelectionPlayerRuntimeBlock *playerBlock;
-  uint armyFlags;
-  dword armyAddress;
+  uint32_t armyFlags;
+  uint32_t armyAddress;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerIndex];
   if ((modelOffset != 0) &&
      (armyAddress = modelOffset + g_ModelRuntimeRebaseDelta, *(int *)(armyAddress + 4) != 0)) {
-    armyFlags = *(uint *)(armyAddress + 0xec);
+    armyFlags = *(uint32_t *)(armyAddress + 0xec);
     playerBlock->assignmentToken80A0 = armyAddress;
     playerBlock->assignmentFlags80A4 = armyFlags & 0x80;
-    *(uint *)(armyAddress + 0xec) = *(uint *)(armyAddress + 0xec) & 0xffffff7f;
+    *(uint32_t *)(armyAddress + 0xec) = *(uint32_t *)(armyAddress + 0xec) & 0xffffff7f;
   }
   return;
 }

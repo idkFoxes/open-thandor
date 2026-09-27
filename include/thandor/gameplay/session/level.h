@@ -16,7 +16,7 @@
 
 /* 0x00531080 */
 EndingMoviePathEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-LevelAsset_PrepareEndingMoviePathCf(word *currentLevelPath,LevelAssetHeader *asset);
+LevelAsset_PrepareEndingMoviePathCf(uint16_t *currentLevelPath,LevelAssetHeader *asset);
 
 /* 0x005311D0 */
 InGameLevelDefaultLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx

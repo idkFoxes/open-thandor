@@ -20,7 +20,7 @@ InGameTargetingContext_AdvanceOrResolveTarget
           (InGameTargetingRootTraversalView9E60 *targetingContext);
 
 /* 0x005688A0 */
-dword InGameWorldInput_ResolveContextActionAndCursorCf
+uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
                 (InGamePointerCallbackValue0 pointerValue0,InGamePointerCallbackValue1 pointerValue1
                 ,InGamePointerCallbackValue2 pointerValue2,InGamePointerCallbackValue3 pointerValue3
                 ,WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime);
@@ -28,15 +28,15 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
 /* 0x00568CB0 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldInput_BeginPointerCaptureCf
-          (InGamePointerCallbackValue0 pointerValue0,dword pointerValue1,dword pointerValue2,
+          (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
           InGamePointerCallbackValue3 pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime);
 
 /* 0x00568E10 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldInput_UpdateDragSelectionAndCameraCf
-          (InGamePointerCallbackValue0 pointerValue0,dword pointerValue1,dword pointerValue2,
-          dword pointerValue3,WorldOwnerListNode100 *candidateNode,
+          (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
+          uint32_t pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime);
 
 /* 0x005691B0 */
@@ -49,7 +49,7 @@ InGameWorldInput_CommitPointerActionCf
 /* 0x0056F230 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCameraCommand_DispatchByCodeAndModifierFlagsCf
-          (dword modifierFlags,dword commandCode,WorldRuntimeContext *worldRuntime);
+          (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0056D4B0 */
 void __thandor_preserve_eax

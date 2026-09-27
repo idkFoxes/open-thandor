@@ -15,25 +15,25 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00402D50 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 WideNumber_FormatUtf16
           (WideNumberFormatFlags flags,WideNumberFractionalDigitCount fractionalDigits,
           WideNumberIntegerDigitLimit integerDigitLimit,WideNumberDenominator32 denominator,
-          WideNumberSignedValue32 value,word *destination);
+          WideNumberSignedValue32 value,uint16_t *destination);
 
 /* 0x00403010 */
 CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
-Utf16String_CompareAsciiCaseInsensitiveFlags(word *rightText,word *leftText);
+Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText);
 
 /* 0x0041BAA0 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination,byte *source);
+Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x00586DA0 */
-dword Utf16_CopyAndReturnByteLength(word *destination,word *source);
+uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source);
 
 /* 0x00402D30 */
 void __thandor_void_preserve_eax_ecx_edx
-WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,word *source,word *destination);
+WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination);
 
 #endif /* THANDOR_CORE_TEXT_STRING_H */

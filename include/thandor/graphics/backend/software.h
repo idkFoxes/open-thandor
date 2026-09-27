@@ -60,7 +60,7 @@ void __thandor_void_preserve_eax_ecx_edx SoftwareGraphicsDispatch_NoOp(void);
 /* 0x004A8F80 */
 DisplayModeEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 SoftwarePixelFormat_BaseDisplayModeHook
-          (dword modeArg0,dword modeArg1,FrontendDisplayDimensionPixels height,
+          (uint32_t modeArg0,uint32_t modeArg1,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width);
 
 /* 0x004A9110 */
@@ -445,7 +445,7 @@ void __thandor_void_preserve_eax_ecx_edx
 SoftwareTexture_BilinearBlendScaleSubresources
           (GraphicsPixelDimension destinationHeight,GraphicsPixelDimension destinationWidth,
           GraphicsScreenCoordinate destinationTop,GraphicsScreenCoordinate destinationLeft,
-          qword *blendedSourcePixels,qword *blendFactorPixels,
+          uint64_t *blendedSourcePixels,uint64_t *blendFactorPixels,
           GraphicsSubresourceIndex sourceSubresourceIndexA,
           GraphicsSubresourceIndex sourceSubresourceIndexB,int *graphicsTextureAsset,
           int *framebufferAccess);

@@ -26,7 +26,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void);
 KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void);
 
 /* 0x004172D0 */
-dword __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
+uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit);
 
 /* 0x00576CF0 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void);
@@ -63,6 +63,6 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode
 void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode character);
 
 /* 0x004172B0 */
-dword __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
+uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit);
 
 #endif /* THANDOR_PLATFORM_INPUT_DEVICES_H */

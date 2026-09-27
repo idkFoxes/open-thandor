@@ -12,37 +12,37 @@
 /* Implementation ownership: world/terrain/visuals. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword TerrainColor_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t TerrainColor_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline dword TerrainColor_PackWordsUnsignedSaturate(qword words)
+static __inline uint32_t TerrainColor_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;
-  dword packed;
+  uint32_t packed;
   int lane;
 
   lanes.q = words;
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     packed = packed |
-             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
 
 /* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1. */
-static __inline qword TerrainColor_AverageWordsWithPixelBytes(qword words,dword pixel)
+static __inline uint64_t TerrainColor_AverageWordsWithPixelBytes(uint64_t words,uint32_t pixel)
 
 {
   ThandorMmx lanes;
@@ -50,7 +50,7 @@ static __inline qword TerrainColor_AverageWordsWithPixelBytes(qword words,dword 
 
   lanes.q = words;
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(lanes.uw[lane] + (pixel >> (lane * 8) & 0xff)) >> 1;
+    lanes.uw[lane] = (uint16_t)(lanes.uw[lane] + (pixel >> (lane * 8) & 0xff)) >> 1;
   }
   return lanes.q;
 }
@@ -71,7 +71,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainCompositeTexture_Crea
   AssetDimension fieldHeight;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   AssetRelativeOffset plane2DataOffset;
-  uint totalImageBytes;
+  uint32_t totalImageBytes;
   int planeSizeBytes;
   ArenaAllocEaxCf5 allocResult;
   StatusValueEaxCf5 resultStatus;
@@ -145,10 +145,10 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
   void *lookupAllocationBase;
   int lookupRowsRemaining;
   int finalRowsRemaining;
-  byte nextInputByte;
-  uint clampInputValue;
-  uint lookupInputValue;
-  byte *lookupWriteCursor;
+  uint8_t nextInputByte;
+  uint32_t clampInputValue;
+  uint32_t lookupInputValue;
+  uint8_t *lookupWriteCursor;
   ArenaAllocEaxCf5 allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x20000);
@@ -157,7 +157,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
     return StatusValue_Fail(allocResult.eax);
   }
   clampInputValue = 0;
-  lookupWriteCursor = (byte *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
+  lookupWriteCursor = (uint8_t *)((int)lookupAllocationBase + 0xffffU & 0xffff0000);
   lookupRowsRemaining = 0x40;
   g_TerrainByteClampLookup = lookupWriteCursor;
   do {
@@ -169,17 +169,17 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
         *lookupWriteCursor = 0;
       }
       else {
-        *lookupWriteCursor = (byte)(clampInputValue - 0x15);
+        *lookupWriteCursor = (uint8_t)(clampInputValue - 0x15);
       }
       lookupWriteCursor = lookupWriteCursor + 1;
       nextInputByte = (char)clampInputValue + 1;
-      clampInputValue = (uint)nextInputByte;
+      clampInputValue = (uint32_t)nextInputByte;
     } while (nextInputByte != 0);
     lookupInputValue = 0;
     do {
       if (lookupInputValue < 0x100) {
         if (lookupInputValue + 0x15 < 0xff) {
-          *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
+          *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
         }
         else {
           *lookupWriteCursor = 0xff;
@@ -189,11 +189,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
         *lookupWriteCursor = 0xff;
       }
       else {
-        *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
       }
       lookupWriteCursor = lookupWriteCursor + 1;
       nextInputByte = (char)lookupInputValue + 1;
-      lookupInputValue = (uint)nextInputByte;
+      lookupInputValue = (uint32_t)nextInputByte;
     } while (nextInputByte != 0);
     lookupRowsRemaining = lookupRowsRemaining + -1;
     clampInputValue = 0;
@@ -202,7 +202,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
   do {
     if (lookupInputValue < 0x88) {
       if (lookupInputValue + 0x15 < 0x87) {
-        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0x87;
@@ -212,17 +212,17 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
       *lookupWriteCursor = 0x87;
     }
     else {
-      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
     nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint)nextInputByte;
+    lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 0x100) {
       if (lookupInputValue + 0x15 < 0xff) {
-        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0xff;
@@ -232,17 +232,17 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
       *lookupWriteCursor = 0xff;
     }
     else {
-      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
     nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint)nextInputByte;
+    lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 0x88) {
       if (lookupInputValue + 0x15 < 0x87) {
-        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0x87;
@@ -252,18 +252,18 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
       *lookupWriteCursor = 0x87;
     }
     else {
-      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
     nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint)nextInputByte;
+    lookupInputValue = (uint32_t)nextInputByte;
   } while (nextInputByte != 0);
   finalRowsRemaining = 0x7d;
   lookupInputValue = 0;
   do {
     if (lookupInputValue < 0x100) {
       if (lookupInputValue + 0x15 < 0xff) {
-        *lookupWriteCursor = (byte)(lookupInputValue + 0x15);
+        *lookupWriteCursor = (uint8_t)(lookupInputValue + 0x15);
       }
       else {
         *lookupWriteCursor = 0xff;
@@ -273,11 +273,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
       *lookupWriteCursor = 0xff;
     }
     else {
-      *lookupWriteCursor = (byte)(lookupInputValue - 0x15);
+      *lookupWriteCursor = (uint8_t)(lookupInputValue - 0x15);
     }
     lookupWriteCursor = lookupWriteCursor + 1;
     nextInputByte = (char)lookupInputValue + 1;
-    lookupInputValue = (uint)nextInputByte;
+    lookupInputValue = (uint32_t)nextInputByte;
   } while ((nextInputByte != 0) || (finalRowsRemaining = finalRowsRemaining + -1, finalRowsRemaining != 0));
   return StatusValue_Ok(0);
 }
@@ -294,19 +294,19 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx TerrainByteClampLookup_Initi
 */
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx
 TerrainVisualResources_LoadPrimary
-          (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
 
 {
   GraphicsPaletteAsset *loadedResourceOrError;
   GraphicsTextureSet *materialTextureSet;
-  dword randomValue;
+  uint32_t randomValue;
   int loopCounter;
   int materialSlotsRemaining;
-  word pathCharOrRotationRate;
-  uint materialFlagBits;
+  uint16_t pathCharOrRotationRate;
+  uint32_t materialFlagBits;
   TerrainMaterialSuffixEntry *suffixLetterCursor;
-  word *pathScanCursor;
-  word *pathScanNext;
+  uint16_t *pathScanCursor;
+  uint16_t *pathScanNext;
   GraphicsTextureSet **materialTextureSetSlot;
   TerrainDirectionRecord *directionRecord;
   GraphicsTextureSetEaxCf5 textureSetLoad;
@@ -362,7 +362,7 @@ TerrainVisualResources_LoadPrimary
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.carry) {
           failureStatus.carry = true;
-          failureStatus.valueOrError = (dword)loadedResourceOrError;
+          failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
           return failureStatus;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -416,7 +416,7 @@ TerrainVisualResources_LoadPrimary
               do {
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -425,7 +425,7 @@ TerrainVisualResources_LoadPrimary
                 *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -450,7 +450,7 @@ TerrainVisualResources_LoadPrimary
     }
   }
   failureStatus.carry = true;
-  failureStatus.valueOrError = (dword)loadedResourceOrError;
+  failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
   return failureStatus;
 }
 
@@ -469,20 +469,20 @@ TerrainVisualResources_LoadPrimary
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 TerrainVisualResources_LoadAndClearCellOverlayFlags
-          (word *primaryResourcePath,word *secondaryResourcePath,FieldGridAsset *field)
+          (uint16_t *primaryResourcePath,uint16_t *secondaryResourcePath,FieldGridAsset *field)
 
 {
   GraphicsPaletteAsset *loadedResourceOrError;
   GraphicsTextureSet *materialTextureSet;
-  dword randomValue;
+  uint32_t randomValue;
   int loopCounter;
   int materialSlotsRemaining;
-  word pathCharOrRotationRate;
-  uint materialFlagBits;
+  uint16_t pathCharOrRotationRate;
+  uint32_t materialFlagBits;
   TerrainMaterialSuffixEntry *suffixLetterCursor;
   FieldGridCell *fieldCell;
-  word *pathScanCursor;
-  word *pathScanNext;
+  uint16_t *pathScanCursor;
+  uint16_t *pathScanNext;
   GraphicsTextureSet **materialTextureSetSlot;
   TerrainDirectionRecord *directionRecord;
   GraphicsTextureSetEaxCf5 textureSetLoad;
@@ -538,7 +538,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
         if (textureSetLoad.carry) {
           failureStatus.carry = true;
-          failureStatus.valueOrError = (dword)loadedResourceOrError;
+          failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
           return failureStatus;
         }
         MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -592,7 +592,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
               do {
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleA = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
                 randomValue = Random_NextPrimary();
                 if ((int)randomValue < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -601,7 +601,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
                 *(short *)&directionRecord->packedAngleA_low16_AngleB_high16 = (short)randomValue;
                 randomValue = Random_NextPrimary();
                 directionRecord->scaleB = (randomValue & 0x1f) + 0x80;
-                pathCharOrRotationRate = ((ushort)(randomValue >> 0x10) & 0x7f) + 0x200;
+                pathCharOrRotationRate = ((uint16_t)(randomValue >> 0x10) & 0x7f) + 0x200;
                 randomOrSuccessStatus.valueOrError = Random_NextPrimary();
                 if ((int)randomOrSuccessStatus.valueOrError < 0) {
                   pathCharOrRotationRate = -pathCharOrRotationRate;
@@ -635,7 +635,7 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
     }
   }
   failureStatus.carry = true;
-  failureStatus.valueOrError = (dword)loadedResourceOrError;
+  failureStatus.valueOrError = (uint32_t)loadedResourceOrError;
   return failureStatus;
 }
 
@@ -696,9 +696,9 @@ TerrainLighting_BuildColorRampAndSetBaseColor
           )
 
 {
-  uint channelValue;
+  uint32_t channelValue;
   int rampStepsRemaining;
-  uint *rampEntryCursor;
+  uint32_t *rampEntryCursor;
   PackedArgb32 *lightLutCursor;
   
   rampEntryCursor = g_TerrainLightingColorRampArgb256;
@@ -775,7 +775,7 @@ void __thandor_preserve_eax TerrainCompositeTexture_Destroy(void)
 */
 void __thandor_preserve_eax_edx
 TerrainLighting_AdjustDirectionAndRecomputeField
-          (dword commandArg0,dword commandArg1,dword commandArg2,dword commandArg3)
+          (uint32_t commandArg0,uint32_t commandArg1,uint32_t commandArg2,uint32_t commandArg3)
 
 {
   Q12 originWorldYQ12;
@@ -806,15 +806,15 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
 {
   AssetDimension textureWidth;
   int panelSubresourceIndex;
-  dword materialColorArgb;
+  uint32_t materialColorArgb;
   PackedArgb32 waterColorArgb;
   GraphicsTextureSourceAsset *panelTextureSource;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
-  byte *planePixelCursor;
+  uint8_t *planePixelCursor;
   FieldGridCell *fieldCell;
-  qword mm0PackedValue0;
-  qword mm0PackedValue1;
+  uint64_t mm0PackedValue0;
+  uint64_t mm0PackedValue1;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -831,7 +831,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7;
-        materialColorArgb = *(dword *)
+        materialColorArgb = *(uint32_t *)
                  (panelTextureSource[panelSubresourceIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                  (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
         if (lightingLevelIndex < 0) {
@@ -847,7 +847,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
         mm0PackedValue0 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(materialColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       else {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
@@ -866,7 +866,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
         mm0PackedValue1 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue1);
+        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue1);
       }
       fieldCell = fieldCell + 1;
       planePixelCursor = planePixelCursor + 4;
@@ -893,16 +893,16 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
   AssetPackedDate tritiumColorArgb;
   AssetMagic soilColorArgb;
   PackedArgb32 waterColorArgb;
-  dword existingPixelArgb;
+  uint32_t existingPixelArgb;
   GraphicsTextureSourceAsset *panelTextureSource;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
-  byte *planePixelCursor;
+  uint8_t *planePixelCursor;
   FieldGridCell *fieldCell;
-  qword mm0PackedValue0;
-  qword mm0PackedValue2;
-  qword mm0PackedValue3;
-  qword mm0PackedValue1;
+  uint64_t mm0PackedValue0;
+  uint64_t mm0PackedValue2;
+  uint64_t mm0PackedValue3;
+  uint64_t mm0PackedValue1;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -933,7 +933,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
           mm0PackedValue3 =
                pmulhw(TerrainColor_UnpackBytesShiftRight(soilColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue3);
+          *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue3);
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7;
@@ -950,7 +950,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
           mm0PackedValue2 =
                pmulhw(TerrainColor_UnpackBytesShiftRight(tritiumColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue2);
+          *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue2);
         }
       }
       else {
@@ -968,7 +968,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         mm0PackedValue0 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(xeniteColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
+        *(uint32_t *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
@@ -984,12 +984,12 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         else {
           lightingLevelIndex = 0xbf;
         }
-        existingPixelArgb = *(dword *)planePixelCursor;
+        existingPixelArgb = *(uint32_t *)planePixelCursor;
         mm0PackedValue1 =
              pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
         /* PADDW with the existing pixel's bytes (PUNPCKLBW/PSRLW 8), PSRLW 1, PACKUSWB */
-        *(uint *)planePixelCursor =
+        *(uint32_t *)planePixelCursor =
              TerrainColor_PackWordsUnsignedSaturate
                        (TerrainColor_AverageWordsWithPixelBytes(mm0PackedValue1,existingPixelArgb));
       }
@@ -1015,23 +1015,23 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
 void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(void)
 
 {
-  byte visibilityFlags;
+  uint8_t visibilityFlags;
   AssetDimension textureWidth;
   AssetDimension textureHeight;
   WorldOwnerListNode100 *ownerNode;
   GameEntityRuntime *ownerEntity;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   GraphicsTextureSourceAsset *panelTextureSource;
-  uint pixelArgb;
+  uint32_t pixelArgb;
   int cellsRemainingOrRowQ12;
   int counterOrGridColumn;
   int gridRow;
-  dword colorVariant;
+  uint32_t colorVariant;
   AssetRelativeOffset assetOffset;
-  byte *pixelCursor;
+  uint8_t *pixelCursor;
   FieldGridCell *fieldCell;
-  byte *plane0Pixels;
-  byte *plane0WriteCursor;
+  uint8_t *plane0Pixels;
+  uint8_t *plane0WriteCursor;
   bool isSelected;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
@@ -1052,7 +1052,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
             assetRelativeAddressAnchor28 + (assetOffset - 0x28);
   plane0WriteCursor = plane0Pixels;
   for (counterOrGridColumn = cellsRemainingOrRowQ12; counterOrGridColumn != 0; counterOrGridColumn = counterOrGridColumn + -1) {
-    *(uint *)plane0WriteCursor = *(uint *)pixelCursor;
+    *(uint32_t *)plane0WriteCursor = *(uint32_t *)pixelCursor;
     pixelCursor = pixelCursor + 4;
     plane0WriteCursor = plane0WriteCursor + 4;
   }
@@ -1061,12 +1061,12 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
   pixelCursor = plane0Pixels;
   do {
     visibilityFlags = fieldCell->runtime60_6B[counterOrGridColumn + 0x10];
-    pixelArgb = (uint)visibilityFlags;
+    pixelArgb = (uint32_t)visibilityFlags;
     if ((visibilityFlags & 0x79) == 0) {
       if ((visibilityFlags & 0xf9) != 0) {
-        pixelArgb = (*(uint *)pixelCursor & 0xfefefefe) >> 1;
+        pixelArgb = (*(uint32_t *)pixelCursor & 0xfefefefe) >> 1;
       }
-      *(uint *)pixelCursor = pixelArgb;
+      *(uint32_t *)pixelCursor = pixelArgb;
     }
     fieldCell = fieldCell + 1;
     pixelCursor = pixelCursor + 4;
@@ -1091,14 +1091,14 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_RebuildPlane0(v
           if (!isSelected) {
             colorVariant = 0;
           }
-          pixelArgb = *(uint *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
+          pixelArgb = *(uint32_t *)(g_InGamePanelTextureSource[1].opaqueTablePayloadBC_1FF +
                            *(int *)((int)panelTextureSource[2].common.buildMetadata.names.sourceName +
                                    assetOffset + 0x18) * 0x20 + colorVariant * 8 + 0x44);
           if (ownerNode->modelTintArgb < 0xff000000) {
             pixelArgb = (pixelArgb & 0xfefefefe) +
-                    (*(uint *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & 0xfefefefe) >> 1;
+                    (*(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) & 0xfefefefe) >> 1;
           }
-          *(uint *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) = pixelArgb;
+          *(uint32_t *)(plane0Pixels + (gridRow * textureWidth + counterOrGridColumn) * 4) = pixelArgb;
         }
       }
     }

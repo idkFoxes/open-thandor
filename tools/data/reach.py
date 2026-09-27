@@ -10,7 +10,7 @@ import struct
 
 import common
 
-NUMERIC = re.compile(r'^(?:const )?(?:byte|word|dword|qword|short|ushort|int|uint|sdword|char|undefined[1248]?|'
+NUMERIC = re.compile(r'^(?:const )?(?:byte|word|dword|qword|short|ushort|int|uint|sdword|char|undefined[1248]?|u?int(?:8|16|32|64)_t|'
                      r'Q\d+|float|double|long|ulong|longlong|ulonglong|SoftwareBgraWordLanes|PackedArgb32)\s*'
                      r'(?:\(\*\)\[[^\]]*\](?:\[[^\]]*\])*)?\s*\*?$')
 

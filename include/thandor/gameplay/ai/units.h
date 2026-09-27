@@ -46,7 +46,7 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
 /* 0x0053B3E0 */
 void __thandor_preserve_eax
 AiUnitCommand_AssignWorkspacePoint
-          (dword *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+          (uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext);
 
 /* 0x0053B420 */

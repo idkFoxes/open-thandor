@@ -23,7 +23,7 @@ import struct
 
 import common
 
-NUMERIC = re.compile(r'^(?:const )?(?:byte|word|dword|qword|short|ushort|int|uint|sdword|char|undefined[1248]?|'
+NUMERIC = re.compile(r'^(?:const )?(?:byte|word|dword|qword|short|ushort|int|uint|sdword|char|undefined[1248]?|u?int(?:8|16|32|64)_t|'
                      r'Q\d+|float|double|long|ulong|longlong|ulonglong|SoftwareBgraWordLanes|PackedArgb32)\s*'
                      r'(?:\(\*\)\[[^\]]*\](?:\[[^\]]*\])*)?\s*\*?$')
 HEADER = ('/*\n * Open Thandor\n * Project: https://github.com/idkFoxes/open-thandor/tree/main\n'
@@ -118,7 +118,7 @@ for a in sorted(strings):
     if owner is None or owner[0] == a:
         continue
     t = types.get(owner[2], '')
-    if t and not re.match(r'^(?:word|char|byte|undefined[12]?)\s*(?:\*|\(\*\)\[)', t.strip()):
+    if t and not re.match(r'^(?:word|char|byte|uint16_t|uint8_t|int8_t|undefined[12]?)\s*(?:\*|\(\*\)\[)', t.strip()):
         continue
     # the next string of a list follows a terminator; otherwise Ghidra only broke the string at a
     # character it did not read as text (the 0xF6 of "erlöse" in g_DeveloperChatPhraseUtf16)
@@ -229,12 +229,12 @@ def address_expression(value):
     if owner is not None and ((owner[2] in macros and macros[owner[2]][1] == owner[0]) or
                               label_aliases.get(owner[2], (None,))[0] == owner[0]):
         offset = value - owner[0]
-        return '&%s' % owner[2] if offset == 0 else '(byte *)&%s + 0x%X' % (owner[2], offset)
+        return '&%s' % owner[2] if offset == 0 else '(uint8_t *)&%s + 0x%X' % (owner[2], offset)
     if value in member_at:
         k, member = member_at[value]
         return '&%s.%s' % (block_name(k), member)
     k = block_of(value)
-    return '(byte *)&%s + 0x%X' % (block_name(k), value - blocks[k][0])
+    return '(uint8_t *)&%s + 0x%X' % (block_name(k), value - blocks[k][0])
 
 # ---- initializers
 def c_string_literal(value, wide):
@@ -275,10 +275,10 @@ def string_member(start, end):
         return None
     rest = [byte_at(x) for x in range(start + len(encoded), end)]
     if not any(rest) and (end - start) % unit == 0:
-        return ('word' if wide else 'char', (end - start) // unit, literal, end - start)
+        return ('uint16_t' if wide else 'char', (end - start) // unit, literal, end - start)
     if all(b in (0, 0x90) for b in rest):
         # the string, then alignment padding (0x90) up to the next object
-        return ('word' if wide else 'char', len(encoded) // unit, literal, len(encoded))
+        return ('uint16_t' if wide else 'char', len(encoded) // unit, literal, len(encoded))
     return None
 
 pointers = []
@@ -293,13 +293,13 @@ def value_expression(field_addr, owner_numeric):
     value = dword_at(field_addr)
     if not owner_numeric and value in funcs:
         pointers.append((field_addr, value, 'function', funcs[value]))
-        return '(dword)%s' % funcs[value]
+        return '(uint32_t)%s' % funcs[value]
     # a UI vtable address is never a number: UI node images typed as plain words (the fatal error
     # dialog, g_UiDisplaySettingsRootTemplate) need it as a pointer
     if (not owner_numeric and (value in anchors or inner_pointer(value))) or value in ui_vtables:
         pointers.append((field_addr, value, 'data', ''))
         target = address_expression(value)
-        return '(dword)(%s)' % target if '+' in target else '(dword)%s' % target
+        return '(uint32_t)(%s)' % target if '+' in target else '(uint32_t)%s' % target
     return '0x%08X' % value
 
 def dword_list(start, count, numeric):
@@ -312,7 +312,7 @@ def dword_list(start, count, numeric):
     line = []
     for v in values:
         line.append(v)
-        if len(line) == 8 or v.startswith('(dword)'):
+        if len(line) == 8 or v.startswith('(uint32_t)'):
             lines.append(', '.join(line))
             line = []
     if line:
@@ -340,7 +340,9 @@ INT_SIZES = {'byte': 1, 'char': 1, 'uchar': 1, 'undefined': 1, 'undefined1': 1, 
              'unsigned char': 1, 'word': 2, 'short': 2, 'ushort': 2, 'undefined2': 2, 'unsigned short': 2,
              'dword': 4, 'int': 4, 'uint': 4, 'sdword': 4, 'undefined4': 4, 'long': 4, 'ulong': 4,
              'unsigned int': 4, 'unsigned long': 4, 'qword': 8, 'longlong': 8, 'ulonglong': 8,
-             'undefined8': 8, 'unsigned long long': 8, 'long long': 8}
+             'undefined8': 8, 'unsigned long long': 8, 'long long': 8,
+             'uint8_t': 1, 'int8_t': 1, 'uint16_t': 2, 'int16_t': 2, 'uint32_t': 4, 'int32_t': 4,
+             'uint64_t': 8, 'int64_t': 8, 'uintptr_t': 4}
 
 def resolve_type(t):
     t = t.strip()
@@ -639,7 +641,7 @@ def node_base_init(addr, typed_pointers, label):
             text = 'UI_TEMPLATE_NO_LINK' if value == 0xFFFFFFFF else 'UI_TEMPLATE_LINK(0x%X)' % value
         elif field['kind'] == 'pointer':
             text = scalar_init(field['type'], addr + field['offset'], typed_pointers)
-        elif field['type'] == 'sdword':
+        elif field['type'] in ('sdword', 'int32_t'):
             text = signed_literal(value)
         else:
             text = '0x%X' % value if value else '0'
@@ -676,7 +678,7 @@ def template_member(k, start, end, name, member):
         count = (piece_end - rest_start) // 4
         if count:
             label = node_member(type_name, piece_start)[0] + '_fields' if is_node else 'header'
-            fields.append('    dword %s[%d];' % (label, count))
+            fields.append('    uint32_t %s[%d];' % (label, count))
             before = len(pointers)
             inits.append('        %s,' % dword_list(start + rest_start, count, False).replace('\n        ',
                                                                                              '\n            '))
@@ -688,7 +690,7 @@ def template_member(k, start, end, name, member):
         '   type) a class field behind the UiNodeBase of the node. */\n'
         'typedef struct %s {\n%s\n} %s;\n'
         '#define %s(root, node) (&((%s *)(uintptr_t)(root))->node)\n'
-        '#define %s_FIELD(root, node, offset, type) (*(type *)((byte *)%s(root, node) + (offset)))\n' % (
+        '#define %s_FIELD(root, node, offset, type) (*(type *)((uint8_t *)%s(root, node) + (offset)))\n' % (
             name, len(nodes), prefix, prefix, type_name, '\n'.join(fields), type_name,
             prefix, type_name, prefix, prefix))
     return '    %s %s;' % (type_name, member), '{\n%s\n    }' % '\n'.join(inits), typed_pointers
@@ -711,13 +713,13 @@ for k, (a, b) in enumerate(blocks):
             decls.append('    %s %s[%d]; %s' % (ctype, member, count, comment))
             inits.append('    %s, %s' % (literal, comment))
             if start + used < end:
-                decls.append('    byte %s_padding[%d];' % (member, end - start - used))
+                decls.append('    uint8_t %s_padding[%d];' % (member, end - start - used))
                 inits.append('    %s,' % byte_list(start + used, end))
             continue
         if name in COMPUTED:
             count, tail = divmod(end - start, 4)
             assert not tail
-            decls.append('    dword %s[%d]; %s' % (member, count, comment))
+            decls.append('    uint32_t %s[%d]; %s' % (member, count, comment))
             inits.append('    {0}, /* %08X %s: filled at startup by %s */' % (start, name, COMPUTED[name]))
             continue
         template = template_member(k, start, end, name, member) if name else None
@@ -737,21 +739,21 @@ for k, (a, b) in enumerate(blocks):
             if typed_end < end:
                 rest_count, rest_tail = divmod(end - typed_end, 4)
                 if rest_count:
-                    decls.append('    dword %s_rest[%d]; /* beyond the declared type */' % (member, rest_count))
+                    decls.append('    uint32_t %s_rest[%d]; /* beyond the declared type */' % (member, rest_count))
                     inits.append('    %s,' % dword_list(typed_end, rest_count, numeric))
                 if rest_tail:
-                    decls.append('    byte %s_rest_tail[%d];' % (member, rest_tail))
+                    decls.append('    uint8_t %s_rest_tail[%d];' % (member, rest_tail))
                     inits.append('    %s,' % byte_list(typed_end + 4 * rest_count, end))
             continue
         count, tail = divmod(end - start, 4)
         if name is None or count == 0:
-            decls.append('    byte %s[%d]; %s' % (member, end - start, comment))
+            decls.append('    uint8_t %s[%d]; %s' % (member, end - start, comment))
             inits.append('    %s, %s' % (byte_list(start, end), comment))
             continue
-        decls.append('    dword %s[%d]; %s' % (member, count, comment))
+        decls.append('    uint32_t %s[%d]; %s' % (member, count, comment))
         inits.append('    %s, %s' % (dword_list(start, count, numeric), comment))
         if tail:
-            decls.append('    byte %s_tail[%d];' % (member, tail))
+            decls.append('    uint8_t %s_tail[%d];' % (member, tail))
             inits.append('    %s,' % byte_list(start + 4 * count, end))
     layout_lines.append(decls)
     init_lines.append(inits)
@@ -786,8 +788,8 @@ for addr in sorted(set(a for _, (_, a) in macros.items())):
         missing.append(addr)
 hdr.append('\n/* For OPEN_THANDOR_SELFTEST=imagecmp: each block with its original range, and every converted\n'
            '   pointer with its original location and value. */\n'
-           'typedef struct ThandorImageBlock { dword start; dword end; const byte *data; } ThandorImageBlock;\n'
-           'typedef struct ThandorImagePointer { dword location; dword originalValue; } ThandorImagePointer;\n'
+           'typedef struct ThandorImageBlock { uint32_t start; uint32_t end; const uint8_t *data; } ThandorImageBlock;\n'
+           'typedef struct ThandorImagePointer { uint32_t location; uint32_t originalValue; } ThandorImagePointer;\n'
            'extern const ThandorImageBlock g_ThandorImageBlocks[%d];\n'
            'extern const ThandorImagePointer g_ThandorImagePointers[%d];\n\n#endif\n' % (len(blocks), len(pointers)))
 open(os.path.join(common.REPO, 'include', 'thandor', 'generated', 'image_data.h'), 'w',
@@ -820,7 +822,7 @@ for k, (a, b) in enumerate(blocks):
     src.append('\nImageData_%08X %s = {\n%s\n};\n' % (a, block_name(k), '\n'.join(lines)))
 src.append('\nconst ThandorImageBlock g_ThandorImageBlocks[%d] = {\n' % len(blocks))
 for k, (a, b) in enumerate(blocks):
-    src.append('    {0x%08X, 0x%08X, (const byte *)&%s},\n' % (a, b, block_name(k)))
+    src.append('    {0x%08X, 0x%08X, (const uint8_t *)&%s},\n' % (a, b, block_name(k)))
 src.append('};\n\nconst ThandorImagePointer g_ThandorImagePointers[%d] = {\n' % len(pointers))
 for location, value, kind, name in pointers:
     src.append('    {0x%08X, 0x%08X},\n' % (location, value))
@@ -830,8 +832,8 @@ open(os.path.join(common.REPO, 'src', 'generated', 'image_data.c'), 'w', encodin
 with open(os.path.join(args.work, 'image_pointers.tsv'), 'w', encoding='utf-8') as f:
     for p in pointers:
         f.write('%08x\t%08x\t%s\t%s\n' % p)
-string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l and ('word ' in l or 'char ' in l)
-                   and not l.strip().startswith('dword'))
+string_count = sum(1 for lines in layout_lines for l in lines if ' = ' not in l and ('uint16_t ' in l or 'char ' in l)
+                   and not l.strip().startswith('uint32_t'))
 print('%d blocks, %d bytes, %d members (%d typed), %d function pointers, %d data pointers' % (
     len(blocks), sum(b - a for a, b in blocks), sum(len(m) for m in members), typed_count,
     sum(1 for p in pointers if p[2] == 'function'), sum(1 for p in pointers if p[2] == 'data')))

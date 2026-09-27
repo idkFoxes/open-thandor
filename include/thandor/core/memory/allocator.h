@@ -25,7 +25,7 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
 /* 0x00547D20 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DwordBlock64Array_ContainsExactRecordCf
-          (DwordBlockRecordCount recordCount,dword *recordArray,dword *candidateRecord);
+          (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);
 
 /* 0x005863C0 */
 void * __cdecl ArenaHeap_Init(void);
@@ -37,7 +37,7 @@ void __thandor_preserve_eax ArenaHeap_Shutdown(void);
 ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadByteCount bytes);
 
 /* 0x00586570 */
-dword __cdecl ArenaHeap_QueryFreeBytes(void);
+uint32_t __cdecl ArenaHeap_QueryFreeBytes(void);
 
 /* 0x005865B0 */
 ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory);

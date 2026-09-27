@@ -15,25 +15,25 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00578270 */
-sdword __stdcall Direct3D_EnumDeviceCallback (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName, D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc, GraphicsAdapterRecord *adapterContext);
+int32_t __stdcall Direct3D_EnumDeviceCallback (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName, D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc, GraphicsAdapterRecord *adapterContext);
 
 /* 0x00578820 */
 /* Called by IDirect3DDevice2::EnumTextureFormats: __stdcall (the original returns with RET 8). */
-sdword __stdcall
+int32_t __stdcall
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context);
 
 /* 0x0057A450 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetAntialiasMode(dword antialiasMode);
+Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode);
 
 /* 0x0057A4C0 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTextureFilterMode(dword textureFilterMode);
+Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode);
 
 /* 0x0057A550 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTexturePerspectiveEnabled(dword texturePerspectiveEnabled);
+Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled);
 
 /* 0x0057CCB0 */
 void __thandor_void_preserve_eax_ecx_edx

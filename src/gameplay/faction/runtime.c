@@ -20,14 +20,14 @@
 */
 void __thandor_void_preserve_eax_ecx
 GameFactionRuntime_AdvancePairwiseRelationState
-          (dword unusedRelationArgument0,dword unusedRelationArgument1,
+          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   bool isRecentTimedState;
   
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
-         ((byte)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
+         ((uint8_t)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
   case 2:
     isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
@@ -81,12 +81,12 @@ GameFactionRuntime_AdvancePairwiseRelationState
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ResetPairwiseRelationState
-          (dword unusedRelationArgument0,dword unusedRelationArgument1,
+          (uint32_t unusedRelationArgument0,uint32_t unusedRelationArgument1,
           FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
-         ((byte)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
+         ((uint8_t)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
   case 1:
   case 2:
   case 3:
@@ -127,24 +127,24 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
 
 {
   WorldOwnerListNode100 *ownerNode;
-  dword unitFactionOrAssetId;
-  uint carryOverMaskBits;
-  dword distanceToAnchor;
+  uint32_t unitFactionOrAssetId;
+  uint32_t carryOverMaskBits;
+  uint32_t distanceToAnchor;
   int remainingOrWorldY;
-  uint skipMaskBits;
+  uint32_t skipMaskBits;
   int copyCountOrAnchorY;
   int scenarioRecord;
   int groupFieldCursorOrOffsetY;
   /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
      all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
   int staleCallerEsi = 0;
-  dword *sourceOrRecordCursor;
-  dword *secondaryTableCursor;
+  uint32_t *sourceOrRecordCursor;
+  uint32_t *secondaryTableCursor;
   bool scenarioFound;
 
   scenarioFound = false;
   if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
-     (sourceOrRecordCursor = (dword *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+     (sourceOrRecordCursor = (uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                          staleCallerEsi *
                          (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex),
      g_FrontendLoadedCampaignAsset != 0)) {
@@ -164,8 +164,8 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
     return;
   }
   groupFieldCursorOrOffsetY = scenarioRecord + 0x200;
-  carryOverMaskBits = *(uint *)(scenarioRecord + 0x304) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
-  skipMaskBits = *(uint *)(scenarioRecord + 0x308) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
+  carryOverMaskBits = *(uint32_t *)(scenarioRecord + 0x304) >> ((uint8_t)g_EndMovieSelectionIndex & 0x1f);
+  skipMaskBits = *(uint32_t *)(scenarioRecord + 0x308) >> ((uint8_t)g_EndMovieSelectionIndex & 0x1f);
   secondaryTableCursor = g_OldUnitSecondaryTable;
   /* Eight groups, one per faction record. The masks are not shifted per group (as in the original). */
   for (remainingOrWorldY = 8; remainingOrWorldY != 0; remainingOrWorldY = remainingOrWorldY + -1) {
@@ -196,7 +196,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
      (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
     for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-          (unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
+          (unitFactionOrAssetId = *(uint32_t *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
           0 < *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) &&
          (distanceToAnchor = FixedMath_Length2(*(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4) - ownerNode->worldYQ12,
                                     *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4) - ownerNode->worldXQ12),
@@ -209,7 +209,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
         sourceOrRecordCursor[3] = (remainingOrWorldY + groupFieldCursorOrOffsetY) - copyCountOrAnchorY;
         sourceOrRecordCursor[1] = unitFactionOrAssetId;
         if (*(int *)((int)ownerNode->runtimePayload + 0xf0) == 0) {
-          unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
+          unitFactionOrAssetId = *(uint32_t *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
           sourceOrRecordCursor[4] = ownerNode->modelLocalRotationAngle2;
           *sourceOrRecordCursor = unitFactionOrAssetId;
           g_OldUnitRecordCount = g_OldUnitRecordCount + 1;
@@ -241,7 +241,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
   int groupSlotsRemaining;
   GameFactionRuntimeImage *factionRecordCursor;
   ArmyAssetRecordPrefix **unusedAssetCursorA;
-  dword *assetIdCursor;
+  uint32_t *assetIdCursor;
   ArmyAssetRecordPrefix **unusedAssetCursorB;
   ArmyRuntimeSlot **groupSlotCursor;
   ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
@@ -256,7 +256,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
         factionRecordCursor->records[0].secondaryArmyAssetCount = 0;
         break;
       }
-      *assetIdCursor = (dword)resolvedAsset.eax;
+      *assetIdCursor = (uint32_t)resolvedAsset.eax;
       assetIdCursor = assetIdCursor + 1;
     }
     assetIdCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
@@ -266,7 +266,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
         factionRecordCursor->records[0].primaryArmyAssetCount = 0;
         break;
       }
-      *assetIdCursor = (dword)resolvedAsset.eax;
+      *assetIdCursor = (uint32_t)resolvedAsset.eax;
       assetIdCursor = assetIdCursor + 1;
     }
     groupSlotCursor = factionRecordCursor->records[0].runtimeGroupMembers8x32;
@@ -335,11 +335,11 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 GameFactionRuntime_TestCapabilityBitClearCf
-          (dword capabilityBitIndex,FactionRuntimeIndex factionIndex)
+          (uint32_t capabilityBitIndex,FactionRuntimeIndex factionIndex)
 
 {
   return (g_GameFactionRuntimeImage.records[factionIndex].capabilityFlags &
-         1 << ((byte)capabilityBitIndex & 0x1f)) == 0;
+         1 << ((uint8_t)capabilityBitIndex & 0x1f)) == 0;
 }
 
 
@@ -354,7 +354,7 @@ GameFactionRuntime_GetPackedStateNibble
 
 {
   return g_GameFactionRuntimeImage.records[factionIndex].packedRelationStates >>
-         ((byte)(otherFactionIndex << 2) & 0x1f) & 0xf;
+         ((uint8_t)(otherFactionIndex << 2) & 0x1f) & 0xf;
 }
 
 
@@ -372,11 +372,11 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
 {
   int otherRecordBase;
   int carryBit;
-  uint bitMask;
-  uint maskWordIndex;
+  uint32_t bitMask;
+  uint32_t maskWordIndex;
   TechnologyId otherTechnologyIndex;
-  uint otherFactionIndex;
-  uint sourceFactionIndex;
+  uint32_t otherFactionIndex;
+  uint32_t sourceFactionIndex;
   TechnologyId sourceTechnologyIndex;
   int sourceRecordBase;
   
@@ -386,7 +386,7 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
     otherRecordBase = sourceRecordBase;
     for (otherFactionIndex = sourceFactionIndex + 1; otherFactionIndex < 8;
         otherFactionIndex = otherFactionIndex + 1) {
-      switch(*(uint *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
+      switch(*(uint32_t *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
       case 8:
       case 9:
       case 10:
@@ -396,8 +396,8 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
         maskWordIndex = 0;
         sourceTechnologyIndex = 0;
         do {
-          if (((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) != 0) &&
-             ((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) == 0)) break;
+          if (((*(uint32_t *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) != 0) &&
+             ((*(uint32_t *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) == 0)) break;
           carryBit = (int)bitMask >> 0x1f;
           bitMask = bitMask << 1 | -carryBit;
           maskWordIndex = maskWordIndex + (-carryBit != 0);
@@ -409,8 +409,8 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
           bitMask = 1;
           otherTechnologyIndex = 0;
           do {
-            if (((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) != 0) &&
-               ((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) == 0)) {
+            if (((*(uint32_t *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) != 0) &&
+               ((*(uint32_t *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) == 0)) {
               Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
               Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
               break;
@@ -536,12 +536,12 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
   TerrainExploredPercent exploredPercent;
   ResourceExtractionRateQ4PerTick xeniteRate;
   int tallyOrComponent;
-  uint cellOrTechnologyCount;
+  uint32_t cellOrTechnologyCount;
   FactionTechnologyCount technologyCountBeyondBaseline;
-  uint cellsLeftOrBitOrRate;
+  uint32_t cellsLeftOrBitOrRate;
   int tritiumComponentOrModelRecord;
-  byte *cellVisibilityCursor;
-  uint maskWordIndex;
+  uint8_t *cellVisibilityCursor;
+  uint32_t maskWordIndex;
   ArmyRegistryEaxCf5_51b6d0 resolvedAsset;
   FieldGridAsset *terrainGrid;
   WorldOwnerListNode100 *ownerNode;
@@ -559,13 +559,13 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
     cellsLeftOrBitOrRate = cellsLeftOrBitOrRate - 1;
   } while (cellsLeftOrBitOrRate != 0);
   g_GameFactionRuntimeImage.records[factionIndex].exploredTerrainPercent =
-       (uint)(tallyOrComponent * 100) / cellOrTechnologyCount;
+       (uint32_t)(tallyOrComponent * 100) / cellOrTechnologyCount;
   cellsLeftOrBitOrRate = 1;
   cellOrTechnologyCount = 0;
   maskWordIndex = 0;
   do {
     do {
-      if ((*(uint *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + maskWordIndex * 4) & cellsLeftOrBitOrRate) != 0) {
+      if ((*(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + maskWordIndex * 4) & cellsLeftOrBitOrRate) != 0) {
         cellOrTechnologyCount = cellOrTechnologyCount + 1;
       }
       cellsLeftOrBitOrRate = cellsLeftOrBitOrRate * 2;
@@ -625,7 +625,7 @@ GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeE
 
 {
   int slotsRemaining;
-  uint groupNumber;
+  uint32_t groupNumber;
   ArmyRuntimeSlot **slotCursor;
   ArmyRuntimeSlot **nextSlotCursor;
   bool found;
@@ -654,7 +654,7 @@ GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeE
     }
     if (7 < groupNumber) {
       notFoundResult.carry = true;
-      notFoundResult.runtimeGroupIndex = (dword)runtimeEntry;
+      notFoundResult.runtimeGroupIndex = (uint32_t)runtimeEntry;
       return notFoundResult;
     }
   } while( true );
@@ -675,7 +675,7 @@ FactionRuntime_HasArmyAssetOrActiveStructureCf
   WorldOwnerListNode100 *ownerNode;
   int *modelPayload;
   FactionArmyAssetCount assetsRemaining;
-  dword *assetIdCursor;
+  uint32_t *assetIdCursor;
   bool matched;
   
   assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
@@ -747,7 +747,7 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
 
 {
   GameEntityRuntime *commandTargetEntity;
-  uint visibilityMask;
+  uint32_t visibilityMask;
   int *targetDefinitionRecord;
   ModelRuntimeNode *targetModelNode;
   WorldPositionEaxEcxEdxCf13 position;
@@ -770,9 +770,9 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
   else {
     commandTargetEntity = (targetState->common).commandTarget.targetEntity;
     if (commandTargetEntity != (GameEntityRuntime *)0x0) {
-      visibilityMask = 2u << ((byte)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
+      visibilityMask = 2u << ((uint8_t)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
       targetDefinitionRecord = (commandTargetEntity->common).ownership.definitionOrClassRecord;
-      if ((*(uint *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
+      if ((*(uint32_t *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
         targetModelNode = (commandTargetEntity->common).ownership.modelNode;
         if (*(int *)(*targetDefinitionRecord + 0x4c) == 0x15) {
           targetModelNode = targetModelNode->childNodes[0];
@@ -910,7 +910,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RegisterArmyAssetPointers
-          (dword reservedDword0,FactionArmyAssetCount repetitionCount,
+          (uint32_t reservedDword0,FactionArmyAssetCount repetitionCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
@@ -948,7 +948,7 @@ GameFactionRuntime_RegisterArmyAssetPointers
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
-          (dword reservedDword0,FactionArmyAssetCount requestedCount,
+          (uint32_t reservedDword0,FactionArmyAssetCount requestedCount,
           PckArmyAssetIdCatalog armyAssetId,FactionRuntimeIndex factionIndex)
 
 {
@@ -982,7 +982,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
         goto 
         GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation;
       }
-      *(dword *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(dword *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
+      *(uint32_t *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(uint32_t *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
       readIndexOrClassId = readIndexOrClassId + 1;
       writeIndex = writeIndex + 1;
     }
@@ -1001,7 +1001,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
             if ((factionIndex == *(int *)(modelPayload[2] + 0xc)) && (readIndexOrClassId == *(int *)(*modelPayload + 0x4c)))
             {
               if (readIndexOrClassId == 0xd) {
-                if ((((*(uint *)(*modelPayload + 0xc4) &
+                if ((((*(uint32_t *)(*modelPayload + 0xc4) &
                       armyDefinition[1].selectionDetailTemplateVariantIndex) != 0) &&
                     (armyDefinition->registryId == modelPayload[0x18])) && (modelPayload[0x2e] == 1)) {
                   modelPayload[0x3d] = modelPayload[0x3d] - modelPayload[0x1d];
@@ -1071,7 +1071,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
-          (PlayerRuntimeId playerRuntimeId,dword reservedDword04,PckArmyAssetIdCatalog armyAssetId,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedDword04,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
 {
@@ -1089,15 +1089,15 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
     byteOffsetOrActiveFaction = factionIndex * 0x740;
     assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-    playerBlock->pendingSelectionEntityOffset8098 = (dword)armyDefinition;
+    playerBlock->pendingSelectionEntityOffset8098 = (uint32_t)armyDefinition;
     for (; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
       if (armyDefinition ==
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
-          *(dword *)
+          *(uint32_t *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
-               *(dword *)
+               *(uint32_t *)
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
@@ -1115,7 +1115,7 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           return;
         }
         g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x20;
-        g_InGamePendingPlacementArmyAsset = (sdword)armyDefinition;
+        g_InGamePendingPlacementArmyAsset = (int32_t)armyDefinition;
         g_InGamePlacementSurfaceHeightQ12OrSentinel = 0x7fffffff;
         return;
       }
@@ -1136,13 +1136,13 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
-          (PlayerRuntimeId playerRuntimeId,dword unusedConsumeArgument0,dword unusedConsumeArgument1
+          (PlayerRuntimeId playerRuntimeId,uint32_t unusedConsumeArgument0,uint32_t unusedConsumeArgument1
           ,FactionRuntimeIndex factionIndex)
 
 {
   FactionArmyAssetCount *primaryCount;
-  dword pendingAsset;
-  uint assetCount;
+  uint32_t pendingAsset;
+  uint32_t assetCount;
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   
   LOCK();
@@ -1153,7 +1153,7 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
   if (pendingAsset != 0) {
     assetCount = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
     if (assetCount < 0x40) {
-      *(dword *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + assetCount * 4) = pendingAsset;
+      *(uint32_t *)(factionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + assetCount * 4) = pendingAsset;
       primaryCount = &g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
       *primaryCount = *primaryCount + 1;
     }
@@ -1181,7 +1181,7 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
-          (dword unusedSaleArgument0,dword unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
+          (uint32_t unusedSaleArgument0,uint32_t unusedSaleArgument1,PckArmyAssetIdCatalog armyAssetId,
           FactionRuntimeIndex factionIndex)
 
 {
@@ -1201,9 +1201,9 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
-          *(dword *)
+          *(uint32_t *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
-               *(dword *)
+               *(uint32_t *)
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
@@ -1270,7 +1270,7 @@ PlayerRuntime_ResolveAndStoreState8094
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8090
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           PlayerState8090Value stateValue)
 
 {
@@ -1288,7 +1288,7 @@ PlayerRuntime_SetState8090
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_SetState8094
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           PlayerState8094Value stateValue)
 
 {
@@ -1304,8 +1304,8 @@ PlayerRuntime_SetState8094
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ClearState8094
-          (PlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
-          dword reservedZero2)
+          (PlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
+          uint32_t reservedZero2)
 
 {
   g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094 = 0;
@@ -1327,14 +1327,14 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
 
 {
   InGameRuntimeRootImageC3E4 *runtimeRoot;
-  dword *nextMaskCursor;
+  uint32_t *nextMaskCursor;
   int factionsRemaining;
   OldUnitRecordCount recordsRemaining;
   int wordsRemaining;
   WorldRuntimeContext *worldRuntime;
-  dword *secondaryCursor;
-  dword *primaryRecordCursor;
-  dword *maskCursor;
+  uint32_t *secondaryCursor;
+  uint32_t *primaryRecordCursor;
+  uint32_t *maskCursor;
   
   factionsRemaining = 8;
   wordsRemaining = 8;
@@ -1387,7 +1387,7 @@ GameFactionRuntime_IsRecentTimedRelationStateCf
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {
-  uint relationStateNibble;
+  uint32_t relationStateNibble;
   
   relationStateNibble =
        g_GameFactionRuntimeImage.records[factionIndex].packedRelationStates >>
@@ -1410,7 +1410,7 @@ void __thandor_void_preserve_eax_ecx OldUnitRuntime_ResetPendingTables(void)
 
 {
   int tableEntriesRemaining;
-  dword *tableCursor;
+  uint32_t *tableCursor;
   
   tableCursor = g_OldUnitSecondaryTable;
   for (tableEntriesRemaining = 0x40; tableEntriesRemaining != 0;
@@ -1453,31 +1453,31 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   TritiumAmountQ4 *tritiumField;
   XeniteAmountQ4 *xeniteField;
   EnergyAmountQ4 *energyField;
-  dword *technologyMaskWord;
+  uint32_t *technologyMaskWord;
   FactionRelationCounter *relationCounter;
   FactionArmyAssetCount *armyAssetCount;
   TritiumAmountQ4 tritiumAmount;
   XeniteAmountQ4 xeniteLimit;
   TritiumAmountQ4 tritiumLimit;
   EnergyAmountQ4 energyCapacity;
-  uint trailingMaskWord;
+  uint32_t trailingMaskWord;
   int counterValueBOrE;
   int counterValueF;
   InGameSimulationTick currentTick;
   FactionRuntimeIndex originalFirstFactionIndex;
-  uint bitOrPlayerCountOrSlot;
-  dword randomValue;
+  uint32_t bitOrPlayerCountOrSlot;
+  uint32_t randomValue;
   bool swapMergeDirection;
-  byte secondShift;
-  byte firstShift;
+  uint8_t secondShift;
+  uint8_t firstShift;
   FactionArmyAssetCount assetsRemaining;
-  uint playerCountOrMaskWord;
+  uint32_t playerCountOrMaskWord;
   FrontendPlayerRuntimeRecord *playerBlockCursor;
   int recordOrCountOrIndex;
   FrontendPlayerRuntimeBlockCount playerBlocksRemaining;
   FieldGridCell *gridCell;
-  dword primaryArmyAssetReferenceDword;
-  dword secondaryArmyAssetReferenceDword;
+  uint32_t primaryArmyAssetReferenceDword;
+  uint32_t secondaryArmyAssetReferenceDword;
   GraphicsTextureSet *survivingFactionTextureSet;
   GraphicsPaletteAsset *survivingFactionPaletteAsset;
   FieldGridAsset *terrainGrid;
@@ -1491,8 +1491,8 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == firstFactionIndex) {
     InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,2,activeFactionCodeForFirst + 500);
   }
-  secondShift = (byte)secondFactionIndex * '\x04';
-  firstShift = (byte)firstFactionIndex * '\x04';
+  secondShift = (uint8_t)secondFactionIndex * '\x04';
+  firstShift = (uint8_t)firstFactionIndex * '\x04';
   g_GameFactionRuntimeImage.records[firstFactionIndex].packedRelationStates =
        stateFirstTowardSecond << (secondShift & 0x1f) |
        ~(0xf << (secondShift & 0x1f)) &
@@ -1501,7 +1501,7 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
        ~(0xf << (firstShift & 0x1f)) &
        g_GameFactionRuntimeImage.records[secondFactionIndex].packedRelationStates |
        stateSecondTowardFirst << (firstShift & 0x1f);
-  bitOrPlayerCountOrSlot = 1 << ((byte)secondFactionIndex & 0x1f);
+  bitOrPlayerCountOrSlot = 1 << ((uint8_t)secondFactionIndex & 0x1f);
   if (stateSecondTowardFirst < 4) {
     capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
     *capabilityFlagsField = *capabilityFlagsField & ~bitOrPlayerCountOrSlot;
@@ -1510,7 +1510,7 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
     capabilityFlagsField = &g_GameFactionRuntimeImage.records[firstFactionIndex].capabilityFlags;
     *capabilityFlagsField = *capabilityFlagsField | bitOrPlayerCountOrSlot;
   }
-  bitOrPlayerCountOrSlot = 1 << ((byte)firstFactionIndex & 0x1f);
+  bitOrPlayerCountOrSlot = 1 << ((uint8_t)firstFactionIndex & 0x1f);
   if (stateSecondTowardFirst < 4) {
     capabilityFlagsField = &g_GameFactionRuntimeImage.records[secondFactionIndex].capabilityFlags;
     *capabilityFlagsField = *capabilityFlagsField & ~bitOrPlayerCountOrSlot;
@@ -1663,10 +1663,10 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   recordOrCountOrIndex = 0;
   for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
       (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < 0x40)); bitOrPlayerCountOrSlot = bitOrPlayerCountOrSlot + 1) {
-    primaryArmyAssetReferenceDword = *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + recordOrCountOrIndex * 4);
+    primaryArmyAssetReferenceDword = *(uint32_t *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + recordOrCountOrIndex * 4);
     armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].primaryArmyAssetCount;
     *armyAssetCount = *armyAssetCount + 1;
-    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + bitOrPlayerCountOrSlot * 4) = primaryArmyAssetReferenceDword;
+    *(uint32_t *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0x1e0) + bitOrPlayerCountOrSlot * 4) = primaryArmyAssetReferenceDword;
     recordOrCountOrIndex = recordOrCountOrIndex + 1;
     assetsRemaining = assetsRemaining - 1;
   }
@@ -1675,10 +1675,10 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   for (bitOrPlayerCountOrSlot = g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
       (assetsRemaining != 0 && (bitOrPlayerCountOrSlot < 0x40)); bitOrPlayerCountOrSlot = bitOrPlayerCountOrSlot + 1) {
     secondaryArmyAssetReferenceDword =
-         *(dword *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + recordOrCountOrIndex * 4);
+         *(uint32_t *)(secondFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + recordOrCountOrIndex * 4);
     armyAssetCount = &g_GameFactionRuntimeImage.records[firstFactionIndex].secondaryArmyAssetCount;
     *armyAssetCount = *armyAssetCount + 1;
-    *(dword *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + bitOrPlayerCountOrSlot * 4) = secondaryArmyAssetReferenceDword
+    *(uint32_t *)(firstFactionIndex * 0x740 + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + bitOrPlayerCountOrSlot * 4) = secondaryArmyAssetReferenceDword
     ;
     recordOrCountOrIndex = recordOrCountOrIndex + 1;
     assetsRemaining = assetsRemaining - 1;

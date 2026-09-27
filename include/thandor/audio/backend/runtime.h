@@ -56,7 +56,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 SoundBackendDisabled_IsVoicePlaying(IDirectSoundBuffer *voice);
 
 /* 0x00417600 */
-qword SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice);
+uint64_t SoundBackendDisabled_QueryVoiceRegs(IDirectSoundBuffer *voice);
 
 /* 0x00417610 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -80,7 +80,7 @@ SoundCreatePcmVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreatePcmVoiceSet
           (AudioBufferByteCount bufferByteCount,AudioSampleRateHz sampleRateHz,
           AudioBitsPerSampleStack32 bitsPerSample,AudioChannelCountStack32 channelCount,
-          dword *pcmData);
+          uint32_t *pcmData);
 
 /* 0x005838D0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -108,7 +108,7 @@ bool __thandor_cf_preserve_eax_ecx_edx DirectSound_IsVoicePlaying(IDirectSoundBu
 void __thandor_void_preserve_eax_ecx_edx DirectSound_StopAllVoices(void);
 
 /* 0x00583C60 */
-qword DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice);
+uint64_t DirectSound_QueryVoiceRegsStub(IDirectSoundBuffer *voice);
 
 /* 0x00583C70 */
 void __thandor_void_preserve_eax_ecx_edx

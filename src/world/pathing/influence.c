@@ -161,7 +161,7 @@ GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entity
 {
   int cellsRemaining;
   int nextCellsRemaining;
-  dword *scratchRecordCursor;
+  uint32_t *scratchRecordCursor;
   bool fullBlockRemaining;
   
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
@@ -215,12 +215,12 @@ GridInfluence_SetLowDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong fixedPointProduct;
-  uint scanGridMetric1;
-  uint scaledYOrLeftScanMetric;
+  int64_t fixedPointProduct;
+  uint32_t scanGridMetric1;
+  uint32_t scaledYOrLeftScanMetric;
   int cellRowOrScanValue;
-  uint centerScanMetric1;
-  uint scanGridMetric0;
+  uint32_t centerScanMetric1;
+  uint32_t scanGridMetric0;
   int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
@@ -244,18 +244,18 @@ GridInfluence_SetLowDistanceBandsAroundWorldPoint
        (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
        (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
-  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  scaledYOrLeftScanMetric = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  radiusColumnOrScanValue = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
   if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
       (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
     scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
     cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
-    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
-    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
-    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
-    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    fixedPointProduct = (int64_t)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x13 | (uint32_t)fixedPointProduct >> 0xd;
+    fixedPointProduct = (int64_t)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x14 | (uint32_t)fixedPointProduct >> 0xc;
     scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
@@ -335,12 +335,12 @@ GridInfluence_SetHighDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong fixedPointProduct;
-  uint scanGridMetric1;
-  uint scaledYOrLeftScanMetric;
+  int64_t fixedPointProduct;
+  uint32_t scanGridMetric1;
+  uint32_t scaledYOrLeftScanMetric;
   int cellRowOrScanValue;
-  uint centerScanMetric1;
-  uint scanGridMetric0;
+  uint32_t centerScanMetric1;
+  uint32_t scanGridMetric0;
   int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
@@ -364,18 +364,18 @@ GridInfluence_SetHighDistanceBandsAroundWorldPoint
        (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
        (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
-  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  scaledYOrLeftScanMetric = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  radiusColumnOrScanValue = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
   if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
       (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
     scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
     cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
-    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
-    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
-    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
-    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    fixedPointProduct = (int64_t)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x13 | (uint32_t)fixedPointProduct >> 0xd;
+    fixedPointProduct = (int64_t)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x14 | (uint32_t)fixedPointProduct >> 0xc;
     scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
@@ -455,12 +455,12 @@ GridInfluence_ClearLowDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong fixedPointProduct;
-  uint scanGridMetric1;
-  uint scaledYOrLeftScanMetric;
+  int64_t fixedPointProduct;
+  uint32_t scanGridMetric1;
+  uint32_t scaledYOrLeftScanMetric;
   int cellRowOrScanValue;
-  uint centerScanMetric1;
-  uint scanGridMetric0;
+  uint32_t centerScanMetric1;
+  uint32_t scanGridMetric0;
   int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
@@ -484,18 +484,18 @@ GridInfluence_ClearLowDistanceBandsAroundWorldPoint
        (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
        (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
-  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  scaledYOrLeftScanMetric = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  radiusColumnOrScanValue = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
   if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
       (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
     scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
     cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
-    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
-    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
-    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
-    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    fixedPointProduct = (int64_t)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x13 | (uint32_t)fixedPointProduct >> 0xd;
+    fixedPointProduct = (int64_t)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x14 | (uint32_t)fixedPointProduct >> 0xc;
     scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
@@ -575,12 +575,12 @@ GridInfluence_ClearHighDistanceBandsAroundWorldPoint
           (FieldGridRadiusUnits radiusMetric,Q12 worldYQ12,Q12 worldXQ12)
 
 {
-  longlong fixedPointProduct;
-  uint scanGridMetric1;
-  uint scaledYOrLeftScanMetric;
+  int64_t fixedPointProduct;
+  uint32_t scanGridMetric1;
+  uint32_t scaledYOrLeftScanMetric;
   int cellRowOrScanValue;
-  uint centerScanMetric1;
-  uint scanGridMetric0;
+  uint32_t centerScanMetric1;
+  uint32_t scanGridMetric0;
   int walkResult;
   GridScratchCell *scratchCell1;
   GridScratchCell *scratchCell3;
@@ -604,18 +604,18 @@ GridInfluence_ClearHighDistanceBandsAroundWorldPoint
        (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset6 + radiusColumnOrScanValue);
   g_GridInfluenceSquaredThreshold7 =
        (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue) * (g_GridInfluenceRadiusOffset7 + radiusColumnOrScanValue);
-  scaledYOrLeftScanMetric = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-          (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-  radiusColumnOrScanValue = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                 (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
+  scaledYOrLeftScanMetric = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+          (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+  radiusColumnOrScanValue = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                 (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - scaledYOrLeftScanMetric) + 0x800) >> 10;
   if ((((-1 < radiusColumnOrScanValue) && (cellRowOrScanValue = (int)(scaledYOrLeftScanMetric * 2 + 0x800) >> 10, -1 < cellRowOrScanValue)) &&
       (radiusColumnOrScanValue < (int)g_GridScratchWidth)) && (cellRowOrScanValue < (int)g_GridScratchHeight)) {
     scratchCell1 = g_GridScratchPrimary + g_GridScratchWidth * cellRowOrScanValue + radiusColumnOrScanValue;
     cellRowOrScanValue = cellRowOrScanValue * 0x400 + -0x600;
-    fixedPointProduct = (longlong)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
-    centerScanMetric1 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x13 | (uint)fixedPointProduct >> 0xd;
-    fixedPointProduct = (longlong)cellRowOrScanValue * -1999;
-    scanGridMetric0 = (int)((ulonglong)fixedPointProduct >> 0x20) << 0x14 | (uint)fixedPointProduct >> 0xc;
+    fixedPointProduct = (int64_t)(cellRowOrScanValue + (radiusColumnOrScanValue * 0x400 + -0x600) * 2) * 0x901;
+    centerScanMetric1 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x13 | (uint32_t)fixedPointProduct >> 0xd;
+    fixedPointProduct = (int64_t)cellRowOrScanValue * -1999;
+    scanGridMetric0 = (int)((uint64_t)fixedPointProduct >> 0x20) << 0x14 | (uint32_t)fixedPointProduct >> 0xc;
     scaledYOrLeftScanMetric = centerScanMetric1;
     scratchCell2 = scratchCell1;
     if ((scratchCell1->stateMask & 0x80000000) == 0) {
@@ -691,13 +691,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -705,14 +705,14 @@ GridInfluence_SetLowDistanceBandsDiagonalNegative
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -739,13 +739,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -753,14 +753,14 @@ GridInfluence_SetLowDistanceBandsDiagonalPositive
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -787,13 +787,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -801,14 +801,14 @@ GridInfluence_SetHighDistanceBandsDiagonalNegative
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -835,13 +835,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_SetHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -849,14 +849,14 @@ GridInfluence_SetHighDistanceBandsDiagonalPositive
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -883,13 +883,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -897,14 +897,14 @@ GridInfluence_ClearLowDistanceBandsDiagonalNegative
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -931,13 +931,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearLowDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -945,14 +945,14 @@ GridInfluence_ClearLowDistanceBandsDiagonalPositive
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -979,13 +979,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalNegative
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -993,14 +993,14 @@ GridInfluence_ClearHighDistanceBandsDiagonalNegative
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;
@@ -1027,13 +1027,13 @@ int __thandor_void_preserve_eax_ecx_edx
 GridInfluence_ClearHighDistanceBandsDiagonalPositive
           (FieldGridCellCoordinate centerGridMetric0,FieldGridCellCoordinate centerGridMetric1,
           FieldGridCellCoordinate scanGridMetric0,FieldGridCellCoordinate scanGridMetric1,
-          uint *scratchCell)
+          uint32_t *scratchCell)
 
 {
   int bandMaskOrNextStep;
   int metric0DeltaSquared;
   int cellsWritten;
-  uint squaredDistanceMetric;
+  uint32_t squaredDistanceMetric;
   
   metric0DeltaSquared = (scanGridMetric0 - centerGridMetric0) * (scanGridMetric0 - centerGridMetric0);
   bandMaskOrNextStep = 0;
@@ -1041,14 +1041,14 @@ GridInfluence_ClearHighDistanceBandsDiagonalPositive
     cellsWritten = bandMaskOrNextStep;
     squaredDistanceMetric =
          metric0DeltaSquared + (scanGridMetric1 - centerGridMetric1) * (scanGridMetric1 - centerGridMetric1);
-    bandMaskOrNextStep = (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
-            ((uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
-            (uint)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
+    bandMaskOrNextStep = (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold0) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold1) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold2) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold3) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold4) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold5) +
+            ((uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold6) +
+            (uint32_t)(squaredDistanceMetric <= g_GridInfluenceSquaredThreshold7) * 2) * 2) * 2) * 2) *
             2) * 2) * 2;
     if (bandMaskOrNextStep == 0) {
       return cellsWritten;

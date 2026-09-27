@@ -8,7 +8,7 @@
 #include <thandor/world/model/hierarchy.h>
 #include <thandor/thandor.h>
 
-static void ModelRuntimeHierarchy_ApplyFlags418From(byte *node);
+static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node);
 
 /* Implementation ownership: world/model/hierarchy. */
 
@@ -22,10 +22,10 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  byte *clampTable;
-  byte clampedColorByte;
-  byte clampedAlphaByte;
-  uint flagsOrPreviousTint;
+  uint8_t *clampTable;
+  uint8_t clampedColorByte;
+  uint8_t clampedAlphaByte;
+  uint32_t flagsOrPreviousTint;
   int colorIntensity;
   PackedArgb32 tintArgb;
   int alphaIntensity;
@@ -51,11 +51,11 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
   flagsOrPreviousTint = modelNodeRuntime->tintArgb;
   /* The clamp table is 64-KiB aligned: the original puts the target intensity in AL/BL and the previous
      tint byte in AH/BH, i.e. indexes it with (previous << 8) | target. */
-  clampTable = (byte *)g_GraphicsIntensityClampTableBase;
-  clampedColorByte = clampTable[((flagsOrPreviousTint >> 0x10) & 0xff) << 8 | (uint)colorIntensity];
-  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 0x18) << 8 | (uint)alphaIntensity];
-  tintArgb = (uint)clampedAlphaByte << 0x18 | (uint)clampedColorByte << 0x10 | (uint)clampedColorByte << 8 |
-             (uint)clampedColorByte;
+  clampTable = (uint8_t *)g_GraphicsIntensityClampTableBase;
+  clampedColorByte = clampTable[((flagsOrPreviousTint >> 0x10) & 0xff) << 8 | (uint32_t)colorIntensity];
+  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 0x18) << 8 | (uint32_t)alphaIntensity];
+  tintArgb = (uint32_t)clampedAlphaByte << 0x18 | (uint32_t)clampedColorByte << 0x10 | (uint32_t)clampedColorByte << 8 |
+             (uint32_t)clampedColorByte;
   if (tintArgb != flagsOrPreviousTint >> 0x10) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
@@ -96,7 +96,7 @@ ModelRuntimeHierarchy_SetPaletteAndTextureSetRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,ModelRuntimeNode *node)
 
 {
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   
   if (node != (ModelRuntimeNode *)0x0) {
     (node->modelPayload).textureSet = textureSet;
@@ -141,10 +141,10 @@ ModelNodeRuntime_AccumulateTransformedBoundsRecursive(ModelRuntimeNode *modelNod
 
 {
   ModelResourceHitTestAndRenderView210 *resourceView;
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   int vertexCountOrChildIndex;
   GraphicsFixedVec3 *point;
-  byte *geometryRecord;
+  uint8_t *geometryRecord;
   ModelPackedGeometryRecordCount geometryRecordsRemaining;
   
   resourceView = (modelNode->modelPayload).modelResource;
@@ -201,7 +201,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_BuildViewFacingRotation(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  dword viewFacingAngle16;
+  uint32_t viewFacingAngle16;
   FixedVectorEaxEcxEdx12 viewRelativeVector;
   
   viewRelativeVector = FixedTransform_ApplyEulerRotationToVectorRegs
@@ -230,7 +230,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_BuildBillboardRotation(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  uint angle0;
+  uint32_t angle0;
   FixedMathVectorAnglesRegs8 viewAngles;
   
   viewAngles = FixedMath_VectorToAngles3Regs
@@ -254,10 +254,10 @@ ModelNodeRuntime_RecomputeSubtreeBoundingRadius(ModelRuntimeNode *modelNodeRunti
 
 {
   ModelRuntimeNode *childNode;
-  dword childDistance;
-  uint childExtent;
-  dword childrenRemaining;
-  uint maximumRadius;
+  uint32_t childDistance;
+  uint32_t childExtent;
+  uint32_t childrenRemaining;
+  uint32_t maximumRadius;
   ModelRuntimeNode *childSlotCursor;
   
   maximumRadius = ((modelNodeRuntime->modelPayload).modelResource)->boundingRadiusQ12;
@@ -350,7 +350,7 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
           (ModelRuntimeNode *modelNodeRuntime,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  uint negatedAngle2;
+  uint32_t negatedAngle2;
   FixedMathVectorAnglesRegs8 directionAngles;
   FixedVectorEaxEcxEdx12 rotatedDirection;
   ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
@@ -386,9 +386,9 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   GraphicsWorldCoordinateQ12 boundsX1;
   ModelRuntimeNode *childNode;
   StatusValueEaxCf5 missResult;
-  byte clippedCornerMask;
+  uint8_t clippedCornerMask;
   GraphicsFixedMatrix3x4 *transformA;
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   int childByteOffset;
   bool cornerVisibleOrHit;
   GraphicsProjectedPointPair projectedCorner;
@@ -596,7 +596,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
   do {
     if (childrenRemaining == 0) {
       missResult.carry = true;
-      missResult.valueOrError = (dword)transformA;
+      missResult.valueOrError = (uint32_t)transformA;
       return missResult;
     }
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
@@ -627,13 +627,13 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
 {
   GraphicsFixedVec3 **triangleCountField;
   ModelResourceHitTestAndRenderView210 *resourceView;
-  longlong projectionOrDiscriminant;
-  longlong projectedDistanceWide;
-  uint negatedAngle2;
+  int64_t projectionOrDiscriminant;
+  int64_t projectedDistanceWide;
+  uint32_t negatedAngle2;
   int deltaXOrNodeY;
   int deltaYOrNodeZ;
   GraphicsFixedVec3 *trianglesRemaining;
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   int deltaZ;
   ModelRaycastNearestNodeOrScratch4 edxCarrier;
   ModelPackedGeometryRecordCount meshRecordsRemaining;
@@ -650,24 +650,24 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
   deltaYOrNodeZ = (modelNodeRuntime->worldTransform).translation.y - g_ModelRaycastOriginY;
   deltaZ = (modelNodeRuntime->worldTransform).translation.z - g_ModelRaycastOriginZ;
   radiusNodeXOrNearest = modelNodeRuntime->subtreeBoundingRadiusQ12;
-  projectionOrDiscriminant = (longlong)deltaYOrNodeZ * (longlong)(int)g_ModelRaycastWorldDirectionYQ28 +
-          (longlong)deltaXOrNodeY * (longlong)(int)g_ModelRaycastWorldDirectionXQ28 +
-          (longlong)deltaZ * (longlong)(int)g_ModelRaycastWorldDirectionZQ28;
-  edxCarrier.scratchSigned = (int)((ulonglong)projectionOrDiscriminant >> 0x20) << 4 | (uint)projectionOrDiscriminant >> 0x1c;
+  projectionOrDiscriminant = (int64_t)deltaYOrNodeZ * (int64_t)(int)g_ModelRaycastWorldDirectionYQ28 +
+          (int64_t)deltaXOrNodeY * (int64_t)(int)g_ModelRaycastWorldDirectionXQ28 +
+          (int64_t)deltaZ * (int64_t)(int)g_ModelRaycastWorldDirectionZQ28;
+  edxCarrier.scratchSigned = (int)((uint64_t)projectionOrDiscriminant >> 0x20) << 4 | (uint32_t)projectionOrDiscriminant >> 0x1c;
   if ((-radiusNodeXOrNearest <= edxCarrier.scratchSigned) &&
      (edxCarrier.scratchSigned < g_ModelRaycastMaximumDistance + radiusNodeXOrNearest)) {
-    projectionOrDiscriminant = (longlong)edxCarrier.scratchSigned;
-    projectedDistanceWide = (longlong)edxCarrier.scratchSigned;
-    edxCarrier.scratchSigned = (int)((ulonglong)((longlong)deltaXOrNodeY * (longlong)deltaXOrNodeY) >> 0x20);
-    projectionOrDiscriminant = ((longlong)radiusNodeXOrNearest * (longlong)radiusNodeXOrNearest + projectionOrDiscriminant * projectedDistanceWide) -
-            (longlong)deltaXOrNodeY * (longlong)deltaXOrNodeY;
+    projectionOrDiscriminant = (int64_t)edxCarrier.scratchSigned;
+    projectedDistanceWide = (int64_t)edxCarrier.scratchSigned;
+    edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY) >> 0x20);
+    projectionOrDiscriminant = ((int64_t)radiusNodeXOrNearest * (int64_t)radiusNodeXOrNearest + projectionOrDiscriminant * projectedDistanceWide) -
+            (int64_t)deltaXOrNodeY * (int64_t)deltaXOrNodeY;
     if (-1 < projectionOrDiscriminant) {
-      edxCarrier.scratchSigned = (int)((ulonglong)((longlong)deltaYOrNodeZ * (longlong)deltaYOrNodeZ) >> 0x20);
-      projectionOrDiscriminant = projectionOrDiscriminant - (longlong)deltaYOrNodeZ * (longlong)deltaYOrNodeZ;
+      edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ) >> 0x20);
+      projectionOrDiscriminant = projectionOrDiscriminant - (int64_t)deltaYOrNodeZ * (int64_t)deltaYOrNodeZ;
       if ((-1 < projectionOrDiscriminant) &&
-         (edxCarrier.scratchSigned = (int)((ulonglong)((longlong)deltaZ * (longlong)deltaZ) >> 0x20)
-         , -1 < (int)(((int)((ulonglong)projectionOrDiscriminant >> 0x20) - edxCarrier.scratchSigned) -
-                     (uint)((uint)projectionOrDiscriminant < (uint)((longlong)deltaZ * (longlong)deltaZ))))) {
+         (edxCarrier.scratchSigned = (int)((uint64_t)((int64_t)deltaZ * (int64_t)deltaZ) >> 0x20)
+         , -1 < (int)(((int)((uint64_t)projectionOrDiscriminant >> 0x20) - edxCarrier.scratchSigned) -
+                     (uint32_t)((uint32_t)projectionOrDiscriminant < (uint32_t)((int64_t)deltaZ * (int64_t)deltaZ))))) {
         negatedAngle2 = -(modelNodeRuntime->modelPayload).worldRotationAngle2;
         FixedTransform_BuildRotationBasis
                   (&g_GraphicsTransformScratchMatrix3x4,negatedAngle2 & 0xffff,
@@ -815,7 +815,7 @@ ModelRuntimeHierarchy_SetCommandTargetRecursive
           ModelRuntimeNode *modelNode)
 
 {
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   
   childrenRemaining = modelNode->childCount;
   (modelNode->modelPayload).textureSet = textureSet;
@@ -869,7 +869,7 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
 {
   /* Rewritten from the assembly (0x0051C100-0x0051C162). */
   (void)contextArg;
-  ModelRuntimeHierarchy_ApplyFlags418From((byte *)(uintptr_t)*modelRuntime);
+  ModelRuntimeHierarchy_ApplyFlags418From((uint8_t *)(uintptr_t)*modelRuntime);
 }
 
 
@@ -879,31 +879,31 @@ ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive
 */
 /* Model runtime nodes keep their child count at +0x0C and child pointers at +0x140 + 32*i (null
    slots are skipped); the original walks this tree depth-first with frames on the machine stack. */
-static int ModelRuntimeHierarchy_SumMetric3CFrom(byte *node)
+static int ModelRuntimeHierarchy_SumMetric3CFrom(uint8_t *node)
 {
   int sum = *(int *)(node + 0x3c);
   int childCount = *(int *)(node + 0xc);
   int i;
   for (i = 0; i < childCount; i++) {
-    byte *child = *(byte **)(node + 0x140 + i * 0x20);
-    if (child != (byte *)0x0) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
+    if (child != (uint8_t *)0x0) {
       sum = sum + ModelRuntimeHierarchy_SumMetric3CFrom(child);
     }
   }
   return sum;
 }
 
-static void ModelRuntimeHierarchy_ApplyFlags418From(byte *node)
+static void ModelRuntimeHierarchy_ApplyFlags418From(uint8_t *node)
 {
   int childCount;
   int i;
-  if ((*(uint *)(node + 0xec) & 8) == 0) {
-    *(uint *)(node + 0xec) = *(uint *)(node + 0xec) | 0x418;
+  if ((*(uint32_t *)(node + 0xec) & 8) == 0) {
+    *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) | 0x418;
   }
   childCount = *(int *)(node + 0xc);
   for (i = 0; i < childCount; i++) {
-    byte *child = *(byte **)(node + 0x140 + i * 0x20);
-    if (child != (byte *)0x0) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
+    if (child != (uint8_t *)0x0) {
       ModelRuntimeHierarchy_ApplyFlags418From(child);
     }
   }
@@ -913,7 +913,7 @@ int __thandor_eax_preserve_ecx_edx ModelRuntimeHierarchy_SumMetric3C(int *modelR
 
 {
   /* Rewritten from the assembly (0x0051C1F0-0x0051C23F). */
-  return ModelRuntimeHierarchy_SumMetric3CFrom((byte *)(uintptr_t)*modelRuntimeRoot);
+  return ModelRuntimeHierarchy_SumMetric3CFrom((uint8_t *)(uintptr_t)*modelRuntimeRoot);
 }
 
 
@@ -933,11 +933,11 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           MdlSerializedNodeHeader38 *definitionNode)
 
 {
-  uint attachmentSlot;
-  uint attachmentKind;
+  uint32_t attachmentSlot;
+  uint32_t attachmentKind;
   int transformRecordsRemaining;
   MdlChildCount childCountRemaining;
-  uint childIndex;
+  uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransformCursor;
   ModelRuntimeAttachmentCollectionRegisterPair recursiveCollectionResult;
   AssetRecordByteCount definitionAssetBase;
@@ -956,7 +956,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
       attachmentKind = attachmentTransformCursor->packedKindAndSelector & 0xf;
       if (((attachmentKind == 0) || (attachmentKind == 1)) &&
          (childIndex == attachmentTransformCursor->packedKindAndSelector >> 4)) {
-        THANDOR_PART(dword, recursiveCollectionResult, 0) =
+        THANDOR_PART(uint32_t, recursiveCollectionResult, 0) =
              ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
                        (modelRuntimeContinuityEdi,modelRuntime,
                         (MdlSerializedNodeHeader38 *)
@@ -1005,11 +1005,11 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
   Q12 translationZ;
   SerializedRelativeByteOffset childDefinitionOffset;
   ModelRuntimeNode *newNode;
-  uint attachmentKindOrSlot;
+  uint32_t attachmentKindOrSlot;
   ModelRuntimeNode *childOrFailedNode;
   ModelPackedLookupTableEntryCount transformRecordsRemaining;
-  dword definitionOrChildrenRemaining;
-  uint childIndex;
+  uint32_t definitionOrChildrenRemaining;
+  uint32_t childIndex;
   ModelAttachmentTransformRecord *attachmentTransform;
   WorldObjectRecordEaxCf5 allocationResult;
   ModelNodeCreateEaxCf5 childResult;
@@ -1044,19 +1044,19 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
   if (ownerArmy->factionIndex != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x20;
   }
-  *(byte *)&newNode->textureSubresourceBaseIndex = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
-  *(byte *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
+  *(uint8_t *)&newNode->textureSubresourceBaseIndex = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 1) = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 2) = 0;
+  *(uint8_t *)((int)&newNode->textureSubresourceBaseIndex + 3) = 0;
   definitionOrChildrenRemaining = (modelRuntime->definitionOrSavedId).savedIdOrOffset;
   newNode->tintArgb = 0xffffffff;
-  if ((*(uint *)(definitionOrChildrenRemaining + 0x68) & 0x10) != 0) {
+  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x10) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x10;
   }
-  if ((*(uint *)(definitionOrChildrenRemaining + 0x68) & 0x20) != 0) {
+  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x20) != 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x200;
   }
-  if ((*(uint *)(definitionOrChildrenRemaining + 0x68) & 0x40) == 0) {
+  if ((*(uint32_t *)(definitionOrChildrenRemaining + 0x68) & 0x40) == 0) {
     newNode->runtimeFlags = newNode->runtimeFlags | 0x100;
   }
   resourceView = (definitionNode->spriteAssetReference).modelResource;
@@ -1144,8 +1144,8 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeNode_ReleaseRecursiveAndDetachParent(ModelRuntimeNode *node)
 
 {
-  dword childrenRemaining;
-  dword parentSlotsRemaining;
+  uint32_t childrenRemaining;
+  uint32_t parentSlotsRemaining;
   ModelRuntimeNode *childSlotCursor;
   
   childSlotCursor = node;
@@ -1183,8 +1183,8 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   int *categoryDamageSlot;
   int linkedRuntime;
   ShotDefinition *definition;
-  uint metricValue;
-  dword selectionRange;
+  uint32_t metricValue;
+  uint32_t selectionRange;
   int armyOrCategoryIndex;
   int definitionArmyOrRemaining;
   
@@ -1192,20 +1192,20 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
   armyOrCategoryIndex = modelRuntime[2];
   linkedRuntime = modelRuntime[1];
   if ((modelRuntime[0x3b] & 1U) == 0) {
-    metricValue = *(uint *)(definitionArmyOrRemaining + 0x48);
+    metricValue = *(uint32_t *)(definitionArmyOrRemaining + 0x48);
   }
   else {
-    metricValue = *(uint *)(definitionArmyOrRemaining + 0x1a4);
+    metricValue = *(uint32_t *)(definitionArmyOrRemaining + 0x1a4);
   }
-  if (*(uint *)(armyOrCategoryIndex + 0x90) < *(uint *)(definitionArmyOrRemaining + 0x27c)) {
-    *(uint *)(armyOrCategoryIndex + 0x90) = *(uint *)(definitionArmyOrRemaining + 0x27c);
+  if (*(uint32_t *)(armyOrCategoryIndex + 0x90) < *(uint32_t *)(definitionArmyOrRemaining + 0x27c)) {
+    *(uint32_t *)(armyOrCategoryIndex + 0x90) = *(uint32_t *)(definitionArmyOrRemaining + 0x27c);
   }
-  if (*(uint *)(armyOrCategoryIndex + 0x44) < metricValue) {
-    *(uint *)(armyOrCategoryIndex + 0x44) = metricValue;
+  if (*(uint32_t *)(armyOrCategoryIndex + 0x44) < metricValue) {
+    *(uint32_t *)(armyOrCategoryIndex + 0x44) = metricValue;
   }
   metricValue = (*(int *)(linkedRuntime + 0x9c) - *(int *)(*(int *)(armyOrCategoryIndex + 4) + 0x9c)) + *(int *)(definitionArmyOrRemaining + 0x70);
-  if (*(uint *)(armyOrCategoryIndex + 0x48) < metricValue) {
-    *(uint *)(armyOrCategoryIndex + 0x48) = metricValue;
+  if (*(uint32_t *)(armyOrCategoryIndex + 0x48) < metricValue) {
+    *(uint32_t *)(armyOrCategoryIndex + 0x48) = metricValue;
   }
   definition = *(ShotDefinition **)(definitionArmyOrRemaining + 0x2c);
   if (*(int *)(definitionArmyOrRemaining + 0x30) != 0) {
@@ -1213,7 +1213,7 @@ ModelRuntimeHierarchy_AccumulateDerivedSelectionMetrics(int *modelRuntime)
     definitionArmyOrRemaining = modelRuntime[2];
     armyOrCategoryIndex = 7;
     if (*(int *)(definitionArmyOrRemaining + 0x4c) < (int)selectionRange) {
-      *(dword *)(definitionArmyOrRemaining + 0x4c) = selectionRange;
+      *(uint32_t *)(definitionArmyOrRemaining + 0x4c) = selectionRange;
     }
     do {
       categoryDamageSlot = (int *)(definitionArmyOrRemaining + 0x100 + armyOrCategoryIndex * 4);
@@ -1243,7 +1243,7 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
 
 {
   ModelRuntimeSlot *childModelRuntime;
-  dword attachmentsRemaining;
+  uint32_t attachmentsRemaining;
   int accumulatedHierarchyScaleQ12;
   ModelRuntimeSlot *attachmentDescriptorCursor;
   int scaleSampleCount;
@@ -1265,10 +1265,10 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
          (ModelRuntimeSlot *)(attachmentDescriptorCursor->reserved10_37 + 0x10);
   }
   /* EAX = the scale ratio, EDX = 0x1000 */
-  return (qword)0x1000 << 0x20 |
-         (qword)(dword)(int)(((longlong)(int)modelRuntime->definitionValue60_3C *
-                             (longlong)accumulatedHierarchyScaleQ12) /
-                            (longlong)
+  return (uint64_t)0x1000 << 0x20 |
+         (uint64_t)(uint32_t)(int)(((int64_t)(int)modelRuntime->definitionValue60_3C *
+                             (int64_t)accumulatedHierarchyScaleQ12) /
+                            (int64_t)
                             (scaleSampleCount *
                             *(int *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x60)));
 }
@@ -1286,11 +1286,11 @@ ModelRuntimeActiveTotalMetricRegisterPair
 ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRuntime)
 
 {
-  dword activeMetricTotal;
-  dword attachmentsRemaining;
-  dword totalMetric;
+  uint32_t activeMetricTotal;
+  uint32_t attachmentsRemaining;
+  uint32_t totalMetric;
   ModelRuntimeSlot *currentChildModelRuntime;
-  dword childMetric;
+  uint32_t childMetric;
   
   totalMetric = (modelRuntime->classState).definitionDerivedValueF4;
   attachmentsRemaining = modelRuntime->attachmentCount0C;
@@ -1298,7 +1298,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
   if (((modelRuntime->classState).classStateEC & 1) == 0) {
     activeMetricTotal = totalMetric;
   }
-  if ((*(uint *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x68) & 0x80) != 0) {
+  if ((*(uint32_t *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x68) & 0x80) != 0) {
     for (; attachmentsRemaining != 0; attachmentsRemaining = attachmentsRemaining - 1) {
       currentChildModelRuntime = modelRuntime->attachments140[0].childModelRuntimeOrSavedOffset00;
       if (currentChildModelRuntime != (ModelRuntimeSlot *)0x0) {
@@ -1311,7 +1311,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
       modelRuntime = (ModelRuntimeSlot *)(modelRuntime->reserved10_37 + 0x10);
     }
   }
-  return (qword)totalMetric << 0x20 | (qword)activeMetricTotal; /* EDX = total, EAX = active */
+  return (uint64_t)totalMetric << 0x20 | (uint64_t)activeMetricTotal; /* EDX = total, EAX = active */
 }
 
 /* Address: 0x0052AAC0.
@@ -1329,10 +1329,10 @@ ModelNodeRuntime_SmoothYawTowardTarget
   ArmyWeaponDefinitionView68 *aimDefinition;
   int turnRateLimit;
   AngleTurn32 currentYawAngle;
-  uint yawAngle;
-  uint yawStep;
+  uint32_t yawAngle;
+  uint32_t yawStep;
   int acceleratedVelocity;
-  uint yawDelta;
+  uint32_t yawDelta;
   bool snapToTarget;
   ModelSmoothEaxCf5 smoothResult;
   ModelSmoothEaxCf5 settledResult;
@@ -1415,7 +1415,7 @@ ModelNodeRuntime_SmoothPitchTowardTarget
 
 {
   ArmyWeaponDefinitionView68 *aimDefinition;
-  uint pitchAngle;
+  uint32_t pitchAngle;
   int pitchStepOrRateLimit;
   int acceleratedVelocity;
   bool snapToTarget;
@@ -1500,7 +1500,7 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_ApplyTintRecursive(PackedArgb32 tintArgb,ModelRuntimeNode *modelNode)
 
 {
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   
   childrenRemaining = modelNode->childCount;
   modelNode->tintArgb = tintArgb;
@@ -1530,7 +1530,7 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
 
 {
   ModelRuntimeNode *currentChild;
-  uint childIndex;
+  uint32_t childIndex;
   FixedEulerPairEdxEax8 extractedEulerAngles;
   FixedEulerAnglesEaxEcxEdx12 childEulerAngles;
   ModelRuntimeNode *childNode;
@@ -1613,8 +1613,8 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
       variantCursorOrRemaining = *modelRuntime;
       *modelRuntime = (int)lookupResult.modelDefinition;
       modelRuntime[0xf] =
-           (int)(((longlong)modelRuntime[0xf] * (longlong)(int)lookupResult.modelDefinition[8].byteSize) /
-                (longlong)*(int *)(variantCursorOrRemaining + 0x60));
+           (int)(((int64_t)modelRuntime[0xf] * (int64_t)(int)lookupResult.modelDefinition[8].byteSize) /
+                (int64_t)*(int *)(variantCursorOrRemaining + 0x60));
       ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)modelRuntime[2]);
       break;
     }

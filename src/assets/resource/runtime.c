@@ -21,10 +21,10 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ResourceRegistration_OpenSourceCf(void *packagePath)
 
 {
-  byte *source;
-  dword packedTimeOrDate;
+  uint8_t *source;
+  uint32_t packedTimeOrDate;
   int clearDwordsRemaining;
-  byte *clearCursor;
+  uint8_t *clearCursor;
   StatusValueEaxCf5 mountResult;
   
   source = g_PackageScratchBuffer;
@@ -54,15 +54,15 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xe] = 1;
   source[0xf] = 0;
   packedTimeOrDate = (*g_LocaleGetPackedCurrentTime)();
-  *(dword *)(source + 0x10) = packedTimeOrDate;
-  *(dword *)(source + 0x18) = packedTimeOrDate;
-  *(dword *)(source + 0x20) = packedTimeOrDate;
+  *(uint32_t *)(source + 0x10) = packedTimeOrDate;
+  *(uint32_t *)(source + 0x18) = packedTimeOrDate;
+  *(uint32_t *)(source + 0x20) = packedTimeOrDate;
   packedTimeOrDate = (*g_LocaleGetPackedCurrentDate)();
-  *(dword *)(source + 0x14) = packedTimeOrDate;
-  *(dword *)(source + 0x1c) = packedTimeOrDate;
-  *(dword *)(source + 0x24) = packedTimeOrDate;
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(source + 0x30));
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(source + 0x70));
+  *(uint32_t *)(source + 0x14) = packedTimeOrDate;
+  *(uint32_t *)(source + 0x1c) = packedTimeOrDate;
+  *(uint32_t *)(source + 0x24) = packedTimeOrDate;
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(source + 0x30));
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(source + 0x70));
   source[0x100] = 0;
   source[0xb0] = 0;
   source[0xb1] = 0;
@@ -80,15 +80,15 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
    Cross-module calls: Package_FindEntryAcrossMounts [assets/package/runtime], WidePath_CombineDirectoryAndLeaf
    [core/text/path], Package_DecodeEntryInto [assets/package/runtime].
 */
-ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path)
+ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path)
 
 {
   PckEntryHeader *entry;
-  byte *bytes;
-  byte *sizeOrFailureCode;
+  uint8_t *bytes;
+  uint8_t *sizeOrFailureCode;
   /* ECX on failure: the file size once it is known, else the caller's ECX (zero stands in for it). It is only
      meaningful on success (byte count); callers test CF. */
-  dword failureByteCount = 0;
+  uint32_t failureByteCount = 0;
   ArenaAllocEaxCf5 allocResult;
   PackageDecodeEaxCf5 decodeResult;
   FileSystemOpenEaxCf5 openResult;
@@ -103,33 +103,33 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
   entry = (PckEntryHeader *)findResult.eax;
   if (findResult.carry) {
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
-               (word *)&g_ExecutableDirectoryUtf16);
-    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    fileOrPackageResult.eax = (byte *)openResult.eax;
+              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+               (uint16_t *)&g_ExecutableDirectoryUtf16);
+    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    fileOrPackageResult.eax = (uint8_t *)openResult.eax;
     if (openResult.carry) {
       openResult = (*g_FileSystemOpenCf)(0,path);
-      fileOrPackageResult.eax = (byte *)openResult.eax;
+      fileOrPackageResult.eax = (uint8_t *)openResult.eax;
       if (openResult.carry) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
     sizeResult = (*g_FileSystemGetSizeCf)(fileOrPackageResult.eax);
-    bytes = (byte *)sizeResult.eax;
+    bytes = (uint8_t *)sizeResult.eax;
     sizeOrFailureCode = bytes;
     if (!sizeResult.carry) {
-      allocResult = (*g_MemoryApi.alloc)((dword)bytes);
+      allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
       fileLoadResult.eax = (void *)allocResult.eax;
-      failureByteCount = (dword)bytes;
+      failureByteCount = (uint32_t)bytes;
       if (allocResult.carry) {
         (*g_WideNumberFormatUtf16)
-                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
-        sizeOrFailureCode = (byte *)0x5;
+                  (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
+        sizeOrFailureCode = (uint8_t *)0x5;
       }
       else {
         readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)bytes,fileLoadResult.eax,fileOrPackageResult.eax);
-        sizeOrFailureCode = (byte *)readResult.eax;
+        sizeOrFailureCode = (uint8_t *)readResult.eax;
         if (!readResult.carry) {
           (*g_FileSystemClose)(fileOrPackageResult.eax);
-          fileLoadResult.ecx = (dword)bytes;
+          fileLoadResult.ecx = (uint32_t)bytes;
           fileLoadResult.carry = false;
           return fileLoadResult;
         }
@@ -140,10 +140,10 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
     fileOrPackageResult.eax = sizeOrFailureCode;
   }
   else {
-    fileOrPackageResult.eax = (byte *)0x5;
+    fileOrPackageResult.eax = (uint8_t *)0x5;
     if (entry->packedSize < 0x800001) {
       allocResult = (*g_MemoryApi.alloc)(entry->unpackedSize);
-      fileOrPackageResult.eax = (byte *)allocResult.eax;
+      fileOrPackageResult.eax = (uint8_t *)allocResult.eax;
       if (!allocResult.carry) {
         decodeResult = Package_DecodeEntryInto(fileOrPackageResult.eax,entry,findResult.ebx);
         if (!decodeResult.carry) {
@@ -151,7 +151,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
           fileOrPackageResult.carry = false;
           return fileOrPackageResult;
         }
-        sizeOrFailureCode = (byte *)decodeResult.eax;
+        sizeOrFailureCode = (uint8_t *)decodeResult.eax;
         (*g_MemoryApi.free)(fileOrPackageResult.eax);
         fileOrPackageResult.eax = sizeOrFailureCode;
       }
@@ -159,7 +159,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
   }
 Resource_Load_ReturnOpenAllocationOrDecodeResult:
   failureResult.ecx = failureByteCount;
-  failureResult.eax = (dword)fileOrPackageResult.eax;
+  failureResult.eax = (uint32_t)fileOrPackageResult.eax;
   failureResult.carry = true;
   return failureResult;
 }
@@ -191,12 +191,12 @@ ResourceRegistration_SelectDomainPair
           (ResourceRegistrationRuntimeImageSerializedScalarViewDC *runtimeImage)
 
 {
-  dword rebasedOffset;
-  dword secondaryOffsetOrNestedCount;
+  uint32_t rebasedOffset;
+  uint32_t secondaryOffsetOrNestedCount;
   int clearCountOrArmyDefinition;
   ResourceRegistrationRecord100 *tailRecord;
-  dword recordsRemainingOrCount;
-  dword nestedBaseOffset;
+  uint32_t recordsRemainingOrCount;
+  uint32_t nestedBaseOffset;
   ResourceRegistrationRecordSerializedScalarView100 *nestedOffsetCursor;
   ResourceRegistrationRecordSerializedScalarView100 *recordCursor;
   
@@ -218,8 +218,8 @@ ResourceRegistration_SelectDomainPair
                    ((int)tailRecord - (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
         recordsRemainingOrCount = runtimeImage->recordCountAC;
-        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
-        return ((qword)(dword)(uintptr_t)recordCursor << 32) | (dword)(recordsRemainingOrCount * 0x100);
+        recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (uint32_t)tailRecord;
+        return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) | (uint32_t)(recordsRemainingOrCount * 0x100);
       }
     }
     rebasedOffset = recordCursor->primarySavedIdOrOffset;
@@ -260,7 +260,7 @@ ResourceRegistration_SelectDomainPair
       clearCountOrArmyDefinition = *(int *)(rebasedOffset + 8);
       recordCursor->paletteAssetSavedIdOrOffset = 0;
       rebasedOffset = rebasedOffset - g_ModelRuntimeRebaseDelta;
-      recordCursor->textureSetSavedIdOrOffset = *(dword *)(clearCountOrArmyDefinition + 0xc);
+      recordCursor->textureSetSavedIdOrOffset = *(uint32_t *)(clearCountOrArmyDefinition + 0xc);
       break;
     case RESOURCE_DOMAIN_SHOT_RUNTIME:
       rebasedOffset = rebasedOffset - (int)g_ShotRuntimeRebaseBaseMinusOne;
@@ -273,7 +273,7 @@ ResourceRegistration_SelectDomainPair
       recordCursor->paletteAssetSavedIdOrOffset = 0;
     }
     recordCursor->runtimePayloadSavedOffset = rebasedOffset;
-    recordCursor->spriteAssetSavedIdOrOffset = *(dword *)(recordCursor->spriteAssetSavedIdOrOffset + 0xb8);
+    recordCursor->spriteAssetSavedIdOrOffset = *(uint32_t *)(recordCursor->spriteAssetSavedIdOrOffset + 0xb8);
     recordCursor = recordCursor + 1;
     recordsRemainingOrCount = recordsRemainingOrCount - 1;
   } while (recordsRemainingOrCount != 0);
@@ -284,8 +284,8 @@ ResourceRegistration_SelectDomainPair
     ;
   }
   recordsRemainingOrCount = runtimeImage->recordCountAC;
-  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
-  return ((qword)(dword)(uintptr_t)recordCursor << 32) | (dword)(recordsRemainingOrCount * 0x100);
+  recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (uint32_t)tailRecord;
+  return ((uint64_t)(uint32_t)(uintptr_t)recordCursor << 32) | (uint32_t)(recordsRemainingOrCount * 0x100);
 }
 
 /* Address: 0x00513020.
@@ -305,8 +305,8 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
   FactionArmyAssetCount primaryArmyAssetPointersRemaining;
   int runtimeMembersRemaining;
   GameFactionRuntimeImage *factionRecordCursor;
-  dword *armyAssetPointerCursor;
-  dword *primaryArmyAssetPointerCursor;
+  uint32_t *armyAssetPointerCursor;
+  uint32_t *primaryArmyAssetPointerCursor;
   ArmyRuntimeSlot **runtimeMemberCursor;
   
   factionRecordCursor = &g_GameFactionRuntimeImage;
@@ -316,14 +316,14 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
     for (armyAssetPointersRemaining = factionRecordCursor->records[0].secondaryArmyAssetCount;
         armyAssetPointersRemaining != 0; armyAssetPointersRemaining = armyAssetPointersRemaining - 1
         ) {
-      *armyAssetPointerCursor = *(dword *)(*armyAssetPointerCursor + 8);
+      *armyAssetPointerCursor = *(uint32_t *)(*armyAssetPointerCursor + 8);
       armyAssetPointerCursor = armyAssetPointerCursor + 1;
     }
     primaryArmyAssetPointerCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
     for (primaryArmyAssetPointersRemaining = factionRecordCursor->records[0].primaryArmyAssetCount;
         primaryArmyAssetPointersRemaining != 0;
         primaryArmyAssetPointersRemaining = primaryArmyAssetPointersRemaining - 1) {
-      *primaryArmyAssetPointerCursor = *(dword *)(*primaryArmyAssetPointerCursor + 8);
+      *primaryArmyAssetPointerCursor = *(uint32_t *)(*primaryArmyAssetPointerCursor + 8);
       primaryArmyAssetPointerCursor = primaryArmyAssetPointerCursor + 1;
     }
     runtimeMemberCursor = factionRecordCursor->records[0].runtimeGroupMembers8x32;
@@ -342,7 +342,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain0Pair(void
     factionRecordsRemaining = factionRecordsRemaining + -1;
   } while (factionRecordsRemaining != 0);
   /* EDX:EAX = faction runtime image, byte size 0x3A20 */
-  return ((qword)(dword)(uintptr_t)&g_GameFactionRuntimeImage << 32) | 0x3a20;
+  return ((uint64_t)(uint32_t)(uintptr_t)&g_GameFactionRuntimeImage << 32) | 0x3a20;
 }
 
 /* Address: 0x0051E2B0.
@@ -381,7 +381,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
       runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
       if (runtimeSlotsRemaining == 0) {
         g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
-        return ((qword)(dword)(uintptr_t)effectRuntimeSlotsBase << 32) | 0x40000;
+        return ((uint64_t)(uint32_t)(uintptr_t)effectRuntimeSlotsBase << 32) | 0x40000;
       }
     }
     if (ownerModelNode != (ModelRuntimeNode *)0x0) {
@@ -405,7 +405,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
-  return ((qword)(dword)(uintptr_t)g_EffectRuntimeSlots << 32) | 0x40000;
+  return ((uint64_t)(uint32_t)(uintptr_t)g_EffectRuntimeSlots << 32) | 0x40000;
 }
 
 /* Address: 0x0052B6D0.
@@ -427,7 +427,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
   int runtimeSlotsRemaining;
   ArmyRuntimeSlot *ownerArmyRuntime;
   ShotRuntimeSlot *runtimeSlotCursor;
-  dword *terminalToggleField;
+  uint32_t *terminalToggleField;
   ShotRuntimeSlot *shotRuntimeSlotsBase;
   
   runtimeSlotsRemaining = 0x1000;
@@ -447,7 +447,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
         terminalToggleField =
              &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
         *terminalToggleField = ~*terminalToggleField;
-        return ((qword)(dword)(uintptr_t)shotRuntimeSlotsBase << 32) | 0x40000;
+        return ((uint64_t)(uint32_t)(uintptr_t)shotRuntimeSlotsBase << 32) | 0x40000;
       }
     }
     if (runtimeStateRef != (void *)0x0) {
@@ -468,7 +468,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
-  return ((qword)(dword)(uintptr_t)g_ShotRuntimeSlots << 32) | 0x40000;
+  return ((uint64_t)(uint32_t)(uintptr_t)g_ShotRuntimeSlots << 32) | 0x40000;
 }
 
 /* Address: 0x00532B00.

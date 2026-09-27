@@ -29,7 +29,7 @@ AiWorkspaceAssetCandidate_AddWeightedEntry
 
 {
   int remainingOrCountOrRate;
-  dword weightRange;
+  uint32_t weightRange;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
   bool testResult;
   
@@ -43,17 +43,17 @@ AiWorkspaceAssetCandidate_AddWeightedEntry
                             (armyAssetId,terrainFeatureEntry->cell,factionIndex,worldRuntime),
          !testResult)) {
         remainingOrCountOrRate = AiPrimaryWorkspace_CountAssignedEntriesById(armyAssetId);
-        weightRange = (uint)(baseWeight * 3) / (remainingOrCountOrRate + 3U);
+        weightRange = (uint32_t)(baseWeight * 3) / (remainingOrCountOrRate + 3U);
         if (armyAssetId != ARM_0330_BUILDING_MDL0303) {
           remainingOrCountOrRate = g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick <<
                   4;
           if (remainingOrCountOrRate != 0) {
-            weightRange = (dword)(((longlong)(int)weightRange *
-                                  (longlong)
+            weightRange = (uint32_t)(((int64_t)(int)weightRange *
+                                  (int64_t)
                                   (int)(g_GameFactionRuntimeImage.records[factionIndex].
                                         unpoweredEnergyDemandQ4 * 2 +
                                        g_GameFactionRuntimeImage.records[factionIndex].
-                                       suppliedEnergyDemandQ4)) / (longlong)remainingOrCountOrRate);
+                                       suppliedEnergyDemandQ4)) / (int64_t)remainingOrCountOrRate);
           }
         }
         AiCandidateWorkspace_AddOrAccumulateWeightedEntry(armyAssetId,weightRange,1);
@@ -98,22 +98,22 @@ AiPlanning_RebuildFactionWorkspaces
   GraphicsWorldCoordinateQ12 translationY;
   ModelRuntimeSlot *slotModelRuntime;
   AiWorkspace00EntryView8 *primaryBuffer;
-  uint countSnapshotOrRemaining;
+  uint32_t countSnapshotOrRemaining;
   AiRuntimeWorkspaceEntry *workspace03Buffer;
   GridScratchStateMask neighborhoodMask;
   FactionArmyAssetCount armyAssetsRemaining;
   int remainingOrClassRecord;
-  uint widthOrCount;
-  dword spacingOrPanelIndex;
-  uint countOrMask;
-  dword scratchWidthOrFactionOffset;
+  uint32_t widthOrCount;
+  uint32_t spacingOrPanelIndex;
+  uint32_t countOrMask;
+  uint32_t scratchWidthOrFactionOffset;
   int rowStrideOrClassId;
   AiWorkspace00EntryView8 *primaryEntryCursor;
   FieldGridCell *fieldCell;
-  byte *cellByteCursor;
+  uint8_t *cellByteCursor;
   ArmyAssetRecordPrefix **workspace11Cursor;
   WorldOwnerListNode100 *worldNode;
-  dword *armyAssetPointerCursor;
+  uint32_t *armyAssetPointerCursor;
   GridScratchCell *scratchCellOrigin;
   GridScratchCell *scratchCell;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
@@ -168,7 +168,7 @@ AiPlanning_RebuildFactionWorkspaces
           }
         }
         else {
-          countOrMask = *(uint *)((entityRuntime->common).damageState.reserved0C_23 + 0x10) >>
+          countOrMask = *(uint32_t *)((entityRuntime->common).damageState.reserved0C_23 + 0x10) >>
                    ((char)factionIndex * '\x02' & 0x1fU);
           if (((entityRuntime->common).ownership.ownerIndex != 0) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClearCf
@@ -414,7 +414,7 @@ AiPlanning_RebuildFactionWorkspaces
       remainingOrClassRecord = *(int *)primaryEntryCursor->runtimeSlotAddressOrZero;
       rowStrideOrClassId = *(int *)(remainingOrClassRecord + 0x4c);
       if (rowStrideOrClassId == 0xd) {
-        countOrMask = countOrMask | *(uint *)(remainingOrClassRecord + 0xc4);
+        countOrMask = countOrMask | *(uint32_t *)(remainingOrClassRecord + 0xc4);
       }
       else if (rowStrideOrClassId == 0x16) {
         countOrMask = countOrMask | 8;
@@ -511,7 +511,7 @@ AiStrategicCandidate_AddBestWorkspace12Entry
   AiTechnologyPlanningCandidateCount candidatesRemaining;
   AiTechnologyPlanningCandidate *candidateCursor;
   bool hasSpecialAsset;
-  uint weightRange;
+  uint32_t weightRange;
   AiCandidateEntryKind entryKind;
   RuntimeToken entityId;
   
@@ -521,7 +521,7 @@ AiStrategicCandidate_AddBestWorkspace12Entry
        technology of category 2 / 3 (the decompiler kept only the empty loop). */
     g_AiTechnologyScoreCategoryMaskEdx = 0;
     for (wordIndexOrBestScore = 0; wordIndexOrBestScore < 8; wordIndexOrBestScore++) {
-      dword owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndexOrBestScore];
+      uint32_t owned = g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[wordIndexOrBestScore];
       if ((g_TechnologyCategoryMasks.category2[wordIndexOrBestScore] & owned) != 0) {
         g_AiTechnologyScoreCategoryMaskEdx = g_AiTechnologyScoreCategoryMaskEdx | 2;
       }
@@ -581,8 +581,8 @@ void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImage
 
 {
   int entryCountOrDwordsRemaining;
-  dword *candidateWorkspaceSourceCursor;
-  dword *factionImageDestinationCursor;
+  uint32_t *candidateWorkspaceSourceCursor;
+  uint32_t *factionImageDestinationCursor;
   
   candidateWorkspaceSourceCursor = &g_AiWorkspaceBuffer13_Size0400->weightedScoreAndKind;
   entryCountOrDwordsRemaining = g_AiCandidateWorkspaceEntryCount;
@@ -592,7 +592,7 @@ void AiCandidateWorkspace_SaveToFactionImage(FactionImageByteOffset factionImage
   *(int *)((int)(g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries + 3) +
           factionImageByteOffset) = entryCountOrDwordsRemaining;
   factionImageDestinationCursor =
-       (dword *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
+       (uint32_t *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
                        weightedScoreAndKind + factionImageByteOffset);
   entryCountOrDwordsRemaining = entryCountOrDwordsRemaining * 2;
   if (entryCountOrDwordsRemaining != 0) {
@@ -618,14 +618,14 @@ AiCandidateWorkspace_LoadFromFactionImage(FactionImageByteOffset factionImageByt
 
 {
   int copyDwordsRemaining;
-  dword *factionImageSourceCursor;
-  dword *candidateWorkspaceDestinationCursor;
+  uint32_t *factionImageSourceCursor;
+  uint32_t *candidateWorkspaceDestinationCursor;
   
   g_AiCandidateWorkspaceEntryCount =
        *(int *)((int)(g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries + 3) +
                factionImageByteOffset);
   factionImageSourceCursor =
-       (dword *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
+       (uint32_t *)((int)&g_GameFactionRuntimeImage.records[0].candidateCache.savedEntries[0].
                        weightedScoreAndKind + factionImageByteOffset);
   copyDwordsRemaining = g_AiCandidateWorkspaceEntryCount * 2;
   candidateWorkspaceDestinationCursor = &g_AiWorkspaceBuffer13_Size0400->weightedScoreAndKind;
@@ -649,13 +649,13 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
 
 {
   int currentRecordScore;
-  uint recordsInCurrentPass;
+  uint32_t recordsInCurrentPass;
   int comparisonsRemaining;
   int currentRecordPayload;
   AiCandidateWorkspaceEntry *scanRecordCursor;
   AiCandidateWorkspaceEntry *currentRecordCursor;
-  dword promotedScore;
-  dword promotedPayload;
+  uint32_t promotedScore;
+  uint32_t promotedPayload;
   
   if (1 < g_AiCandidateWorkspaceEntryCount) {
     currentRecordScore = g_AiWorkspaceBuffer13_Size0400->weightedScoreAndKind;
@@ -705,7 +705,7 @@ int __thandor_eax_preserve_ecx_edx
 AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
 
 {
-  dword resolvedEntityValue;
+  uint32_t resolvedEntityValue;
   RuntimeToken registryId;
   ArmyRegistryEaxCf5_51b6d0 registryLookup;
   
@@ -1058,7 +1058,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
                         (armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime);
       if (!placementRejected) {
         createResult = ArmyRuntime_CreateInstanceFromAssetCf
-                          (4,(uint)(ushort)workspaceRecord->triangle0NormalAngles,
+                          (4,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                            workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                            worldRuntime);
         createdSlotPair = (ArmyRuntimeSlot **)createResult.eax;
@@ -1118,7 +1118,7 @@ AiWorkspace12Score_DefaultZero
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
 
 {
-  byte *workspaceAllocation;
+  uint8_t *workspaceAllocation;
   AiTechnologyPlanningCandidate *technologyCandidateWorkspaceAllocation;
   AiKnowledgeDataImage *knowledgeDataImage;
   PackageLoadEntryEaxCf5 loadResult;
@@ -1171,10 +1171,10 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void
                               loadResult = THANDOR_BITCAST(ArenaAllocEaxCf5, PackageLoadEntryEaxCf5, (*g_MemoryApi.alloc)(0x100));
                               if (!loadResult.carry) {
                                 g_AiWorkspaceBuffer14_Size0100 = loadResult.bufferOrError;
-                                loadResult = Package_LoadEntry((word *)u_engine_ki_dat_0053c5e4);
+                                loadResult = Package_LoadEntry((uint16_t *)u_engine_ki_dat_0053c5e4);
                                 knowledgeDataImage = loadResult.bufferOrError;
                                 if (!loadResult.carry) {
-                                  loadResult = THANDOR_BITCAST(qword, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(PackageLoadEntryEaxCf5, qword, loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+                                  loadResult = THANDOR_BITCAST(uint64_t, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(PackageLoadEntryEaxCf5, uint64_t, loadResult) & 0xFFFFFFFFFFull) & 0xffffffff));
                                   g_AiKnowledgeData = knowledgeDataImage;
                                 }
                               }
@@ -1192,7 +1192,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void
       }
     }
   }
-  initStatus.valueOrError = (dword)loadResult.bufferOrError;
+  initStatus.valueOrError = (uint32_t)loadResult.bufferOrError;
   initStatus.carry = loadResult.carry;
   return initStatus;
 }
@@ -1209,7 +1209,7 @@ AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell
 
 {
   FieldGridCell **cellBuffer;
-  uint entryIndex;
+  uint32_t entryIndex;
   bool isOutsideExtents;
   
   entryIndex = g_AiWorkspace09Count;
@@ -1237,7 +1237,7 @@ AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell
 
 {
   FieldGridCell **cellBuffer;
-  uint entryIndex;
+  uint32_t entryIndex;
   bool isOutsideExtents;
   
   entryIndex = g_AiWorkspace10Count;
@@ -1348,13 +1348,13 @@ AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId)
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiCandidateWorkspace_AddOrAccumulateWeightedEntry
-          (RuntimeToken entityId,dword weightRange,AiCandidateEntryKind entryKind)
+          (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind)
 
 {
-  uint newEntryIndex;
-  dword randomValue;
+  uint32_t newEntryIndex;
+  uint32_t randomValue;
   int weightedScore;
-  uint entriesRemaining;
+  uint32_t entriesRemaining;
   AiCandidateWorkspaceEntry *candidateEntry;
   
   randomValue = (*g_RandomGeneratorState.next)();

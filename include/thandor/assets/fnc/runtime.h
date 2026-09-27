@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0041A610 */
-dword FncModule_GetBindingModeCf(FncModuleHeader *module);
+uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module);
 
 /* 0x0041A640 */
 FncModuleLoadEaxCf5 FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule);

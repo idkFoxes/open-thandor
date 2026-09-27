@@ -12,20 +12,20 @@
 
 /* MOVD mm,color; PUNPCKLBW mm,mm; PSRLW mm,4: each color byte b (B,G,R,A from low to high)
    becomes the 16-bit lane (b << 8 | b) >> 4. */
-static __inline ulonglong Direct3D_MmxUnpackColorWords(PackedArgb32 color)
+static __inline uint64_t Direct3D_MmxUnpackColorWords(PackedArgb32 color)
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)((((color >> (lane * 8)) & 0xff) * 0x101) >> 4);
+    lanes.uw[lane] = (uint16_t)((((color >> (lane * 8)) & 0xff) * 0x101) >> 4);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm; MOVD color,mm: each signed 16-bit lane saturated to 0..0xff and packed back into
    the B,G,R,A bytes of a D3D color. */
-static __inline PackedArgb32 Direct3D_MmxPackColorWords(ulonglong words)
+static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
 {
   ThandorMmx lanes;
   PackedArgb32 color;
@@ -46,15 +46,15 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(ulonglong words)
    Purpose: IDirect3D2::EnumDevices callback. Context points at the adapter record being expanded.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-sdword __stdcall Direct3D_EnumDeviceCallback
+int32_t __stdcall Direct3D_EnumDeviceCallback
                  (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName,
                  D3DDEVICEDESC_DX6 *hardwareDesc,D3DDEVICEDESC_DX6 *softwareDesc,
                  GraphicsAdapterRecord *adapterContext)
 
 {
   GraphicsAdapterRecord *filledRecord;
-  dword newAdapterIndex;
-  dword updatedAdapterCount;
+  uint32_t newAdapterIndex;
+  uint32_t updatedAdapterCount;
   int remainingDwords;
   GraphicsAdapterRecord *newRecord;
   GraphicsAdapterRecord *recordCursor;
@@ -104,7 +104,7 @@ sdword __stdcall Direct3D_EnumDeviceCallback
         deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
         guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
       }
-      Text_CopyNarrowToUtf16Cf(0x28,filledRecord->deviceNameUtf16,(byte *)deviceName);
+      Text_CopyNarrowToUtf16Cf(0x28,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
       filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
       descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.eax;
       for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -129,18 +129,18 @@ sdword __stdcall Direct3D_EnumDeviceCallback
    Purpose: Semantic ABI remains deferred.
 */
 /* Called by IDirect3DDevice2::EnumTextureFormats: __stdcall (the original returns with RET 8). */
-sdword __stdcall
+int32_t __stdcall
 GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
           (DDSURFACEDESC_DX6 *surfaceDesc,TH_LEGACY_LPVOID context)
 
 {
-  uint pixelFormatFlags;
+  uint32_t pixelFormatFlags;
   int currentAlphaLowBit;
   int candidateAlphaLowBit;
   int candidateAlphaHighBit;
-  uint bitCountOrMaskDelta;
+  uint32_t bitCountOrMaskDelta;
   int highBitOrCopyCount;
-  uint candidateColorMask;
+  uint32_t candidateColorMask;
   int replaceOpaqueFormat;
   DDPIXELFORMAT *pixelFormatCursor;
   TH_LEGACY_DWORD *formatDwordCursor;
@@ -208,7 +208,7 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
       for (; (*formatDwordCursor >> candidateAlphaLowBit & 1) == 0; candidateAlphaLowBit = candidateAlphaLowBit + 1) {
       }
     }
-    if ((uint)(currentAlphaLowBit - highBitOrCopyCount) < (uint)(candidateAlphaLowBit - candidateAlphaHighBit)) {
+    if ((uint32_t)(currentAlphaLowBit - highBitOrCopyCount) < (uint32_t)(candidateAlphaLowBit - candidateAlphaHighBit)) {
       pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
       formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DAlphaTextureFormat,0);
       for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
@@ -227,10 +227,10 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
    Purpose: Handles direct3 drenderer set antialias mode.
 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetAntialiasMode(dword antialiasMode)
+Direct3DRenderer_SetAntialiasMode(uint32_t antialiasMode)
 
 {
-  sdword direct3DResult;
+  int32_t direct3DResult;
   Direct3DRenderStateApplyEaxCf5 successResult;
   Direct3DRenderStateApplyEaxCf5 failureResult;
   
@@ -254,13 +254,13 @@ Direct3DRenderer_SetAntialiasMode(dword antialiasMode)
    Purpose: Handles direct3 drenderer set texture filter mode.
 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTextureFilterMode(dword textureFilterMode)
+Direct3DRenderer_SetTextureFilterMode(uint32_t textureFilterMode)
 
 {
-  sdword direct3DResult;
+  int32_t direct3DResult;
   Direct3DRenderStateApplyEaxCf5 successResult;
   Direct3DRenderStateApplyEaxCf5 failureResult;
-  sdword errorCode;
+  int32_t errorCode;
   
   errorCode = 0x6e;
   direct3DResult = (*g_Direct3DDevice2->lpVtbl->SetRenderState)
@@ -288,10 +288,10 @@ Direct3DRenderer_SetTextureFilterMode(dword textureFilterMode)
    Purpose: Handles direct3 drenderer set texture perspective enabled.
 */
 Direct3DRenderStateApplyEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Direct3DRenderer_SetTexturePerspectiveEnabled(dword texturePerspectiveEnabled)
+Direct3DRenderer_SetTexturePerspectiveEnabled(uint32_t texturePerspectiveEnabled)
 
 {
-  sdword direct3DResult;
+  int32_t direct3DResult;
   Direct3DRenderStateApplyEaxCf5 successResult;
   Direct3DRenderStateApplyEaxCf5 failureResult;
   
@@ -326,13 +326,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  ulonglong modulationWords;
-  sdword bindResult;
+  uint64_t modulationWords;
+  int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  sdword unusedResult;
+  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -448,7 +448,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -471,13 +471,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  ulonglong modulationWords;
-  sdword bindResult;
+  uint64_t modulationWords;
+  int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  sdword unusedResult;
+  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -607,7 +607,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -631,13 +631,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  ulonglong modulationWords;
-  sdword bindResult;
+  uint64_t modulationWords;
+  int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  sdword unusedResult;
+  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -767,7 +767,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -790,13 +790,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  ulonglong modulationWords;
-  sdword bindResult;
+  uint64_t modulationWords;
+  int32_t bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  sdword unusedResult;
+  int32_t unusedResult;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -926,7 +926,7 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -947,14 +947,14 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
-  uint textureWidthLog2;
-  uint textureHeightLog2;
+  uint32_t textureWidthLog2;
+  uint32_t textureHeightLog2;
   GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
   GraphicsTextureHandle deviceTextureHandle;
-  sdword bindResult;
-  byte coordinateShift;
-  uint largerDimensionLog2;
+  int32_t bindResult;
+  uint8_t coordinateShift;
+  uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
@@ -1130,7 +1130,7 @@ Direct3D_PrimitiveHandler_TexturedPreset0(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1151,14 +1151,14 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
-  uint textureWidthLog2;
-  uint textureHeightLog2;
+  uint32_t textureWidthLog2;
+  uint32_t textureHeightLog2;
   GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
   GraphicsTextureHandle deviceTextureHandle;
-  sdword bindResult;
-  byte coordinateShift;
-  uint largerDimensionLog2;
+  int32_t bindResult;
+  uint8_t coordinateShift;
+  uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
@@ -1334,7 +1334,7 @@ Direct3D_PrimitiveHandler_TexturedPreset1(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1355,14 +1355,14 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
-  uint textureWidthLog2;
-  uint textureHeightLog2;
+  uint32_t textureWidthLog2;
+  uint32_t textureHeightLog2;
   GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
   GraphicsTextureHandle deviceTextureHandle;
-  sdword bindResult;
-  byte coordinateShift;
-  uint largerDimensionLog2;
+  int32_t bindResult;
+  uint8_t coordinateShift;
+  uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
@@ -1538,7 +1538,7 @@ Direct3D_PrimitiveHandler_TexturedPreset2(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1560,14 +1560,14 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
-  uint textureWidthLog2;
-  uint textureHeightLog2;
+  uint32_t textureWidthLog2;
+  uint32_t textureHeightLog2;
   GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
   GraphicsTextureHandle deviceTextureHandle;
-  sdword bindResult;
-  byte coordinateShift;
-  uint largerDimensionLog2;
+  int32_t bindResult;
+  uint8_t coordinateShift;
+  uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
@@ -1743,7 +1743,7 @@ Direct3D_PrimitiveHandler_TexturedPreset3(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;
@@ -1764,14 +1764,14 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
 
 {
   GraphicsPrimitiveTextureCoordinateFixed *textureCoordinate;
-  uint textureWidthLog2;
-  uint textureHeightLog2;
+  uint32_t textureWidthLog2;
+  uint32_t textureHeightLog2;
   GraphicsTextureSetEntry *packetTextureEntry;
   GraphicsTextureResource *texture;
   GraphicsTextureHandle deviceTextureHandle;
-  sdword bindResult;
-  byte coordinateShift;
-  uint largerDimensionLog2;
+  int32_t bindResult;
+  uint8_t coordinateShift;
+  uint32_t largerDimensionLog2;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
@@ -1947,7 +1947,7 @@ Direct3D_PrimitiveHandler_TexturedPreset4(GraphicsPrimitivePacket *packet)
     if (bindResult != 0) {
       newBoundTextureHandle = (IDirect3DDevice2 *)g_BoundTextureHandle;
     }
-    g_BoundTextureHandle = (dword)newBoundTextureHandle;
+    g_BoundTextureHandle = (uint32_t)newBoundTextureHandle;
     g_TextureBindStateChangeCount = g_TextureBindStateChangeCount + 1;
   }
   return;

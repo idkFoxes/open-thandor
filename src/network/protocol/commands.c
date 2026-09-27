@@ -23,7 +23,7 @@ FrontendCommandQueue_EnqueueLocalPlayerCommand
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
-  uint packedCommandAndPlayerId;
+  uint32_t packedCommandAndPlayerId;
   UiCommandQueueRecord *writeRecord;
   
   writeRecord = g_FrontendCommandQueueEnd;
@@ -49,7 +49,7 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
 
 {
   int firstRecordDwordsRemaining;
-  uint trailingDwordCount;
+  uint32_t trailingDwordCount;
   UiCommandQueueRecord *copySourceCursor;
   UiCommandQueueRecord *outputRecordWriteCursor;
   UiCommandQueueRecord *copyDestinationCursor;
@@ -69,7 +69,7 @@ FrontendCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputR
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
   }
   copyDestinationCursor = g_FrontendCommandQueueRecords;
-  trailingDwordCount = (uint)((byte *)queueEndSnapshot - (byte *)&g_FrontendCommandQueueRecords[1]) >> 2;
+  trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_FrontendCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;
@@ -95,7 +95,7 @@ InGameCommandQueue_AppendLocalPlayerCommand
           CommandPayloadDword08 payloadDword08,CommandPayloadDword04 payloadDword04)
 
 {
-  uint packedCommandAndPlayerId;
+  uint32_t packedCommandAndPlayerId;
   UiCommandQueueRecord *writeRecord;
   
   writeRecord = g_InGameCommandQueueEnd;
@@ -121,7 +121,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
 
 {
   int firstRecordDwordsRemaining;
-  uint trailingDwordCount;
+  uint32_t trailingDwordCount;
   UiCommandQueueRecord *copySourceCursor;
   UiCommandQueueRecord *outputRecordWriteCursor;
   UiCommandQueueRecord *copyDestinationCursor;
@@ -141,7 +141,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
     outputRecordWriteCursor = (UiCommandQueueRecord *)&outputRecordWriteCursor->payloadDword04;
   }
   copyDestinationCursor = g_InGameCommandQueueRecords;
-  trailingDwordCount = (uint)((byte *)queueEndSnapshot - (byte *)&g_InGameCommandQueueRecords[1]) >> 2;
+  trailingDwordCount = (uint32_t)((uint8_t *)queueEndSnapshot - (uint8_t *)&g_InGameCommandQueueRecords[1]) >> 2;
   if (trailingDwordCount != 0) {
     for (; trailingDwordCount != 0; trailingDwordCount = trailingDwordCount - 1) {
       copyDestinationCursor->packedCommandAndPlayerId = copySourceCursor->packedCommandAndPlayerId;

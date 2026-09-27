@@ -42,10 +42,10 @@ typedef struct RasterColor {
 
 /* Where a family draws: 16-bit framebuffer, 32-bit framebuffer or the auxiliary 32-bit target. */
 typedef struct RasterTarget {
-    byte *pixels;          /* row 0 of the colour target */
+    uint8_t *pixels;          /* row 0 of the colour target */
     int pixelBytes;        /* 2 or 4 */
     int pixelStride;       /* bytes per colour row */
-    byte *depth;           /* row 0 of the depth buffer (one dword per pixel) */
+    uint8_t *depth;           /* row 0 of the depth buffer (one dword per pixel) */
     int depthStride;       /* bytes per depth row */
     int clipMinX;          /* clip rectangle in pixels, max exclusive */
     int clipMinY;
@@ -69,10 +69,10 @@ typedef enum RasterShading {
 
 /* A texture as the textured modes (16..30) sample it: nearest texel, wrapped. */
 typedef struct RasterTexture {
-    const byte *texels;    /* one byte per texel (paletted) or one dword (direct colour) */
-    const byte *palette;   /* 256 entries of 8 bytes (only the first dword is used), NULL for direct colour */
-    dword uMask;           /* (width - 1) << 12 */
-    dword vMask;           /* (height - 1) << 12 */
+    const uint8_t *texels;    /* one byte per texel (paletted) or one dword (direct colour) */
+    const uint8_t *palette;   /* 256 entries of 8 bytes (only the first dword is used), NULL for direct colour */
+    uint32_t uMask;           /* (width - 1) << 12 */
+    uint32_t vMask;           /* (height - 1) << 12 */
     int widthLog2;
 } RasterTexture;
 
@@ -83,7 +83,7 @@ typedef struct RasterEdges {
     int longXStep;         /* per scanline */
     int shortX;
     int shortXStep;
-    dword longDepth;
+    uint32_t longDepth;
     int longDepthStep;
     RasterColor longColor;
     RasterColor longColorStep;
@@ -97,13 +97,13 @@ typedef struct RasterEdges {
 /* One horizontal run of pixels, handed to the mode's span function. The span is walked away from
    the long edge, so it runs left to right or right to left; the deltas already carry the sign. */
 typedef struct RasterSpan {
-    byte *pixel;           /* first pixel */
-    dword *depth;          /* its depth buffer entry */
+    uint8_t *pixel;           /* first pixel */
+    uint32_t *depth;          /* its depth buffer entry */
     int count;             /* pixels to draw, > 0 */
     int pixelStep;         /* +pixelBytes or -pixelBytes */
     int depthPointerStep;  /* +1 or -1 (dwords) */
-    dword depthValue;      /* interpolated depth of the current pixel */
-    dword depthDelta;      /* per pixel, in span direction */
+    uint32_t depthValue;      /* interpolated depth of the current pixel */
+    uint32_t depthDelta;      /* per pixel, in span direction */
     RasterColor color;     /* interpolated colour of the current pixel */
     RasterColor colorDelta;
     int u;                 /* interpolated texture coordinates of the current pixel */
@@ -126,7 +126,7 @@ static __inline int Raster_MulShift(int a, int b, int shift)
 /* Difference of two 32-bit values with wrap-around (SUB), e.g. of depths. */
 static __inline int Raster_Diff(int a, int b)
 {
-    return (int)((dword)a - (dword)b);
+    return (int)((uint32_t)a - (uint32_t)b);
 }
 
 /* One byte channel (0 = blue .. 3 = alpha) of a packed ARGB colour. */
@@ -179,17 +179,17 @@ static __inline RasterColor RasterColor_ShiftRight(RasterColor a, int shift)
 
 /* Unpacks a 16-bit framebuffer pixel into lanes of channel * 16 (Q4), using the runtime 565/555
    constants: mask the channel, scale it to the top of 16 bits (PMULLW), shift down by 4 (PSRLW). */
-static __inline RasterColor Raster_Unpack16(word pixel)
+static __inline RasterColor Raster_Unpack16(uint16_t pixel)
 {
     const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const word masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (word)k->packedPixelMasks.zero};
-    const word scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (word)k->unpackScales.zero};
+    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
+                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
+    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
+                                            (uint16_t)k->unpackScales.zero};
     RasterColor result;
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        word scaled = (word)((pixel & masks[i]) * scales[i]);
+        uint16_t scaled = (uint16_t)((pixel & masks[i]) * scales[i]);
         result.lane[i] = (short)(scaled >> 4);
     }
     return result;
@@ -197,7 +197,7 @@ static __inline RasterColor Raster_Unpack16(word pixel)
 
 /* Unpacks a 32-bit pixel (blue in the low byte) into lanes of (c * 0x101) >> 4, about channel * 16
    (Q4): MOVD + PUNPCKLBW with itself + PSRLW 4. Used by the Non16 and Aux families. */
-static __inline RasterColor Raster_Unpack32(dword pixel)
+static __inline RasterColor Raster_Unpack32(uint32_t pixel)
 {
     RasterColor result;
     int i;
@@ -210,29 +210,29 @@ static __inline RasterColor Raster_Unpack32(dword pixel)
 /* Packs four channel bytes into a 16-bit framebuffer pixel with the runtime 565/555 constants:
    widen to 12 bits (PUNPCKLBW + PSRLW 4), keep the channel's top bits (PAND), move them into place
    with PMADDWD and add the two dword halves. */
-static __inline word Raster_Pack16(const int channel[RASTER_LANE_COUNT])
+static __inline uint16_t Raster_Pack16(const int channel[RASTER_LANE_COUNT])
 {
     const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const word masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
-                                           k->quantizeMasksQ12.red, (word)k->quantizeMasksQ12.zero};
-    const word weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
-                                             (word)k->packWeights.zero};
+    const uint16_t masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
+                                           k->quantizeMasksQ12.red, (uint16_t)k->quantizeMasksQ12.zero};
+    const uint16_t weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
+                                             (uint16_t)k->packWeights.zero};
     short q[RASTER_LANE_COUNT];
-    dword low;
-    dword high;
+    uint32_t low;
+    uint32_t high;
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         q[i] = (short)(((channel[i] * 0x101) >> 4) & masks[i]);
     }
-    low = (dword)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
-    high = (dword)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
-    return (word)((low >> 8) + (high >> 8));
+    low = (uint32_t)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
+    high = (uint32_t)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
+    return (uint16_t)((low >> 8) + (high >> 8));
 }
 
 /* Packs four channel bytes into a 32-bit pixel (blue in the low byte, PACKUSWB + MOVD). */
-static __inline dword Raster_Pack32(const int channel[RASTER_LANE_COUNT])
+static __inline uint32_t Raster_Pack32(const int channel[RASTER_LANE_COUNT])
 {
-    return (dword)channel[0] | ((dword)channel[1] << 8) | ((dword)channel[2] << 16) | ((dword)channel[3] << 24);
+    return (uint32_t)channel[0] | ((uint32_t)channel[1] << 8) | ((uint32_t)channel[2] << 16) | ((uint32_t)channel[3] << 24);
 }
 
 /* Lanes >> shift, saturated to bytes (PSRAW + PACKUSWB). */
@@ -245,7 +245,7 @@ static __inline void Raster_LanesToBytes(RasterColor color, int shift, int chann
 }
 
 /* Q6 shaded colour -> 16-bit pixel. */
-static __inline word Raster_ShadeToPixel16(RasterColor color)
+static __inline uint16_t Raster_ShadeToPixel16(RasterColor color)
 {
     int channel[RASTER_LANE_COUNT];
     Raster_LanesToBytes(color, 6, channel);
@@ -260,7 +260,7 @@ static __inline word Raster_ShadeToPixel16(RasterColor color)
    256 entries into the image data behind them, as the original does. Result in Q4. */
 static __inline RasterColor Raster_BlendAlpha(RasterColor sourceQ4, RasterColor destinationQ4)
 {
-    unsigned index = (word)sourceQ4.lane[RASTER_LANE_ALPHA] >> 4;
+    unsigned index = (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >> 4;
     const SoftwareRgbWordLanes *alpha = &g_SoftwareBlendAlphaFactors[0] + index;
     const SoftwareRgbWordLanes *inverse = &g_SoftwareBlendInverseAlphaFactors[0] + index;
     const short alphaLanes[RASTER_LANE_COUNT] = {(short)alpha->blue, (short)alpha->green, (short)alpha->red,
@@ -316,7 +316,7 @@ static __inline int Raster_SetupTriangle(const GraphicsPrimitivePacket *packet, 
     edges->longX = v0->screenX;
     edges->shortX = v0->screenX;
     edges->longXStep = Raster_MulShift(v2->screenX - v0->screenX, invHeight, 12);
-    edges->longDepth = (dword)v0->depth;
+    edges->longDepth = (uint32_t)v0->depth;
     edges->longDepthStep = Raster_MulShift(Raster_Diff(v2->depth, v0->depth), invHeight, 12);
     if (textured) {
         edges->longU = v0->textureU;
@@ -387,7 +387,7 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         span.count = end - first;
         span.pixelStep = target->pixelBytes;
         span.depthPointerStep = 1;
-        span.depthDelta = (dword)gradients->depthStepX;
+        span.depthDelta = (uint32_t)gradients->depthStepX;
         span.colorDelta = gradients->colorStepX;
         span.uDelta = gradients->uStepX;
         span.vDelta = gradients->vStepX;
@@ -403,7 +403,7 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         span.count = first - end;
         span.pixelStep = -target->pixelBytes;
         span.depthPointerStep = -1;
-        span.depthDelta = (dword)-gradients->depthStepX;
+        span.depthDelta = (uint32_t)-gradients->depthStepX;
         span.colorDelta = RasterColor_Negate(gradients->colorStepX);
         span.uDelta = -gradients->uStepX;
         span.vDelta = -gradients->vStepX;
@@ -411,8 +411,8 @@ static __forceinline void Raster_DrawScanline(const RasterTarget *target, const 
         first--;
     }
     span.pixel = target->pixels + edges->scanlineY * target->pixelStride + first * target->pixelBytes;
-    span.depth = (dword *)(target->depth + edges->scanlineY * target->depthStride) + first;
-    span.depthValue = edges->longDepth + (dword)Raster_MulShift(prestep, gradients->depthStepX, 12);
+    span.depth = (uint32_t *)(target->depth + edges->scanlineY * target->depthStride) + first;
+    span.depthValue = edges->longDepth + (uint32_t)Raster_MulShift(prestep, gradients->depthStepX, 12);
     span.u = edges->longU + Raster_MulShift(prestep, gradients->uStepX, 12);
     span.v = edges->longV + Raster_MulShift(prestep, gradients->vStepX, 12);
     span.texture = texture;
@@ -433,7 +433,7 @@ static __forceinline void Raster_WalkRows(const RasterTarget *target, RasterEdge
         if (edges->scanlineY >= target->clipMinY && edges->scanlineY < target->clipMaxY) {
             Raster_DrawScanline(target, edges, gradients, texture, drawSpan);
         }
-        edges->longDepth += (dword)edges->longDepthStep;
+        edges->longDepth += (uint32_t)edges->longDepthStep;
         edges->longColor = RasterColor_Add(edges->longColor, edges->longColorStep);
         edges->longU += edges->longUStep;
         edges->longV += edges->longVStep;
@@ -473,7 +473,7 @@ static __inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMa
     target.pixels = g_FramebufferAccess->pixels;
     target.pixelBytes = pixelBytes;
     target.pixelStride = (int)g_FramebufferRowStrideBytes;
-    target.depth = (byte *)g_SoftwareDepthBuffer;
+    target.depth = (uint8_t *)g_SoftwareDepthBuffer;
     target.depthStride = (int)g_SoftwareDepthRowStrideBytes;
     target.clipMinX = clipMinX;
     target.clipMinY = clipMinY;
@@ -487,10 +487,10 @@ static __inline RasterTarget Raster_FramebufferTarget(int pixelBytes, int clipMa
 static __inline RasterTarget Raster_AuxiliaryTarget(int clipMaxY, int clipMaxX, int clipMinY, int clipMinX)
 {
     RasterTarget target;
-    target.pixels = (byte *)g_SoftwareAuxiliaryTargetBase;
+    target.pixels = (uint8_t *)g_SoftwareAuxiliaryTargetBase;
     target.pixelBytes = 4;
     target.pixelStride = clipMaxX * 4;
-    target.depth = (byte *)g_SoftwareDepthBuffer;
+    target.depth = (uint8_t *)g_SoftwareDepthBuffer;
     target.depthStride = clipMaxX * 4;
     target.clipMinX = clipMinX;
     target.clipMinY = clipMinY;
@@ -518,29 +518,29 @@ static __inline void RasterSpan_Next(RasterSpan *span)
 static __inline void Raster_SetupTexture(const GraphicsPrimitivePacket *packet, RasterTexture *texture)
 {
     const GraphicsTextureSetEntry *entry = packet->textureEntry;
-    const byte *asset = (const byte *)entry->sourceAsset;
+    const uint8_t *asset = (const uint8_t *)entry->sourceAsset;
     const GraphicsTextureSourceEntry *source = entry->sourceEntry;
     int paletteIndex = (int)source->paletteIndex;
     texture->widthLog2 = (int)entry->widthLog2;
     texture->uMask = ((1u << (entry->widthLog2 & 31)) - 1) << 12;
     texture->vMask = ((1u << (entry->heightLog2 & 31)) - 1) << 12;
     texture->texels = asset + source->dataOffset;
-    texture->palette = paletteIndex < 0 ? NULL : asset + 0x200 + (dword)paletteIndex * 0x800;
+    texture->palette = paletteIndex < 0 ? NULL : asset + 0x200 + (uint32_t)paletteIndex * 0x800;
 }
 
 /* The ARGB texel at (u, v), both wrapped to the texture (nearest texel, no filtering). */
-static __inline dword Raster_FetchTexel(const RasterTexture *texture, int u, int v)
+static __inline uint32_t Raster_FetchTexel(const RasterTexture *texture, int u, int v)
 {
-    dword index = (((dword)u & texture->uMask) >> 12) +
-                  (dword)(((unsigned long long)((dword)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
+    uint32_t index = (((uint32_t)u & texture->uMask) >> 12) +
+                  (uint32_t)(((unsigned long long)((uint32_t)v & texture->vMask) << 32) >> (44 - texture->widthLog2));
     if (texture->palette != NULL) {
-        return *(const dword *)(texture->palette + texture->texels[index] * 8u);
+        return *(const uint32_t *)(texture->palette + texture->texels[index] * 8u);
     }
-    return ((const dword *)texture->texels)[index];
+    return ((const uint32_t *)texture->texels)[index];
 }
 
 /* An ARGB texel as lanes of (c * 0x101) >> 2 (PUNPCKLBW + PSRLW 2), ready for Raster_Modulate. */
-static __inline RasterColor Raster_TexelLanes(dword argb)
+static __inline RasterColor Raster_TexelLanes(uint32_t argb)
 {
     RasterColor result;
     int i;
@@ -569,7 +569,7 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
    MM2 instead (see docs/software_raster.md), and the C keeps this rule for them. */
 static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
 {
-    return (word)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
+    return (uint16_t)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
 }
 
 /* ---- Texture-source blits and rectangle fills --------------------------------------------- */
@@ -593,41 +593,41 @@ the same.
 
 /* One clipped image in the framebuffer, and where its first texel is. */
 typedef struct BlitRegion {
-    const byte *texels;    /* texel of the top-left drawn pixel */
+    const uint8_t *texels;    /* texel of the top-left drawn pixel */
     int texelBytes;        /* 1 (palette index) or 4 (ARGB) */
     int texelStride;       /* bytes per source row */
-    const byte *palette;   /* palette bank of a paletted image (256 entries of 8 bytes), else NULL */
-    byte *pixels;          /* top-left drawn pixel */
+    const uint8_t *palette;   /* palette bank of a paletted image (256 entries of 8 bytes), else NULL */
+    uint8_t *pixels;          /* top-left drawn pixel */
     int pixelBytes;        /* 2 or 4 */
     int pixelStride;       /* bytes per framebuffer row (framebuffer->width pixels) */
     int width;             /* drawn size in pixels, both > 0 */
     int height;
 } BlitRegion;
 
-static __inline int Blit_IsTransparent(dword argb)
+static __inline int Blit_IsTransparent(uint32_t argb)
 {
     return argb < 0x1000000u;
 }
 
-static __inline int Blit_IsOpaque(dword argb)
+static __inline int Blit_IsOpaque(uint32_t argb)
 {
     return argb >= 0xff000000u;
 }
 
 /* The two dwords of a palette entry: +0 ARGB colour, +4 converted (16-bit) pixel with the alpha on top. */
-static __inline dword Blit_PaletteColor(const BlitRegion *region, byte index)
+static __inline uint32_t Blit_PaletteColor(const BlitRegion *region, uint8_t index)
 {
-    return *(const dword *)(region->palette + index * 8u);
+    return *(const uint32_t *)(region->palette + index * 8u);
 }
 
-static __inline dword Blit_PalettePixel(const BlitRegion *region, byte index)
+static __inline uint32_t Blit_PalettePixel(const BlitRegion *region, uint8_t index)
 {
-    return *(const dword *)(region->palette + index * 8u + 4u);
+    return *(const uint32_t *)(region->palette + index * 8u + 4u);
 }
 
 /* ARGB -> framebuffer pixel through the g_SoftwarePixelPackTables channel tables. The alpha byte is
    added on top; a 16-bit framebuffer keeps the low word. */
-static __inline dword Blit_ConvertArgb(dword argb)
+static __inline uint32_t Blit_ConvertArgb(uint32_t argb)
 {
     const SoftwarePixelPackTables *tables = g_SoftwarePixelPackTables;
     return tables->blue[argb & 0xff] + (argb & 0xff000000u) + tables->green[(argb >> 8) & 0xff] +
@@ -635,7 +635,7 @@ static __inline dword Blit_ConvertArgb(dword argb)
 }
 
 /* ARGB (or a 32-bit pixel) as lanes of (c * 0x101) >> shift (PUNPCKLBW with itself + PSRLW). */
-static __inline RasterColor Blit_ArgbLanes(dword argb, int shift)
+static __inline RasterColor Blit_ArgbLanes(uint32_t argb, int shift)
 {
     RasterColor result;
     int i;
@@ -647,17 +647,17 @@ static __inline RasterColor Blit_ArgbLanes(dword argb, int shift)
 
 /* A 16-bit framebuffer pixel as lanes: masked channel scaled to the top of 16 bits (PAND + PMULLW
    with the 565/555 constants), then >> 2 (PSRLW). Same scale as Blit_ArgbLanes(argb, 2). */
-static __inline RasterColor Blit_Unpack16(word pixel)
+static __inline RasterColor Blit_Unpack16(uint16_t pixel)
 {
     const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const word masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (word)k->packedPixelMasks.zero};
-    const word scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (word)k->unpackScales.zero};
+    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
+                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
+    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
+                                            (uint16_t)k->unpackScales.zero};
     RasterColor result;
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        word scaled = (word)((pixel & masks[i]) * scales[i]);
+        uint16_t scaled = (uint16_t)((pixel & masks[i]) * scales[i]);
         result.lane[i] = (short)(scaled >> 2);
     }
     return result;
@@ -684,43 +684,43 @@ static __inline RasterColor Blit_BlendLanes(RasterColor source, RasterColor dest
 
 /* Blended lanes (channel << 4, 12 bits) -> 16-bit pixel: PAND with the quantize masks, PMADDWD with
    the pack weights, and the word sum of bits 8..23 of both dword halves (PSRLQ 8 / 40 + PADDW). */
-static __inline word Blit_PackLanes16(RasterColor lanes)
+static __inline uint16_t Blit_PackLanes16(RasterColor lanes)
 {
     const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const word masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
-                                           k->quantizeMasksQ12.red, (word)k->quantizeMasksQ12.zero};
-    const word weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
-                                             (word)k->packWeights.zero};
+    const uint16_t masks[RASTER_LANE_COUNT] = {k->quantizeMasksQ12.blue, k->quantizeMasksQ12.green,
+                                           k->quantizeMasksQ12.red, (uint16_t)k->quantizeMasksQ12.zero};
+    const uint16_t weights[RASTER_LANE_COUNT] = {k->packWeights.blue, k->packWeights.green, k->packWeights.red,
+                                             (uint16_t)k->packWeights.zero};
     short q[RASTER_LANE_COUNT];
-    dword low;
-    dword high;
+    uint32_t low;
+    uint32_t high;
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
         q[i] = (short)(lanes.lane[i] & masks[i]);
     }
-    low = (dword)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
-    high = (dword)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
-    return (word)((low >> 8) + (high >> 8));
+    low = (uint32_t)(q[0] * (short)weights[0] + q[1] * (short)weights[1]);
+    high = (uint32_t)(q[2] * (short)weights[2] + q[3] * (short)weights[3]);
+    return (uint16_t)((low >> 8) + (high >> 8));
 }
 
 /* Blended lanes -> 32-bit pixel: PSRLW 4 (logical) + PACKUSWB, alpha lane included. */
-static __inline dword Blit_PackLanes32(RasterColor lanes)
+static __inline uint32_t Blit_PackLanes32(RasterColor lanes)
 {
     int channel[RASTER_LANE_COUNT];
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        channel[i] = Raster_SaturateByte((word)lanes.lane[i] >> 4);
+        channel[i] = Raster_SaturateByte((uint16_t)lanes.lane[i] >> 4);
     }
     return Raster_Pack32(channel);
 }
 
 /* Source-alpha blend of an ARGB colour over a 16-bit / 32-bit pixel, alpha = the colour's top byte. */
-static __inline word Blit_BlendArgb16(dword argb, word destination)
+static __inline uint16_t Blit_BlendArgb16(uint32_t argb, uint16_t destination)
 {
     return Blit_PackLanes16(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_Unpack16(destination), argb >> 24));
 }
 
-static __inline dword Blit_BlendArgb32(dword argb, dword destination)
+static __inline uint32_t Blit_BlendArgb32(uint32_t argb, uint32_t destination)
 {
     return Blit_PackLanes32(Blit_BlendLanes(Blit_ArgbLanes(argb, 2), Blit_ArgbLanes(destination, 2), argb >> 24));
 }
@@ -766,7 +766,7 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
                                           SoftwareFramebufferAccess *framebuffer, int pixelBytes, int drawX, int drawY,
                                           int clipMaxY, int clipMaxX, int clipMinY, int clipMinX, BlitRegion *region)
 {
-    const byte *asset = (const byte *)sourceAsset;
+    const uint8_t *asset = (const uint8_t *)sourceAsset;
     const GraphicsTextureSourceEntry *entry;
     int left;
     int top;
@@ -784,9 +784,9 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
         region->texelBytes = 4;
         region->palette = NULL;
     }
-    else if ((dword)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
+    else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         region->texelBytes = 1;
-        region->palette = asset + 0x200 + (dword)entry->paletteIndex * 0x800;
+        region->palette = asset + 0x200 + (uint32_t)entry->paletteIndex * 0x800;
     }
     else {
         return 0;
@@ -818,37 +818,37 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
    (c * mc) >> 8, so even modulation 0xFFFFFFFF darkens by one step (0xFF * 0xFF >> 8 = 0xFE). In
    particular the modulated alpha is at most 0xFE: the opaque shortcut of the Modulated blits is dead
    code, and every visible texel goes through the blend. */
-static __inline dword Blit_Modulate(dword argb, dword modulation)
+static __inline uint32_t Blit_Modulate(uint32_t argb, uint32_t modulation)
 {
-    dword blue = ((argb & 0xff) * (modulation & 0xff)) >> 8;
-    dword green = (((argb >> 8) & 0xff) * ((modulation >> 8) & 0xff)) & 0xff00u;
-    dword red = (((argb >> 16) & 0xff) * ((modulation >> 16) & 0xff)) & 0xff00u;
-    dword alpha = ((argb >> 24) * (modulation >> 24)) & 0xff00u;
+    uint32_t blue = ((argb & 0xff) * (modulation & 0xff)) >> 8;
+    uint32_t green = (((argb >> 8) & 0xff) * ((modulation >> 8) & 0xff)) & 0xff00u;
+    uint32_t red = (((argb >> 16) & 0xff) * ((modulation >> 16) & 0xff)) & 0xff00u;
+    uint32_t alpha = ((argb >> 24) * (modulation >> 24)) & 0xff00u;
     return blue | green | (red << 8) | (alpha << 16);
 }
 
 /* ---- B2: saturated add (BlitSaturatedAddRgb, BlitHalfRgbSaturatedAdd) ------------------------ */
 
 /* PADDUSW of one lane: unsigned 16-bit add, clamped at 0xFFFF. */
-static __inline word Blit_AddSaturateWord(word a, word b)
+static __inline uint16_t Blit_AddSaturateWord(uint16_t a, uint16_t b)
 {
-    dword sum = (dword)a + b;
-    return (word)(sum > 0xffffu ? 0xffffu : sum);
+    uint32_t sum = (uint32_t)a + b;
+    return (uint16_t)(sum > 0xffffu ? 0xffffu : sum);
 }
 
 /* A 16-bit framebuffer pixel as lanes without Blit_Unpack16's final >> 2: the masked channel times
    the unpack scale, low 16 bits (PAND + PMULLW), i.e. the channel at the top of the word. */
-static __inline RasterColor Blit_Unpack16Unshifted(word pixel)
+static __inline RasterColor Blit_Unpack16Unshifted(uint16_t pixel)
 {
     const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
-    const word masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
-                                           k->packedPixelMasks.red, (word)k->packedPixelMasks.zero};
-    const word scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
-                                            (word)k->unpackScales.zero};
+    const uint16_t masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
+                                           k->packedPixelMasks.red, (uint16_t)k->packedPixelMasks.zero};
+    const uint16_t scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
+                                            (uint16_t)k->unpackScales.zero};
     RasterColor result;
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        result.lane[i] = (short)(word)((pixel & masks[i]) * scales[i]);
+        result.lane[i] = (short)(uint16_t)((pixel & masks[i]) * scales[i]);
     }
     return result;
 }
@@ -857,27 +857,27 @@ static __inline RasterColor Blit_Unpack16Unshifted(word pixel)
    Blit_Unpack16Unshifted, PADDUSW, then PSRLW 4 down to the Q12 scale Blit_PackLanes16 expects.
    The alpha lane goes through the same steps; the pack constants' fourth lane decides whether it
    reaches the pixel. */
-static __inline word Blit_AddArgb16(dword argb, word destination, int sourceShift)
+static __inline uint16_t Blit_AddArgb16(uint32_t argb, uint16_t destination, int sourceShift)
 {
     RasterColor source = Blit_ArgbLanes(argb, sourceShift);
     RasterColor sum = Blit_Unpack16Unshifted(destination);
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        sum.lane[i] = (short)(Blit_AddSaturateWord((word)sum.lane[i], (word)source.lane[i]) >> 4);
+        sum.lane[i] = (short)(Blit_AddSaturateWord((uint16_t)sum.lane[i], (uint16_t)source.lane[i]) >> 4);
     }
     return Blit_PackLanes16(sum);
 }
 
 /* Adds an ARGB colour to a 32-bit pixel: both as lanes c * 0x101 (the source >> sourceShift),
    PADDUSW, PSRLW 8 and PACKUSWB. All four bytes, alpha included, are summed and written. */
-static __inline dword Blit_AddArgb32(dword argb, dword destination, int sourceShift)
+static __inline uint32_t Blit_AddArgb32(uint32_t argb, uint32_t destination, int sourceShift)
 {
     RasterColor source = Blit_ArgbLanes(argb, sourceShift);
     RasterColor target = Blit_ArgbLanes(destination, 0);
     int channel[RASTER_LANE_COUNT];
     int i;
     for (i = 0; i < RASTER_LANE_COUNT; i++) {
-        channel[i] = Blit_AddSaturateWord((word)target.lane[i], (word)source.lane[i]) >> 8;
+        channel[i] = Blit_AddSaturateWord((uint16_t)target.lane[i], (uint16_t)source.lane[i]) >> 8;
     }
     return Raster_Pack32(channel);
 }
@@ -891,11 +891,11 @@ destination pointer walks the unclipped image; a pixel at (x, y) is at pixels + 
 pixelBytes, which is what BlitScaled_Pixel computes, and only for pixels that pass the clip test.
 */
 typedef struct BlitScaledImage {
-    const byte *texels;  /* first texel of the subresource */
+    const uint8_t *texels;  /* first texel of the subresource */
     int texelBytes;      /* 1 (palette index) or 4 (ARGB) */
-    const byte *palette; /* palette bank of a paletted image, else NULL */
-    dword width;         /* source size in texels (the original's loop counters; 0 would mean 2^32) */
-    dword height;
+    const uint8_t *palette; /* palette bank of a paletted image, else NULL */
+    uint32_t width;         /* source size in texels (the original's loop counters; 0 would mean 2^32) */
+    uint32_t height;
     int left;            /* framebuffer position of the scaled image: draw + origin * scale */
     int top;
     int clipMinX;        /* clip rectangle clamped to the framebuffer */
@@ -908,11 +908,11 @@ typedef struct BlitScaledImage {
    negative paletteIndex (TEST + JS), not only -1, means ARGB texels, and the origin is scaled. */
 static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAsset,
                                      GraphicsSubresourceIndex subresourceIndex,
-                                     const SoftwareFramebufferAccess *framebuffer, int pixelBytes, dword scale,
+                                     const SoftwareFramebufferAccess *framebuffer, int pixelBytes, uint32_t scale,
                                      int drawX, int drawY, int clipMaxY, int clipMaxX, int clipMinY, int clipMinX,
                                      BlitScaledImage *image)
 {
-    const byte *asset = (const byte *)sourceAsset;
+    const uint8_t *asset = (const uint8_t *)sourceAsset;
     const GraphicsTextureSourceEntry *entry;
 
     if (sourceAsset->common.magic != ASSET_MAGIC_GFX ||
@@ -926,9 +926,9 @@ static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAss
         image->texelBytes = 4;
         image->palette = NULL;
     }
-    else if ((dword)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
+    else if ((uint32_t)entry->paletteIndex < sourceAsset->tableDescriptor.paletteBankCount) {
         image->texelBytes = 1;
-        image->palette = asset + 0x200 + (dword)entry->paletteIndex * 0x800;
+        image->palette = asset + 0x200 + (uint32_t)entry->paletteIndex * 0x800;
     }
     else {
         return 0;
@@ -936,8 +936,8 @@ static __inline int Blit_SetupScaled(const GraphicsTextureSourceAsset *sourceAss
     image->texels = asset + entry->dataOffset;
     image->width = entry->pixelWidth;
     image->height = entry->pixelHeight;
-    image->left = (int)((dword)drawX + (dword)entry->originX * scale);
-    image->top = (int)((dword)drawY + (dword)entry->originY * scale);
+    image->left = (int)((uint32_t)drawX + (uint32_t)entry->originX * scale);
+    image->top = (int)((uint32_t)drawY + (uint32_t)entry->originY * scale);
     image->clipMinX = clipMinX < 0 ? 0 : clipMinX;
     image->clipMinY = clipMinY < 0 ? 0 : clipMinY;
     image->clipMaxX = clipMaxX > (int)framebuffer->width ? (int)framebuffer->width : clipMaxX;
@@ -957,17 +957,17 @@ static __inline int BlitScaled_ColumnVisible(const BlitScaledImage *image, int x
 
 /* The texel's alpha-test colour and blend colour. A paletted texel tests the entry's converted pixel
    (+4) and blends the entry's ARGB colour (+0), in both depths; a direct texel is both. */
-static __inline dword BlitScaled_TexelColor(const BlitScaledImage *image, const byte *texel, dword *blendColor)
+static __inline uint32_t BlitScaled_TexelColor(const BlitScaledImage *image, const uint8_t *texel, uint32_t *blendColor)
 {
     if (image->palette != NULL) {
-        *blendColor = *(const dword *)(image->palette + *texel * 8u);
-        return *(const dword *)(image->palette + *texel * 8u + 4u);
+        *blendColor = *(const uint32_t *)(image->palette + *texel * 8u);
+        return *(const uint32_t *)(image->palette + *texel * 8u + 4u);
     }
-    *blendColor = *(const dword *)texel;
+    *blendColor = *(const uint32_t *)texel;
     return *blendColor;
 }
 
-static __inline byte *BlitScaled_Pixel(const SoftwareFramebufferAccess *framebuffer, int pixelBytes, int x, int y)
+static __inline uint8_t *BlitScaled_Pixel(const SoftwareFramebufferAccess *framebuffer, int pixelBytes, int x, int y)
 {
     return framebuffer->pixels + (y * (int)framebuffer->width + x) * pixelBytes;
 }

@@ -28,7 +28,7 @@ void __thandor_preserve_eax PersistentSettings_Flush(void);
 void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void);
 
 /* 0x00402C50 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 PersistentSettings_ReadDword
           (PersistentSettingsDwordValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes);
@@ -42,7 +42,7 @@ PersistentSettings_GetRegionOrFallback
 /* 0x00402CF0 */
 void __thandor_void_preserve_eax_ecx_edx
 PersistentSettings_WriteDwords
-          (PersistentSettingsByteCount regionByteCount,dword *source,
+          (PersistentSettingsByteCount regionByteCount,uint32_t *source,
           PersistentSettingsByteOffset settingsOffsetBytes);
 
 /* 0x00402C80 */

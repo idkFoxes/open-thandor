@@ -36,7 +36,7 @@ AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell);
 /* 0x00537CF0 */
 void __thandor_void_preserve_ecx_edx
 AiSiteCandidate_AddTerrainFeatureCellIfSeparated
-          (FieldGridCell *terrainFeatureCell,dword gridScratchRowStrideBytes);
+          (FieldGridCell *terrainFeatureCell,uint32_t gridScratchRowStrideBytes);
 
 /* 0x00539200 */
 bool __thandor_cf_preserve_eax_ecx_edx

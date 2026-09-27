@@ -27,8 +27,8 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
   /* Rewritten from the assembly (0x004869B0-0x00486AFC). The original reports "point outside the
      triangle" through CF, which the decompiler dropped; it is published in
      g_Triangle2DBarycentricOutside. Weights are Q16 internally and returned >> 4. */
-  longlong denominator;
-  longlong numerator;
+  int64_t denominator;
+  int64_t numerator;
   int denominatorShifted;
   int denominatorHigh;
   int weightA;
@@ -44,15 +44,15 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
       (pointY < vertexCY && pointY < vertexBY && pointY < vertexAY)) {
     return result;
   }
-  denominator = (longlong)vertexCX * (vertexAY - vertexBY) + (longlong)vertexBX * (vertexCY - vertexAY) +
-                (longlong)vertexAX * (vertexBY - vertexCY);
+  denominator = (int64_t)vertexCX * (vertexAY - vertexBY) + (int64_t)vertexBX * (vertexCY - vertexAY) +
+                (int64_t)vertexAX * (vertexBY - vertexCY);
   denominatorHigh = (int)(denominator >> 32);
   denominatorShifted = (int)(denominator >> 16);
   if (denominatorShifted == 0) {
     return result;
   }
-  numerator = (longlong)(pointY - vertexBY) * vertexCX + (longlong)(vertexCY - pointY) * vertexBX +
-              (longlong)(vertexBY - vertexCY) * pointX;
+  numerator = (int64_t)(pointY - vertexBY) * vertexCX + (int64_t)(vertexCY - pointY) * vertexBX +
+              (int64_t)(vertexBY - vertexCY) * pointX;
   if (denominatorHigh >= 0 ? (int)(numerator >> 32) > denominatorHigh
                            : (int)(numerator >> 32) < denominatorHigh) {
     return result;
@@ -61,8 +61,8 @@ Triangle2D_ComputeBarycentricWeightsQ12Packed
   if (weightA < 0 || weightA > 0x10000) {
     return result;
   }
-  numerator = (longlong)(vertexAY - pointY) * vertexCX + (longlong)(vertexCY - vertexAY) * pointX +
-              (longlong)(pointY - vertexCY) * vertexAX;
+  numerator = (int64_t)(vertexAY - pointY) * vertexCX + (int64_t)(vertexCY - vertexAY) * pointX +
+              (int64_t)(pointY - vertexCY) * vertexAX;
   if (denominatorHigh >= 0 ? (int)(numerator >> 32) > denominatorHigh
                            : (int)(numerator >> 32) < denominatorHigh) {
     return result;

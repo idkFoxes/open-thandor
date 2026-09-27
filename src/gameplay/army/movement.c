@@ -37,10 +37,10 @@ ArmyRuntimeClass_UpdateArticulatedMovement
   int previousWorldX;
   int previousWorldY;
   ModelDefinitionArticulatedMovementView280 *movementDefinition;
-  sdword waterDelta;
+  int32_t waterDelta;
   int advanceOrDelta;
-  dword advanceOrHeading;
-  uint relativeHeading;
+  uint32_t advanceOrHeading;
+  uint32_t relativeHeading;
   ModelRuntimeNode *steeringAngle16;
   int component0;
   ArmyRuntimeCoordinateCommandOrHistoryValue4 x;
@@ -93,7 +93,7 @@ ArmyRuntimeClass_UpdateArticulatedMovement
                g_InGameSimulationStepTicks) >> 0xc);
     if (((modelRuntime->articulatedContact).fallbackPosition0Q12 & 2U) == 0) {
       modelRuntime->runtimeStateA8 =
-           (dword)((steeringAngle16->modelPayload).reserved2C_33 +
+           (uint32_t)((steeringAngle16->modelPayload).reserved2C_33 +
                   (modelRuntime->runtimeStateA8 - 0x38));
       if (0xfff < modelRuntime->runtimeStateA8) {
         contactStateFlags = &(modelRuntime->articulatedContact).fallbackPosition0Q12;
@@ -200,7 +200,7 @@ ArmyArticulatedMovement_ClearContactTransitionAndAdvanceWaypoint:
         advanceOrDelta = waypointResult.worldXQ12 - (modelNode1->worldTransform).translation.x;
         component0 = waypointResult.worldYQ12 - (modelNode1->worldTransform).translation.y;
         if ((advanceOrDelta == 0) && (component0 == 0)) {
-          targetAngleLength = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode1->modelPayload).worldRotationAngle2 << 0x20));
+          targetAngleLength = THANDOR_BITCAST(uint64_t, FixedLengthAngleEaxEdx8, ((uint64_t)(modelNode1->modelPayload).worldRotationAngle2 << 0x20));
         }
         else {
           targetAngleLength = FixedMath_Vector2AngleAndLengthRegs(component0,advanceOrDelta);
@@ -430,7 +430,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
   int backwardStepCountdown;
   FixedMathScale32 backwardStepScale;
   ModelRuntimeNode *modelNodeRuntime;
-  dword stepMultiplier;
+  uint32_t stepMultiplier;
   ArmyRuntimeSlot *commandTargetArmy;
   InGameSimulationStepBatchTicks elapsedTicks;
   Q12 point0Z;
@@ -584,7 +584,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
   ArmyWeaponDefinitionView68 *weaponDefinition;
   FixedMathScale32 backwardStepScale;
   ModelRuntimeNode *modelNodeRuntime;
-  dword stepMultiplier;
+  uint32_t stepMultiplier;
   ArmyRuntimeSlot *commandTargetArmy;
   InGameSimulationStepBatchTicks elapsedTicks;
   Q12 point0Z;
@@ -766,14 +766,14 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   ModelDefinitionGroundMovementTrackView280 *movementDefinition;
   ArmyPlacementContactKindIndex32 placementContactKind;
   ModelResourceHitTestAndRenderView210 *nodeModelResource;
-  sdword waterDelta;
+  int32_t waterDelta;
   int primaryDelta;
-  uint facingAngle;
-  dword trackDistance;
-  uint turnVelocityOrLimit;
+  uint32_t facingAngle;
+  uint32_t trackDistance;
+  uint32_t turnVelocityOrLimit;
   int secondaryDelta;
-  uint headingDifference;
-  uint desiredHeading;
+  uint32_t headingDifference;
+  uint32_t desiredHeading;
   ModelRuntimeNode *modelNode1;
   bool withinLinkRadius;
   FixedLengthAngleEaxEdx8 angleAndLength;
@@ -784,7 +784,7 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
-  dword targetDistance;
+  uint32_t targetDistance;
   ModelRuntimeNode *modelNode2;
   
   linkedOrOwnerArmy = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime;
@@ -817,7 +817,7 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      angleAndLength = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
+      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngleEaxEdx8, ((uint64_t)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLengthRegs(secondaryDelta,primaryDelta);
@@ -869,9 +869,9 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     facingAngle = facingAngle - desiredHeading & 0xffff;
     if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12C0) {
       turnVelocityOrLimit = movementDefinition->nearHeadingErrorLimitAngleC8 +
-               (int)(((longlong)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
-                     (longlong)(int)targetDistance) /
-                    (longlong)movementDefinition->headingErrorInterpolationDistanceQ12C0);
+               (int)(((int64_t)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
+                     (int64_t)(int)targetDistance) /
+                    (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12C0);
     }
     if ((turnVelocityOrLimit < facingAngle) && (facingAngle < 0x10000 - turnVelocityOrLimit)) {
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
@@ -889,7 +889,7 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     else {
       linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)linkedOrOwnerArmy);
-      nextPosition = THANDOR_PART(qword, waypointResult, 0);
+      nextPosition = THANDOR_PART(uint64_t, waypointResult, 0);
       ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -907,8 +907,8 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      THANDOR_PART(dword, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
-      THANDOR_PART(dword, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(uint32_t, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
       ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -1045,7 +1045,7 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
 {
   ArmyMovementStateFlags *ownerMovementFlags;
   AngleTurn32 *childRotationAngle;
-  dword *classStateWord;
+  uint32_t *classStateWord;
   ModelDefinitionGroundMovementSteeringView280 *movementDefinition;
   DirectSoundVoiceSet **voiceSetRef;
   AngleTurn32 previousRotationAngle;
@@ -1054,14 +1054,14 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   ModelRuntimeNode *thirdChildNode;
   AngleTurn32 currentHeading;
   ArmyPlacementContactKindIndex32 placementContactKind;
-  dword waypointWorldX;
+  uint32_t waypointWorldX;
   int primaryDelta;
   GraphicsFixedVec3 *worldPosition;
   ArmyRuntimeSlot *armyOrWaypointY;
   int secondaryDelta;
   AngleTurn32 angle16;
-  uint newHeading;
-  uint turnVelocityOrIndex;
+  uint32_t newHeading;
+  uint32_t turnVelocityOrIndex;
   ModelRuntimeNode *modelNode2;
   bool testResult;
   FixedPlanarPointEdxEax8 nextPosition;
@@ -1091,9 +1091,9 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
     if ((2 < turnVelocityOrIndex) && (((modelRuntime->classState).classStateB8 & 4) != 0)) {
       classStateWord = &(modelRuntime->classState).classStateB8;
       *classStateWord = *classStateWord | 1;
-      turnVelocityOrIndex = *(uint *)(movementDefinition->reserved26C_277 + 8);
+      turnVelocityOrIndex = *(uint32_t *)(movementDefinition->reserved26C_277 + 8);
       if ((turnVelocityOrIndex != 0) &&
-         ((turnVelocityOrIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (dword *)0x0)))) {
+         ((turnVelocityOrIndex < worldRuntime->dwordArrayCount && (worldRuntime->dwordArray != (uint32_t *)0x0)))) {
         voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[turnVelocityOrIndex];
         if (voiceSetRef != (DirectSoundVoiceSet **)0x0) {
           worldPosition = &(modelRuntime->rootModelNode->worldTransform).translation;
@@ -1138,14 +1138,14 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
     if ((waypointWorldX != (modelRuntime->classLinkState).classState68) &&
        (armyOrWaypointY != (modelRuntime->classLinkState).armyLinkOrState6C.armyRuntime)) {
       (modelRuntime->classLinkState).classState68 = waypointWorldX;
-      (modelRuntime->classLinkState).armyLinkOrState6C.classState = (dword)armyOrWaypointY;
+      (modelRuntime->classLinkState).armyLinkOrState6C.classState = (uint32_t)armyOrWaypointY;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
       (modelRuntime->movementControl).turnVelocityAngle16 = 0;
     }
     primaryDelta = waypointWorldX - (modelNode2->worldTransform).translation.x;
     secondaryDelta = (int)armyOrWaypointY - (modelNode2->worldTransform).translation.y;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      targetAngleLength = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
+      targetAngleLength = THANDOR_BITCAST(uint64_t, FixedLengthAngleEaxEdx8, ((uint64_t)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       targetAngleLength = FixedMath_Vector2AngleAndLengthRegs(secondaryDelta,primaryDelta);
@@ -1153,7 +1153,7 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
     angle16 = targetAngleLength.angle;
     movementDefinition = modelRuntime->modelDefinition;
     turnVelocityOrIndex = (modelRuntime->movementControl).turnVelocityAngle16;
-    if ((turnVelocityOrIndex == 0) && (targetAngleLength.length < (uint)movementDefinition->headingErrorInterpolationDistanceQ12C0))
+    if ((turnVelocityOrIndex == 0) && (targetAngleLength.length < (uint32_t)movementDefinition->headingErrorInterpolationDistanceQ12C0))
     {
 ArmyMovementBanking_HoldCurrentHeadingAndResetTurnVelocity:
       (modelRuntime->movementControl).turnVelocityAngle16 = 0;
@@ -1209,7 +1209,7 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
     else {
       armyOrWaypointY = modelRuntime->ownerArmyRuntime;
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)armyOrWaypointY);
-      nextPosition = THANDOR_PART(qword, waypointResult, 0);
+      nextPosition = THANDOR_PART(uint64_t, waypointResult, 0);
       ownerMovementFlags = &armyOrWaypointY->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -1227,8 +1227,8 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      THANDOR_PART(dword, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
-      THANDOR_PART(dword, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(uint32_t, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
       ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -1334,13 +1334,13 @@ ArmyMovementBanking_FinalizeBankingEffectsAndTransforms:
 
 
 /* Model runtime tree: child count at +0x0C, children at +0x140 + 32*i (null slots skipped). */
-static void ArmyRuntime_ClearModelTreeFlags218(byte *node)
+static void ArmyRuntime_ClearModelTreeFlags218(uint8_t *node)
 {
   int i;
-  *(dword *)(node + 0xec) = *(dword *)(node + 0xec) & 0xfffffde7;
+  *(uint32_t *)(node + 0xec) = *(uint32_t *)(node + 0xec) & 0xfffffde7;
   for (i = 0; i < *(int *)(node + 0xc); i++) {
-    byte *child = *(byte **)(node + 0x140 + i * 0x20);
-    if (child != (byte *)0x0) {
+    uint8_t *child = *(uint8_t **)(node + 0x140 + i * 0x20);
+    if (child != (uint8_t *)0x0) {
       ArmyRuntime_ClearModelTreeFlags218(child);
     }
   }
@@ -1384,7 +1384,7 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   attachedModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
   if ((((attachedModelRuntime->classState).classStateEC & 0x10) != 0) && (attachedModelRuntime->definitionValue60_3C != 0)) {
     /* Rewritten from the assembly (0x0051C460-0x0051C4A4): clear 0x218 on the whole model tree. */
-    ArmyRuntime_ClearModelTreeFlags218((byte *)attachedModelRuntime);
+    ArmyRuntime_ClearModelTreeFlags218((uint8_t *)attachedModelRuntime);
   }
   return;
 
@@ -1508,9 +1508,9 @@ ArmyArticulatedRuntime_InitializeTerrainContactGeometry
 
 {
   ArmyRuntimeCoordinateCommandOrHistoryValue4 rootHeading;
-  dword terrainHeight;
-  dword contactX;
-  dword contactY;
+  uint32_t terrainHeight;
+  uint32_t contactX;
+  uint32_t contactY;
   int lateralOffsetY;
   FixedSinCosEdxEax8 lateralOffset;
   FieldGridHeightEaxCf5 terrainHeightResult;
@@ -1548,8 +1548,8 @@ ArmyArticulatedRuntime_InitializeTerrainContactGeometry
   articulatedRuntime->articulatedCoordinateOrState9C = contactY;
   articulatedRuntime->runtimeStateA4 = terrainHeight;
   rootHeading = THANDOR_BITCAST(AngleTurn32, ArmyRuntimeCoordinateCommandOrHistoryValue4, (modelNodeRuntime->modelPayload).worldRotationAngle2);
-  articulatedRuntime->classState60 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, dword, rootHeading);
-  articulatedRuntime->ownerValue64 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, dword, rootHeading);
+  articulatedRuntime->classState60 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, uint32_t, rootHeading);
+  articulatedRuntime->ownerValue64 = THANDOR_BITCAST(ArmyRuntimeCoordinateCommandOrHistoryValue4, uint32_t, rootHeading);
   (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory = rootHeading;
   (articulatedRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue = rootHeading;
   (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory = rootHeading;
@@ -1691,13 +1691,13 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   int worldY;
   ModelDefinitionGroundMovementSteeringView280 *movementDefinition;
   ArmyPlacementContactKindIndex32 placementContactKind;
-  sdword waterDelta;
+  int32_t waterDelta;
   int primaryDelta;
-  uint facingAngle;
-  uint turnVelocityOrLimit;
+  uint32_t facingAngle;
+  uint32_t turnVelocityOrLimit;
   int secondaryDelta;
-  uint desiredHeading;
-  uint headingDifference;
+  uint32_t desiredHeading;
+  uint32_t headingDifference;
   ModelRuntimeNode *modelNode2;
   bool withinLinkRadius;
   FixedLengthAngleEaxEdx8 angleAndLength;
@@ -1707,7 +1707,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
-  dword targetDistance;
+  uint32_t targetDistance;
   ModelRuntimeNode *modelNode1;
   
   linkedOrOwnerArmy = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime;
@@ -1740,7 +1740,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      angleAndLength = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
+      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngleEaxEdx8, ((uint64_t)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLengthRegs(secondaryDelta,primaryDelta);
@@ -1792,9 +1792,9 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
     facingAngle = facingAngle - desiredHeading & 0xffff;
     if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12C0) {
       turnVelocityOrLimit = movementDefinition->nearHeadingErrorLimitAngleC8 +
-              (int)(((longlong)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
-                    (longlong)(int)targetDistance) /
-                   (longlong)movementDefinition->headingErrorInterpolationDistanceQ12C0);
+              (int)(((int64_t)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
+                    (int64_t)(int)targetDistance) /
+                   (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12C0);
     }
     if ((turnVelocityOrLimit < facingAngle) && (facingAngle < 0x10000 - turnVelocityOrLimit)) {
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
@@ -1812,7 +1812,7 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
     else {
       linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)linkedOrOwnerArmy);
-      nextPosition = THANDOR_PART(qword, waypointResult, 0);
+      nextPosition = THANDOR_PART(uint64_t, waypointResult, 0);
       ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -1830,8 +1830,8 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
                  (modelNode1->worldTransform).translation.x,(ArmyRuntimeSlot *)blockingCollision.eax,
                  worldRuntime);
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      THANDOR_PART(dword, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
-      THANDOR_PART(dword, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(uint32_t, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
       ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -1919,12 +1919,12 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
   Q12 *contactStateFlags;
   void *definitionAsset;
   FieldGridAsset *activeFieldGrid;
-  dword contactCoordOrLength;
-  uint reachOrAngle;
+  uint32_t contactCoordOrLength;
+  uint32_t reachOrAngle;
   int contactXOrHeight;
-  uint angle;
+  uint32_t angle;
   int contactYOrStep;
-  dword contactY;
+  uint32_t contactY;
   FixedSinCosEdxEax8 lateralSinCos;
   FixedSinCosEdxEax8 headingSinCos;
   ArmyCollisionFindEaxCf5 blockingCollision;
@@ -1946,7 +1946,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
                             ((int)lateralSinCos + armyRuntime->runtimeState94) -
                             (modelNode1->worldTransform).translation.x);
   reachOrAngle = contactCoordOrLength + *(int *)((int)definitionAsset + 0xc0);
-  if (reachOrAngle < (uint)contactDistanceLimitQ12) {
+  if (reachOrAngle < (uint32_t)contactDistanceLimitQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrAngle);
     contactXOrHeight = (int)headingSinCos + (modelNode1->worldTransform).translation.x;
     contactYOrStep = (int)(headingSinCos >> 0x20) + (modelNode1->worldTransform).translation.y;
@@ -2023,7 +2023,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact:
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
   if (contactXOrHeight != 0) {
     (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-         (Q12)((longlong)(ulonglong)(uint)(contactYOrStep << 0xd) / (longlong)contactXOrHeight);
+         (Q12)((int64_t)(uint64_t)(uint32_t)(contactYOrStep << 0xd) / (int64_t)contactXOrHeight);
   }
   return;
 }
@@ -2050,10 +2050,10 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
   Q12 *contactStateFlags;
   void *definitionAsset;
   FieldGridAsset *activeFieldGrid;
-  dword contactCoordOrLength;
-  uint reachOrAngle;
+  uint32_t contactCoordOrLength;
+  uint32_t reachOrAngle;
   int contactCoordOrDistance;
-  uint angle;
+  uint32_t angle;
   int contactYOrStep;
   FixedSinCosEdxEax8 lateralSinCos;
   FixedSinCosEdxEax8 headingSinCos;
@@ -2076,7 +2076,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
                             ((int)lateralSinCos + armyRuntime->runtimeState90) -
                             (modelNode1->worldTransform).translation.x);
   reachOrAngle = contactCoordOrLength + *(int *)((int)definitionAsset + 0xc0);
-  if (reachOrAngle < (uint)contactDistanceLimitQ12) {
+  if (reachOrAngle < (uint32_t)contactDistanceLimitQ12) {
     headingSinCos = FixedMath_SinCosScaled(headingAngle16,reachOrAngle);
     contactCoordOrDistance = (int)headingSinCos + (modelNode1->worldTransform).translation.x;
     contactYOrStep = (int)(headingSinCos >> 0x20) + (modelNode1->worldTransform).translation.y;
@@ -2153,7 +2153,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact:
   (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
   if (contactCoordOrDistance != 0) {
     (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-         (Q12)((longlong)(ulonglong)(uint)(contactYOrStep << 0xd) / (longlong)contactCoordOrDistance);
+         (Q12)((int64_t)(uint64_t)(uint32_t)(contactYOrStep << 0xd) / (int64_t)contactCoordOrDistance);
   }
   return;
 }
@@ -2186,11 +2186,11 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   ModelDefinitionGroundMovementSteeringView280 *movementDefinition;
   ArmyPlacementContactKindIndex32 placementContactKind;
   int primaryDelta;
-  uint facingAngle;
-  uint turnVelocityOrLimit;
+  uint32_t facingAngle;
+  uint32_t turnVelocityOrLimit;
   int secondaryDelta;
-  uint desiredHeading;
-  uint headingDifference;
+  uint32_t desiredHeading;
+  uint32_t headingDifference;
   ModelRuntimeNode *modelNode2;
   bool withinLinkRadius;
   FixedLengthAngleEaxEdx8 angleAndLength;
@@ -2200,7 +2200,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   FixedEulerAnglesEaxEbxEdx12 composedAngles;
   Q12 heightOffsetQ12;
   WorldRuntimeContext *dispatchWorldRuntime;
-  dword targetDistance;
+  uint32_t targetDistance;
   ModelRuntimeNode *modelNode1;
   
   linkedOrOwnerArmy = (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime;
@@ -2227,7 +2227,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
     secondaryDelta = waypointResult.worldYQ12 - (modelNode2->worldTransform).translation.y;
     primaryDelta = waypointResult.worldXQ12 - (modelNode2->worldTransform).translation.x;
     if ((primaryDelta == 0) && (secondaryDelta == 0)) {
-      angleAndLength = THANDOR_BITCAST(ulonglong, FixedLengthAngleEaxEdx8, ((ulonglong)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
+      angleAndLength = THANDOR_BITCAST(uint64_t, FixedLengthAngleEaxEdx8, ((uint64_t)(modelNode2->modelPayload).worldRotationAngle2 << 0x20));
     }
     else {
       angleAndLength = FixedMath_Vector2AngleAndLengthRegs(secondaryDelta,primaryDelta);
@@ -2279,9 +2279,9 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     facingAngle = facingAngle - desiredHeading & 0xffff;
     if ((int)targetDistance < movementDefinition->headingErrorInterpolationDistanceQ12C0) {
       turnVelocityOrLimit = movementDefinition->nearHeadingErrorLimitAngleC8 +
-               (int)(((longlong)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
-                     (longlong)(int)targetDistance) /
-                    (longlong)movementDefinition->headingErrorInterpolationDistanceQ12C0);
+               (int)(((int64_t)(int)(turnVelocityOrLimit - movementDefinition->nearHeadingErrorLimitAngleC8) *
+                     (int64_t)(int)targetDistance) /
+                    (int64_t)movementDefinition->headingErrorInterpolationDistanceQ12C0);
     }
     if ((turnVelocityOrLimit < facingAngle) && (facingAngle < 0x10000 - turnVelocityOrLimit)) {
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
@@ -2299,7 +2299,7 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     else {
       linkedOrOwnerArmy = modelRuntime->ownerArmyRuntime;
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints(worldRuntime,(ArmyMovementRuntime *)linkedOrOwnerArmy);
-      nextPosition = THANDOR_PART(qword, waypointResult, 0);
+      nextPosition = THANDOR_PART(uint64_t, waypointResult, 0);
       ownerMovementFlags = &linkedOrOwnerArmy->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -2313,8 +2313,8 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     if (blockingCollision.carry) {
       modelNode1 = modelRuntime->rootModelNode;
       (modelRuntime->movementControl).movementAdvancePerTickQ12 = 0;
-      THANDOR_PART(dword, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
-      THANDOR_PART(dword, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
+      THANDOR_PART(uint32_t, nextPosition, 0) = (modelNode1->worldTransform).translation.x;
+      THANDOR_PART(uint32_t, nextPosition, 4) = (modelNode1->worldTransform).translation.y;
       ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
       *ownerMovementFlags = *ownerMovementFlags | 0x10;
     }
@@ -2479,17 +2479,17 @@ ArmyArticulatedRuntime_UpdateContactChildAndEffects
 {
   GraphicsFixedVec3 *worldPosition;
   ModelRuntimeSlot *armyModelRuntime;
-  uint soundIndex;
+  uint32_t soundIndex;
   DirectSoundVoiceSet **voiceSetRef;
-  sdword waterDelta;
+  int32_t waterDelta;
   EffectDefinition *effectDefinition;
   bool cellMasked;
   ModelRuntimeNode *modelNode1;
   
   armyModelRuntime = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  soundIndex = *(uint *)(armyModelRuntime->classState).reservedCC_CF;
+  soundIndex = *(uint32_t *)(armyModelRuntime->classState).reservedCC_CF;
   if ((((soundIndex != 0) && (soundIndex < worldRuntime->dwordArrayCount)) &&
-      (worldRuntime->dwordArray != (dword *)0x0)) &&
+      (worldRuntime->dwordArray != (uint32_t *)0x0)) &&
      (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex],
      voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
     worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
@@ -2543,7 +2543,7 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
 
 {
   GraphicsWorldCoordinateQ12 *nodeTranslationZ;
-  dword leftBlendQ12;
+  uint32_t leftBlendQ12;
   int leftHeading;
   int leftPreviousHeading;
   int leftHeadingBase;
@@ -2554,17 +2554,17 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   int rightNodeY;
   int rightNodeZ;
   AngleTurn32 rootHeading;
-  longlong blendProduct;
-  dword leftYOrSideLength;
-  dword sideLength0Q12;
+  int64_t blendProduct;
+  uint32_t leftYOrSideLength;
+  uint32_t sideLength0Q12;
   short leftRelativeAngle;
   int inverseBlendOrRightHeading;
   int leftXOrAngle;
-  uint leftYawOffset;
-  uint leftRelativeMasked;
+  uint32_t leftYawOffset;
+  uint32_t leftRelativeMasked;
   short rightRelativeAngle;
-  uint rightRelativeRaw;
-  uint rightLengthOrAngle;
+  uint32_t rightRelativeRaw;
+  uint32_t rightLengthOrAngle;
   int leftYOrElevation;
   FixedLengthAngleEaxEdx8 leftPlanarVector;
   FixedLengthAngleEaxEdx8 rightPlanarVector;
@@ -2596,22 +2596,22 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   articulatedRuntime = (ArmyArticulatedRuntimeSlotView *)(modelNodeRuntime->runtimePayload).armyRuntime;
   modelNode2 = modelNodeRuntime->childNodes[0]->childNodes[0]->childNodes[0]->childNodes[0];
   leftBlendQ12 = articulatedRuntime->runtimeStateA8;
-  blendProduct = (longlong)(int)(articulatedRuntime->runtimeState90 - articulatedRuntime->movementTarget0Q12) *
-           (longlong)(int)leftBlendQ12;
+  blendProduct = (int64_t)(int)(articulatedRuntime->runtimeState90 - articulatedRuntime->movementTarget0Q12) *
+           (int64_t)(int)leftBlendQ12;
   leftYOrSideLength = articulatedRuntime->runtimeState98;
   (modelNode2->worldTransform).translation.x =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) + articulatedRuntime->movementTarget0Q12
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) + articulatedRuntime->movementTarget0Q12
   ;
-  blendProduct = (longlong)(int)(leftYOrSideLength - articulatedRuntime->definitionClassValue80) * (longlong)(int)leftBlendQ12;
+  blendProduct = (int64_t)(int)(leftYOrSideLength - articulatedRuntime->definitionClassValue80) * (int64_t)(int)leftBlendQ12;
   (modelNode2->worldTransform).translation.y =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) +
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) +
        articulatedRuntime->definitionClassValue80;
-  blendProduct = (longlong)
+  blendProduct = (int64_t)
            (int)((((int)((0x1000 - leftBlendQ12) * *(int *)((int)articulatedRuntime->definitionOrAsset + 0xc4)) >> 10)
                  + articulatedRuntime->articulatedHeightOrStateA0) - articulatedRuntime->definitionClassValue88) *
-           (longlong)(int)leftBlendQ12;
+           (int64_t)(int)leftBlendQ12;
   (modelNode2->worldTransform).translation.z =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) +
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) +
        articulatedRuntime->definitionClassValue88;
   leftHeading = (articulatedRuntime->linkedChildOverloadedState).leftHeadingCommandOrSpawnValue.signedValue;
   leftPreviousHeading = (articulatedRuntime->linkedChildOverloadedState).primaryCoordinateCommandOrHistory.signedValue;
@@ -2624,41 +2624,41 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
              (int)articulatedRuntime->ownerValue68 >> 0x10,articulatedRuntime->ownerValue68 & 0xffff);
   inverseBlendOrRightHeading = 0x1000 - articulatedRuntime->runtimeStateA8;
   g_ArmySuspensionBlendVectorAXQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)leftBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAXQ12 * (int64_t)(int)leftBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)leftBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)inverseBlendOrRightHeading) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)inverseBlendOrRightHeading) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAXQ12 * (int64_t)(int)leftBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBXQ12 * (int64_t)inverseBlendOrRightHeading) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBXQ12 * (int64_t)inverseBlendOrRightHeading) >> 0xc);
   g_ArmySuspensionBlendVectorAYQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)leftBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAYQ12 * (int64_t)(int)leftBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)leftBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)inverseBlendOrRightHeading) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)inverseBlendOrRightHeading) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAYQ12 * (int64_t)(int)leftBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBYQ12 * (int64_t)inverseBlendOrRightHeading) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBYQ12 * (int64_t)inverseBlendOrRightHeading) >> 0xc);
   g_ArmySuspensionBlendVectorAZQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)leftBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAZQ12 * (int64_t)(int)leftBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)leftBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)inverseBlendOrRightHeading) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)inverseBlendOrRightHeading) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAZQ12 * (int64_t)(int)leftBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBZQ12 * (int64_t)inverseBlendOrRightHeading) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBZQ12 * (int64_t)inverseBlendOrRightHeading) >> 0xc);
   leftBlendAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
   modelNode1 = modelNodeRuntime->childNodes[1]->childNodes[0]->childNodes[0]->childNodes[0];
   rightBlendQ12 = (articulatedRuntime->articulatedContact).terrainContactMode;
-  blendProduct = (longlong)(int)(articulatedRuntime->runtimeState94 - articulatedRuntime->movementTarget1Q12) *
-           (longlong)(int)rightBlendQ12;
+  blendProduct = (int64_t)(int)(articulatedRuntime->runtimeState94 - articulatedRuntime->movementTarget1Q12) *
+           (int64_t)(int)rightBlendQ12;
   inverseBlendOrRightHeading = articulatedRuntime->articulatedCoordinateOrState9C;
   (modelNode1->worldTransform).translation.x =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) + articulatedRuntime->movementTarget1Q12
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) + articulatedRuntime->movementTarget1Q12
   ;
-  blendProduct = (longlong)(int)(inverseBlendOrRightHeading - articulatedRuntime->definitionClassValue84) * (longlong)(int)rightBlendQ12;
+  blendProduct = (int64_t)(int)(inverseBlendOrRightHeading - articulatedRuntime->definitionClassValue84) * (int64_t)(int)rightBlendQ12;
   (modelNode1->worldTransform).translation.y =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) +
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) +
        articulatedRuntime->definitionClassValue84;
-  blendProduct = (longlong)
+  blendProduct = (int64_t)
            (int)((((int)((0x1000 - rightBlendQ12) * *(int *)((int)articulatedRuntime->definitionOrAsset + 0xc4)) >> 10)
-                 + articulatedRuntime->runtimeStateA4) - articulatedRuntime->runtimeState8C) * (longlong)(int)rightBlendQ12;
+                 + articulatedRuntime->runtimeStateA4) - articulatedRuntime->runtimeState8C) * (int64_t)(int)rightBlendQ12;
   (modelNode1->worldTransform).translation.z =
-       ((int)((ulonglong)blendProduct >> 0x20) << 0x14 | (uint)blendProduct >> 0xc) + articulatedRuntime->runtimeState8C;
+       ((int)((uint64_t)blendProduct >> 0x20) << 0x14 | (uint32_t)blendProduct >> 0xc) + articulatedRuntime->runtimeState8C;
   inverseBlendOrRightHeading = (articulatedRuntime->linkedChildOverloadedState).rightHeadingCommandOrSpawnValue.signedValue;
   rightPreviousHeading = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
   rightHeadingBase = (articulatedRuntime->linkedChildOverloadedState).secondaryCoordinateCommandOrHistory.signedValue;
@@ -2668,26 +2668,26 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   FixedMath_WriteDirectionQ28
             ((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorBXQ12,
              (int)articulatedRuntime->linkedArmyRuntimeOrSavedOffset >> 0x10,
-             (uint)articulatedRuntime->linkedArmyRuntimeOrSavedOffset & 0xffff);
+             (uint32_t)articulatedRuntime->linkedArmyRuntimeOrSavedOffset & 0xffff);
   leftXOrAngle = 0x1000 - (articulatedRuntime->articulatedContact).terrainContactMode;
   g_ArmySuspensionBlendVectorAXQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)rightBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAXQ12 * (int64_t)(int)rightBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAXQ12 * (longlong)(int)rightBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)leftXOrAngle) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBXQ12 * (longlong)leftXOrAngle) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAXQ12 * (int64_t)(int)rightBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBXQ12 * (int64_t)leftXOrAngle) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBXQ12 * (int64_t)leftXOrAngle) >> 0xc);
   g_ArmySuspensionBlendVectorAYQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)rightBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAYQ12 * (int64_t)(int)rightBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAYQ12 * (longlong)(int)rightBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)leftXOrAngle) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBYQ12 * (longlong)leftXOrAngle) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAYQ12 * (int64_t)(int)rightBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBYQ12 * (int64_t)leftXOrAngle) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBYQ12 * (int64_t)leftXOrAngle) >> 0xc);
   g_ArmySuspensionBlendVectorAZQ12 =
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)rightBlendQ12) >> 0x20
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorAZQ12 * (int64_t)(int)rightBlendQ12) >> 0x20
              ) << 0x14 |
-       (uint)((longlong)(int)g_ArmySuspensionBlendVectorAZQ12 * (longlong)(int)rightBlendQ12) >> 0xc) +
-       ((int)((ulonglong)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)leftXOrAngle) >> 0x20) <<
-        0x14 | (uint)((longlong)(int)g_ArmySuspensionBlendVectorBZQ12 * (longlong)leftXOrAngle) >> 0xc);
+       (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorAZQ12 * (int64_t)(int)rightBlendQ12) >> 0xc) +
+       ((int)((uint64_t)((int64_t)(int)g_ArmySuspensionBlendVectorBZQ12 * (int64_t)leftXOrAngle) >> 0x20) <<
+        0x14 | (uint32_t)((int64_t)(int)g_ArmySuspensionBlendVectorBZQ12 * (int64_t)leftXOrAngle) >> 0xc);
   rightBlendAngles = FixedMath_VectorToAnglesVec3Regs((GraphicsFixedVec3 *)&g_ArmySuspensionBlendVectorAXQ12);
   definitionAsset = articulatedRuntime->definitionOrAsset;
   LOCK();
@@ -2742,7 +2742,7 @@ ArmyArticulatedRuntime_UpdateSuspensionHierarchy
   if ((0x3fff < leftYawOffset) && (leftYawOffset < 0xc001)) {
     rightRelativeAngle = rightRelativeAngle + -0x8000;
   }
-  leftYawOffset = (uint)leftRelativeAngle;
+  leftYawOffset = (uint32_t)leftRelativeAngle;
   leftXOrAngle = (int)rightRelativeAngle;
   if (rightLengthOrAngle < 0x140) {
     if (rightLengthOrAngle < 0x40) {
@@ -2911,8 +2911,8 @@ ArmyArticulatedRuntime_InitializeLeftTerrainContact
   int segmentLength;
   void *definitionAsset;
   int stepBase;
-  dword contactLength;
-  uint angle;
+  uint32_t contactLength;
+  uint32_t angle;
   FixedSinCosEdxEax8 offsetSinCos;
   FieldGridHeightNormalEaxEdxCf9 terrainSample;
   
@@ -2944,7 +2944,7 @@ ArmyArticulatedRuntime_InitializeLeftTerrainContact
       (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
       if (segmentLength != 0) {
         (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-             (Q12)((longlong)(ulonglong)(uint)(stepBase << 0xd) / (longlong)segmentLength);
+             (Q12)((int64_t)(uint64_t)(uint32_t)(stepBase << 0xd) / (int64_t)segmentLength);
         contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
         *contactStateFlags = *contactStateFlags & 0xffffff7f;
       }
@@ -2973,8 +2973,8 @@ ArmyArticulatedRuntime_InitializeRightTerrainContact
   int segmentLength;
   void *definitionAsset;
   int stepBase;
-  dword contactLength;
-  uint angle;
+  uint32_t contactLength;
+  uint32_t angle;
   FixedSinCosEdxEax8 offsetSinCos;
   FieldGridHeightNormalEaxEdxCf9 terrainSample;
   
@@ -3006,7 +3006,7 @@ ArmyArticulatedRuntime_InitializeRightTerrainContact
       (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
       if (segmentLength != 0) {
         (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-             (Q12)((longlong)(ulonglong)(uint)(stepBase << 0xd) / (longlong)segmentLength);
+             (Q12)((int64_t)(uint64_t)(uint32_t)(stepBase << 0xd) / (int64_t)segmentLength);
         contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
         *contactStateFlags = *contactStateFlags & 0xffffff7f;
       }
@@ -3032,13 +3032,13 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
 {
   Q12 *contactStateFlags;
   void *definitionAsset;
-  dword contactYOrHeight;
-  longlong scaledOffsetProduct;
+  uint32_t contactYOrHeight;
+  int64_t scaledOffsetProduct;
   int contactXOrSegment;
-  dword contactCoordOrLength;
+  uint32_t contactCoordOrLength;
   int signedSteeringAngle;
-  uint contactHeading;
-  uint scaledLateralOffset;
+  uint32_t contactHeading;
+  uint32_t scaledLateralOffset;
   int contactYOrStep;
   FixedSinCosEdxEax8 offsetSinCos;
   FieldGridHeightNormalEaxEdxCf9 terrainSample;
@@ -3047,13 +3047,13 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
   
   definitionAsset = armyRuntime->definitionOrAsset;
   if (steeringAngle16 < 0x8001) {
-    if (*(uint *)((int)definitionAsset + 200) < steeringAngle16) {
+    if (*(uint32_t *)((int)definitionAsset + 200) < steeringAngle16) {
       steeringAngle16 = *(AngleTurn32 *)((int)definitionAsset + 200);
     }
     modelNode1 = armyRuntime->modelNodeRuntime;
     contactHeading = armyRuntime->classState60 + 0x8000 & 0xffff;
-    scaledOffsetProduct = (longlong)(armyRuntime->articulatedContact).lateralOffsetQ12 * 0x1800;
-    scaledLateralOffset = (int)((ulonglong)scaledOffsetProduct >> 0x20) << 0x14 | (uint)scaledOffsetProduct >> 0xc;
+    scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * 0x1800;
+    scaledLateralOffset = (int)((uint64_t)scaledOffsetProduct >> 0x20) << 0x14 | (uint32_t)scaledOffsetProduct >> 0xc;
     offsetSinCos = FixedMath_SinCosScaled(contactHeading,scaledLateralOffset);
     contactXOrSegment = (int)offsetSinCos + (modelNode1->worldTransform).translation.x;
     contactYOrStep = (int)(offsetSinCos >> 0x20) + (modelNode1->worldTransform).translation.y;
@@ -3097,7 +3097,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
     if (contactXOrSegment != 0) {
       (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-           (Q12)((longlong)(ulonglong)(uint)(contactYOrStep << 0xd) / (longlong)contactXOrSegment);
+           (Q12)((int64_t)(uint64_t)(uint32_t)(contactYOrStep << 0xd) / (int64_t)contactXOrSegment);
       return;
     }
   }
@@ -3109,8 +3109,8 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     modelNode1 = armyRuntime->modelNodeRuntime;
     signedSteeringAngle = steeringAngle16 - 0x10000;
     contactHeading = armyRuntime->classState60 + 0x8000 & 0xffff;
-    scaledOffsetProduct = (longlong)(armyRuntime->articulatedContact).lateralOffsetQ12 * 0x1800;
-    scaledLateralOffset = (int)((ulonglong)scaledOffsetProduct >> 0x20) << 0x14 | (uint)scaledOffsetProduct >> 0xc;
+    scaledOffsetProduct = (int64_t)(armyRuntime->articulatedContact).lateralOffsetQ12 * 0x1800;
+    scaledLateralOffset = (int)((uint64_t)scaledOffsetProduct >> 0x20) << 0x14 | (uint32_t)scaledOffsetProduct >> 0xc;
     offsetSinCos = FixedMath_SinCosScaled(contactHeading,scaledLateralOffset);
     contactXOrSegment = (int)offsetSinCos + (modelNode1->worldTransform).translation.x;
     contactYOrStep = (int)(offsetSinCos >> 0x20) + (modelNode1->worldTransform).translation.y;
@@ -3154,7 +3154,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
     (armyRuntime->articulatedContact).fallbackPosition1Q12 = 0x2000;
     if (contactXOrSegment != 0) {
       (armyRuntime->articulatedContact).fallbackPosition1Q12 =
-           (Q12)((longlong)(ulonglong)(uint)(contactYOrStep << 0xd) / (longlong)contactXOrSegment);
+           (Q12)((int64_t)(uint64_t)(uint32_t)(contactYOrStep << 0xd) / (int64_t)contactXOrSegment);
     }
   }
   return;
@@ -3223,7 +3223,7 @@ ArmyRuntime_QueueWaypointOrStartMoveVariantA
           (Q12 targetWorldY,Q12 targetWorldX,ArmyMovementRuntime *movementRuntime)
 
 {
-  uint queuedWaypointIndex;
+  uint32_t queuedWaypointIndex;
   
   if (((movementRuntime->movementStateFlags & 0x80) == 0) &&
      ((movementRuntime->movementStateFlags & 3) != 0)) {
@@ -3377,15 +3377,15 @@ ArmyRuntime_UpdateMovementAndWaypoints
 
 {
   ArmyWaypointCount *waypointCount;
-  uint exceededDistance;
+  uint32_t exceededDistance;
   Q12 movementWorldX;
   Q12 movementWorldY;
   Q12 currentWorldX;
   Q12 currentWorldY;
   int offsetXOrCount;
-  uint distanceX;
+  uint32_t distanceX;
   int offsetY;
-  uint distanceY;
+  uint32_t distanceY;
   Q12 *queuedCoordinateRead;
   Q12 *queuedCoordinateWrite;
   bool belowThreshold;
@@ -3465,8 +3465,8 @@ ArmyRuntime_UpdateMovementAndWaypoints
         (movementRuntime->fallbackPosition).worldXQ12 = resolvedDestination.fallbackWorldXQ12;
         (movementRuntime->fallbackPosition).worldYQ12 = resolvedDestination.fallbackWorldYQ12;
         resolvedPosition.carry = false;
-        resolvedPosition.worldXQ12 = (int)THANDOR_PART(qword, resolvedDestination, 0);
-        resolvedPosition.worldYQ12 = (int)(THANDOR_PART(qword, resolvedDestination, 0) >> 0x20);
+        resolvedPosition.worldXQ12 = (int)THANDOR_PART(uint64_t, resolvedDestination, 0);
+        resolvedPosition.worldYQ12 = (int)(THANDOR_PART(uint64_t, resolvedDestination, 0) >> 0x20);
         return resolvedPosition;
       }
     }

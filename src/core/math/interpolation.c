@@ -27,11 +27,11 @@ WorldMotionSpline_EvaluateAndApplyAtTime
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  sdword positionX;
-  sdword positionY;
-  sdword positionZ;
+  int32_t positionX;
+  int32_t positionY;
+  int32_t positionZ;
   UQ12 magnitude;
-  uint yawAngle;
+  uint32_t yawAngle;
   AngleTurn32 pitchAngle;
   int keyframeIndex;
   WorldMotionSplineKeyframe *currentKeyframe;
@@ -42,7 +42,7 @@ WorldMotionSpline_EvaluateAndApplyAtTime
   keyframeIndex = 0;
   do {
     currentKeyframe = keyframes;
-    if ((uint)timeQ12 < (uint)currentKeyframe->timeQ12) {
+    if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {
       runtimeCopy = worldRuntime;
       positionX = CubicSpline_EvaluateValueQ12
                             (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
@@ -103,17 +103,17 @@ WorldMotionSpline_EvaluateAndApplyAtTime
    WorldMotionSpline_ClearCachedDerivatives.
    Cross-module calls: WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime)
 
 {
-  sdword originX;
-  sdword originY;
-  sdword originZ;
+  int32_t originX;
+  int32_t originY;
+  int32_t originZ;
   UQ12 distance;
-  uint yawAngle;
+  uint32_t yawAngle;
   AngleTurn32 pitchAngle;
   int keyframeIndex; /* EDX: the segment index is passed (minus one) to every evaluation */
   WorldMotionSplineKeyframe *currentKeyframe;
@@ -121,7 +121,7 @@ WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
   keyframeIndex = 0;
   do {
     currentKeyframe = keyframes;
-    if ((uint)timeQ12 < (uint)currentKeyframe->timeQ12) {
+    if ((uint32_t)timeQ12 < (uint32_t)currentKeyframe->timeQ12) {
       originX = CubicSpline_EvaluateValueQ12
                           (timeQ12,keyframeIndex + -1,g_WorldMotionSplineCoefficientTables[0]);
       originY = CubicSpline_EvaluateValueQ12
@@ -183,9 +183,9 @@ WorldMotionSpline_BuildSixChannelCurves
 
 {
   WorldMotionSplineKeyframe *keyframeCursor;
-  uint unwrappedAngle;
+  uint32_t unwrappedAngle;
   int remainingCount;
-  uint previousAngle;
+  uint32_t previousAngle;
   int unwrapDelta;
   
   if (1 < keyframeCount) {
@@ -288,8 +288,8 @@ InterpolationState_SetNegatedTargetAndRescaleProgress
     durationOrElapsed = interpolationState->radiusTransitionDurationTicks;
     interpolationState->radiusTransitionDurationTicks = negatedDurationOrZero;
     UNLOCK();
-    durationOrElapsed = (int)(((longlong)(int)negatedDurationOrZero * (longlong)interpolationState->radiusTransitionElapsedTicks
-                  ) / (longlong)durationOrElapsed);
+    durationOrElapsed = (int)(((int64_t)(int)negatedDurationOrZero * (int64_t)interpolationState->radiusTransitionElapsedTicks
+                  ) / (int64_t)durationOrElapsed);
     interpolationState->radiusTransitionElapsedTicks = durationOrElapsed;
     negatedDurationOrZero = 0;
     if (durationOrElapsed != 0) {
@@ -323,12 +323,12 @@ InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
   do {
     durationTicks = stateRecord->radiusTransitionDurationTicks;
     if ((stateRecord->packedColorRgbActive != 0) && (durationTicks != 0)) {
-      currentRadius = (int)(((longlong)stateRecord->targetRadiusQ12 *
-                    (longlong)stateRecord->radiusTransitionElapsedTicks) / (longlong)durationTicks);
+      currentRadius = (int)(((int64_t)stateRecord->targetRadiusQ12 *
+                    (int64_t)stateRecord->radiusTransitionElapsedTicks) / (int64_t)durationTicks);
       stateRecord->radiusTransitionElapsedTicks = stateRecord->radiusTransitionElapsedTicks + elapsedTicks;
-      stateRecord->squaredRadiusQ24 = (longlong)currentRadius * (longlong)currentRadius;
+      stateRecord->squaredRadiusQ24 = (int64_t)currentRadius * (int64_t)currentRadius;
       if (durationTicks < 0) {
-        if ((uint)stateRecord->radiusTransitionElapsedTicks < 0x80000000) {
+        if ((uint32_t)stateRecord->radiusTransitionElapsedTicks < 0x80000000) {
           /* deactivation transition finished: clear the light */
           stateRecord->squaredRadiusQ24 = 0;
           stateRecord->targetRadiusQ12 = 0;
@@ -367,8 +367,8 @@ CubicSpline_SolveCoefficientSystem
   float pivot;
   CubicSplineMatrixIndex rowIndex;
   CubicSplineMatrixIndex columnOrRowIndex;
-  uint followingIndex;
-  uint nextRowIndex;
+  uint32_t followingIndex;
+  uint32_t nextRowIndex;
   
   rowIndex = 0;
   columnOrRowIndex = 0;
@@ -609,7 +609,7 @@ void __thandor_void_preserve_eax_ecx WorldMotionSpline_ClearCachedDerivatives(vo
    Evaluates one cubic segment value at Q12 time. Inputs: Time, segment index and solved coefficient table.
    Outputs: Q12 channel value.
 */
-sdword CubicSpline_EvaluateValueQ12
+int32_t CubicSpline_EvaluateValueQ12
                  (WorldMotionSplineTimeQ12 timeQ12,CubicSplineSegmentIndex segmentIndex,
                  float *coefficients)
 

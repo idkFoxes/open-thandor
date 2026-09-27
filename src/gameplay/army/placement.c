@@ -97,7 +97,7 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
 {
   ModelRuntimeNode *modelNodeRuntime;
   ModelDefinitionRuntimeSemanticView280 *placementDefinition;
-  dword worldYQ12;
+  uint32_t worldYQ12;
   Q12 worldXQ12;
   int referenceHeightQ12;
   bool blocked;
@@ -178,8 +178,8 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
     return false;
   }
   for (corner = 0; corner < 4; corner++) {
-    Q12 x = (Q12)(((uint)worldXQ12 & 0xffffff00) + cornerDx[corner]);
-    Q12 y = (Q12)(((uint)worldYQ12 & 0xffffff00) + cornerDy[corner]);
+    Q12 x = (Q12)(((uint32_t)worldXQ12 & 0xffffff00) + cornerDx[corner]);
+    Q12 y = (Q12)(((uint32_t)worldYQ12 & 0xffffff00) + cornerDy[corner]);
     dispatched = ArmyPlacement_DispatchAssetAtFieldPoint
                            (placementMode,0,armyAssetId,y,x,placementContext,ownerFactionId,
                             inGameRuntime);
@@ -218,7 +218,7 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
   int cellColumn;
   int eaxOrCellColumn;
   ArmyPlacementCandidateEaxCf5 result;
-  uint projectedRowTerm;
+  uint32_t projectedRowTerm;
   int cellRow;
   ArmyPlacementCandidateEaxCf5 clearanceResult;
   FieldGridAsset *activeFieldGrid;
@@ -231,16 +231,16 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementCandidate_TestFieldOccupancyCf
   eaxOrCellColumn = clearanceEax;
   if (!clearanceResult.carry) {
     activeFieldGrid = worldRuntime->fieldGrid;
-    projectedRowTerm = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
-            (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
-    cellColumn = (int)((((int)((ulonglong)((longlong)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
-                   (uint)((longlong)worldXQ12 * 0x1c6e9c) >> 0x14) - projectedRowTerm) + 0x800) >> 0xc;
+    projectedRowTerm = (int)((uint64_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
+            (uint32_t)((int64_t)worldYQ12 * -0x20c8cc) >> 0x15;
+    cellColumn = (int)((((int)((uint64_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x20) << 0xc |
+                   (uint32_t)((int64_t)worldXQ12 * 0x1c6e9c) >> 0x14) - projectedRowTerm) + 0x800) >> 0xc;
     eaxOrCellColumn = cellColumn;
     if ((((-1 < cellColumn) && (cellRow = (int)(projectedRowTerm * 2 + 0x800) >> 0xc, -1 < cellRow)) &&
         (cellColumn < (int)activeFieldGrid->gridWidth)) && (cellRow < (int)activeFieldGrid->gridHeight)) {
       eaxOrCellColumn = clearanceEax;
       if ((activeFieldGrid->cells[activeFieldGrid->gridWidth * cellRow + cellColumn].flagsAndMaterial &
-          0x800 << ((byte)modelDefinition[0x10].byteSize & 0x1f)) != 0) {
+          0x800 << ((uint8_t)modelDefinition[0x10].byteSize & 0x1f)) != 0) {
         result.eax = clearanceEax;
         result.carry = false;
         return result;
@@ -289,7 +289,7 @@ ArmyPlacement_TestGridOccupancyMask
       if ((cellColumn + 1 < (int)activeFieldGrid->gridWidth) &&
          ((cellRow + 1 < (int)activeFieldGrid->gridHeight &&
           ((activeFieldGrid->cells[cellRow * activeFieldGrid->gridWidth + cellColumn].flagsAndMaterial &
-           0x800 << ((byte)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f)) !=
+           0x800 << ((uint8_t)modelRuntime->modelDefinition->resourceFieldSupportSelectorC0 & 0x1f)) !=
            0)))) {
         return false;
       }
@@ -324,8 +324,8 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
   blocked = GridScratch_TestProjectedCellMaskBandsCf
                     ((modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
-                     (byte)modelRuntime->modelDefinition->gridClassification260,
-                     (byte)modelRuntime->modelDefinition->gridClassification264);
+                     (uint8_t)modelRuntime->modelDefinition->gridClassification260,
+                     (uint8_t)modelRuntime->modelDefinition->gridClassification264);
   if (!blocked) {
     blockingRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
                       ((modelNode->worldTransform).translation.y,
@@ -355,7 +355,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
    FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
 */
 ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
-               (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3,
+               (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
@@ -363,11 +363,11 @@ ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
   bool blocked;
   
   blocked = GridScratch_TestProjectedCellMaskBandsCf
-                    (worldXQ12,worldYQ12,(byte)modelDefinition->gridClassification260,
-                     (byte)modelDefinition->gridClassification264);
+                    (worldXQ12,worldYQ12,(uint8_t)modelDefinition->gridClassification260,
+                     (uint8_t)modelDefinition->gridClassification264);
   if (!blocked) {
     blocked = ArmyCollision_TestPointAgainstRuntimeListCf
-                      (worldXQ12,worldYQ12,(byte *)modelDefinition,worldRuntime);
+                      (worldXQ12,worldYQ12,(uint8_t *)modelDefinition,worldRuntime);
     if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
       blocked = FieldGrid_TestWorldPointBlockedCf
                         (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
@@ -536,8 +536,8 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  byte *capacityCounter;
-  dword capacityContribution;
+  uint8_t *capacityCounter;
+  uint32_t capacityContribution;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   int factionValueOrCellIndex;
   int counterOffsetOrCellRow;
@@ -555,10 +555,10 @@ ArmyPlacement_ReleaseFactionCapacityAndClearGridReservation
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
     *(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
          *(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
-         (int)(((longlong)(int)capacityContribution * (longlong)*(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)factionValueOrCellIndex);
+         (int)(((int64_t)(int)capacityContribution * (int64_t)*(int *)(counterOffsetOrCellRow + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (int64_t)factionValueOrCellIndex);
   }
   capacityCounter = g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffsetOrCellRow + -0x78;
-  *(dword *)capacityCounter = *(int *)capacityCounter - capacityContribution;
+  *(uint32_t *)capacityCounter = *(int *)capacityCounter - capacityContribution;
   inGameRoot = g_InGameRuntimeRoot;
   gridCoordinates = FieldGrid_WorldToGridQ12
                     ((((modelRuntime->rootModelNodeOrSavedOffset).modelNode)->worldTransform).
@@ -590,8 +590,8 @@ ArmyPlacement_ReleaseFactionCapacity
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  byte *capacityCounter;
-  dword capacityContribution;
+  uint8_t *capacityCounter;
+  uint32_t capacityContribution;
   int factionOffsetOrCapacityTotal;
   int counterOffset;
   
@@ -606,10 +606,10 @@ ArmyPlacement_ReleaseFactionCapacity
      (((modelRuntime->classState).classStateEC & 0x20) == 0)) {
     *(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) =
          *(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4)) -
-         (int)(((longlong)(int)capacityContribution * (longlong)*(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (longlong)factionOffsetOrCapacityTotal);
+         (int)(((int64_t)(int)capacityContribution * (int64_t)*(int *)(counterOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,-4))) / (int64_t)factionOffsetOrCapacityTotal);
   }
   capacityCounter = g_GameFactionRuntimeImage.records[0].reserved78_87 + counterOffset + -0x78;
-  *(dword *)capacityCounter = *(int *)capacityCounter - capacityContribution;
+  *(uint32_t *)capacityCounter = *(int *)capacityCounter - capacityContribution;
   return;
 }
 
@@ -625,12 +625,12 @@ ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime)
 
 {
-  dword *classCounter;
-  sdword *reservationBits;
+  uint32_t *classCounter;
+  int32_t *reservationBits;
   ModelRuntimeArmyLinkOrState4 *armyLinkState;
   int remainingCount;
   ModelRuntimeSlot *slotCursor;
-  uint reservationBit;
+  uint32_t reservationBit;
   ModelRuntimeSlot *linkedModelSlot;
   
   linkedModelSlot = (modelRuntime->classLinkState).modelLinkOrState60.modelRuntime;
@@ -672,9 +672,9 @@ ArmyPlacement_ReleaseClassStateReservation
    remain deliberately generic.
 */
 ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
-               (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3,
+               (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
-               dword dispatchArg7,WorldRuntimeContext *worldRuntime)
+               uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
   ArmyPlacementCandidateEaxCf5 result;
@@ -695,7 +695,7 @@ ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
 
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyCollision_TestPointAgainstRuntimeListCf
-          (Q12 worldXQ12,Q12 worldYQ12,byte *modelDefinition,WorldRuntimeContext *worldRuntime)
+          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
   int intervalRadius;
@@ -747,7 +747,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
 
 {
   ModelRuntimeNode *currentModelNode;
-  dword clearanceRadiusQ12;
+  uint32_t clearanceRadiusQ12;
   ArmyRuntimeSlot *armyRuntime;
   Q12 queryRadiusQ12;
   bool hit;
@@ -775,7 +775,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
          (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
                             (clearanceRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)) {
         found.carry = true;
-        found.eax = (dword)armyRuntime;
+        found.eax = (uint32_t)armyRuntime;
         return found;
       }
     }
@@ -804,7 +804,7 @@ ArmyPlacement_DispatchAssetAtFieldPoint
           UiRootNode *inGameRoot)
 
 {
-  dword assetClassIndex;
+  uint32_t assetClassIndex;
   ArmyAssetRecordPrefix *modelDefinition;
   ArmyRegistryEaxCf5_51b6d0 lookupResult;
   FieldGridHeightEaxCf5 terrainHeight;
@@ -826,7 +826,7 @@ ArmyPlacement_DispatchAssetAtFieldPoint
                 (WorldRuntimeContext *)inGameRoot));
     }
   }
-  dispatchResult.eax = (dword)lookupResult.eax;
+  dispatchResult.eax = (uint32_t)lookupResult.eax;
   dispatchResult.carry = lookupResult.carry;
   return dispatchResult;
 }
@@ -911,7 +911,7 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
 
 {
   ArmyRuntimeSlot *armyRuntime;
-  dword modelClassId;
+  uint32_t modelClassId;
   WorldOwnerListNode100 *candidateNode;
   char *queryRadiusQ12;
   bool hit;
@@ -972,11 +972,11 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
 
 {
   ModelDefinitionRuntimeSemanticView280 *placementDefinition;
-  dword ownClearanceQ12;
+  uint32_t ownClearanceQ12;
   ArmyRuntimeSlot *ownerArmy;
-  dword neighborClearanceQ12;
-  longlong deltaYSquared;
-  longlong remainingSquared;
+  uint32_t neighborClearanceQ12;
+  int64_t deltaYSquared;
+  int64_t remainingSquared;
   int heightCopyOrDeltaX;
   int heightRadiusOrDeltaY;
   ModelRuntimeNode *ownerNode;
@@ -1028,13 +1028,13 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
           heightRadiusOrDeltaY = neighborClearanceQ12 + ownClearanceQ12;
           heightCopyOrDeltaX = (rootNode->worldTransform).translation.x -
                   (ownerNode->worldTransform).translation.x;
-          remainingSquared = (longlong)heightRadiusOrDeltaY * (longlong)heightRadiusOrDeltaY - (longlong)heightCopyOrDeltaX * (longlong)heightCopyOrDeltaX;
+          remainingSquared = (int64_t)heightRadiusOrDeltaY * (int64_t)heightRadiusOrDeltaY - (int64_t)heightCopyOrDeltaX * (int64_t)heightCopyOrDeltaX;
           if ((-1 < remainingSquared) &&
              (heightRadiusOrDeltaY = (rootNode->worldTransform).translation.y -
                       (ownerNode->worldTransform).translation.y,
-             deltaYSquared = (longlong)heightRadiusOrDeltaY * (longlong)heightRadiusOrDeltaY,
-             -1 < (int)(((int)((ulonglong)remainingSquared >> 0x20) - (int)((ulonglong)deltaYSquared >> 0x20)) -
-                       (uint)((uint)remainingSquared < (uint)deltaYSquared)))) {
+             deltaYSquared = (int64_t)heightRadiusOrDeltaY * (int64_t)heightRadiusOrDeltaY,
+             -1 < (int)(((int)((uint64_t)remainingSquared >> 0x20) - (int)((uint64_t)deltaYSquared >> 0x20)) -
+                       (uint32_t)((uint32_t)remainingSquared < (uint32_t)deltaYSquared)))) {
             return false;
           }
         }
@@ -1063,19 +1063,19 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
 ArmyPlacementCandidateEaxCf5
 ArmyPlacementCollision_TestCandidateAndClearanceCf
           (ArmyPlacementDispatchArg0 dispatchArg0,
-          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,dword dispatchArg2,
+          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t dispatchArg2,
           ArmyPlacementDispatchArg3 dispatchArg3,Q12 worldXQ12,Q12 worldYQ12,
           ModelDefinitionRuntimeSemanticView280 *modelDefinition,
           ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
 
 {
   ArmyPlacementContactKindIndex32 contactKindIndex;
-  longlong radiusSquaredOrDelta;
-  longlong remainingSquared;
-  longlong deltaYSquared;
-  longlong nearestDistanceSquared;
+  int64_t radiusSquaredOrDelta;
+  int64_t remainingSquared;
+  int64_t deltaYSquared;
+  int64_t nearestDistanceSquared;
   int recordOrDistanceTerm;
-  dword nearestDistanceQ12;
+  uint32_t nearestDistanceQ12;
   WorldOwnerListNode100 *ownerNode;
   bool blocked;
   TerrainPlacementTestEaxCf5 terrainTest;
@@ -1109,23 +1109,23 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
           do {
             if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
               recordOrDistanceTerm = *(int *)ownerNode->runtimePayload;
-              eaxContinuity = *(uint *)(recordOrDistanceTerm + 0x19c);
+              eaxContinuity = *(uint32_t *)(recordOrDistanceTerm + 0x19c);
               if (((eaxContinuity != 0) &&
                   (*(ArmyPlacementDispatchArg7 *)
                     (*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) == dispatchArg7)) &&
                  ((eaxContinuity = eaxContinuity + placementClearancePaddingQ12,
                   *(int *)(recordOrDistanceTerm + 0x4c) != 0x12 ||
                   (((dispatchArg0 & 1) == 0 &&
-                   ((*(uint *)((int)ownerNode->runtimePayload + 0xec) & 0x18) == 0)))))) {
+                   ((*(uint32_t *)((int)ownerNode->runtimePayload + 0xec) & 0x18) == 0)))))) {
                 recordOrDistanceTerm = eaxContinuity + modelDefinition->placementFlags1A8;
-                radiusSquaredOrDelta = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                radiusSquaredOrDelta = (int64_t)recordOrDistanceTerm * (int64_t)recordOrDistanceTerm;
                 recordOrDistanceTerm = ownerNode->worldXQ12 - worldYQ12;
-                remainingSquared = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                remainingSquared = (int64_t)recordOrDistanceTerm * (int64_t)recordOrDistanceTerm;
                 eaxContinuity = (int)remainingSquared;
                 remainingSquared = radiusSquaredOrDelta - remainingSquared;
                 if (-1 < remainingSquared) {
                   recordOrDistanceTerm = ownerNode->worldYQ12 - worldXQ12;
-                  deltaYSquared = (longlong)recordOrDistanceTerm * (longlong)recordOrDistanceTerm;
+                  deltaYSquared = (int64_t)recordOrDistanceTerm * (int64_t)recordOrDistanceTerm;
                   eaxContinuity = (int)deltaYSquared;
                   remainingSquared = remainingSquared - deltaYSquared;
                   if (-1 < remainingSquared) {
@@ -1140,7 +1140,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
                 }
               }
             }
-            nearestDistanceHigh = (UInt64Half32)((ulonglong)nearestDistanceSquared >> 0x20);
+            nearestDistanceHigh = (UInt64Half32)((uint64_t)nearestDistanceSquared >> 0x20);
             nearestDistanceLow = (UInt64Half32)nearestDistanceSquared;
             ownerNode = ownerNode->nextNode;
           } while (ownerNode != (WorldOwnerListNode100 *)0x0);
@@ -1182,7 +1182,7 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
 
 {
   ModelRuntimeNode *modelNodeRuntime;
-  dword anchorDistanceQ12;
+  uint32_t anchorDistanceQ12;
   ModelLookupEntryEaxCf5 anchorLookup;
   ModelLocalPointRegs12 anchorWorldPoint;
   
@@ -1210,8 +1210,8 @@ ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {
-  longlong radiusSquared;
-  longlong distanceSquared;
+  int64_t radiusSquared;
+  int64_t distanceSquared;
   int deltaXOrRadiusQ12;
   int deltaYQ12;
   
@@ -1219,11 +1219,11 @@ ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
       (queryRadiusQ12 != 0)) &&
      (deltaXOrRadiusQ12 = (armyRuntime->modelNodeRuntime->worldTransform).translation.x - worldYQ12,
      deltaYQ12 = (armyRuntime->modelNodeRuntime->worldTransform).translation.y - worldXQ12,
-     distanceSquared = (longlong)deltaYQ12 * (longlong)deltaYQ12 + (longlong)deltaXOrRadiusQ12 * (longlong)deltaXOrRadiusQ12,
+     distanceSquared = (int64_t)deltaYQ12 * (int64_t)deltaYQ12 + (int64_t)deltaXOrRadiusQ12 * (int64_t)deltaXOrRadiusQ12,
      deltaXOrRadiusQ12 = (((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC +
-             queryRadiusQ12, radiusSquared = (longlong)deltaXOrRadiusQ12 * (longlong)deltaXOrRadiusQ12,
-     -1 < (int)(((int)((ulonglong)radiusSquared >> 0x20) - (int)((ulonglong)distanceSquared >> 0x20)) -
-               (uint)((uint)radiusSquared < (uint)distanceSquared)))) {
+             queryRadiusQ12, radiusSquared = (int64_t)deltaXOrRadiusQ12 * (int64_t)deltaXOrRadiusQ12,
+     -1 < (int)(((int)((uint64_t)radiusSquared >> 0x20) - (int)((uint64_t)distanceSquared >> 0x20)) -
+               (uint32_t)((uint32_t)radiusSquared < (uint32_t)distanceSquared)))) {
     return true;
   }
   return false;

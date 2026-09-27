@@ -292,7 +292,7 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
 StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset)
 
 {
-  dword registrationStatusCode;
+  uint32_t registrationStatusCode;
   AssetRecordCount recordsRemaining;
   ArmyAssetHeader *record;
   StatusValueEaxCf5 registrationStatus;
@@ -319,7 +319,7 @@ StatusValueEaxCf5 __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyA
     }
   }
   else {
-    Package_SetLastErrorPath((word *)asset);
+    Package_SetLastErrorPath((uint16_t *)asset);
   }
   failureStatus.carry = true;
   failureStatus.valueOrError = registrationStatusCode;
@@ -360,7 +360,7 @@ ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
-          (FactionRuntimeIndex factionIndex,dword requiredDefinitionFlags,
+          (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -402,10 +402,10 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
    Local calls: ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf.
 */
 void __thandor_void_preserve_eax_ecx
-ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyAssetRegistryId)
+ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedArmyAssetRegistryId)
 
 {
-  dword resolvedTexture;
+  uint32_t resolvedTexture;
   int registrySlotsRemaining;
   ArmyAssetRecordPrefix **registryCursor;
   ArmyAssetRecordPrefix *registeredRecord;
@@ -422,24 +422,24 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(dword selectedArmyA
     registrySlotsRemaining = registrySlotsRemaining + -1;
   } while (registrySlotsRemaining != 0);
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
-  *(dword *)(selectedArmyAssetRegistryId + 0x9d24) = resolvedTexture;
+  *(uint32_t *)(selectedArmyAssetRegistryId + 0x9d24) = resolvedTexture;
   resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
-  *(dword *)(selectedArmyAssetRegistryId + 0x9ddc) = resolvedTexture;
+  *(uint32_t *)(selectedArmyAssetRegistryId + 0x9ddc) = resolvedTexture;
   return;
 }
 
 
-static dword ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,byte *node)
+static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
   ModelDefinitionLookupEaxCf5 selected;
-  dword sum;
-  dword i;
+  uint32_t sum;
+  uint32_t i;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  sum = *(dword *)((byte *)selected.modelDefinition + 0x60);
-  for (i = 0; i < *(dword *)(node + 8); i++) {
-    byte *child = *(byte **)(node + 0xc + i * 4);
-    if (child != (byte *)0x0) {
+  sum = *(uint32_t *)((uint8_t *)selected.modelDefinition + 0x60);
+  for (i = 0; i < *(uint32_t *)(node + 8); i++) {
+    uint8_t *child = *(uint8_t **)(node + 0xc + i * 4);
+    if (child != (uint8_t *)0x0) {
       sum = sum + ArmyAssetHierarchy_SumArmourFrom(factionIndex,child);
     }
   }
@@ -456,32 +456,32 @@ static dword ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionIndex,b
    unchanged.
    Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedArmour
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
+  return ArmyAssetHierarchy_SumArmourFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
 }
 
 
-static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,byte *node)
+static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
   ModelDefinitionLookupEaxCf5 selected;
   EnergyDemandQ4 sum;
-  dword childCount;
-  dword i;
+  uint32_t childCount;
+  uint32_t i;
   selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
-  sum = *(EnergyDemandQ4 *)((byte *)selected.modelDefinition + 0x18c);
-  childCount = *(dword *)(node + 8);
-  if ((*(dword *)((byte *)selected.modelDefinition + 0x68) & 0x80) == 0) {
+  sum = *(EnergyDemandQ4 *)((uint8_t *)selected.modelDefinition + 0x18c);
+  childCount = *(uint32_t *)(node + 8);
+  if ((*(uint32_t *)((uint8_t *)selected.modelDefinition + 0x68) & 0x80) == 0) {
     childCount = 0; /* only definitions with flag 0x80 contribute their children */
   }
   for (i = 0; i < childCount; i++) {
-    sum = sum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(byte **)(node + 0xc + i * 4));
+    sum = sum + ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(node + 0xc + i * 4));
   }
   return sum;
 }
@@ -504,7 +504,7 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(byte **)(uintptr_t)(definitionNode + 0xc));
+  return ArmyAssetHierarchy_SumEnergyFrom(factionIndex,*(uint8_t **)(uintptr_t)(definitionNode + 0xc));
 }
 
 
@@ -587,27 +587,27 @@ ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
 /* Relocates one node of an army record's model tree and all of its children (offsets 0x0C + 4*i,
    count at +0x08) against assetBase, adding each node's model-definition build metrics (looked up by
    the id at +0x20) to the record. Returns the last lookup error, or 0. */
-static dword ArmyAssetRecord_RelocateModelTree
-          (ArmyAssetRuntimeSemanticView80 *record,byte *assetBase,byte *node)
+static uint32_t ArmyAssetRecord_RelocateModelTree
+          (ArmyAssetRuntimeSemanticView80 *record,uint8_t *assetBase,uint8_t *node)
 {
   ModelBuildMetricEaxEcxEdxCf13 metrics;
-  dword childCount;
-  dword childIndex;
-  dword error = 0;
-  dword childError;
+  uint32_t childCount;
+  uint32_t childIndex;
+  uint32_t error = 0;
+  uint32_t childError;
 
   metrics = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(*(PckModelDefinitionIdCatalog *)(node + 0x20));
   if (metrics.carry) {
-    error = (dword)metrics.metric0;
+    error = (uint32_t)metrics.metric0;
   }
   else {
-    record->relocationPointerOrOffset2C = record->relocationPointerOrOffset2C + (dword)metrics.metric0;
+    record->relocationPointerOrOffset2C = record->relocationPointerOrOffset2C + (uint32_t)metrics.metric0;
     record->relocationValue24 = record->relocationValue24 + metrics.metric1;
     record->relocationValue28 = record->relocationValue28 + metrics.metric2;
   }
-  childCount = *(dword *)(node + 8);
+  childCount = *(uint32_t *)(node + 8);
   for (childIndex = 0; childIndex < childCount; childIndex = childIndex + 1) {
-    byte **child = (byte **)(node + 0xc + childIndex * 4);
+    uint8_t **child = (uint8_t **)(node + 0xc + childIndex * 4);
     *child = *child + (uintptr_t)assetBase;
     childError = ArmyAssetRecord_RelocateModelTree(record,assetBase,*child);
     if (childError != 0) {
@@ -640,12 +640,12 @@ ArmyAssetRecord_RegisterAndRelocate
   slot = g_ArmyAssetRecordRegistry;
   for (slotsRemaining = 0x300; slotsRemaining != 0; slotsRemaining = slotsRemaining + -1) {
     if (*slot == (ArmyAssetRecordPrefix *)0x0) {
-      dword error = 0;
+      uint32_t error = 0;
       *slot = (ArmyAssetRecordPrefix *)record;
       if (record->rootNodeOffsetOrPointer != 0) {
-        record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (dword)(uintptr_t)assetBase;
+        record->rootNodeOffsetOrPointer = record->rootNodeOffsetOrPointer + (uint32_t)(uintptr_t)assetBase;
         error = ArmyAssetRecord_RelocateModelTree
-                          (record,(byte *)assetBase,(byte *)(uintptr_t)record->rootNodeOffsetOrPointer);
+                          (record,(uint8_t *)assetBase,(uint8_t *)(uintptr_t)record->rootNodeOffsetOrPointer);
       }
       status.carry = error != 0;
       status.valueOrError = error;
@@ -666,7 +666,7 @@ ArmyAssetRecord_RegisterAndRelocate
    creates and caches the preview through ArmyRuntime_RenderPreviewTextureCf.
    Cross-module calls: ArmyRuntime_RenderPreviewTextureCf [gameplay/army/runtime].
 */
-dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryId)
+uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetRegistryId)
 
 {
   ArmyAssetRecordPrefix *registeredRecord;
@@ -698,7 +698,7 @@ dword ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(dword armyAssetRegistryI
       return 0;
     }
     registeredRecord[2].byteSize = (AssetRecordByteCount)renderResult.previewTexture;
-    return (dword)renderResult.previewTexture;
+    return (uint32_t)renderResult.previewTexture;
   }
   return registeredRecord[2].byteSize;
 }
@@ -749,7 +749,7 @@ ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
 
 {
@@ -778,7 +778,7 @@ ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
    absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping
    preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
 */
-byte __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
+uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -807,7 +807,7 @@ byte __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(Arm
    ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction,
    or direction.
 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
 
 {
@@ -838,7 +838,7 @@ ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
    flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or
    direction.
 */
-byte __thandor_cf_preserve_eax_ecx_edx
+uint8_t __thandor_cf_preserve_eax_ecx_edx
 ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId)
 
 {

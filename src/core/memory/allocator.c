@@ -22,9 +22,9 @@ PriorityPairHeap_SiftUp(PriorityPairHeapCount heapSize,EntityPathingPriorityPair
 
 {
   EntityPathingPriorityPair *parentHeapPair;
-  uint parentSearchIndex;
+  uint32_t parentSearchIndex;
   EntityPathingPriorityPair *currentHeapPair;
-  sdword parentPriority;
+  int32_t parentPriority;
   int childPriority;
   GameEntityRuntime *childEntity;
   
@@ -62,11 +62,11 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
 
 {
   int selectedChildPriority;
-  uint selectedChildIndex;
+  uint32_t selectedChildIndex;
   GameEntityRuntime *selectedChildEntity;
   EntityPathingPriorityPair *currentHeapPair;
   int leftChildBaseIndex;
-  sdword displacedParentPriority;
+  int32_t displacedParentPriority;
   GameEntityRuntime *displacedParentEntity;
   
   selectedChildIndex = 0;
@@ -111,11 +111,11 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 DwordBlock64Array_ContainsExactRecordCf
-          (DwordBlockRecordCount recordCount,dword *recordArray,dword *candidateRecord)
+          (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
 
 {
   int dwordsRemainingInRecord;
-  dword *candidateRecordCursor;
+  uint32_t *candidateRecordCursor;
   bool dwordsEqual;
 
   do {
@@ -200,9 +200,9 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
 
 {
   ArenaBlockHeader *followingBlock;
-  uint alignedBytes;
+  uint32_t alignedBytes;
   ArenaBlockHeader *splitBlock;
-  dword largestFreeOrOriginalSize;
+  uint32_t largestFreeOrOriginalSize;
   ArenaBlockHeader *blockCursor;
   ArenaAllocEaxCf5 outOfMemoryResult;
   ArenaAllocEaxCf5 corruptHeapResult;
@@ -226,7 +226,7 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
         blockCursor->stateMagic = ARENA_BLOCK_ALLOCATED;
         if (blockCursor->payloadSize <= alignedBytes + 0x40) {
           exactFitResult.carry = false;
-          exactFitResult.eax = (dword)(blockCursor + 1);
+          exactFitResult.eax = (uint32_t)(blockCursor + 1);
           return exactFitResult;
         }
         largestFreeOrOriginalSize = blockCursor->payloadSize;
@@ -243,7 +243,7 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
           followingBlock->previous = splitBlock;
         }
         splitResult.carry = false;
-        splitResult.eax = (dword)(blockCursor + 1);
+        splitResult.eax = (uint32_t)(blockCursor + 1);
         return splitResult;
       }
     }
@@ -263,10 +263,10 @@ ArenaAllocEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Alloc(ArenaPayloadB
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns the sum of
    all free block payload sizes in EAX.
 */
-dword __cdecl ArenaHeap_QueryFreeBytes(void)
+uint32_t __cdecl ArenaHeap_QueryFreeBytes(void)
 
 {
-  dword freePayloadBytes;
+  uint32_t freePayloadBytes;
   ArenaBlockHeader *blockCursor;
   
   freePayloadBytes = 0;
@@ -305,7 +305,7 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
       corruptBlockResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
       return corruptBlockResult;
     }
-    *(dword *)((int)memory + -0x1c) = 0xa5a5a5a5;
+    *(uint32_t *)((int)memory + -0x1c) = 0xa5a5a5a5;
     adjacentFreeBlock = *(int **)((int)memory + -0x18);
     if ((adjacentFreeBlock != (int *)0xffffffff) && (adjacentFreeBlock[1] == -0x5a5a5a5b)) {
       *freedBlockHeader = *freedBlockHeader + *adjacentFreeBlock + 0x20;
@@ -342,7 +342,7 @@ ArenaLargestAllocationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
 ArenaHeap_AllocLargestFreeBlock(void)
 
 {
-  dword largestFreePayloadBytes;
+  uint32_t largestFreePayloadBytes;
   ArenaBlockHeader *blockCursor;
   ArenaBlockHeader *largestFreeBlock;
   ArenaLargestAllocationEaxEcxCf9 outOfMemoryResult;
@@ -375,7 +375,7 @@ ArenaHeap_AllocLargestFreeBlock(void)
   }
   largestFreeBlock->stateMagic = ARENA_BLOCK_ALLOCATED;
   successResult.blockSizeOrSentinel = largestFreePayloadBytes;
-  successResult.allocationOrError = (dword)(largestFreeBlock + 1);
+  successResult.allocationOrError = (uint32_t)(largestFreeBlock + 1);
   successResult.carry = false;
   return successResult;
 }
@@ -390,18 +390,18 @@ ArenaShrinkEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
 
 {
-  uint originalPayloadSize;
+  uint32_t originalPayloadSize;
   int *followingBlock;
   int followingPayloadSize;
   int followingNextAddress;
-  uint alignedBytes;
+  uint32_t alignedBytes;
   int *thresholdOrSplitBlock;
   int splitPayloadSize;
-  uint *blockHeader;
+  uint32_t *blockHeader;
   ArenaShrinkEaxCf5 successResult;
   ArenaShrinkEaxCf5 failureResult;
   
-  blockHeader = (uint *)((int)memory + -0x20);
+  blockHeader = (uint32_t *)((int)memory + -0x20);
   alignedBytes = newSize + 0x1f & 0xffffffe0;
   if ((*(int *)((int)memory + -0x1c) == 0x5a5a5a5a) && (alignedBytes <= *blockHeader)) {
     thresholdOrSplitBlock = (int *)(alignedBytes + 0x40);
@@ -427,7 +427,7 @@ ArenaHeap_ShrinkInPlace(ArenaPayloadByteCount newSize,void *memory)
       }
     }
     successResult.carry = false;
-    successResult.scratchOrError = (dword)thresholdOrSplitBlock;
+    successResult.scratchOrError = (uint32_t)thresholdOrSplitBlock;
     return successResult;
   }
   failureResult.carry = true;
@@ -447,8 +447,8 @@ ArenaLinearReserveEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 
 {
-  byte *previousLinearCursor;
-  byte *reservedLinearBase;
+  uint8_t *previousLinearCursor;
+  uint8_t *reservedLinearBase;
   ArenaLinearReserveEaxCf5 successResult;
   ArenaLinearReserveEaxCf5 failureResult;
   
@@ -456,7 +456,7 @@ ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
   if (g_Arena.linearCursor + bytes < g_Arena.linearLimit) {
     g_Arena.linearCursor = g_Arena.linearCursor + bytes;
     successResult.carry = false;
-    successResult.baseOrError = (dword)previousLinearCursor;
+    successResult.baseOrError = (uint32_t)previousLinearCursor;
     return successResult;
   }
   failureResult.carry = true;
@@ -475,11 +475,11 @@ ArenaHeap_ReserveLinear(ArenaPayloadByteCount bytes)
 void __thandor_void_preserve_eax_ecx_edx Memory_ZeroDwords(MemoryByteCount bytes,void *destination)
 
 {
-  uint dwordsRemaining;
+  uint32_t dwordsRemaining;
   
   for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-    *(dword *)destination = 0;
-    destination = (dword *)((int)destination + 4);
+    *(uint32_t *)destination = 0;
+    destination = (uint32_t *)((int)destination + 4);
   }
   return;
 }

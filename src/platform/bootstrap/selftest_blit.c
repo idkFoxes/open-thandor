@@ -158,18 +158,18 @@ static int BlitRange(unsigned *state, int low, int high)
     return low + (int)(BlitRandom(state) % (unsigned)(high - low + 1));
 }
 
-static void BlitFill(byte *data, unsigned size, unsigned *state)
+static void BlitFill(uint8_t *data, unsigned size, unsigned *state)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
-        data[i] = (byte)(BlitRandom(state) >> 11);
+        data[i] = (uint8_t)(BlitRandom(state) >> 11);
     }
 }
 
 /* ARGB with alpha 0 / 0xFF / random and sometimes RGB 0, so each pixel branch is taken. */
-static dword BlitRandomArgb(unsigned *state)
+static uint32_t BlitRandomArgb(unsigned *state)
 {
-    dword value = BlitRandom(state);
+    uint32_t value = BlitRandom(state);
     switch (BlitRandom(state) % 8) {
     case 0:
     case 1:
@@ -188,7 +188,7 @@ static dword BlitRandomArgb(unsigned *state)
     return value;
 }
 
-static int BlitFirstDifference(const byte *a, const byte *b, unsigned size)
+static int BlitFirstDifference(const uint8_t *a, const uint8_t *b, unsigned size)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
@@ -223,10 +223,10 @@ static void BlitSetPixelConstants(int layout555)
 
 /* g_GraphicsTextureSourceGetLogicalSize for the mask test: the C code calls it as a C function that
    returns the struct, the original expects width in EAX, height in EDX, CF clear and ECX preserved. */
-static dword s_BlitMaskWidth;
-static dword s_BlitMaskHeight;
+static uint32_t s_BlitMaskWidth;
+static uint32_t s_BlitMaskHeight;
 
-static GraphicsTextureSizeEaxEdxCf9 BlitMaskSizeForC(dword reserved, GraphicsTextureSourceAsset *asset)
+static GraphicsTextureSizeEaxEdxCf9 BlitMaskSizeForC(uint32_t reserved, GraphicsTextureSourceAsset *asset)
 {
     GraphicsTextureSizeEaxEdxCf9 size;
     (void)reserved;
@@ -248,7 +248,7 @@ static __declspec(naked) void BlitMaskSizeForOriginal(void)
 }
 
 /* Pushes count dwords (args[0] = first parameter) and calls the stdcall original; returns CF. */
-static unsigned BlitCallOriginal(void *entry, const dword *args, int count)
+static unsigned BlitCallOriginal(void *entry, const uint32_t *args, int count)
 {
     unsigned carry;
     __asm {
@@ -258,7 +258,7 @@ static unsigned BlitCallOriginal(void *entry, const dword *args, int count)
         mov ecx, count
         mov esi, args
     push_next:
-        push dword ptr [esi + ecx * 4 - 4]
+        push uint32_t ptr [esi + ecx * 4 - 4]
         dec ecx
         jnz push_next
         cld
@@ -275,7 +275,7 @@ static unsigned BlitCallOriginal(void *entry, const dword *args, int count)
     return carry;
 }
 
-static unsigned BlitCallC(const BlitCase *testCase, const dword *a)
+static unsigned BlitCallC(const BlitCase *testCase, const uint32_t *a)
 {
     unsigned carry = 0;
     switch (testCase->kind) {
@@ -316,7 +316,7 @@ static unsigned BlitCallC(const BlitCase *testCase, const dword *a)
 }
 
 /* Returns nonzero when the call faulted. */
-static int BlitRunGuarded(const BlitCase *testCase, void *originalEntry, const dword *args, int count,
+static int BlitRunGuarded(const BlitCase *testCase, void *originalEntry, const uint32_t *args, int count,
                           unsigned *carry, unsigned *exceptionCode)
 {
     __try {
@@ -336,9 +336,9 @@ static int BlitRunGuarded(const BlitCase *testCase, void *originalEntry, const d
 }
 
 typedef struct BlitBuffers {
-    byte *pixels;   /* framebuffer with BLIT_GUARD before and after */
-    byte *asset;
-    byte *mask;     /* mask with BLIT_GUARD before and after */
+    uint8_t *pixels;   /* framebuffer with BLIT_GUARD before and after */
+    uint8_t *asset;
+    uint8_t *mask;     /* mask with BLIT_GUARD before and after */
 } BlitBuffers;
 
 typedef struct BlitSetup {
@@ -356,7 +356,7 @@ typedef struct BlitSetup {
 } BlitSetup;
 
 /* Builds the asset: header, bankCount palettes at 0x200, subresource table, texel data. */
-static void BlitBuildAsset(BlitSetup *setup, byte *asset, unsigned *state)
+static void BlitBuildAsset(BlitSetup *setup, uint8_t *asset, unsigned *state)
 {
     GraphicsTextureSourceAsset *header = (GraphicsTextureSourceAsset *)asset;
     unsigned tableOffset = BLIT_HEADER + (unsigned)setup->bankCount * BLIT_BANK_BYTES;
@@ -367,20 +367,20 @@ static void BlitBuildAsset(BlitSetup *setup, byte *asset, unsigned *state)
     memset(asset, 0, setup->assetBytes);
     BlitFill(asset, BLIT_HEADER, state);
     header->common.magic = ASSET_MAGIC_GFX;
-    header->tableDescriptor.subresourceCount = (dword)setup->subresourceCount;
-    header->tableDescriptor.paletteBankCount = (dword)setup->bankCount;
+    header->tableDescriptor.subresourceCount = (uint32_t)setup->subresourceCount;
+    header->tableDescriptor.paletteBankCount = (uint32_t)setup->bankCount;
     header->tableDescriptor.subresourceTableOffset = tableOffset;
     for (i = 0; i < (unsigned)setup->bankCount * 256u * 2u; i++) {
-        ((dword *)(asset + BLIT_HEADER))[i] = BlitRandomArgb(state);
+        ((uint32_t *)(asset + BLIT_HEADER))[i] = BlitRandomArgb(state);
     }
     for (s = 0; s < setup->subresourceCount; s++) {
         GraphicsTextureSourceEntry *entry = (GraphicsTextureSourceEntry *)(asset + tableOffset) + s;
         int direct = (BlitRandom(state) % 3) == 0;
         unsigned texels;
-        entry->pixelWidth = (dword)BlitRange(state, 1, 48);
-        entry->pixelHeight = (dword)BlitRange(state, 1, 40);
-        entry->logicalWidth = entry->pixelWidth + (dword)BlitRange(state, 0, 8);
-        entry->logicalHeight = entry->pixelHeight + (dword)BlitRange(state, 0, 8);
+        entry->pixelWidth = (uint32_t)BlitRange(state, 1, 48);
+        entry->pixelHeight = (uint32_t)BlitRange(state, 1, 40);
+        entry->logicalWidth = entry->pixelWidth + (uint32_t)BlitRange(state, 0, 8);
+        entry->logicalHeight = entry->pixelHeight + (uint32_t)BlitRange(state, 0, 8);
         entry->originX = BlitRange(state, -24, 24);
         entry->originY = BlitRange(state, -24, 24);
         entry->paletteIndex = direct ? -1 : BlitRange(state, 0, setup->bankCount - 1);
@@ -391,7 +391,7 @@ static void BlitBuildAsset(BlitSetup *setup, byte *asset, unsigned *state)
         texels = entry->pixelWidth * entry->pixelHeight;
         if (direct) {
             for (i = 0; i < texels; i++) {
-                ((dword *)(asset + dataOffset))[i] = BlitRandomArgb(state);
+                ((uint32_t *)(asset + dataOffset))[i] = BlitRandomArgb(state);
             }
             dataOffset += texels * 4u;
         }
@@ -410,7 +410,7 @@ static unsigned BlitAssetBytes(int bankCount, int subresourceCount)
 
 /* Builds one run's inputs and arguments. Returns the argument count. */
 static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setup, BlitBuffers *input,
-                        SoftwareFramebufferAccess *framebuffer, SoftwareMaskRuntimeView *mask, dword *args)
+                        SoftwareFramebufferAccess *framebuffer, SoftwareMaskRuntimeView *mask, uint32_t *args)
 {
     unsigned rng = seed;
     int clipMinX;
@@ -439,24 +439,24 @@ static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setu
     if (testCase->kind == BLIT_KIND_MASK) {
         /* mask: w*h >= 32 (the original loops 2^32 times for fewer than 32 pixels) */
         unsigned i;
-        s_BlitMaskWidth = (dword)BlitRange(&rng, 1, 200);
-        s_BlitMaskHeight = (dword)BlitRange(&rng, 1, 150);
+        s_BlitMaskWidth = (uint32_t)BlitRange(&rng, 1, 200);
+        s_BlitMaskHeight = (uint32_t)BlitRange(&rng, 1, 150);
         if (s_BlitMaskWidth * s_BlitMaskHeight < 32) {
             s_BlitMaskHeight = 32;
         }
         setup->maskBytes = s_BlitMaskWidth * s_BlitMaskHeight;
         BlitFill(input->mask, setup->maskBytes + 2 * BLIT_GUARD, &rng);
         for (i = 0; i < setup->maskBytes; i++) {
-            byte *p = input->mask + BLIT_GUARD + i;
+            uint8_t *p = input->mask + BLIT_GUARD + i;
             switch (BlitRandom(&rng) % 4) {
             case 0:
                 *p = 0;
                 break;
             case 1:
-                *p = (byte)BlitRange(&rng, 0xd8, 0xff);
+                *p = (uint8_t)BlitRange(&rng, 0xd8, 0xff);
                 break;
             case 2:
-                *p = (byte)BlitRange(&rng, 1, 0x40);
+                *p = (uint8_t)BlitRange(&rng, 1, 0x40);
                 break;
             default:
                 break;
@@ -467,7 +467,7 @@ static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setu
         mask->maskPixels = (setup->invalid == 1) ? NULL : input->mask + BLIT_GUARD;
         sprintf_s(setup->describe, sizeof setup->describe, "mask %ux%u%s", s_BlitMaskWidth, s_BlitMaskHeight,
                   mask->maskPixels == NULL ? " (NULL)" : "");
-        args[n++] = (dword)(uintptr_t)mask;
+        args[n++] = (uint32_t)(uintptr_t)mask;
         return n;
     }
 
@@ -500,17 +500,17 @@ static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setu
         int rectMinY = BlitRange(&rng, -20, setup->height - 1);
         int rectMaxX = rectMinX + BlitRange(&rng, -2, setup->width + 20);
         int rectMaxY = rectMinY + BlitRange(&rng, -2, setup->height + 20);
-        dword argb = BlitRandomArgb(&rng);
-        args[n++] = (dword)clipMaxY;
-        args[n++] = (dword)clipMaxX;
-        args[n++] = (dword)clipMinY;
-        args[n++] = (dword)clipMinX;
-        args[n++] = (dword)rectMaxY;
-        args[n++] = (dword)rectMaxX;
-        args[n++] = (dword)rectMinY;
-        args[n++] = (dword)rectMinX;
+        uint32_t argb = BlitRandomArgb(&rng);
+        args[n++] = (uint32_t)clipMaxY;
+        args[n++] = (uint32_t)clipMaxX;
+        args[n++] = (uint32_t)clipMinY;
+        args[n++] = (uint32_t)clipMinX;
+        args[n++] = (uint32_t)rectMaxY;
+        args[n++] = (uint32_t)rectMaxX;
+        args[n++] = (uint32_t)rectMinY;
+        args[n++] = (uint32_t)rectMinX;
         args[n++] = argb;
-        args[n++] = (dword)(uintptr_t)framebuffer;
+        args[n++] = (uint32_t)(uintptr_t)framebuffer;
         sprintf_s(setup->describe, sizeof setup->describe,
                   "fb %dx%d %s clip %d,%d-%d,%d rect %d,%d-%d,%d argb %08x", setup->width, setup->height,
                   setup->layout555 ? "555" : "565", clipMinX, clipMinY, clipMaxX, clipMaxY, rectMinX, rectMinY,
@@ -540,21 +540,21 @@ static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setu
         drawX = BlitRange(&rng, -w + 1, setup->width - 1) - entry->originX * scale;
         drawY = BlitRange(&rng, -h + 1, setup->height - 1) - entry->originY * scale;
     }
-    args[n++] = (dword)clipMaxY;
-    args[n++] = (dword)clipMaxX;
-    args[n++] = (dword)clipMinY;
-    args[n++] = (dword)clipMinX;
-    args[n++] = (dword)drawY;
-    args[n++] = (dword)drawX;
+    args[n++] = (uint32_t)clipMaxY;
+    args[n++] = (uint32_t)clipMaxX;
+    args[n++] = (uint32_t)clipMinY;
+    args[n++] = (uint32_t)clipMinX;
+    args[n++] = (uint32_t)drawY;
+    args[n++] = (uint32_t)drawX;
     if (testCase->kind == BLIT_KIND_EXTRA) {
-        dword extra;
+        uint32_t extra;
         if (testCase->extra == BLIT_EXTRA_SCALE) {
-            extra = (dword)scale;
+            extra = (uint32_t)scale;
         }
         else if (testCase->extra == BLIT_EXTRA_BANK) {
-            extra = (dword)BlitRange(&rng, 0, setup->bankCount - 1);
+            extra = (uint32_t)BlitRange(&rng, 0, setup->bankCount - 1);
             if ((BlitRandom(&rng) % 12) == 0) {
-                extra = (dword)(setup->bankCount + BlitRange(&rng, 0, 3));
+                extra = (uint32_t)(setup->bankCount + BlitRange(&rng, 0, 3));
             }
         }
         else {
@@ -573,8 +573,8 @@ static int BlitBuildRun(const BlitCase *testCase, unsigned seed, BlitSetup *setu
         args[n++] = extra;
     }
     args[n++] = subresourceIndex;
-    args[n++] = (dword)(uintptr_t)input->asset;
-    args[n++] = (dword)(uintptr_t)framebuffer;
+    args[n++] = (uint32_t)(uintptr_t)input->asset;
+    args[n++] = (uint32_t)(uintptr_t)framebuffer;
     {
         const GraphicsTextureSourceEntry *entry =
             (subresourceIndex < (unsigned)setup->subresourceCount)
@@ -599,8 +599,8 @@ void Thandor_SelfTestBlitCompare(void)
     const char *filter = getenv("OPEN_THANDOR_BLITCMP_FILTER");
     int runs = (runsText != NULL && runsText[0] != 0) ? atoi(runsText) : 500;
     unsigned baseSeed = (seedText != NULL && seedText[0] != 0) ? (unsigned)strtoul(seedText, NULL, 0) : 1u;
-    byte *blitCode = (byte *)Thandor_LoadOriginalCodeCopy(BLIT_CODE_START, BLIT_CODE_END - BLIT_CODE_START);
-    byte *maskCode = (byte *)Thandor_LoadOriginalCodeCopy(MASK_CODE_START, MASK_CODE_END - MASK_CODE_START);
+    uint8_t *blitCode = (uint8_t *)Thandor_LoadOriginalCodeCopy(BLIT_CODE_START, BLIT_CODE_END - BLIT_CODE_START);
+    uint8_t *maskCode = (uint8_t *)Thandor_LoadOriginalCodeCopy(MASK_CODE_START, MASK_CODE_END - MASK_CODE_START);
     SoftwarePixelMmxConstants savedConstants = g_SoftwarePixelMmxConstants;
     SoftwarePixelPackTables *savedPackTables = g_SoftwarePixelPackTables;
     GraphicsTextureSourceGetLogicalSizeProc *savedGetSize = g_GraphicsTextureSourceGetLogicalSize;
@@ -621,15 +621,15 @@ void Thandor_SelfTestBlitCompare(void)
         Thandor_Log("blitcmp: could not load the original code (thandor_original.exe missing?)");
         return;
     }
-    input.pixels = (byte *)malloc(maxPixels);
-    input.asset = (byte *)malloc(maxAsset);
-    input.mask = (byte *)malloc(maxMask);
-    mine.pixels = (byte *)malloc(maxPixels);
-    mine.asset = (byte *)malloc(maxAsset);
-    mine.mask = (byte *)malloc(maxMask);
-    theirs.pixels = (byte *)malloc(maxPixels);
-    theirs.asset = (byte *)malloc(maxAsset);
-    theirs.mask = (byte *)malloc(maxMask);
+    input.pixels = (uint8_t *)malloc(maxPixels);
+    input.asset = (uint8_t *)malloc(maxAsset);
+    input.mask = (uint8_t *)malloc(maxMask);
+    mine.pixels = (uint8_t *)malloc(maxPixels);
+    mine.asset = (uint8_t *)malloc(maxAsset);
+    mine.mask = (uint8_t *)malloc(maxMask);
+    theirs.pixels = (uint8_t *)malloc(maxPixels);
+    theirs.asset = (uint8_t *)malloc(maxAsset);
+    theirs.mask = (uint8_t *)malloc(maxMask);
     if (!packTables || !input.pixels || !input.asset || !input.mask || !mine.pixels || !mine.asset || !mine.mask ||
         !theirs.pixels || !theirs.asset || !theirs.mask) {
         Thandor_Log("blitcmp: allocation failed");
@@ -637,7 +637,7 @@ void Thandor_SelfTestBlitCompare(void)
     }
     {
         unsigned packState = 0x9e3779b9u ^ baseSeed;
-        BlitFill((byte *)packTables, sizeof *packTables, &packState);
+        BlitFill((uint8_t *)packTables, sizeof *packTables, &packState);
     }
     g_SoftwarePixelPackTables = packTables;
     Thandor_Log("blitcmp: %d runs per function, seed %u, filter \"%s\"", runs, baseSeed, filter ? filter : "");
@@ -660,7 +660,7 @@ void Thandor_SelfTestBlitCompare(void)
             unsigned seed = (baseSeed * 2654435761u) ^ ((unsigned)caseIndex * 0x9e3779b9u) ^
                             ((unsigned)run * 0x85ebca6bu) ^ 0x7654321u;
             BlitSetup setup;
-            dword args[10];
+            uint32_t args[10];
             int count;
             unsigned mineCarry = 0;
             unsigned theirsCarry = 0;
@@ -670,8 +670,8 @@ void Thandor_SelfTestBlitCompare(void)
             int theirsFaulted;
             const char *where = NULL;
             int difference = -1;
-            const byte *a = NULL;
-            const byte *b = NULL;
+            const uint8_t *a = NULL;
+            const uint8_t *b = NULL;
             if (seed == 0) {
                 seed = 1;
             }
@@ -683,7 +683,7 @@ void Thandor_SelfTestBlitCompare(void)
             memcpy(mine.mask, input.mask, setup.maskBytes + 2 * BLIT_GUARD);
             framebuffer.pixels = mine.pixels + BLIT_GUARD;
             if (testCase->kind == BLIT_KIND_PLAIN || testCase->kind == BLIT_KIND_EXTRA) {
-                args[count - 2] = (dword)(uintptr_t)mine.asset; /* asset is the second-to-last argument */
+                args[count - 2] = (uint32_t)(uintptr_t)mine.asset; /* asset is the second-to-last argument */
             }
             if (testCase->kind == BLIT_KIND_MASK && maskRuntime.maskPixels != NULL) {
                 maskRuntime.maskPixels = mine.mask + BLIT_GUARD;
@@ -697,7 +697,7 @@ void Thandor_SelfTestBlitCompare(void)
             memcpy(theirs.mask, input.mask, setup.maskBytes + 2 * BLIT_GUARD);
             framebuffer.pixels = theirs.pixels + BLIT_GUARD;
             if (testCase->kind == BLIT_KIND_PLAIN || testCase->kind == BLIT_KIND_EXTRA) {
-                args[count - 2] = (dword)(uintptr_t)theirs.asset;
+                args[count - 2] = (uint32_t)(uintptr_t)theirs.asset;
             }
             if (testCase->kind == BLIT_KIND_MASK && maskRuntime.maskPixels != NULL) {
                 maskRuntime.maskPixels = theirs.mask + BLIT_GUARD;

@@ -25,11 +25,11 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
           WorldRuntimeContext *worldRuntime)
 
 {
-  dword definitionClassValue;
+  uint32_t definitionClassValue;
   TechnologyAsset *technologyAsset;
   ModelDefinitionRecordPrefix *candidateDefinition;
   UQ8 relationScaleQ8;
-  uint candidateScore;
+  uint32_t candidateScore;
   bool cfResult;
   
   candidateDefinition = ModelDefinitionRegistry_FindByRuntimeClassId(technologyId);
@@ -99,44 +99,44 @@ AiTechnologyCandidate_IsCurrentlyAvailableCf
   workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
   for (remainingCount = g_AiWorkspace00Count; remainingCount != 0; remainingCount = remainingCount + -1) {
     runtimeSlotAddress = workspaceEntry->runtimeSlotAddressOrZero;
-    if (((runtimeSlotAddress != 0) && ((*(uint *)(runtimeSlotAddress + 0xec) & 0xc0) != 0)) &&
+    if (((runtimeSlotAddress != 0) && ((*(uint32_t *)(runtimeSlotAddress + 0xec) & 0xc0) != 0)) &&
        (technologyIndex == *(PckTechnologyIdCatalog *)(runtimeSlotAddress + 0x100))) {
       return true;
     }
     workspaceEntry = workspaceEntry + 1;
   }
-  if ((((((*(uint *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
-          1 << ((byte)technologyIndex & 0x1f)) == 0) &&
+  if ((((((*(uint32_t *)(factionRecordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0x6e0) + (technologyIndex >> 5) * 4) &
+          1 << ((uint8_t)technologyIndex & 0x1f)) == 0) &&
         ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0] &
-         *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+         *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                   factionRecordOffset)) ==
          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[0])) &&
        (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &
-         *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+         *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                   factionRecordOffset + 4)) ==
          g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[1] &&
         (((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &
-          *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+          *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                    factionRecordOffset + 8)) ==
           g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[2] &&
          ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3] &
-          *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+          *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                    factionRecordOffset + 0xc)) ==
           g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[3])))))) &&
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4] &
-       *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+       *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                 factionRecordOffset + 0x10)) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[4])) &&
      ((((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &
-        *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+        *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                  factionRecordOffset + 0x14)) ==
         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[5] &&
        ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6] &
-        *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+        *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                  factionRecordOffset + 0x18)) ==
         g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[6])) &&
       ((g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7] &
-       *(uint *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
+       *(uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                 factionRecordOffset + 0x1c)) ==
        g_TechnologyAsset->records[technologyIndex].prerequisiteMasks[7])))) {
     return false;
@@ -153,7 +153,7 @@ AiTechnologyCandidate_IsCurrentlyAvailableCf
 */
 AiTechnologyPlanningLoopRegisterContinuityResult
 AiTechnologyPlanning_AddCandidateRecord
-          (dword technologyPanelIndex,dword sourceArmyEntriesRemaining,dword factionRecordOffset,
+          (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
           ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId)
 
 {
@@ -232,9 +232,9 @@ AiTechnologyScore_ComputeFactionScaledCandidateValue
          g_GameFactionRuntimeImage.records[factionIndex].suppliedEnergyDemandQ4 +
          g_GameFactionRuntimeImage.records[factionIndex].unpoweredEnergyDemandQ4;
     energyDemandPressureRatioQ8 =
-         (UQ8)(((ulonglong)(totalEnergyDemandQ4 >> 0x18) << 0x20 |
-               (ulonglong)totalEnergyDemandQ4 * 0x100 & 0xffffffff) /
-              (ulonglong)
+         (UQ8)(((uint64_t)(totalEnergyDemandQ4 >> 0x18) << 0x20 |
+               (uint64_t)totalEnergyDemandQ4 * 0x100 & 0xffffffff) /
+              (uint64_t)
               (g_GameFactionRuntimeImage.records[factionIndex].tritiumExtractionRateQ4PerTick * 0x10
               + g_GameFactionRuntimeImage.records[factionIndex].baselineEnergySupplyQ4));
     if (0xef < (int)energyDemandPressureRatioQ8) {
@@ -307,7 +307,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
 
 {
   TechnologyCategory technologyCategory;
-  uint categoryMaskBit;
+  uint32_t categoryMaskBit;
   TechnologyAsset *technologyAsset;
   AiCandidateScore32 averageAssetScore;
   
@@ -328,7 +328,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
   }
   averageAssetScore = AiArmyCandidate_ComputeAverageCompatibleAssetScore
                     (&g_AiArmyCandidateScoreWeightsVariantC15,factionIndex,technologyId);
-  return (uint)(averageAssetScore * technologyAsset->records[technologyId].baseCandidateScore) >> 8;
+  return (uint32_t)(averageAssetScore * technologyAsset->records[technologyId].baseCandidateScore) >> 8;
 }
 
 
@@ -358,7 +358,7 @@ UQ8 AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8
   UQ8 averageScaleQ8;
   int remainingCount;
   int definitionIdDelta;
-  uint occupiedEntryCount;
+  uint32_t occupiedEntryCount;
   AiRuntimeWorkspaceEntry *runtimeWorkspaceEntry;
   
   averageScaleQ8 = 0x100;

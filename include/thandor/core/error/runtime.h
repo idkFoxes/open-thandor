@@ -33,20 +33,20 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
 
 /* 0x00407F90 */
 FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
-FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn);
+FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn);
 
 /* 0x00408090 */
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
 /* 0x0041BC50 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination,byte *source);
+FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
 FatalErrorEaxCf5 __thandor_eax_cf_io_preserve_ecx_edx
-FatalError_Exit(dword errorOrValue,bool carryIn);
+FatalError_Exit(uint32_t errorOrValue,bool carryIn);
 
 /* 0x0041BB00 */
-int FatalError_CopyRichTextToNarrowCf (TextOutputCapacityBytes capacityBytes,byte *destination,word *source);
+int FatalError_CopyRichTextToNarrowCf (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 #endif /* THANDOR_CORE_ERROR_RUNTIME_H */

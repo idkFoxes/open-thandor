@@ -17,20 +17,20 @@
 */
 FileSystemStringTableEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
 FileSystem_BuildEnumerationStringTableCf
-          (FileSystemEnumerationMode enumerationMode,dword reserved,byte *pathOrVolumeText)
+          (FileSystemEnumerationMode enumerationMode,uint32_t reserved,uint8_t *pathOrVolumeText)
 
 {
   short codeUnit;
-  byte *outputRecords;
-  byte *recordStride;
-  byte *memory;
+  uint8_t *outputRecords;
+  uint8_t *recordStride;
+  uint8_t *memory;
   FileSystemOutputCapacityBytes foundEntryCount;
   FileSystemOutputCapacityBytes outputCapacityBytes;
   FileSystemOutputCapacityBytes remainingEntries;
-  byte *pointerSlot;
-  byte *sourceChar;
-  byte *sourceRecord;
-  byte *stringCursor;
+  uint8_t *pointerSlot;
+  uint8_t *sourceChar;
+  uint8_t *sourceRecord;
+  uint8_t *stringCursor;
   bool capacityCheck;
   ArenaShrinkEaxCf5 shrinkResult;
   ArenaFreeEaxCf5 freeResult;
@@ -41,13 +41,13 @@ FileSystem_BuildEnumerationStringTableCf
   
   largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
   outputCapacityBytes = largestBlock.blockSizeOrSentinel;
-  outputRecords = (byte *)largestBlock.allocationOrError;
+  outputRecords = (uint8_t *)largestBlock.allocationOrError;
   if (!largestBlock.carry) {
     enumerationResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
                        (enumerationMode,reserved,outputCapacityBytes,outputRecords,pathOrVolumeText)
     ;
     foundEntryCount = enumerationResult.entryCount;
-    recordStride = (byte *)enumerationResult.recordSizeBytes;
+    recordStride = (uint8_t *)enumerationResult.recordSizeBytes;
     memory = recordStride;
     outputCapacityBytes = foundEntryCount;
     if (!enumerationResult.carry) {
@@ -60,11 +60,11 @@ FileSystem_BuildEnumerationStringTableCf
       }
       outputCapacityBytes = foundEntryCount * (int)recordStride;
       shrinkResult = (*g_MemoryApi.shrinkInPlace)(outputCapacityBytes,outputRecords);
-      memory = (byte *)shrinkResult.scratchOrError;
+      memory = (uint8_t *)shrinkResult.scratchOrError;
       if (!shrinkResult.carry) {
         largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
         outputCapacityBytes = largestBlock.blockSizeOrSentinel;
-        memory = (byte *)largestBlock.allocationOrError;
+        memory = (uint8_t *)largestBlock.allocationOrError;
         if (!largestBlock.carry) {
           stringCursor = memory + foundEntryCount * 4;
           capacityCheck = foundEntryCount * 4 <= outputCapacityBytes;
@@ -74,7 +74,7 @@ FileSystem_BuildEnumerationStringTableCf
           sourceRecord = outputRecords;
           if (capacityCheck && outputCapacityBytes != 0) {
             do {
-              *(byte **)pointerSlot = stringCursor;
+              *(uint8_t **)pointerSlot = stringCursor;
               sourceChar = sourceRecord;
               do {
                 codeUnit = *(short *)sourceChar;
@@ -92,7 +92,7 @@ FileSystem_BuildEnumerationStringTableCf
                 (*g_MemoryApi.shrinkInPlace)((int)stringCursor - (int)memory,memory);
                 (*g_MemoryApi.free)(outputRecords);
                 successResult.entryCountOrScratch = foundEntryCount;
-                successResult.tableOrError = (dword)memory;
+                successResult.tableOrError = (uint32_t)memory;
                 successResult.carry = false;
                 return successResult;
               }
@@ -100,7 +100,7 @@ FileSystem_BuildEnumerationStringTableCf
           }
 FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
           freeResult = (*g_MemoryApi.free)(memory);
-          memory = (byte *)freeResult.eax;
+          memory = (uint8_t *)freeResult.eax;
         }
       }
     }
@@ -108,7 +108,7 @@ FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
     outputRecords = memory;
   }
   failureResult.entryCountOrScratch = outputCapacityBytes;
-  failureResult.tableOrError = (dword)outputRecords;
+  failureResult.tableOrError = (uint32_t)outputRecords;
   failureResult.carry = true;
   return failureResult;
 }
@@ -122,16 +122,16 @@ FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
    ArenaHeap_Alloc [core/memory/allocator], FatalError_Exit [core/error/runtime], WidePath_CombineDirectoryAndLeaf
    [core/text/path], ArenaHeap_Free [core/memory/allocator].
 */
-dword __cdecl FileSystem_Init(void)
+uint32_t __cdecl FileSystem_Init(void)
 
 {
-  byte configByte;
-  byte *configCursor;
+  uint8_t configByte;
+  uint8_t *configCursor;
   BOOL computerNameFound;
   void *handle;
   int clearCount;
   ArenaPayloadByteCount bytes;
-  word *labelCursor;
+  uint16_t *labelCursor;
   ArenaAllocEaxCf5 allocResult;
   Win32FileOpenEaxCf5 openResult;
   Win32FileSizeEaxCf5 sizeResult;
@@ -144,7 +144,7 @@ dword __cdecl FileSystem_Init(void)
   Thandor_GetExecutablePathA((char *)g_Win32PathScratchA,sizeof g_Win32PathScratchA);
   Text_CopyNarrowToUtf16Cf(0x200,g_PackageLastErrorPath,g_Win32PathScratchA);
   WidePath_SplitParentAndLeaf
-            ((word *)g_Win32PathScratchA,(word *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath)
+            ((uint16_t *)g_Win32PathScratchA,(uint16_t *)&g_ExecutableDirectoryUtf16,g_PackageLastErrorPath)
   ;
   g_FileSystemOpenCf = Win32File_OpenCf;
   g_FileSystemClose = Win32File_Close;
@@ -187,14 +187,14 @@ dword __cdecl FileSystem_Init(void)
                     // WARNING: Subroutine does not return
     FatalError_Exit(THANDOR_ADDR(g_ErrorTextIoInitializationFailed,0),true);
   }
-  g_PackageScratchBuffer = (byte *)allocResult.eax;
-  openResult = Win32File_OpenCf(0,(word *)u_THANDOR_cfg_0040e23d);
+  g_PackageScratchBuffer = (uint8_t *)allocResult.eax;
+  openResult = Win32File_OpenCf(0,(uint16_t *)u_THANDOR_cfg_0040e23d);
   handle = (void *)openResult.eax;
   if (openResult.carry) {
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_FileSystemCombinedPathScratchUtf16,(word *)u_THANDOR_cfg_0040e23d,
-               (word *)&g_ExecutableDirectoryUtf16);
-    openResult = Win32File_OpenCf(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,(uint16_t *)u_THANDOR_cfg_0040e23d,
+               (uint16_t *)&g_ExecutableDirectoryUtf16);
+    openResult = Win32File_OpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     handle = (void *)openResult.eax;
     if (openResult.carry) goto FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage;
   }
@@ -202,7 +202,7 @@ dword __cdecl FileSystem_Init(void)
   bytes = sizeResult.eax;
   if ((!sizeResult.carry) && (bytes != 0)) {
     allocResult = ArenaHeap_Alloc(bytes);
-    configCursor = (byte *)allocResult.eax;
+    configCursor = (uint8_t *)allocResult.eax;
     if (!allocResult.carry) {
       readResult = Win32File_ReadExactCf(bytes,configCursor,handle);
       if (readResult.carry) {
@@ -240,7 +240,7 @@ dword __cdecl FileSystem_Init(void)
   Win32File_Close(handle);
 FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
   Win32File_GetCurrentDirectoryCf(g_InitialWorkingDirectory.codeUnits);
-  mountResult = Package_MountLowPriority((word *)u_engine_pck_0040e255);
+  mountResult = Package_MountLowPriority((uint16_t *)u_engine_pck_0040e255);
   if (!mountResult.carry) {
     g_EnginePackageLowPriorityMountHandle = mountResult.valueOrError;
   }
@@ -254,7 +254,7 @@ FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
    date with CF clear.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDateCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDateCf(uint16_t *path)
 
 {
   BOOL fileTimeQuerySucceeded;
@@ -282,7 +282,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDat
     }
   }
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)hFile;
+  failureResult.valueOrError = (uint32_t)hFile;
   return failureResult;
 }
 
@@ -293,7 +293,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteDosDat
    failure.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHighCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHighCf(uint16_t *path)
 
 {
   BOOL fileTimeQuerySucceeded;
@@ -317,7 +317,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHi
     }
   }
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)hFile;
+  failureResult.valueOrError = (uint32_t)hFile;
   return failureResult;
 }
 
@@ -328,15 +328,15 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetLastWriteTimeHi
    captured volume serial number in EAX, and reports failure through CF.
    Local calls: Win32File_OpenCf, Win32File_Close.
 */
-dword Win32Drive_GetVolumeSerialNumberCf(byte *outputLabel,char *path)
+uint32_t Win32Drive_GetVolumeSerialNumberCf(uint8_t *outputLabel,char *path)
 
 {
   BOOL volumeInformationQuerySucceeded;
   HANDLE hFile;
-  dword volumeSerialNumber;
+  uint32_t volumeSerialNumber;
   Win32FileOpenEaxCf5 openResult;
   
-  openResult = Win32File_OpenCf(0,(word *)path);
+  openResult = Win32File_OpenCf(0,(uint16_t *)path);
   hFile = (HANDLE)openResult.eax;
   if (!openResult.carry) {
     volumeInformationQuerySucceeded =
@@ -351,7 +351,7 @@ dword Win32Drive_GetVolumeSerialNumberCf(byte *outputLabel,char *path)
       return volumeSerialNumber;
     }
   }
-  return (dword)hFile;
+  return (uint32_t)hFile;
 }
 
 
@@ -381,7 +381,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
 
 {
-  dword driveTypeCode;
+  uint32_t driveTypeCode;
   
   driveTypeCode = Win32Drive_GetEngineTypeCode(driveLetter);
   if ((driveTypeCode != 0x28) && (driveTypeCode != 0x2b)) {
@@ -395,7 +395,7 @@ Win32Drive_CheckMediaReadyCf(DosDriveLetterCode32 driveLetter)
    Ownership: platform/filesystem/win32.
    Purpose: Loads a whole file through the recovered file-system path and returns the carry/error contract.
 */
-FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(word *pathUtf16)
+FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(uint16_t *pathUtf16)
 
 {
   void *handle;
@@ -407,9 +407,9 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
   FileBufferEaxCf5 failureResult;
   
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
-             (word *)&g_ExecutableDirectoryUtf16);
-  openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
+  openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.eax;
   if (openResult.carry) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
@@ -423,10 +423,10 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
   bytes = (void *)sizeResult.eax;
   if (!sizeResult.carry) {
-    allocResult = (*g_MemoryApi.alloc)((dword)bytes);
+    allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
     if (allocResult.carry) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
@@ -434,7 +434,7 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
       bytes = (void *)readResult.eax;
       if (!readResult.carry) {
         (*g_FileSystemClose)(handle);
-        return THANDOR_BITCAST(qword, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)((void *)allocResult.eax);
     }
@@ -451,7 +451,7 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
    Purpose: Loads a whole file through the alternate recovered path and returns the carry/error contract.
 */
 FileBufferEaxCf5 __thandor_eax_cf_preserve_edx
-FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
+FileSystem_LoadWholeFileAlternatePathCf(uint16_t *pathUtf16)
 
 {
   void *handle;
@@ -463,9 +463,9 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
   FileBufferEaxCf5 failureResult;
   
   WidePath_CombineDirectoryAndLeaf
-            ((word *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
-             (word *)&g_ExecutableDirectoryUtf16);
-  openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+            ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,pathUtf16,
+             (uint16_t *)&g_ExecutableDirectoryUtf16);
+  openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
   handle = (void *)openResult.eax;
   if (openResult.carry) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
@@ -479,10 +479,10 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
   bytes = (void *)sizeResult.eax;
   if (!sizeResult.carry) {
-    allocResult = (*g_MemoryApi.alloc)((dword)bytes);
+    allocResult = (*g_MemoryApi.alloc)((uint32_t)bytes);
     if (allocResult.carry) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)bytes,g_FatalErrorDetail1Utf16);
       bytes = (void *)0x5;
     }
     else {
@@ -490,7 +490,7 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
       bytes = (void *)readResult.eax;
       if (!readResult.carry) {
         (*g_FileSystemClose)(handle);
-        return THANDOR_BITCAST(qword, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, FileBufferEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)((void *)allocResult.eax);
     }
@@ -507,7 +507,7 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
    Purpose: Opens a UTF-16 path with engine mode 3, writes exactly byteCount bytes, and closes the handle. On write
    failure it closes and deletes the partial file. CF clear returns EAX zero; CF set preserves the backend error.
 */
-StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,word *path)
+StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void *source,uint16_t *path)
 
 {
   void *handle;
@@ -534,7 +534,7 @@ StatusValueEaxCf5 FileSystem_WriteBufferToPathCf(FileIoByteCount byteCount,void 
     (*g_FileSystemDeleteCf)(1,path);
   }
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)handle;
+  failureResult.valueOrError = (uint32_t)handle;
   return failureResult;
 }
 
@@ -549,7 +549,7 @@ Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handl
 
 {
   BOOL operationSucceeded;
-  dword writeCompletionStatusCode;
+  uint32_t writeCompletionStatusCode;
   BOOL setEndOfFileSucceeded;
   Win32FileWriteEaxCf5 successResult;
   Win32FileWriteEaxCf5 flushResult;
@@ -581,7 +581,7 @@ Win32File_WriteExactOrFlushCf(FileIoByteCount byteCount,void *source,void *handl
    Ownership: platform/filesystem/win32.
    Purpose: Queries the current file position with SetFilePointer(FILE_CURRENT). CF reports failure.
 */
-dword Win32File_GetPositionCf(void *handle)
+uint32_t Win32File_GetPositionCf(void *handle)
 
 {
   DWORD filePosition;
@@ -626,7 +626,7 @@ Win32File_SeekCf(FileSystemSeekOrigin moveMethod,FileSystemFilePosition distance
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-dword Win32File_DeleteCf(dword unusedFlags,word *path)
+uint32_t Win32File_DeleteCf(uint32_t unusedFlags,uint16_t *path)
 
 {
   BOOL operationSucceeded;
@@ -647,7 +647,7 @@ dword Win32File_DeleteCf(dword unusedFlags,word *path)
    [assets/text/richtext].
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Win32File_MoveCf(word *destinationPath,word *sourcePath)
+Win32File_MoveCf(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL operationSucceeded;
@@ -677,7 +677,7 @@ Win32File_MoveCf(word *destinationPath,word *sourcePath)
    [assets/text/richtext].
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Win32File_CopyCf(word *destinationPath,word *sourcePath)
+Win32File_CopyCf(uint16_t *destinationPath,uint16_t *sourcePath)
 
 {
   BOOL operationSucceeded;
@@ -710,14 +710,14 @@ Win32File_CopyCf(word *destinationPath,word *sourcePath)
    [assets/text/richtext], WidePath_SplitParentAndLeaf [core/text/path].
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *path)
+Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,uint16_t *path)
 
 {
-  uint createSucceeded;
+  uint32_t createSucceeded;
   StatusValueEaxCf5 parentOrSuccessResult;
   StatusValueEaxCf5 failureResult;
-  word parentPath [256];
-  word leafName [248];
+  uint16_t parentPath [256];
+  uint16_t leafName [248];
 
   Package_SetLastErrorPath(path);
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
@@ -753,7 +753,7 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *
    Purpose: Converts one UTF-16 path and calls RemoveDirectoryA. Error 11 is returned with CF set.
    Cross-module calls: RichTextCommandStream_CopyToNarrowCf [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectoryCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_RemoveDirectoryCf(uint16_t *path)
 
 {
   BOOL operationSucceeded;
@@ -787,7 +787,7 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
   int freeBytes;
   int totalBytes;
   
-  g_Win32DriveRootPathScratchA = (byte)driveLetter; /* "X:\" root path scratch */
+  g_Win32DriveRootPathScratchA = (uint8_t)driveLetter; /* "X:\" root path scratch */
   querySucceeded =
        GetDiskFreeSpaceA(&g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32DiskSectorsPerClusterScratch
                          ,(LPDWORD)&g_Win32DiskBytesPerSectorScratch,
@@ -801,7 +801,7 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
     totalBytes = g_Win32DiskTotalClustersScratch *
                  g_Win32DiskBytesPerSectorScratch * g_Win32DiskSectorsPerClusterScratch;
   }
-  return (qword)(dword)totalBytes << 0x20 | (qword)(dword)freeBytes; /* EDX = total, EAX = free */
+  return (uint64_t)(uint32_t)totalBytes << 0x20 | (uint64_t)(uint32_t)freeBytes; /* EDX = total, EAX = free */
 }
 
 /* Address: 0x005766B0.
@@ -810,12 +810,12 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
    written.
 */
 DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx
-Win32Drive_EnumerateLetters(byte *lettersOut)
+Win32Drive_EnumerateLetters(uint8_t *lettersOut)
 
 {
-  uint logicalDriveMask;
-  dword enumeratedDriveCount;
-  byte currentDriveLetter;
+  uint32_t logicalDriveMask;
+  uint32_t enumeratedDriveCount;
+  uint8_t currentDriveLetter;
   int driveLettersRemaining;
   DriveLetterEnumerationEaxEcx8 enumerationResult;
   
@@ -847,12 +847,12 @@ Win32Drive_EnumerateLetters(byte *lettersOut)
    semantic domains were explicitly deferred.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *pathAnsi)
+Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,uint8_t *pathAnsi)
 
 {
-  byte pathChar;
+  uint8_t pathChar;
   int charsRemaining;
-  byte *previousCursor;
+  uint8_t *previousCursor;
   bool componentRejected;
   
   if ((flags & FILESYSTEM_DOS83_COMPONENT_ONLY) == 0) {
@@ -1006,21 +1006,21 @@ Win32Path_ValidateDos83Cf(FileSystemDos83ValidationFlags flags,byte *pathAnsi)
 */
 FileSystemEnumerationEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
 Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
-          (FileSystemEnumerationMode mode,dword reserved,
-          FileSystemOutputCapacityBytes outputCapacityBytes,byte *outputRecords,
-          byte *pathOrVolumeText)
+          (FileSystemEnumerationMode mode,uint32_t reserved,
+          FileSystemOutputCapacityBytes outputCapacityBytes,uint8_t *outputRecords,
+          uint8_t *pathOrVolumeText)
 
 {
   HANDLE hFindFile;
   BOOL apiSucceeded;
-  uint recordCount;
+  uint32_t recordCount;
   int comparisonsRemaining;
   int dwordsRemaining;
-  dword *rightRecordDwords;
-  dword *copySource;
-  word *destination;
-  dword *leftRecordDwords;
-  dword *copyDestination;
+  uint32_t *rightRecordDwords;
+  uint32_t *copySource;
+  uint16_t *destination;
+  uint32_t *leftRecordDwords;
+  uint32_t *copyDestination;
   FileSystemEnumerationEaxEcxCf9 enumerationResult;
   FileSystemEnumerationEaxEcxCf9 volumeResult;
   CompareFlagsCfZf2 compareFlags;
@@ -1039,7 +1039,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     }
     recordCount = 0;
     if (0xff < outputCapacityBytes) {
-      Text_CopyNarrowToUtf16Cf(0x200,(word *)outputRecords,g_Win32PathScratchA);
+      Text_CopyNarrowToUtf16Cf(0x200,(uint16_t *)outputRecords,g_Win32PathScratchA);
       volumeResult.entryCount = 1;
       volumeResult.recordSizeBytes = 0x200;
       volumeResult.carry = false;
@@ -1047,8 +1047,8 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     }
   }
   else {
-    Package_SetLastErrorPath((word *)pathOrVolumeText);
-    RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,(word *)pathOrVolumeText);
+    Package_SetLastErrorPath((uint16_t *)pathOrVolumeText);
+    RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,(uint16_t *)pathOrVolumeText);
     hFindFile = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     if (hFindFile == (HANDLE)0xffffffff) {
@@ -1058,7 +1058,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
       return enumerationResult;
     }
     recordCount = 0;
-    destination = (word *)outputRecords;
+    destination = (uint16_t *)outputRecords;
     do {
       /* files: neither directory nor volume label (attributes & 0x18); directories: not "." or ".." */
       if ((mode == FILESYSTEM_ENUMERATE_FILES) ?
@@ -1069,7 +1069,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
             ((g_Win32FindDataFileNameSecondCharA != '\0') &&
              ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')))))) {
         if (0x1ff < outputCapacityBytes) {
-          Text_CopyNarrowToUtf16Cf(0x200,destination,(byte *)&g_Win32FindDataFileNameA);
+          Text_CopyNarrowToUtf16Cf(0x200,destination,(uint8_t *)&g_Win32FindDataFileNameA);
           destination = destination + 0x100;
           recordCount = recordCount + 1;
           outputCapacityBytes = outputCapacityBytes - 0x200;
@@ -1080,16 +1080,16 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     FindClose(hFindFile);
     if (1 < recordCount) {
       comparisonsRemaining = recordCount - 1;
-      rightRecordDwords = (dword *)(outputRecords + 0x200);
-      leftRecordDwords = (dword *)outputRecords;
+      rightRecordDwords = (uint32_t *)(outputRecords + 0x200);
+      leftRecordDwords = (uint32_t *)outputRecords;
       passesRemaining = comparisonsRemaining;
       do {
         do {
           compareFlags = Utf16String_CompareAsciiCaseInsensitiveFlags
-                            ((word *)rightRecordDwords,(word *)leftRecordDwords);
+                            ((uint16_t *)rightRecordDwords,(uint16_t *)leftRecordDwords);
           if (!compareFlags.carry && !compareFlags.zero) {
             copySource = rightRecordDwords;
-            copyDestination = (dword *)g_Win32PathScratchA;
+            copyDestination = (uint32_t *)g_Win32PathScratchA;
             for (dwordsRemaining = 0x80; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
               *copyDestination = *copySource;
               copySource = copySource + 1;
@@ -1102,7 +1102,7 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
               copySource = copySource + 1;
               copyDestination = copyDestination + 1;
             }
-            copySource = (dword *)g_Win32PathScratchA;
+            copySource = (uint32_t *)g_Win32PathScratchA;
             copyDestination = leftRecordDwords;
             for (dwordsRemaining = 0x80; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
               *copyDestination = *copySource;
@@ -1115,8 +1115,8 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
           comparisonsRemaining = comparisonsRemaining + -1;
         } while (comparisonsRemaining != 0);
         comparisonsRemaining = passesRemaining + -1;
-        rightRecordDwords = (dword *)(outputRecords + 0x200);
-        leftRecordDwords = (dword *)outputRecords;
+        rightRecordDwords = (uint32_t *)(outputRecords + 0x200);
+        leftRecordDwords = (uint32_t *)outputRecords;
         passesRemaining = comparisonsRemaining;
       } while (comparisonsRemaining != 0);
     }
@@ -1183,7 +1183,7 @@ Win32FileSizeEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_GetSizeCf(void *
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Win32File_GetCurrentDirectoryCf(word *destination)
+Win32File_GetCurrentDirectoryCf(uint16_t *destination)
 
 {
   DWORD narrowPathLength;
@@ -1193,7 +1193,7 @@ Win32File_GetCurrentDirectoryCf(word *destination)
   narrowPathLength = GetCurrentDirectoryA(0xff,(LPSTR)g_Win32PathScratchA);
   if (narrowPathLength != 0) {
     copyResult = Text_CopyNarrowToUtf16Cf(0x200,destination,g_Win32PathScratchA);
-    return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, qword, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+    return THANDOR_BITCAST(uint64_t, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, uint64_t, copyResult) & 0xFFFFFFFFFFull) & 0xffffffff));
   }
   destination[0] = 0;
   destination[1] = 0;
@@ -1209,7 +1209,7 @@ Win32File_GetCurrentDirectoryCf(word *destination)
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime], RichTextCommandStream_CopyToNarrowCf
    [assets/text/richtext].
 */
-StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectoryCf(word *path)
+StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Win32File_SetCurrentDirectoryCf(uint16_t *path)
 
 {
   BOOL operationSucceeded;
@@ -1242,7 +1242,7 @@ Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
 {
   UINT driveTypeCode;
   
-  g_Win32DriveRootPathScratchA = (byte)driveLetter; /* "X:\" root path scratch */
+  g_Win32DriveRootPathScratchA = (uint8_t)driveLetter; /* "X:\" root path scratch */
   driveTypeCode = GetDriveTypeA(&g_Win32DriveRootPathScratchA);
   if (driveTypeCode == 2) {
     return ENGINE_DRIVE_REMOVABLE;
@@ -1269,7 +1269,7 @@ Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
    [assets/text/richtext].
 */
 Win32FileOpenEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Win32File_OpenCf(FileSystemOpenFlags openFlags,word *path)
+Win32File_OpenCf(FileSystemOpenFlags openFlags,uint16_t *path)
 
 {
   HANDLE fileHandle;
@@ -1313,7 +1313,7 @@ Win32File_OpenCf(FileSystemOpenFlags openFlags,word *path)
                            (LPSECURITY_ATTRIBUTES)0x0,dwCreationDisposition,0x80000080,(HANDLE)0x0);
   if (fileHandle != (HANDLE)0xffffffff) {
     successResult.carry = false;
-    successResult.eax = (dword)fileHandle;
+    successResult.eax = (uint32_t)fileHandle;
     return successResult;
   }
   failureResult.carry = true;

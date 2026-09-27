@@ -16,7 +16,7 @@
    first advanced value is shifted left 14 bits, the second becomes the stored seed and is shifted right 2 bits,
    and the two values are XORed for the return value.
 */
-dword __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
+uint32_t __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
 
 {
   int firstGeneratorStepState;
@@ -32,7 +32,7 @@ dword __thandor_eax_preserve_ecx_edx Random_NextPrimary(void)
    Purpose: Uses the same two-step state=state*33+101 recurrence and output mix as Random_NextPrimary, but reads
    and writes only RandomGeneratorState.secondarySeed.
 */
-dword __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
+uint32_t __thandor_eax_preserve_ecx_edx Random_NextSecondary(void)
 
 {
   int firstGeneratorStepState;
@@ -61,7 +61,7 @@ void __thandor_void_preserve_eax_ecx_edx Random_SetBothSeeds(RandomSeed seed)
    Purpose: Returns RandomGeneratorState.secondarySeed. It does not return primarySeed or invoke the active
    generator.
 */
-dword __cdecl Random_GetSecondarySeed(void)
+uint32_t __cdecl Random_GetSecondarySeed(void)
 
 {
   return g_RandomGeneratorState.secondarySeed;

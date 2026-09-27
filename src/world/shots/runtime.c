@@ -11,31 +11,31 @@
 /* Implementation ownership: world/shots/runtime. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword ShotTint_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t ShotTint_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline dword ShotTint_PackWordsUnsignedSaturate(qword words)
+static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;
-  dword packed;
+  uint32_t packed;
   int lane;
 
   lanes.q = words;
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     packed = packed |
-             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
@@ -71,8 +71,8 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
   FactionNotificationCodeBase activeFactionCodeForSecond;
   FactionRelationStateNibble stateFirstTowardSecond;
   FactionRelationStateNibble stateSecondTowardFirst;
-  dword capabilityBitIndex;
-  dword factionIndex;
+  uint32_t capabilityBitIndex;
+  uint32_t factionIndex;
   GameEntityRuntime *runtimeEntry;
   
   armyRuntime = (shotRuntime->ownerAndTrajectory).ownerArmyRuntime;
@@ -143,7 +143,7 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], MoviePlayback_AdvanceScheduledFrameAndTick
    [movie/runtime/playback].
 */
-StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(word *mutableBasePath)
+StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
 
 {
   ShotRuntimeSlot *runtimeSlotCursor;
@@ -166,7 +166,7 @@ StatusValueEaxCf5 ShotRuntime_InitGraphicsResources(word *mutableBasePath)
       runtimeSlotCursor = (ShotRuntimeSlot *)loadResult.eax;
       if (!loadResult.carry) {
         g_ShotRuntimeRebaseBaseMinusOne =
-             (byte *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
+             (uint8_t *)((int)&runtimeSlotCursor[-1].ownerAndTrajectory.secondaryEffectCountdownTicks +
                      3);
         g_ShotRuntimeSlots = runtimeSlotCursor;
         for (runtimeSlotsRemaining = 0x10000; runtimeSlotsRemaining != 0;
@@ -250,7 +250,7 @@ ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)registryDefinition,g_PackageLastErrorPath);
+                (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int32_t)registryDefinition,g_PackageLastErrorPath);
       failureResult.carry = true;
       failureResult.definitionOrError = (ShotDefinition *)0x44;
       return failureResult;
@@ -364,9 +364,9 @@ ShotRuntimePool_CreateProjectileFromDefinition
   ShotRuntimeSlot *slotsRemaining;
   Q12 runtimeLaunchSpeedQ12;
   Q12 worldXQ12;
-  dword directionZOrNeighborhoodMask;
+  uint32_t directionZOrNeighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
-  qword tintProduct;
+  uint64_t tintProduct;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   WorldObjectRecordEaxCf5 allocatedRecord;
   ModelLookupEntryEaxCf5 lookupEntry;

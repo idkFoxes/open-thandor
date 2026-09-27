@@ -24,15 +24,15 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
 
 {
   UiNodeFlags *compactLayoutFlags;
-  dword rowControlOffset;
+  uint32_t rowControlOffset;
   UiNodeVtable *rootVtable;
   int localPlayerRuntimeId;
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
-  dword activeCountOffsetOrLocalRow;
-  uint rowOrAssignmentIndex;
-  uint rowCursor;
-  byte *rowTextIdBytes;
-  dword assignableCountOrOffset;
+  uint32_t activeCountOffsetOrLocalRow;
+  uint32_t rowOrAssignmentIndex;
+  uint32_t rowCursor;
+  uint8_t *rowTextIdBytes;
+  uint32_t assignableCountOrOffset;
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResourceResolveEaxCf5 titleText;
   TextResourceResolveEaxCf5 templateText;
@@ -49,36 +49,36 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
   rowOrAssignmentIndex = 0;
   do {
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + rowControlOffset + 8;
     rowTextIdBytes[0] = 0x9a;
     rowTextIdBytes[1] = 0x21;
     rowTextIdBytes[2] = 0;
     rowTextIdBytes[3] = 0;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbff;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowOrAssignmentIndex + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbfd;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xfffffbfd;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowOrAssignmentIndex + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
     rowControlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowOrAssignmentIndex + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (rowControlOffset - 4)) & 0xfffffff7;
     rowCursor = rowOrAssignmentIndex + 1;
-    *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + rowControlOffset) & 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowOrAssignmentIndex + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1;
@@ -87,83 +87,83 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
   } while (assignableCountOrOffset != 0);
   for (; activeCountOffsetOrLocalRow != 0; activeCountOffsetOrLocalRow = activeCountOffsetOrLocalRow - 1) {
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & 0xfffffff7;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) & 0xfffffff7;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + assignableCountOrOffset + 8;
     rowTextIdBytes[0] = 0x9a;
     rowTextIdBytes[1] = 0x21;
     rowTextIdBytes[2] = 0;
     rowTextIdBytes[3] = 0;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffbff;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffffd;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | 0x400;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xfffffffd;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) | 0x400;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
     assignableCountOrOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
-         *(uint *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (assignableCountOrOffset - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + assignableCountOrOffset) & 0xffffffbf;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] =
          FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     rowCursor = rowCursor + 1;
   }
   for (; rowCursor < 7; rowCursor = rowCursor + 1) {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
     rowTextIdBytes = frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8;
     rowTextIdBytes[0] = 0x99;
     rowTextIdBytes[1] = 0x21;
     rowTextIdBytes[2] = 0;
     rowTextIdBytes[3] = 0;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x400;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.statusRows.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowCursor + 1];
-    *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
-         *(uint *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + (activeCountOffsetOrLocalRow - 4)) | 8;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) | 0x40;
     g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowCursor + 1] = 0;
   }
   do {
     activeCountOffsetOrLocalRow = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowCursor];
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8) =
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow + 8) =
          *(int *)((int)&loadedLevel->playerSlots[0].aiClassOrMode +
                  g_InGameLevelRuntimeGlobalBlock.playerSlotByteOffsets[rowCursor - 1]) + 0x2173 + rowCursor;
-    *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
-         *(uint *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
+    *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) =
+         *(uint32_t *)(frontendRootPage->taskRowControls04C + activeCountOffsetOrLocalRow) & 0xfffffffd;
     localPlayerRuntimeId = g_LocalPlayerRuntimeId;
     rowCursor = rowCursor - 1;
   } while (rowCursor != 0);
@@ -191,13 +191,13 @@ FrontendTaskAssignmentPage_Initialize(FrontendTaskAssignmentPageInitView26C4 *fr
     }
     remainingPlayerRecords = remainingPlayerRecords - 1;
   } while (remainingPlayerRecords != 0);
-  *(uint *)(frontendRootPage->taskRowControls04C +
+  *(uint32_t *)(frontendRootPage->taskRowControls04C +
            g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) =
-       *(uint *)(frontendRootPage->taskRowControls04C +
+       *(uint32_t *)(frontendRootPage->taskRowControls04C +
                 g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1]) | 2;
-  *(uint *)(frontendRootPage->taskRowControls04C +
+  *(uint32_t *)(frontendRootPage->taskRowControls04C +
            (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) =
-       *(uint *)(frontendRootPage->taskRowControls04C +
+       *(uint32_t *)(frontendRootPage->taskRowControls04C +
                 (g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[activeCountOffsetOrLocalRow + 1] - 4)) &
        0xfffffff7;
   FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls((UiRootNode *)frontendRootPage);
@@ -310,13 +310,13 @@ FrontendDisplaySettingsAction_ApplyPendingColorDepth(UiNodeBase *optionButton)
 void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void *control)
 
 {
-  dword previousWidth;
-  dword previousHeight;
-  dword previousAdapterIndex;
-  dword selectedAdapterIndex;
-  dword selectedWidth;
-  dword selectedHeight;
-  dword selectedBitsPerPixel;
+  uint32_t previousWidth;
+  uint32_t previousHeight;
+  uint32_t previousAdapterIndex;
+  uint32_t selectedAdapterIndex;
+  uint32_t selectedWidth;
+  uint32_t selectedHeight;
+  uint32_t selectedBitsPerPixel;
   int colorBitsCounterOrParentLink;
   GraphicsTextureSourceAsset **fontTextureSource;
   DisplayModeEaxCf5 selectedModeResult;
@@ -388,12 +388,12 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   }
   /* control is now the frontend template root. */
   if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) | 0x2000;
+    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) | 0x2000;
   }
   else {
-    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) =
-         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint) & 0xffffdfff;
+    FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) =
+         FRONTEND_UI_FIELD(control,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
   }
   return;
 }
@@ -416,8 +416,8 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
   UiNodeBase *parentCursor;
   UiTextEditControl *firstNode;
   int remainingDwords;
-  dword *sourceDwordCursor;
-  dword *playerNameDwordCursor;
+  uint32_t *sourceDwordCursor;
+  uint32_t *playerNameDwordCursor;
   
   parentCursor = (control->base).parent;
   firstNode = control;
@@ -434,8 +434,8 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
     UiNodeList_UnsuppressActionId(0x2001,&firstNode->base);
     FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
               ((FrontendNetworkSettingsControlView250 *)&firstNode[0x96].activationSound);
-    PersistentSettings_WriteDwords(0x28,(dword *)control->textPrefix6C,0x60);
-    sourceDwordCursor = (dword *)control->textPrefix6C;
+    PersistentSettings_WriteDwords(0x28,(uint32_t *)control->textPrefix6C,0x60);
+    sourceDwordCursor = (uint32_t *)control->textPrefix6C;
     playerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
       *playerNameDwordCursor = *sourceDwordCursor;
@@ -483,7 +483,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -526,7 +526,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -554,7 +554,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -584,7 +584,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -616,7 +616,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -646,7 +646,7 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
-  dword optionFlags;
+  uint32_t optionFlags;
   PersistentSettingsDwordValue value;
   bool isSelected;
   
@@ -675,12 +675,12 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *frontendRoot)
 
 {
-  sdword *compactLayoutFlags;
-  dword persistedValue;
+  int32_t *compactLayoutFlags;
+  uint32_t persistedValue;
   
   UiPageStack_SetActiveIndex(5,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    compactLayoutFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,sdword);
+    compactLayoutFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
     *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
   persistedValue = PersistentSettings_ReadDword(0,0x40);
@@ -700,7 +700,7 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
   }
   UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
   persistedValue = PersistentSettings_ReadDword(0x20,0x48);
-  FRONTEND_UI_FIELD(frontendRoot,scrollSpeedSlider,0x58,dword) = persistedValue;
+  FRONTEND_UI_FIELD(frontendRoot,scrollSpeedSlider,0x58,uint32_t) = persistedValue;
   return;
 }
 
@@ -718,8 +718,8 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
 
 {
   FrontendGraphicsRuntimeSettingsPageState167C *firstNode;
-  dword persistedValue;
-  dword shadingDepthQuarter;
+  uint32_t persistedValue;
+  uint32_t shadingDepthQuarter;
   int shadingDepth;
   UiNodeBase *parentCursorOrSelectedRow;
   /* source is the frontend template's settings3DButton (+0x2794). */
@@ -728,8 +728,8 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x2794);
   UiPageStack_SetActiveIndex(7,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
   }
   persistedValue = PersistentSettings_ReadDword(1,0x1c);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
@@ -807,8 +807,8 @@ FrontendAudioSettings_OpenAndSynchronize
 {
   UiNodeFlags *compactLayoutFlags;
   UiNodeBase *parentCursor;
-  dword audioFlags;
-  dword gainValue;
+  uint32_t audioFlags;
+  uint32_t gainValue;
   
   UiPageStack_SetActiveIndex(8,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->settingsPageStack);
   if ((int)g_FramebufferWidth < 0x281) {
@@ -869,7 +869,7 @@ void __thandor_void_preserve_eax_ecx
 FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
 
 {
-  byte isSelected;
+  uint8_t isSelected;
   UiNodeBase *parentCursor;
   
   isSelected = UiSelectableControl_IsSelectedCf(control);
@@ -901,13 +901,13 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
-  sdword shadingGridSize;
+  int32_t shadingGridSize;
   UiNodeBase *shadingLevelGroup;
-  uint shadingDepthQuarter;
+  uint32_t shadingDepthQuarter;
   UiNodeBase *selectedControl;
   
   shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
-  shadingDepthQuarter = (uint)((UiNumericPairTextButton *)control)->secondValue >> 2;
+  shadingDepthQuarter = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
   PersistentSettings_WriteDword((int)shadingGridSize * 2,0x14);
   PersistentSettings_WriteDword((PersistentSettingsDwordValue)shadingGridSize,0x10);
   PersistentSettings_WriteDword(shadingDepthQuarter,0x18);
@@ -1016,7 +1016,7 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
 
 {
   UiNodeBase *parentCursor;
-  dword audioFlags;
+  uint32_t audioFlags;
   AudioMixerGainQ15 effectsGain;
   MovieAudioGainQ15 movieDefaultGain;
   MovieAudioGainQ15 movieAlternateGain;
@@ -1024,7 +1024,7 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   audioFlags = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword((uint)isSelected | audioFlags & 0xfffffffe,0x20);
+  PersistentSettings_WriteDword((uint32_t)isSelected | audioFlags & 0xfffffffe,0x20);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -1090,9 +1090,9 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   IDirectSoundBuffer *activeMusicBuffer;
   SoundSampleAsset *musicSample;
   DirectSoundVoiceSet *musicVoiceSet;
-  dword gainOrAudioFlags;
-  uint musicEnabledBit;
-  uint newAudioFlags;
+  uint32_t gainOrAudioFlags;
+  uint32_t musicEnabledBit;
+  uint32_t newAudioFlags;
   bool isSelected;
   SoundCreateSampleVoiceSetEaxCf5 createVoiceResult;
   SoundPlayVoiceEaxCf5 playResult;
@@ -1103,7 +1103,7 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   if (isSelected) {
     musicEnabledBit = 2;
     (*g_GraphicsCursorSetFrame)(6);
-    loadResult = Resource_Load((word *)u_sound_music00_sam_00545c4e);
+    loadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
     musicSample = (SoundSampleAsset *)loadResult.eax;
     activeMusicBuffer = g_FrontendMusicActiveBuffer;
     if (!loadResult.carry) {
@@ -1180,9 +1180,9 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 
 {
-  dword currentAudioFlags;
-  uint reverseStereoBit;
-  sdword reverseStereoMask;
+  uint32_t currentAudioFlags;
+  uint32_t reverseStereoBit;
+  int32_t reverseStereoMask;
   bool isSelected;
   
   reverseStereoBit = 0;
@@ -1269,7 +1269,7 @@ void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueCo
 
 {
   PersistentSettingsDwordValue value;
-  dword musicGainQ15;
+  uint32_t musicGainQ15;
   
   value = control->boundValue;
   PersistentSettings_WriteDword(value,0x2c);
@@ -1293,7 +1293,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsVal
   PersistentSettings_WriteDword(value,0x3c);
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
-             (word *)&g_FrontendNetworkPlayerCountTextUtf16);
+             (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
   return;
 }
 
@@ -1322,7 +1322,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditContro
   }
   else {
     UiNodeList_UnsuppressActionId(0x2004,&firstNode->base);
-    PersistentSettings_WriteDwords(0x28,(dword *)control->textPrefix6C,0x88);
+    PersistentSettings_WriteDwords(0x28,(uint32_t *)control->textPrefix6C,0x88);
   }
   return;
 }
@@ -1360,9 +1360,9 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
   }
   else {
     UiNodeList_UnsuppressActionId(0x2002,(UiNodeBase *)&firstNode->commonState);
-    if (((uint)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
+    if (((uint32_t)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
       dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
-      *dirtyFlagsSlot = (UiNodeBase *)((uint)*dirtyFlagsSlot & 0xfffffffb);
+      *dirtyFlagsSlot = (UiNodeBase *)((uint32_t)*dirtyFlagsSlot & 0xfffffffb);
       FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
                 ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(firstNode,networkGameJoinButton));
     }
@@ -1380,11 +1380,11 @@ void
 FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssignmentRoot)
 
 {
-  sdword *rosterLayoutFlags;
-  uint *controlFlags;
-  word scannedChar;
-  dword controlOffset;
-  uint factionIndexOrSetMask;
+  int32_t *rosterLayoutFlags;
+  uint32_t *controlFlags;
+  uint16_t scannedChar;
+  uint32_t controlOffset;
+  uint32_t factionIndexOrSetMask;
   SessionNetworkRoleFlags networkedOrRemainingCount;
   FrontendLoadedLevelRuntimeImage370 *loadedLevelOrClearMask;
   FrontendFactionAssignmentIndex localFactionIndex;
@@ -1396,10 +1396,10 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendPlayerRuntimeRecord *otherPlayerRecord;
   FrontendTaskAssignmentGeneratedFactionTextRow50 *textRowCursor;
-  word *rosterTextCursor;
-  word *rosterScanCursor;
-  uint controlClearMask;
-  uint controlSetMask;
+  uint16_t *rosterTextCursor;
+  uint16_t *rosterScanCursor;
+  uint32_t controlClearMask;
+  uint32_t controlSetMask;
   
   controlSetMask = 0;
   controlClearMask = 0xfffffff7;
@@ -1425,45 +1425,45 @@ FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *taskAssig
        (UiNodeBase *)
        (localFactionIndex + 0x230010 + (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10);
   do {
-    if ((*(uint *)((int)&taskAssignmentRoot->rootFlags +
+    if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags +
                   g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount]) & 2) != 0)
     goto FrontendTaskAssignment_ApplyEligibleFactionControlState;
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL)
          && (controlOffset = g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount],
-            (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset) & 8) != 0)) {
-        if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x40) != 0)
+            (*(uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset) & 8) != 0)) {
+        if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x40) != 0)
         goto FrontendTaskAssignment_DisableUnavailableFactionControl;
       }
       else if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                SESSION_NETWORK_ROLE_LOCAL) {
         controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
-        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
         *controlFlags = *controlFlags | 8;
-        controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+        controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
         *controlFlags = *controlFlags & 0xfffffbff;
         goto FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop;
       }
 FrontendTaskAssignment_ApplyEligibleFactionControlState:
       controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags | controlSetMask;
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags & controlClearMask;
-      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
       *controlFlags = *controlFlags & 0xfffffbff;
     }
     else {
 FrontendTaskAssignment_DisableUnavailableFactionControl:
       controlOffset = g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount];
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags | 8;
-      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
       *controlFlags = *controlFlags | 0x400;
     }
 FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
-    controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+    controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                      g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount]);
     *controlFlags = *controlFlags | 8;
     rowIndexOrCount = rowIndexOrCount + -1;
@@ -1471,26 +1471,26 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
   rowIndexOrCount = 7;
   do {
     controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
-    *(dword *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
+    *(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-       (*(dword *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
-       (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+       (*(uint32_t *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
+       (*(uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                  g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) & 8) ==
        0)) {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags | controlSetMask;
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags & controlClearMask;
-      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
       *controlFlags = *controlFlags & 0xfffffbff;
     }
     else {
       controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
       *controlFlags = *controlFlags | 8;
-      controlFlags = (uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
+      controlFlags = (uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset);
       *controlFlags = *controlFlags | 0x400;
     }
     loadedLevelOrClearMask = g_FrontendLoadedLevelAsset;
@@ -1500,7 +1500,7 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
   } while (rowIndexOrCount != 0);
   do {
     factionIndexOrSetMask = (playerRecord->factionAssignment).factionAssignmentIndex;
-    *(dword *)
+    *(uint32_t *)
      ((int)&taskAssignmentRoot->previousRoot +
      g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]) = 0x2198;
     remainingPlayers = remainingPlayers - 1;
@@ -1509,21 +1509,21 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
   rowIndexOrCount = 7;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     do {
-      if ((*(uint *)((int)&taskAssignmentRoot->rootFlags +
+      if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags +
                     g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) &
           0x40) == 0) {
         controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
-        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
         *controlFlags = *controlFlags | factionIndexOrSetMask;
-        controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
-        *controlFlags = *controlFlags & (uint)loadedLevelOrClearMask;
+        controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+        *controlFlags = *controlFlags & (uint32_t)loadedLevelOrClearMask;
       }
       rowIndexOrCount = rowIndexOrCount + -1;
       remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
       playerRecord = g_FrontendPlayerRuntimeBlocks;
     } while (rowIndexOrCount != 0);
     do {
-      controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+      controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                        g_FrontendTaskAssignmentControlOffsets.playerControls.offsets
                        [(playerRecord->factionAssignment).factionAssignmentIndex]);
       *controlFlags = *controlFlags | 8;
@@ -1537,19 +1537,19 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     textRowCursor->textUtf16[1] = 0;
     textRowCursor = (FrontendTaskAssignmentGeneratedFactionTextRow50 *)(textRowCursor->textUtf16 + 2);
   }
-  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,sdword);
+  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,int32_t);
   *rosterLayoutFlags = *rosterLayoutFlags | 8;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
     return;
   }
-  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,sdword);
+  rosterLayoutFlags = &FRONTEND_UI_FIELD(taskAssignmentRoot,rosterParticipantHeader,0x48,int32_t);
   *rosterLayoutFlags = *rosterLayoutFlags & 0xfffffff7;
   remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
   playerName = &playerRecord->playerName;
   do {
-    rosterTextCursor = (word *)((int)&g_FrontendUiDisplayModeAndTaskAssignmentScratch +
+    rosterTextCursor = (uint16_t *)((int)&g_FrontendUiDisplayModeAndTaskAssignmentScratch +
                       *(FrontendFactionAssignmentIndex *)
                        ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 8) * 0x50);
     rowIndexOrCount = 0x28;
@@ -1601,11 +1601,11 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
     playerName = playerName + 0x7e;
     if (remainingPlayers == 0) {
       rowIndexOrCount = 7;
-      if (((uint)FRONTEND_UI_FIELD(taskAssignmentRoot,factionSetupFinishButton,0x4C,struct UiRootCallbacks *) & 2) == 0) {
+      if (((uint32_t)FRONTEND_UI_FIELD(taskAssignmentRoot,factionSetupFinishButton,0x4C,struct UiRootCallbacks *) & 2) == 0) {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
-            controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+            controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
             *controlFlags = *controlFlags & 0xfffffff7;
           }
           rowIndexOrCount = rowIndexOrCount + -1;
@@ -1616,8 +1616,8 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
       else {
         do {
           controlOffset = g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[rowIndexOrCount];
-          if ((*(uint *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
-            controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
+          if ((*(uint32_t *)((int)&taskAssignmentRoot->rootFlags + controlOffset) & 0x400) == 0) {
+            controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags + controlOffset);
             *controlFlags = *controlFlags | 8;
           }
           rowIndexOrCount = rowIndexOrCount + -1;
@@ -1638,7 +1638,7 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
               return;
             }
           }
-          controlFlags = (uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
+          controlFlags = (uint32_t *)((int)&(taskAssignmentRoot->base).nodeFlags +
                            g_FrontendTaskAssignmentControlOffsets.factionControls.offsets[rowIndexOrCount]);
           *controlFlags = *controlFlags | 8;
           return;
@@ -1666,13 +1666,13 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
 
 {
   int remainingDwords;
-  dword *selectedPlayerRecordDwordCursor;
-  dword *selectedEndpointDwordCursor;
+  uint32_t *selectedPlayerRecordDwordCursor;
+  uint32_t *selectedEndpointDwordCursor;
   bool sendCarry;
   
-  g_FrontendSessionToken = *(dword *)(**(int **)(networkSettings->raw + 0x248) + 4);
-  selectedPlayerRecordDwordCursor = (dword *)(**(int **)(networkSettings->raw + 0x248) + 0xa0);
-  selectedEndpointDwordCursor = (dword *)&g_FrontendSelectedNetworkEndpoint;
+  g_FrontendSessionToken = *(uint32_t *)(**(int **)(networkSettings->raw + 0x248) + 4);
+  selectedPlayerRecordDwordCursor = (uint32_t *)(**(int **)(networkSettings->raw + 0x248) + 0xa0);
+  selectedEndpointDwordCursor = (uint32_t *)&g_FrontendSelectedNetworkEndpoint;
   for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
     *selectedEndpointDwordCursor = *selectedPlayerRecordDwordCursor;
     selectedPlayerRecordDwordCursor = selectedPlayerRecordDwordCursor + 1;
@@ -1697,11 +1697,11 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
 {
-  dword adapterIndex;
-  dword pendingWidth;
-  dword pendingHeight;
-  dword bitsPerPixel;
-  dword persistedValue;
+  uint32_t adapterIndex;
+  uint32_t pendingWidth;
+  uint32_t pendingHeight;
+  uint32_t bitsPerPixel;
+  uint32_t persistedValue;
   FrontendDisplayDimensionPixels width;
   FrontendDisplayDimensionPixels height;
   bool modeCheckCarry;
@@ -1722,7 +1722,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     parentCursorOrSelectedRow = frontendRoot->parent;
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,dword),
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t),
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
@@ -1736,7 +1736,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x201e,frontendRoot);
   }
-  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,dword)) {
+  if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t)) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
@@ -1749,7 +1749,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x201f,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,sdword),pendingHeight,pendingWidth,adapterIndex);
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,int32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2020,frontendRoot);
   }
@@ -1757,7 +1757,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2020,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,dword),pendingHeight,pendingWidth,adapterIndex);
+                    (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2021,frontendRoot);
   }
@@ -1771,7 +1771,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
       FRONTEND_UI(frontendRoot,displayColorDepthOption1));
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,sdword),adapterIndex);
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t),adapterIndex);
   parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2022,frontendRoot);
@@ -1779,12 +1779,12 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2022,frontendRoot);
   }
-  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,sdword)) &&
+  if ((pendingWidth == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t)) &&
      (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags))) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,sdword),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,sdword),
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2023,frontendRoot);
@@ -1793,8 +1793,8 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2023,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,dword),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,dword),adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2024,frontendRoot);
   }
@@ -1813,8 +1813,8 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2025,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,sdword),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,sdword),adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,int32_t),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2026,frontendRoot);
   }
@@ -1822,8 +1822,8 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2026,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,dword),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,dword),adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2027,frontendRoot);
   }
@@ -1840,8 +1840,8 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2028,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,sdword),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,sdword),adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,int32_t),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2029,frontendRoot);
   }
@@ -1849,8 +1849,8 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x2029,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,sdword),
-                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,sdword),adapterIndex);
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,int32_t),
+                     FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202a,frontendRoot);
   }
@@ -1858,7 +1858,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     UiNodeList_UnsuppressActionId(0x202a,frontendRoot);
   }
   modeCheckCarry = DisplayModeTable_ContainsExactModeCf
-                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,sdword),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,sdword),
+                    (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202b,frontendRoot);

@@ -12,25 +12,25 @@
 
 /* MOVD mm,packed; PUNPCKLBW mm,mm; PSRLW mm,shift: every byte b of packed becomes the word lane
    ((b << 8) | b) >> shift (byte k -> word lane k). */
-static __inline ulonglong Shading_DuplicateBytesToWordLanes(dword packed,int shift)
+static __inline uint64_t Shading_DuplicateBytesToWordLanes(uint32_t packed,int shift)
 {
-  ulonglong lanes;
-  dword laneByte;
+  uint64_t lanes;
+  uint32_t laneByte;
   int lane;
 
   lanes = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     laneByte = (packed >> (lane * 8)) & 0xff;
-    lanes = lanes | ((ulonglong)((((laneByte << 8) | laneByte) >> shift) & 0xffff) << (lane * 16));
+    lanes = lanes | ((uint64_t)((((laneByte << 8) | laneByte) >> shift) & 0xffff) << (lane * 16));
   }
   return lanes;
 }
 
 /* PACKUSWB mm,mm; MOVD dword,mm: saturates the four signed word lanes to unsigned bytes
    (<= 0 -> 0, > 0xff -> 0xff) and packs them into one dword (word lane k -> byte k). */
-static __inline dword Shading_PackWordLanesUnsignedSaturate(ulonglong lanes)
+static __inline uint32_t Shading_PackWordLanesUnsignedSaturate(uint64_t lanes)
 {
-  dword packed;
+  uint32_t packed;
   short laneValue;
   int lane;
 
@@ -41,7 +41,7 @@ static __inline dword Shading_PackWordLanesUnsignedSaturate(ulonglong lanes)
       packed = packed | (0xffu << (lane * 8));
     }
     else if (0 < laneValue) {
-      packed = packed | ((dword)laneValue << (lane * 8));
+      packed = packed | ((uint32_t)laneValue << (lane * 8));
     }
   }
   return packed;
@@ -70,24 +70,24 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   GraphicsProjectedPointPair pointPair2;
   GraphicsProjectedPointPair pointPair3;
   GraphicsWorldCoordinateQ12 sampleWorldZ;
-  sdword planeDotOrTextureOffset;
+  int32_t planeDotOrTextureOffset;
   int radiusScaleOrCoordinate;
-  dword directionXOrTileCoordinate;
+  uint32_t directionXOrTileCoordinate;
   FixedMathScale32 surfaceDistanceQ12;
   Q12 remainingRayLength;
   GraphicsProjectedPointPair *projectedBlocks;
-  uint tintMaskOrIntensityB;
-  dword directionYOrGridStep;
+  uint32_t tintMaskOrIntensityB;
+  uint32_t directionYOrGridStep;
   int halfDirectionYOrCoordinate;
-  dword directionZ;
+  uint32_t directionZ;
   int halfDirectionZOrCoordinate;
-  uint intensityC;
-  uint heightDeltaOrIntensityA;
+  uint32_t intensityC;
+  uint32_t heightDeltaOrIntensityA;
   bool lacksGeometry;
-  ulonglong shadedA;
-  ulonglong shadedB;
-  ulonglong shadedC;
-  ulonglong tintLanesOrShadedC;
+  uint64_t shadedA;
+  uint64_t shadedB;
+  uint64_t shadedC;
+  uint64_t tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
   FieldGridHeightEaxCf5 surfaceHeight;
   GraphicsProjectedBlockEaxCf5 reservedBlocks;
@@ -110,7 +110,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
          g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z - g_ViewOriginFixed.z;
     lacksGeometry = GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(modelNode);
     if (!lacksGeometry) {
-      heightDeltaOrIntensityA = (uint)(radiusScaleOrCoordinate * 9) >> 2;
+      heightDeltaOrIntensityA = (uint32_t)(radiusScaleOrCoordinate * 9) >> 2;
       planeDotOrTextureOffset = FixedVec3_DotQ28(g_FrustumPlaneNormalFixed_0,
                                 (GraphicsFixedVec3 *)&g_ModelCullViewRelativeX);
       if ((((planeDotOrTextureOffset <= (int)heightDeltaOrIntensityA) &&
@@ -228,56 +228,56 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
           /* EDX:EAX = sign-extended (halfSize - border) << 24, then unsigned DIV (as in the original). */
-          radiusScaleOrCoordinate = (int)((ulonglong)((longlong)(int)(g_GraphicsShadingGridHalfSize -
+          radiusScaleOrCoordinate = (int)((uint64_t)((int64_t)(int)(g_GraphicsShadingGridHalfSize -
                                                    g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
                                          0x1000000) /
-                        (ulonglong)
-                        (uint)(g_GeneratedTextureScratchRuntime.projectedMaxX -
+                        (uint64_t)
+                        (uint32_t)(g_GeneratedTextureScratchRuntime.projectedMaxX -
                               g_GeneratedTextureScratchRuntime.projectedMinX));
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[0] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[0] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[1] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[1] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow0[2] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow0[2] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[0] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[1] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[2] = 0;
-          radiusScaleOrCoordinate = (int)((ulonglong)((longlong)(int)(g_GraphicsShadingGridHalfSize -
+          radiusScaleOrCoordinate = (int)((uint64_t)((int64_t)(int)(g_GraphicsShadingGridHalfSize -
                                                    g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
                                          0x1000000) /
-                        (ulonglong)
-                        (uint)(g_GeneratedTextureScratchRuntime.projectedMaxY -
+                        (uint64_t)
+                        (uint32_t)(g_GeneratedTextureScratchRuntime.projectedMaxY -
                               g_GeneratedTextureScratchRuntime.projectedMinY));
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[0] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[0] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[1] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[1] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow1[2] =
-               (int)((ulonglong)
-                     ((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)radiusScaleOrCoordinate) >>
+               (int)((uint64_t)
+                     ((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (int64_t)radiusScaleOrCoordinate) >>
                     0x20) << 4 |
-               (uint)((longlong)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (longlong)radiusScaleOrCoordinate) >>
+               (uint32_t)((int64_t)g_AuxiliaryRotationMatrixFixed.basisRow1[2] * (int64_t)radiusScaleOrCoordinate) >>
                0x1c;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.translation.x = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.translation.y = 0;
@@ -479,11 +479,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[0].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -514,8 +514,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20) {
                 return;
@@ -523,18 +523,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[0].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -607,11 +607,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[2].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -642,8 +642,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20) {
                 return;
@@ -651,18 +651,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[2].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[2].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -735,11 +735,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[1].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -770,8 +770,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20) {
                 return;
@@ -779,18 +779,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[1].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[1].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -863,11 +863,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[3].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -898,8 +898,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20) {
                 return;
@@ -907,18 +907,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[3].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -991,11 +991,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[4].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1026,8 +1026,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20) {
                 return;
@@ -1035,18 +1035,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[4].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[4].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1119,11 +1119,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[5].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1154,8 +1154,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20) {
                 return;
@@ -1163,18 +1163,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[5].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[5].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1247,11 +1247,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[6].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1282,8 +1282,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20) {
                 return;
@@ -1291,18 +1291,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[6].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1375,11 +1375,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[7].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1410,8 +1410,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20) {
                 return;
@@ -1419,18 +1419,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[7].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[7].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1503,11 +1503,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[8].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1538,8 +1538,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20) {
                 return;
@@ -1547,18 +1547,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[8].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[8].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1631,11 +1631,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[10].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1666,8 +1666,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20) {
                 return;
@@ -1675,18 +1675,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[10].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[10].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1759,11 +1759,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[9].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1794,8 +1794,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20) {
                 return;
@@ -1803,18 +1803,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[9].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -1887,11 +1887,11 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                   g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 == 0) {
                 return;
               }
-              remainingRayLength = (Q12)(((longlong)
+              remainingRayLength = (Q12)(((int64_t)
                               (int)(g_GraphicsShadingGridStepQ20Current -
                                    g_GeneratedTextureScratchRuntime.samples[0xb].
-                                   textureCoordinateOffsetQ20) * (longlong)radiusScaleOrCoordinate) /
-                            (longlong)(int)g_GraphicsShadingGridStepQ20Current);
+                                   textureCoordinateOffsetQ20) * (int64_t)radiusScaleOrCoordinate) /
+                            (int64_t)(int)g_GraphicsShadingGridStepQ20Current);
               g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 = radiusScaleOrCoordinate;
               direction = FixedMath_DirectionFromAnglesScaledRegs
                                  (renderContext->viewAngleBC,renderContext->viewAngleB8,radiusScaleOrCoordinate);
@@ -1922,8 +1922,8 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                    g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.edx;
               g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 =
                    g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 +
-                   ((int)(((longlong)surfaceDistanceQ12 * (longlong)(int)g_GraphicsShadingGridStepQ20Current) /
-                         (longlong)modelNode->subtreeBoundingRadiusQ12) >> 1);
+                   ((int)(((int64_t)surfaceDistanceQ12 * (int64_t)(int)g_GraphicsShadingGridStepQ20Current) /
+                         (int64_t)modelNode->subtreeBoundingRadiusQ12) >> 1);
               if ((int)g_GraphicsShadingGridStepQ20Current <
                   g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20) {
                 return;
@@ -1931,18 +1931,18 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
             }
           }
           else {
-            if ((uint)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
+            if ((uint32_t)modelNode->subtreeBoundingRadiusQ12 <= heightDeltaOrIntensityA) {
               heightDeltaOrIntensityA = modelNode->subtreeBoundingRadiusQ12;
             }
             g_GeneratedTextureScratchRuntime.samples[0xb].terrainRayDistanceQ12 = 0;
-            radiusScaleOrCoordinate = (int)(((longlong)(int)g_GraphicsShadingGridStepQ20Current *
-                           (longlong)
-                           (int)((int)((ulonglong)
-                                       ((longlong)(int)heightDeltaOrIntensityA *
-                                       (longlong)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
-                                 << 3 | (uint)((longlong)(int)heightDeltaOrIntensityA *
-                                              (longlong)g_FixedCosQ28[renderContext->viewAngleBC])
-                                        >> 0x1d)) / (longlong)modelNode->subtreeBoundingRadiusQ12);
+            radiusScaleOrCoordinate = (int)(((int64_t)(int)g_GraphicsShadingGridStepQ20Current *
+                           (int64_t)
+                           (int)((int)((uint64_t)
+                                       ((int64_t)(int)heightDeltaOrIntensityA *
+                                       (int64_t)g_FixedCosQ28[renderContext->viewAngleBC]) >> 0x20)
+                                 << 3 | (uint32_t)((int64_t)(int)heightDeltaOrIntensityA *
+                                              (int64_t)g_FixedCosQ28[renderContext->viewAngleBC])
+                                        >> 0x1d)) / (int64_t)modelNode->subtreeBoundingRadiusQ12);
             g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 =
                  g_GeneratedTextureScratchRuntime.samples[0xb].textureCoordinateOffsetQ20 - radiusScaleOrCoordinate;
             if (planeDotOrTextureOffset < radiusScaleOrCoordinate) {
@@ -2166,9 +2166,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedA = pmulhw(*(uint64_t *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(uint64_t *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(uint64_t *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
               projectedBlocks[0x67].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
               projectedBlocks[0xb3].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
               projectedBlocks[0x73].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
@@ -2196,9 +2196,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedA = pmulhw(*(uint64_t *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(uint64_t *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(uint64_t *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
               projectedBlocks[0xab].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
               projectedBlocks[0x57].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
               projectedBlocks[0x3b].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
@@ -2226,9 +2226,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedA = pmulhw(*(uint64_t *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(uint64_t *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(uint64_t *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
               projectedBlocks[0x2b].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
               projectedBlocks[0x47].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
               projectedBlocks[3].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
@@ -2256,9 +2256,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              tintLanesOrShadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedA = pmulhw(*(uint64_t *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(uint64_t *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              tintLanesOrShadedC = pmulhw(*(uint64_t *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
               projectedBlocks[0xb].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
               projectedBlocks[7].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
               projectedBlocks[0x13].projectedY = Shading_PackWordLanesUnsignedSaturate(tintLanesOrShadedC);
@@ -2485,7 +2485,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
 {
   int rowsRemaining;
   char inputByte;
-  uint inputValue;
+  uint32_t inputValue;
   int referenceValue;
   char *tableCursor;
   ArenaAllocEaxCf5 allocResult;
@@ -2496,7 +2496,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
     tableCursor = (char *)(allocResult.eax + 0xffff & 0xffff0000);
     rowsRemaining = 0x100;
     referenceValue = 0;
-    g_GraphicsIntensityClampTableBase = (dword)tableCursor;
+    g_GraphicsIntensityClampTableBase = (uint32_t)tableCursor;
     do {
       do {
         inputByte = (char)inputValue;
@@ -2515,8 +2515,8 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
           *tableCursor = inputByte;
         }
         tableCursor = tableCursor + 1;
-        inputValue = (uint)(byte)(inputByte + 1U);
-      } while ((byte)(inputByte + 1U) != 0);
+        inputValue = (uint32_t)(uint8_t)(inputByte + 1U);
+      } while ((uint8_t)(inputByte + 1U) != 0);
       referenceValue = referenceValue + 1;
       rowsRemaining = rowsRemaining + -1;
     } while (rowsRemaining != 0);
@@ -2536,41 +2536,41 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
 
 {
   PackedRgb24 packedColor;
-  longlong axisDeltaSquared;
+  int64_t axisDeltaSquared;
   int remainingHigh;
-  uint remainingLowOrSquareLow;
+  uint32_t remainingLowOrSquareLow;
   int axisDelta;
-  uint squareLow;
+  uint32_t squareLow;
   GraphicsShadingRecordCount recordsRemaining;
-  uint remainingLowOrRadiusScale;
+  uint32_t remainingLowOrRadiusScale;
   GraphicsShadingRuntimeRecord *shadingRecord;
-  ulonglong scaledLight;
+  uint64_t scaledLight;
   
   shadingRecord = g_GraphicsShadingCompactRecords;
   for (recordsRemaining = g_GraphicsShadingCompactRecordCount; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
     if (shadingRecord->targetRadiusQ12 != 0) {
-      squareLow = (uint)shadingRecord->squaredRadiusQ24;
+      squareLow = (uint32_t)shadingRecord->squaredRadiusQ24;
       remainingHigh = worldPointQ12->x - shadingRecord->worldXQ12;
-      axisDeltaSquared = (longlong)remainingHigh * (longlong)remainingHigh;
-      remainingLowOrSquareLow = (uint)axisDeltaSquared;
+      axisDeltaSquared = (int64_t)remainingHigh * (int64_t)remainingHigh;
+      remainingLowOrSquareLow = (uint32_t)axisDeltaSquared;
       remainingLowOrRadiusScale = squareLow - remainingLowOrSquareLow;
       remainingHigh = (*(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) -
-              (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(squareLow < remainingLowOrSquareLow);
+              (int)((uint64_t)axisDeltaSquared >> 0x20)) - (uint32_t)(squareLow < remainingLowOrSquareLow);
       if (-1 < remainingHigh) {
         axisDelta = worldPointQ12->y - shadingRecord->worldYQ12;
-        axisDeltaSquared = (longlong)axisDelta * (longlong)axisDelta;
-        squareLow = (uint)axisDeltaSquared;
+        axisDeltaSquared = (int64_t)axisDelta * (int64_t)axisDelta;
+        squareLow = (uint32_t)axisDeltaSquared;
         remainingLowOrSquareLow = remainingLowOrRadiusScale - squareLow;
-        remainingHigh = (remainingHigh - (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(remainingLowOrRadiusScale < squareLow);
+        remainingHigh = (remainingHigh - (int)((uint64_t)axisDeltaSquared >> 0x20)) - (uint32_t)(remainingLowOrRadiusScale < squareLow);
         if (-1 < remainingHigh) {
           axisDelta = worldPointQ12->z - shadingRecord->worldZQ12;
-          axisDeltaSquared = (longlong)axisDelta * (longlong)axisDelta;
-          squareLow = (uint)axisDeltaSquared;
-          remainingHigh = (remainingHigh - (int)((ulonglong)axisDeltaSquared >> 0x20)) - (uint)(remainingLowOrSquareLow < squareLow);
+          axisDeltaSquared = (int64_t)axisDelta * (int64_t)axisDelta;
+          squareLow = (uint32_t)axisDeltaSquared;
+          remainingHigh = (remainingHigh - (int)((uint64_t)axisDeltaSquared >> 0x20)) - (uint32_t)(remainingLowOrSquareLow < squareLow);
           if (-1 < remainingHigh) {
             packedColor = shadingRecord->packedColorRgbActive;
             remainingLowOrRadiusScale = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
-                    (uint)shadingRecord->squaredRadiusQ24 >> 0xc;
+                    (uint32_t)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainingLowOrRadiusScale != 0) {
               scaledLight = pmulhw(Shading_DuplicateBytesToWordLanes(packedColor,2),
                               g_PackedLightingLookupTable[(remainingHigh * 0x8000000 | remainingLowOrSquareLow - squareLow >> 5) / remainingLowOrRadiusScale]);
@@ -2611,7 +2611,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
         recordCursor->targetRadiusQ12 = radiusQ12;
         recordCursor->packedColorRgbActive = packedColorRgb & 0xffffff;
         if (transitionDurationTicks == 0) {
-          recordCursor->squaredRadiusQ24 = (longlong)radiusQ12 * (longlong)radiusQ12;
+          recordCursor->squaredRadiusQ24 = (int64_t)radiusQ12 * (int64_t)radiusQ12;
           recordCursor->radiusTransitionDurationTicks = 0;
           recordCursor->radiusTransitionElapsedTicks = 0;
         }
@@ -2712,11 +2712,11 @@ GraphicsShadingRuntime_CollectNearbyRecords
   int deltaXRadiusOrCounter;
   int deltaYQ12;
   int deltaZQ12;
-  dword sourceRecordsRemaining;
+  uint32_t sourceRecordsRemaining;
   GraphicsShadingRuntimeRecord *sourceRecordCursor;
   GraphicsShadingRuntimeRecord *destinationRecordCursor;
-  longlong combinedRadiusSquaredQ24;
-  longlong distanceSquaredQ24;
+  int64_t combinedRadiusSquaredQ24;
+  int64_t distanceSquaredQ24;
   
   sourceRecordCursor = g_GraphicsShadingCompactRecords;
   destinationRecordCursor = g_GraphicsShadingNearbyRecords;
@@ -2727,13 +2727,13 @@ GraphicsShadingRuntime_CollectNearbyRecords
     deltaYQ12 = worldYQ12 - sourceRecordCursor->worldYQ12;
     deltaZQ12 = worldZQ12 - sourceRecordCursor->worldZQ12;
     distanceSquaredQ24 =
-         (longlong)deltaYQ12 * (longlong)deltaYQ12 + (longlong)deltaXRadiusOrCounter * (longlong)deltaXRadiusOrCounter +
-         (longlong)deltaZQ12 * (longlong)deltaZQ12;
+         (int64_t)deltaYQ12 * (int64_t)deltaYQ12 + (int64_t)deltaXRadiusOrCounter * (int64_t)deltaXRadiusOrCounter +
+         (int64_t)deltaZQ12 * (int64_t)deltaZQ12;
     deltaXRadiusOrCounter = queryRadiusQ12 + sourceRecordCursor->targetRadiusQ12;
-    combinedRadiusSquaredQ24 = (longlong)deltaXRadiusOrCounter * (longlong)deltaXRadiusOrCounter;
-    if ((int)(((int)((ulonglong)combinedRadiusSquaredQ24 >> 0x20) -
-              (int)((ulonglong)distanceSquaredQ24 >> 0x20)) -
-             (uint)((uint)combinedRadiusSquaredQ24 < (uint)distanceSquaredQ24)) < 0) {
+    combinedRadiusSquaredQ24 = (int64_t)deltaXRadiusOrCounter * (int64_t)deltaXRadiusOrCounter;
+    if ((int)(((int)((uint64_t)combinedRadiusSquaredQ24 >> 0x20) -
+              (int)((uint64_t)distanceSquaredQ24 >> 0x20)) -
+             (uint32_t)((uint32_t)combinedRadiusSquaredQ24 < (uint32_t)distanceSquaredQ24)) < 0) {
       sourceRecordCursor = sourceRecordCursor + 1;
     }
     else {
@@ -2768,8 +2768,8 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
 {
   GraphicsGeneratedTextureAssetOrEntryView200 *allocationCursor;
   AssetMagic paletteEntry;
-  uint allocationSize;
-  uint dwordsRemaining;
+  uint32_t allocationSize;
+  uint32_t dwordsRemaining;
   int counterOrGridOrigin;
   AssetRelativeOffset pixelDataOffset;
   GraphicsGeneratedTextureAssetOrEntryView200 *entryCursor;
@@ -2835,7 +2835,7 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
       g_GraphicsShadingTextureDimension = textureDimension;
       g_GraphicsShadingGridHalfSize = gridHalfSize;
       g_GraphicsShadingGridStepQ20 =
-           (dword)(((ulonglong)gridHalfSize * 0x100000) / (ulonglong)textureDimension);
+           (uint32_t)(((uint64_t)gridHalfSize * 0x100000) / (uint64_t)textureDimension);
       counterOrGridOrigin = ((int)gridHalfSize >> 1) + -1;
       g_GraphicsShadingPositiveGridOriginQ12 = counterOrGridOrigin * 0x1000;
       g_GraphicsShadingNegativeGridOriginQ12 = counterOrGridOrigin * -0x1000;
@@ -2844,13 +2844,13 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
       allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)textureSetResult.textureSet;
       if (!textureSetResult.carry) {
         g_GraphicsShadingTextureSet = (GraphicsTextureSet *)&allocationCursor->asset;
-        return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, qword, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+        return THANDOR_BITCAST(uint64_t, StatusValueEaxCf5, ((THANDOR_BITCAST(GraphicsTextureSetEaxCf5, uint64_t, textureSetResult) & 0xFFFFFFFFFFull) & 0xffffffff));
       }
       (*g_MemoryApi.free)(g_GraphicsShadingGeneratedAsset);
     }
   }
   failureStatus.carry = true;
-  failureStatus.valueOrError = (dword)allocationCursor;
+  failureStatus.valueOrError = (uint32_t)allocationCursor;
   return failureStatus;
 }
 
@@ -2882,8 +2882,8 @@ GraphicsShadingGeneratedTexture_ResetPassScratchAndClearAlphaPlanes(void)
 
 {
   AssetRelativeOffset tableOffset;
-  uint dwordsRemaining;
-  byte *alphaCursor;
+  uint32_t dwordsRemaining;
+  uint8_t *alphaCursor;
   
   g_GeneratedTextureScratchRuntime.downsampleBorderOffset = g_TextureDownsampleShift << 2;
   g_GraphicsShadingGeneratedTexturePixelCursor =
@@ -2925,7 +2925,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
 
 {
-  dword subresourceIndex;
+  uint32_t subresourceIndex;
   GraphicsSubresourceIndex subresourcesRemaining;
   
   subresourceIndex = 0;
@@ -2950,8 +2950,8 @@ void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlockCf
                (GeneratedTextureRenderContextView *renderContext)
 
 {
-  uint *blockPool;
-  uint usedBlockCount;
+  uint32_t *blockPool;
+  uint32_t usedBlockCount;
   
   blockPool = renderContext->projectedPointBlockPool;
   usedBlockCount = blockPool[1];
@@ -2980,7 +2980,7 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Clear(ModelMeshGroupAdd
   
   vertexCount = *(int *)(meshGroup + 8);
   triangleCount = *(int *)(meshGroup + 0xc);
-  if (((*(uint *)(meshGroup + 0x10) & 1) == 0) &&
+  if (((*(uint32_t *)(meshGroup + 0x10) & 1) == 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20), vertexCount != 0)) {
     do {
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
@@ -3018,8 +3018,8 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *mo
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
   int offsetCountOrChildIndex;
-  dword childrenRemaining;
-  byte *meshGroup;
+  uint32_t childrenRemaining;
+  uint8_t *meshGroup;
   
   originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
   originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
@@ -3069,22 +3069,22 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Clear(ModelRuntimeNode *mo
 */
 /* Returns EBX: 0 when nothing was rasterized, 1 when triangles were, otherwise the last transformed
    record address (the original leaves EBX there when the batch has vertices but no triangles). */
-dword
+uint32_t
 GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddress32 meshGroup)
 
 {
   int vertexCount;
   int triangleCount;
   GraphicsFixedVec3 *recordCursor;
-  dword result;
+  uint32_t result;
   
   result = 0;
   vertexCount = *(int *)(meshGroup + 8);
   triangleCount = *(int *)(meshGroup + 0xc);
-  if (((*(uint *)(meshGroup + 0x10) & 1) != 0) &&
+  if (((*(uint32_t *)(meshGroup + 0x10) & 1) != 0) &&
      (recordCursor = (GraphicsFixedVec3 *)(meshGroup + 0x20), vertexCount != 0)) {
     do {
-      result = (dword)&recordCursor[2].z;
+      result = (uint32_t)&recordCursor[2].z;
       GraphicsShadingGeneratedTexture_TransformPointXYQuantized
                 ((GraphicsFixedVec2 *)&recordCursor[2].z,recordCursor,
                  &g_GeneratedTextureScratchRuntime.modelToGeneratedTextureTransform);
@@ -3115,11 +3115,11 @@ GraphicsShadingGeneratedTexture_RasterizeRecordBatchFlag0Set(ModelMeshGroupAddre
 /* Returns EBX, which the caller tests before filtering the generated texture: the last mesh group's
    result plus the mesh-group table offset (EAX at 0x004CDB36), plus the children's results. Nonzero
    whenever the hierarchy has a mesh group. */
-dword
+uint32_t
 GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *modelNode)
 
 {
-  dword result;
+  uint32_t result;
   int meshGroupTableOffset;
   GraphicsFixedVec3 *nodeTranslation;
   GraphicsWorldCoordinateQ12 *translationComponent;
@@ -3128,8 +3128,8 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyFlag0Set(ModelRuntimeNode *mode
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
   int offsetCountOrChildIndex;
-  dword childrenRemaining;
-  byte *meshGroup;
+  uint32_t childrenRemaining;
+  uint8_t *meshGroup;
   
   originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
   originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
@@ -3232,8 +3232,8 @@ GraphicsShadingGeneratedTexture_TraverseHierarchyAndAccumulateProjectedBounds
   GraphicsWorldCoordinateQ12 originY;
   GraphicsWorldCoordinateQ12 originZ;
   int offsetCountOrChildIndex;
-  dword childrenRemaining;
-  byte *meshGroup;
+  uint32_t childrenRemaining;
+  uint8_t *meshGroup;
   
   originZ = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
   originY = g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
@@ -3285,19 +3285,19 @@ GraphicsShadingGeneratedTexture_TransformPointXY
 
 {
   int row1Column0;
-  longlong dotProduct;
+  int64_t dotProduct;
   
-  dotProduct = (longlong)transform->basisRow0[1] * (longlong)point->y +
-          (longlong)transform->basisRow0[0] * (longlong)point->x +
-          (longlong)transform->basisRow0[2] * (longlong)point->z;
+  dotProduct = (int64_t)transform->basisRow0[1] * (int64_t)point->y +
+          (int64_t)transform->basisRow0[0] * (int64_t)point->x +
+          (int64_t)transform->basisRow0[2] * (int64_t)point->z;
   row1Column0 = transform->basisRow1[0];
   outputXY->component0 =
-       ((int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c) + (transform->translation).x;
-  dotProduct = (longlong)transform->basisRow1[1] * (longlong)point->y +
-          (longlong)row1Column0 * (longlong)point->x +
-          (longlong)transform->basisRow1[2] * (longlong)point->z;
+       ((int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c) + (transform->translation).x;
+  dotProduct = (int64_t)transform->basisRow1[1] * (int64_t)point->y +
+          (int64_t)row1Column0 * (int64_t)point->x +
+          (int64_t)transform->basisRow1[2] * (int64_t)point->z;
   outputXY->component1 =
-       ((int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c) + (transform->translation).y;
+       ((int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c) + (transform->translation).y;
   return;
 }
 
@@ -3349,39 +3349,39 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
 
 {
   int backtrackOffset;
-  qword threeBitMask;
+  uint64_t threeBitMask;
   int scratchBlockStride;
-  uint rowBytesRemaining;
-  uint rowsRemaining;
-  ulonglong *scratchWriteCursor;
-  ulonglong *neighborCursor;
-  longlong *scratchCursor;
-  ulonglong *textureWriteCursor;
-  ulonglong *textureReadCursor;
-  uint neighborStep;
+  uint32_t rowBytesRemaining;
+  uint32_t rowsRemaining;
+  uint64_t *scratchWriteCursor;
+  uint64_t *neighborCursor;
+  int64_t *scratchCursor;
+  uint64_t *textureWriteCursor;
+  uint64_t *textureReadCursor;
+  uint32_t neighborStep;
   bool rowContinues;
-  ulonglong weightedSum0;
-  ulonglong quad1OrResult0;
-  ulonglong weightedSum1;
-  ulonglong quad2OrResult1;
-  ulonglong weightedSum2;
-  ulonglong quad3OrResult2;
-  ulonglong weightedSum3;
-  ulonglong result3;
-  ulonglong crossSum0;
-  ulonglong crossSum1;
-  ulonglong crossSum2;
-  ulonglong crossSum3;
+  uint64_t weightedSum0;
+  uint64_t quad1OrResult0;
+  uint64_t weightedSum1;
+  uint64_t quad2OrResult1;
+  uint64_t weightedSum2;
+  uint64_t quad3OrResult2;
+  uint64_t weightedSum3;
+  uint64_t result3;
+  uint64_t crossSum0;
+  uint64_t crossSum1;
+  uint64_t crossSum2;
+  uint64_t crossSum3;
   
   threeBitMask = g_GraphicsShadingMmxPacked3BitPerByteMask;
   neighborStep = g_GraphicsShadingGridHalfSize >> 4;
-  textureWriteCursor = (ulonglong *)
+  textureWriteCursor = (uint64_t *)
            (g_GraphicsShadingGeneratedTexturePixelCursor +
            (-(g_GraphicsShadingGridHalfSize >> 1) -
            g_GraphicsShadingTextureDimension * (g_GraphicsShadingGridHalfSize >> 1)));
   rowBytesRemaining = g_GraphicsShadingGridHalfSize;
   rowsRemaining = g_GraphicsShadingGridHalfSize;
-  scratchWriteCursor = (ulonglong *)g_GraphicsShadingGridScratchInterior;
+  scratchWriteCursor = (uint64_t *)g_GraphicsShadingGridScratchInterior;
   textureReadCursor = textureWriteCursor;
   do {
     do {
@@ -3397,77 +3397,77 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
       rowContinues = 0x1f < rowBytesRemaining;
       rowBytesRemaining = rowBytesRemaining - 0x20;
     } while (rowContinues && rowBytesRemaining != 0);
-    scratchWriteCursor = (ulonglong *)((int)scratchWriteCursor + g_GraphicsShadingGridHalfSize);
-    textureReadCursor = (ulonglong *)
+    scratchWriteCursor = (uint64_t *)((int)scratchWriteCursor + g_GraphicsShadingGridHalfSize);
+    textureReadCursor = (uint64_t *)
               ((int)textureReadCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
     rowsRemaining = rowsRemaining - 1;
     rowBytesRemaining = g_GraphicsShadingGridHalfSize;
   } while (rowsRemaining != 0);
   scratchBlockStride = g_GraphicsShadingGridHalfSize * 2 * neighborStep;
   rowsRemaining = g_GraphicsShadingGridHalfSize;
-  scratchCursor = (longlong *)g_GraphicsShadingGridScratchInterior;
+  scratchCursor = (int64_t *)g_GraphicsShadingGridScratchInterior;
   do {
     do {
-      weightedSum0 = paddusb(*scratchCursor << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2));
-      weightedSum1 = paddusb(scratchCursor[1] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(scratchCursor[2] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(scratchCursor[3] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 0x18));
-      neighborCursor = (ulonglong *)((int)scratchCursor - neighborStep);
-      crossSum0 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep),*neighborCursor);
-      crossSum1 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
-      crossSum2 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 0x10),neighborCursor[2]);
-      crossSum3 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 0x18),neighborCursor[3]);
-      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(*scratchCursor << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2));
+      weightedSum1 = paddusb(scratchCursor[1] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(scratchCursor[2] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(scratchCursor[3] << 2,*(uint64_t *)((int)scratchCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (uint64_t *)((int)scratchCursor - neighborStep);
+      crossSum0 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep),*neighborCursor);
+      crossSum1 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
+      crossSum2 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 0x10),neighborCursor[2]);
+      crossSum3 = paddusb(*(uint64_t *)((int)scratchCursor + neighborStep + 0x18),neighborCursor[3]);
+      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (ulonglong *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
+      neighborCursor = (uint64_t *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
       crossSum0 = paddusb(crossSum0,*neighborCursor);
       crossSum1 = paddusb(crossSum1,neighborCursor[1]);
       crossSum2 = paddusb(crossSum2,neighborCursor[2]);
       crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x18));
-      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
+      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
+      neighborCursor = (uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
       crossSum0 = paddusb(crossSum0,*neighborCursor);
       crossSum1 = paddusb(crossSum1,neighborCursor[1]);
       crossSum2 = paddusb(crossSum2,neighborCursor[2]);
       crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep * 2 + 0x18));
       backtrackOffset = -scratchBlockStride - neighborStep;
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 0x10 + backtrackOffset));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 0x18 + backtrackOffset));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride + 0x10 + backtrackOffset));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride + 0x18 + backtrackOffset));
       backtrackOffset = (backtrackOffset - neighborStep) - scratchBlockStride;
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x18));
       weightedSum0 = paddusb(weightedSum0,crossSum0);
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
@@ -3476,7 +3476,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
       weightedSum3 = paddusb(weightedSum3,crossSum3);
-      neighborCursor = (ulonglong *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
+      neighborCursor = (uint64_t *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
       weightedSum0 = paddusb(weightedSum0,crossSum0);
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
@@ -3485,38 +3485,38 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
-      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      neighborCursor = (uint64_t *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
-      quad1OrResult0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
-      quad2OrResult1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
-      quad3OrResult2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x10));
-      result3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      quad1OrResult0 = paddusb(weightedSum0,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
+      quad2OrResult1 = paddusb(weightedSum1,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
+      quad3OrResult2 = paddusb(weightedSum2,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x10));
+      result3 = paddusb(weightedSum3,*(uint64_t *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x18));
       *textureWriteCursor = quad1OrResult0;
       textureWriteCursor[1] = quad2OrResult1;
       textureWriteCursor[2] = quad3OrResult2;
       textureWriteCursor[3] = result3;
-      scratchCursor = (longlong *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep + 0x20);
+      scratchCursor = (int64_t *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep + 0x20);
       textureWriteCursor = textureWriteCursor + 4;
       rowContinues = 0x1f < rowBytesRemaining;
       rowBytesRemaining = rowBytesRemaining - 0x20;
     } while (rowContinues && rowBytesRemaining != 0);
-    scratchCursor = (longlong *)((int)scratchCursor + g_GraphicsShadingGridHalfSize);
-    textureWriteCursor = (ulonglong *)
+    scratchCursor = (int64_t *)((int)scratchCursor + g_GraphicsShadingGridHalfSize);
+    textureWriteCursor = (uint64_t *)
              ((int)textureWriteCursor + (g_GraphicsShadingTextureDimension - g_GraphicsShadingGridHalfSize));
     rowsRemaining = rowsRemaining - 1;
     rowBytesRemaining = g_GraphicsShadingGridHalfSize;
@@ -3533,8 +3533,8 @@ bool __thandor_void_preserve_eax_ecx
 GraphicsShadingGeneratedTexture_ProbeHierarchyForGeometry(ModelRuntimeNode *modelNode)
 
 {
-  dword decrementedCount;
-  dword childrenRemaining;
+  uint32_t decrementedCount;
+  uint32_t childrenRemaining;
   int childIndex;
   bool childLacksGeometry;
   
@@ -3564,8 +3564,8 @@ GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
           (GeneratedTextureRenderContextView *renderContext)
 
 {
-  uint *blockPool;
-  uint usedBlockCount;
+  uint32_t *blockPool;
+  uint32_t usedBlockCount;
   GraphicsProjectedBlockEaxCf5 reservedResult;
   GraphicsProjectedBlockEaxCf5 newCountOrFailure;
   
@@ -3573,22 +3573,22 @@ GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
   usedBlockCount = blockPool[1];
   newCountOrFailure.firstBlock = (void *)(usedBlockCount + 0xe);
   if (newCountOrFailure.firstBlock < (void *)*blockPool) {
-    blockPool[1] = (uint)newCountOrFailure.firstBlock;
+    blockPool[1] = (uint32_t)newCountOrFailure.firstBlock;
     reservedResult.firstBlock = (void *)(usedBlockCount * 0x80 + blockPool[2]);
-    blockPool[usedBlockCount * 4 + 9] = (uint)reservedResult.firstBlock;
-    blockPool[usedBlockCount * 4 + 0xd] = (uint)((byte *)reservedResult.firstBlock + 0x80);
-    blockPool[usedBlockCount * 4 + 0x11] = (uint)((byte *)reservedResult.firstBlock + 0x100);
-    blockPool[usedBlockCount * 4 + 0x15] = (uint)((byte *)reservedResult.firstBlock + 0x180);
-    blockPool[usedBlockCount * 4 + 0x19] = (uint)((byte *)reservedResult.firstBlock + 0x200);
-    blockPool[usedBlockCount * 4 + 0x1d] = (uint)((byte *)reservedResult.firstBlock + 0x280);
-    blockPool[usedBlockCount * 4 + 0x21] = (uint)((byte *)reservedResult.firstBlock + 0x300);
-    blockPool[usedBlockCount * 4 + 0x25] = (uint)((byte *)reservedResult.firstBlock + 0x380);
-    blockPool[usedBlockCount * 4 + 0x29] = (uint)((byte *)reservedResult.firstBlock + 0x400);
-    blockPool[usedBlockCount * 4 + 0x2d] = (uint)((byte *)reservedResult.firstBlock + 0x480);
-    blockPool[usedBlockCount * 4 + 0x31] = (uint)((byte *)reservedResult.firstBlock + 0x500);
-    blockPool[usedBlockCount * 4 + 0x35] = (uint)((byte *)reservedResult.firstBlock + 0x580);
-    blockPool[usedBlockCount * 4 + 0x39] = (uint)((byte *)reservedResult.firstBlock + 0x600);
-    blockPool[usedBlockCount * 4 + 0x3d] = (uint)((byte *)reservedResult.firstBlock + 0x680);
+    blockPool[usedBlockCount * 4 + 9] = (uint32_t)reservedResult.firstBlock;
+    blockPool[usedBlockCount * 4 + 0xd] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x80);
+    blockPool[usedBlockCount * 4 + 0x11] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x100);
+    blockPool[usedBlockCount * 4 + 0x15] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x180);
+    blockPool[usedBlockCount * 4 + 0x19] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x200);
+    blockPool[usedBlockCount * 4 + 0x1d] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x280);
+    blockPool[usedBlockCount * 4 + 0x21] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x300);
+    blockPool[usedBlockCount * 4 + 0x25] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x380);
+    blockPool[usedBlockCount * 4 + 0x29] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x400);
+    blockPool[usedBlockCount * 4 + 0x2d] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x480);
+    blockPool[usedBlockCount * 4 + 0x31] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x500);
+    blockPool[usedBlockCount * 4 + 0x35] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x580);
+    blockPool[usedBlockCount * 4 + 0x39] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x600);
+    blockPool[usedBlockCount * 4 + 0x3d] = (uint32_t)((uint8_t *)reservedResult.firstBlock + 0x680);
     ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xc].projectedX = 0;
     ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xd].projectedX = 0x11000;
     reservedResult.carry = false;
@@ -3622,20 +3622,20 @@ GraphicsShadingGeneratedTexture_TransformPointXYQuantized
 
 {
   int row1Column0;
-  longlong dotProduct;
+  int64_t dotProduct;
   
-  dotProduct = (longlong)transform->basisRow0[1] * (longlong)point->y +
-          (longlong)transform->basisRow0[0] * (longlong)point->x +
-          (longlong)transform->basisRow0[2] * (longlong)point->z;
+  dotProduct = (int64_t)transform->basisRow0[1] * (int64_t)point->y +
+          (int64_t)transform->basisRow0[0] * (int64_t)point->x +
+          (int64_t)transform->basisRow0[2] * (int64_t)point->z;
   row1Column0 = transform->basisRow1[0];
   outputXY->component0 =
-       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) + (transform->translation).x &
+       ((int)((uint64_t)dotProduct >> 0x20) << 0x14 | (uint32_t)dotProduct >> 0xc) + (transform->translation).x &
        0xfffff000;
-  dotProduct = (longlong)transform->basisRow1[1] * (longlong)point->y +
-          (longlong)row1Column0 * (longlong)point->x +
-          (longlong)transform->basisRow1[2] * (longlong)point->z;
+  dotProduct = (int64_t)transform->basisRow1[1] * (int64_t)point->y +
+          (int64_t)row1Column0 * (int64_t)point->x +
+          (int64_t)transform->basisRow1[2] * (int64_t)point->z;
   outputXY->component1 =
-       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) + (transform->translation).y &
+       ((int)((uint64_t)dotProduct >> 0x20) << 0x14 | (uint32_t)dotProduct >> 0xc) + (transform->translation).y &
        0xfffff000;
   return;
 }
@@ -3652,72 +3652,72 @@ GraphicsShadingGeneratedTexture_ComposeTransform
 
 {
   int lhsElement;
-  longlong dotProduct;
+  int64_t dotProduct;
   
-  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[0] +
-          (longlong)lhsTransform->basisRow0[0] * (longlong)rhsTransform->basisRow0[0] +
-          (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[0];
+  dotProduct = (int64_t)lhsTransform->basisRow0[1] * (int64_t)rhsTransform->basisRow1[0] +
+          (int64_t)lhsTransform->basisRow0[0] * (int64_t)rhsTransform->basisRow0[0] +
+          (int64_t)lhsTransform->basisRow0[2] * (int64_t)rhsTransform->basisRow2[0];
   lhsElement = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
-          (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[1];
+  outTransform->basisRow0[0] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow0[1] * (int64_t)rhsTransform->basisRow1[1] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[1] +
+          (int64_t)lhsTransform->basisRow0[2] * (int64_t)rhsTransform->basisRow2[1];
   lhsElement = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
-          (longlong)lhsTransform->basisRow0[2] * (longlong)rhsTransform->basisRow2[2];
+  outTransform->basisRow0[1] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow0[1] * (int64_t)rhsTransform->basisRow1[2] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[2] +
+          (int64_t)lhsTransform->basisRow0[2] * (int64_t)rhsTransform->basisRow2[2];
   lhsElement = lhsTransform->basisRow0[0];
-  outTransform->basisRow0[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow0[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
-          (longlong)lhsTransform->basisRow0[2] * (longlong)(rhsTransform->translation).z;
+  outTransform->basisRow0[2] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow0[1] * (int64_t)(rhsTransform->translation).y +
+          (int64_t)lhsElement * (int64_t)(rhsTransform->translation).x +
+          (int64_t)lhsTransform->basisRow0[2] * (int64_t)(rhsTransform->translation).z;
   lhsElement = lhsTransform->basisRow1[0];
   (outTransform->translation).x =
-       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
+       ((int)((uint64_t)dotProduct >> 0x20) << 0x14 | (uint32_t)dotProduct >> 0xc) +
        (lhsTransform->translation).x;
-  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[0] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[0] +
-          (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[0];
+  dotProduct = (int64_t)lhsTransform->basisRow1[1] * (int64_t)rhsTransform->basisRow1[0] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[0] +
+          (int64_t)lhsTransform->basisRow1[2] * (int64_t)rhsTransform->basisRow2[0];
   lhsElement = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
-          (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[1];
+  outTransform->basisRow1[0] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow1[1] * (int64_t)rhsTransform->basisRow1[1] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[1] +
+          (int64_t)lhsTransform->basisRow1[2] * (int64_t)rhsTransform->basisRow2[1];
   lhsElement = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
-          (longlong)lhsTransform->basisRow1[2] * (longlong)rhsTransform->basisRow2[2];
+  outTransform->basisRow1[1] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow1[1] * (int64_t)rhsTransform->basisRow1[2] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[2] +
+          (int64_t)lhsTransform->basisRow1[2] * (int64_t)rhsTransform->basisRow2[2];
   lhsElement = lhsTransform->basisRow1[0];
-  outTransform->basisRow1[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow1[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
-          (longlong)lhsTransform->basisRow1[2] * (longlong)(rhsTransform->translation).z;
+  outTransform->basisRow1[2] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow1[1] * (int64_t)(rhsTransform->translation).y +
+          (int64_t)lhsElement * (int64_t)(rhsTransform->translation).x +
+          (int64_t)lhsTransform->basisRow1[2] * (int64_t)(rhsTransform->translation).z;
   lhsElement = lhsTransform->basisRow2[0];
   (outTransform->translation).y =
-       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
+       ((int)((uint64_t)dotProduct >> 0x20) << 0x14 | (uint32_t)dotProduct >> 0xc) +
        (lhsTransform->translation).y;
-  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[0] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[0] +
-          (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[0];
+  dotProduct = (int64_t)lhsTransform->basisRow2[1] * (int64_t)rhsTransform->basisRow1[0] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[0] +
+          (int64_t)lhsTransform->basisRow2[2] * (int64_t)rhsTransform->basisRow2[0];
   lhsElement = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[0] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[1] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[1] +
-          (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[1];
+  outTransform->basisRow2[0] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow2[1] * (int64_t)rhsTransform->basisRow1[1] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[1] +
+          (int64_t)lhsTransform->basisRow2[2] * (int64_t)rhsTransform->basisRow2[1];
   lhsElement = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[1] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)rhsTransform->basisRow1[2] +
-          (longlong)lhsElement * (longlong)rhsTransform->basisRow0[2] +
-          (longlong)lhsTransform->basisRow2[2] * (longlong)rhsTransform->basisRow2[2];
+  outTransform->basisRow2[1] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow2[1] * (int64_t)rhsTransform->basisRow1[2] +
+          (int64_t)lhsElement * (int64_t)rhsTransform->basisRow0[2] +
+          (int64_t)lhsTransform->basisRow2[2] * (int64_t)rhsTransform->basisRow2[2];
   lhsElement = lhsTransform->basisRow2[0];
-  outTransform->basisRow2[2] = (int)((ulonglong)dotProduct >> 0x20) << 4 | (uint)dotProduct >> 0x1c;
-  dotProduct = (longlong)lhsTransform->basisRow2[1] * (longlong)(rhsTransform->translation).y +
-          (longlong)lhsElement * (longlong)(rhsTransform->translation).x +
-          (longlong)lhsTransform->basisRow2[2] * (longlong)(rhsTransform->translation).z;
+  outTransform->basisRow2[2] = (int)((uint64_t)dotProduct >> 0x20) << 4 | (uint32_t)dotProduct >> 0x1c;
+  dotProduct = (int64_t)lhsTransform->basisRow2[1] * (int64_t)(rhsTransform->translation).y +
+          (int64_t)lhsElement * (int64_t)(rhsTransform->translation).x +
+          (int64_t)lhsTransform->basisRow2[2] * (int64_t)(rhsTransform->translation).z;
   (outTransform->translation).z =
-       ((int)((ulonglong)dotProduct >> 0x20) << 0x14 | (uint)dotProduct >> 0xc) +
+       ((int)((uint64_t)dotProduct >> 0x20) << 0x14 | (uint32_t)dotProduct >> 0xc) +
        (lhsTransform->translation).z;
   return;
 }
@@ -3739,16 +3739,16 @@ GraphicsShadingGeneratedTexture_RasterizeTriangleMask
   int spanRemaining;
   int yOrLongEdgeStep;
   int yOrRowsRemaining;
-  sdword bottomXClamped;
+  int32_t bottomXClamped;
   int xDeltaOrSpan;
   GraphicsFixedVec2 *otherVertex;
   GraphicsFixedVec2 *bottomVertex;
   GraphicsFixedVec2 *middleVertex;
-  byte *rowPixels;
-  byte *spanPixel;
-  sdword upperEdgeX;
+  uint8_t *rowPixels;
+  uint8_t *spanPixel;
+  int32_t upperEdgeX;
   int topYOrLongEdgeX;
-  sdword lowerEdgeX;
+  int32_t lowerEdgeX;
   
   topYOrLongEdgeX = vertexC->component1;
   yOrRowsRemaining = vertexB->component1;
@@ -3881,7 +3881,7 @@ void GraphicsLighting_BuildPackedLookupTable(void)
   int level;
 
   for (level = 0; level < 512; level++) {
-    qword factor = level < 256 ? (qword)((level * 0x101) >> 4) : 0x1000;
-    g_PackedLightingLookupTable[level] = factor | factor << 16 | factor << 32 | (qword)0x1000 << 48;
+    uint64_t factor = level < 256 ? (uint64_t)((level * 0x101) >> 4) : 0x1000;
+    g_PackedLightingLookupTable[level] = factor | factor << 16 | factor << 32 | (uint64_t)0x1000 << 48;
   }
 }

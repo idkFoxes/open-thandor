@@ -46,10 +46,10 @@ void __thandor_preserve_eax PersistentSettings_Flush(void)
 void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
 
 {
-  dword *settingsClearCursor;
+  uint32_t *settingsClearCursor;
   void *handle;
   int dwordsRemaining;
-  uint byteCount;
+  uint32_t byteCount;
   PersistentSettingsImage *destination;
   ArenaAllocEaxCf5 allocResult;
   FileSystemOpenEaxCf5 openResult;
@@ -60,7 +60,7 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
   Resource_Release(g_PersistentSettings.image);
   g_PersistentSettings.image = (PersistentSettingsImage *)0x0;
   allocResult = (*g_MemoryApi.alloc)(200);
-  settingsClearCursor = (dword *)allocResult.eax;
+  settingsClearCursor = (uint32_t *)allocResult.eax;
   if (allocResult.carry) {
     return;
   }
@@ -73,9 +73,9 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
   handle = (void *)openResult.eax;
   if (openResult.carry) {
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
-               (word *)&g_ExecutableDirectoryUtf16);
-    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
+               (uint16_t *)&g_ExecutableDirectoryUtf16);
+    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     if (openResult.carry) {
       (*g_MemoryApi.free)(destination);
       return;
@@ -83,7 +83,7 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     /* The original also continues with EAX = the byte count returned by the path copy below as the
        file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
     pathCopyResult = RichTextCommandStream_CopyExpandedCf
-                      (0x200,g_PersistentSettings.path,(word *)&g_FileSystemCombinedPathScratchUtf16
+                      (0x200,g_PersistentSettings.path,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16
                       );
     handle = (void *)pathCopyResult.eax;
   }
@@ -122,7 +122,7 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
    defaultValue→PersistentSettingsDwordValue_V342. Calling convention, exact VariableStorage serialization,
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 PersistentSettings_ReadDword
           (PersistentSettingsDwordValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes)
@@ -164,17 +164,17 @@ PersistentSettings_GetRegionOrFallback
 */
 void __thandor_void_preserve_eax_ecx_edx
 PersistentSettings_WriteDwords
-          (PersistentSettingsByteCount regionByteCount,dword *source,
+          (PersistentSettingsByteCount regionByteCount,uint32_t *source,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
-  uint dwordsRemaining;
-  dword *destinationDwordCursor;
+  uint32_t dwordsRemaining;
+  uint32_t *destinationDwordCursor;
   
   if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
      (settingsOffsetBytes + regionByteCount < 0xc9)) {
     destinationDwordCursor =
-         (dword *)((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
+         (uint32_t *)((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
     dwordsRemaining = regionByteCount >> 2;
     if (dwordsRemaining != 0) {
       for (; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {

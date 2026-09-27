@@ -29,7 +29,7 @@ AiTechnologyCandidate_IsCurrentlyAvailableCf
 /* 0x00538140 */
 AiTechnologyPlanningLoopRegisterContinuityResult
 AiTechnologyPlanning_AddCandidateRecord
-          (dword technologyPanelIndex,dword sourceArmyEntriesRemaining,dword factionRecordOffset,
+          (uint32_t technologyPanelIndex,uint32_t sourceArmyEntriesRemaining,uint32_t factionRecordOffset,
           ArmyRuntimeSlot *sourceArmyRuntime,PckTechnologyIdCatalog technologyId);
 
 /* 0x0053BCC0 */

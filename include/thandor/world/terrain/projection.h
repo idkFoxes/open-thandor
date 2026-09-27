@@ -17,7 +17,7 @@
 /* 0x00506CD0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
-          (ulonglong occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
+          (uint64_t occupancyMaskBits,FieldGridRadiusUnits radiusWorldUnits,Q12 referenceHeightQ12,
           Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid);
 
 /* 0x005099D0 */
@@ -42,42 +42,42 @@ TerrainProjectedGrid_TransformShadeAndQueue
 /* 0x005066D0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge0
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x005067D0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge1
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x005068D0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge2
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x005069D0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge3
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00506AD0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge4
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00506BD0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_TraceWedge5
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
@@ -144,7 +144,7 @@ FieldGridTerrainOverlayVariantB_ApplyWedge5
 /* 0x00500CE0 */
 void __thandor_void_preserve_ecx_edx
 TerrainProjectedQuad_QueueAsTwoTrianglesRegs
-          (dword rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
+          (uint32_t rowStrideBytes,TerrainProjectedVertexWorkRecord *topLeftVertex,
           FrontendModelPointerContextRuntimeState17C *renderContext);
 
 /* 0x005004A0 */
@@ -170,42 +170,42 @@ TerrainProjectedGrid_ClipRowSpansAgainstPlane
 /* 0x005063B0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection0
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00506430 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection1
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x005064C0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection2
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00506540 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection3
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x005065C0 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection4
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 
 /* 0x00506650 */
 void __thandor_void_preserve_eax_ecx_edx_mm0
 TerrainProjectedOcclusion_ScanDirection5
-          (ulonglong occupancyMaskBits,
+          (uint64_t occupancyMaskBits,
           TerrainProjectedHeightThresholdQ20 projectedHeightThresholdQ20,
           TerrainDirectionalScanStep scanStep,FieldGridCell *cell);
 

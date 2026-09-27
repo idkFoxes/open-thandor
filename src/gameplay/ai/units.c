@@ -23,7 +23,7 @@ AiUnitBehavior_UpdateWorkspace01Entities
           (FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  byte *cooldownCounterBytes;
+  uint8_t *cooldownCounterBytes;
   int workspaceEntriesRemaining;
   AiRuntimeWorkspaceEntry *workspaceEntryCursor;
   MdlDefinitionSemanticPrefix80 *modelDefinition;
@@ -93,7 +93,7 @@ AiUnitBehavior_SelectBestAnchorAction
 {
   int workspaceScore;
   AiCandidateScore32 factionAnchorScore;
-  uint selectedAnchorActionKind;
+  uint32_t selectedAnchorActionKind;
   int bestAnchorActionScore;
   int currentBestScore;
   AiScoredSiteWorkspaceEntry *selectedWorkspaceEntry;
@@ -107,7 +107,7 @@ AiUnitBehavior_SelectBestAnchorAction
     currentBestScore = workspaceScore;
     selectedWorkspaceEntry = workspaceSelection.selectedEntry;
   }
-  selectedAnchorActionKind = (uint)(workspaceScore != 0);
+  selectedAnchorActionKind = (uint32_t)(workspaceScore != 0);
   factionAnchorScore = AiUnitBehavior_ComputeFactionAnchorDistanceScore
                     (factionIndex,currentBestScore,modelDefinition,armyRuntimeSlot);
   if (factionAnchorScore != currentBestScore) {
@@ -123,7 +123,7 @@ AiUnitBehavior_SelectBestAnchorAction
   if (selectedAnchorActionKind != 0) {
     if (selectedAnchorActionKind == 1) {
       AiUnitCommand_AssignWorkspacePoint
-                ((dword *)selectedWorkspaceEntry,armyRuntimeSlot,worldRuntime);
+                ((uint32_t *)selectedWorkspaceEntry,armyRuntimeSlot,worldRuntime);
       return;
     }
     if (selectedAnchorActionKind < 3) {
@@ -327,7 +327,7 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
 */
 void __thandor_preserve_eax
 AiUnitCommand_AssignWorkspacePoint
-          (dword *workspacePoint,ArmyRuntimeSlot *armyRuntime,
+          (uint32_t *workspacePoint,ArmyRuntimeSlot *armyRuntime,
           WorldRuntimeContext *worldRuntimeContext)
 
 {
@@ -412,9 +412,9 @@ AiUnitBehavior_UpdateSpecialClass12Entity
   AiKnowledgeDataImage *knowledgeData;
   int siteScoreOrY;
   int distanceTerm;
-  uint weightedScore;
+  uint32_t weightedScore;
   int sitesRemainingOrX;
-  uint bestScore;
+  uint32_t bestScore;
   int deltaY;
   FieldGridCell *workspaceRecord;
   AiTerrainFeatureWorkspaceEntry *terrainFeatureEntry;
@@ -508,7 +508,7 @@ AiUnitBehavior_UpdateSpecialClass12Entity
               siteScoreOrY = siteScoreOrY * 2;
             }
             distanceTerm = AiPrimaryWorkspace_CountAssignedEntriesById(terrainFeatureEntry->armyAssetId);
-            weightedScore = (uint)(siteScoreOrY * 3) / (distanceTerm + 3U);
+            weightedScore = (uint32_t)(siteScoreOrY * 3) / (distanceTerm + 3U);
             if ((int)bestScore < (int)weightedScore) {
               bestScore = weightedScore;
               bestCell = workspaceRecord;

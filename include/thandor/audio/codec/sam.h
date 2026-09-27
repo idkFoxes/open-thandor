@@ -17,7 +17,7 @@
 /* 0x00417700 */
 PreservedEaxEdxRegisterPair64 __fastcall
 SoundCoefficientTransform_ApplyCosineBanksMmx
-          (dword preservedIncomingEcx,dword preservedIncomingEdx,short *outputSamples,
+          (uint32_t preservedIncomingEcx,uint32_t preservedIncomingEdx,short *outputSamples,
           SoundCoefficientBlock256 *coefficientBlock);
 
 /* 0x00418560 */
@@ -29,12 +29,12 @@ void __thandor_void_preserve_eax_ecx_edx
 SoundSample_DecodeCoefficientBlockToMonoPcmMmx(short *outputMonoPcm,short *coefficients);
 
 /* 0x0041A430 */
-dword __thandor_eax_preserve_ecx_edx
-SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,byte *encodedBlock);
+uint32_t __thandor_eax_preserve_ecx_edx
+SoundSample_DecodePackedCoefficientBlock(short *outputCoefficients,uint8_t *encodedBlock);
 
 
 /* 0x0041A320 */
-dword __thandor_eax_preserve_ecx_edx
-SoundSample_EncodePackedCoefficientBlock(byte *encodedBlock,short *inputCoefficients);
+uint32_t __thandor_eax_preserve_ecx_edx
+SoundSample_EncodePackedCoefficientBlock(uint8_t *encodedBlock,short *inputCoefficients);
 
 #endif /* THANDOR_AUDIO_CODEC_SAM_H */

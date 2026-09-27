@@ -31,7 +31,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName);
 DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName);
 
 /* 0x00573CD0 */
-dword DynDLL_Unload(char *moduleName);
+uint32_t DynDLL_Unload(char *moduleName);
 
 /* 0x00573D40 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
@@ -44,7 +44,7 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void);
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam);
 
 /* 0x00587370 */
-dword __cdecl CPU_DetectFeatures(void);
+uint32_t __cdecl CPU_DetectFeatures(void);
 
 /* 0x00573070 */
 void __cdecl Game_Run(void);
@@ -53,7 +53,7 @@ void __cdecl Game_Run(void);
 StatusValueEaxCf5 __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
 
 /* 0x00573140 */
-dword __cdecl Game_LoadCoreAssets(void);
+uint32_t __cdecl Game_LoadCoreAssets(void);
 
 /* 0x005739D0 */
 bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void);
@@ -75,15 +75,15 @@ cdecl and would leave the stack unbalanced after every call.
 */
 typedef HINSTANCE (__stdcall *BootstrapLoadLibraryAProc)(char *moduleName);                 /* [0] */
 typedef BOOL (__stdcall *BootstrapFreeLibraryProc)(HINSTANCE module);                        /* [1] */
-typedef dword (__stdcall *BootstrapTimeSetEventProc)(dword delayMs, dword resolutionMs, void *callback,
-                                                     dword user, dword flags);             /* [2] */
-typedef dword (__stdcall *BootstrapTimeKillEventProc)(dword timerId);                        /* [3] */
-typedef dword (__stdcall *BootstrapMciSendCommandAProc)(dword device, dword message, dword flags,
-                                                        dword params);                     /* [4] */
-typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(dword key, char *subKey, dword options, dword access,
+typedef uint32_t (__stdcall *BootstrapTimeSetEventProc)(uint32_t delayMs, uint32_t resolutionMs, void *callback,
+                                                     uint32_t user, uint32_t flags);             /* [2] */
+typedef uint32_t (__stdcall *BootstrapTimeKillEventProc)(uint32_t timerId);                        /* [3] */
+typedef uint32_t (__stdcall *BootstrapMciSendCommandAProc)(uint32_t device, uint32_t message, uint32_t flags,
+                                                        uint32_t params);                     /* [4] */
+typedef long (__stdcall *BootstrapRegOpenKeyExAProc)(uint32_t key, char *subKey, uint32_t options, uint32_t access,
                                                      void *result);                       /* [5] */
-typedef long (__stdcall *BootstrapRegQueryValueExAProc)(dword key, void *valueName, dword *reserved,
+typedef long (__stdcall *BootstrapRegQueryValueExAProc)(uint32_t key, void *valueName, uint32_t *reserved,
                                                         void *type, void *data, void *size); /* [6] */
-typedef long (__stdcall *BootstrapRegCloseKeyProc)(dword key);                               /* [7] */
+typedef long (__stdcall *BootstrapRegCloseKeyProc)(uint32_t key);                               /* [7] */
 
 #endif /* THANDOR_PLATFORM_BOOTSTRAP_RUNTIME_H */

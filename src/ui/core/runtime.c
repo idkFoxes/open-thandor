@@ -59,10 +59,10 @@ void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void 
 {
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x400000,
-             *(sdword *)((int)runtime + 0x140),(word *)((int)runtime + 0xbb4));
+             *(int32_t *)((int)runtime + 0x140),(uint16_t *)((int)runtime + 0xbb4));
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,3,10,0x10000,
-             *(sdword *)((int)runtime + 0x144),(word *)((int)runtime + 0xb94));
+             *(int32_t *)((int)runtime + 0x144),(uint16_t *)((int)runtime + 0xb94));
   return;
 }
 
@@ -81,10 +81,10 @@ UiRuntime_OpenFourValueDialogCf
           UiPixelCoordinate value3)
 
 {
-  sdword *valueTextBuffer;
+  int32_t *valueTextBuffer;
   UiRootNode *root;
   int remainingDwords;
-  dword *templateCursor;
+  uint32_t *templateCursor;
   UiRootNode *copyCursor;
   ArenaAllocEaxCf5 allocResult;
   TextResourceResolveEaxCf5 resolvedText;
@@ -99,16 +99,16 @@ UiRuntime_OpenFourValueDialogCf
       templateCursor = templateCursor + 1;
       copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
     }
-    valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,sdword);
+    valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,int32_t);
     resolvedText = TextResource_Resolve(0x109);
     RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.eax);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,sdword),
-               (word *)valueTextBuffer);
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,sdword) = value3;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,sdword) = value2;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,sdword) = value1;
-    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,sdword) = value0;
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,int32_t),
+               (uint16_t *)valueTextBuffer);
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,int32_t) = value3;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t) = value2;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t) = value1;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t) = value0;
     UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
     UiRootStack_InvalidateAll();
     return;
@@ -126,8 +126,8 @@ UiRuntimeRecordRingDiscardEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 UiRuntimeRecordRing_DiscardOldestCf(void)
 
 {
-  uint nextReadIndex;
-  dword readIndex;
+  uint32_t nextReadIndex;
+  uint32_t readIndex;
   UiRuntimeRecordRingDiscardEaxEdxCf9 discardedResult;
   UiRuntimeRecordRingDiscardEaxEdxCf9 emptyResult;
   
@@ -190,7 +190,7 @@ bool __thandor_cf_preserve_eax_ecx_edx
 UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
 
 {
-  dword ringIndex;
+  uint32_t ringIndex;
   UiRuntimeRecord *recordCursor;
   bool lockUnavailable;
   
@@ -273,7 +273,7 @@ void __thandor_preserve_eax UiRuntime_Initialize(void)
   g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)checkedResult.eax;
   allocResult = (*g_MemoryApi.alloc)(0x2000);
   checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-  g_UiTransferDataBuffer = (byte *)checkedResult.eax;
+  g_UiTransferDataBuffer = (uint8_t *)checkedResult.eax;
   g_UiRuntimeRecordWriteIndex = 0;
   g_UiRuntimeRecordReadIndex = 0;
   g_UiTransferUnitCursor = 0;
@@ -297,7 +297,7 @@ void UiRuntime_Shutdown(void)
     (*g_MemoryApi.free)(g_UiTransferEndpointBuffer);
     g_UiRuntimeRecordRing = (UiRuntimeRecord *)0x0;
     g_UiRuntimeAuxiliaryBuffer8000 = (void *)0x0;
-    g_UiTransferDataBuffer = (byte *)0x0;
+    g_UiTransferDataBuffer = (uint8_t *)0x0;
     g_UiTransferEndpointBuffer = (UiTransferEndpointDescriptor *)0x0;
     (*g_MemoryApi.free)(g_UiDirtyRectEntries);
     g_UiDirtyRectEntries = (UiDirtyRectEntry *)0x0;
@@ -342,8 +342,8 @@ void __cdecl UiActionQueue_DispatchPending(void)
     actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8;
     actionHandler = (void (*)(void *))
-                    g_UiActionHandlerPages[(uint)queueHead->actionId >> 8]->handlers
-                    [(uint)queueHead->actionId & 0xff];
+                    g_UiActionHandlerPages[(uint32_t)queueHead->actionId >> 8]->handlers
+                    [(uint32_t)queueHead->actionId & 0xff];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
     for (remainingCount = 0x1e; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount = remainingCount + -1) {

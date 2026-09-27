@@ -20,7 +20,7 @@ RecentTextHistory_SortAndBuildPointerList
           (RecentTextHistoryEntryLimit maxEntries,RecentTextHistoryPointerList *output);
 
 /* 0x0050F130 */
-void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(word *text);
+void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text);
 
 /* 0x0050F2E0 */
 void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_RemoveOldest(void);
@@ -31,7 +31,7 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView);
 
 /* 0x0054D5D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourcePath);
+PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
 /* 0x0050F1A0 */
 void __thandor_void_preserve_eax_ecx_edx

@@ -119,7 +119,7 @@ AiPrimaryWorkspace_CountAssignedEntriesById(PckArmyAssetIdCatalog entryId);
 /* 0x005374B0 */
 void __thandor_void_preserve_eax_ecx_edx
 AiCandidateWorkspace_AddOrAccumulateWeightedEntry
-          (RuntimeToken entityId,dword weightRange,AiCandidateEntryKind entryKind);
+          (RuntimeToken entityId,uint32_t weightRange,AiCandidateEntryKind entryKind);
 
 /* 0x00538FD0 */
 bool __thandor_void_preserve_ecx_edx

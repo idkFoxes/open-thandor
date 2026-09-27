@@ -115,47 +115,47 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
 void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStatusCode stateCode);
 
 /* 0x00548910 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FrontendRuntime_UpdatePointerContextAndSceneViewCf
-          (dword pointerValue0,dword pointerValue1,dword pointerValue2,dword pointerValue3,
+          (uint32_t pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,uint32_t pointerValue3,
           void *pointedRecord,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
 
 /* 0x00548BE0 */
-void FrontendRuntimeCallback5C_NoOp (dword argument1,dword argument2,dword argument3,dword argument4,dword argument5, dword argument6);
+void FrontendRuntimeCallback5C_NoOp (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5, uint32_t argument6);
 
 /* 0x00548BF0 */
-void FrontendRuntimeCallback60_NoOp (dword argument1,dword argument2,dword argument3,dword argument4,dword argument5, dword argument6);
+void FrontendRuntimeCallback60_NoOp (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,uint32_t argument5, uint32_t argument6);
 
 /* 0x00548C00 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRuntimeCallback64_DispatchRecord1350
-          (dword argument1,dword argument2,dword argument3,dword argument4,
-          FrontendCallbackArgument5 argument5,dword argument6);
+          (uint32_t argument1,uint32_t argument2,uint32_t argument3,uint32_t argument4,
+          FrontendCallbackArgument5 argument5,uint32_t argument6);
 
 /* 0x00548C70 */
-void FrontendRuntimeCallback68_DispatchRefresh1340(dword callbackArgument);
+void FrontendRuntimeCallback68_DispatchRefresh1340(uint32_t callbackArgument);
 
 /* 0x00548CB0 */
-void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(word *text);
+void __thandor_void_preserve_eax_ecx_edx FrontendRecentTextHistory_InsertAndRebuild5(uint16_t *text);
 
 /* 0x00549100 */
-void FrontendCallback_ApplyGameSpeedOrDispatch02C0(dword callbackArgument);
+void FrontendCallback_ApplyGameSpeedOrDispatch02C0(uint32_t callbackArgument);
 
 /* 0x00549140 */
-void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(dword callbackArgument);
+void FrontendCallback_ReleaseSelectedResourceOrDispatch0320(uint32_t callbackArgument);
 
 /* 0x00549180 */
 void FrontendCallback_NoOpArg1(void *source);
 
 /* 0x00549AB0 */
-void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(dword callbackArgument);
+void __thandor_preserve_eax FrontendCallback_ReturnToMainPageOrDispatch0DC0(uint32_t callbackArgument);
 
 /* 0x0054A5A0 */
-void FrontendCallback_ReturnToMainPageOrDispatchState4(dword callbackArgument);
+void FrontendCallback_ReturnToMainPageOrDispatchState4(uint32_t callbackArgument);
 
 /* 0x0054A7D0 */
 void __thandor_preserve_eax
-FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(dword callbackArgument);
+FrontendCallback_ReturnToMainPageOrDispatch0DC0_Secondary(uint32_t callbackArgument);
 
 /* 0x0054AAD0 */
 void __thandor_preserve_eax_edx FrontendUiAction2010_Handler(UiNodeBase *sourceNode);
@@ -195,19 +195,19 @@ FrontendMenu_BindSharedResources(FrontendRootResourceSlots5954 *frontendUiState)
 /* 0x005445A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2044_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,dword argument2,dword argument3,
+          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
           FrontendFactionAssignmentIndex selectionIndex);
 
 /* 0x00544640 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2045_IndexedSelectionHelper
-          (dword argument1,dword argument2,dword argument3,
+          (uint32_t argument1,uint32_t argument2,uint32_t argument3,
           FrontendFactionAssignmentIndex selectionIndex);
 
 /* 0x005446A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendUiAction2046_IndexedSelectionHelper
-          (FrontendIndexedSelectionArgument argument1,dword argument2,dword argument3,
+          (FrontendIndexedSelectionArgument argument1,uint32_t argument2,uint32_t argument3,
           FrontendFactionAssignmentIndex selectionIndex);
 
 /* 0x00546190 */
@@ -218,6 +218,6 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void);
 void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResourcesRegs(void);
 
 /* 0x0050AD90 */
-qword FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);
+uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context);
 
 #endif /* THANDOR_UI_FRONTEND_RUNTIME_H */

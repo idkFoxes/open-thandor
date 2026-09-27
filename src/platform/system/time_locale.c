@@ -19,7 +19,7 @@
 void __thandor_preserve_eax TimerSystem_Shutdown(void)
 
 {
-  uint callbackSlotByteOffset;
+  uint32_t callbackSlotByteOffset;
   
   callbackSlotByteOffset = 0;
   do {
@@ -156,8 +156,8 @@ void __cdecl TimerSystem_Init(void)
    slotOffset→TimerCallbackSlotByteOffset_V331. Nearby but non-identical semantic domains were explicitly deferred.
 */
 void __stdcall WinMM_TimerDispatchCallback
-          (WinMmTimerId timerId,dword message,TimerCallbackSlotByteOffset slotOffset,
-          dword callbackData0,dword callbackData1)
+          (WinMmTimerId timerId,uint32_t message,TimerCallbackSlotByteOffset slotOffset,
+          uint32_t callbackData0,uint32_t callbackData1)
 
 {
   if ((((slotOffset & 3) == 0) && (slotOffset < 0x80)) &&
@@ -184,7 +184,7 @@ TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *cal
   WinMmTimerId winmmTimerId;
   TimerCallbackSlotByteOffset callbackSlotSearchByteOffset;
   
-  intervalMilliseconds = (WinMmTimerPeriodMilliseconds)(1000 / (ulonglong)frequencyHz);
+  intervalMilliseconds = (WinMmTimerPeriodMilliseconds)(1000 / (uint64_t)frequencyHz);
   callbackSlotSearchByteOffset = 0;
   do {
     if (*(int *)((int)g_TimerSystemState.callbacks + callbackSlotSearchByteOffset) == 0) {
@@ -212,49 +212,49 @@ TimerSystem_RegisterPeriodic(TimerFrequencyHz frequencyHz,TimerCallbackProc *cal
    length excluding the final UTF-16 terminator.
    Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
 */
-dword Locale_FormatDateFieldsUtf16
+uint32_t Locale_FormatDateFieldsUtf16
                 (LocaleCalendarYearStack32 year,LocaleCalendarMonthStack32 month,
-                LocaleCalendarDayStack32 day,word *destination)
+                LocaleCalendarDayStack32 day,uint16_t *destination)
 
 {
-  dword appendByteLength;
-  dword separatorByteLength;
-  word *outputCursor;
+  uint32_t appendByteLength;
+  uint32_t separatorByteLength;
+  uint16_t *outputCursor;
   int completedByteOffset;
   
   if (g_LocaleSystemState.longDateOrder == 0) {
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,destination);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+                      ((uint16_t *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (uint16_t *)((int)((int)destination + appendByteLength) + separatorByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,outputCursor);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
     completedByteOffset = (int)outputCursor + appendByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,destination);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+                      ((uint16_t *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (uint16_t *)((int)((int)destination + appendByteLength) + separatorByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,outputCursor);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,outputCursor);
     completedByteOffset = (int)outputCursor + appendByteLength;
   }
   else {
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,year,destination);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+                      ((uint16_t *)((int)destination + appendByteLength),g_LocaleSystemState.dateSeparator);
+    outputCursor = (uint16_t *)((int)((int)destination + appendByteLength) + separatorByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,month,outputCursor);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = Utf16_CopyAndReturnByteLength(outputCursor,g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)outputCursor + appendByteLength);
+    outputCursor = (uint16_t *)((int)outputCursor + appendByteLength);
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,day,outputCursor);
     completedByteOffset = (int)outputCursor + appendByteLength;
   }
@@ -267,80 +267,80 @@ dword Locale_FormatDateFieldsUtf16
    separator. Returns output byte length excluding the final UTF-16 terminator.
    Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
 */
-dword Locale_FormatCurrentDateUtf16(word *destination)
+uint32_t Locale_FormatCurrentDateUtf16(uint16_t *destination)
 
 {
-  dword currentAppendByteLength;
-  dword separatorByteLength;
-  dword branchAppendByteLength;
-  dword branchSeparatorByteLength;
-  dword fieldByteLength;
-  dword dateSeparatorByteLength;
-  word *outputCursor;
-  word *branchOutputCursor;
+  uint32_t currentAppendByteLength;
+  uint32_t separatorByteLength;
+  uint32_t branchAppendByteLength;
+  uint32_t branchSeparatorByteLength;
+  uint32_t fieldByteLength;
+  uint32_t dateSeparatorByteLength;
+  uint16_t *outputCursor;
+  uint16_t *branchOutputCursor;
   int completedByteOffset;
-  word *fieldCursor;
+  uint16_t *fieldCursor;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.longDateOrder == 0) {
     currentAppendByteLength =
          (*g_WideNumberFormatUtf16)
-                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month,
+                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.month,
                     destination);
     separatorByteLength =
          Utf16_CopyAndReturnByteLength
-                   ((word *)((int)destination + currentAppendByteLength),
+                   ((uint16_t *)((int)destination + currentAppendByteLength),
                     g_LocaleSystemState.dateSeparator);
-    outputCursor = (word *)((int)((int)destination + currentAppendByteLength) + separatorByteLength)
+    outputCursor = (uint16_t *)((int)((int)destination + currentAppendByteLength) + separatorByteLength)
     ;
     branchAppendByteLength =
          (*g_WideNumberFormatUtf16)
-                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
+                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.day,
                     outputCursor);
     branchSeparatorByteLength =
          Utf16_CopyAndReturnByteLength
-                   ((word *)((int)outputCursor + branchAppendByteLength),
+                   ((uint16_t *)((int)outputCursor + branchAppendByteLength),
                     g_LocaleSystemState.dateSeparator);
     branchOutputCursor =
-         (word *)((int)((int)outputCursor + branchAppendByteLength) + branchSeparatorByteLength);
+         (uint16_t *)((int)((int)outputCursor + branchAppendByteLength) + branchSeparatorByteLength);
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.year,
                        branchOutputCursor);
     completedByteOffset = (int)branchOutputCursor + fieldByteLength;
   }
   else if (g_LocaleSystemState.longDateOrder == 1) {
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.day,
                        destination);
     dateSeparatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
-    fieldCursor = (word *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
+                      ((uint16_t *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
+    fieldCursor = (uint16_t *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.month
                        ,fieldCursor);
-    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldCursor = (uint16_t *)((int)fieldCursor + fieldByteLength);
     fieldByteLength = Utf16_CopyAndReturnByteLength(fieldCursor,g_LocaleSystemState.dateSeparator);
-    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldCursor = (uint16_t *)((int)fieldCursor + fieldByteLength);
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.year,
                        fieldCursor);
     completedByteOffset = (int)fieldCursor + fieldByteLength;
   }
   else {
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.year,
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.year,
                        destination);
     dateSeparatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
-    fieldCursor = (word *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
+                      ((uint16_t *)((int)destination + fieldByteLength),g_LocaleSystemState.dateSeparator);
+    fieldCursor = (uint16_t *)((int)((int)destination + fieldByteLength) + dateSeparatorByteLength);
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.month
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.month
                        ,fieldCursor);
-    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldCursor = (uint16_t *)((int)fieldCursor + fieldByteLength);
     fieldByteLength = Utf16_CopyAndReturnByteLength(fieldCursor,g_LocaleSystemState.dateSeparator);
-    fieldCursor = (word *)((int)fieldCursor + fieldByteLength);
+    fieldCursor = (uint16_t *)((int)fieldCursor + fieldByteLength);
     fieldByteLength = (*g_WideNumberFormatUtf16)
-                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint)g_LocaleSystemState.localTime.day,
+                      (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(uint32_t)g_LocaleSystemState.localTime.day,
                        fieldCursor);
     completedByteOffset = (int)fieldCursor + fieldByteLength;
   }
@@ -352,12 +352,12 @@ dword Locale_FormatCurrentDateUtf16(word *destination)
    Ownership: platform/system/time_locale.
    Purpose: Calls GetLocalTime and returns (year << 16) | (month << 8) | day.
 */
-dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
+uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
-  return (uint)g_LocaleSystemState.localTime.day | (uint)g_LocaleSystemState.localTime.month << 8 |
-         (uint)g_LocaleSystemState.localTime.year << 0x10;
+  return (uint32_t)g_LocaleSystemState.localTime.day | (uint32_t)g_LocaleSystemState.localTime.month << 8 |
+         (uint32_t)g_LocaleSystemState.localTime.year << 0x10;
 }
 
 
@@ -369,14 +369,14 @@ dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentDate(void)
    terminator.
    Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
 */
-dword Locale_FormatTimeFieldsUtf16
-                (LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,word *destination)
+uint32_t Locale_FormatTimeFieldsUtf16
+                (LocaleClockHourStack32 hour,LocaleClockMinuteStack32 minute,uint16_t *destination)
 
 {
-  dword appendByteLength;
-  dword separatorByteLength;
-  word *designatorText;
-  word *outputCursor;
+  uint32_t appendByteLength;
+  uint32_t separatorByteLength;
+  uint16_t *designatorText;
+  uint16_t *outputCursor;
   int completedByteOffset;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
@@ -390,15 +390,15 @@ dword Locale_FormatTimeFieldsUtf16
     }
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,destination);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + appendByteLength),g_LocaleSystemState.timeSeparator);
-    outputCursor = (word *)((int)((int)destination + appendByteLength) + separatorByteLength);
+                      ((uint16_t *)((int)destination + appendByteLength),g_LocaleSystemState.timeSeparator);
+    outputCursor = (uint16_t *)((int)((int)destination + appendByteLength) + separatorByteLength);
     if (minute < 10) {
       outputCursor[0] = 0x30;
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,minute,outputCursor);
-    separatorByteLength = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + appendByteLength),designatorText);
+    separatorByteLength = Utf16_CopyAndReturnByteLength((uint16_t *)((int)outputCursor + appendByteLength),designatorText);
     completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
   }
   else {
@@ -410,8 +410,8 @@ dword Locale_FormatTimeFieldsUtf16
     }
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hour,outputCursor);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)outputCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
-    outputCursor = (word *)((int)((int)outputCursor + appendByteLength) + separatorByteLength);
+                      ((uint16_t *)((int)outputCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
+    outputCursor = (uint16_t *)((int)((int)outputCursor + appendByteLength) + separatorByteLength);
     if (minute < 10) {
       outputCursor[0] = 0x30;
       outputCursor[1] = 0;
@@ -429,23 +429,23 @@ dword Locale_FormatTimeFieldsUtf16
    optional AM/PM designator. Returns output byte length excluding the final terminator.
    Cross-module calls: Utf16_CopyAndReturnByteLength [core/text/string].
 */
-dword Locale_FormatCurrentTimeUtf16(word *destination)
+uint32_t Locale_FormatCurrentTimeUtf16(uint16_t *destination)
 
 {
-  uint hourOrMinute;
-  dword currentAppendByteLength;
-  dword appendByteLength;
-  dword separatorByteLength;
-  word *designatorText;
-  word *outputCursor;
+  uint32_t hourOrMinute;
+  uint32_t currentAppendByteLength;
+  uint32_t appendByteLength;
+  uint32_t separatorByteLength;
+  uint16_t *designatorText;
+  uint16_t *outputCursor;
   int completedByteOffset;
-  word *timeCursor;
+  uint16_t *timeCursor;
   Win32Hour16 localHour;
   Win32Minute16 localMinute;
   
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
   if (g_LocaleSystemState.timeFormat24Hour == 0) {
-    hourOrMinute = (uint)g_LocaleSystemState.localTime.hour;
+    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
     /* See Locale_FormatTimeFieldsUtf16: the designator selection was lost in decompilation. */
     designatorText = g_LocaleSystemState.pmDesignator;
     if (0xb < hourOrMinute) {
@@ -455,21 +455,21 @@ dword Locale_FormatCurrentTimeUtf16(word *destination)
     currentAppendByteLength =
          (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,destination);
     appendByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)destination + currentAppendByteLength),
+                      ((uint16_t *)((int)destination + currentAppendByteLength),
                        g_LocaleSystemState.timeSeparator);
-    outputCursor = (word *)((int)((int)destination + currentAppendByteLength) + appendByteLength);
-    hourOrMinute = (uint)g_LocaleSystemState.localTime.minute;
+    outputCursor = (uint16_t *)((int)((int)destination + currentAppendByteLength) + appendByteLength);
+    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
     if (hourOrMinute < 10) {
       outputCursor[0] = 0x30;
       outputCursor[1] = 0;
       outputCursor = outputCursor + 1;
     }
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,outputCursor);
-    separatorByteLength = Utf16_CopyAndReturnByteLength((word *)((int)outputCursor + appendByteLength),designatorText);
+    separatorByteLength = Utf16_CopyAndReturnByteLength((uint16_t *)((int)outputCursor + appendByteLength),designatorText);
     completedByteOffset = (int)((int)outputCursor + appendByteLength) + separatorByteLength;
   }
   else {
-    hourOrMinute = (uint)g_LocaleSystemState.localTime.hour;
+    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.hour;
     timeCursor = destination;
     if (hourOrMinute < 10) {
       destination[0] = 0x30;
@@ -478,9 +478,9 @@ dword Locale_FormatCurrentTimeUtf16(word *destination)
     }
     appendByteLength = (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,hourOrMinute,timeCursor);
     separatorByteLength = Utf16_CopyAndReturnByteLength
-                      ((word *)((int)timeCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
-    timeCursor = (word *)((int)((int)timeCursor + appendByteLength) + separatorByteLength);
-    hourOrMinute = (uint)g_LocaleSystemState.localTime.minute;
+                      ((uint16_t *)((int)timeCursor + appendByteLength),g_LocaleSystemState.timeSeparator);
+    timeCursor = (uint16_t *)((int)((int)timeCursor + appendByteLength) + separatorByteLength);
+    hourOrMinute = (uint32_t)g_LocaleSystemState.localTime.minute;
     if (hourOrMinute < 10) {
       timeCursor[0] = 0x30;
       timeCursor[1] = 0;
@@ -497,13 +497,13 @@ dword Locale_FormatCurrentTimeUtf16(word *destination)
    Ownership: platform/system/time_locale.
    Purpose: Calls GetLocalTime and returns (hour << 16) | (minute << 8) | second.
 */
-dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
+uint32_t __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
 
 {
   GetLocalTime((LPSYSTEMTIME)&g_LocaleSystemState);
-  return (uint)g_LocaleSystemState.localTime.second |
-         (uint)g_LocaleSystemState.localTime.minute << 8 |
-         (uint)g_LocaleSystemState.localTime.hour << 0x10;
+  return (uint32_t)g_LocaleSystemState.localTime.second |
+         (uint32_t)g_LocaleSystemState.localTime.minute << 8 |
+         (uint32_t)g_LocaleSystemState.localTime.hour << 0x10;
 }
 
 
@@ -512,12 +512,12 @@ dword __thandor_eax_preserve_ecx_edx Locale_GetPackedCurrentTime(void)
    Purpose: Masks GetUserDefaultLCID with 0x1FF and maps English, German, French, Italian, Spanish, and Russian
    primary-language values to telephone country codes 44, 49, 33, 39, 34, and 7. Other values return zero.
 */
-dword __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
+uint32_t __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
 
 {
   LCID userLocaleId;
-  uint primaryLanguageId;
-  dword telephoneCountryCode;
+  uint32_t primaryLanguageId;
+  uint32_t telephoneCountryCode;
   
   userLocaleId = GetUserDefaultLCID();
   primaryLanguageId = userLocaleId & 0x1ff;
@@ -551,16 +551,16 @@ dword __thandor_eax_preserve_ecx_edx Locale_GetDefaultTelephoneCountryCode(void)
    Purpose: Copies exactly 0x40 bytes from the fixed UTF-16 label L"Computer", including trailing zero padding,
    into destination.
 */
-void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(word *destination)
+void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(uint16_t *destination)
 
 {
   int copyDwordsRemaining;
-  word *sourceCursor;
+  uint16_t *sourceCursor;
   
   sourceCursor = g_DefaultComputerLabelUtf16;
   for (copyDwordsRemaining = 0x10; copyDwordsRemaining != 0;
       copyDwordsRemaining = copyDwordsRemaining + -1) {
-    *(dword *)destination = *(dword *)sourceCursor; /* two UTF-16 units per dword */
+    *(uint32_t *)destination = *(uint32_t *)sourceCursor; /* two UTF-16 units per dword */
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
   }
@@ -585,7 +585,7 @@ void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCal
         callback) {
       *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = (TimerCallbackProc *)0x0;
       ((BootstrapTimeKillEventProc)g_BootstrapApiBindings[3].destination)
-                (*(dword *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
+                (*(uint32_t *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
       return;
     }
     callbackSlotByteOffset = callbackSlotByteOffset + 4;
@@ -599,15 +599,15 @@ void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCal
    Purpose: Parses consecutive ASCII digits until NUL or the first non-digit. No sign, whitespace, hexadecimal, or
    overflow handling is performed.
 */
-dword Locale_ParseUnsignedDecimalAscii(byte *text)
+uint32_t Locale_ParseUnsignedDecimalAscii(uint8_t *text)
 
 {
   /* The decompiled loop tested (c - '0') > 0x2f instead of "no borrow", so every digit ended the
      parse and the locale's day-month order and 24-hour flag always read as 0 (US format). */
-  dword parsedValue = 0;
+  uint32_t parsedValue = 0;
 
   while ((*text >= 0x30) && (*text < 0x3a)) {
-    parsedValue = parsedValue * 10 + (dword)(*text - 0x30);
+    parsedValue = parsedValue * 10 + (uint32_t)(*text - 0x30);
     text = text + 1;
   }
   return parsedValue;

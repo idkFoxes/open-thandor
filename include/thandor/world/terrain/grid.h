@@ -24,7 +24,7 @@ FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
 /* 0x00562330 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RunDirectionalRelaxationPasses
-          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero,
+          (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero,
           TerrainRelaxationPassCount passCount,TerrainRelaxationMode mode);
 
 /* 0x005610A0 */
@@ -97,7 +97,7 @@ FieldGridSurfacePointEaxEcxEdxCf13
 FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEBA0 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FieldGrid_GetNearestWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEC10 */
@@ -105,7 +105,7 @@ FieldGridHeightEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
 /* 0x004FED50 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FieldGrid_InterpolateWaterDelta(Q12 worldY,Q12 worldX,FieldGridAsset *field);
 
 /* 0x004FEE90 */
@@ -208,7 +208,7 @@ FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGr
 
 /* 0x00532B60 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_SaveAssetImageFromRuntimeStateCf(dword *sourceImageDwords);
+FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords);
 
 /* 0x00561050 */
 void __thandor_void_preserve_eax_ecx_edx

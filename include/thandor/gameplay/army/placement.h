@@ -48,7 +48,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
 
 /* 0x005281A0 */
 ArmyPlacementCandidateEaxCf5 ArmyRuntimeCollision_TestShotSpawnPointCf
-               (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3,
+               (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
 
@@ -98,12 +98,12 @@ ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527BD0 */
-ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf (dword dispatchArg0,dword dispatchArg1,dword dispatchArg2,dword dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, dword dispatchArg7,WorldRuntimeContext *worldRuntime);
+ArmyPlacementCandidateEaxCf5 ArmyPlacementAssetClassDispatch_AlwaysSuccessCf (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529CB0 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyCollision_TestPointAgainstRuntimeListCf
-          (Q12 worldXQ12,Q12 worldYQ12,byte *modelDefinition,WorldRuntimeContext *worldRuntime);
+          (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529E60 */
 ArmyCollisionFindEaxCf5 __thandor_eax_cf_preserve_ecx_edx
@@ -141,7 +141,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
 ArmyPlacementCandidateEaxCf5
 ArmyPlacementCollision_TestCandidateAndClearanceCf
           (ArmyPlacementDispatchArg0 dispatchArg0,
-          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,dword dispatchArg2,
+          ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t dispatchArg2,
           ArmyPlacementDispatchArg3 dispatchArg3,Q12 worldXQ12,Q12 worldYQ12,
           ModelDefinitionRuntimeSemanticView280 *modelDefinition,
           ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);

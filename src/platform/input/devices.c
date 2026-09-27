@@ -25,9 +25,9 @@ Keyboard_CompareAsciiCaseInsensitiveFlags
           (KeyboardCharacterCode leftCodeUnit,KeyboardCharacterCode rightCodeUnit)
 
 {
-  uint asciiCodeUnit;
-  dword upperRight;
-  dword upperLeft;
+  uint32_t asciiCodeUnit;
+  uint32_t upperRight;
+  uint32_t upperLeft;
   
   asciiCodeUnit = leftCodeUnit & 0xffff;
   upperRight = Keyboard_ToUpperAscii(rightCodeUnit & 0xffff);
@@ -57,7 +57,7 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
 {
-  uint nextReadIndex;
+  uint32_t nextReadIndex;
   KeyboardEventEaxEdxCf9 readEvent;
   KeyboardEventEaxEdxCf9 emptyResult;
   KeyboardInputEvent *eventRecord;
@@ -89,7 +89,7 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-dword __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
+uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToLowerAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if ((0x40 < asciiCodeUnit) && (asciiCodeUnit < 0x5b)) {
@@ -110,13 +110,13 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
 
 {
   GraphicsSubresourceIndex frameTimestampValue;
-  ushort keyState;
+  uint16_t keyState;
   TH_LEGACY_HRESULT directInputResult;
   GraphicsTextureSourceAsset *cursorDataOrError;
-  uint remainingFrames;
-  dword subresourceIndex;
-  dword maxHeight;
-  dword maxWidth;
+  uint32_t remainingFrames;
+  uint32_t subresourceIndex;
+  uint32_t maxHeight;
+  uint32_t maxWidth;
   DynDllLoadEaxCf5 dllLoadResult;
   FatalErrorEaxCf5 fatalCheckResult;
   DynApiResolveEaxCf5 procResolveResult;
@@ -125,13 +125,13 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   StatusValueEaxCf5 failureResult;
   ResourceLoadEaxEcxCf9 resourceLoadResult;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
-  sdword initStage;
+  int32_t initStage;
   
   initStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_3);
-  fatalCheckResult = (*g_FatalErrorPrimaryDispatchCf)((dword)dllLoadResult.moduleOrError,dllLoadResult.carry);
+  fatalCheckResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.carry);
   procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.eax,dynapi_19);
-  (*g_FatalErrorPrimaryDispatchCf)((dword)procResolveResult.procedureOrError,procResolveResult.carry);
+  (*g_FatalErrorPrimaryDispatchCf)((uint32_t)procResolveResult.procedureOrError,procResolveResult.carry);
   SetCursor((HCURSOR)0x0);
   directInputResult = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
   if (directInputResult == 0) {
@@ -159,7 +159,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
             TimerSystem_RegisterPeriodic(0x40,DirectInputMouse_PollBufferedEvents);
             g_PointerFlushEvents = DirectInputMouse_FlushBufferedEvents;
             g_PointerSetPosition = DirectInputMouse_SetPosition;
-            packageLoadResult = Package_LoadEntry((word *)u_engine_mouse_gfx_00416864);
+            packageLoadResult = Package_LoadEntry((uint16_t *)u_engine_mouse_gfx_00416864);
             cursorDataOrError = packageLoadResult.bufferOrError;
             if (!packageLoadResult.carry) {
               maxWidth = 0;
@@ -178,7 +178,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
               } while (subresourceIndex < (cursorDataOrError->tableDescriptor).subresourceCount);
               g_CursorMaxWidth = maxWidth;
               g_CursorMaxHeight = maxHeight;
-              resourceLoadResult = Resource_Load((word *)u_engine_mouse_dat_00416886);
+              resourceLoadResult = Resource_Load((uint16_t *)u_engine_mouse_dat_00416886);
               cursorDataOrError = (GraphicsTextureSourceAsset *)resourceLoadResult.eax;
               if (!resourceLoadResult.carry) {
                 remainingFrames = resourceLoadResult.ecx >> 5;
@@ -201,7 +201,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
                 }
                 /* EAX on success is the Caps Lock GetKeyState result */
-                successResult.valueOrError = (dword)(int)GetKeyState(0x14);
+                successResult.valueOrError = (uint32_t)(int)GetKeyState(0x14);
                 if ((successResult.valueOrError & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
                 }
@@ -211,7 +211,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
             }
             /* cursor asset load failed: its error code */
             failureResult.carry = true;
-            failureResult.valueOrError = (dword)cursorDataOrError;
+            failureResult.valueOrError = (uint32_t)cursorDataOrError;
             return failureResult;
           }
         }
@@ -221,7 +221,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
   cursorDataOrError = (GraphicsTextureSourceAsset *)0x25;
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)cursorDataOrError;
+  failureResult.valueOrError = (uint32_t)cursorDataOrError;
   return failureResult;
 }
 
@@ -322,19 +322,19 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_Shutdown(void)
 void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(void)
 
 {
-  dword wasBusyOrEventIndex;
-  dword clockValue;
+  uint32_t wasBusyOrEventIndex;
+  uint32_t clockValue;
   UiPointerWheelDelta wheelDelta;
   GraphicsCursorButtonState buttonState;
   TH_LEGACY_HRESULT directInputResult;
   GraphicsCursorEventType eventType;
-  dword clampedXPlusOne;
+  uint32_t clampedXPlusOne;
   int clampedXOrY;
-  uint nextWriteIndex;
-  dword clampedYPlusOne;
+  uint32_t nextWriteIndex;
+  uint32_t clampedYPlusOne;
   int unclampedY;
   GraphicsCursorInputEvent18 *eventRecord;
-  uint errorAttempts;
+  uint32_t errorAttempts;
   int processedCount;
   
   wasBusyOrEventIndex = g_MousePollBusy;
@@ -520,7 +520,7 @@ DirectInputMouse_DisplayModeHookCf
     }
   }
   previousHookResult.carry = true;
-  previousHookResult.eax = (dword)newCursorFramebuffer;
+  previousHookResult.eax = (uint32_t)newCursorFramebuffer;
   return previousHookResult;
 }
 
@@ -575,9 +575,9 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
 {
   KeyboardInputEvent *eventRecord;
   KeyboardEventRingIndex writeIndex;
-  dword queuedStateMask;
-  uint mappedCodeOrMask;
-  uint nextWriteIndex;
+  uint32_t queuedStateMask;
+  uint32_t mappedCodeOrMask;
+  uint32_t nextWriteIndex;
   
   queuedStateMask = g_KeyboardStateMask;
   writeIndex = g_KeyboardWriteIndex;
@@ -678,8 +678,8 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyDown(KeyboardVirtualKeyCo
 void __thandor_void_preserve_eax_ecx_edx Keyboard_OnKeyUp(KeyboardVirtualKeyCode virtualKey)
 
 {
-  uint mappedKeyStateCode;
-  uint mappedCodeOrToggleMask;
+  uint32_t mappedKeyStateCode;
+  uint32_t mappedCodeOrToggleMask;
   
   mappedKeyStateCode = 0x40001;
   if ((((((virtualKey == 0xa0) || (mappedKeyStateCode = 0x40003, virtualKey == 0x10)) ||
@@ -759,7 +759,7 @@ void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode chara
   KeyboardInputEvent *eventRecord;
   KeyboardEventRingIndex writeIndex;
   UiKeyboardEventCode keyCode;
-  uint nextWriteIndex;
+  uint32_t nextWriteIndex;
   
   writeIndex = g_KeyboardWriteIndex;
   eventRecord = g_KeyboardEvents + g_KeyboardWriteIndex;
@@ -785,7 +785,7 @@ void __thandor_void_preserve_eax_ecx Keyboard_OnChar(KeyboardCharacterCode chara
    domains were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
 */
-dword __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
+uint32_t __thandor_eax_preserve_ecx_edx Keyboard_ToUpperAscii(KeyboardCharacterCode asciiCodeUnit)
 
 {
   if ((0x60 < asciiCodeUnit) && (asciiCodeUnit < 0x7b)) {

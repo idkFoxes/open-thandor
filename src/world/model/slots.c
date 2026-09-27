@@ -56,7 +56,7 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  uint definitionField1;
+  uint32_t definitionField1;
   AssetRecordByteCount definitionField10;
   int initialTimingValue;
   ModelRuntimeNode *rootChild0Node;
@@ -76,12 +76,12 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   (modelRuntimeSlot->classState).classStateB0 = (rootChild0Node->modelPayload).localTranslationYQ12;
   (modelRuntimeSlot->classState).classStateB4 = grandchildLocalYQ12;
   definitionField10 = modelDefinition[0x10].byteSize;
-  initialTimingValue = (int)(((longlong)
-                 (int)(((longlong)(int)definitionField1 << 0xc) /
-                      (longlong)(int)definitionField10) * (longlong)(int)(modelDefinition[0x10].flags + definitionField10))
-               / (longlong)(int)definitionField10) -
-          (int)(((longlong)(int)definitionField10 * (longlong)(int)modelDefinition[2].byteSize) /
-               (longlong)(int)(definitionField1 << 2));
+  initialTimingValue = (int)(((int64_t)
+                 (int)(((int64_t)(int)definitionField1 << 0xc) /
+                      (int64_t)(int)definitionField10) * (int64_t)(int)(modelDefinition[0x10].flags + definitionField10))
+               / (int64_t)(int)definitionField10) -
+          (int)(((int64_t)(int)definitionField10 * (int64_t)(int)modelDefinition[2].byteSize) /
+               (int64_t)(int)(definitionField1 << 2));
   *(int *)modelRuntimeSlot->reserved10_37 = initialTimingValue;
   (modelRuntimeSlot->classState).classStateD0 = initialTimingValue;
   (modelRuntimeSlot->classState).enabledStateE8 = 0x7fffffff;
@@ -99,7 +99,7 @@ ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  dword *classStateFlags;
+  uint32_t *classStateFlags;
   ModelRuntimeNode *rootModelNode;
   Q12 rootWorldYQ12;
   
@@ -131,10 +131,10 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  dword *classCounterField;
+  uint32_t *classCounterField;
   ModelRuntimeArmyLinkOrState4 *armyLinkCounterField;
   ModelLookupPayloadEaxEcxEdxCf13 keyLookupResult;
-  dword *matchedClassCounterField;
+  uint32_t *matchedClassCounterField;
   ModelRuntimeArmyLinkOrState4 *class6CCounterField;
   ModelRuntimeNode *modelKeyLookupNode;
   ModelRuntimeNode *modelNode1;
@@ -298,7 +298,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  byte *factionMetricField;
+  uint8_t *factionMetricField;
   int factionRecordOffset;
   int metricRecordOffset;
   ArmyRuntimeSlot *armySlot1;
@@ -313,7 +313,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild3
   }
   modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
-  *(dword *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
+  *(uint32_t *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (3 < modelNode1->childCount)) && (modelNode1->childNodes[3] != (ModelRuntimeNode *)0x0)) {
     WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[3]);
@@ -335,7 +335,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntimeSlot)
 
 {
-  byte *factionMetricField;
+  uint8_t *factionMetricField;
   int factionRecordOffset;
   int metricRecordOffset;
   ArmyRuntimeSlot *armySlot1;
@@ -349,7 +349,7 @@ ModelRuntimeSlotClassInit_AccumulateFactionMetricAndDetachRootChild1
   }
   modelNode1 = (modelRuntimeSlot->rootModelNodeOrSavedOffset).modelNode;
   factionMetricField = g_GameFactionRuntimeImage.records[0].reserved78_87 + metricRecordOffset + -0x78;
-  *(dword *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
+  *(uint32_t *)factionMetricField = *(int *)factionMetricField + modelDefinition[0x10].flags;
   if ((((armySlot1->articulatedContact).fallbackPosition1Q12 != 0x6000000) &&
       (1 < modelNode1->childCount)) && (modelNode1->childNodes[1] != (ModelRuntimeNode *)0x0)) {
     WorldRuntime_UnlinkNodeFromOwnerListD8((WorldOwnerListNode100 *)modelNode1->childNodes[1]);
@@ -479,7 +479,7 @@ ModelRuntimeSlotClassInit_ClearExtendedStateAndEnableRootAnimation
 
 {
   int stateDwordsRemaining;
-  dword *stateClearCursor;
+  uint32_t *stateClearCursor;
   ModelRuntimeNode *rootModelNode;
   AssetRecordByteCount primaryAnimatedSubresourceIndex;
   

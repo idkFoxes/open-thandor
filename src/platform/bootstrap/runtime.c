@@ -27,16 +27,16 @@ void __cdecl ProcessEntry(void)
   HINSTANCE windowInstance;
   int screenHeight;
   int screenWidth;
-  dword networkResult;
-  dword bitsPerPixel;
-  dword adapterIndex;
+  uint32_t networkResult;
+  uint32_t bitsPerPixel;
+  uint32_t adapterIndex;
   StatusValueEaxCf5 statusResult;
   StatusValueEaxCf5 soundResult;
   FatalErrorEaxCf5 fatalResult;
   DisplayModeEaxCf5 displayModeResult;
   CommandLineFindOptionEbxCf5 soundOption;
-  dword displayWidth;
-  dword displayHeight;
+  uint32_t displayWidth;
+  uint32_t displayHeight;
 
   g_hInstance = GetModuleHandleA(NULL);
   processOrThreadHandle = GetCurrentProcess();
@@ -123,11 +123,11 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
   FactionCapabilityFlags *capabilityFlagsSlot;
   void *memory;
   int remainingCount;
-  uint relationStatePattern;
-  uint factionBit;
+  uint32_t relationStatePattern;
+  uint32_t factionBit;
   GameFactionRuntimeImage *factionRecordCursor;
-  dword *dwordCursor;
-  dword *statTableCursor;
+  uint32_t *dwordCursor;
+  uint32_t *statTableCursor;
   ArenaAllocEaxCf5 allocResult;
   StatusValueEaxCf5 status;
   
@@ -177,7 +177,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
     UNLOCK();
     g_GameStatTableImage = (void *)allocResult.eax;
     (*g_MemoryApi.free)(memory);
-    statTableCursor = (dword *)allocResult.eax;
+    statTableCursor = (uint32_t *)allocResult.eax;
     for (remainingCount = 0xe000; remainingCount != 0; remainingCount = remainingCount + -1) {
       *statTableCursor = 0;
       statTableCursor = statTableCursor + 1;
@@ -206,10 +206,10 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
 
 {
   void *memory;
-  dword *oldUnitBufferOrCursor;
+  uint32_t *oldUnitBufferOrCursor;
   int remainingCount;
-  dword *sourceCursor;
-  dword *destinationCursor;
+  uint32_t *sourceCursor;
+  uint32_t *destinationCursor;
   StatusValueEaxCf5 loadStatus;
   PackageLoadEntryEaxCf5 packageEntry;
   
@@ -220,16 +220,16 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
     oldUnitBufferOrCursor = oldUnitBufferOrCursor + 1;
   }
   loadStatus = Package_LoadEntryIntoBuffer
-                    (0x3a20,(byte *)&g_GameFactionRuntimeImage,(word *)u_daten_hex_0050e054);
+                    (0x3a20,(uint8_t *)&g_GameFactionRuntimeImage,(uint16_t *)u_daten_hex_0050e054);
   if (!loadStatus.carry) {
-    packageEntry = Package_LoadEntry((word *)u_stat_hex_0050e082);
+    packageEntry = Package_LoadEntry((uint16_t *)u_stat_hex_0050e082);
     memory = g_GameStatTableImage;
     if (!packageEntry.carry) {
       LOCK();
       UNLOCK();
       g_GameStatTableImage = packageEntry.bufferOrError;
       (*g_MemoryApi.free)(memory);
-      packageEntry = Package_LoadEntry((word *)u_oldunit_hex_0050e094);
+      packageEntry = Package_LoadEntry((uint16_t *)u_oldunit_hex_0050e094);
       oldUnitBufferOrCursor = packageEntry.bufferOrError;
       if (packageEntry.carry) {
         oldUnitBufferOrCursor = g_OldUnitPrimaryTable;
@@ -278,12 +278,12 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
 
 {
   FARPROC resolvedProcedure;
-  dword modulesRemaining;
+  uint32_t modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
   DynApiResolveEaxCf5 successResult;
   DynApiResolveEaxCf5 failureResult;
   
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)procedureName);
+  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != (FARPROC)0x0) {
     *destination = resolvedProcedure;
@@ -297,7 +297,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   for (; modulesRemaining != 0; modulesRemaining = modulesRemaining - 1) {
     if (module == moduleEntryCursor->module) {
       /* name the module in the error detail */
-      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)moduleEntryCursor->name);
+      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
       break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
@@ -320,9 +320,9 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
   HINSTANCE loadedModule;
   DynDllLoadEaxCf5 successResult;
   DynDllLoadEaxCf5 failureResult;
-  dword moduleSlotIndex;
+  uint32_t moduleSlotIndex;
   
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
+  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
   if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) && (g_DynamicModuleCount < 0x10))
   {
     loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(moduleName);
@@ -347,10 +347,10 @@ DynDllLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
    Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
 */
-dword DynDLL_Unload(char *moduleName)
+uint32_t DynDLL_Unload(char *moduleName)
 
 {
-  dword modulesRemainingOrResult;
+  uint32_t modulesRemainingOrResult;
   DynamicModuleEntry *moduleEntryCursor;
   
   moduleEntryCursor = g_DynamicModules;
@@ -366,7 +366,7 @@ dword DynDLL_Unload(char *moduleName)
     moduleEntryCursor = moduleEntryCursor + 1;
   }
   /* module not loaded, or FreeLibrary failed */
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
+  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
   return 0xf;
 }
 
@@ -380,7 +380,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
 
 {
   void *resolvedProcedure;
-  dword remainingCount;
+  uint32_t remainingCount;
   DynamicApiBinding *bindingCursor;
   StatusValueEaxCf5 failureResult;
   StatusValueEaxCf5 successResult;
@@ -389,7 +389,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
   remainingCount = g_DynamicModuleCount;
   for (; remainingCount != 0; remainingCount = remainingCount - 1) {
     if (destination == bindingCursor->destination) {
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)destination);
+      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)destination);
       /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
          (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
          into the matching binding (MOV [ESI],EDX after POP ESI). The function is unreferenced. */
@@ -418,7 +418,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
 void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 
 {
-  dword modulesRemaining;
+  uint32_t modulesRemaining;
   DynamicModuleEntry *moduleEntryCursor;
   HINSTANCE loadedModule;
   
@@ -447,7 +447,7 @@ void __thandor_void_preserve_eax_ecx_edx DynDLL_UnloadAll(void)
 LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM wParam,LPARAM lParam)
 
 {
-  ushort keyState;
+  uint16_t keyState;
   HANDLE currentProcess;
   LRESULT defaultResult;
   
@@ -523,13 +523,13 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
    Purpose: Executes CPUID leaf 1, sets g_CpuFeatureFlags bit 0 when EDX bit 23 reports MMX support, and returns
    constant 5.
 */
-dword __cdecl CPU_DetectFeatures(void)
+uint32_t __cdecl CPU_DetectFeatures(void)
 
 {
   int cpuidVersionInfo;
   
   cpuidVersionInfo = cpuid_Version_info(1);
-  if ((*(uint *)(cpuidVersionInfo + 8) & 0x800000) != 0) {
+  if ((*(uint32_t *)(cpuidVersionInfo + 8) & 0x800000) != 0) {
     g_CpuFeatureFlags = g_CpuFeatureFlags | 1;
   }
   return 5;
@@ -547,10 +547,10 @@ void __cdecl Game_Run(void)
 
 {
   StatusValueEaxCf5 renderingInitResult;
-  dword loadResultOrWidth;
-  dword displayHeight;
-  dword bitDepth;
-  dword adapterIndex;
+  uint32_t loadResultOrWidth;
+  uint32_t displayHeight;
+  uint32_t bitDepth;
+  uint32_t adapterIndex;
   bool dispatchCarry;
   GraphicsCursorFrameEaxCf5 cursorFrameResult;
   FatalErrorEaxCf5 fatalResult;
@@ -634,21 +634,21 @@ StatusValueEaxCf5 __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
    [core/text/path], Package_Mount [assets/package/runtime], LevelPackage_ValidateAndMount
    [assets/package/runtime], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
-dword __cdecl Game_LoadCoreAssets(void)
+uint32_t __cdecl Game_LoadCoreAssets(void)
 
 {
   wchar_t screenshotTensDigit;
   int statusOrCount;
   SoundSampleAsset *loadedResource;
   FncModuleHeader *module;
-  word *textBuffer;
-  dword settingsOrBufferBase;
+  uint16_t *textBuffer;
+  uint32_t settingsOrBufferBase;
   AudioMixerGainQ15 uiSoundGain;
   MovieAudioGainQ15 movieGain;
   MovieAudioGainQ15 alternateMovieGain;
   float *splineBuffer;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
-  byte *scratchCursor;
+  uint8_t *scratchCursor;
   TextResourceId resourceId;
   FrontendPlayerRuntimeRecord **playerRuntimePointerTableWriteCursor;
   StatusValueEaxCf5 status;
@@ -672,10 +672,10 @@ dword __cdecl Game_LoadCoreAssets(void)
                        &g_InstallRegistryValueDataCapacityBytes);
     if ((statusOrCount == 0) && (g_InstallRegistryValueType == 1)) {
       Text_CopyNarrowToUtf16Cf
-                (0x200,(word *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
+                (0x200,(uint16_t *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
       WidePath_CombineDirectoryAndLeaf
-                (g_LooseMoviePathPrefix.codeUnits,(word *)u_Thandor_00572e10,
-                 (word *)&g_InstallDirectoryScratchUtf16);
+                (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,
+                 (uint16_t *)&g_InstallDirectoryScratchUtf16);
     }
     ((BootstrapRegCloseKeyProc)g_BootstrapApiBindings[7].destination)(g_InstallRegistryKeyHandle);
   }
@@ -684,14 +684,14 @@ dword __cdecl Game_LoadCoreAssets(void)
        flm folder of the game directory, so the CD is no longer needed. Movie_Open looks under
        g_LooseMoviePathPrefix before the packages, which only hold still-image stand-ins for
        these movies; point the prefix at the game directory when that folder exists. */
-    static const word flmLeaf[4] = {'f','l','m',0};
-    static word localFlmPath[0x100];
+    static const uint16_t flmLeaf[4] = {'f','l','m',0};
+    static uint16_t localFlmPath[0x100];
     char narrow[0x100];
     int k;
     WidePath_CombineDirectoryAndLeaf
-              (localFlmPath,(word *)flmLeaf,(word *)&g_ExecutableDirectoryUtf16);
+              (localFlmPath,(uint16_t *)flmLeaf,(uint16_t *)&g_ExecutableDirectoryUtf16);
     if (Thandor_DirectoryExistsW(localFlmPath)) {
-      word *directory = (word *)&g_ExecutableDirectoryUtf16;
+      uint16_t *directory = (uint16_t *)&g_ExecutableDirectoryUtf16;
       for (k = 0; (k < 0xff) && (directory[k] != 0); k++) {
         g_LooseMoviePathPrefix.codeUnits[k] = directory[k];
       }
@@ -723,94 +723,94 @@ dword __cdecl Game_LoadCoreAssets(void)
     g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits =
          g_LevelArchivePathTemplateUtf16.decimalDigits.packedDigits + 0x9ffff;
   } while (0x2f < g_LevelArchivePathTemplateUtf16.decimalDigits.codeUnits[0]);
-  status = Package_Mount((word *)u_daten_pck_00572e56);
+  status = Package_Mount((uint16_t *)u_daten_pck_00572e56);
   if (!status.carry) {
     g_DataPackageHandle = status.valueOrError;
   }
-  status = Package_Mount((word *)u_modelle_pck_00572e6a);
+  status = Package_Mount((uint16_t *)u_modelle_pck_00572e6a);
   if (!status.carry) {
     g_ModelPackageHandle = status.valueOrError;
   }
-  status = Package_Mount((word *)u_graphik_pck_00572e82);
+  status = Package_Mount((uint16_t *)u_graphik_pck_00572e82);
   if (!status.carry) {
     g_GraphicsPackageHandle = status.valueOrError;
   }
-  status = Package_Mount((word *)u_sound_pck_00572e9a);
+  status = Package_Mount((uint16_t *)u_sound_pck_00572e9a);
   if (!status.carry) {
     g_SoundPackageHandle = status.valueOrError;
   }
-  status = Package_Mount((word *)u_filme_pck_00572eae);
+  status = Package_Mount((uint16_t *)u_filme_pck_00572eae);
   if (!status.carry) {
     g_MoviePackageHandle = status.valueOrError;
   }
-  status = Package_Mount((word *)u_level_pck_00572ec2);
+  status = Package_Mount((uint16_t *)u_level_pck_00572ec2);
   if (!status.carry) {
     g_LevelPackageHandle = status.valueOrError;
   }
-  resourceLoadResult = Resource_Load((word *)u_sound_button0_sam_00572f06);
+  resourceLoadResult = Resource_Load((uint16_t *)u_sound_button0_sam_00572f06);
   loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
   if (resourceLoadResult.carry) {
-    return (dword)loadedResource;
+    return (uint32_t)loadedResource;
   }
   voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
   module = (FncModuleHeader *)voiceSetResult.eax;
   if (!voiceSetResult.carry) {
     Resource_Release(loadedResource);
     g_UiButtonSoundVoiceSets7[0] = (DirectSoundVoiceSet *)module;
-    resourceLoadResult = Resource_Load((word *)u_sound_button1_sam_00572f2a);
+    resourceLoadResult = Resource_Load((uint16_t *)u_sound_button1_sam_00572f2a);
     loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
     if (resourceLoadResult.carry) {
-      return (dword)loadedResource;
+      return (uint32_t)loadedResource;
     }
     voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
     module = (FncModuleHeader *)voiceSetResult.eax;
     if (!voiceSetResult.carry) {
       Resource_Release(loadedResource);
       g_UiButtonSoundVoiceSets7[1] = (DirectSoundVoiceSet *)module;
-      resourceLoadResult = Resource_Load((word *)u_sound_button2_sam_00572f4e);
+      resourceLoadResult = Resource_Load((uint16_t *)u_sound_button2_sam_00572f4e);
       loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
       if (resourceLoadResult.carry) {
-        return (dword)loadedResource;
+        return (uint32_t)loadedResource;
       }
       voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
       module = (FncModuleHeader *)voiceSetResult.eax;
       if (!voiceSetResult.carry) {
         Resource_Release(loadedResource);
         g_UiButtonSoundVoiceSets7[2] = (DirectSoundVoiceSet *)module;
-        resourceLoadResult = Resource_Load((word *)u_sound_button3_sam_00572f72);
+        resourceLoadResult = Resource_Load((uint16_t *)u_sound_button3_sam_00572f72);
         loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
         if (resourceLoadResult.carry) {
-          return (dword)loadedResource;
+          return (uint32_t)loadedResource;
         }
         voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
         module = (FncModuleHeader *)voiceSetResult.eax;
         if (!voiceSetResult.carry) {
           Resource_Release(loadedResource);
           g_UiButtonSoundVoiceSets7[3] = (DirectSoundVoiceSet *)module;
-          resourceLoadResult = Resource_Load((word *)u_sound_button4_sam_00572f96);
+          resourceLoadResult = Resource_Load((uint16_t *)u_sound_button4_sam_00572f96);
           loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
           if (resourceLoadResult.carry) {
-            return (dword)loadedResource;
+            return (uint32_t)loadedResource;
           }
           voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
           module = (FncModuleHeader *)voiceSetResult.eax;
           if (!voiceSetResult.carry) {
             Resource_Release(loadedResource);
             g_UiButtonSoundVoiceSets7[4] = (DirectSoundVoiceSet *)module;
-            resourceLoadResult = Resource_Load((word *)u_sound_button5_sam_00572fba);
+            resourceLoadResult = Resource_Load((uint16_t *)u_sound_button5_sam_00572fba);
             loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
             if (resourceLoadResult.carry) {
-              return (dword)loadedResource;
+              return (uint32_t)loadedResource;
             }
             voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
             module = (FncModuleHeader *)voiceSetResult.eax;
             if (!voiceSetResult.carry) {
               Resource_Release(loadedResource);
               g_UiButtonSoundVoiceSets7[5] = (DirectSoundVoiceSet *)module;
-              resourceLoadResult = Resource_Load((word *)u_sound_button6_sam_00572fde);
+              resourceLoadResult = Resource_Load((uint16_t *)u_sound_button6_sam_00572fde);
               loadedResource = (SoundSampleAsset *)resourceLoadResult.eax;
               if (resourceLoadResult.carry) {
-                return (dword)loadedResource;
+                return (uint32_t)loadedResource;
               }
               voiceSetResult = (*g_SoundCreateSampleVoiceSet)(loadedResource);
               module = (FncModuleHeader *)voiceSetResult.eax;
@@ -819,16 +819,16 @@ dword __cdecl Game_LoadCoreAssets(void)
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 do {
                   do {
-                    openResult = (*g_FileSystemOpenCf)(0,(word *)(u_Dscreen00_pcx_00572e3a + 1));
+                    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
                     if (openResult.carry)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
                     (*g_FileSystemClose)((void *)openResult.eax);
                     screenshotTensDigit = u_Dscreen00_pcx_00572e3a[7];
-                  } while ((ushort)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
+                  } while ((uint16_t)u_Dscreen00_pcx_00572e3a[8] < 0x3a);
                   u_Dscreen00_pcx_00572e3a[7] = u_Dscreen00_pcx_00572e3a[7] + L'\x01';
                   u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\xfff6';
-                } while ((ushort)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
+                } while ((uint16_t)u_Dscreen00_pcx_00572e3a[7] < 0x3a);
                 u_Dscreen00_pcx_00572e3a[7] = screenshotTensDigit + L'\xfff7';
 Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 resourceId = 0x112;
@@ -873,35 +873,35 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                           (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
                 UiActionHandlers_SetPageCf
                           (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
-                textPageLoadResult = TextResourcePage_Load(0xff,(word *)u_texte_neterror_str_0050f104);
+                textPageLoadResult = TextResourcePage_Load(0xff,(uint16_t *)u_texte_neterror_str_0050f104);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x18,(word *)u_texte_help_str_00563170);
+                textPageLoadResult = TextResourcePage_Load(0x18,(uint16_t *)u_texte_help_str_00563170);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x20,(word *)u_texte_hilfe_str_00545b34);
+                textPageLoadResult = TextResourcePage_Load(0x20,(uint16_t *)u_texte_hilfe_str_00545b34);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x21,(word *)u_texte_menue_str_00545ba0);
+                textPageLoadResult = TextResourcePage_Load(0x21,(uint16_t *)u_texte_menue_str_00545ba0);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x30,(word *)u_texte_techno_str_0050dec4);
+                textPageLoadResult = TextResourcePage_Load(0x30,(uint16_t *)u_texte_techno_str_0050dec4);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x22,(word *)u_texte_level_str_00545bc0);
+                textPageLoadResult = TextResourcePage_Load(0x22,(uint16_t *)u_texte_level_str_00545bc0);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x23,(word *)u_texte_inhalt_str_00545be0);
+                textPageLoadResult = TextResourcePage_Load(0x23,(uint16_t *)u_texte_inhalt_str_00545be0);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
-                textPageLoadResult = TextResourcePage_Load(0x24,(word *)u_texte_tastatur_str_005631b8);
+                textPageLoadResult = TextResourcePage_Load(0x24,(uint16_t *)u_texte_tastatur_str_005631b8);
                 if (textPageLoadResult.carry) {
                   return textPageLoadResult.errorOrValue;
                 }
@@ -933,9 +933,9 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 if (status.carry) {
                   return status.valueOrError;
                 }
-                pcxModuleEntry = Package_LoadEntry((word *)u_engine_pcx_fnc_00573028);
+                pcxModuleEntry = Package_LoadEntry((uint16_t *)u_engine_pcx_fnc_00573028);
                 if (pcxModuleEntry.carry) {
-                  return (dword)pcxModuleEntry.bufferOrError;
+                  return (uint32_t)pcxModuleEntry.bufferOrError;
                 }
                 moduleLoadResult = FncModule_LoadAndRelocateCf(pcxModuleEntry.bufferOrError);
                 module = (FncModuleHeader *)moduleLoadResult.moduleBase;
@@ -953,26 +953,26 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       /* EDX still holds the engine\pcx.fnc package buffer. */
                       Resource_Release((SoundSampleAsset *)pcxModuleEntry.bufferOrError);
                       panelTextureResult = (*g_GraphicsTextureSourceLoadPackageAsset)
-                                         ((word *)u_gfx_panel_stat_gfx_00573002);
+                                         ((uint16_t *)u_gfx_panel_stat_gfx_00573002);
                       if (panelTextureResult.carry) {
-                        return (dword)panelTextureResult.eax;
+                        return (uint32_t)panelTextureResult.eax;
                       }
                       g_InGameStatusPanelTextureSource = panelTextureResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x800);
                       if (allocResult.carry) {
-                        return (dword)(RecentTextHistorySlot *)allocResult.eax;
+                        return (uint32_t)(RecentTextHistorySlot *)allocResult.eax;
                       }
                       g_RecentTextSlotStorage = (RecentTextHistorySlot *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x100);
                       if (allocResult.carry) {
-                        return (dword)(dword *)allocResult.eax;
+                        return (uint32_t)(uint32_t *)allocResult.eax;
                       }
-                      g_OldUnitSecondaryTable = (dword *)allocResult.eax;
+                      g_OldUnitSecondaryTable = (uint32_t *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x4000);
                       if (allocResult.carry) {
-                        return (dword)(dword *)allocResult.eax;
+                        return (uint32_t)(uint32_t *)allocResult.eax;
                       }
-                      g_OldUnitPrimaryTable = (dword *)allocResult.eax;
+                      g_OldUnitPrimaryTable = (uint32_t *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x400);
                       settingsOrBufferBase = allocResult.eax;
                       if (allocResult.carry) {
@@ -988,36 +988,36 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_FrontendPlayerListRows = settingsOrBufferBase;
                       allocResult = (*g_MemoryApi.alloc)(0x800);
                       if (allocResult.carry) {
-                        return (dword)(RomRegistrySlot *)allocResult.eax;
+                        return (uint32_t)(RomRegistrySlot *)allocResult.eax;
                       }
                       g_RomRegistrySlots = (RomRegistrySlot *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x80);
                       if (allocResult.carry) {
-                        return (dword)(FrontendSessionDiscoveryRecordB0 **)allocResult.eax;
+                        return (uint32_t)(FrontendSessionDiscoveryRecordB0 **)allocResult.eax;
                       }
                       g_FrontendSessionListRows = (FrontendSessionDiscoveryRecordB0 **)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x1600);
                       if (allocResult.carry) {
-                        return (dword)(FrontendSessionDiscoveryRecordB0 *)allocResult.eax;
+                        return (uint32_t)(FrontendSessionDiscoveryRecordB0 *)allocResult.eax;
                       }
                       g_FrontendSessionDiscoveryRecords =
                            (FrontendSessionDiscoveryRecordB0 *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x2000);
-                      textBuffer = (word *)allocResult.eax;
+                      textBuffer = (uint16_t *)allocResult.eax;
                       if (allocResult.carry) {
-                        return (dword)textBuffer;
+                        return (uint32_t)textBuffer;
                       }
                       g_InGameFactionStatusTextScratchUtf16 = textBuffer;
                       g_InGameFactionStatusTextScratchUtf16Mirror = textBuffer;
                       allocResult = (*g_MemoryApi.alloc)(0x160);
                       if (allocResult.carry) {
-                        return (dword)(word *)allocResult.eax;
+                        return (uint32_t)(uint16_t *)allocResult.eax;
                       }
-                      g_InGamePlayerListTextScratchUtf16 = (word *)allocResult.eax;
+                      g_InGamePlayerListTextScratchUtf16 = (uint16_t *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x6000);
                       splineBuffer = (float *)allocResult.eax;
                       if (allocResult.carry) {
-                        return (dword)splineBuffer;
+                        return (uint32_t)splineBuffer;
                       }
                       g_WorldMotionSplineMatrixWorkspaces[1] = splineBuffer + 0x400;
                       g_WorldMotionSplineMatrixWorkspaces[2] = splineBuffer + 0x800;
@@ -1028,7 +1028,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       allocResult = (*g_MemoryApi.alloc)(0x300);
                       splineBuffer = (float *)allocResult.eax;
                       if (allocResult.carry) {
-                        return (dword)splineBuffer;
+                        return (uint32_t)splineBuffer;
                       }
                       g_WorldMotionSplineCoefficientTables[1] = splineBuffer + 0x20;
                       g_WorldMotionSplineCoefficientTables[2] = splineBuffer + 0x40;
@@ -1038,7 +1038,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       g_WorldMotionSplineCoefficientTables[0] = splineBuffer;
                       allocResult = (*g_MemoryApi.alloc)(0x408c0);
                       if (allocResult.carry) {
-                        return (dword)(SelectionPlayerRuntimeBlock *)allocResult.eax;
+                        return (uint32_t)(SelectionPlayerRuntimeBlock *)allocResult.eax;
                       }
                       g_SelectionPlayerBlocks = (SelectionPlayerRuntimeBlock *)allocResult.eax;
                       allocResult = (*g_MemoryApi.alloc)(0x1300);
@@ -1059,7 +1059,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                       allocResult = (*g_MemoryApi.alloc)(0x9d80);
                       playerRecordCursor = (FrontendPlayerRuntimeRecord *)allocResult.eax;
                       if (allocResult.carry) {
-                        return (dword)playerRecordCursor;
+                        return (uint32_t)playerRecordCursor;
                       }
                       playerRuntimePointerTableWriteCursor =
                            g_FrontendPlayerRuntimeRecordPointers32;
@@ -1080,9 +1080,9 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                         statusOrCount = statusOrCount + -1;
                       } while (statusOrCount != 0);
                       allocResult = (*g_MemoryApi.alloc)(0xe00);
-                      scratchCursor = (byte *)allocResult.eax;
+                      scratchCursor = (uint8_t *)allocResult.eax;
                       if (allocResult.carry) {
-                        return (dword)scratchCursor;
+                        return (uint32_t)scratchCursor;
                       }
                       g_CoreAssetScratchSlice1 = scratchCursor + 0x200;
                       g_CoreAssetScratchSlice2 = scratchCursor + 0x400;
@@ -1110,7 +1110,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
     }
   }
   Resource_Release(loadedResource);
-  return (dword)module;
+  return (uint32_t)module;
 }
 
 
@@ -1121,7 +1121,7 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
    The name and frame counter are drawn top left. OPEN_THANDOR_MOVIE_STRETCH=1 draws full screen
    with the end-movie bilinear stretch. The process exits after the last movie. */
 
-static const byte g_DebugFont5x7[][8] = {
+static const uint8_t g_DebugFont5x7[][8] = {
   /* char, 7 rows of 5 bits */
   {' ',0x00,0x00,0x00,0x00,0x00,0x00,0x00},{'.',0x00,0x00,0x00,0x00,0x00,0x0c,0x0c},
   {'/',0x01,0x02,0x02,0x04,0x08,0x08,0x10},{':',0x00,0x0c,0x0c,0x00,0x0c,0x0c,0x00},
@@ -1150,14 +1150,14 @@ static const byte g_DebugFont5x7[][8] = {
    [2] bytes per pixel, [3] pixels. */
 static void DebugMovie_DrawText(int x0, int y0, const char *text)
 {
-  dword *fb = (dword *)g_FramebufferAccess;
+  uint32_t *fb = (uint32_t *)g_FramebufferAccess;
   int scale = 1;
   int length = (int)strlen(text);
   int boxWidth = length * 6 * scale + 2 * scale;
   int boxHeight = 9 * scale;
-  dword pitch;
-  dword bpp;
-  byte *pixels;
+  uint32_t pitch;
+  uint32_t bpp;
+  uint8_t *pixels;
   int x;
   int y;
   int c;
@@ -1166,15 +1166,15 @@ static void DebugMovie_DrawText(int x0, int y0, const char *text)
   }
   pitch = fb[0];
   bpp = fb[2];
-  pixels = (byte *)(uintptr_t)fb[3];
+  pixels = (uint8_t *)(uintptr_t)fb[3];
   if ((pixels == NULL) || ((bpp != 4) && (bpp != 2))) {
     return;
   }
   if (x0 + boxWidth > (int)g_FramebufferWidth) boxWidth = (int)g_FramebufferWidth - x0;
 #define DEBUG_PUT(px, py, white)                                                          \
   do {                                                                                    \
-    if (bpp == 4) ((dword *)pixels)[(py) * pitch + (px)] = (white) ? 0xffffff40 : 0xff000000; \
-    else ((word *)pixels)[(py) * pitch + (px)] = (white) ? 0xffe8 : 0;                    \
+    if (bpp == 4) ((uint32_t *)pixels)[(py) * pitch + (px)] = (white) ? 0xffffff40 : 0xff000000; \
+    else ((uint16_t *)pixels)[(py) * pitch + (px)] = (white) ? 0xffe8 : 0;                    \
   } while (0)
   for (y = 0; y < boxHeight; y++) {
     for (x = 0; x < boxWidth; x++) {
@@ -1183,11 +1183,11 @@ static void DebugMovie_DrawText(int x0, int y0, const char *text)
   }
   for (c = 0; c < length; c++) {
     char ch = text[c];
-    const byte *glyph = NULL;
+    const uint8_t *glyph = NULL;
     unsigned g;
     if ((ch >= 'A') && (ch <= 'Z')) ch = (char)(ch - 'A' + 'a');
     for (g = 0; g < sizeof g_DebugFont5x7 / sizeof g_DebugFont5x7[0]; g++) {
-      if (g_DebugFont5x7[g][0] == (byte)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
+      if (g_DebugFont5x7[g][0] == (uint8_t)ch) { glyph = g_DebugFont5x7[g] + 1; break; }
     }
     if (glyph == NULL) continue;
     for (y = 0; y < 7 * scale; y++) {
@@ -1217,7 +1217,7 @@ static void DebugMovie_ClearScreen(void)
 /* Plays one movie; returns after the end, 10 seconds, or a key/click. */
 static void DebugMovie_PlayOne(const char *name, int index, int count, int stretch)
 {
-  word path[0x40];
+  uint16_t path[0x40];
   char label[0x80];
   int n = 0;
   int i;
@@ -1225,7 +1225,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   MovieOpenEaxCf5 opened;
   MovieAdvanceFrameEaxCf5 frame;
   path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm'; path[n++] = '\\';
-  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (word)name[i];
+  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (uint16_t)name[i];
   path[n++] = '.'; path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm';
   path[n] = 0;
   DebugMovie_ClearScreen();
@@ -1281,7 +1281,7 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
       }
       else {
         MovieFrameDimensionsEdxEax8 size = Movie_GetFrameDimensions();
-        dword height = g_FramebufferHeight;
+        uint32_t height = g_FramebufferHeight;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
                   (g_FramebufferHeight,g_FramebufferWidth,0,0,
                    ((int)((height - (height >> 2)) - (int)(size >> 0x20)) >> 1) + (height >> 3),
@@ -1348,9 +1348,9 @@ static void DebugMovie_Run(const char *which)
 bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
 
 {
-  dword frameHeightSnapshot;
-  dword playbackRateHz;
-  uint quarterFrameHeight;
+  uint32_t frameHeightSnapshot;
+  uint32_t playbackRateHz;
+  uint32_t quarterFrameHeight;
   int frameAdvanceBudget;
   bool accessFailed;
   MovieFrameDimensionsEdxEax8 frameDimensions;
@@ -1386,7 +1386,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
   noIntroOption = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
   if (noIntroOption.carry) {
     while( true ) {
-      openResult = Movie_Open(1,(word *)u_flm_intro0_flm_00573046);
+      openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046);
       if (openResult.carry) break;
       firstFrameResult = Movie_AdvanceFrame();
       if (firstFrameResult.carry) {
@@ -1456,20 +1456,20 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
   StatusValueEaxCf5 procedureMissingResult;
   void **lpProcName;
   char *moduleName;
-  dword moduleSlotIndex;
+  uint32_t moduleSlotIndex;
   
   bindingCursor = g_BootstrapApiBindings;
   do {
     if (bindingCursor->destination == (void **)0x0) {
       successResult.carry = false;
-      successResult.valueOrError = (dword)resolvedProcedure;
+      successResult.valueOrError = (uint32_t)resolvedProcedure;
       return successResult;
     }
     lpProcName = bindingCursor->destination;
     hModule = GetModuleHandleA(bindingCursor->moduleName);
     if (hModule == (HMODULE)0x0) {
       if (bindingCursor->destination == (void **)dynapi_9) {
-        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         moduleUnavailableResult.carry = true;
         moduleUnavailableResult.valueOrError = 0xf;
         return moduleUnavailableResult;
@@ -1478,7 +1478,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
                 ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (hModule == (HINSTANCE)0x0) {
-        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         loadFailedResult.carry = true;
         loadFailedResult.valueOrError = 0x11;
         return loadFailedResult;
@@ -1491,8 +1491,8 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
     }
     resolvedProcedure = (void **)GetProcAddress(hModule,(LPCSTR)lpProcName);
     if (resolvedProcedure == (void **)0x0) {
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->destination);
-      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)bindingCursor->moduleName);
+      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
+      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
       procedureMissingResult.carry = true;
       procedureMissingResult.valueOrError = 0x10;
       return procedureMissingResult;
@@ -1514,7 +1514,7 @@ CommandLineFindOptionEbxCf5 __thandor_ebx_cf_preserve_eax_ecx_edx
 CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 
 {
-  dword compareBytesRemaining;
+  uint32_t compareBytesRemaining;
   int optionBufferCapacityRemaining;
   char *compareOrScanCursor;
   char *optionBufferCursor;
@@ -1528,7 +1528,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
   do {
     if (*optionBufferCursor == '\0') {
       notFoundResult.carry = true;
-      notFoundResult.ebx = (byte *)0; /* EBX not written; all callers read it only with CF clear */
+      notFoundResult.ebx = (uint8_t *)0; /* EBX not written; all callers read it only with CF clear */
       return notFoundResult;
     }
     comparedBytesEqual = false;
@@ -1544,7 +1544,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
     } while (comparedBytesEqual);
     if (comparedBytesEqual) {
       foundResult.carry = false;
-      foundResult.ebx = (byte *)optionBufferCursor;
+      foundResult.ebx = (uint8_t *)optionBufferCursor;
       return foundResult;
     }
     optionBufferCapacityRemaining = (int)sz_MainWindowTitle - (int)optionBufferCursor;
@@ -1572,17 +1572,17 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
 
 {
-  byte *commandLineNext;
+  uint8_t *commandLineNext;
   CommandLineArgumentMirrorState500 *pathWriteNext;
-  byte currentChar;
-  byte *commandLineCursor;
+  uint8_t currentChar;
+  uint8_t *commandLineCursor;
   char *textWriteCursor;
   char *optionWriteNext;
   CommandLineArgumentMirrorState500 *pathWriteCursor;
   char *argumentWriteCursor;
   
   g_CommandLineFindOption = CommandLine_FindOption;
-  commandLineCursor = (byte *)GetCommandLineA();
+  commandLineCursor = (uint8_t *)GetCommandLineA();
   pathWriteNext = &g_CommandLine;
   if (*commandLineCursor == 0x22) {
     commandLineCursor = commandLineCursor + 1;
@@ -1720,11 +1720,11 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
   }
 CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
   Text_CopyNarrowToUtf16Cf
-            (0x200,g_CommandLineWideArguments.argument1,(byte *)g_CommandLine.argument1);
+            (0x200,g_CommandLineWideArguments.argument1,(uint8_t *)g_CommandLine.argument1);
   Text_CopyNarrowToUtf16Cf
-            (0x200,g_CommandLineWideArguments.argument2,(byte *)g_CommandLine.argument2);
+            (0x200,g_CommandLineWideArguments.argument2,(uint8_t *)g_CommandLine.argument2);
   Text_CopyNarrowToUtf16Cf
-            (0x200,g_CommandLineWideArguments.argument3,(byte *)g_CommandLine.argument3);
+            (0x200,g_CommandLineWideArguments.argument3,(uint8_t *)g_CommandLine.argument3);
   return;
 }
 

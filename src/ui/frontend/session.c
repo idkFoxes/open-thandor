@@ -21,8 +21,8 @@
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReleaseSelectedResourceAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,dword argument2,dword argument3,
-          dword argument4)
+          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
+          uint32_t argument4)
 
 {
   Resource_Release(g_FrontendLoadedCampaignAsset);
@@ -147,7 +147,7 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
 
 {
   UiNodeBase *parentNode;
-  dword seed;
+  uint32_t seed;
   int recordsRemaining;
   FrontendPlayerRuntimeRecord *playerRecordCursor;
   
@@ -190,7 +190,7 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_SetGameSpeedPercent
-          (dword argument1,dword argument2,dword argument3,GameSpeedPercent gameSpeedPercent)
+          (uint32_t argument1,uint32_t argument2,uint32_t argument3,GameSpeedPercent gameSpeedPercent)
 
 {
   FRONTEND_UI_FIELD(g_FrontendRootNode,gameSpeedSlider,0x58,GameSpeedPercent) = gameSpeedPercent;
@@ -209,8 +209,8 @@ void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(FrontendU
 {
   UiPageStack_SetActiveIndex(9,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
   }
   return;
 }
@@ -240,8 +240,8 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
   frontendUi = (FrontendUiImage *)THANDOR_UI_AT(source,-0x5784);
   UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
   if ((int)g_FramebufferWidth < 0x281) {
-    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) =
-         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,sdword) | 0x2000;
+    FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) =
+         FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,int32_t) | 0x2000;
   }
   UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
@@ -284,8 +284,8 @@ FrontendSessionList_DecrementExpiryAndCompactRows
   int dwordsRemaining;
   void **rowSlotCursor;
   FrontendSessionDiscoveryRecordB0 **rowPointerCursor;
-  dword *sourceDwordCursor;
-  dword *destinationDwordCursor;
+  uint32_t *sourceDwordCursor;
+  uint32_t *destinationDwordCursor;
   
   rowSlotCursor = (frontendRuntime->sessionDiscoveryList).rowSlots;
   sourceRecord = g_FrontendSessionDiscoveryRecords;
@@ -294,9 +294,9 @@ FrontendSessionList_DecrementExpiryAndCompactRows
   for (rowsRemaining = (frontendRuntime->sessionDiscoveryList).rowCount; rowsRemaining != 0; rowsRemaining = rowsRemaining - 1) {
     expiryTicks = &(sourceRecord->advertisement).payloadByteCount;
     *expiryTicks = *expiryTicks - 1;
-    destinationDwordCursor = (dword *)destinationRecord;
+    destinationDwordCursor = (uint32_t *)destinationRecord;
     if (*expiryTicks == 0) {
-      sourceDwordCursor = (dword *)(sourceRecord + 1);
+      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
       rowCountField = &(frontendRuntime->sessionDiscoveryList).rowCount;
       *rowCountField = *rowCountField - 1;
       currentSelectedSlot = (frontendRuntime->sessionDiscoveryList).selectedRowSlot;
@@ -310,13 +310,13 @@ FrontendSessionList_DecrementExpiryAndCompactRows
       }
     }
     else {
-      sourceDwordCursor = (dword *)(sourceRecord + 1);
+      sourceDwordCursor = (uint32_t *)(sourceRecord + 1);
       *rowPointerCursor = destinationRecord;
-      destinationDwordCursor = (dword *)(destinationRecord + 1);
+      destinationDwordCursor = (uint32_t *)(destinationRecord + 1);
       rowPointerCursor = rowPointerCursor + 1;
       if (destinationDwordCursor != sourceDwordCursor) {
-        sourceDwordCursor = (dword *)sourceRecord;
-        destinationDwordCursor = (dword *)destinationRecord;
+        sourceDwordCursor = (uint32_t *)sourceRecord;
+        destinationDwordCursor = (uint32_t *)destinationRecord;
         for (dwordsRemaining = 0x2c; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
           *destinationDwordCursor = *sourceDwordCursor;
           sourceDwordCursor = sourceDwordCursor + 1;
@@ -598,17 +598,17 @@ void __thandor_void_preserve_eax_ecx FrontendHostSession_TickShutdownOrReadyCons
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ApplyGameSpeedAndReturnToMainPage
-          (FrontendReturnCallbackContext32 callbackContext,dword argument2,dword argument3,
+          (FrontendReturnCallbackContext32 callbackContext,uint32_t argument2,uint32_t argument3,
           FrontendStatusCode stateCode)
 
 {
-  uint *runtimeFlags;
+  uint32_t *runtimeFlags;
   int frontendRootAddress;
   
   frontendRootAddress = g_FrontendRootNode;
   Movie_Close();
   g_GameFactionRuntimeImage.tail.gameSpeedQ8 =
-       (uint)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 0x10;
+       (uint32_t)(FRONTEND_UI_FIELD(frontendRootAddress,gameSpeedSlider,0x58,int) * 0x28f5c) >> 0x10;
   runtimeFlags = &((UiImageActionControl *)FRONTEND_UI(frontendRootAddress,briefingImage))->displayFlags;
   *runtimeFlags = *runtimeFlags | 8;
   FrontendSession_ReturnToMainPage(callbackContext,0,0,stateCode);
@@ -628,15 +628,15 @@ FrontendSession_ApplyGameSpeedAndReturnToMainPage
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendSession_ReturnToMainPage
-          (dword callbackContext,dword argument2,dword argument3,FrontendStatusCode stateCode)
+          (uint32_t callbackContext,uint32_t argument2,uint32_t argument3,FrontendStatusCode stateCode)
 
 {
   int frontendRootAddress;
   
   frontendRootAddress = g_FrontendRootNode;
   UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack));
-  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint) =
-       FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint) & 0xffffdfff;
+  FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) =
+       FRONTEND_UI_FIELD(frontendRootAddress,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
   FrontendState_DispatchCode(stateCode);
   return;
 }

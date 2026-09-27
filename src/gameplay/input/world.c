@@ -126,15 +126,15 @@ InGameTargetingContext_AdvanceOrResolveTarget
    SelectionInfo_CollectAttachmentEffectVariantMask [gameplay/selection/runtime], SelectionInfo_HasAnyEntryCf
    [gameplay/selection/runtime].
 */
-dword InGameWorldInput_ResolveContextActionAndCursorCf
+uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
                 (InGamePointerCallbackValue0 pointerValue0,InGamePointerCallbackValue1 pointerValue1
                 ,InGamePointerCallbackValue2 pointerValue2,InGamePointerCallbackValue3 pointerValue3
                 ,WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
-  dword cursorOrVariantMask;
+  uint32_t cursorOrVariantMask;
   int ownerIndex;
-  uint modifierModeMask;
+  uint32_t modifierModeMask;
   GameEntityRuntime *entry;
   bool testResult;
   bool classifySelectedState;
@@ -182,7 +182,7 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
          (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
         ((int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
        (testResult = GameFactionRuntime_TestCapabilityBitClearCf
-                          (*(dword *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
+                          (*(uint32_t *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
                            ownerIndex), !testResult)) {
       g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | 1;
       return 0x15;
@@ -321,7 +321,7 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldInput_BeginPointerCaptureCf
-          (InGamePointerCallbackValue0 pointerValue0,dword pointerValue1,dword pointerValue2,
+          (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
           InGamePointerCallbackValue3 pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
 
@@ -350,7 +350,7 @@ InGameWorldInput_BeginPointerCaptureCf
               (payloadEntityAddress = *(int *)((int)candidateNode->runtimePayload + 8),
               (int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
              (testResult = GameFactionRuntime_TestCapabilityBitClearCf
-                                (*(dword *)(payloadEntityAddress + 0xc),ownerIndex), !testResult)) {
+                                (*(uint32_t *)(payloadEntityAddress + 0xc),ownerIndex), !testResult)) {
             modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
@@ -362,17 +362,17 @@ InGameWorldInput_BeginPointerCaptureCf
             return;
           }
           g_InGameCommandPointerCaptureX =
-               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 4);
           g_InGameCommandPointerCaptureY =
-               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 8);
           g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80;
         }
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 4);
         g_InGamePlacementPointerCaptureY =
-             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 8);
       }
     }
     else {
@@ -399,16 +399,16 @@ InGameWorldInput_BeginPointerCaptureCf
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldInput_UpdateDragSelectionAndCameraCf
-          (InGamePointerCallbackValue0 pointerValue0,dword pointerValue1,dword pointerValue2,
-          dword pointerValue3,WorldOwnerListNode100 *candidateNode,
+          (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
+          uint32_t pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
 
 {
-  uint deltaXOrTripletCount;
+  uint32_t deltaXOrTripletCount;
   int countOrOwnerOrDelta;
-  uint deltaY;
+  uint32_t deltaY;
   InGameCommandPayloadTripletValue32 payloadValue;
-  dword *clearCursor;
+  uint32_t *clearCursor;
   WorldOwnerListNode100 *runtimeNode;
   CommandPayloadDword04 *tripletCursor;
   bool testResult;
@@ -444,7 +444,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
           }
         }
         else {
-          clearCursor = (dword *)&g_InGameSelectionInsertTripletDwords;
+          clearCursor = (uint32_t *)&g_InGameSelectionInsertTripletDwords;
           for (countOrOwnerOrDelta = 0x1a; countOrOwnerOrDelta != 0; countOrOwnerOrDelta = countOrOwnerOrDelta + -1) {
             *clearCursor = 0;
             clearCursor = clearCursor + 1;
@@ -534,16 +534,16 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
         if ((g_CursorButtonState & 4) == 0) {
           /* The original adds the horizontal mouse delta since capture (computed before snapping the
              pointer back) - not the pointer function's return value. */
-          countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
+          countOrOwnerOrDelta = *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
           g_PointerSetPosition(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
         }
         else {
           g_InGameCommandPointerCaptureX =
-               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
+               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
           g_InGameCommandPointerCaptureY =
-               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
+               *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
         }
       }
     }
@@ -551,16 +551,16 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
       if ((g_CursorButtonState & 4) == 0) {
         /* The original adds the horizontal mouse delta since capture (computed before snapping the
            pointer back) - not the pointer function's return value. */
-        countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
+        countOrOwnerOrDelta = *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
         g_PointerSetPosition(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
+             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0xc);
         g_InGamePlacementPointerCaptureY =
-             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
+             *(int32_t *)(inGameRuntime[1].interaction.reserved00_47 + 0x10);
       }
     }
   }
@@ -590,9 +590,9 @@ InGameWorldInput_CommitPointerActionCf
 
 {
   InGamePointerModeHandler *modeHandler;
-  dword variantMaskOrSurfaceHeight;
+  uint32_t variantMaskOrSurfaceHeight;
   CommandPayloadDword04 payloadDword0C;
-  uint modifierModeMask;
+  uint32_t modifierModeMask;
   int ownerIndex;
   CommandPayloadDword08 payloadDword08;
   GameEntityRuntime *entry;
@@ -841,18 +841,18 @@ InGameWorldInput_ReleasePointerCapture:
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCameraCommand_DispatchByCodeAndModifierFlagsCf
-          (dword modifierFlags,dword commandCode,WorldRuntimeContext *worldRuntime)
+          (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime)
 
 {
   InGameCameraCommandKeyCode recordKeyCode;
-  uint requiredModifiers;
-  dword bookmark1PackedAngles;
-  dword bookmark2PackedAngles;
-  dword bookmark3PackedAngles;
-  dword bookmark4PackedAngles;
-  dword bookmark5PackedAngles;
-  dword bookmark6PackedAngles;
-  dword bookmark7PackedAngles;
+  uint32_t requiredModifiers;
+  uint32_t bookmark1PackedAngles;
+  uint32_t bookmark2PackedAngles;
+  uint32_t bookmark3PackedAngles;
+  uint32_t bookmark4PackedAngles;
+  uint32_t bookmark5PackedAngles;
+  uint32_t bookmark6PackedAngles;
+  uint32_t bookmark7PackedAngles;
   InGameCameraCommandDispatchTable *currentRecord;
   InGameCameraCommandDispatchTable *nextRecord;
   

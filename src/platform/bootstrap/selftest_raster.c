@@ -160,11 +160,11 @@ static int RasterRandomRange(unsigned *state, int low, int high)
     return low + (int)(RasterRandom(state) % (unsigned)(high - low + 1));
 }
 
-static void RasterFillRandom(byte *data, unsigned size, unsigned *state)
+static void RasterFillRandom(uint8_t *data, unsigned size, unsigned *state)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
-        data[i] = (byte)(RasterRandom(state) >> 11);
+        data[i] = (uint8_t)(RasterRandom(state) >> 11);
     }
 }
 
@@ -216,11 +216,11 @@ static int RasterRunGuarded(const RasterCompareCase *testCase, void *originalEnt
 }
 
 typedef struct RasterBuffers {
-    byte *color;      /* includes RASTER_GUARD_BYTES before and after */
-    byte *depth;
-    byte *texture;    /* texture asset: header, palettes, texels */
+    uint8_t *color;      /* includes RASTER_GUARD_BYTES before and after */
+    uint8_t *depth;
+    uint8_t *texture;    /* texture asset: header, palettes, texels */
     GraphicsPrimitivePacket packet;
-    byte state[sizeof(SoftwareRasterScanState)];
+    uint8_t state[sizeof(SoftwareRasterScanState)];
 } RasterBuffers;
 
 typedef struct RasterRunSetup {
@@ -277,7 +277,7 @@ static void RasterClearZeroLanes(SoftwareRasterScanState *state)
 
 /* Builds the inputs of one run into `input` (buffers already allocated with the sizes of setup). */
 static int RasterBuildRun(const RasterCompareCase *testCase, unsigned seed, RasterRunSetup *setup,
-                          RasterBuffers *input, dword *textureEntry, dword *sourceEntry)
+                          RasterBuffers *input, uint32_t *textureEntry, uint32_t *sourceEntry)
 {
     unsigned rng = seed;
     int i;
@@ -292,7 +292,7 @@ static int RasterBuildRun(const RasterCompareCase *testCase, unsigned seed, Rast
     memset(input->color + RASTER_GUARD_BYTES + setup->colorBytes, RASTER_GUARD_VALUE, RASTER_GUARD_BYTES);
     /* depth values in a band around the vertex depths, so about half of the pixels pass */
     for (i = 0; i < (int)(setup->depthBytes / 4); i++) {
-        ((dword *)(input->depth + RASTER_GUARD_BYTES))[i] = 0x20000000u + (RasterRandom(&rng) % 0x40000000u);
+        ((uint32_t *)(input->depth + RASTER_GUARD_BYTES))[i] = 0x20000000u + (RasterRandom(&rng) % 0x40000000u);
     }
     memset(input->depth, RASTER_GUARD_VALUE, RASTER_GUARD_BYTES);
     memset(input->depth + RASTER_GUARD_BYTES + setup->depthBytes, RASTER_GUARD_VALUE, RASTER_GUARD_BYTES);
@@ -300,13 +300,13 @@ static int RasterBuildRun(const RasterCompareCase *testCase, unsigned seed, Rast
         RasterFillRandom(input->texture, setup->textureBytes, &rng);
     }
 
-    memset(textureEntry, 0, 8 * sizeof(dword));
-    memset(sourceEntry, 0, 8 * sizeof(dword));
-    textureEntry[1] = (dword)setup->widthLog2;
-    textureEntry[2] = (dword)setup->heightLog2;
-    textureEntry[3] = (dword)(uintptr_t)input->texture;
-    textureEntry[4] = (dword)(uintptr_t)sourceEntry;
-    sourceEntry[2] = (dword)setup->paletteIndex;
+    memset(textureEntry, 0, 8 * sizeof(uint32_t));
+    memset(sourceEntry, 0, 8 * sizeof(uint32_t));
+    textureEntry[1] = (uint32_t)setup->widthLog2;
+    textureEntry[2] = (uint32_t)setup->heightLog2;
+    textureEntry[3] = (uint32_t)(uintptr_t)input->texture;
+    textureEntry[4] = (uint32_t)(uintptr_t)sourceEntry;
+    sourceEntry[2] = (uint32_t)setup->paletteIndex;
     sourceEntry[3] = RASTER_TEXTURE_HEADER;
 
     memset(packet, 0, sizeof *packet);
@@ -325,7 +325,7 @@ static int RasterBuildRun(const RasterCompareCase *testCase, unsigned seed, Rast
     packet->modulationColor = RasterRandom(&rng);
     packet->textureEntry = (GraphicsTextureSetEntry *)textureEntry;
     packet->renderFlags = (GraphicsPrimitiveDispatchFlags)(testCase->mode << 12);
-    g_SoftwareDepthEpoch = (sdword)(RasterRandom(&rng) % 0x1000000u);
+    g_SoftwareDepthEpoch = (int32_t)(RasterRandom(&rng) % 0x1000000u);
     SoftwareRenderer_PrepareTrianglePacket(packet);
 
     /* the original divides 0x1000000000 by the (Q12) doubled area with IDIV: skip overflowing cases */
@@ -354,7 +354,7 @@ static int RasterReadsStaleMm2(const RasterCompareCase *testCase)
 }
 
 /* First depth dword (byte offset) that matches neither `never` nor `always`; guards must match `never`. */
-static int RasterFirstDepthOutsideBoth(const byte *mine, const byte *never, const byte *always, unsigned depthBytes)
+static int RasterFirstDepthOutsideBoth(const uint8_t *mine, const uint8_t *never, const uint8_t *always, unsigned depthBytes)
 {
     unsigned i;
     for (i = 0; i < RASTER_GUARD_BYTES; i++) {
@@ -363,8 +363,8 @@ static int RasterFirstDepthOutsideBoth(const byte *mine, const byte *never, cons
         }
     }
     for (i = RASTER_GUARD_BYTES; i < RASTER_GUARD_BYTES + depthBytes; i += 4) {
-        dword m = *(const dword *)(mine + i);
-        if (m != *(const dword *)(never + i) && m != *(const dword *)(always + i)) {
+        uint32_t m = *(const uint32_t *)(mine + i);
+        if (m != *(const uint32_t *)(never + i) && m != *(const uint32_t *)(always + i)) {
             return (int)i;
         }
     }
@@ -377,7 +377,7 @@ static int RasterFirstDepthOutsideBoth(const byte *mine, const byte *never, cons
 }
 
 /* Test coverage: number of `unit`-byte elements that differ. */
-static unsigned RasterCountChangedUnits(const byte *before, const byte *after, unsigned size, unsigned unit)
+static unsigned RasterCountChangedUnits(const uint8_t *before, const uint8_t *after, unsigned size, unsigned unit)
 {
     unsigned count = 0;
     unsigned i;
@@ -389,7 +389,7 @@ static unsigned RasterCountChangedUnits(const byte *before, const byte *after, u
     return count;
 }
 
-static int RasterFirstDifference(const byte *a, const byte *b, unsigned size)
+static int RasterFirstDifference(const uint8_t *a, const uint8_t *b, unsigned size)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
@@ -417,7 +417,7 @@ static int RasterExecute(const RasterCompareCase *testCase, void *originalEntry,
     access->pixels = output->color + RASTER_GUARD_BYTES;
     g_FramebufferAccess = access;
     g_FramebufferRowStrideBytes = setup->colorStride;
-    g_SoftwareDepthBuffer = (sdword *)(output->depth + RASTER_GUARD_BYTES);
+    g_SoftwareDepthBuffer = (int32_t *)(output->depth + RASTER_GUARD_BYTES);
     g_SoftwareDepthRowStrideBytes = setup->depthStride;
     g_SoftwareAuxiliaryTargetBase = output->color + RASTER_GUARD_BYTES;
     RasterSetPixelConstants(setup->layout555);
@@ -428,8 +428,8 @@ static int RasterExecute(const RasterCompareCase *testCase, void *originalEntry,
     return faulted;
 }
 
-static void RasterDescribeDifference(const char *what, const RasterRunSetup *setup, int offset, const byte *mine,
-                                     const byte *theirs, int *x, int *y)
+static void RasterDescribeDifference(const char *what, const RasterRunSetup *setup, int offset, const uint8_t *mine,
+                                     const uint8_t *theirs, int *x, int *y)
 {
     int inside = offset - (int)RASTER_GUARD_BYTES;
     unsigned stride = (what[0] == 'c') ? setup->colorStride : setup->depthStride;
@@ -452,15 +452,15 @@ void Thandor_SelfTestRasterCompare(void)
     const char *seedText = getenv("OPEN_THANDOR_RASTERCMP_SEED");
     int runs = runsText ? atoi(runsText) : 300;
     unsigned baseSeed = seedText ? (unsigned)strtoul(seedText, NULL, 0) : 1u;
-    byte *code = (byte *)Thandor_LoadOriginalCodeCopy(RASTER_CODE_START, RASTER_CODE_END - RASTER_CODE_START);
-    byte savedState[sizeof(SoftwareRasterScanState)];
+    uint8_t *code = (uint8_t *)Thandor_LoadOriginalCodeCopy(RASTER_CODE_START, RASTER_CODE_END - RASTER_CODE_START);
+    uint8_t savedState[sizeof(SoftwareRasterScanState)];
     SoftwarePixelMmxConstants savedConstants = g_SoftwarePixelMmxConstants;
     SoftwareFramebufferAccess *savedAccess = g_FramebufferAccess;
-    dword savedColorStride = g_FramebufferRowStrideBytes;
-    sdword *savedDepth = g_SoftwareDepthBuffer;
-    dword savedDepthStride = g_SoftwareDepthRowStrideBytes;
+    uint32_t savedColorStride = g_FramebufferRowStrideBytes;
+    int32_t *savedDepth = g_SoftwareDepthBuffer;
+    uint32_t savedDepthStride = g_SoftwareDepthRowStrideBytes;
     void *savedAux = g_SoftwareAuxiliaryTargetBase;
-    sdword savedEpoch = g_SoftwareDepthEpoch;
+    int32_t savedEpoch = g_SoftwareDepthEpoch;
     const unsigned maxColorBytes = (320u * 4u + 64u) * 240u;
     const unsigned maxDepthBytes = (320u * 4u + 64u) * 240u;
     const unsigned maxTextureBytes = RASTER_TEXTURE_HEADER + 256u * 256u * 4u;
@@ -469,8 +469,8 @@ void Thandor_SelfTestRasterCompare(void)
     RasterBuffers theirs;
     RasterBuffers theirsOtherState;
     RasterBuffers theirsAlways;
-    static dword textureEntry[8];
-    static dword sourceEntry[8];
+    static uint32_t textureEntry[8];
+    static uint32_t sourceEntry[8];
     SoftwareFramebufferAccess access;
     int caseIndex;
     int casesRun = 0;
@@ -483,17 +483,17 @@ void Thandor_SelfTestRasterCompare(void)
         return;
     }
     memcpy(savedState, &g_SoftwareRasterScanState, sizeof savedState);
-    input.color = (byte *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
-    input.depth = (byte *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
-    input.texture = (byte *)malloc(maxTextureBytes);
-    mine.color = (byte *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
-    mine.depth = (byte *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
-    theirs.color = (byte *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
-    theirs.depth = (byte *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
-    theirsOtherState.color = (byte *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
-    theirsOtherState.depth = (byte *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
-    theirsAlways.color = (byte *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
-    theirsAlways.depth = (byte *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
+    input.color = (uint8_t *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
+    input.depth = (uint8_t *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
+    input.texture = (uint8_t *)malloc(maxTextureBytes);
+    mine.color = (uint8_t *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
+    mine.depth = (uint8_t *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
+    theirs.color = (uint8_t *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
+    theirs.depth = (uint8_t *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
+    theirsOtherState.color = (uint8_t *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
+    theirsOtherState.depth = (uint8_t *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
+    theirsAlways.color = (uint8_t *)malloc(maxColorBytes + 2 * RASTER_GUARD_BYTES);
+    theirsAlways.depth = (uint8_t *)malloc(maxDepthBytes + 2 * RASTER_GUARD_BYTES);
     if (!input.color || !input.depth || !input.texture || !mine.color || !mine.depth || !theirs.color ||
         !theirs.depth || !theirsOtherState.color || !theirsOtherState.depth || !theirsAlways.color ||
         !theirsAlways.depth) {
@@ -601,8 +601,8 @@ void Thandor_SelfTestRasterCompare(void)
                 if (outputDiffs <= 3) {
                     const char *what = colorDiff >= 0 ? "color" : "depth";
                     int offset = colorDiff >= 0 ? colorDiff : depthDiff;
-                    const byte *a = colorDiff >= 0 ? mine.color : mine.depth;
-                    const byte *b = colorDiff >= 0 ? theirs.color : theirs.depth;
+                    const uint8_t *a = colorDiff >= 0 ? mine.color : mine.depth;
+                    const uint8_t *b = colorDiff >= 0 ? theirs.color : theirs.depth;
                     int x;
                     int y;
                     RasterDescribeDifference(what, &setup, offset, a, b, &x, &y);

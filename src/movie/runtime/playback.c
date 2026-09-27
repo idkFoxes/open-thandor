@@ -20,25 +20,25 @@
    MOVD packs the four averages back into one pixel. */
 
 /* One byte lane of one pixel after PUNPCKLBW mm,mm and PSRLW mm,6. */
-static __inline ushort Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
+static __inline uint16_t Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
 {
-  byte value = (byte)(pixel >> (lane * 8));
-  return (ushort)((((ushort)value << 8) | value) >> 6);
+  uint8_t value = (uint8_t)(pixel >> (lane * 8));
+  return (uint16_t)((((uint16_t)value << 8) | value) >> 6);
 }
 
 /* PADDW of one 4-pixel row into the four 16-bit channel sums. */
-static __inline ulonglong
-Movie_AddRowToChannelSums(ulonglong channelSums,PackedRgb24 pixel0,PackedRgb24 pixel1,PackedRgb24 pixel2,
+static __inline uint64_t
+Movie_AddRowToChannelSums(uint64_t channelSums,PackedRgb24 pixel0,PackedRgb24 pixel1,PackedRgb24 pixel2,
                           PackedRgb24 pixel3)
 {
-  ulonglong result = 0;
-  ushort sum;
+  uint64_t result = 0;
+  uint16_t sum;
   int lane;
   for (lane = 0; lane < 4; lane = lane + 1) {
-    sum = (ushort)(channelSums >> (lane * 16));
-    sum = (ushort)(sum + Movie_DuplicatedByteLaneShr6(pixel0,lane) + Movie_DuplicatedByteLaneShr6(pixel1,lane) +
+    sum = (uint16_t)(channelSums >> (lane * 16));
+    sum = (uint16_t)(sum + Movie_DuplicatedByteLaneShr6(pixel0,lane) + Movie_DuplicatedByteLaneShr6(pixel1,lane) +
                    Movie_DuplicatedByteLaneShr6(pixel2,lane) + Movie_DuplicatedByteLaneShr6(pixel3,lane));
-    result = result | ((ulonglong)sum << (lane * 16));
+    result = result | ((uint64_t)sum << (lane * 16));
   }
   return result;
 }
@@ -46,14 +46,14 @@ Movie_AddRowToChannelSums(ulonglong channelSums,PackedRgb24 pixel0,PackedRgb24 p
 /* PSRLW mm,6; PACKUSWB mm,mm; MOVD: the four channel averages as one pixel. The saturation to 0xFF can
    never trigger (16 lanes of at most 0x3FF, shifted right by 6), so PACKUSWB's signed input view does not
    matter either. */
-static __inline PackedRgb24 Movie_PackChannelAverages(ulonglong channelSums)
+static __inline PackedRgb24 Movie_PackChannelAverages(uint64_t channelSums)
 {
   PackedRgb24 color = 0;
-  ushort average;
+  uint16_t average;
   int lane;
   for (lane = 0; lane < 4; lane = lane + 1) {
-    average = (ushort)((ushort)(channelSums >> (lane * 16)) >> 6);
-    color = color | ((dword)(average > 0xff ? 0xff : average) << (lane * 8));
+    average = (uint16_t)((uint16_t)(channelSums >> (lane * 16)) >> 6);
+    color = color | ((uint32_t)(average > 0xff ? 0xff : average) << (lane * 8));
   }
   return color;
 }
@@ -66,16 +66,16 @@ static __inline PackedRgb24 Movie_PackChannelAverages(ulonglong channelSums)
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 Movie_EncodeFlmBufferFromFrameProviderCf
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint *outputBuffer,MovieFrameProviderCfProc *frameProvider)
+          uint32_t *outputBuffer,MovieFrameProviderCfProc *frameProvider)
 
 {
-  dword packedTimeOrDate;
+  uint32_t packedTimeOrDate;
   void *frameToReleaseOrNull;
-  uint byteCount;
+  uint32_t byteCount;
   int clearCount;
-  uint frameCount;
-  uint *sourcePixels;
-  uint *outputCursor;
+  uint32_t frameCount;
+  uint32_t *sourcePixels;
+  uint32_t *outputCursor;
   MovieFrameProviderEaxCf5 providerResult;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 failureResult;
@@ -98,9 +98,9 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   outputCursor[-0x7b] = packedTimeOrDate;
   outputCursor[-0x79] = packedTimeOrDate;
   outputCursor[-0x77] = packedTimeOrDate;
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -0x74));
-  (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -100));
-  *(byte *)(outputCursor + -0x40) = 0;
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputCursor + -0x74));
+  (*g_LocaleCopyDefaultComputerLabelUtf16)((uint16_t *)(outputCursor + -100));
+  *(uint8_t *)(outputCursor + -0x40) = 0;
   outputCursor[-0x54] = frameWidthPixels;
   outputCursor[-0x53] = frameHeightPixels;
   outputCursor[-0x52] = 0;
@@ -109,11 +109,11 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   frameToReleaseOrNull = providerResult.frameOrError;
   if (!providerResult.carry) {
     frameCount = 1;
-    sourcePixels = (uint *)((int)frameToReleaseOrNull +
+    sourcePixels = (uint32_t *)((int)frameToReleaseOrNull +
                            *(int *)((int)frameToReleaseOrNull +
                                    *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc));
     byteCount = Movie_EncodeFrame4x4Keyframe(frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels);
-    outputCursor = (uint *)((int)outputCursor + byteCount);
+    outputCursor = (uint32_t *)((int)outputCursor + byteCount);
     firstFrame = frameToReleaseOrNull;
     while( true ) {
       providerResult = (*frameProvider)((void *)0x0);
@@ -122,10 +122,10 @@ Movie_EncodeFlmBufferFromFrameProviderCf
       frameCount = frameCount + 1;
       byteCount = Movie_EncodeFrame4x4Delta
                         (frameHeightPixels,frameWidthPixels,outputCursor,sourcePixels,
-                         (uint *)(*(int *)((int)frameToReleaseOrNull +
+                         (uint32_t *)(*(int *)((int)frameToReleaseOrNull +
                                           *(int *)((int)frameToReleaseOrNull + 0xb8) + 0xc) +
                                  (int)frameToReleaseOrNull));
-      outputCursor = (uint *)((int)outputCursor + byteCount);
+      outputCursor = (uint32_t *)((int)outputCursor + byteCount);
       (*frameProvider)(frameToReleaseOrNull);
     }
     (*frameProvider)(firstFrame);
@@ -142,7 +142,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
     }
   }
   failureResult.carry = true;
-  failureResult.valueOrError = (dword)frameToReleaseOrNull;
+  failureResult.valueOrError = (uint32_t)frameToReleaseOrNull;
   return failureResult;
 }
 
@@ -158,12 +158,12 @@ Movie_EncodeFlmBufferFromFrameProviderCf
 void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void)
 
 {
-  uint targetFrame;
-  uint boundaryFrame;
+  uint32_t targetFrame;
+  uint32_t boundaryFrame;
   
   g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + 1;
   if (g_MoviePlaybackScheduleSpan != 0) {
-    targetFrame = (uint)(g_MoviePlaybackScheduleCounter * 8) / g_MoviePlaybackScheduleSpan + 1 +
+    targetFrame = (uint32_t)(g_MoviePlaybackScheduleCounter * 8) / g_MoviePlaybackScheduleSpan + 1 +
                   g_MoviePlaybackBaseFrameGroup * 8;
     for (boundaryFrame = 8; boundaryFrame < targetFrame; boundaryFrame = boundaryFrame + 8) {
       if (g_MoviePlaybackCurrentFrame < boundaryFrame) {
@@ -188,11 +188,11 @@ static StatusValueEaxCf5
 Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle)
 
 {
-  uint audioTrackCount;
-  uint selectedTrack;
-  uint track;
-  dword trackOffset;
-  dword trackBytes;
+  uint32_t audioTrackCount;
+  uint32_t selectedTrack;
+  uint32_t track;
+  uint32_t trackOffset;
+  uint32_t trackBytes;
   void *audioSample;
   FileSystemSeekEaxCf5 seekResult;
   ArenaAllocEaxCf5 allocResult;
@@ -237,7 +237,7 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
   if (!readResult.carry) {
     voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)audioSample);
     result.carry = voiceSetResult.carry;
-    result.valueOrError = (dword)voiceSetResult.eax;
+    result.valueOrError = (uint32_t)voiceSetResult.eax;
   }
   (*g_MemoryApi.free)(audioSample);
   return result;
@@ -252,22 +252,22 @@ Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount re
    Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], Package_FindEntryAcrossMounts
    [assets/package/runtime], Random_NextPrimary [core/math/random].
 */
-MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
+MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,uint16_t *path)
 
 {
   MovieFileHeader *header;
   MovieRuntime *movie;
   void *handle;
-  dword *copySource;
-  dword *copyDestination;
+  uint32_t *copySource;
+  uint32_t *copyDestination;
   int copyCount;
   MovieSubresourceCount frameWidth;
   MoviePaletteBankCount frameHeight;
   MovieAudioGainQ15 defaultAudioGain;
   HANDLE semaphoreOrThread;
-  dword sizeOrValue;
-  dword initialVideoBytes;
-  dword status;
+  uint32_t sizeOrValue;
+  uint32_t initialVideoBytes;
+  uint32_t status;
   bool looseFileOpened;
   FileSystemOpenEaxCf5 openResult;
   FileSystemSeekEaxCf5 seekResult;
@@ -278,7 +278,7 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   MovieOpenEaxCf5 failureResult;
   PackageFindEntryEaxEbxCf9 packageEntry;
   MovieStreamByteCount remainingByteCount;
-  byte *loadedEnd;
+  uint8_t *loadedEnd;
   MovieStreamFileOffset streamPosition;
   MovieSharedStreamHandleFlag isSharedPackageHandle;
 
@@ -286,8 +286,8 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   looseFileOpened = false;
   if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
-              ((word *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
-    openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+              ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
+    openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     handle = (void *)openResult.eax;
     looseFileOpened = !openResult.carry;
   }
@@ -303,9 +303,9 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
     }
     else {
       WidePath_CombineDirectoryAndLeaf
-                ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
-                 (word *)&g_ExecutableDirectoryUtf16);
-      openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
+                ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
+                 (uint16_t *)&g_ExecutableDirectoryUtf16);
+      openResult = (*g_FileSystemOpenCf)(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
       if (openResult.carry) {
         openResult = (*g_FileSystemOpenCf)(0,path);
         if (openResult.carry) {
@@ -323,7 +323,7 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
   if (!readResult.carry) {
     header = (MovieFileHeader *)g_PackageScratchBuffer;
     status = 0x30;
-    if ((header->common.magic == ASSET_MAGIC_FLM) && ((dword)header->common.converterVersion == 0x20001)) {
+    if ((header->common.magic == ASSET_MAGIC_FLM) && ((uint32_t)header->common.converterVersion == 0x20001)) {
       sizeOrValue = header->videoStreamBytes + 0x200;
       if ((0x3c0000 < sizeOrValue) && (movieOpenFlags != 0)) {
         sizeOrValue = 0x3c0000;
@@ -331,8 +331,8 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
       allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
       status = allocResult.eax;
       if (!allocResult.carry) {
-        copySource = (dword *)g_PackageScratchBuffer;
-        copyDestination = (dword *)allocResult.eax;
+        copySource = (uint32_t *)g_PackageScratchBuffer;
+        copyDestination = (uint32_t *)allocResult.eax;
         for (copyCount = 0x80; copyCount != 0; copyCount = copyCount + -1) {
           *copyDestination = *copySource;
           copySource = copySource + 1;
@@ -344,7 +344,7 @@ MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpe
           initialVideoBytes = 0x3a2000;
         }
         remainingByteCount = header->videoStreamBytes - initialVideoBytes;
-        loadedEnd = (byte *)(header + 1) + initialVideoBytes;
+        loadedEnd = (uint8_t *)(header + 1) + initialVideoBytes;
         readResult = (*g_FileSystemReadExactCf)(initialVideoBytes,header + 1,handle);
         status = readResult.eax;
         if (!readResult.carry) {
@@ -485,12 +485,12 @@ void __thandor_preserve_eax Movie_SetAudioGainQ15(MovieAudioGainQ15 gainQ15)
    below 0x3A2200, advances streamFileOffset/loadedVideoEnd, records read failure as state 2, and clears
    workerActive before returning zero.
 */
-dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
+uint32_t __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
 
 {
   void *handle;
   MovieRuntime *movie;
-  uint byteCount;
+  uint32_t byteCount;
   FileSystemReadEaxCf5 readResult;
   
   /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
@@ -504,7 +504,7 @@ dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
         (movie->workerActive == 0) || (movie->remainingVideoBytes == 0)) break;
     if (movie->streamState == MOVIE_STREAM_IDLE) continue;
     byteCount = movie->remainingVideoBytes;
-    if ((uint)(movie->loadedVideoEnd - (byte *)movie->fileHeader) < 0x3a2200) {
+    if ((uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader) < 0x3a2200) {
       handle = movie->streamHandle;
       if (0x1e000 < byteCount) {
         byteCount = 0x1e000;
@@ -634,10 +634,10 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
   /* Rewritten from the assembly (0x00565810-0x00565A29). The decompiled version jumped to the
      continuation labels inside the original machine code. EBX is the end-movie runtime. */
   UiCommandDispatchRecord *record = g_EndMovieCommandDispatchRecords_00_Code00000071_Modifier30;
-  dword target = 0;
+  uint32_t target = 0;
 
   for (;; record++) {
-    uint flags = record->modifierClassFlags;
+    uint32_t flags = record->modifierClassFlags;
     if (record->commandCode == 0) {
       return;
     }
@@ -656,7 +656,7 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
     else {
       if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
     }
-    target = (dword)record->continuationEntryAddress;
+    target = (uint32_t)record->continuationEntryAddress;
     break;
   }
   switch (target) {
@@ -664,8 +664,8 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
     GraphicsFramebufferCaptureEaxCf5 capture =
          (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeEaxEcxCf9 pcx;
-    word *digitHigh = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
-    word *digitLow = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
+    uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
+    uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.carry) {
       break;
     }
@@ -675,7 +675,7 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
-                                   (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
+                                   (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     (*g_MemoryApi.free)(pcx.encodedBytesOrError);
     (*g_MemoryApi.free)(capture.eax);
     *digitLow = *digitLow + 1;
@@ -689,7 +689,7 @@ EndMovieUiRuntime_DispatchCommandByFlagsCf
     break;
   }
   case 0x565990: /* skip the end movie */
-    if (((*(dword *)((byte *)endMovieRuntime + 0x6ec) & 8) != 0) ||
+    if (((*(uint32_t *)((uint8_t *)endMovieRuntime + 0x6ec) & 8) != 0) ||
         ((g_UiCommandRuntimeFlags & 0x800) != 0)) {
       break;
     }
@@ -733,16 +733,16 @@ void IntroMovie_TimerTick(void)
    Purpose: Handles movie encode frame4x4 keyframe.
    Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
 */
-uint __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Keyframe
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint *encodedOutput,uint *sourcePixels)
+          uint32_t *encodedOutput,uint32_t *sourcePixels)
 
 {
-  uint maxLumaOrLevel;
-  uint minLumaOrBaseLuma;
-  uint sampleLumaOrLevel;
-  uint minLumaChromaOrLevel;
+  uint32_t maxLumaOrLevel;
+  uint32_t minLumaOrBaseLuma;
+  uint32_t sampleLumaOrLevel;
+  uint32_t minLumaChromaOrLevel;
   int level0;
   int level1;
   int level2;
@@ -752,18 +752,18 @@ Movie_EncodeFrame4x4Keyframe
   int level6;
   int level7;
   int level8;
-  uint wideLevel0;
-  uint wideLevel1;
-  uint wideLevel2;
-  uint wideLevel3;
-  uint wideLevel4;
-  uint wideLevel5;
+  uint32_t wideLevel0;
+  uint32_t wideLevel1;
+  uint32_t wideLevel2;
+  uint32_t wideLevel3;
+  uint32_t wideLevel4;
+  uint32_t wideLevel5;
   PackedRgb24 *blockRowPixels;
-  uint *outputCursor;
+  uint32_t *outputCursor;
   PackedRgb24 averageColor;
-  ulonglong channelSums;
-  uint blocksLeftInRow;
-  uint blockRowsLeft;
+  uint64_t channelSums;
+  uint32_t blocksLeftInRow;
+  uint32_t blockRowsLeft;
 
   blockRowsLeft = frameHeightPixels >> 2;
   outputCursor = encodedOutput;
@@ -1170,82 +1170,82 @@ Movie_EncodeFrame4x4Keyframe
    Purpose: Handles movie encode frame4x4 delta.
    Local calls: MovieColor_ComputeLuma5FromRgb888, MovieColor_ComputeChromaCodeFromRgb888.
 */
-uint __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 Movie_EncodeFrame4x4Delta
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint *encodedOutput,uint *previousFramePixels,uint *currentFramePixels)
+          uint32_t *encodedOutput,uint32_t *previousFramePixels,uint32_t *currentFramePixels)
 
 {
   int rowStrideBytes;
-  ulonglong copiedQwordA;
-  ulonglong copiedQwordB;
-  ulonglong *previousBlock;
-  uint maxLumaChromaOrLevel;
-  uint minLumaOrBaseLuma;
-  uint sampleLumaOrLevel;
-  uint minLumaOrSkipCount;
+  uint64_t copiedQwordA;
+  uint64_t copiedQwordB;
+  uint64_t *previousBlock;
+  uint32_t maxLumaChromaOrLevel;
+  uint32_t minLumaOrBaseLuma;
+  uint32_t sampleLumaOrLevel;
+  uint32_t minLumaOrSkipCount;
   int level0;
   int level1;
   int level2;
   int level3;
   int level4;
   int level5;
-  uint wideLevel0;
+  uint32_t wideLevel0;
   int level6;
   int level7;
   int level8;
-  uint wideLevel1;
-  uint wideLevel2;
-  uint wideLevel3;
-  uint wideLevel4;
-  uint wideLevel5;
-  uint wideLevel6;
+  uint32_t wideLevel1;
+  uint32_t wideLevel2;
+  uint32_t wideLevel3;
+  uint32_t wideLevel4;
+  uint32_t wideLevel5;
+  uint32_t wideLevel6;
   PackedRgb24 *blockRowPixels;
-  ulonglong *currentBlockCursor;
-  uint *outputCursor;
-  ulonglong changedBitsOrQword;
+  uint64_t *currentBlockCursor;
+  uint32_t *outputCursor;
+  uint64_t changedBitsOrQword;
   PackedRgb24 averageColor;
-  ulonglong channelSums;
-  uint blocksLeftInRow;
-  uint blockRowsLeft;
-  uint pendingSkipCount;
+  uint64_t channelSums;
+  uint32_t blocksLeftInRow;
+  uint32_t blockRowsLeft;
+  uint32_t pendingSkipCount;
   
   rowStrideBytes = frameWidthPixels * 4;
   blockRowsLeft = frameHeightPixels >> 2;
   pendingSkipCount = 0;
-  currentBlockCursor = (ulonglong *)currentFramePixels;
+  currentBlockCursor = (uint64_t *)currentFramePixels;
   outputCursor = encodedOutput;
   blocksLeftInRow = frameWidthPixels >> 2;
   do {
     do {
-      previousBlock = (ulonglong *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels);
+      previousBlock = (uint64_t *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels);
       changedBitsOrQword = g_MovieDeltaRgbHighNibbleMask2Pixels &
                (*currentBlockCursor & g_MovieDeltaRgbHighNibbleMask2Pixels ^ *previousBlock |
                 currentBlockCursor[1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^ previousBlock[1] |
-                *(ulonglong *)(rowStrideBytes + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                *(ulonglong *)((int)previousBlock + rowStrideBytes) |
-                *(ulonglong *)(rowStrideBytes + 8 + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
-                *(ulonglong *)((int)previousBlock + rowStrideBytes + 8) |
+                *(uint64_t *)(rowStrideBytes + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(uint64_t *)((int)previousBlock + rowStrideBytes) |
+                *(uint64_t *)(rowStrideBytes + 8 + (int)currentBlockCursor) & g_MovieDeltaRgbHighNibbleMask2Pixels ^
+                *(uint64_t *)((int)previousBlock + rowStrideBytes + 8) |
                 currentBlockCursor[frameWidthPixels] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
                 previousBlock[frameWidthPixels] |
                 currentBlockCursor[frameWidthPixels + 1] & g_MovieDeltaRgbHighNibbleMask2Pixels ^
                 previousBlock[frameWidthPixels + 1] |
-               *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc) &
+               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc) |
-               *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc + 8) &
+               *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc) |
+               *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc + 8) &
                g_MovieDeltaRgbHighNibbleMask2Pixels ^
-               *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc + 8));
+               *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc + 8));
       minLumaOrSkipCount = pendingSkipCount + 1;
       if ((int)(changedBitsOrQword >> 0x20) != 0 || (int)changedBitsOrQword != 0) {
         if (pendingSkipCount != 0) {
           if (pendingSkipCount < 9) {
-            *(byte *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
-            outputCursor = (uint *)((int)outputCursor + 1);
+            *(uint8_t *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+            outputCursor = (uint32_t *)((int)outputCursor + 1);
           }
           else if (pendingSkipCount < 0x809) {
-            *(ushort *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
-            outputCursor = (uint *)((int)outputCursor + 2);
+            *(uint16_t *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+            outputCursor = (uint32_t *)((int)outputCursor + 2);
           }
           else {
             *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
@@ -1253,22 +1253,22 @@ Movie_EncodeFrame4x4Delta
           }
           pendingSkipCount = 0;
         }
-        previousBlock = (ulonglong *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels)
+        previousBlock = (uint64_t *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels)
         ;
         changedBitsOrQword = currentBlockCursor[1];
-        copiedQwordA = *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 4);
-        copiedQwordB = *(ulonglong *)((int)currentBlockCursor + (frameWidthPixels + 2) * 4);
+        copiedQwordA = *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 4);
+        copiedQwordB = *(uint64_t *)((int)currentBlockCursor + (frameWidthPixels + 2) * 4);
         *previousBlock = *currentBlockCursor;
         previousBlock[1] = changedBitsOrQword;
-        *(ulonglong *)((int)previousBlock + rowStrideBytes) = copiedQwordA;
-        *(ulonglong *)((int)previousBlock + rowStrideBytes + 8) = copiedQwordB;
+        *(uint64_t *)((int)previousBlock + rowStrideBytes) = copiedQwordA;
+        *(uint64_t *)((int)previousBlock + rowStrideBytes + 8) = copiedQwordB;
         changedBitsOrQword = currentBlockCursor[frameWidthPixels + 1];
-        copiedQwordA = *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc);
-        copiedQwordB = *(ulonglong *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
+        copiedQwordA = *(uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+        copiedQwordB = *(uint64_t *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
         previousBlock[frameWidthPixels] = currentBlockCursor[frameWidthPixels];
         previousBlock[frameWidthPixels + 1] = changedBitsOrQword;
-        *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordA;
-        *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQwordB;
+        *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordA;
+        *(uint64_t *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQwordB;
         blockRowPixels = (PackedRgb24 *)currentBlockCursor;
         channelSums = Movie_AddRowToChannelSums(0,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
                                                 blockRowPixels[3]);
@@ -1469,7 +1469,7 @@ Movie_EncodeFrame4x4Delta
           else if (7 < level4) {
             level4 = 7;
           }
-          currentBlockCursor = (ulonglong *)(blockRowPixels + -frameWidthPixels);
+          currentBlockCursor = (uint64_t *)(blockRowPixels + -frameWidthPixels);
           maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
           level5 = maxLumaChromaOrLevel - minLumaOrBaseLuma;
           if (level5 < 0) {
@@ -1618,7 +1618,7 @@ Movie_EncodeFrame4x4Delta
           else if (0xf < (int)wideLevel1) {
             wideLevel1 = 0xf;
           }
-          currentBlockCursor = (ulonglong *)(blockRowPixels + -frameWidthPixels);
+          currentBlockCursor = (uint64_t *)(blockRowPixels + -frameWidthPixels);
           wideLevel2 = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 0xc));
           wideLevel2 = wideLevel2 - minLumaOrBaseLuma;
           if ((int)wideLevel2 < 0) {
@@ -1662,18 +1662,18 @@ Movie_EncodeFrame4x4Delta
       currentBlockCursor = currentBlockCursor + 2;
       blocksLeftInRow = blocksLeftInRow - 1;
     } while (blocksLeftInRow != 0);
-    currentBlockCursor = (ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+    currentBlockCursor = (uint64_t *)((int)currentBlockCursor + frameWidthPixels * 0xc);
     blockRowsLeft = blockRowsLeft - 1;
     blocksLeftInRow = frameWidthPixels >> 2;
   } while (blockRowsLeft != 0);
   if (pendingSkipCount != 0) {
     if (pendingSkipCount < 9) {
-      *(byte *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
-      outputCursor = (uint *)((int)outputCursor + 1);
+      *(uint8_t *)outputCursor = ((char)pendingSkipCount + -1) * ' ' | 0x19;
+      outputCursor = (uint32_t *)((int)outputCursor + 1);
     }
     else if (pendingSkipCount < 0x809) {
-      *(ushort *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
-      outputCursor = (uint *)((int)outputCursor + 2);
+      *(uint16_t *)outputCursor = ((short)pendingSkipCount + -9) * 0x20 | 0x1a;
+      outputCursor = (uint32_t *)((int)outputCursor + 2);
     }
     else {
       *outputCursor = (pendingSkipCount - 0x809) * 0x20 | 0x1b;
@@ -1693,13 +1693,13 @@ Movie_EncodeFrame4x4Delta
 */
 /* Debug tool: OPEN_THANDOR_MOVIEDUMP=1 logs every decoded frame (consumed bytes, stream state,
    pixel checksum) and writes every tenth frame to moviedump\frame_NNNN.bmp. */
-static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
+static void Movie_DebugDumpFrame(MovieRuntime *movie, uint32_t consumedBytes)
 {
   static int enabled = -1;
-  dword width = movie->sourceEntry.pixelWidth;
-  dword height = movie->sourceEntry.pixelHeight;
-  dword sum = 0;
-  dword i;
+  uint32_t width = movie->sourceEntry.pixelWidth;
+  uint32_t height = movie->sourceEntry.pixelHeight;
+  uint32_t sum = 0;
+  uint32_t i;
   if (enabled < 0) {
     const char *value = getenv("OPEN_THANDOR_MOVIEDUMP");
     enabled = (value != NULL) && (value[0] == '1');
@@ -1715,7 +1715,7 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
   }
   Thandor_Log("movie frame %u/%u: consumed=%x offset=%x loadedEnd-header=%x remaining=%x state=%d worker=%d sum=%08x",
               movie->currentFrameIndex, movie->fileHeader->frameCount, consumedBytes,
-              movie->videoStreamOffset, (dword)(movie->loadedVideoEnd - (byte *)movie->fileHeader),
+              movie->videoStreamOffset, (uint32_t)(movie->loadedVideoEnd - (uint8_t *)movie->fileHeader),
               movie->remainingVideoBytes, (int)movie->streamState, (int)movie->workerActive, sum);
   if ((movie->currentFrameIndex % 10) == 1) {
     char name[64];
@@ -1723,8 +1723,8 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
     sprintf(name, "moviedump\\frame_%04u.bmp", movie->currentFrameIndex);
     file = fopen(name, "wb");
     if (file != NULL) {
-      dword imageBytes = width * height * 4;
-      dword header[13];
+      uint32_t imageBytes = width * height * 4;
+      uint32_t header[13];
       int y;
       memset(header, 0, sizeof header);
       fwrite("BM", 1, 2, file);
@@ -1732,7 +1732,7 @@ static void Movie_DebugDumpFrame(MovieRuntime *movie, dword consumedBytes)
       header[2] = 54;              /* pixel data offset */
       header[3] = 40;              /* BITMAPINFOHEADER */
       header[4] = width;
-      header[5] = (dword)-(int)height; /* top-down */
+      header[5] = (uint32_t)-(int)height; /* top-down */
       header[6] = 1 | (32 << 16);  /* planes, bit count */
       header[8] = imageBytes;
       fwrite(header, 4, 13, file);
@@ -1750,12 +1750,12 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
   MovieFileHeader *flmHeader;
   MovieFrameIndex previousFrameIndex;
   MovieRuntime *movie;
-  uint byteCountOrStatus;
-  dword consumedBytes;
-  uint nextFrameOrLoadedSize;
-  dword *copySource;
-  dword *copyDestination;
-  byte *streamCursor;
+  uint32_t byteCountOrStatus;
+  uint32_t consumedBytes;
+  uint32_t nextFrameOrLoadedSize;
+  uint32_t *copySource;
+  uint32_t *copyDestination;
+  uint8_t *streamCursor;
   SoundPlayVoiceEaxCf5 playResult;
   MovieAdvanceFrameEaxCf5 successResult;
   MovieAdvanceFrameEaxCf5 bufferingResult;
@@ -1778,7 +1778,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
     else {
       if (((g_ActiveMovie->streamState == MOVIE_STREAM_IDLE) && (g_ActiveMovie->workerActive != 0))
          && (g_ActiveMovie->remainingVideoBytes != 0)) {
-        if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200)
+        if ((uint32_t)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200)
         {
           g_ActiveMovie->streamState = MOVIE_STREAM_FILL_REQUESTED;
           ReleaseSemaphore(movie->refillSemaphore,1,(LPLONG)0x0);
@@ -1786,7 +1786,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
       }
       flmHeader = movie->fileHeader;
       previousFrameIndex = movie->currentFrameIndex;
-      streamCursor = (byte *)flmHeader + movie->videoStreamOffset;
+      streamCursor = (uint8_t *)flmHeader + movie->videoStreamOffset;
       if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
         playResult = (*g_SoundPlayOneShot)
                           (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
@@ -1801,7 +1801,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
              0x004A8B48. Callers keep EAX as the movie only after the first-frame call, which cannot
              get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
           bufferingResult.carry = false;
-          bufferingResult.eax = (dword)((byte *)movie - 0x220);
+          bufferingResult.eax = (uint32_t)((uint8_t *)movie - 0x220);
           return bufferingResult;
         }
         consumedBytes = Movie_DecodeFrame4x4Delta
@@ -1814,9 +1814,9 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
           nextFrameOrLoadedSize = (int)movie->loadedVideoEnd - (int)movie->fileHeader;
           if ((0x1e01ff < byteCountOrStatus) && (byteCountOrStatus < nextFrameOrLoadedSize)) {
             movie->videoStreamOffset = movie->videoStreamOffset - 0x1e0000;
-            copyDestination = (dword *)((byte *)movie->fileHeader + byteCountOrStatus - 0x1e0000);
+            copyDestination = (uint32_t *)((uint8_t *)movie->fileHeader + byteCountOrStatus - 0x1e0000);
             movie->loadedVideoEnd = movie->loadedVideoEnd + -0x1e0000;
-            copySource = (dword *)((byte *)copyDestination + 0x1e0000);
+            copySource = (uint32_t *)((uint8_t *)copyDestination + 0x1e0000);
             for (byteCountOrStatus = (nextFrameOrLoadedSize - byteCountOrStatus) >> 2; byteCountOrStatus != 0; byteCountOrStatus = byteCountOrStatus - 1) {
               *copyDestination = *copySource;
               copySource = copySource + 1;
@@ -1825,7 +1825,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
           }
         }
         successResult.carry = false;
-        successResult.eax = (dword)movie;
+        successResult.eax = (uint32_t)movie;
         return successResult;
       }
     }
@@ -1850,7 +1850,7 @@ void __thandor_void_preserve_eax_ecx_edx
 MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
 
 {
-  uint frameIndex;
+  uint32_t frameIndex;
   MovieAdvanceFrameEaxCf5 advanceResult;
   
   frameIndex = g_MoviePlaybackCurrentFrame;
@@ -1877,27 +1877,27 @@ MoviePlayback_AdvanceToFrameAndPresent(MovieFrameIndex targetFrame)
    g_MovieChromaLumaToArgb, while tokens 25-31 skip runs and preserve pixels from the previous frame. Returns
    encoded bytes consumed rounded up to eight.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 Movie_DecodeFrame4x4Delta
-          (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,dword *destinationArgb,
-          byte *encodedFrame)
+          (MoviePixelDimension heightPixels,MoviePixelDimension widthPixels,uint32_t *destinationArgb,
+          uint8_t *encodedFrame)
 
 {
-  uint blockWord0;
-  uint blockWord1;
-  dword pixel1;
-  dword pixel2;
-  dword pixel3;
-  uint tokenOrColorBase;
-  uint *streamCursor;
-  dword *destinationRow;
-  uint blocksLeftInRow;
-  uint blockRowsLeft;
-  uint skipRemaining;
+  uint32_t blockWord0;
+  uint32_t blockWord1;
+  uint32_t pixel1;
+  uint32_t pixel2;
+  uint32_t pixel3;
+  uint32_t tokenOrColorBase;
+  uint32_t *streamCursor;
+  uint32_t *destinationRow;
+  uint32_t blocksLeftInRow;
+  uint32_t blockRowsLeft;
+  uint32_t skipRemaining;
   
   blockRowsLeft = heightPixels >> 2;
   skipRemaining = 0;
-  streamCursor = (uint *)encodedFrame;
+  streamCursor = (uint32_t *)encodedFrame;
   blocksLeftInRow = widthPixels >> 2;
   do {
     do {
@@ -1929,7 +1929,7 @@ Movie_DecodeFrame4x4Delta
             pixel1 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 & 7) * 2];
             pixel2 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 3 & 7) * 2];
             pixel3 = g_MovieChromaLumaToArgb[0][tokenOrColorBase + (blockWord1 >> 6 & 7) * 2];
-            *destinationRow = *(dword *)((int)g_MovieChromaLumaToArgb[0] +
+            *destinationRow = *(uint32_t *)((int)g_MovieChromaLumaToArgb[0] +
                                 (blockWord0 >> 0x1a & 0xfffffff8) + tokenOrColorBase * 4);
             destinationRow[1] = pixel1;
             destinationRow[2] = pixel2;
@@ -1985,11 +1985,11 @@ Movie_DecodeFrame4x4Delta
           }
         }
         else if (tokenOrColorBase == 0x19) {
-          streamCursor = (uint *)((int)streamCursor + 1);
+          streamCursor = (uint32_t *)((int)streamCursor + 1);
           skipRemaining = (blockWord0 & 0xff) >> 5;
         }
         else if (tokenOrColorBase < 0x1b) {
-          streamCursor = (uint *)((int)streamCursor + 2);
+          streamCursor = (uint32_t *)((int)streamCursor + 2);
           skipRemaining = ((blockWord0 & 0xffff) >> 5) + 8;
         }
         else {
@@ -2016,10 +2016,10 @@ Movie_DecodeFrame4x4Delta
    Purpose: Handles movie color compute chroma code from rgb888.
    Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed].
 */
-uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
+uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(PackedRgb24 rgb888)
 
 {
-  uint middleChannel;
+  uint32_t middleChannel;
   FixedLengthAngleEaxEdx8 angleAndLength;
   
   middleChannel = rgb888 >> 8 & 0xff;
@@ -2034,7 +2034,7 @@ uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeChromaCodeFromRgb888(Packe
    Ownership: movie/runtime/playback.
    Purpose: Handles movie color compute luma5 from rgb888.
 */
-uint __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
+uint32_t __thandor_eax_preserve_ecx_edx MovieColor_ComputeLuma5FromRgb888(PackedRgb24 rgb888)
 
 {
   return ((rgb888 & 0xff) + (rgb888 >> 8 & 0xff) + (rgb888 >> 0x10 & 0xff)) * 0x5555 + 0x40000 >>
@@ -2119,9 +2119,9 @@ static const short k_MovieChromaSinTerm[32][32] = {
     {0, 27, 54, 79, 101, 118, 132, 140, 143, 140, 132, 118, 101, 79, 54, 27, 0, -29, -55, -80, -102, -120, -133, -141, -144, -141, -133, -120, -102, -80, -55, -29},
 };
 
-static dword MovieColor_ClampChannel(int value)
+static uint32_t MovieColor_ClampChannel(int value)
 {
-  return value < 0 ? 0 : (value > 255 ? 255 : (dword)value);
+  return value < 0 ? 0 : (value > 255 ? 255 : (uint32_t)value);
 }
 
 /* Called once at startup. */
@@ -2135,7 +2135,7 @@ void Movie_BuildChromaLumaTable(void)
     for (hue = 0; hue < 32; hue++) {
       int cosTerm = k_MovieChromaCosTerm[saturation][hue];
       int sinTerm = k_MovieChromaSinTerm[saturation][hue];
-      dword *row = g_MovieChromaLumaToArgb[saturation * 32 + hue];
+      uint32_t *row = g_MovieChromaLumaToArgb[saturation * 32 + hue];
       for (luma = 0; luma < 32; luma++) {
         int grey = luma * 8;
         row[luma] = 0xff000000u | MovieColor_ClampChannel(grey - 2 * cosTerm) << 16 |

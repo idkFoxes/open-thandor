@@ -21,7 +21,7 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
           FieldGridOccupancyByteIndex occupancyByteOffset,FieldGridAsset *fieldGrid);
 
 /* 0x00507610 */
-dword __thandor_void_preserve_eax_ecx
+uint32_t __thandor_void_preserve_eax_ecx
 TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           (Q12 neighborhoodRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,FieldGridAsset *fieldGrid);
 

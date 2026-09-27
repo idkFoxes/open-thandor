@@ -33,18 +33,18 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   FrontendPlayerRuntimeRecord *playerCursor;
   FrontendPlayerRuntimeRecord *nextPlayer;
   FrontendNetworkListsRuntimeView5650 *frontendRoot;
-  dword networkState;
+  uint32_t networkState;
   UiNodeBase *hoveredNode;
   int levelRecordAddress;
   GraphicsCursorFrameIndex cursorFrame;
-  uint levelMaskBit;
+  uint32_t levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
-  uint maskWordIndex;
+  uint32_t maskWordIndex;
   MovieAdvanceFrameEaxCf5 movieFrame;
   StatusValueEaxCf5 activePageStatus;
   TextResourceResolveEaxCf5 markerText;
   UiSelectableGroupIndexEcxCf5 selectedGroup;
-  word availabilityMarker;
+  uint16_t availabilityMarker;
   
   networkState = g_FrontendNetworkState;
   frontendRoot = g_FrontendRootNode;
@@ -126,7 +126,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
             }
             nextPlayer = playerCursor + 1;
             playerCursor = playerCursor + 1;
-          } while ((*(uint *)(nextPlayer->reserved78_7F + maskWordIndex * 4 + 0xc) & levelMaskBit) != 0);
+          } while ((*(uint32_t *)(nextPlayer->reserved78_7F + maskWordIndex * 4 + 0xc) & levelMaskBit) != 0);
           markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + 0x2230);
           *markerText.eax = availabilityMarker;
           levelRecordAddress = levelRecordAddress + 0x100;
@@ -159,13 +159,13 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
 
 {
-  sdword *layoutField;
+  int32_t *layoutField;
   UiNodeBase **nodeLinkField;
   UiNodeVtable **vtableField;
   UiAnchorFractionQ31 *control;
   UiTextResourceId titleTextId;
   FrontendLoadedLevelRuntimeImage370 *loadedLevel;
-  dword savedSettingValue;
+  uint32_t savedSettingValue;
   int factionSlot;
   FrontendPlayerRuntimeBlockCount playersRemaining;
   int factionsRemaining;
@@ -180,13 +180,13 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     savedSettingValue = PersistentSettings_ReadDword(100,0x44);
-    FRONTEND_UI_FIELD(frontendRoot,gameSpeedSlider,0x58,dword) = savedSettingValue;
+    FRONTEND_UI_FIELD(frontendRoot,gameSpeedSlider,0x58,uint32_t) = savedSettingValue;
   }
   UiPageStack_SetActiveIndex(0xc,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if ((int)g_FramebufferWidth < 0x281) {
-    layoutField = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,sdword);
+    layoutField = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
     *layoutField = *layoutField | 0x2000;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -198,7 +198,7 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
     playersRemaining = playersRemaining - 1;
   } while (playersRemaining != 0);
   titleTextId = (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex;
-  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,sdword) =
+  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,int32_t) =
        (playerRecord->factionAssignment).factionAssignmentIndex + 0x230017 +
        (g_FrontendLoadedLevelAsset->header).titleTextResourceIndex * 0x10;
   briefingText = TextResource_Resolve(titleTextId + 0x2230);
@@ -207,61 +207,61 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   RichTextCommandStream_PatchPayloadBySelector(0,briefingText.eax,templateText.eax);
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,(loadedLevel->header).titleTextResourceIndex,
-             (word *)&g_FrontendMissionBriefingLevelDigitsUtf16);
-  WidePath_SetExtensionCode(0x6d6c66,(word *)&g_FrontendMissionBriefingMoviePathUtf16);
-  movieOpen = Movie_Open(0x80000000,(word *)&g_FrontendMissionBriefingMoviePathUtf16);
+             (uint16_t *)&g_FrontendMissionBriefingLevelDigitsUtf16);
+  WidePath_SetExtensionCode(0x6d6c66,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
+  movieOpen = Movie_Open(0x80000000,(uint16_t *)&g_FrontendMissionBriefingMoviePathUtf16);
   if (movieOpen.carry) {
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,sdword) = 0;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = 0;
   }
   else {
     firstFrame = Movie_AdvanceFrame();
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,sdword) = firstFrame.eax;
-    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x58,sdword) = 0;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x54,int32_t) = firstFrame.eax;
+    FRONTEND_UI_FIELD(frontendRoot,briefingImage,0x58,int32_t) = 0;
   }
   if ((((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
       (g_FrontendLoadedCampaignAsset == 0)) && (g_FrontendScenarioInitializationCount == 0)) {
     FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) =
-         (UiNodeBase *)((uint)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) & 0xfffffff7);
+         (UiNodeBase *)((uint32_t)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) & 0xfffffff7);
     nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x4C,struct UiNodeBase *);
-    *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField & 0xfffffbff);
+    *nodeLinkField = (UiNodeBase *)((uint32_t)*nodeLinkField & 0xfffffbff);
   }
   else {
     FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) =
-         (UiNodeBase *)((uint)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) | 8);
+         (UiNodeBase *)((uint32_t)FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x48,struct UiNodeBase *) | 8);
     nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingBackButton,0x4C,struct UiNodeBase *);
-    *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField | 0x400);
+    *nodeLinkField = (UiNodeBase *)((uint32_t)*nodeLinkField | 0x400);
     if ((g_FrontendScenarioInitializationCount != 0) || (g_FrontendLoadedCampaignAsset != 0)) {
       nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x48,struct UiNodeBase *);
-      *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField & 0xfffffff7);
+      *nodeLinkField = (UiNodeBase *)((uint32_t)*nodeLinkField & 0xfffffff7);
       vtableField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x4C,struct UiNodeVtable *);
-      *vtableField = (UiNodeVtable *)((uint)*vtableField & 0xfffffbff);
-      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
+      *vtableField = (UiNodeVtable *)((uint32_t)*vtableField & 0xfffffbff);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,int32_t);
       *layoutField = *layoutField & 0xfffffff7;
-      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,int32_t);
       *layoutField = *layoutField & 0xfffffbff;
-      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,int32_t);
       *layoutField = *layoutField | 8;
-      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
+      layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,int32_t);
       *layoutField = *layoutField | 0x400;
       goto FrontendMissionBriefing_InitializePlayerReadinessAndLayout;
     }
   }
   nodeLinkField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x48,struct UiNodeBase *);
-  *nodeLinkField = (UiNodeBase *)((uint)*nodeLinkField | 8);
+  *nodeLinkField = (UiNodeBase *)((uint32_t)*nodeLinkField | 8);
   vtableField = &FRONTEND_UI_FIELD(frontendRoot,briefingExitButton,0x4C,struct UiNodeVtable *);
-  *vtableField = (UiNodeVtable *)((uint)*vtableField | 0x400);
-  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,sdword);
+  *vtableField = (UiNodeVtable *)((uint32_t)*vtableField | 0x400);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x48,int32_t);
   *layoutField = *layoutField | 8;
-  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,sdword);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingSaveButton,0x4C,int32_t);
   *layoutField = *layoutField | 0x400;
 FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
-  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,sdword);
+  layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,int32_t);
   *layoutField = *layoutField & 0xfffffff7;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) &&
      (1 < g_FrontendPlayerRuntimeBlockCount)) {
-    layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,sdword);
+    layoutField = &FRONTEND_UI_FIELD(frontendRoot,briefingBeginButton,0x48,int32_t);
     *layoutField = *layoutField | 8;
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -271,10 +271,10 @@ FrontendMissionBriefing_InitializePlayerReadinessAndLayout:
     playersRemaining = playersRemaining - 1;
     playerRecord = playerRecord + 1;
   } while (playersRemaining != 0);
-  briefingText = TextResource_Resolve(FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,sdword));
+  briefingText = TextResource_Resolve(FRONTEND_UI_FIELD(frontendRoot,briefingText,0x54,int32_t));
   textExtent = RichTextCommandStream_MeasureWrappedBlockRegs
                      (g_UiTextStyleNormal,briefingText.eax,(UiPixelExtent)FRONTEND_UI_FIELD(frontendRoot,briefingText,0x50,struct UiNodeVtable *));
-  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x28,dword) = textExtent.widthPixels + 6;
+  FRONTEND_UI_FIELD(frontendRoot,briefingText,0x28,uint32_t) = textExtent.widthPixels + 6;
   FRONTEND_UI(frontendRoot,briefingText)->bottomOffset = textExtent.heightPixels + 6;
   control = (UiAnchorFractionQ31 *)FRONTEND_UI(frontendRoot,briefingTextScroller);
   UiScrollableControl_RebuildViewportAndScrollbars((UiScrollableControl *)control);
@@ -307,11 +307,11 @@ FrontendMissionBriefing_AdvanceFactionAvailabilityScan:
       if (((g_FrontendLoadedCampaignAsset == 0) ||
           (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) ==
            *(int *)(g_FrontendLoadedCampaignAsset + 0xb4))) && (unclaimedActiveFactions != 0)) {
-        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,sdword);
+        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,int32_t);
         *layoutField = *layoutField & 0xfffffff7;
       }
       else {
-        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,sdword);
+        layoutField = &FRONTEND_UI_FIELD(frontendRoot,opponentSettingsGroup,0x48,int32_t);
         *layoutField = *layoutField | 8;
         UiNodeList_SuppressActionId(0x204a,&frontendRoot->base);
       }

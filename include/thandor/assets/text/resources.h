@@ -16,7 +16,7 @@
 
 /* 0x0041CD30 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path);
+TextResourcePage_LoadCompatibilityAliases(uint32_t aliasAddressBase,uint16_t *path);
 
 /* 0x0041B080 */
 void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void);
@@ -38,18 +38,18 @@ FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource);
 
 /* 0x0041D370 */
-dword FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,sdword drawX);
+uint32_t FontGlyph_DrawBottomAligned (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate baselineY,int32_t drawX);
 
 /* 0x0041D400 */
-dword FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX);
+uint32_t FontGlyph_DrawVerticallyCentered (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom, UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource, UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,int32_t drawX);
 
 /* 0x0041CA50 */
 TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path);
+TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path);
 
 /* 0x0041CCF0 */
 void __thandor_void_preserve_eax_ecx_edx
-TextResourceOverride_Register(TextResourceId resourceId,word *text);
+TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text);
 
 /* 0x0041CDE0 */
 TextResourceResolveEaxCf5 __thandor_eax_cf_preserve_ecx_edx

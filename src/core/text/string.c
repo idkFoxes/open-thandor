@@ -20,23 +20,23 @@
    denominator must be nonzero.
    Local calls: WideText_CopyCodeUnits.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 WideNumber_FormatUtf16
           (WideNumberFormatFlags flags,WideNumberFractionalDigitCount fractionalDigits,
           WideNumberIntegerDigitLimit integerDigitLimit,WideNumberDenominator32 denominator,
-          WideNumberSignedValue32 value,word *destination)
+          WideNumberSignedValue32 value,uint16_t *destination)
 
 {
-  ulonglong previousValue;
-  uint integerPartOrHexDigit;
-  word *source;
+  uint64_t previousValue;
+  uint32_t integerPartOrHexDigit;
+  uint16_t *source;
   WideNumberFormatCodeUnitCount segmentLength;
-  uint digitCount;
+  uint32_t digitCount;
   UiTextCodeUnitCount codeUnitCount;
-  uint fractionRemainder;
-  word *signText;
-  word *paddingText;
-  word *destinationCursor;
+  uint32_t fractionRemainder;
+  uint16_t *signText;
+  uint16_t *paddingText;
+  uint16_t *destinationCursor;
   
   segmentLength = g_WideNumberFormatState.hexPrefixLength;
   if ((flags & WIDE_FORMAT_HEXADECIMAL) == 0) {
@@ -55,12 +55,12 @@ WideNumber_FormatUtf16
     }
     WideText_CopyCodeUnits(segmentLength,signText,destination);
     destinationCursor = destination + segmentLength;
-    integerPartOrHexDigit = (uint)value / denominator;
-    fractionRemainder = (uint)value % denominator;
+    integerPartOrHexDigit = (uint32_t)value / denominator;
+    fractionRemainder = (uint32_t)value % denominator;
     source = g_WideNumberFormatState.digitAlphabet;
     digitCount = 0;
     do {
-      previousValue = (ulonglong)integerPartOrHexDigit;
+      previousValue = (uint64_t)integerPartOrHexDigit;
       integerPartOrHexDigit = integerPartOrHexDigit / 10;
       source = source + -1;
       digitCount = digitCount + 1;
@@ -98,9 +98,9 @@ WideNumber_FormatUtf16
       destinationCursor = destinationCursor + segmentLength;
       if (fractionalDigits != 0) {
         do {
-          previousValue = (ulonglong)fractionRemainder;
-          fractionRemainder = (uint)((previousValue * 10) % (ulonglong)denominator);
-          *destinationCursor = (short)((previousValue * 10) / (ulonglong)denominator) + 0x30;
+          previousValue = (uint64_t)fractionRemainder;
+          fractionRemainder = (uint32_t)((previousValue * 10) % (uint64_t)denominator);
+          *destinationCursor = (short)((previousValue * 10) / (uint64_t)denominator) + 0x30;
           destinationCursor = destinationCursor + 1;
           fractionalDigits = fractionalDigits - 1;
         } while ((fractionalDigits != 0) && (fractionRemainder != 0));
@@ -124,7 +124,7 @@ WideNumber_FormatUtf16
       value = value << 8;
     }
     do {
-      integerPartOrHexDigit = (uint)value >> 0x1c;
+      integerPartOrHexDigit = (uint32_t)value >> 0x1c;
       value = value << 4;
       *destinationCursor = g_WideNumberFormatState.digitAlphabet[integerPartOrHexDigit];
       segmentLength = g_WideNumberFormatState.hexSuffixLength;
@@ -148,12 +148,12 @@ WideNumber_FormatUtf16
    returned through flags.
 */
 CompareFlagsCfZf2 __thandor_void_preserve_eax_ecx_edx
-Utf16String_CompareAsciiCaseInsensitiveFlags(word *rightText,word *leftText)
+Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftText)
 
 {
-  ushort leftCodeUnit;
-  ushort otherCodeUnit;
-  ushort rightCodeUnit;
+  uint16_t leftCodeUnit;
+  uint16_t otherCodeUnit;
+  uint16_t rightCodeUnit;
   CompareFlagsCfZf2 compareFlags;
   
   do {
@@ -181,7 +181,7 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(word *rightText,word *leftText)
       }
     }
   } while (leftCodeUnit == rightCodeUnit);
-  return THANDOR_BITCAST(int, CompareFlagsCfZf2, ((ushort)(leftCodeUnit < rightCodeUnit) << 8));
+  return THANDOR_BITCAST(int, CompareFlagsCfZf2, ((uint16_t)(leftCodeUnit < rightCodeUnit) << 8));
 }
 
 
@@ -193,14 +193,14 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(word *rightText,word *leftText)
    body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination,byte *source)
+Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
-  dword remainingCapacityBytes;
+  uint32_t remainingCapacityBytes;
   bool capacityExhausted;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 overflowResult;
-  byte sourceByte;
+  uint8_t sourceByte;
   
   remainingCapacityBytes = capacityBytes;
   do {
@@ -213,7 +213,7 @@ Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination
       overflowResult.valueOrError = 0x14;
       return overflowResult;
     }
-    *destination = (ushort)sourceByte;
+    *destination = (uint16_t)sourceByte;
     source = source + 1;
     destination = destination + 1;
   } while (sourceByte != 0);
@@ -228,12 +228,12 @@ Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,word *destination
    Purpose: Copies a NUL-terminated UTF-16 string including its terminator. Returns the copied byte count excluding
    the two-byte terminator.
 */
-dword Utf16_CopyAndReturnByteLength(word *destination,word *source)
+uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source)
 
 {
-  dword completedByteLength;
-  word copiedCodeUnit;
-  dword nextByteLength;
+  uint32_t completedByteLength;
+  uint16_t copiedCodeUnit;
+  uint32_t nextByteLength;
   
   nextByteLength = 0;
   do {
@@ -254,7 +254,7 @@ dword Utf16_CopyAndReturnByteLength(word *destination,word *source)
    codeUnitCount→UiTextCodeUnitCount_V300. Nearby but non-identical semantic domains were explicitly deferred.
 */
 void __thandor_void_preserve_eax_ecx_edx
-WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,word *source,word *destination)
+WideText_CopyCodeUnits(UiTextCodeUnitCount codeUnitCount,uint16_t *source,uint16_t *destination)
 
 {
   if (codeUnitCount != 0) {

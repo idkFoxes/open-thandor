@@ -11,31 +11,31 @@
 /* Implementation ownership: world/effects/maintenance. */
 
 /* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
-static __inline qword EffectTint_UnpackBytesShiftRight(dword value,int shift)
+static __inline uint64_t EffectTint_UnpackBytesShiftRight(uint32_t value,int shift)
 
 {
   ThandorMmx lanes;
   int lane;
 
   for (lane = 0; lane < 4; lane = lane + 1) {
-    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+    lanes.uw[lane] = (uint16_t)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
   }
   return lanes.q;
 }
 
 /* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
-static __inline dword EffectTint_PackWordsUnsignedSaturate(qword words)
+static __inline uint32_t EffectTint_PackWordsUnsignedSaturate(uint64_t words)
 
 {
   ThandorMmx lanes;
-  dword packed;
+  uint32_t packed;
   int lane;
 
   lanes.q = words;
   packed = 0;
   for (lane = 0; lane < 4; lane = lane + 1) {
     packed = packed |
-             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+             (uint32_t)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
   }
   return packed;
 }
@@ -56,8 +56,8 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 {
   PackedArgb32 effectTintArgb;
   PackedArgb32 definitionTintArgb;
-  dword primaryOccupancyMask;
-  qword mm0PackedValue0;
+  uint32_t primaryOccupancyMask;
+  uint64_t mm0PackedValue0;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   EffectRuntimeSlot *effectRuntime;
   
@@ -137,7 +137,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   EffectShadingCountdownTicks *shadingCountdownPtr;
   EffectPeriodicIntervalTicks *periodicCountdownPtr;
   DefinitionReferencePresentFlag *linkedCountdownPtr;
-  dword *completionCountdownPtr;
+  uint32_t *completionCountdownPtr;
   AngleTurn32 *rotationAngle1Ptr;
   GraphicsFixedVec3 *translationPtr;
   GraphicsWorldCoordinateQ12 *translationAxisPtr;
@@ -148,18 +148,18 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   PackedArgb32 definitionTintArgb;
   EffectRuntimeCompletionAction pendingCompletionAction;
   int *ownerClassRecord;
-  dword keyIndex;
+  uint32_t keyIndex;
   AngleTurn32 previousRotationAngle1;
-  uint frameAgeOrTintValue;
-  sdword normalDotMotion;
-  uint fadeOutStartTicks;
+  uint32_t frameAgeOrTintValue;
+  int32_t normalDotMotion;
+  uint32_t fadeOutStartTicks;
   Q12 worldXQ12;
   int frameAdvancedOrScratch;
   Q12 worldZQ12;
   GameEntityRuntime *spawnArmyCompletionEntity;
   EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
-  qword modulatedLanes;
+  uint64_t modulatedLanes;
   ModelLookupEntryEaxCf5 lookupResult;
   GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
   ArmyRuntimeCreateEaxCf5 armyCreateResult;
@@ -232,7 +232,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
         effectSlot->stateTintArgb =
              effectSlot->stateTintArgb |
-             (int)(((longlong)(int)frameAgeOrTintValue * 0xff) / (longlong)(int)fadeDurationTicks) << 0x18;
+             (int)(((int64_t)(int)frameAgeOrTintValue * 0xff) / (int64_t)(int)fadeDurationTicks) << 0x18;
       }
       else if ((fadeOutStartTicks < frameAgeOrTintValue) && (0 < (int)effectDefinition->alphaFadeOutTicks)) {
         fadeDurationTicks = effectDefinition->alphaFadeOutTicks;
@@ -240,7 +240,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         effectSlot->stateTintArgb = effectSlot->stateTintArgb & 0xffffff;
         effectSlot->stateTintArgb =
              effectSlot->stateTintArgb |
-             (int)(((longlong)(int)((frameAgeOrTintValue - fadeOutStartTicks) - fadeDurationTicks) * -0xff) / (longlong)(int)fadeOutDivisorTicks) <<
+             (int)(((int64_t)(int)((frameAgeOrTintValue - fadeOutStartTicks) - fadeDurationTicks) * -0xff) / (int64_t)(int)fadeOutDivisorTicks) <<
              0x18;
       }
       else {
@@ -260,10 +260,10 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     }
     if ((modelNode->runtimeFlags & 0x800) != 0) {
       modelNode->modelScaleQ12 =
-           (int)(((longlong)
+           (int)(((int64_t)
                   (effectDefinition->modelScaleEndQ12 - effectDefinition->modelScaleStartQ12) *
-                 (longlong)(int)effectSlot->effectAgeTicks) /
-                (longlong)
+                 (int64_t)(int)effectSlot->effectAgeTicks) /
+                (int64_t)
                 (int)(effectDefinition->animationFrameCount *
                       effectDefinition->frameAdvanceThresholdQ4 >> 4)) +
            effectDefinition->modelScaleStartQ12;
@@ -376,9 +376,9 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                                       *(PckArmyAssetIdCatalog *)(frameAdvancedOrScratch + 0xc0),worldRuntime);
                   if (!armyCreateResult.carry) {
                     (*(int **)armyCreateResult.eax)[0xf] =
-                         (int)(((longlong)ownerClassRecord[0xf] *
-                               (longlong)*(int *)(**(int **)armyCreateResult.eax + 0x60)) /
-                              (longlong)*(int *)(frameAdvancedOrScratch + 0x60));
+                         (int)(((int64_t)ownerClassRecord[0xf] *
+                               (int64_t)*(int *)(**(int **)armyCreateResult.eax + 0x60)) /
+                              (int64_t)*(int *)(frameAdvancedOrScratch + 0x60));
                     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,spawnArmyCompletionEntity);
                   }
                 }

@@ -32,7 +32,7 @@ void __thandor_preserve_eax InGameSettingsPage_OpenViaSharedToggle(UiNodeBase *s
 /* 0x0055F520 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameSimulationSpeed_AdjustPlayerAndRecomputeMinimumTicks
-          (FrontendPlayerRuntimeId playerRuntimeId,dword reservedZero0,dword reservedZero1,
+          (FrontendPlayerRuntimeId playerRuntimeId,uint32_t reservedZero0,uint32_t reservedZero1,
           int stepDelta);
 
 /* 0x0056AA90 */

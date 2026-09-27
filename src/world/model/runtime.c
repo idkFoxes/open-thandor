@@ -95,9 +95,9 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
 {
   Q12 *boundingRadiusField;
   ModelResourceHitTestAndRenderView210 *renderView;
-  uint radiusOrMeshGroupCount;
-  sdword planeDistance;
-  dword distanceOrChildrenRemaining;
+  uint32_t radiusOrMeshGroupCount;
+  int32_t planeDistance;
+  uint32_t distanceOrChildrenRemaining;
   int subtreeRadiusOrChildIndex;
   ModelMeshGroupRelativeOffset *meshGroup;
   int nodeRadius;
@@ -143,7 +143,7 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                 projectedRadiusScale = 0x10000000;
               }
               else {
-                projectedRadiusScale = (Q12)(((ulonglong)radiusOrMeshGroupCount << 0x1c) / (ulonglong)distanceOrChildrenRemaining); /* unsigned DIV */
+                projectedRadiusScale = (Q12)(((uint64_t)radiusOrMeshGroupCount << 0x1c) / (uint64_t)distanceOrChildrenRemaining); /* unsigned DIV */
               }
               FixedTransform_ApplyPoint
                         ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
@@ -164,9 +164,9 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                 renderView = (modelNodeRuntime->modelPayload).modelResource;
                 radiusOrMeshGroupCount = renderView->meshGroupCount;
                 meshGroup = &renderView->firstMeshGroupRelativeOffset;
-                if (((((uint)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ) && (1 < radiusOrMeshGroupCount))
+                if (((((uint32_t)g_ModelLodDepthThresholdQ8 < (int)g_ModelCullViewRelativeZ) && (1 < radiusOrMeshGroupCount))
                     && (meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup),
-                       (uint)g_ModelLodDepthThresholdQ8 < (uint)((int)g_ModelCullViewRelativeZ >> 1)
+                       (uint32_t)g_ModelLodDepthThresholdQ8 < (uint32_t)((int)g_ModelCullViewRelativeZ >> 1)
                        )) && (2 < radiusOrMeshGroupCount)) {
                   meshGroup = (ModelMeshGroupRelativeOffset *)((int)meshGroup + *meshGroup);
                 }
@@ -206,7 +206,7 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
 
 {
   ModelResourceHitTestAndRenderView210 *modelResourceView;
-  dword boundsLengthOrChildrenRemaining;
+  uint32_t boundsLengthOrChildrenRemaining;
   int childIndex;
   
   modelResourceView = (modelNode->modelPayload).modelResource;
@@ -410,18 +410,18 @@ StatusValueEaxCf5 __cdecl ModelRuntimePool_Init(void)
    children (child count at +0x14, child pointers from +0x18). The original walks the tree with an
    explicit {count, index, node} frame stack on the machine stack; the decompile only followed the
    first child. */
-static void ModelRuntimePool_ReleaseDefinitionNodeResources(dword resourceRecord)
+static void ModelRuntimePool_ReleaseDefinitionNodeResources(uint32_t resourceRecord)
 
 {
-  dword childrenRemaining;
+  uint32_t childrenRemaining;
   int childIndex;
   
-  childrenRemaining = *(dword *)(resourceRecord + 0x14);
-  if (((*(uint *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
+  childrenRemaining = *(uint32_t *)(resourceRecord + 0x14);
+  if (((*(uint32_t *)(resourceRecord + 4) & 0xf) == 0) && (*(int *)(resourceRecord + 0x34) != 0)) {
     Resource_Release(*(void **)(resourceRecord + 0x30));
   }
   for (childIndex = 0; childrenRemaining != 0; childIndex = childIndex + 1) {
-    ModelRuntimePool_ReleaseDefinitionNodeResources(*(dword *)(resourceRecord + 0x18 + childIndex * 4));
+    ModelRuntimePool_ReleaseDefinitionNodeResources(*(uint32_t *)(resourceRecord + 0x18 + childIndex * 4));
     childrenRemaining = childrenRemaining - 1;
   }
   return;
@@ -439,7 +439,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_ShutdownAndReleaseDefi
 {
   int registryRemaining;
   ModelDefinitionRecordPrefix **registryEntry;
-  dword resourceRecord;
+  uint32_t resourceRecord;
   
   (*g_MemoryApi.free)(g_ModelRuntimeSlots);
   g_ModelRuntimeSlots = (ModelRuntimeSlot *)0x0;
@@ -470,7 +470,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
 {
   ModelRuntimeSlotSerializedScalarView200 *linkedModelOffset;
   ModelRuntimePoolRelativeOffset childRuntimeOffset;
-  dword offsetClassOrCount;
+  uint32_t offsetClassOrCount;
   int dwordsRemaining;
   int slotsRemaining;
   ModelNodePoolRelativeOffset parentNodeOffset;
@@ -505,7 +505,7 @@ void __cdecl ModelRuntimePool_UnrebaseBeforeSave(void)
     if (offsetClassOrCount != 0) {
       offsetClassOrCount = offsetClassOrCount - (int)g_ArmyRuntimeRebaseBaseMinusOne;
     }
-    modelRuntime->linkedModelRuntimeSavedOffset = (dword)linkedModelOffset;
+    modelRuntime->linkedModelRuntimeSavedOffset = (uint32_t)linkedModelOffset;
     (modelRuntime->classState).linkedArmyRuntimeSavedOffset = offsetClassOrCount;
     offsetClassOrCount = (modelRuntime->definitionReferenceOrSavedId).definition[6].flags;
     modelRuntime->definitionReferenceOrSavedId =
@@ -548,7 +548,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
   ArmyRuntimeSlot *ownerOrLinkedArmy;
   ArmyRuntimeSlot *rebasedLinkedArmy;
   int registryRemaining;
-  dword classIndexOrCount;
+  uint32_t classIndexOrCount;
   int slotsRemaining;
   ModelRuntimeNode *rebasedParentNode;
   ModelDefinitionRecordPrefix **registryEntry;
@@ -669,7 +669,7 @@ ModelRuntimePool_DestroyHierarchyAndDetach
   Q12 worldXQ12;
   AngleTurn32 orientationAngle;
   int ownerDefinition;
-  dword classIndexOrCount;
+  uint32_t classIndexOrCount;
   ModelRuntimeSlot *attachmentCursor;
   ModelRuntimeNode *parentModelNode;
   
@@ -793,11 +793,11 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
           WorldRuntimeContext *worldRuntime)
 
 {
-  dword copiedValueA;
-  uint state44CandidateOrFlags;
-  uint state90Candidate;
-  dword copiedValueB;
-  dword copiedValueC;
+  uint32_t copiedValueA;
+  uint32_t state44CandidateOrFlags;
+  uint32_t state90Candidate;
+  uint32_t copiedValueB;
+  uint32_t copiedValueC;
   ModelRuntimeNode *modelNodeRuntime;
   int slotsRemaining;
   int registryRemaining;

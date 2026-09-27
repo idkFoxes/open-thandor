@@ -18,10 +18,10 @@
    Local calls: TextResourcePage_Load, TextResource_Resolve, TextResourceOverride_Register.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TextResourcePage_LoadCompatibilityAliases(dword aliasAddressBase,word *path)
+TextResourcePage_LoadCompatibilityAliases(uint32_t aliasAddressBase,uint16_t *path)
 
 {
-  word *resolvedText;
+  uint16_t *resolvedText;
   int aliasIndex;
   bool failed;
   TextResourceLoadEaxCf5 pageLoadResult;
@@ -81,8 +81,8 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
   remainingSources = 2;
   scanLimitOrSlotCount = 0x21;
   do {
-    textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((word *)pathUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)textureLoadResult.eax,textureLoadResult.carry);
+    textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)pathUtf16);
+    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)textureLoadResult.eax,textureLoadResult.carry);
     *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.eax;
     pathCursor = pathUtf16;
     do {
@@ -98,7 +98,7 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
     if (remainingSources == 0) {
       allocResult = (*g_MemoryApi.alloc)(0x4000);
       checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
-      g_FontRuntimeBuffer = (byte *)checkedResult.eax;
+      g_FontRuntimeBuffer = (uint8_t *)checkedResult.eax;
       allocResult = (*g_MemoryApi.alloc)(0x8000);
       checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.eax,allocResult.carry);
       g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.eax;
@@ -155,10 +155,10 @@ FontGlyphSizeEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx
 FontGlyph_GetLogicalSizeActiveRegs(GraphicsSubresourceIndex glyphSubresource)
 
 {
-  dword glyphWidth;
+  uint32_t glyphWidth;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   FontGlyphSizeEaxEdxCf9 glyphSize;
-  dword fontIndex;
+  uint32_t fontIndex;
   
   fontIndex = g_ActiveFontIndex;
   textureSize = (*g_GraphicsTextureSourceGetLogicalSize)
@@ -187,8 +187,8 @@ FontGlyph_GetLogicalSizeForStyleRegs
           (UiPackedTextStyle packedStyle,GraphicsSubresourceIndex glyphSubresource)
 
 {
-  dword glyphWidth;
-  uint fontIndex;
+  uint32_t glyphWidth;
+  uint32_t fontIndex;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   FontGlyphSizeEaxEdxCf9 glyphSize;
   
@@ -215,15 +215,15 @@ FontGlyph_GetLogicalSizeForStyleRegs
    clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
    clipRight→UiPixelCoordinate_V297, p5 baselineY→UiPixelCoordinate_V297.
 */
-dword FontGlyph_DrawBottomAligned
+uint32_t FontGlyph_DrawBottomAligned
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
                UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
-               UiPixelCoordinate baselineY,sdword drawX)
+               UiPixelCoordinate baselineY,int32_t drawX)
 
 {
   int drawY;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
-  dword colorArgb;
+  uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
   
@@ -256,15 +256,15 @@ dword FontGlyph_DrawBottomAligned
    clipTop→UiPixelCoordinate_V297, p1 clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3
    clipRight→UiPixelCoordinate_V297, p5 lineTop→UiPixelCoordinate_V297, p6 lineBottom→UiPixelCoordinate_V297.
 */
-dword FontGlyph_DrawVerticallyCentered
+uint32_t FontGlyph_DrawVerticallyCentered
                (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
                UiPixelCoordinate clipRight,GraphicsSubresourceIndex glyphSubresource,
-               UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,sdword drawX)
+               UiPixelCoordinate lineTop,UiPixelCoordinate lineBottom,int32_t drawX)
 
 {
   int drawY;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
-  dword colorArgb;
+  uint32_t colorArgb;
   GraphicsTextureSourceAsset *fontTexture;
   SoftwareFramebufferAccess *framebuffer;
   
@@ -298,18 +298,18 @@ dword FontGlyph_DrawVerticallyCentered
    Cross-module calls: Package_LoadEntry [assets/package/runtime], Resource_Release [assets/resource/runtime].
 */
 TextResourceLoadEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
+TextResourcePage_Load(TextResourcePageIndex pageIndex,uint16_t *path)
 
 {
-  ushort codeUnit;
-  uint packedHighDigits;
+  uint16_t codeUnit;
+  uint32_t packedHighDigits;
   TextResourceAssetHeader *allocation;
   TextResourceAssetHeader *localeBlockOrError;
   LocaleTelephoneCountryCode countryCode;
   AssetRecordCount remainingBlocks;
   TextResourceStringCount remainingStrings;
-  word *recordStart;
-  word *textCursor;
+  uint16_t *recordStart;
+  uint16_t *textCursor;
   int stringIndex;
   PackageLoadEntryEaxCf5 loadResult;
   TextResourceLoadEaxCf5 failureResult;
@@ -318,7 +318,7 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
   loadResult = Package_LoadEntry(path);
   if (loadResult.carry) {
     Thandor_Log("text page 0x%02X \"%ls\": load failed 0x%08X", pageIndex, (wchar_t *)path,
-                (dword)loadResult.bufferOrError);
+                (uint32_t)loadResult.bufferOrError);
   }
   allocation = loadResult.bufferOrError;
   localeBlockOrError = allocation;
@@ -359,7 +359,7 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
       stringIndex = 0;
       for (remainingStrings = (localeBlockOrError->localeCountHeader).common.allocationSizeBytes; remainingStrings != 0;
           remainingStrings = remainingStrings - 1) {
-        textCursor = (word *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
+        textCursor = (uint16_t *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
                           assetRelativeAddressAnchor28 +
                          *(int *)((localeBlockOrError->localeCountHeader).common.buildMetadata.
                                   assetRelativeAddressAnchor28 + stringIndex * 4 + -0x18) + -0x28);
@@ -380,22 +380,22 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
               break;
             case 0x18:
             case 0x19:
-              packedHighDigits = *(uint *)textCursor;
-              *(uint *)(recordStart + 3) =
-                   (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
+              packedHighDigits = *(uint32_t *)textCursor;
+              *(uint32_t *)(recordStart + 3) =
+                   (*(uint32_t *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
               *(void **)textCursor = &g_MissingTextResourceFallbackStream;
-              *(uint *)(recordStart + 3) =
+              *(uint32_t *)(recordStart + 3) =
                    *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + 5;
               break;
             case 0x1a:
               /* Like 0x18/0x19, but the pointer slot is cleared. The high digits are read before the
                  clear (0x0041CC23 MOV EBX,[ESI] precedes 0x0041CC3E MOV [ESI],0). */
-              packedHighDigits = *(uint *)textCursor;
-              *(uint *)(recordStart + 3) =
-                   (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
-              *(uint *)textCursor = 0;
-              *(uint *)(recordStart + 3) =
+              packedHighDigits = *(uint32_t *)textCursor;
+              *(uint32_t *)(recordStart + 3) =
+                   (*(uint32_t *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint32_t *)(recordStart + 3) & 0xf) * 10;
+              *(uint32_t *)textCursor = 0;
+              *(uint32_t *)(recordStart + 3) =
                    *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + 5;
             }
@@ -404,13 +404,13 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
         stringIndex = stringIndex + 1;
       }
       successResult.carry = false;
-      successResult.errorOrValue = (dword)localeBlockOrError;
+      successResult.errorOrValue = (uint32_t)localeBlockOrError;
       return successResult;
     }
     Resource_Release(allocation);
   }
   failureResult.carry = true;
-  failureResult.errorOrValue = (dword)localeBlockOrError;
+  failureResult.errorOrValue = (uint32_t)localeBlockOrError;
   return failureResult;
 }
 
@@ -422,7 +422,7 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
    body bytes, control flow, and executable data remain unchanged.
 */
 void __thandor_void_preserve_eax_ecx_edx
-TextResourceOverride_Register(TextResourceId resourceId,word *text)
+TextResourceOverride_Register(TextResourceId resourceId,uint16_t *text)
 
 {
   int overrideSlotsRemaining;
@@ -473,7 +473,7 @@ TextResource_Resolve(TextResourceId resourceId)
   TextResourceResolveEaxCf5 missingResult;
   
   if (resourceId == 0xffffffff) {
-    emptyResult.eax = (word *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
+    emptyResult.eax = (uint16_t *)THANDOR_ADDR(g_EmptyTextResourceUtf16,0);
     emptyResult.carry = false;
     return emptyResult;
   }
@@ -491,7 +491,7 @@ TextResource_Resolve(TextResourceId resourceId)
     } while (!overrideFound);
     if (overrideFound) {
       overrideResult.carry = false;
-      overrideResult.eax = (word *)cursorAfterScan->resourceIds[0xfff];
+      overrideResult.eax = (uint16_t *)cursorAfterScan->resourceIds[0xfff];
       return overrideResult;
     }
   }
@@ -516,7 +516,7 @@ TextResource_Resolve(TextResourceId resourceId)
   Thandor_Log("text resource 0x%08X missing (page binding %p)", resourceId,
               g_TextResourcePageBindings[(resourceId & 0xff0000) == 0 ? resourceId >> 8 : resourceId >> 0x10].selectedLocaleBlock);
   missingResult.carry = true;
-  missingResult.eax = (word *)&k_LowAddressLiteral00000033;
+  missingResult.eax = (uint16_t *)&k_LowAddressLiteral00000033;
   return missingResult;
 }
 

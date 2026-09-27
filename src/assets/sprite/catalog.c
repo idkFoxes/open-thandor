@@ -99,13 +99,13 @@ SpriteAsset_RegisterAndRelocatePointers(SpriteAssetHeader *asset)
                 pointerRecordsRemaining != 0; pointerRecordsRemaining = pointerRecordsRemaining - 1)
             {
               pointerRelocationCursor->pointerOrSerializedOffset00 =
-                   (dword)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
+                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
                           + (pointerRelocationCursor->pointerOrSerializedOffset00 - 0x28));
               pointerRelocationCursor->pointerOrSerializedOffset0C =
-                   (dword)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
+                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
                           + (pointerRelocationCursor->pointerOrSerializedOffset0C - 0x28));
               pointerRelocationCursor->pointerOrSerializedOffset18 =
-                   (dword)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
+                   (uint32_t)((asset->registryHeader).common.buildMetadata.assetRelativeAddressAnchor28
                           + (pointerRelocationCursor->pointerOrSerializedOffset18 - 0x28));
               pointerRelocationCursor = pointerRelocationCursor + 1;
             }
@@ -141,7 +141,7 @@ SpriteAsset_CopyAndDerelocateImage
           (void *serializedDestination,SpriteAssetHeader *relocatedSourceImage)
 
 {
-  uint copyDwordsRemaining;
+  uint32_t copyDwordsRemaining;
   int blocksRemaining;
   int recordsRemaining;
   SpriteAssetHeader *sourceCursor;

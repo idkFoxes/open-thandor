@@ -18,14 +18,14 @@
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent],
    WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface [world/runtime/core].
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
 
 {
-  dword edgeScrollStep;
-  dword bottomStepOrCursorFrame;
-  dword rightStepOrScreenDeltaX;
-  dword screenDeltaY;
+  uint32_t edgeScrollStep;
+  uint32_t bottomStepOrCursorFrame;
+  uint32_t rightStepOrScreenDeltaX;
+  uint32_t screenDeltaY;
   
   edgeScrollStep = PersistentSettings_ReadDword(0x20,0x48);
   rightStepOrScreenDeltaX = 0;
@@ -200,7 +200,7 @@ WorldMotion_AdjustHeadingAndRecomputePosition
           (int headingDeltaInput,WorldRuntimeContext *worldRuntime)
 
 {
-  uint azimuthAngle;
+  uint32_t azimuthAngle;
   FixedDirectionXyzRegs12 cameraOffset;
   
   azimuthAngle = (worldRuntime->motion).headingAngle +
@@ -425,7 +425,7 @@ WorldMotion_AdjustPitchClampAndClearFieldGridDirty
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_TranslateCameraByScreenDelta
-          (CameraScreenDeltaPixels screenDeltaX,dword screenDeltaY,WorldRuntimeContext *worldRuntime
+          (CameraScreenDeltaPixels screenDeltaX,uint32_t screenDeltaY,WorldRuntimeContext *worldRuntime
           )
 
 {
@@ -440,15 +440,15 @@ WorldRuntime_TranslateCameraByScreenDelta
           0x10;
   angle = (worldRuntime->motion).headingAngle;
   movementDeltaXYQ12 = FixedMath_SinCosScaled(angle,screenDeltaX * distanceScaleOrSideDeltaY);
-  THANDOR_PART(dword, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
+  THANDOR_PART(uint32_t, movementDeltaXYQ12, 4) = (int)(movementDeltaXYQ12 >> 0x20);
   (worldRuntime->motion).positionXQ12 =
        (worldRuntime->motion).positionXQ12 - (int)movementDeltaXYQ12;
   motionCoordinateField = &(worldRuntime->motion).positionYQ12;
-  *motionCoordinateField = *motionCoordinateField - THANDOR_PART(dword, movementDeltaXYQ12, 4);
+  *motionCoordinateField = *motionCoordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
   coordinateField = &(worldRuntime->motion).targetPositionXQ12;
   *coordinateField = *coordinateField - (int)movementDeltaXYQ12;
   coordinateField = &(worldRuntime->motion).targetPositionYQ12;
-  *coordinateField = *coordinateField - THANDOR_PART(dword, movementDeltaXYQ12, 4);
+  *coordinateField = *coordinateField - THANDOR_PART(uint32_t, movementDeltaXYQ12, 4);
   sideMovementDeltaXYQ12 = FixedMath_SinCosScaled(angle + 0x4000 & 0xffff,screenDeltaY * distanceScaleOrSideDeltaY);
   distanceScaleOrSideDeltaY = (int)(sideMovementDeltaXYQ12 >> 0x20);
   (worldRuntime->motion).positionXQ12 = (worldRuntime->motion).positionXQ12 - (int)sideMovementDeltaXYQ12;

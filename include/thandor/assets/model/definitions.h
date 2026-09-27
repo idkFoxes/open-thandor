@@ -73,7 +73,7 @@ ModelDefinition_UnlockLinkedTechnologyForFactionCf
 /* 0x0052AD90 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ModelDefinition_IsFactionTechnologyUnlockedCf
-          (dword *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
+          (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId);
 
 /* 0x00528E20 */
 ModelDefinitionLookupEaxCf5 __thandor_eax_cf_preserve_ecx_edx

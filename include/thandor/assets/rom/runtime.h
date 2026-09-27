@@ -17,7 +17,7 @@
 /* 0x005452A0 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendRomActionTable_ExecuteRecord
-          (dword reservedZero0,dword reservedZero1,FrontendBooleanState32 suppressActivationSound,
+          (uint32_t reservedZero0,uint32_t reservedZero1,FrontendBooleanState32 suppressActivationSound,
           RomRecordTableIndex recordIndex);
 
 /* 0x00546450 */
@@ -40,7 +40,7 @@ RomAssetRecordPrefix * __thandor_eax_preserve_ecx_edx
 RomRegistry_FindRecordBySlotValue(RomRegistrySlotValue slotValue);
 
 /* 0x00548840 */
-dword RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record);
+uint32_t RomRegistry_FindSlotValueByRecord(RomAssetRecordPrefix *record);
 
 /* 0x00548890 */
 void * __thandor_eax_preserve_ecx_edx

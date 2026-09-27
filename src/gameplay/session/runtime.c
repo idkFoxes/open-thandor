@@ -27,10 +27,10 @@
 InGameRuntimeRunEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
           (LevelAssetRuntimeImagePrefix370 *levelAsset,
-          FrontendBooleanState32 loadExistingSessionFlag,word *levelPathUtf16)
+          FrontendBooleanState32 loadExistingSessionFlag,uint16_t *levelPathUtf16)
 
 {
-  dword startupErrorOrExitCode;
+  uint32_t startupErrorOrExitCode;
   InGameRuntimeInitEaxCf5 newSessionInit;
   InGameRuntimeLoadedInitEaxCf5 loadedSessionInit;
   InGameRuntimeRunEaxCf5 abortResult;
@@ -130,28 +130,28 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
   FieldGridAsset *cameraFieldGrid;
   ArmyRuntimeSlot *armyRuntime;
   LevelMusicSampleNumber selectedMusicTrackId;
-  longlong projectedProduct;
+  int64_t projectedProduct;
   InGameLevelConditionStorageView800 *levelConditionStorage;
   UiNodeBase *hoveredNode;
-  dword candidateFrameOrScore;
+  uint32_t candidateFrameOrScore;
   int columnDeltaOrCount;
   AngleTurn32 clampedPitchAngle;
   UQ12 clampedTargetDistance;
   int gridRowOrDeltaY;
-  uint bestTrackOrSecondsLeft;
+  uint32_t bestTrackOrSecondsLeft;
   InGamePresentationTick currentPresentationTick;
   int targetRowQ12;
   WorldRuntimeContext *worldRuntime;
   int gridColumn;
   int outOfBoundsAxisCount;
-  uint trackIndex;
-  uint nextTrackIndex;
+  uint32_t trackIndex;
+  uint32_t nextTrackIndex;
   InGameConditionScheduleImageView480 *scheduledCondition;
   bool voicePlaying;
   FieldGridCoordinatesEaxEdx8 targetGridPosition;
   StatusValueEaxCf5 pageStackStatus;
   SoundPlayVoiceEaxCf5 playVoiceResult;
-  dword cursorFrameOrScratch;
+  uint32_t cursorFrameOrScratch;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -231,11 +231,11 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       targetRowQ12 = (cameraFieldGrid->gridHeight + 8) * 0x1000;
     }
     if (outOfBoundsAxisCount != 0) {
-      projectedProduct = (longlong)(targetRowQ12 + columnDeltaOrCount * 2) * 0x901;
-      columnDeltaOrCount = ((int)((ulonglong)projectedProduct >> 0x20) << 0x13 | (uint)projectedProduct >> 0xd) -
+      projectedProduct = (int64_t)(targetRowQ12 + columnDeltaOrCount * 2) * 0x901;
+      columnDeltaOrCount = ((int)((uint64_t)projectedProduct >> 0x20) << 0x13 | (uint32_t)projectedProduct >> 0xd) -
               (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12;
-      gridRowOrDeltaY = ((int)((ulonglong)((longlong)targetRowQ12 * -1999) >> 0x20) << 0x14 |
-               (uint)((longlong)targetRowQ12 * -1999) >> 0xc) -
+      gridRowOrDeltaY = ((int)((uint64_t)((int64_t)targetRowQ12 * -1999) >> 0x20) << 0x14 |
+               (uint32_t)((int64_t)targetRowQ12 * -1999) >> 0xc) -
                (endGameResultsRuntime->worldRuntime0A30).motion.targetPositionYQ12;
       motionCoordinate = &(endGameResultsRuntime->worldRuntime0A30).motion.targetPositionXQ12;
       *motionCoordinate = *motionCoordinate + columnDeltaOrCount;
@@ -437,11 +437,11 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
              INGAME_SCHEDULED_CONDITION_COUNTDOWN_ELAPSED) &&
            (bestTrackOrSecondsLeft = scheduledCondition->conditions[0].payload.operands[1], bestTrackOrSecondsLeft != 0)) {
           cursorFrameOrScratch = (*g_WideNumberFormatUtf16)
-                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 0x3c,(word *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
-          *(word *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
+                             (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 0x3c,(uint16_t *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
+          *(uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
           (*g_WideNumberFormatUtf16)
                     (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 0x3c,
-                     (word *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
+                     (uint16_t *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
           currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
           goto 
           EndGameResultsUiRuntime_UpdateAndHandleInput_RefreshTerrainCompositeOnPresentationCadence;
@@ -478,16 +478,16 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
 {
   void *tailNestedPointer;
   FrontendPlayerRuntimeRecord *playerRuntimeBlocks;
-  byte *primaryPointer;
-  byte *auxiliaryPointer;
+  uint8_t *primaryPointer;
+  uint8_t *auxiliaryPointer;
   GraphicsTextureSet *selectedTextureSet;
   SpriteAssetHeader *resolvedSprite;
-  byte *secondaryPointer;
-  dword nestedRemaining;
+  uint8_t *secondaryPointer;
+  uint32_t nestedRemaining;
   GraphicsPaletteAsset *selectedPalette;
   ResourceRegistrationRecord100 *registrationRecord;
-  dword remainingRecords;
-  byte *nestedBasePointer;
+  uint32_t remainingRecords;
+  uint8_t *nestedBasePointer;
   ResourceRegistrationRecord100 *nestedCursor;
   ArmyRuntimeSlot *payloadSlot;
   
@@ -495,35 +495,35 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
   remainingRecords = runtimeImage->recordCountAC;
   do {
     if ((registrationRecord->flags & RUNTIME_REGISTRATION_RECORD_ALLOCATED) != 0) {
-      primaryPointer = (byte *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
+      primaryPointer = (uint8_t *)(registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset;
       secondaryPointer = (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer;
       nestedBasePointer = (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer;
-      if (primaryPointer != (byte *)0x0) {
+      if (primaryPointer != (uint8_t *)0x0) {
         primaryPointer = primaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (secondaryPointer != (byte *)0x0) {
+      if (secondaryPointer != (uint8_t *)0x0) {
         secondaryPointer = secondaryPointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      if (nestedBasePointer != (byte *)0x0) {
+      if (nestedBasePointer != (uint8_t *)0x0) {
         nestedBasePointer = nestedBasePointer + (int)g_RuntimeObjectRebaseBaseMinusOne;
       }
-      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (dword)primaryPointer;
+      (registrationRecord->primaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)primaryPointer;
       (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer = secondaryPointer;
       (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
-      auxiliaryPointer = (byte *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
+      auxiliaryPointer = (uint8_t *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
       nestedRemaining = registrationRecord->nestedCountC8;
-      if (auxiliaryPointer != (byte *)0x0) {
+      if (auxiliaryPointer != (uint8_t *)0x0) {
         /* 1-based offset from the shading records; 0 is null */
-        auxiliaryPointer = (byte *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
+        auxiliaryPointer = (uint8_t *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
       }
-      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (dword)auxiliaryPointer;
+      (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (uint32_t)auxiliaryPointer;
       nestedCursor = registrationRecord;
       selectedPalette = g_ShotPalette;
       for (; g_ShotPalette = selectedPalette, nestedRemaining != 0; nestedRemaining = nestedRemaining - 1) {
         if (nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer != (void *)0x0) {
           nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer =
-               (byte *)((int)nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer +
+               (uint8_t *)((int)nestedCursor->nestedPointerOrOffsetArray13[0].runtimePointer +
                        (int)g_RuntimeObjectRebaseBaseMinusOne);
         }
         nestedCursor = (ResourceRegistrationRecord100 *)&nestedCursor->secondaryPointerOrSavedOffset;
@@ -552,7 +552,7 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
                      (int)&payloadSlot->modelRuntimeOrSavedOffset);
         selectedTextureSet = g_EffectTextureSet;
         selectedPalette = g_EffectPalette;
-        if ((*(uint *)(((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 + 0x20)
+        if ((*(uint32_t *)(((payloadSlot->modelRuntimeOrSavedOffset).modelRuntime)->reserved10_37 + 0x20)
             & 2) != 0) {
           selectedTextureSet = g_ArmyGraphicsBindings[0].textureSet;
           selectedPalette = g_ArmyGraphicsBindings[0].paletteAsset;
@@ -617,13 +617,13 @@ InGameHotkeys_DispatchCommandByFlagsCf
      addresses inside this function; the decompiled version jumped into the original machine code,
      which then called the recovered C functions with the wrong calling convention (crash on ESC
      after loading). Each continuation is translated below; EBX is the runtime root. */
-  byte *rt = (byte *)endGameResultsRuntime;
+  uint8_t *rt = (uint8_t *)endGameResultsRuntime;
   UiCommandDispatchRecord *record = g_EndGameResultsCommandDispatchRecords_00_Code00030071_Modifier30;
-  dword target = 0;
+  uint32_t target = 0;
   bool localSession = (g_SessionNetworkRoleFlags & 3) == 0;
 
   for (;; record++) {
-    uint flags = record->modifierClassFlags;
+    uint32_t flags = record->modifierClassFlags;
     if (record->commandCode == 0) {
       return false;
     }
@@ -642,7 +642,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
     else {
       if (((modifierFlags & 0xc) == 0) || ((modifierFlags & 0x30) == 0)) continue;
     }
-    target = (dword)record->continuationEntryAddress;
+    target = (uint32_t)record->continuationEntryAddress;
     break;
   }
   switch (target) {
@@ -653,13 +653,13 @@ InGameHotkeys_DispatchCommandByFlagsCf
     break;
   case 0x567200: /* cheat: add xenite */
     if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740) += 0x3e80;
+      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740) += 0x3e80;
     }
     break;
   case 0x567230: /* cheat: add energy */
     if ((g_UiCommandRuntimeFlags & 0x40000) != 0) {
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x20) += 0x640;
-      *(dword *)((byte *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x24) += 0x640;
+      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x20) += 0x640;
+      *(uint32_t *)((uint8_t *)&g_GameFactionRuntimeImage + ((WorldRuntimeContext *)INGAME_UI(rt,worldView))->activeFactionRuntimeIndex * 0x740 + 0x24) += 0x640;
     }
     break;
   case 0x567270:
@@ -671,11 +671,11 @@ InGameHotkeys_DispatchCommandByFlagsCf
       UiSelectableNodeEaxEcxCf9 visible;
       int i;
       for (i = 0; i < 0x18; i++) {
-        INGAME_UI_FIELD(rt,chatInputTextEdit,0x6c + i * 4,dword) = 0;
+        INGAME_UI_FIELD(rt,chatInputTextEdit,0x6c + i * 4,uint32_t) = 0;
       }
       visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
-      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+      (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
                 (visible.node);
     }
     UiKeyboardFocus_Set(INGAME_UI(rt,chatInputTextEdit));
@@ -691,10 +691,10 @@ InGameHotkeys_DispatchCommandByFlagsCf
     toggle = (UiSelectableControl *)(target == 0x567460 ? INGAME_UI(rt,missionObjectivesButton) :
                                                      INGAME_UI(rt,inGameMenuButton));
     UiSelectableControl_SetSelected(1,toggle);
-    if (((*(dword *)((byte *)toggle + 0x4c) & 0x200) != 0) &&
-        (*(dword *)((byte *)toggle + 0x70) != 0)) {
+    if (((*(uint32_t *)((uint8_t *)toggle + 0x4c) & 0x200) != 0) &&
+        (*(uint32_t *)((uint8_t *)toggle + 0x70) != 0)) {
       (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,
-                            *(DirectSoundVoiceSet **)((byte *)toggle + 0x70));
+                            *(DirectSoundVoiceSet **)((uint8_t *)toggle + 0x70));
     }
     if (target == 0x567460) {
       InGameUiAction101F_Handler((UiNodeBase *)toggle);
@@ -711,7 +711,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
   }
   case 0x5674b0: {
     UiPageStackControl *stack;
-    dword index;
+    uint32_t index;
     UiSelectableNodeEaxEcxCf9 visible;
     int i;
     if (localSession) {
@@ -732,11 +732,11 @@ InGameHotkeys_DispatchCommandByFlagsCf
     ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionStart = 0;
     ((UiTextEditControl *)INGAME_UI(rt,messageTextEdit))->selectionEnd = 0;
     for (i = 0; i < 0x18; i++) {
-      INGAME_UI_FIELD(rt,messageTextEdit,0x6c + i * 4,dword) = 0;
+      INGAME_UI_FIELD(rt,messageTextEdit,0x6c + i * 4,uint32_t) = 0;
     }
     visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
-    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(dword *)((byte *)visible.node + 0x50) & 0xff) * 4))
+    (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
               (visible.node);
     (*g_KeyboardFlushEvents)();
     break;
@@ -761,7 +761,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
     break;
   }
   case 0x5676a0: {
-    dword settings = PersistentSettings_ReadDword(0,0x40);
+    uint32_t settings = PersistentSettings_ReadDword(0,0x40);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
     if (UiPageStack_ActivePageNotInListCf(stack).valueOrError != 0) {
       UiPageStack_SetActiveIndex(0,stack);
@@ -785,8 +785,8 @@ InGameHotkeys_DispatchCommandByFlagsCf
     GraphicsFramebufferCaptureEaxCf5 capture =
          (*g_GraphicsFramebufferCaptureRegion)(g_FramebufferHeight,g_FramebufferWidth,0,0);
     PcxEncodeEaxEcxCf9 pcx;
-    word *digitHigh = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
-    word *digitLow = (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
+    uint16_t *digitHigh = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xc);
+    uint16_t *digitLow = (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0xe);
     if (capture.carry) {
       break;
     }
@@ -796,7 +796,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       break;
     }
     FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
-                                   (word *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
+                                   (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     (*g_MemoryApi.free)(pcx.encodedBytesOrError);
     (*g_MemoryApi.free)(capture.eax);
     *digitLow = *digitLow + 1;
@@ -837,7 +837,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotificationTimer(void)
 
 {
-  uint notificationMovieNumber;
+  uint32_t notificationMovieNumber;
   GraphicsTextureSourceAsset *panelTextureSource;
   int remainingWords;
   InGameNotificationPayload18 *sourcePayload;
@@ -860,8 +860,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
     if (inGameRoot->notificationQueue9E60[0].priority04 != 0) {
       notificationMovieNumber = inGameRoot->notificationQueue9E60[0].notificationMovieId00;
       (*g_WideNumberFormatUtf16)
-                (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(word *)(u_flm_movie000_flm_0056314e + 9));
-      openResult = Movie_Open(0x80000000,(word *)u_flm_movie000_flm_0056314e);
+                (WIDE_FORMAT_PAD_WITH_ZERO,0,3,1,notificationMovieNumber,(uint16_t *)(u_flm_movie000_flm_0056314e + 9));
+      openResult = Movie_Open(0x80000000,(uint16_t *)u_flm_movie000_flm_0056314e);
       if (!openResult.carry) {
         if ((99 < notificationMovieNumber) && ((notificationMovieNumber < 300 || ((699 < notificationMovieNumber && (notificationMovieNumber < 900)))))) {
           Movie_SetAudioGainQ15(g_MovieAlternateAudioGainQ15);
@@ -904,7 +904,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
     if (frameResult.carry) {
       Movie_Close();
       g_InGameSessionNotificationTimeoutTicks = 0x280;
-      inGameRoot->observedSessionNotificationValue9B50 = (dword)panelTextureSource;
+      inGameRoot->observedSessionNotificationValue9B50 = (uint32_t)panelTextureSource;
       inGameRoot->notificationPlaybackCompletionCode9B54 = 0x25;
     }
   }
@@ -925,32 +925,32 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
    UiRootStack_Push [ui/controls/layout].
 */
 InGameRuntimeInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,word *levelMoviePath)
+InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
   WorldRuntimeContext *world;
-  word titleChar;
+  uint16_t titleChar;
   UiTextResourceId titleTextIndex;
   PlayerRuntimeId localPlayerId;
-  word *titleSource;
+  uint16_t *titleSource;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  dword settingOrFactionToken;
-  dword gridHalfSize;
-  dword subresourceCount;
+  uint32_t settingOrFactionToken;
+  uint32_t gridHalfSize;
+  uint32_t subresourceCount;
   int countOrPlayerId;
   FrontendPlayerRuntimeBlockCount remainingPlayers;
   InGameNotificationMovieId notificationMovieId;
   InGameNotificationMovieId unusedNotificationMovieId;
   SelectionPlayerRuntimeBlock *selectionBlock;
   FrontendPlayerNameUtf16_28 *playerNameSource;
-  dword *templateCursor;
+  uint32_t *templateCursor;
   FrontendPlayerRemovalPacket10007 *packetCursor;
   SelectionPlayerRuntimeBlock *selectionBlockCursor;
   FrontendPlayerRuntimeRecord *frontendPlayer;
-  byte *playerNameDestination;
-  word *sessionNameClearCursor;
-  word *sessionNameCursor;
+  uint8_t *playerNameDestination;
+  uint16_t *sessionNameClearCursor;
+  uint16_t *sessionNameCursor;
   InGameRuntimeRootImageC3E4 *rootCursorOrError;
   InGameNotificationQueueRecord20 *queueRecord;
   bool subsystemFailed;
@@ -979,7 +979,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
   g_TextureDownsampleShift = PersistentSettings_ReadDword(0,0x30);
   g_EndMovieSelectionIndex = 0xffffffff;
   g_EndMovieVariantIndex = 0;
-  g_EndMoviePath = (word *)0x0;
+  g_EndMoviePath = (uint16_t *)0x0;
   packetCursor = &g_FrontendClientPlayerRemovalPacket10007;
   for (countOrPlayerId = 0xa0; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
     (packetCursor->header).packedTypeAndUnitCount = 0;
@@ -1003,7 +1003,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
     playerNameSource = &frontendPlayer->playerName;
     playerNameDestination = selectionBlock->reserved80B0_8117 + 0x40;
     for (countOrPlayerId = 0x14; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
-      *(dword *)playerNameDestination = *(dword *)playerNameSource->textUtf16;
+      *(uint32_t *)playerNameDestination = *(uint32_t *)playerNameSource->textUtf16;
       playerNameSource = (FrontendPlayerNameUtf16_28 *)(playerNameSource->textUtf16 + 2);
       playerNameDestination = playerNameDestination + 4;
     }
@@ -1058,7 +1058,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
       inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.eax;
       rootCursorOrError = inGameRoot;
       if (!allocation.carry) {
-        templateCursor = (dword *)&g_InGameRuntimeDefaultImageTemplate;
+        templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
         for (countOrPlayerId = 0x30f9; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
           (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
@@ -1101,7 +1101,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
           endingMoviePath = LevelAsset_PrepareEndingMoviePathCf(levelMoviePath,&levelAsset->header);
           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)endingMoviePath.moviePath;
           if (!endingMoviePath.carry) {
-            movieOpen = Movie_Open(0x80000000,(word *)rootCursorOrError);
+            movieOpen = Movie_Open(0x80000000,(uint16_t *)rootCursorOrError);
             rootCursorOrError = (InGameRuntimeRootImageC3E4 *)movieOpen.eax;
             if (!movieOpen.carry) {
               firstFrame = Movie_AdvanceFrame();
@@ -1123,7 +1123,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                 (inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex = settingOrFactionToken;
                 (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = localPlayerId;
                 WorldRuntime_AttachAndClearDwordArray
-                          (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
+                          (0x100,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
                 statusResult = GameData_ResetDefaults();
                 rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                 if (!statusResult.carry) {
@@ -1181,7 +1181,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                       }
                       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
                                      PersistentSettings_ReadDword(0,0x40);
-                      if (((uint)rootCursorOrError & 4) != 0) {
+                      if (((uint32_t)rootCursorOrError & 4) != 0) {
                         UiPageStack_SetActiveIndex(1,&inGameRoot->optionalUiPageStack40AC);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
                                        &inGameRoot->optionalUiPageStack4530;
@@ -1191,7 +1191,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                         UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
                       }
                       subsystemFailed = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
-                                               ((dword)(inGameRoot->worldRuntime0A30).fieldGrid);
+                                               ((uint32_t)(inGameRoot->worldRuntime0A30).fieldGrid);
                       if (!subsystemFailed) {
                         if (g_FrontendLoadedCampaignAsset == 0) {
                           OldUnitRuntime_ResetPendingTables();
@@ -1251,7 +1251,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                              notification movies from conditionStorage+0x324. */
                           notificationMovieId =
                                *(InGameNotificationMovieId *)
-                                ((byte *)g_InGameLevelRuntimeGlobalBlock.conditionStorage + 0x324);
+                                ((uint8_t *)g_InGameLevelRuntimeGlobalBlock.conditionStorage + 0x324);
                           (*g_TimerRegisterPeriodic)
                                     (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                           if (notificationMovieId != 0) {
@@ -1266,7 +1266,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
                             InGameNotificationQueue_InsertPriorityRecord
                                       (NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,1,notificationMovieId + 4);
                           }
-                          return THANDOR_BITCAST(qword, InGameRuntimeInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+                          return THANDOR_BITCAST(uint64_t, InGameRuntimeInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
                         }
                       }
                     }
@@ -1281,7 +1281,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
   }
   Movie_Close();
   failureResult.carry = true;
-  failureResult.runtimeRootOrError = (dword)rootCursorOrError;
+  failureResult.runtimeRootOrError = (uint32_t)rootCursorOrError;
   return failureResult;
 }
 
@@ -1298,7 +1298,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
    InGameUiRuntime_InitializeControlTreeResourcesCf [ui/ingame/runtime].
 */
 InGameRuntimeLoadedInitEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-InGameRuntime_InitializeLoadedSession(word *savePackagePath)
+InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
 
 {
   WorldRuntimeFlags *worldRuntimeFlags;
@@ -1307,17 +1307,17 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
   InGameRuntimeRootImageC3E4 *mountResult;
   FrontendLoadedLevelRuntimeImage370 *levelImage;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  dword settingOrFactionToken;
-  dword gridHalfSize;
-  dword subresourceCount;
+  uint32_t settingOrFactionToken;
+  uint32_t gridHalfSize;
+  uint32_t subresourceCount;
   InGameRuntimeRootImageC3E4 *rootCursorOrError;
   int remainingCount;
-  byte *saveNameSource;
-  dword *templateCursor;
-  word *sessionNameClearCursor;
-  byte *scanCursor;
-  byte *scanEnd;
-  uint copyCount;
+  uint8_t *saveNameSource;
+  uint32_t *templateCursor;
+  uint16_t *sessionNameClearCursor;
+  uint8_t *scanCursor;
+  uint8_t *scanEnd;
+  uint32_t copyCount;
   short *sessionNameCursor;
   SelectionPlayerRuntimeBlock *selectionBlockCursor;
   InGameNotificationQueueRecord20 *queueRecord;
@@ -1370,7 +1370,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
       scanEnd[-0xffffffff00000009] = 0;
       scanEnd[-0xffffffff00000008] = 0;
       scanEnd[-0xffffffff00000007] = 0;
-      copyCount = (uint)((int)scanEnd - (int)saveNameSource) >> 1;
+      copyCount = (uint32_t)((int)scanEnd - (int)saveNameSource) >> 1;
       sessionNameCursor = &g_InGameSessionNameScratchUtf16;
       if (0x1f < copyCount) {
         copyCount = 0x1f;
@@ -1381,11 +1381,11 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
         sessionNameCursor = sessionNameCursor + 1;
       }
     }
-    packageEntry = Package_LoadEntry((word *)u_campagne_hex_0050e068);
+    packageEntry = Package_LoadEntry((uint16_t *)u_campagne_hex_0050e068);
     if (!packageEntry.carry) {
       g_FrontendLoadedCampaignAsset = packageEntry.bufferOrError;
     }
-    packageEntry = Package_LoadEntry((word *)u_level_hex_0050e040);
+    packageEntry = Package_LoadEntry((uint16_t *)u_level_hex_0050e040);
     levelImage = packageEntry.bufferOrError;
     rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelImage;
     mountedPackage = mountResult;
@@ -1398,7 +1398,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
       }
       g_EndMovieSelectionIndex = 0xffffffff;
       g_EndMovieVariantIndex = 0;
-      g_EndMoviePath = (word *)0x0;
+      g_EndMoviePath = (uint16_t *)0x0;
       g_LocalPlayerRuntimeId = 0;
       g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerBlocks;
       g_SelectionPlayerBlocks->primaryEntityOrFactionToken8080 = settingOrFactionToken;
@@ -1434,7 +1434,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
           inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.eax;
           rootCursorOrError = inGameRoot;
           if (!allocation.carry) {
-            templateCursor = (dword *)&g_InGameRuntimeDefaultImageTemplate;
+            templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
             for (remainingCount = 0x30f9; remainingCount != 0; remainingCount = remainingCount + -1) {
               (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
@@ -1476,13 +1476,13 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
               UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
               WidePath_CombineDirectoryAndLeaf
                         (&g_FrontendScenarioPathScratchUtf16,
-                         (word *)(levelImage->header).opaque100_16F,(word *)u_level_0050daac);
+                         (uint16_t *)(levelImage->header).opaque100_16F,(uint16_t *)u_level_0050daac);
               WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
               endingMoviePath = LevelAsset_PrepareEndingMoviePathCf
                                  (savePackagePath,(LevelAssetHeader *)levelImage);
               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)endingMoviePath.moviePath;
               if (!endingMoviePath.carry) {
-                movieOpen = Movie_Open(0x80000000,(word *)rootCursorOrError);
+                movieOpen = Movie_Open(0x80000000,(uint16_t *)rootCursorOrError);
                 rootCursorOrError = (InGameRuntimeRootImageC3E4 *)movieOpen.eax;
                 if (!movieOpen.carry) {
                   firstFrame = Movie_AdvanceFrame();
@@ -1503,14 +1503,14 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                          (FactionRuntimeIndex)rootCursorOrError;
                     (inGameRoot->worldRuntime0A30).selection.activePlayerRuntimeId = 0;
                     WorldRuntime_AttachAndClearDwordArray
-                              (0x100,(dword *)&g_InGameWorldRuntimeDwordArray256,world);
+                              (0x100,(uint32_t *)&g_InGameWorldRuntimeDwordArray256,world);
                     terminatorOrFailure = GameData_LoadExternalTables();
                     if (!terminatorOrFailure) {
-                      packageEntry = Package_LoadEntry((word *)u_field_hex_0050e002);
+                      packageEntry = Package_LoadEntry((uint16_t *)u_field_hex_0050e002);
                       rootCursorOrError = packageEntry.bufferOrError;
                       if (!packageEntry.carry) {
                         (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid =
-                             (dword)rootCursorOrError;
+                             (uint32_t)rootCursorOrError;
                         levelLoad = InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
                                            (levelImage,world);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelLoad.errorOrValue;
@@ -1545,7 +1545,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                             }
                             rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
                                      PersistentSettings_ReadDword(0,0x5c);
-                            if (((uint)rootCursorOrError & 1) == 0) {
+                            if (((uint32_t)rootCursorOrError & 1) == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xbfffffff;
                             }
@@ -1553,7 +1553,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x40000000;
                             }
-                            if (((uint)rootCursorOrError & 2) == 0) {
+                            if (((uint32_t)rootCursorOrError & 2) == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0x7fffffff;
                             }
@@ -1561,7 +1561,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x80000000;
                             }
-                            if (((uint)rootCursorOrError & 4) == 0) {
+                            if (((uint32_t)rootCursorOrError & 4) == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xfbffffff;
                             }
@@ -1570,7 +1570,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x4000000;
                             }
                             terminatorOrFailure = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
-                                                     ((dword)(inGameRoot->worldRuntime0A30).
+                                                     ((uint32_t)(inGameRoot->worldRuntime0A30).
                                                              fieldGrid);
                             if (!terminatorOrFailure) {
                               gridScratch = GridScratch_AllocateForFieldGridCf
@@ -1621,7 +1621,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
                                 (*g_GraphicsCursorSetFrame)(0);
                                 (*g_TimerRegisterPeriodic)
                                           (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
-                                return THANDOR_BITCAST(qword, InGameRuntimeLoadedInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
+                                return THANDOR_BITCAST(uint64_t, InGameRuntimeLoadedInitEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, uint64_t, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
                               }
                             }
                           }
@@ -1641,7 +1641,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
   Resource_Release(loadedLevelAsset);
   Package_Unmount((EngineFileHandle)mountedPackage);
   failureResult.carry = true;
-  failureResult.runtimeRootOrError = (dword)rootCursorOrError;
+  failureResult.runtimeRootOrError = (uint32_t)rootCursorOrError;
   return failureResult;
 }
 
@@ -1756,18 +1756,18 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
 
 {
   ResourceExtractionDescriptor32 *cellExtractionFlags;
-  dword secondFactionIndex;
+  uint32_t secondFactionIndex;
   int modelRecord;
   int *modelRuntime;
   InGameLevelConditionStorageView800 *levelConditionStorage;
-  dword operandValue;
-  uint countOrFactionIndex;
-  byte tokenOrShift;
+  uint32_t operandValue;
+  uint32_t countOrFactionIndex;
+  uint8_t tokenOrShift;
   int remainingCount;
   InGameScheduledConditionKind kindOrExpressionValue;
-  uint cellsLeftOrFaction;
-  byte *byteCursor;
-  uint cellCount;
+  uint32_t cellsLeftOrFaction;
+  uint8_t *byteCursor;
+  uint32_t cellCount;
   FactionRuntimeLifecycleObservedState *otherLifecycleState;
   WorldRuntimeContext *contextArg;
   FactionRuntimeLifecycleObservedState *lifecycleState;
@@ -1801,7 +1801,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
           worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
         if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
            (scheduledCondition->conditions[0].payload.operands[0] ==
-            *(dword *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc)))
+            *(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc)))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
@@ -1812,7 +1812,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
              [*(int *)(*(int *)worldNode->runtimePayload + 0x4c)] ==
              ArmyRuntime_ClassCommandHandlerGroupACf)) &&
-           (*(dword *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
+           (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
             scheduledCondition->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
@@ -1822,8 +1822,8 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
           worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (modelRecord = *(int *)((int)worldNode->runtimePayload + 8),
-            scheduledCondition->conditions[0].payload.operands[0] == *(dword *)(modelRecord + 0xc))) &&
-           (*(dword *)(modelRecord + 0xa0) == scheduledCondition->conditions[0].payload.operands[2]))
+            scheduledCondition->conditions[0].payload.operands[0] == *(uint32_t *)(modelRecord + 0xc))) &&
+           (*(uint32_t *)(modelRecord + 0xa0) == scheduledCondition->conditions[0].payload.operands[2]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
@@ -1864,9 +1864,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (*(dword *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
+            (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
              scheduledCondition->conditions[0].payload.operands[0])) &&
-           ((*(dword *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xa0) ==
+           ((*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xa0) ==
              scheduledCondition->conditions[0].payload.operands[2] && (operandValue = operandValue - 1, operandValue == 0))))
         goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
       }
@@ -1885,7 +1885,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
         cellsLeftOrFaction = cellsLeftOrFaction - 1;
       } while (cellsLeftOrFaction != 0);
       if ((int)scheduledCondition->conditions[0].payload.operands[1] <=
-          (int)(((ulonglong)countOrFactionIndex * 100) / (ulonglong)cellCount)) {
+          (int)(((uint64_t)countOrFactionIndex * 100) / (uint64_t)cellCount)) {
         scheduledCondition->conditions[0].statusAndKind.kind = scheduledCondition->conditions[0].statusAndKind.kind | 1;
       }
       break;
@@ -1907,7 +1907,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
           worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (operandValue = *(dword *)(*(int *)worldNode->runtimePayload + 0x4c),
+            (operandValue = *(uint32_t *)(*(int *)worldNode->runtimePayload + 0x4c),
             g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[operandValue] !=
             ArmyRuntime_ClassCommandHandlerGroupACf)) &&
            (operandValue == scheduledCondition->conditions[0].payload.operands[0]))
@@ -1917,7 +1917,7 @@ InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied:
       scheduledCondition->conditions[0].statusAndKind.kind = scheduledCondition->conditions[0].statusAndKind.kind | 1;
       break;
     case INGAME_SCHEDULED_CONDITION_BOOLEAN_POSTFIX_EXPRESSION:
-      byteCursor = (byte *)((int)&scheduledCondition->conditions[0].statusAndKind.kind + 1);
+      byteCursor = (uint8_t *)((int)&scheduledCondition->conditions[0].statusAndKind.kind + 1);
       kindOrExpressionValue = INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED;
       while( true ) {
         while( true ) {
@@ -1952,7 +1952,7 @@ InGameScheduledCondition_AdvanceToNextRecord:
             INGAME_SCHEDULED_CONDITION_NONE_OR_UNUSED)) {
           endTrigger->stateFlags = endTrigger->stateFlags | INGAME_END_CONDITION_TRIGGER_PROCESSED;
           triggerRoot = g_InGameRuntimeRoot;
-          cellsLeftOrFaction = (uint)endTrigger->factionRuntimeIndex;
+          cellsLeftOrFaction = (uint32_t)endTrigger->factionRuntimeIndex;
           if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[cellsLeftOrFaction] ==
               FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
             contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
@@ -1989,16 +1989,16 @@ InGameScheduledCondition_AdvanceToNextRecord:
                     if ((*otherLifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
                        ((g_GameFactionRuntimeImage.records[countOrFactionIndex].packedRelationStates >>
                          (tokenOrShift & 0x1f) & 0xf) < 8)) {
-                      if ((uint)endTrigger->factionRuntimeIndex ==
+                      if ((uint32_t)endTrigger->factionRuntimeIndex ==
                           (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
                         g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 =
                              g_InGameRuntimeRoot->observedRelationTransitionFlags4D54 | 8;
-                        *(uint *)(relationRoot->opaque4D58_9A6B + 0x10a4) =
-                             *(uint *)(relationRoot->opaque4D58_9A6B + 0x10a4) | 8;
-                        *(uint *)(relationRoot->opaque4D58_9A6B + 0x2970) =
-                             *(uint *)(relationRoot->opaque4D58_9A6B + 0x2970) | 8;
-                        *(uint *)(relationRoot->opaque4D58_9A6B + 0x3f3c) =
-                             *(uint *)(relationRoot->opaque4D58_9A6B + 0x3f3c) | 8;
+                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x10a4) =
+                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x10a4) | 8;
+                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x2970) =
+                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x2970) | 8;
+                        *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x3f3c) =
+                             *(uint32_t *)(relationRoot->opaque4D58_9A6B + 0x3f3c) | 8;
                       }
                       return;
                     }
@@ -2009,10 +2009,10 @@ InGameScheduledCondition_AdvanceToNextRecord:
                 tokenOrShift = tokenOrShift + 4;
               } while (cellsLeftOrFaction < 7);
               contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
-              cellsLeftOrFaction = (uint)endTrigger->factionRuntimeIndex;
+              cellsLeftOrFaction = (uint32_t)endTrigger->factionRuntimeIndex;
             }
             countOrFactionIndex = contextArg->activeFactionRuntimeIndex;
-            g_EndMovieVariantIndex = (uint)endTrigger->movieVariantSelector;
+            g_EndMovieVariantIndex = (uint32_t)endTrigger->movieVariantSelector;
             if (((countOrFactionIndex != cellsLeftOrFaction) &&
                 (g_EndMovieVariantIndex = 0,
                 g_GameFactionRuntimeImage.tail.factionLifecycleStates[countOrFactionIndex] <
@@ -2021,13 +2021,13 @@ InGameScheduledCondition_AdvanceToNextRecord:
               g_EndMovieVariantIndex = endTrigger->movieVariantSelector ^ 1;
               if (3 < (g_GameFactionRuntimeImage.records[countOrFactionIndex].packedRelationStates >>
                        ((char)cellsLeftOrFaction * '\x04' & 0x1fU) & 0xf)) {
-                g_EndMovieVariantIndex = (uint)endTrigger->movieVariantSelector;
+                g_EndMovieVariantIndex = (uint32_t)endTrigger->movieVariantSelector;
               }
             }
-            g_EndMovieSelectionIndex = (uint)endTrigger->endMovieSelectionIndex;
-            g_EndMoviePath = (word *)u_flm_ende0000_flm_0050df06;
+            g_EndMovieSelectionIndex = (uint32_t)endTrigger->endMovieSelectionIndex;
+            g_EndMoviePath = (uint16_t *)u_flm_ende0000_flm_0050df06;
             if (g_EndMovieVariantIndex == 0) {
-              g_EndMoviePath = (word *)u_flm_ende0001_flm_0050df28;
+              g_EndMoviePath = (uint16_t *)u_flm_ende0001_flm_0050df28;
             }
             g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x800;
             return;
@@ -2062,24 +2062,24 @@ InGameScheduledCondition_AdvanceToNextRecord:
 void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
 
 {
-  byte *totalAccumulator;
+  uint8_t *totalAccumulator;
   FieldGridDimension fieldGridWidth;
   int *attachedRuntime;
   InGameLevelConditionStorageView800 *levelConditionStorage;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  uint valueOrFactionIndex;
+  uint32_t valueOrFactionIndex;
   int tickContribution;
   int counterOrValue;
   int cellCountOrValue;
   int rebasedModel;
   int cellsRemaining;
-  uint entryCountOrValue;
+  uint32_t entryCountOrValue;
   FactionArmyAssetCount remainingArmyAssets;
-  uint remainingEntries;
+  uint32_t remainingEntries;
   FieldCellPackedFlagsAndMaterial requiredOccupancyMask;
-  uint *entryCursor;
-  uint supplyOrSwapValue;
-  uint remainingEnergy;
+  uint32_t *entryCursor;
+  uint32_t supplyOrSwapValue;
+  uint32_t remainingEnergy;
   TerrainRegionCollectionCount remainingRegionEntries;
   WorldRuntimeContext *worldRuntime;
   GameFactionRuntimeRecord *factionRecord;
@@ -2087,12 +2087,12 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   GameFactionRuntimeImage *factionImageCursor;
   GameFactionRuntimeRecord *reverseFactionRecord;
   int *runtimeOrStatCursor;
-  dword *pairPressureRow;
+  uint32_t *pairPressureRow;
   FieldGridCell *firstCell;
   FieldGridCell *clearCursor;
   FieldGridCell *cell;
-  uint factionOrDemand;
-  uint *sortBaseOrFlags;
+  uint32_t factionOrDemand;
+  uint32_t *sortBaseOrFlags;
   InGameNotificationMovieId notificationMovieId;
   bool queueCapacityNotification;
   FieldGridAsset *factionFieldGrid;
@@ -2212,27 +2212,27 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
        (runtimeOrStatCursor = worldNode->runtimePayload, (runtimeOrStatCursor[0x3b] & 0x10U) == 0)) {
       if (runtimeOrStatCursor[0x3d] != 0) {
         if (0xff < entryCountOrValue) continue;
-        valueOrFactionIndex = *(uint *)(runtimeOrStatCursor[2] + 0xc);
+        valueOrFactionIndex = *(uint32_t *)(runtimeOrStatCursor[2] + 0xc);
         counterOrValue = *(int *)(*runtimeOrStatCursor + 0x4c);
-        *entryCursor = (uint)runtimeOrStatCursor;
+        *entryCursor = (uint32_t)runtimeOrStatCursor;
         entryCursor[1] = valueOrFactionIndex;
         valueOrFactionIndex = runtimeOrStatCursor[0x3d];
-        entryCursor[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + counterOrValue * 4);
+        entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + counterOrValue * 4);
         entryCursor[2] = valueOrFactionIndex;
         entryCountOrValue = entryCountOrValue + 1;
         entryCursor = entryCursor + 4;
       }
       counterOrValue = runtimeOrStatCursor[3];
-      if ((entryCountOrValue < 0x100) && ((*(uint *)(*runtimeOrStatCursor + 0x68) & 0x80) != 0)) {
+      if ((entryCountOrValue < 0x100) && ((*(uint32_t *)(*runtimeOrStatCursor + 0x68) & 0x80) != 0)) {
         for (; counterOrValue != 0; counterOrValue = counterOrValue + -1) {
           attachedRuntime = (int *)runtimeOrStatCursor[0x50];
           if (((attachedRuntime != (int *)0x0) && (attachedRuntime[0x3d] != 0)) && (entryCountOrValue < 0x100)) {
-            valueOrFactionIndex = *(uint *)(attachedRuntime[2] + 0xc);
+            valueOrFactionIndex = *(uint32_t *)(attachedRuntime[2] + 0xc);
             cellCountOrValue = *(int *)(*attachedRuntime + 0x4c);
-            *entryCursor = (uint)attachedRuntime;
+            *entryCursor = (uint32_t)attachedRuntime;
             entryCursor[1] = valueOrFactionIndex;
             valueOrFactionIndex = attachedRuntime[0x3d];
-            entryCursor[3] = *(uint *)(&g_FactionEnergyAllocationPriorityByModelClass + cellCountOrValue * 4);
+            entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + cellCountOrValue * 4);
             entryCursor[2] = valueOrFactionIndex;
             entryCountOrValue = entryCountOrValue + 1;
             entryCursor = entryCursor + 4;
@@ -2244,8 +2244,8 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   }
   if (entryCountOrValue != 0) {
     if (1 < entryCountOrValue) {
-      valueOrFactionIndex = ((dword *)(uintptr_t)g_TerrainRegionCollectionEntries)[3];
-      entryCursor = (uint *)(uintptr_t)g_TerrainRegionCollectionEntries + 4; /* 16-byte records: +1 entry */
+      valueOrFactionIndex = ((uint32_t *)(uintptr_t)g_TerrainRegionCollectionEntries)[3];
+      entryCursor = (uint32_t *)(uintptr_t)g_TerrainRegionCollectionEntries + 4; /* 16-byte records: +1 entry */
       counterOrValue = entryCountOrValue - 1;
       factionOrDemand = entryCountOrValue;
       sortBaseOrFlags = g_TerrainRegionCollectionEntries;
@@ -2317,7 +2317,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         if (valueOrFactionIndex == entryCursor[1]) {
           supplyOrSwapValue = *entryCursor;
           if (remainingEnergy < factionOrDemand) {
-            sortBaseOrFlags = (uint *)(supplyOrSwapValue + 0xec);
+            sortBaseOrFlags = (uint32_t *)(supplyOrSwapValue + 0xec);
             *sortBaseOrFlags = *sortBaseOrFlags | 1;
             reverseFactionRecord->unpoweredEnergyDemandQ4 =
                  reverseFactionRecord->unpoweredEnergyDemandQ4 + factionOrDemand;
@@ -2326,7 +2326,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             remainingEnergy = remainingEnergy - factionOrDemand;
             reverseFactionRecord->suppliedEnergyDemandQ4 =
                  reverseFactionRecord->suppliedEnergyDemandQ4 + factionOrDemand;
-            sortBaseOrFlags = (uint *)(supplyOrSwapValue + 0xec);
+            sortBaseOrFlags = (uint32_t *)(supplyOrSwapValue + 0xec);
             *sortBaseOrFlags = *sortBaseOrFlags & 0xfffffffe;
           }
         }
@@ -2416,7 +2416,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
 
 {
   UQ12 committedDistance;
-  dword viewSettings;
+  uint32_t viewSettings;
   FieldGridCoordinatesEaxEdx8 cursorGridPosition;
   InGameRuntimeRootImageC3E4 *inGameRoot;
   
@@ -2433,7 +2433,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
   }
   if ((viewSettings & 1) == 0) {
     *(int *)inGameRoot->opaque9A74_9B4B =
-         (int)((ulonglong)((longlong)(int)committedDistance * 0x6000000) >> 0x20);
+         (int)((uint64_t)((int64_t)(int)committedDistance * 0x6000000) >> 0x20);
   }
   return;
 }
@@ -2450,7 +2450,7 @@ InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 
 {
   g_InGameTemplateWorldViewInfoTextResourceId =
-       INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,sdword);
+       INGAME_UI_FIELD(inGameRoot,worldViewCyclingInfoText,0x54,int32_t);
   g_FrontendTemplateStatusTextResourceId = g_InGameTemplateWorldViewInfoTextResourceId;
   return;
 }
@@ -2474,8 +2474,8 @@ InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
 {
-  dword modelDefinition;
-  uint tickPhase;
+  uint32_t modelDefinition;
+  uint32_t tickPhase;
   WorldRuntimeContext *worldRuntime;
   WorldOwnerListNode100 *worldNode;
   ModelRuntimeNode *modelNode;
@@ -2672,8 +2672,8 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
    direct branch, call, or absolute-pointer reference in the archived executable, so they are verified separately
    and are not included in the function range.
 */
-byte __thandor_cf_preserve_eax_ecx_edx
-InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(dword unusedArgument)
+uint8_t __thandor_cf_preserve_eax_ecx_edx
+InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(uint32_t unusedArgument)
 
 {
   return 0;

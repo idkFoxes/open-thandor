@@ -44,8 +44,8 @@ FixedTransform_ComposeEulerAnglesRegs
   extractedAngles = FixedTransform_ExtractEulerAnglesRegs
                     ((GraphicsFixedMatrix3x4 *)&g_FixedTransformComposedRotationScratch);
   composedAngles.angle2 = extractedAngles.eaxAngle;
-  composedAngles.angle0 = (int)THANDOR_PART(qword, extractedAngles, 4);
-  composedAngles.angle1 = (int)((ulonglong)THANDOR_PART(qword, extractedAngles, 4) >> 0x20);
+  composedAngles.angle0 = (int)THANDOR_PART(uint64_t, extractedAngles, 4);
+  composedAngles.angle1 = (int)((uint64_t)THANDOR_PART(uint64_t, extractedAngles, 4) >> 0x20);
   return composedAngles;
 }
 
@@ -64,25 +64,25 @@ FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
-  dword elevationAngle16;
-  dword elevationAngleResult;
-  dword azimuthAngle16;
-  dword vectorLengthQ12;
+  uint32_t elevationAngle16;
+  uint32_t elevationAngleResult;
+  uint32_t azimuthAngle16;
+  uint32_t vectorLengthQ12;
   FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
-  longlong squaredLengthAccumulatorQ24;
-  longlong totalSquaredLengthQ24;
+  int64_t squaredLengthAccumulatorQ24;
+  int64_t totalSquaredLengthQ24;
   
-  squaredLengthAccumulatorQ24 = (longlong)y * (longlong)y + (longlong)z * (longlong)z;
+  squaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
   elevationAngle16 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   elevationAngleResult = FixedMath_Atan2Angle16(x,elevationAngle16);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
-  totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)x * (longlong)x;
+  totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (int64_t)x * (int64_t)x;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
   lengthAnglesResult.elevationAngle = elevationAngleResult;
   lengthAnglesResult.lengthQ12 = vectorLengthQ12;
@@ -100,31 +100,31 @@ FixedMath_VectorToAnglesAndLength3Regs
 FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  dword elevationAngle16;
-  dword elevationAngleResult;
-  dword azimuthAngle16;
-  dword vectorLengthQ12;
+  uint32_t elevationAngle16;
+  uint32_t elevationAngleResult;
+  uint32_t azimuthAngle16;
+  uint32_t vectorLengthQ12;
   FixedLengthAnglesEaxEcxEdx12 lengthAnglesResult;
   int y;
   int x;
-  longlong totalSquaredLengthQ24;
-  longlong squaredLengthAccumulatorQ24;
+  int64_t totalSquaredLengthQ24;
+  int64_t squaredLengthAccumulatorQ24;
   GraphicsWorldCoordinateQ12 inputZQ12;
   
   x = vector->x;
   inputZQ12 = vector->z;
   y = vector->y;
-  squaredLengthAccumulatorQ24 = (longlong)y * (longlong)y + (longlong)x * (longlong)x;
+  squaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
   elevationAngle16 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   elevationAngleResult = FixedMath_Atan2Angle16(vector->z,elevationAngle16);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
-  totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (longlong)inputZQ12 * (longlong)inputZQ12;
+  totalSquaredLengthQ24 = squaredLengthAccumulatorQ24 + (int64_t)inputZQ12 * (int64_t)inputZQ12;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
   lengthAnglesResult.elevationAngle = elevationAngleResult;
   lengthAnglesResult.lengthQ12 = vectorLengthQ12;
@@ -146,8 +146,8 @@ FixedMath_Vector2AngleAndLengthRegs
           (FixedMathVectorComponent32 component0,FixedMathVectorComponent32 component1)
 
 {
-  dword vectorAngle16;
-  dword vectorLengthQ12;
+  uint32_t vectorAngle16;
+  uint32_t vectorLengthQ12;
   FixedLengthAngleEaxEdx8 lengthAngle;
 
   vectorAngle16 = FixedMath_Atan2Angle16(component0,component1);
@@ -232,40 +232,40 @@ FixedTriangleJointAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
 FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12,Q12 sideLength2Q12)
 
 {
-  longlong projectionOrHeightSquared;
-  longlong side2Squared;
-  longlong side1Squared;
-  longlong side0Squared;
+  int64_t projectionOrHeightSquared;
+  int64_t side2Squared;
+  int64_t side1Squared;
+  int64_t side0Squared;
   int projectionOrSquaredLow;
-  dword triangleHeight;
-  dword firstAngle16;
+  uint32_t triangleHeight;
+  uint32_t firstAngle16;
   AngleTurn32 fallbackAngle0;
   AngleTurn32 fallbackAngle1;
   FixedTriangleJointAnglesEaxEdx8 solvedAngles;
   FixedTriangleJointAnglesEaxEdx8 fallbackAngles;
-  longlong cosineNumerator0;
+  int64_t cosineNumerator0;
   
-  projectionOrSquaredLow = (int)(((longlong)sideLength0Q12 * (longlong)sideLength0Q12 -
-                (longlong)sideLength1Q12 * (longlong)sideLength1Q12) / (longlong)sideLength2Q12);
-  projectionOrHeightSquared = (longlong)projectionOrSquaredLow * (longlong)projectionOrSquaredLow;
-  side2Squared = (longlong)sideLength2Q12 * (longlong)sideLength2Q12;
-  side1Squared = (longlong)sideLength1Q12 * (longlong)sideLength1Q12;
-  side0Squared = (longlong)sideLength0Q12 * (longlong)sideLength0Q12;
+  projectionOrSquaredLow = (int)(((int64_t)sideLength0Q12 * (int64_t)sideLength0Q12 -
+                (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12) / (int64_t)sideLength2Q12);
+  projectionOrHeightSquared = (int64_t)projectionOrSquaredLow * (int64_t)projectionOrSquaredLow;
+  side2Squared = (int64_t)sideLength2Q12 * (int64_t)sideLength2Q12;
+  side1Squared = (int64_t)sideLength1Q12 * (int64_t)sideLength1Q12;
+  side0Squared = (int64_t)sideLength0Q12 * (int64_t)sideLength0Q12;
   cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
   /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order */
   projectionOrHeightSquared =
        (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
   if ((-1 < projectionOrHeightSquared) && (0x10 < sideLength2Q12)) {
-    triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)projectionOrHeightSquared >> 0x20),(UInt64Half32)projectionOrHeightSquared);
-    firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,(int)(cosineNumerator0 / (longlong)sideLength2Q12) >> 1);
+    triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((uint64_t)projectionOrHeightSquared >> 0x20),(UInt64Half32)projectionOrHeightSquared);
+    firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,(int)(cosineNumerator0 / (int64_t)sideLength2Q12) >> 1);
     solvedAngles.jointAngle0 =
          FixedMath_Atan2Angle16
-                   ((int)triangleHeight >> 1,(int)(((side1Squared + side2Squared) - side0Squared) / (longlong)sideLength2Q12) >> 1
+                   ((int)triangleHeight >> 1,(int)(((side1Squared + side2Squared) - side0Squared) / (int64_t)sideLength2Q12) >> 1
                    );
     solvedAngles.jointAngle1 = firstAngle16 + solvedAngles.jointAngle0;
     return solvedAngles;
   }
-  if ((uint)sideLength0Q12 < (uint)sideLength2Q12) {
+  if ((uint32_t)sideLength0Q12 < (uint32_t)sideLength2Q12) {
     fallbackAngle0 = 0;
     fallbackAngle1 = 0;
   }
@@ -287,19 +287,19 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
    unchanged.
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length3(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,
                  FixedMathVectorComponent32 z)
 
 {
-  dword vectorLengthQ12;
-  longlong squaredLengthAccumulatorQ24;
+  uint32_t vectorLengthQ12;
+  int64_t squaredLengthAccumulatorQ24;
   
   squaredLengthAccumulatorQ24 =
-       (longlong)y * (longlong)y + (longlong)z * (longlong)z + (longlong)x * (longlong)x;
+       (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z + (int64_t)x * (int64_t)x;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   return vectorLengthQ12;
 }
@@ -332,11 +332,11 @@ void __thandor_void_preserve_eax_ecx_edx
 FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
 
 {
-  dword inputLengthQ12;
+  uint32_t inputLengthQ12;
   int reciprocalLengthScaleQ32;
-  longlong normalizedComponentProduct;
-  longlong finalNormalizedComponentProduct;
-  longlong currentNormalizedComponentProduct;
+  int64_t normalizedComponentProduct;
+  int64_t finalNormalizedComponentProduct;
+  int64_t currentNormalizedComponentProduct;
   
   inputLengthQ12 = FixedMath_LengthVec3(input);
   if (inputLengthQ12 < 2) {
@@ -345,16 +345,16 @@ FixedVec3_NormalizeQ28(GraphicsFixedVec3 *output,GraphicsFixedVec3 *input)
     output->z = 0;
   }
   else {
-    reciprocalLengthScaleQ32 = (int)(0x100000000 / (ulonglong)inputLengthQ12);
-    normalizedComponentProduct = (longlong)reciprocalLengthScaleQ32 * (longlong)input->x;
-    output->x = (int)((ulonglong)normalizedComponentProduct >> 0x20) << 0x1c |
-                (uint)normalizedComponentProduct >> 4;
-    currentNormalizedComponentProduct = (longlong)reciprocalLengthScaleQ32 * (longlong)input->y;
-    output->y = (int)((ulonglong)currentNormalizedComponentProduct >> 0x20) << 0x1c |
-                (uint)currentNormalizedComponentProduct >> 4;
-    finalNormalizedComponentProduct = (longlong)reciprocalLengthScaleQ32 * (longlong)input->z;
-    output->z = (int)((ulonglong)finalNormalizedComponentProduct >> 0x20) << 0x1c |
-                (uint)finalNormalizedComponentProduct >> 4;
+    reciprocalLengthScaleQ32 = (int)(0x100000000 / (uint64_t)inputLengthQ12);
+    normalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->x;
+    output->x = (int)((uint64_t)normalizedComponentProduct >> 0x20) << 0x1c |
+                (uint32_t)normalizedComponentProduct >> 4;
+    currentNormalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->y;
+    output->y = (int)((uint64_t)currentNormalizedComponentProduct >> 0x20) << 0x1c |
+                (uint32_t)currentNormalizedComponentProduct >> 4;
+    finalNormalizedComponentProduct = (int64_t)reciprocalLengthScaleQ32 * (int64_t)input->z;
+    output->z = (int)((uint64_t)finalNormalizedComponentProduct >> 0x20) << 0x1c |
+                (uint32_t)finalNormalizedComponentProduct >> 4;
   }
   return;
 }
@@ -399,11 +399,11 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
 {
   short *outputCursor;
   int entriesRemainingInRow;
-  uint angleStep16;
-  uint secondAngleStep16;
+  uint32_t angleStep16;
+  uint32_t secondAngleStep16;
   int entriesRemaining;
-  uint angleIndex16;
-  uint secondAngleIndex16;
+  uint32_t angleIndex16;
+  uint32_t secondAngleIndex16;
   ArenaAllocEaxCf5 allocResult;
   
   allocResult = (*g_MemoryApi.alloc)(0x40000);
@@ -421,7 +421,7 @@ void __cdecl CosineDerivedLookupTables_InitCf(void)
     entriesRemaining = 0x100;
     do {
       do {
-        *outputCursor = (short)((uint)g_FixedCosQ28[angleIndex16] >> 0x10);
+        *outputCursor = (short)((uint32_t)g_FixedCosQ28[angleIndex16] >> 0x10);
         outputCursor = outputCursor + 1;
         angleIndex16 = angleIndex16 + angleStep16 * 2 & 0xffff;
         entriesRemaining = entriesRemaining + -1;
@@ -467,10 +467,10 @@ FixedMath_WriteDirectionQ28
           (GraphicsFixedVec3 *output,AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  uint azimuthPlusElevationAngle16;
-  uint azimuthMinusElevationAngle16;
-  uint azimuthMinusElevationIndex16;
-  sdword verticalSinQ28;
+  uint32_t azimuthPlusElevationAngle16;
+  uint32_t azimuthMinusElevationAngle16;
+  uint32_t azimuthMinusElevationIndex16;
+  int32_t verticalSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
   
@@ -499,13 +499,13 @@ FixedSinCosEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 {
-  dword sinScaled;
-  dword cosScaled;
+  uint32_t sinScaled;
+  uint32_t cosScaled;
 
   /* SHRD by 28 of the 64-bit products: bits 28..59 */
-  sinScaled = (dword)((longlong)g_FixedSinQ28[angle & 0xffff] * (longlong)scale >> 0x1c);
-  cosScaled = (dword)((longlong)g_FixedCosQ28[angle & 0xffff] * (longlong)scale >> 0x1c);
-  return (qword)sinScaled << 0x20 | (qword)cosScaled; /* EDX = sin, EAX = cos */
+  sinScaled = (uint32_t)((int64_t)g_FixedSinQ28[angle & 0xffff] * (int64_t)scale >> 0x1c);
+  cosScaled = (uint32_t)((int64_t)g_FixedCosQ28[angle & 0xffff] * (int64_t)scale >> 0x1c);
+  return (uint64_t)sinScaled << 0x20 | (uint64_t)cosScaled; /* EDX = sin, EAX = cos */
 }
 
 
@@ -518,7 +518,7 @@ FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
 
 {
-  return (qword)(dword)g_FixedSinQ28[angle & 0xffff] << 0x20 | (qword)(dword)g_FixedCosQ28[angle & 0xffff];
+  return (uint64_t)(uint32_t)g_FixedSinQ28[angle & 0xffff] << 0x20 | (uint64_t)(uint32_t)g_FixedCosQ28[angle & 0xffff];
 }
 
 /* Address: 0x00484F10.
@@ -531,29 +531,29 @@ FixedTransform_ApplyDirection
 
 {
   int basisRow2Component0Q28;
-  longlong finalBasisDotProductQ40;
+  int64_t finalBasisDotProductQ40;
   int currentBasisRowComponent0Q28;
-  longlong currentBasisDotProductQ40;
-  longlong basisDotProductAccumulatorQ40;
+  int64_t currentBasisDotProductQ40;
+  int64_t basisDotProductAccumulatorQ40;
   
   basisDotProductAccumulatorQ40 =
-       (longlong)transform->basisRow0[1] * (longlong)direction->y +
-       (longlong)transform->basisRow0[0] * (longlong)direction->x +
-       (longlong)transform->basisRow0[2] * (longlong)direction->z;
+       (int64_t)transform->basisRow0[1] * (int64_t)direction->y +
+       (int64_t)transform->basisRow0[0] * (int64_t)direction->x +
+       (int64_t)transform->basisRow0[2] * (int64_t)direction->z;
   currentBasisRowComponent0Q28 = transform->basisRow1[0];
-  output->x = (int)((ulonglong)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
-              (uint)basisDotProductAccumulatorQ40 >> 0x1c;
+  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
+              (uint32_t)basisDotProductAccumulatorQ40 >> 0x1c;
   currentBasisDotProductQ40 =
-       (longlong)transform->basisRow1[1] * (longlong)direction->y +
-       (longlong)currentBasisRowComponent0Q28 * (longlong)direction->x +
-       (longlong)transform->basisRow1[2] * (longlong)direction->z;
+       (int64_t)transform->basisRow1[1] * (int64_t)direction->y +
+       (int64_t)currentBasisRowComponent0Q28 * (int64_t)direction->x +
+       (int64_t)transform->basisRow1[2] * (int64_t)direction->z;
   basisRow2Component0Q28 = transform->basisRow2[0];
-  output->y = (int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint)currentBasisDotProductQ40 >> 0x1c;
-  finalBasisDotProductQ40 = (longlong)transform->basisRow2[1] * (longlong)direction->y +
-          (longlong)basisRow2Component0Q28 * (longlong)direction->x +
-          (longlong)transform->basisRow2[2] * (longlong)direction->z;
-  output->z = (int)((ulonglong)finalBasisDotProductQ40 >> 0x20) << 4 | (uint)finalBasisDotProductQ40 >> 0x1c;
+  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
+              (uint32_t)currentBasisDotProductQ40 >> 0x1c;
+  finalBasisDotProductQ40 = (int64_t)transform->basisRow2[1] * (int64_t)direction->y +
+          (int64_t)basisRow2Component0Q28 * (int64_t)direction->x +
+          (int64_t)transform->basisRow2[2] * (int64_t)direction->z;
+  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 0x20) << 4 | (uint32_t)finalBasisDotProductQ40 >> 0x1c;
   return;
 }
 
@@ -568,29 +568,29 @@ FixedTransform_ApplyTransposeDirection
 
 {
   int basisRow0Component2Q28;
-  longlong finalBasisDotProductQ40;
-  longlong currentBasisDotProductQ40;
+  int64_t finalBasisDotProductQ40;
+  int64_t currentBasisDotProductQ40;
   int currentBasisColumnRow0ComponentQ28;
-  longlong basisDotProductAccumulatorQ40;
+  int64_t basisDotProductAccumulatorQ40;
   
   basisDotProductAccumulatorQ40 =
-       (longlong)transform->basisRow1[0] * (longlong)direction->y +
-       (longlong)transform->basisRow0[0] * (longlong)direction->x +
-       (longlong)transform->basisRow2[0] * (longlong)direction->z;
+       (int64_t)transform->basisRow1[0] * (int64_t)direction->y +
+       (int64_t)transform->basisRow0[0] * (int64_t)direction->x +
+       (int64_t)transform->basisRow2[0] * (int64_t)direction->z;
   currentBasisColumnRow0ComponentQ28 = transform->basisRow0[1];
-  output->x = (int)((ulonglong)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
-              (uint)basisDotProductAccumulatorQ40 >> 0x1c;
+  output->x = (int)((uint64_t)basisDotProductAccumulatorQ40 >> 0x20) << 4 |
+              (uint32_t)basisDotProductAccumulatorQ40 >> 0x1c;
   currentBasisDotProductQ40 =
-       (longlong)transform->basisRow1[1] * (longlong)direction->y +
-       (longlong)currentBasisColumnRow0ComponentQ28 * (longlong)direction->x +
-       (longlong)transform->basisRow2[1] * (longlong)direction->z;
+       (int64_t)transform->basisRow1[1] * (int64_t)direction->y +
+       (int64_t)currentBasisColumnRow0ComponentQ28 * (int64_t)direction->x +
+       (int64_t)transform->basisRow2[1] * (int64_t)direction->z;
   basisRow0Component2Q28 = transform->basisRow0[2];
-  output->y = (int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint)currentBasisDotProductQ40 >> 0x1c;
-  finalBasisDotProductQ40 = (longlong)transform->basisRow1[2] * (longlong)direction->y +
-          (longlong)basisRow0Component2Q28 * (longlong)direction->x +
-          (longlong)transform->basisRow2[2] * (longlong)direction->z;
-  output->z = (int)((ulonglong)finalBasisDotProductQ40 >> 0x20) << 4 | (uint)finalBasisDotProductQ40 >> 0x1c;
+  output->y = (int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
+              (uint32_t)currentBasisDotProductQ40 >> 0x1c;
+  finalBasisDotProductQ40 = (int64_t)transform->basisRow1[2] * (int64_t)direction->y +
+          (int64_t)basisRow0Component2Q28 * (int64_t)direction->x +
+          (int64_t)transform->basisRow2[2] * (int64_t)direction->z;
+  output->z = (int)((uint64_t)finalBasisDotProductQ40 >> 0x20) << 4 | (uint32_t)finalBasisDotProductQ40 >> 0x1c;
   return;
 }
 
@@ -603,88 +603,88 @@ void __thandor_void_preserve_eax_ecx_edx
 FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix3x4 *input)
 
 {
-  longlong cofactorOrTranslationProduct;
-  longlong translationYProduct;
-  longlong translationZProduct;
-  uint negatedProductXLow;
+  int64_t cofactorOrTranslationProduct;
+  int64_t translationYProduct;
+  int64_t translationZProduct;
+  uint32_t negatedProductXLow;
   int productXLow;
-  uint productYLow;
-  uint productZLow;
+  uint32_t productYLow;
+  uint32_t productZLow;
   int componentOrProductLow;
-  uint partialDifferenceLow;
+  uint32_t partialDifferenceLow;
   
-  cofactorOrTranslationProduct = (longlong)input->basisRow1[1] * (longlong)input->basisRow2[2] -
-          (longlong)input->basisRow1[2] * (longlong)input->basisRow2[1];
+  cofactorOrTranslationProduct = (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[2] -
+          (int64_t)input->basisRow1[2] * (int64_t)input->basisRow2[1];
   componentOrProductLow = input->basisRow1[2];
-  output->basisRow0[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[0] -
-          (longlong)input->basisRow1[0] * (longlong)input->basisRow2[2];
+  output->basisRow0[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
+          (int64_t)input->basisRow1[0] * (int64_t)input->basisRow2[2];
   componentOrProductLow = input->basisRow1[0];
-  output->basisRow1[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[1] -
-          (longlong)input->basisRow1[1] * (longlong)input->basisRow2[0];
+  output->basisRow1[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
+          (int64_t)input->basisRow1[1] * (int64_t)input->basisRow2[0];
   componentOrProductLow = input->basisRow0[2];
-  output->basisRow2[0] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[1] -
-          (longlong)input->basisRow0[1] * (longlong)input->basisRow2[2];
+  output->basisRow2[0] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[1] -
+          (int64_t)input->basisRow0[1] * (int64_t)input->basisRow2[2];
   componentOrProductLow = input->basisRow0[0];
-  output->basisRow0[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[2] -
-          (longlong)input->basisRow0[2] * (longlong)input->basisRow2[0];
+  output->basisRow0[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[2] -
+          (int64_t)input->basisRow0[2] * (int64_t)input->basisRow2[0];
   componentOrProductLow = input->basisRow0[1];
-  output->basisRow1[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow2[0] -
-          (longlong)input->basisRow0[0] * (longlong)input->basisRow2[1];
+  output->basisRow1[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow2[0] -
+          (int64_t)input->basisRow0[0] * (int64_t)input->basisRow2[1];
   componentOrProductLow = input->basisRow0[1];
-  output->basisRow2[1] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[2] -
-          (longlong)input->basisRow0[2] * (longlong)input->basisRow1[1];
+  output->basisRow2[1] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[2] -
+          (int64_t)input->basisRow0[2] * (int64_t)input->basisRow1[1];
   componentOrProductLow = input->basisRow0[2];
-  output->basisRow0[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[0] -
-          (longlong)input->basisRow0[0] * (longlong)input->basisRow1[2];
+  output->basisRow0[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[0] -
+          (int64_t)input->basisRow0[0] * (int64_t)input->basisRow1[2];
   componentOrProductLow = input->basisRow0[0];
-  output->basisRow1[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)input->basisRow1[1] -
-          (longlong)input->basisRow0[1] * (longlong)input->basisRow1[0];
-  output->basisRow2[2] = (int)((ulonglong)cofactorOrTranslationProduct >> 0x20) << 4 | (uint)cofactorOrTranslationProduct >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)(input->translation).x * (longlong)output->basisRow0[0];
+  output->basisRow1[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)input->basisRow1[1] -
+          (int64_t)input->basisRow0[1] * (int64_t)input->basisRow1[0];
+  output->basisRow2[2] = (int)((uint64_t)cofactorOrTranslationProduct >> 0x20) << 4 | (uint32_t)cofactorOrTranslationProduct >> 0x1c;
+  cofactorOrTranslationProduct = (int64_t)(input->translation).x * (int64_t)output->basisRow0[0];
   productXLow = (int)cofactorOrTranslationProduct;
   negatedProductXLow = -productXLow;
-  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow0[1];
-  productYLow = (uint)translationYProduct;
+  translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow0[1];
+  productYLow = (uint32_t)translationYProduct;
   partialDifferenceLow = negatedProductXLow - productYLow;
-  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow0[2];
-  productZLow = (uint)translationZProduct;
+  translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow0[2];
+  productZLow = (uint32_t)translationZProduct;
   componentOrProductLow = (input->translation).x;
   (output->translation).x =
-       (((((-(uint)(productXLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
-          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       (((((-(uint32_t)(productXLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 0x20)) - (int)((uint64_t)translationYProduct >> 0x20)
+          ) - (uint32_t)(negatedProductXLow < productYLow)) - (int)((uint64_t)translationZProduct >> 0x20)) - (uint32_t)(partialDifferenceLow < productZLow)) *
        0x10 | partialDifferenceLow - productZLow >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)output->basisRow1[0];
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)output->basisRow1[0];
   productXLow = (int)cofactorOrTranslationProduct;
   negatedProductXLow = -productXLow;
-  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow1[1];
-  productYLow = (uint)translationYProduct;
+  translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow1[1];
+  productYLow = (uint32_t)translationYProduct;
   partialDifferenceLow = negatedProductXLow - productYLow;
-  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow1[2];
-  productZLow = (uint)translationZProduct;
+  translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow1[2];
+  productZLow = (uint32_t)translationZProduct;
   componentOrProductLow = (input->translation).x;
   (output->translation).y =
-       (((((-(uint)(productXLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
-          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       (((((-(uint32_t)(productXLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 0x20)) - (int)((uint64_t)translationYProduct >> 0x20)
+          ) - (uint32_t)(negatedProductXLow < productYLow)) - (int)((uint64_t)translationZProduct >> 0x20)) - (uint32_t)(partialDifferenceLow < productZLow)) *
        0x10 | partialDifferenceLow - productZLow >> 0x1c;
-  cofactorOrTranslationProduct = (longlong)componentOrProductLow * (longlong)output->basisRow2[0];
+  cofactorOrTranslationProduct = (int64_t)componentOrProductLow * (int64_t)output->basisRow2[0];
   componentOrProductLow = (int)cofactorOrTranslationProduct;
   negatedProductXLow = -componentOrProductLow;
-  translationYProduct = (longlong)(input->translation).y * (longlong)output->basisRow2[1];
-  productYLow = (uint)translationYProduct;
+  translationYProduct = (int64_t)(input->translation).y * (int64_t)output->basisRow2[1];
+  productYLow = (uint32_t)translationYProduct;
   partialDifferenceLow = negatedProductXLow - productYLow;
-  translationZProduct = (longlong)(input->translation).z * (longlong)output->basisRow2[2];
-  productZLow = (uint)translationZProduct;
+  translationZProduct = (int64_t)(input->translation).z * (int64_t)output->basisRow2[2];
+  productZLow = (uint32_t)translationZProduct;
   (output->translation).z =
-       (((((-(uint)(componentOrProductLow != 0) - (int)((ulonglong)cofactorOrTranslationProduct >> 0x20)) - (int)((ulonglong)translationYProduct >> 0x20)
-          ) - (uint)(negatedProductXLow < productYLow)) - (int)((ulonglong)translationZProduct >> 0x20)) - (uint)(partialDifferenceLow < productZLow)) *
+       (((((-(uint32_t)(componentOrProductLow != 0) - (int)((uint64_t)cofactorOrTranslationProduct >> 0x20)) - (int)((uint64_t)translationYProduct >> 0x20)
+          ) - (uint32_t)(negatedProductXLow < productYLow)) - (int)((uint64_t)translationZProduct >> 0x20)) - (uint32_t)(partialDifferenceLow < productZLow)) *
        0x10 | partialDifferenceLow - productZLow >> 0x1c;
   return;
 }
@@ -694,17 +694,17 @@ FixedTransform_InvertRigidQ28(GraphicsFixedMatrix3x4 *output,GraphicsFixedMatrix
    Ownership: core/math/fixed.
    Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 12.
 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
-  longlong dotProductAccumulatorQ24;
+  int64_t dotProductAccumulatorQ24;
   
   dotProductAccumulatorQ24 =
-       (longlong)right->y * (longlong)left->y + (longlong)right->x * (longlong)left->x +
-       (longlong)right->z * (longlong)left->z;
-  return (uint)dotProductAccumulatorQ24 >> 0xc |
-         (int)((ulonglong)dotProductAccumulatorQ24 >> 0x20) << 0x14;
+       (int64_t)right->y * (int64_t)left->y + (int64_t)right->x * (int64_t)left->x +
+       (int64_t)right->z * (int64_t)left->z;
+  return (uint32_t)dotProductAccumulatorQ24 >> 0xc |
+         (int)((uint64_t)dotProductAccumulatorQ24 >> 0x20) << 0x14;
 }
 
 
@@ -712,17 +712,17 @@ FixedVec3_DotQ12(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
    Ownership: core/math/fixed.
    Purpose: Returns (left.x*right.x + left.y*right.y + left.z*right.z) shifted right by 28.
 */
-sdword __thandor_eax_preserve_ecx_edx
+int32_t __thandor_eax_preserve_ecx_edx
 FixedVec3_DotQ28(GraphicsFixedVec3 *left,GraphicsFixedVec3 *right)
 
 {
-  longlong dotProductAccumulatorQ56;
+  int64_t dotProductAccumulatorQ56;
   
   dotProductAccumulatorQ56 =
-       (longlong)right->y * (longlong)left->y + (longlong)right->x * (longlong)left->x +
-       (longlong)right->z * (longlong)left->z;
-  return (uint)dotProductAccumulatorQ56 >> 0x1c |
-         (int)((ulonglong)dotProductAccumulatorQ56 >> 0x20) << 4;
+       (int64_t)right->y * (int64_t)left->y + (int64_t)right->x * (int64_t)left->x +
+       (int64_t)right->z * (int64_t)left->z;
+  return (uint32_t)dotProductAccumulatorQ56 >> 0x1c |
+         (int)((uint64_t)dotProductAccumulatorQ56 >> 0x20) << 4;
 }
 
 
@@ -737,26 +737,26 @@ FixedVec3_CrossQ12(GraphicsFixedVec3 *output,GraphicsFixedVec3 *rightOperand,
 
 {
   int leftXQ12;
-  longlong finalCrossProductDifferenceQ24;
+  int64_t finalCrossProductDifferenceQ24;
   int currentLeftComponentQ12;
-  longlong currentCrossProductDifferenceQ24;
-  longlong crossComponentProductDifferenceQ24;
+  int64_t currentCrossProductDifferenceQ24;
+  int64_t crossComponentProductDifferenceQ24;
   
   crossComponentProductDifferenceQ24 =
-       (longlong)leftOperand->y * (longlong)rightOperand->z -
-       (longlong)leftOperand->z * (longlong)rightOperand->y;
+       (int64_t)leftOperand->y * (int64_t)rightOperand->z -
+       (int64_t)leftOperand->z * (int64_t)rightOperand->y;
   currentLeftComponentQ12 = leftOperand->z;
-  output->x = (int)((ulonglong)crossComponentProductDifferenceQ24 >> 0x20) << 0x14 |
-              (uint)crossComponentProductDifferenceQ24 >> 0xc;
+  output->x = (int)((uint64_t)crossComponentProductDifferenceQ24 >> 0x20) << 0x14 |
+              (uint32_t)crossComponentProductDifferenceQ24 >> 0xc;
   currentCrossProductDifferenceQ24 =
-       (longlong)currentLeftComponentQ12 * (longlong)rightOperand->x -
-       (longlong)leftOperand->x * (longlong)rightOperand->z;
+       (int64_t)currentLeftComponentQ12 * (int64_t)rightOperand->x -
+       (int64_t)leftOperand->x * (int64_t)rightOperand->z;
   leftXQ12 = leftOperand->x;
-  output->y = (int)((ulonglong)currentCrossProductDifferenceQ24 >> 0x20) << 0x14 |
-              (uint)currentCrossProductDifferenceQ24 >> 0xc;
-  finalCrossProductDifferenceQ24 = (longlong)leftXQ12 * (longlong)rightOperand->y -
-          (longlong)leftOperand->y * (longlong)rightOperand->x;
-  output->z = (int)((ulonglong)finalCrossProductDifferenceQ24 >> 0x20) << 0x14 | (uint)finalCrossProductDifferenceQ24 >> 0xc;
+  output->y = (int)((uint64_t)currentCrossProductDifferenceQ24 >> 0x20) << 0x14 |
+              (uint32_t)currentCrossProductDifferenceQ24 >> 0xc;
+  finalCrossProductDifferenceQ24 = (int64_t)leftXQ12 * (int64_t)rightOperand->y -
+          (int64_t)leftOperand->y * (int64_t)rightOperand->x;
+  output->z = (int)((uint64_t)finalCrossProductDifferenceQ24 >> 0x20) << 0x14 | (uint32_t)finalCrossProductDifferenceQ24 >> 0xc;
   return;
 }
 
@@ -773,13 +773,13 @@ FixedPlanarPointEdxEax8
 FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX)
 
 {
-  dword pointX;
-  dword pointY;
+  uint32_t pointX;
+  uint32_t pointY;
 
   /* SHLD EDX,EAX,4 of the 64-bit products: bits 28..59 */
-  pointX = baseX + (dword)((longlong)g_FixedCosQ28[angle16 & 0xffff] * (longlong)distance >> 0x1c);
-  pointY = (dword)((longlong)g_FixedSinQ28[angle16 & 0xffff] * (longlong)distance >> 0x1c) + baseY;
-  return (qword)pointY << 0x20 | (qword)pointX; /* EDX = y, EAX = x */
+  pointX = baseX + (uint32_t)((int64_t)g_FixedCosQ28[angle16 & 0xffff] * (int64_t)distance >> 0x1c);
+  pointY = (uint32_t)((int64_t)g_FixedSinQ28[angle16 & 0xffff] * (int64_t)distance >> 0x1c) + baseY;
+  return (uint64_t)pointY << 0x20 | (uint64_t)pointX; /* EDX = y, EAX = x */
 }
 
 /* Address: 0x004BEC50.
@@ -826,18 +826,18 @@ FixedMathVectorAnglesRegs8 __thandor_preserve_eax
 FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  dword magnitudeOrElevationAngle;
-  dword azimuthAngle16;
+  uint32_t magnitudeOrElevationAngle;
+  uint32_t azimuthAngle16;
   int y;
   int x;
-  longlong horizontalSquaredLengthAccumulatorQ24;
+  int64_t horizontalSquaredLengthAccumulatorQ24;
   FixedMathVectorAnglesRegs8 vectorAngles;
   
   x = vector->x;
   y = vector->y;
-  horizontalSquaredLengthAccumulatorQ24 = (longlong)y * (longlong)y + (longlong)x * (longlong)x;
+  horizontalSquaredLengthAccumulatorQ24 = (int64_t)y * (int64_t)y + (int64_t)x * (int64_t)x;
   magnitudeOrElevationAngle = FixedMath_UInt64Sqrt
-                    ((UInt64Half32)((ulonglong)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
+                    ((UInt64Half32)((uint64_t)horizontalSquaredLengthAccumulatorQ24 >> 0x20),
                      (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
   magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
@@ -860,8 +860,8 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
 FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedMatrix3x4 *transform)
 
 {
-  dword extractedRotationAngle2;
-  dword gimbalAngle16;
+  uint32_t extractedRotationAngle2;
+  uint32_t gimbalAngle16;
   FixedMathVectorAnglesRegs8 forwardAngles;
   FixedEulerAnglesEaxEcxEdx12 eulerAngles;
   
@@ -891,18 +891,18 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
    Purpose: Returns floor(sqrt(vector->x^2 + vector->y^2 + vector->z^2)).
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vector)
 
 {
-  dword vectorLengthQ12;
-  longlong squaredLengthAccumulatorQ24;
+  uint32_t vectorLengthQ12;
+  int64_t squaredLengthAccumulatorQ24;
   
   squaredLengthAccumulatorQ24 =
-       (longlong)vector->y * (longlong)vector->y + (longlong)vector->x * (longlong)vector->x +
-       (longlong)vector->z * (longlong)vector->z;
+       (int64_t)vector->y * (int64_t)vector->y + (int64_t)vector->x * (int64_t)vector->x +
+       (int64_t)vector->z * (int64_t)vector->z;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   return vectorLengthQ12;
 }
@@ -915,17 +915,17 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_LengthVec3(GraphicsFixedVec3 *vec
    control flow, globals, locals, and executable data remain unchanged.
    Local calls: FixedMath_UInt64Sqrt.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Length2(FixedMathVectorComponent32 x,FixedMathVectorComponent32 y)
 
 {
-  dword vectorLengthQ12;
-  longlong squaredLengthAccumulatorQ24;
+  uint32_t vectorLengthQ12;
+  int64_t squaredLengthAccumulatorQ24;
   
-  squaredLengthAccumulatorQ24 = (longlong)x * (longlong)x + (longlong)y * (longlong)y;
+  squaredLengthAccumulatorQ24 = (int64_t)x * (int64_t)x + (int64_t)y * (int64_t)y;
   vectorLengthQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)squaredLengthAccumulatorQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)squaredLengthAccumulatorQ24 >> 0x20),
                   (UInt64Half32)squaredLengthAccumulatorQ24);
   return vectorLengthQ12;
 }
@@ -943,25 +943,25 @@ FixedMath_DirectionFromAnglesScaledRegs
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,FixedMathScale32 scale)
 
 {
-  longlong scaledYComponentProduct;
-  uint sumAngle16;
-  uint elevationAngle16;
-  uint differenceAngle16;
+  int64_t scaledYComponentProduct;
+  uint32_t sumAngle16;
+  uint32_t elevationAngle16;
+  uint32_t differenceAngle16;
   FixedDirectionXyzRegs12 scaledDirection;
-  longlong scaledHorizontalComponentProduct;
+  int64_t scaledHorizontalComponentProduct;
   
   elevationAngle16 = elevationAngle & 0xffff;
   sumAngle16 = elevationAngle16 + azimuthAngle & 0xffff;
   differenceAngle16 = azimuthAngle - elevationAngle16 & 0xffff;
   scaledHorizontalComponentProduct =
-       (longlong)(g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16]) * (longlong)scale;
-  scaledYComponentProduct = (longlong)(g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16]) * (longlong)scale;
-  scaledDirection.edx = (int)((ulonglong)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x20
+       (int64_t)(g_FixedCosQ28[sumAngle16] + g_FixedCosQ28[differenceAngle16]) * (int64_t)scale;
+  scaledYComponentProduct = (int64_t)(g_FixedSinQ28[sumAngle16] + g_FixedSinQ28[differenceAngle16]) * (int64_t)scale;
+  scaledDirection.edx = (int)((uint64_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x20
                    ) << 4 |
-              (uint)((longlong)g_FixedSinQ28[elevationAngle16] * (longlong)scale) >> 0x1c;
-  scaledDirection.ecx = (int)((ulonglong)scaledYComponentProduct >> 0x20) << 3 | (uint)scaledYComponentProduct >> 0x1d;
-  scaledDirection.eax = (int)((ulonglong)scaledHorizontalComponentProduct >> 0x20) << 3 |
-              (uint)scaledHorizontalComponentProduct >> 0x1d;
+              (uint32_t)((int64_t)g_FixedSinQ28[elevationAngle16] * (int64_t)scale) >> 0x1c;
+  scaledDirection.ecx = (int)((uint64_t)scaledYComponentProduct >> 0x20) << 3 | (uint32_t)scaledYComponentProduct >> 0x1d;
+  scaledDirection.eax = (int)((uint64_t)scaledHorizontalComponentProduct >> 0x20) << 3 |
+              (uint32_t)scaledHorizontalComponentProduct >> 0x1d;
   return scaledDirection;
 }
 
@@ -977,9 +977,9 @@ FixedDirectionXyzRegs12
 FixedMath_DirectionFromAnglesQ28Regs(AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle)
 
 {
-  uint sumAngle16;
-  uint elevationAngle16;
-  uint differenceAngle16;
+  uint32_t sumAngle16;
+  uint32_t elevationAngle16;
+  uint32_t differenceAngle16;
   FixedDirectionXyzRegs12 directionQ28;
   
   elevationAngle16 = elevationAngle & 0xffff;
@@ -1005,13 +1005,13 @@ FixedMath_WriteDirectionScaled
           FixedMathScale32 scale)
 
 {
-  uint azimuthPlusElevationAngle16;
-  uint elevationOrDifferenceAngle16;
+  uint32_t azimuthPlusElevationAngle16;
+  uint32_t elevationOrDifferenceAngle16;
   int verticalSinQ28;
   int azimuthPlusElevationSinQ28;
   int azimuthMinusElevationSinQ28;
-  longlong yComponentScaleProduct;
-  longlong horizontalComponentScaleProduct;
+  int64_t yComponentScaleProduct;
+  int64_t horizontalComponentScaleProduct;
   
   elevationOrDifferenceAngle16 = elevationAngle & 0xffff;
   verticalSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
@@ -1020,16 +1020,16 @@ FixedMath_WriteDirectionScaled
   azimuthPlusElevationSinQ28 = g_FixedSinQ28[azimuthPlusElevationAngle16];
   azimuthMinusElevationSinQ28 = g_FixedSinQ28[elevationOrDifferenceAngle16];
   horizontalComponentScaleProduct =
-       (longlong)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[elevationOrDifferenceAngle16]) *
-       (longlong)scale;
-  output->x = (int)((ulonglong)horizontalComponentScaleProduct >> 0x20) << 3 |
-              (uint)horizontalComponentScaleProduct >> 0x1d;
+       (int64_t)(g_FixedCosQ28[azimuthPlusElevationAngle16] + g_FixedCosQ28[elevationOrDifferenceAngle16]) *
+       (int64_t)scale;
+  output->x = (int)((uint64_t)horizontalComponentScaleProduct >> 0x20) << 3 |
+              (uint32_t)horizontalComponentScaleProduct >> 0x1d;
   yComponentScaleProduct =
-       (longlong)(azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) * (longlong)scale;
-  output->y = (int)((ulonglong)yComponentScaleProduct >> 0x20) << 3 |
-              (uint)yComponentScaleProduct >> 0x1d;
-  output->z = (int)((ulonglong)((longlong)verticalSinQ28 * (longlong)scale) >> 0x20) << 4 |
-              (uint)((longlong)verticalSinQ28 * (longlong)scale) >> 0x1c;
+       (int64_t)(azimuthPlusElevationSinQ28 + azimuthMinusElevationSinQ28) * (int64_t)scale;
+  output->y = (int)((uint64_t)yComponentScaleProduct >> 0x20) << 3 |
+              (uint32_t)yComponentScaleProduct >> 0x1d;
+  output->z = (int)((uint64_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 0x20) << 4 |
+              (uint32_t)((int64_t)verticalSinQ28 * (int64_t)scale) >> 0x1c;
   return;
 }
 
@@ -1047,75 +1047,75 @@ FixedTransform_Compose
 
 {
   int rightBasisComponent0Q28;
-  longlong composedProductSumQ56;
+  int64_t composedProductSumQ56;
   int currentRightBasisRowComponent0Q28;
-  longlong currentComposedComponentProductSumQ56;
+  int64_t currentComposedComponentProductSumQ56;
   
   currentComposedComponentProductSumQ56 =
-       (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[0] +
-       (longlong)transformB->basisRow0[0] * (longlong)transformA->basisRow0[0] +
-       (longlong)transformB->basisRow0[2] * (longlong)transformA->basisRow2[0];
+       (int64_t)transformB->basisRow0[1] * (int64_t)transformA->basisRow1[0] +
+       (int64_t)transformB->basisRow0[0] * (int64_t)transformA->basisRow0[0] +
+       (int64_t)transformB->basisRow0[2] * (int64_t)transformA->basisRow2[0];
   currentRightBasisRowComponent0Q28 = transformB->basisRow0[0];
   output->basisRow0[0] =
-       (int)((ulonglong)currentComposedComponentProductSumQ56 >> 0x20) << 4 |
-       (uint)currentComposedComponentProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[1] +
-          (longlong)currentRightBasisRowComponent0Q28 * (longlong)transformA->basisRow0[1] +
-          (longlong)transformB->basisRow0[2] * (longlong)transformA->basisRow2[1];
+       (int)((uint64_t)currentComposedComponentProductSumQ56 >> 0x20) << 4 |
+       (uint32_t)currentComposedComponentProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow0[1] * (int64_t)transformA->basisRow1[1] +
+          (int64_t)currentRightBasisRowComponent0Q28 * (int64_t)transformA->basisRow0[1] +
+          (int64_t)transformB->basisRow0[2] * (int64_t)transformA->basisRow2[1];
   rightBasisComponent0Q28 = transformB->basisRow0[0];
-  output->basisRow0[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
-          (longlong)transformB->basisRow0[2] * (longlong)transformA->basisRow2[2];
+  output->basisRow0[1] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow0[1] * (int64_t)transformA->basisRow1[2] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[2] +
+          (int64_t)transformB->basisRow0[2] * (int64_t)transformA->basisRow2[2];
   rightBasisComponent0Q28 = transformB->basisRow0[0];
-  output->basisRow0[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow0[1] * (longlong)(transformA->translation).y +
-          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
-          (longlong)transformB->basisRow0[2] * (longlong)(transformA->translation).z;
+  output->basisRow0[2] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow0[1] * (int64_t)(transformA->translation).y +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)(transformA->translation).x +
+          (int64_t)transformB->basisRow0[2] * (int64_t)(transformA->translation).z;
   rightBasisComponent0Q28 = transformB->basisRow1[0];
   (output->translation).x =
-       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).x;
-  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[0] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[0] +
-          (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[0];
+       ((int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c) + (transformB->translation).x;
+  composedProductSumQ56 = (int64_t)transformB->basisRow1[1] * (int64_t)transformA->basisRow1[0] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[0] +
+          (int64_t)transformB->basisRow1[2] * (int64_t)transformA->basisRow2[0];
   rightBasisComponent0Q28 = transformB->basisRow1[0];
-  output->basisRow1[0] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[1] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[1] +
-          (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[1];
+  output->basisRow1[0] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow1[1] * (int64_t)transformA->basisRow1[1] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[1] +
+          (int64_t)transformB->basisRow1[2] * (int64_t)transformA->basisRow2[1];
   rightBasisComponent0Q28 = transformB->basisRow1[0];
-  output->basisRow1[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
-          (longlong)transformB->basisRow1[2] * (longlong)transformA->basisRow2[2];
+  output->basisRow1[1] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow1[1] * (int64_t)transformA->basisRow1[2] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[2] +
+          (int64_t)transformB->basisRow1[2] * (int64_t)transformA->basisRow2[2];
   rightBasisComponent0Q28 = transformB->basisRow1[0];
-  output->basisRow1[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow1[1] * (longlong)(transformA->translation).y +
-          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
-          (longlong)transformB->basisRow1[2] * (longlong)(transformA->translation).z;
+  output->basisRow1[2] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow1[1] * (int64_t)(transformA->translation).y +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)(transformA->translation).x +
+          (int64_t)transformB->basisRow1[2] * (int64_t)(transformA->translation).z;
   rightBasisComponent0Q28 = transformB->basisRow2[0];
   (output->translation).y =
-       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).y;
-  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[0] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[0] +
-          (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[0];
+       ((int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c) + (transformB->translation).y;
+  composedProductSumQ56 = (int64_t)transformB->basisRow2[1] * (int64_t)transformA->basisRow1[0] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[0] +
+          (int64_t)transformB->basisRow2[2] * (int64_t)transformA->basisRow2[0];
   rightBasisComponent0Q28 = transformB->basisRow2[0];
-  output->basisRow2[0] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[1] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[1] +
-          (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[1];
+  output->basisRow2[0] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow2[1] * (int64_t)transformA->basisRow1[1] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[1] +
+          (int64_t)transformB->basisRow2[2] * (int64_t)transformA->basisRow2[1];
   rightBasisComponent0Q28 = transformB->basisRow2[0];
-  output->basisRow2[1] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)transformA->basisRow1[2] +
-          (longlong)rightBasisComponent0Q28 * (longlong)transformA->basisRow0[2] +
-          (longlong)transformB->basisRow2[2] * (longlong)transformA->basisRow2[2];
+  output->basisRow2[1] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow2[1] * (int64_t)transformA->basisRow1[2] +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)transformA->basisRow0[2] +
+          (int64_t)transformB->basisRow2[2] * (int64_t)transformA->basisRow2[2];
   rightBasisComponent0Q28 = transformB->basisRow2[0];
-  output->basisRow2[2] = (int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c;
-  composedProductSumQ56 = (longlong)transformB->basisRow2[1] * (longlong)(transformA->translation).y +
-          (longlong)rightBasisComponent0Q28 * (longlong)(transformA->translation).x +
-          (longlong)transformB->basisRow2[2] * (longlong)(transformA->translation).z;
+  output->basisRow2[2] = (int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c;
+  composedProductSumQ56 = (int64_t)transformB->basisRow2[1] * (int64_t)(transformA->translation).y +
+          (int64_t)rightBasisComponent0Q28 * (int64_t)(transformA->translation).x +
+          (int64_t)transformB->basisRow2[2] * (int64_t)(transformA->translation).z;
   (output->translation).z =
-       ((int)((ulonglong)composedProductSumQ56 >> 0x20) << 4 | (uint)composedProductSumQ56 >> 0x1c) + (transformB->translation).z;
+       ((int)((uint64_t)composedProductSumQ56 >> 0x20) << 4 | (uint32_t)composedProductSumQ56 >> 0x1c) + (transformB->translation).z;
   return;
 }
 
@@ -1134,16 +1134,16 @@ FixedMath_VectorToAngles3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
-  dword horizontalMagnitudeQ12;
-  dword elevationAngle16;
-  dword azimuthAngle16;
-  longlong horizontalMagnitudeSquaredQ24;
+  uint32_t horizontalMagnitudeQ12;
+  uint32_t elevationAngle16;
+  uint32_t azimuthAngle16;
+  int64_t horizontalMagnitudeSquaredQ24;
   FixedMathVectorAnglesRegs8 vectorAngles;
   
-  horizontalMagnitudeSquaredQ24 = (longlong)y * (longlong)y + (longlong)z * (longlong)z;
+  horizontalMagnitudeSquaredQ24 = (int64_t)y * (int64_t)y + (int64_t)z * (int64_t)z;
   horizontalMagnitudeQ12 =
        FixedMath_UInt64Sqrt
-                 ((UInt64Half32)((ulonglong)horizontalMagnitudeSquaredQ24 >> 0x20),
+                 ((UInt64Half32)((uint64_t)horizontalMagnitudeSquaredQ24 >> 0x20),
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
   elevationAngle16 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
@@ -1164,27 +1164,27 @@ FixedTransform_ApplyPoint
 
 {
   int basisRow2Component0Q28;
-  longlong basisDotProductQ40;
+  int64_t basisDotProductQ40;
   int currentBasisRowComponent0Q28;
-  longlong currentBasisDotProductQ40;
+  int64_t currentBasisDotProductQ40;
   
   currentBasisDotProductQ40 =
-       (longlong)transform->basisRow0[1] * (longlong)point->y +
-       (longlong)transform->basisRow0[0] * (longlong)point->x +
-       (longlong)transform->basisRow0[2] * (longlong)point->z;
+       (int64_t)transform->basisRow0[1] * (int64_t)point->y +
+       (int64_t)transform->basisRow0[0] * (int64_t)point->x +
+       (int64_t)transform->basisRow0[2] * (int64_t)point->z;
   currentBasisRowComponent0Q28 = transform->basisRow1[0];
-  output->x = ((int)((ulonglong)currentBasisDotProductQ40 >> 0x20) << 4 |
-              (uint)currentBasisDotProductQ40 >> 0x1c) + (transform->translation).x;
-  basisDotProductQ40 = (longlong)transform->basisRow1[1] * (longlong)point->y +
-          (longlong)currentBasisRowComponent0Q28 * (longlong)point->x +
-          (longlong)transform->basisRow1[2] * (longlong)point->z;
+  output->x = ((int)((uint64_t)currentBasisDotProductQ40 >> 0x20) << 4 |
+              (uint32_t)currentBasisDotProductQ40 >> 0x1c) + (transform->translation).x;
+  basisDotProductQ40 = (int64_t)transform->basisRow1[1] * (int64_t)point->y +
+          (int64_t)currentBasisRowComponent0Q28 * (int64_t)point->x +
+          (int64_t)transform->basisRow1[2] * (int64_t)point->z;
   basisRow2Component0Q28 = transform->basisRow2[0];
-  output->y = ((int)((ulonglong)basisDotProductQ40 >> 0x20) << 4 | (uint)basisDotProductQ40 >> 0x1c) +
+  output->y = ((int)((uint64_t)basisDotProductQ40 >> 0x20) << 4 | (uint32_t)basisDotProductQ40 >> 0x1c) +
               (transform->translation).y;
-  basisDotProductQ40 = (longlong)transform->basisRow2[1] * (longlong)point->y +
-          (longlong)basisRow2Component0Q28 * (longlong)point->x +
-          (longlong)transform->basisRow2[2] * (longlong)point->z;
-  output->z = ((int)((ulonglong)basisDotProductQ40 >> 0x20) << 4 | (uint)basisDotProductQ40 >> 0x1c) +
+  basisDotProductQ40 = (int64_t)transform->basisRow2[1] * (int64_t)point->y +
+          (int64_t)basisRow2Component0Q28 * (int64_t)point->x +
+          (int64_t)transform->basisRow2[2] * (int64_t)point->z;
+  output->z = ((int)((uint64_t)basisDotProductQ40 >> 0x20) << 4 | (uint32_t)basisDotProductQ40 >> 0x1c) +
               (transform->translation).z;
   return;
 }
@@ -1203,19 +1203,19 @@ FixedTransform_BuildRotationBasis
           (GraphicsFixedMatrix3x4 *output,AngleTurn32 angle0,AngleTurn32 angle1,AngleTurn32 angle2)
 
 {
-  longlong rowComponentTimesVerticalSinProduct;
+  int64_t rowComponentTimesVerticalSinProduct;
   int currentSymmetricComponentQ28;
   int symmetricComponentQ28;
-  uint differenceAngleIndex16;
-  uint secondarySymmetricAngleIndex16;
-  uint primarySymmetricAngleIndex16;
+  uint32_t differenceAngleIndex16;
+  uint32_t secondarySymmetricAngleIndex16;
+  uint32_t primarySymmetricAngleIndex16;
   FixedDirectionXZEdxEax8 directionSamplePairQ28;
   FixedDirectionXZEdxEax8 secondaryDirectionSamplePairQ28;
   FixedDirectionXyzRegs12 directionRow;
-  longlong currentComponentTimesVerticalSinProduct;
+  int64_t currentComponentTimesVerticalSinProduct;
   int verticalSinQ28;
-  longlong componentTimesVerticalSinProduct;
-  longlong secondaryComponentTimesVerticalSinProduct;
+  int64_t componentTimesVerticalSinProduct;
+  int64_t secondaryComponentTimesVerticalSinProduct;
   
   directionRow = FixedMath_DirectionFromAnglesQ28Regs(angle1,angle2);
   output->basisRow0[2] = directionRow.eax;
@@ -1233,24 +1233,24 @@ FixedTransform_BuildRotationBasis
   output->basisRow0[0] = currentSymmetricComponentQ28;
   symmetricComponentQ28 = g_FixedCosQ28[primarySymmetricAngleIndex16] + g_FixedCosQ28[differenceAngleIndex16] >> 1;
   output->basisRow1[1] =
-       ((int)((ulonglong)((longlong)currentSymmetricComponentQ28 * (longlong)verticalSinQ28) >> 0x20
+       ((int)((uint64_t)((int64_t)currentSymmetricComponentQ28 * (int64_t)verticalSinQ28) >> 0x20
              ) << 4 |
-       (uint)((longlong)currentSymmetricComponentQ28 * (longlong)verticalSinQ28) >> 0x1c) + symmetricComponentQ28;
-  currentComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
+       (uint32_t)((int64_t)currentSymmetricComponentQ28 * (int64_t)verticalSinQ28) >> 0x1c) + symmetricComponentQ28;
+  currentComponentTimesVerticalSinProduct = (int64_t)symmetricComponentQ28 * (int64_t)verticalSinQ28;
   output->basisRow0[0] =
        output->basisRow0[0] +
-       ((int)((ulonglong)currentComponentTimesVerticalSinProduct >> 0x20) << 4 |
-       (uint)currentComponentTimesVerticalSinProduct >> 0x1c);
+       ((int)((uint64_t)currentComponentTimesVerticalSinProduct >> 0x20) << 4 |
+       (uint32_t)currentComponentTimesVerticalSinProduct >> 0x1c);
   symmetricComponentQ28 = g_FixedSinQ28[primarySymmetricAngleIndex16] + g_FixedSinQ28[differenceAngleIndex16] >> 1;
   output->basisRow1[0] = symmetricComponentQ28;
-  rowComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
+  rowComponentTimesVerticalSinProduct = (int64_t)symmetricComponentQ28 * (int64_t)verticalSinQ28;
   symmetricComponentQ28 = g_FixedSinQ28[differenceAngleIndex16] - g_FixedSinQ28[primarySymmetricAngleIndex16] >> 1;
-  secondaryComponentTimesVerticalSinProduct = (longlong)symmetricComponentQ28 * (longlong)verticalSinQ28;
-  output->basisRow0[1] = symmetricComponentQ28 - ((int)((ulonglong)rowComponentTimesVerticalSinProduct >> 0x20) << 4 | (uint)rowComponentTimesVerticalSinProduct >> 0x1c);
+  secondaryComponentTimesVerticalSinProduct = (int64_t)symmetricComponentQ28 * (int64_t)verticalSinQ28;
+  output->basisRow0[1] = symmetricComponentQ28 - ((int)((uint64_t)rowComponentTimesVerticalSinProduct >> 0x20) << 4 | (uint32_t)rowComponentTimesVerticalSinProduct >> 0x1c);
   output->basisRow1[0] =
        output->basisRow1[0] -
-       ((int)((ulonglong)secondaryComponentTimesVerticalSinProduct >> 0x20) << 4 |
-       (uint)secondaryComponentTimesVerticalSinProduct >> 0x1c);
+       ((int)((uint64_t)secondaryComponentTimesVerticalSinProduct >> 0x20) << 4 |
+       (uint32_t)secondaryComponentTimesVerticalSinProduct >> 0x1c);
   return;
 }
 
@@ -1262,13 +1262,13 @@ FixedTransform_BuildRotationBasis
    Calling convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
 */
-dword __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x)
 
 {
-  dword angle16Result;
+  uint32_t angle16Result;
   int denominatorOrRatio;
-  uint reducedAngleNumerator;
+  uint32_t reducedAngleNumerator;
   int doubledYOrRatioSquared;
   AngleTurn16Stored32 octantBaseAngle16;
   
@@ -1325,16 +1325,16 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
   }
   angle16Result = 0;
   if (denominatorOrRatio * 2 != 0) {
-    denominatorOrRatio = (int)((longlong)((ulonglong)reducedAngleNumerator << 0x20) / (longlong)(denominatorOrRatio * 2));
-    doubledYOrRatioSquared = (int)((ulonglong)((longlong)denominatorOrRatio * (longlong)denominatorOrRatio) >> 0x20);
+    denominatorOrRatio = (int)((int64_t)((uint64_t)reducedAngleNumerator << 0x20) / (int64_t)(denominatorOrRatio * 2));
+    doubledYOrRatioSquared = (int)((uint64_t)((int64_t)denominatorOrRatio * (int64_t)denominatorOrRatio) >> 0x20);
     angle16Result =
          octantBaseAngle16 +
-         (int)((ulonglong)
-               ((longlong)denominatorOrRatio *
-               (longlong)
-               ((int)((ulonglong)
-                      ((longlong)doubledYOrRatioSquared *
-                      (longlong)((int)((ulonglong)((longlong)doubledYOrRatioSquared * 0x104c2) >> 0x20) + -0x6ca6))
+         (int)((uint64_t)
+               ((int64_t)denominatorOrRatio *
+               (int64_t)
+               ((int)((uint64_t)
+                      ((int64_t)doubledYOrRatioSquared *
+                      (int64_t)((int)((uint64_t)((int64_t)doubledYOrRatioSquared * 0x104c2) >> 0x20) + -0x6ca6))
                      >> 0x20) + 0x517d)) >> 0x20);
   }
   return angle16Result;
@@ -1345,11 +1345,11 @@ FixedMath_Atan2Angle16(FixedMathVectorComponent32 y,FixedMathVectorComponent32 x
    Ownership: core/math/fixed.
    Purpose: Computes the recovered Q12 fixed-point square-root approximation.
 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue)
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint32_t inputValue)
 
 {
   int highestBitOrNormalized;
-  uint normalizeShift;
+  uint32_t normalizeShift;
   
   highestBitOrNormalized = 0x1f;
   if (inputValue != 0) {
@@ -1358,15 +1358,15 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue)
   }
   if (inputValue != 0) {
     normalizeShift = 0x1cU - highestBitOrNormalized & 0x1e;
-    highestBitOrNormalized = inputValue << (sbyte)normalizeShift;
-    return (int)((ulonglong)
-                 ((longlong)highestBitOrNormalized *
-                 (longlong)
-                 ((int)((ulonglong)
-                        ((longlong)highestBitOrNormalized *
-                        (longlong)
-                        ((int)((ulonglong)((longlong)highestBitOrNormalized * 0x25ed098) >> 0x20) + -0x1c71c71)) >>
-                       0x20) + 0xb1c71c)) >> 0x20) + 0x66b75U >> (sbyte)(normalizeShift >> 1);
+    highestBitOrNormalized = inputValue << (int8_t)normalizeShift;
+    return (int)((uint64_t)
+                 ((int64_t)highestBitOrNormalized *
+                 (int64_t)
+                 ((int)((uint64_t)
+                        ((int64_t)highestBitOrNormalized *
+                        (int64_t)
+                        ((int)((uint64_t)((int64_t)highestBitOrNormalized * 0x25ed098) >> 0x20) + -0x1c71c71)) >>
+                       0x20) + 0xb1c71c)) >> 0x20) + 0x66b75U >> (int8_t)(normalizeShift >> 1);
   }
   return 0;
 }
@@ -1378,13 +1378,13 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_SqrtQ12Approx(uint inputValue)
    low→UInt64Half32_V342. Calling convention, exact VariableStorage serialization, function body bytes, control
    flow, globals, locals, and executable data remain unchanged.
 */
-dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
+uint32_t __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt64Half32 low)
 
 {
-  byte initialRootShift;
-  uint rootEstimate;
-  uint refinedRootEstimate;
-  uint secondRootEstimate;
+  uint8_t initialRootShift;
+  uint32_t rootEstimate;
+  uint32_t refinedRootEstimate;
+  uint32_t secondRootEstimate;
   int lowHighestSetBitIndex;
   int highestSetBitIndex;
   
@@ -1403,18 +1403,18 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
     if (low == 0) {
       return 0;
     }
-    initialRootShift = (byte)(lowHighestSetBitIndex + 1U >> 1);
+    initialRootShift = (uint8_t)(lowHighestSetBitIndex + 1U >> 1);
   }
   else {
-    initialRootShift = (byte)(highestSetBitIndex + 0x21U >> 1);
+    initialRootShift = (uint8_t)(highestSetBitIndex + 0x21U >> 1);
   }
   rootEstimate = 1 << (initialRootShift & 0x1f);
   /* unsigned DIV of EDX:EAX = high:low */
   refinedRootEstimate =
-       rootEstimate + (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)rootEstimate) >> 1;
+       rootEstimate + (int)(((uint64_t)high << 0x20 | (uint64_t)low) / (uint64_t)rootEstimate) >> 1;
   secondRootEstimate =
-       refinedRootEstimate + (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)refinedRootEstimate) >> 1;
-  return (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)secondRootEstimate) + secondRootEstimate >> 1;
+       refinedRootEstimate + (int)(((uint64_t)high << 0x20 | (uint64_t)low) / (uint64_t)refinedRootEstimate) >> 1;
+  return (int)(((uint64_t)high << 0x20 | (uint64_t)low) / (uint64_t)secondRootEstimate) + secondRootEstimate >> 1;
 }
 
 
@@ -1425,9 +1425,9 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
    table into the next.
    Entry i is sin(i * 2pi / 65536) in Q28, rounded half up, computed with pi = 3.141592654; this
    reproduces every entry of the original. Called once at startup. */
-static sdword FixedMath_SineTableEntry(int index)
+static int32_t FixedMath_SineTableEntry(int index)
 {
-  return (sdword)floor(sin(index * (3.141592654 / 32768.0)) * 268435456.0 + 0.5);
+  return (int32_t)floor(sin(index * (3.141592654 / 32768.0)) * 268435456.0 + 0.5);
 }
 
 void FixedMath_BuildSinCosTables(void)

@@ -43,9 +43,9 @@ void Thandor_SelfTestBlendScaleCompare(void)
 #define BLENDSCALE_GUARD 64u
 #define BLENDSCALE_HEADER 0x200u
 
-typedef void (__stdcall *BlendScaleProc)(dword destinationHeight, dword destinationWidth, int destinationTop,
-                                         int destinationLeft, qword *blended, qword *factor, dword indexA,
-                                         dword indexB, int *asset, int *framebuffer);
+typedef void (__stdcall *BlendScaleProc)(uint32_t destinationHeight, uint32_t destinationWidth, int destinationTop,
+                                         int destinationLeft, uint64_t *blended, uint64_t *factor, uint32_t indexA,
+                                         uint32_t indexB, int *asset, int *framebuffer);
 
 static unsigned BlendScaleRandom(unsigned *state)
 {
@@ -62,15 +62,15 @@ static unsigned BlendScaleRange(unsigned *state, unsigned low, unsigned high)
     return low + BlendScaleRandom(state) % (high - low + 1);
 }
 
-static void BlendScaleFill(byte *data, unsigned size, unsigned *state)
+static void BlendScaleFill(uint8_t *data, unsigned size, unsigned *state)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
-        data[i] = (byte)(BlendScaleRandom(state) >> 11);
+        data[i] = (uint8_t)(BlendScaleRandom(state) >> 11);
     }
 }
 
-static int BlendScaleFirstDifference(const byte *a, const byte *b, unsigned size)
+static int BlendScaleFirstDifference(const uint8_t *a, const uint8_t *b, unsigned size)
 {
     unsigned i;
     for (i = 0; i < size; i++) {
@@ -109,8 +109,8 @@ static void BlendScaleSetFormat(unsigned *state)
 }
 
 /* Returns nonzero when the original faulted. */
-static int BlendScaleCallOriginal(BlendScaleProc original, dword height, dword width, int top, int left,
-                                  qword *blended, qword *factor, dword indexA, dword indexB, int *asset,
+static int BlendScaleCallOriginal(BlendScaleProc original, uint32_t height, uint32_t width, int top, int left,
+                                  uint64_t *blended, uint64_t *factor, uint32_t indexA, uint32_t indexB, int *asset,
                                   int *framebuffer, unsigned *exceptionCode)
 {
     __try {
@@ -133,7 +133,7 @@ void Thandor_SelfTestBlendScaleCompare(void)
     BlendScaleProc original =
         (BlendScaleProc)Thandor_LoadOriginalCodeCopy(BLENDSCALE_CODE_START, BLENDSCALE_CODE_END - BLENDSCALE_CODE_START);
     SoftwarePixelFormatConfig savedFormat = g_SoftwarePixelFormatConfig;
-    dword savedLut[256];
+    uint32_t savedLut[256];
     int run;
     int failures = 0;
     int drawn = 0;
@@ -146,35 +146,35 @@ void Thandor_SelfTestBlendScaleCompare(void)
     Thandor_Log("blendscalecmp: %d runs, seed %u", runs, baseSeed);
     for (run = 0; run < runs; run++) {
         unsigned state = (baseSeed * 2654435761u) ^ (unsigned)(run * 40503 + 1);
-        dword sourceWidth;
-        dword sourceHeight;
-        dword pixels;
-        dword entryCount;
-        dword entryBytes;
-        dword assetBytes;
-        dword indexA;
-        dword indexB;
-        dword destinationWidth;
-        dword destinationHeight;
-        dword pixelBytes;
-        dword pitch;
+        uint32_t sourceWidth;
+        uint32_t sourceHeight;
+        uint32_t pixels;
+        uint32_t entryCount;
+        uint32_t entryBytes;
+        uint32_t assetBytes;
+        uint32_t indexA;
+        uint32_t indexB;
+        uint32_t destinationWidth;
+        uint32_t destinationHeight;
+        uint32_t pixelBytes;
+        uint32_t pitch;
         int top;
         int left;
-        dword framebufferBytes;
-        dword blendedBytes;
-        byte *asset;
-        byte *factor;
-        byte *blendedMine;
-        byte *blendedTheirs;
-        byte *pixelsMine;
-        byte *pixelsTheirs;
-        dword lutBefore[256];
-        dword lutMine[256];
+        uint32_t framebufferBytes;
+        uint32_t blendedBytes;
+        uint8_t *asset;
+        uint8_t *factor;
+        uint8_t *blendedMine;
+        uint8_t *blendedTheirs;
+        uint8_t *pixelsMine;
+        uint8_t *pixelsTheirs;
+        uint32_t lutBefore[256];
+        uint32_t lutMine[256];
         SoftwareFramebufferAccess framebufferMine;
         SoftwareFramebufferAccess framebufferTheirs;
         unsigned exceptionCode = 0;
         unsigned invalid;
-        dword i;
+        uint32_t i;
         int difference;
         const char *where = NULL;
 
@@ -197,15 +197,15 @@ void Thandor_SelfTestBlendScaleCompare(void)
         pitch = destinationWidth + BlendScaleRange(&state, 0, 16);
         top = (int)BlendScaleRange(&state, 0, 8);
         left = (int)BlendScaleRange(&state, 0, pitch - destinationWidth);
-        framebufferBytes = (dword)(top + destinationHeight) * pitch * pixelBytes + 2 * BLENDSCALE_GUARD;
+        framebufferBytes = (uint32_t)(top + destinationHeight) * pitch * pixelBytes + 2 * BLENDSCALE_GUARD;
         blendedBytes = sourceWidth * (sourceHeight + 1) + 16;
 
-        asset = (byte *)calloc(1, assetBytes);
-        factor = (byte *)malloc(entryBytes);
-        blendedMine = (byte *)malloc(blendedBytes);
-        blendedTheirs = (byte *)malloc(blendedBytes);
-        pixelsMine = (byte *)malloc(framebufferBytes);
-        pixelsTheirs = (byte *)malloc(framebufferBytes);
+        asset = (uint8_t *)calloc(1, assetBytes);
+        factor = (uint8_t *)malloc(entryBytes);
+        blendedMine = (uint8_t *)malloc(blendedBytes);
+        blendedTheirs = (uint8_t *)malloc(blendedBytes);
+        pixelsMine = (uint8_t *)malloc(framebufferBytes);
+        pixelsTheirs = (uint8_t *)malloc(framebufferBytes);
         if (!asset || !factor || !blendedMine || !blendedTheirs || !pixelsMine || !pixelsTheirs) {
             Thandor_Log("blendscalecmp: allocation failed");
             return;
@@ -243,11 +243,11 @@ void Thandor_SelfTestBlendScaleCompare(void)
         memcpy(blendedTheirs, blendedMine, blendedBytes);
         BlendScaleFill(pixelsMine, framebufferBytes, &state);
         memcpy(pixelsTheirs, pixelsMine, framebufferBytes);
-        BlendScaleFill((byte *)lutBefore, sizeof lutBefore, &state);
+        BlendScaleFill((uint8_t *)lutBefore, sizeof lutBefore, &state);
         BlendScaleSetFormat(&state);
 
         framebufferMine.width = pitch;
-        framebufferMine.height = (dword)top + destinationHeight;
+        framebufferMine.height = (uint32_t)top + destinationHeight;
         framebufferMine.bytesPerPixel = (enum SoftwareFramebufferPixelSize)pixelBytes;
         framebufferMine.pixels = pixelsMine + BLENDSCALE_GUARD;
         framebufferTheirs = framebufferMine;
@@ -255,12 +255,12 @@ void Thandor_SelfTestBlendScaleCompare(void)
 
         memcpy(g_SoftwarePixelIntensityToNativeColorLut256, lutBefore, sizeof lutBefore);
         SoftwareTexture_BilinearBlendScaleSubresources(destinationHeight, destinationWidth, top, left,
-                                                       (qword *)blendedMine, (qword *)factor, indexA, indexB,
+                                                       (uint64_t *)blendedMine, (uint64_t *)factor, indexA, indexB,
                                                        (int *)asset, (int *)&framebufferMine);
         memcpy(lutMine, g_SoftwarePixelIntensityToNativeColorLut256, sizeof lutMine);
         memcpy(g_SoftwarePixelIntensityToNativeColorLut256, lutBefore, sizeof lutBefore);
-        if (BlendScaleCallOriginal(original, destinationHeight, destinationWidth, top, left, (qword *)blendedTheirs,
-                                   (qword *)factor, indexA, indexB, (int *)asset, (int *)&framebufferTheirs,
+        if (BlendScaleCallOriginal(original, destinationHeight, destinationWidth, top, left, (uint64_t *)blendedTheirs,
+                                   (uint64_t *)factor, indexA, indexB, (int *)asset, (int *)&framebufferTheirs,
                                    &exceptionCode)) {
             failures++;
             Thandor_Log("blendscalecmp run %d: original faulted (exception %08x)", run, exceptionCode);
@@ -276,8 +276,8 @@ void Thandor_SelfTestBlendScaleCompare(void)
             else if ((difference = BlendScaleFirstDifference(pixelsMine, pixelsTheirs, framebufferBytes)) >= 0) {
                 where = "framebuffer";
             }
-            else if ((difference = BlendScaleFirstDifference((const byte *)lutMine,
-                                                             (const byte *)g_SoftwarePixelIntensityToNativeColorLut256,
+            else if ((difference = BlendScaleFirstDifference((const uint8_t *)lutMine,
+                                                             (const uint8_t *)g_SoftwarePixelIntensityToNativeColorLut256,
                                                              sizeof lutMine)) >= 0) {
                 where = "intensity table";
             }

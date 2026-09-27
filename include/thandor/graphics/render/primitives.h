@@ -30,7 +30,7 @@ GraphicsPrimitiveQueue_ResetGlobal(void);
 void __thandor_preserve_eax GraphicsPrimitiveQueue_Free(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0A90 */
-dword __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
+uint32_t __thandor_eax_preserve_ecx_edx GraphicsPrimitiveQueue_GetCount(GraphicsPrimitiveQueue *queue);
 
 /* 0x004D0AA0 */
 GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
@@ -68,7 +68,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
 /* 0x004D0DA0 */
 GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
-          (dword *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,
@@ -78,7 +78,7 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
 /* 0x004D0F20 */
 GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
-          (dword *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
+          (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
           GraphicsProjectedVertexSource *vertex1Projected,

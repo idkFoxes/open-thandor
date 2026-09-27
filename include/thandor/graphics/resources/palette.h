@@ -23,7 +23,7 @@ void GraphicsPaletteAsset_GetBankCountRegs(GraphicsPaletteAsset *paletteAsset);
 
 /* 0x004AD820 */
 GraphicsPaletteAssetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
-GraphicsPaletteAsset_LoadPackage(word *pathUtf16);
+GraphicsPaletteAsset_LoadPackage(uint16_t *pathUtf16);
 
 /* 0x004AD860 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -59,11 +59,11 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
 /* 0x004AE2E0 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsPaletteTextureSource_RemapColorIndexForPaletteBank
-          (uint oldColorIndex,uint newColorIndex,GraphicsPaletteIndex paletteBank,
+          (uint32_t oldColorIndex,uint32_t newColorIndex,GraphicsPaletteIndex paletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource);
 
 /* 0x004AE370 */
-uint __thandor_eax_preserve_ecx_edx
+uint32_t __thandor_eax_preserve_ecx_edx
 GraphicsPaletteTextureSource_CountCombinedUsedColors
           (GraphicsPaletteIndex candidatePaletteBank,GraphicsPaletteIndex destinationPaletteBank,
           GraphicsTextureSourceHeaderViewBC *textureSource);
