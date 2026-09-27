@@ -559,4 +559,16 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
     return color;
 }
 
+/* ---- WP1: 16-bit alpha blend with depth write -------------------------------------------- */
+
+/* Depth rule of the alpha-blended modes that write depth (4/6/12/14 and the textured 20/22/28/30):
+   depth is written when the source alpha lane (Q4, as handed to Raster_BlendAlpha) is >= 128, i.e.
+   the blend index (word)alpha >> 4 is > 0x7f. The lane is read unsigned, so a negative lane also
+   passes. The textured modes test exactly this in the original; the untextured ones test a stale
+   MM2 instead (see docs/software_raster.md), and the C keeps this rule for them. */
+static __inline int Raster_AlphaWritesDepth(RasterColor sourceQ4)
+{
+    return (word)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
