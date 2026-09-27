@@ -14,7 +14,7 @@
    Ownership: gameplay/faction/relations.
    Purpose: Walks every active opposing faction, tests pair-transition rules, and dispatches state-specific random
    advance, faster advance, or reset behavior for the selected faction.
-   Local calls: GameFactionRelations_TestPairTransitionAllowedCf, GameFactionRelations_IsResetEligibleStateCf,
+   Local calls: GameFactionRelations_TestPairTransitionAllowed, GameFactionRelations_IsResetEligibleState,
    GameFactionRelations_MaybeResetPairState, GameFactionRelations_MaybeAdvancePairStateRare,
    GameFactionRelations_MaybeAdvancePairStateCommon.
 */
@@ -31,17 +31,17 @@ GameFactionRelations_UpdateAllPairsForFaction
   do {
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[opposingFactionIndex] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) && (sourceFactionIndex != opposingFactionIndex)) {
-      pairTestResult = GameFactionRelations_TestPairTransitionAllowedCf
+      pairTestResult = GameFactionRelations_TestPairTransitionAllowed
                         (opposingFactionIndex,sourceFactionIndex);
       if (pairTestResult) {
-        pairTestResult = GameFactionRelations_IsResetEligibleStateCf
+        pairTestResult = GameFactionRelations_IsResetEligibleState
                           (opposingFactionIndex,sourceFactionIndex);
         if (!pairTestResult) {
           GameFactionRelations_MaybeResetPairState(opposingFactionIndex,sourceFactionIndex);
         }
       }
       else {
-        pairTestResult = GameFactionRelations_IsResetEligibleStateCf
+        pairTestResult = GameFactionRelations_IsResetEligibleState
                           (opposingFactionIndex,sourceFactionIndex);
         if (pairTestResult) {
           GameFactionRelations_MaybeAdvancePairStateRare(opposingFactionIndex,sourceFactionIndex);
@@ -105,11 +105,11 @@ PlayerPairList_RemoveRange
    Ownership: gameplay/faction/relations.
    Purpose: Rejects terminal or globally disabled relation states, combines each faction eligibility mask for low
    states, and evaluates transition rules for both directions, returning permission through carry.
-   Local calls: GameFactionRelations_BuildEligibleFactionMask, GameFactionRelations_EvaluateTransitionRulesCf.
+   Local calls: GameFactionRelations_BuildEligibleFactionMask, GameFactionRelations_EvaluateTransitionRules.
    Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_TestPairTransitionAllowedCf
+GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {
@@ -129,9 +129,9 @@ GameFactionRelations_TestPairTransitionAllowedCf
     }
     targetEligibleMask = GameFactionRelations_BuildEligibleFactionMask(targetFactionIndex);
     sourceEligibleMask = GameFactionRelations_BuildEligibleFactionMask(sourceFactionIndex);
-    rulesSatisfied = GameFactionRelations_EvaluateTransitionRulesCf(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
+    rulesSatisfied = GameFactionRelations_EvaluateTransitionRules(targetFactionIndex,sourceEligibleMask | targetEligibleMask);
     if ((!rulesSatisfied) &&
-       (rulesSatisfied = GameFactionRelations_EvaluateTransitionRulesCf(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
+       (rulesSatisfied = GameFactionRelations_EvaluateTransitionRules(sourceFactionIndex,sourceEligibleMask | targetEligibleMask),
        !rulesSatisfied)) {
       return false;
     }
@@ -182,7 +182,7 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
 */
 
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_EvaluateTransitionRulesCf
+GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask)
 
 {
@@ -325,7 +325,7 @@ GameFactionRelations_EvaluateTransitionRulesCf
    Cross-module calls: GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsResetEligibleStateCf
+GameFactionRelations_IsResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex)
 
 {

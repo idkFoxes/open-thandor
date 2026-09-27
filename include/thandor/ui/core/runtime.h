@@ -15,7 +15,7 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x004228F0 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root);
+bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);
 
 /* 0x00422980 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_NoOpMethod08(UiRootNode *root);
@@ -25,23 +25,23 @@ void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void 
 
 /* 0x004244E0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRuntime_OpenFourValueDialogCf
+UiRuntime_OpenFourValueDialog
           (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
           UiPixelCoordinate value3);
 
 /* 0x004AEF00 */
 RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
-UiRuntimeRecordRing_DiscardOldestCf(void);
+UiRuntimeRecordRing_DiscardOldest(void);
 
 /* 0x004AF020 */
 void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void);
 
 /* 0x004AF030 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPendingCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void);
 
 /* 0x004AF050 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken);
+UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sequenceToken);
 
 /* 0x004AF0F0 */
 void __thandor_preserve_eax_edx
@@ -105,7 +105,7 @@ void UiNode_DefaultTick(UiNodeBase *control);
 
 /* 0x004B0FD0 */
 void __thandor_preserve_eax
-UiActionHandlers_SetPageCf(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page);
+UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page);
 
 /* 0x004B14B0 */
 UiNodeBase * UiNode_GetRoot(UiNodeBase *node);

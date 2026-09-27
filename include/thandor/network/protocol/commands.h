@@ -36,7 +36,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
 
 /* 0x0055F200 */
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameCommandQueue_ContainsTripletValueCf
+InGameCommandQueue_ContainsTripletValue
           (InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress);
 

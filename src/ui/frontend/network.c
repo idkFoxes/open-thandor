@@ -18,8 +18,8 @@
    Local calls: FrontendNetworkSetupPage_InitializeFromCommandLine.
    Cross-module calls: UiNodeList_UnsuppressActionId [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout], UiPointerList_InitializeColumnLayout
-   [ui/controls/lists], RichTextCommandStream_CopyExpandedCf [assets/text/richtext],
-   UiTransfer_SendPlayerDescriptorPacket20002Cf [network/protocol/transfer].
+   [ui/controls/lists], RichTextCommandStream_CopyExpanded [assets/text/richtext],
+   UiTransfer_SendPlayerDescriptorPacket20002 [network/protocol/transfer].
 */
 void __thandor_void_preserve_eax_ecx
 FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
@@ -95,7 +95,7 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     g_NetworkBackendSlot7
               (&g_FrontendNetworkEndpointTextUtf16,
                (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-    RichTextCommandStream_CopyExpandedCf
+    RichTextCommandStream_CopyExpanded
               (0x80,((UiRequiredTextEditControl *)FRONTEND_UI(frontendUi,hostAddressEdit))->textPrefix6C,
                (uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
     UiPageStack_SetActiveIndex(1,(UiPageStackControl *)FRONTEND_UI(frontendUi,frontendPageStack));
@@ -118,12 +118,12 @@ FrontendNetworkSetupPage_InitializeBackendMode(FrontendUiImage *frontendUi)
     (firstPlayerRecord->factionAssignment).roleStateFlags = 0;
     firstPlayerRecord->runtimeState64 = 0;
     firstPlayerRecord->snapshotTransferFlags = 0;
-    UiTransfer_SendPlayerDescriptorPacket20002Cf();
+    UiTransfer_SendPlayerDescriptorPacket20002();
     return;
   }
   UiRuntimeRecordRing_Clear();
   UiTransferMailbox_RandomizeSequenceToken();
-  backendIndex = UiPointerList_GetSelectedIndexVariantACf
+  backendIndex = UiPointerList_GetSelectedIndexVariantA
                           ((UiPointerListControl *)FRONTEND_UI(frontendUi,networkProtocolList));
   selectedBackendIndex = backendIndex;
   setSessionResult = g_NetworkBackendSlot0(backendIndex);
@@ -159,8 +159,8 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
           *optionTextCursor = 0;
           if (optionTextCursor[1] == 0) {
             *commandLineOptionBytes = 0x6e;
-            Text_CopyNarrowToUtf16Cf(0x28,destination,commandLineOptionBytes + 6);
-            Text_CopyNarrowToUtf16Cf
+            Text_CopyNarrowToUtf16(0x28,destination,commandLineOptionBytes + 6);
+            Text_CopyNarrowToUtf16
                       (0x28,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
             *optionTextCursor = 0x22;
           }
@@ -184,7 +184,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
       UiPointerList_InitializeColumnLayout
                 (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
-      UiTransfer_SendPacketType10000Value2931Cf();
+      UiTransfer_SendPacketType10000Value2931();
       findOptionResult = g_CommandLineFindOption(5,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x1a);
       if (findOptionResult.notFound) {
         findOptionResult = g_CommandLineFindOption(8,s_NAME__CLIENT__KARTE___00545e91 + 6);
@@ -210,7 +210,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
           *optionTextCursor = 0;
           if (optionTextCursor[1] == 0) {
             *secondaryCommandLineOptionBytes = 99;
-            Text_CopyNarrowToUtf16Cf
+            Text_CopyNarrowToUtf16
                       (0x800000,(uint16_t *)g_PackageScratchBuffer,secondaryCommandLineOptionBytes + 8);
             endpointParseFailed = g_NetworkBackendSlot6
                               (&g_FrontendSelectedNetworkEndpoint,(char *)g_PackageScratchBuffer);
@@ -219,12 +219,12 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
                         (&g_FrontendNetworkEndpointScratch,(char *)g_PackageScratchBuffer);
               g_FrontendSessionToken = 0x12340000;
               g_FrontendSelectedPlayerToken = 0xffffffff;
-              UiTransfer_SendPlayerDescriptorPacket20002Cf();
+              UiTransfer_SendPlayerDescriptorPacket20002();
               remainingOrRootNode = g_FrontendRootNode;
               g_NetworkBackendSlot7
                         (&g_FrontendNetworkEndpointTextUtf16,
                          (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
-              RichTextCommandStream_CopyExpandedCf
+              RichTextCommandStream_CopyExpanded
                         (0x80,
                          ((UiRequiredTextEditControl *)FRONTEND_UI(remainingOrRootNode,hostAddressEdit))
                          ->textPrefix6C,(uint16_t *)&g_FrontendNetworkEndpointTextUtf16);
@@ -303,7 +303,7 @@ void __thandor_void_preserve_eax_ecx FrontendTeardown_SaveRootStateSnapshot80(Ui
    for FRONTEND_PAGE20[13] (0x200D). Return datatype is preserved for non-queue direct callers. Typed parameters:
    p0 transferPageControl→UiTextEditControl *. Calling convention, complete VariableStorage serialization, function
    bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer].
+   Cross-module calls: UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer].
 */
 void __thandor_preserve_eax_edx
 FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferPageControl)
@@ -320,7 +320,7 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
   }
   transferPageControl->editStateFlags =
        transferPageControl->editStateFlags | UI_TEXT_EDIT_VALUE_VALID;
-  UiTransfer_SendPacketType10000Value2931Cf();
+  UiTransfer_SendPacketType10000Value2931();
   g_NetworkBackendSlot7
             (&g_FrontendNetworkEndpointTextUtf16,(WinSockAddress *)&g_FrontendNetworkEndpointScratch
             );
@@ -336,7 +336,7 @@ FrontendTransferPage_ValidateInputAndRequestMailbox(UiTextEditControl *transferP
    globals, locals, and executable data remain unchanged.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiNodeList_SuppressActionId
    [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer].
+   UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer].
 */
 void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBase *source)
 
@@ -354,7 +354,7 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
   UiNodeList_SuppressActionId(0x2002,FRONTEND_UI(frontendUi,frontendRoot));
   UiPointerList_InitializeColumnLayout
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
-  UiTransfer_SendPacketType10000Value2931Cf();
+  UiTransfer_SendPacketType10000Value2931();
   return;
 }
 
@@ -365,8 +365,8 @@ void __thandor_preserve_eax FrontendTransferPage_OpenAndRequestMailbox(UiNodeBas
    selected counts, applies compact-layout state, and refreshes game-name validity. Queued UI action handler for
    FRONTEND_PAGE20[1] (0x2001). Return datatype is preserved for non-queue direct callers.
    Local calls: FrontendNetworkSetupPage_InitializeSingleLocalPlayer.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string], UiPageStack_SetActiveIndex
-   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpandedCf
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], UiPageStack_SetActiveIndex
+   [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpanded
    [assets/text/richtext], UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
    FrontendNetworkSettings_SetGameName [ui/frontend/settings].
 */
@@ -416,7 +416,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
       *optionTextCursor = 0;
       if (optionTextCursor[1] == 0) {
         *optionText = 0x73;
-        Text_CopyNarrowToUtf16Cf(0x28,destination,optionText + 7);
+        Text_CopyNarrowToUtf16(0x28,destination,optionText + 7);
         *optionTextCursor = 0x22;
         appliedOptionMask = appliedOptionMask + 2;
       }
@@ -447,7 +447,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   parsedCountOrTickSetting = g_SessionNetworkTickInterval >> 1;
   ((UiRangeSliderControl *)FRONTEND_UI(frontendUi,networkSpeedSlider))->value = parsedCountOrTickSetting;
   resolvedText = TextResource_Resolve(parsedCountOrTickSetting + 0x210d);
-  RichTextCommandStream_CopyExpandedCf
+  RichTextCommandStream_CopyExpanded
             (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,resolvedText.text);
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
   FrontendNetworkSettings_SetGameName((UiTextEditControl *)FRONTEND_UI(frontendUi,gameNameEdit));
@@ -465,7 +465,7 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
    action handler for FRONTEND_PAGE20[4] (0x2004). Return datatype is preserved for non-queue direct callers.
    Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   PcxPreview_Load64x64PaletteAndPixelsCf [ui/support/runtime],
+   PcxPreview_Load64x64PaletteAndPixels [ui/support/runtime],
    FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction [ui/frontend/player].
 */
 void __thandor_void_preserve_eax_ecx
@@ -521,7 +521,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_HOST;
   localPlayerRecordDwordCursor[6] = 0;
-  previewLoadFailed = PcxPreview_Load64x64PaletteAndPixelsCf
+  previewLoadFailed = PcxPreview_Load64x64PaletteAndPixels
                     ((PcxPreview64 *)(localPlayerRecordDwordCursor + 0x18),
                      (uint16_t *)(localPlayerRecordDwordCursor + -0xe));
   if (!previewLoadFailed) {

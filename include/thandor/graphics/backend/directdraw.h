@@ -16,13 +16,13 @@
 
 /* 0x00423CF0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsDisplayMode_IsEnumeratedCf
+GraphicsDisplayMode_IsEnumerated
           (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width);
 
 /* 0x0054B0E0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DisplayModeTable_ContainsExactModeCf
+DisplayModeTable_ContainsExactMode
           (FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex);
 
@@ -34,7 +34,7 @@ int32_t __stdcall DirectDraw_EnumDisplayModeCallback (DDSURFACEDESC_DX6 *surface
 
 /* 0x00578920 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
+GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width);
 

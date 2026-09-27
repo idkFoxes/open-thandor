@@ -5,7 +5,7 @@ digraph thandor {
   "RecentTextHistory_Insert" [label="0x0050F130\nRecentTextHistory_Insert"];
   "RecentTextHistory_RemoveOldest" [label="0x0050F2E0\nRecentTextHistory_RemoveOldest"];
   "CreditsScreen_Open" [label="0x00548EC0\nCreditsScreen_Open"];
-  "PcxPreview_Load64x64PaletteAndPixelsCf" [label="0x0054D5D0\nPcxPreview_Load64x64PaletteAndPixelsCf"];
+  "PcxPreview_Load64x64PaletteAndPixels" [label="0x0054D5D0\nPcxPreview_Load64x64PaletteAndPixelsCf"];
   "RecentTextHistory_SwapSlots" [label="0x0050F1A0\nRecentTextHistory_SwapSlots"];
   "RecentTextHistory_SortAndBuildPointerList" -> "RecentTextHistory_SwapSlots";
 }

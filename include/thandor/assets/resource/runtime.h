@@ -16,7 +16,7 @@
 
 /* 0x0040E2E0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-ResourceRegistration_OpenSourceCf(void *packagePath);
+ResourceRegistration_OpenSource(void *packagePath);
 
 /* 0x0040F000 */
 ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *path);

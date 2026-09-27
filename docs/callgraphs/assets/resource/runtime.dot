@@ -1,7 +1,7 @@
 digraph thandor {
   rankdir=LR;
   node [shape=box];
-  "ResourceRegistration_OpenSourceCf" [label="0x0040E2E0\nResourceRegistration_OpenSourceCf"];
+  "ResourceRegistration_OpenSource" [label="0x0040E2E0\nResourceRegistration_OpenSourceCf"];
   "Resource_Load" [label="0x0040F000\nResource_Load"];
   "Resource_Release" [label="0x0040F1D0\nResource_Release"];
   "ResourceRegistration_SelectDomainPair" [label="0x0050E890\nResourceRegistration_SelectDomainPair"];

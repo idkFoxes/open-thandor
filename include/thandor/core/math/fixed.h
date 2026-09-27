@@ -69,7 +69,7 @@ FixedTransform_RotateDirectionScaledRegs
           AngleTurn32 rotationAngle0,AngleTurn32 rotationAngle1,AngleTurn32 rotationAngle2);
 
 /* 0x00417620 */
-void __cdecl CosineDerivedLookupTables_InitCf(void);
+void __cdecl CosineDerivedLookupTables_Init(void);
 
 /* 0x004848C0 */
 void __thandor_void_preserve_eax_ecx_edx

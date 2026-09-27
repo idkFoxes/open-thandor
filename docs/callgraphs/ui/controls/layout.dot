@@ -8,9 +8,9 @@ digraph thandor {
   "UiFrame_ProcessAndPresent" [label="0x004AF920\nUiFrame_ProcessAndPresent"];
   "UiPageStack_SetActiveIndex" [label="0x004B48D0\nUiPageStack_SetActiveIndex"];
   "UiResizableWindowControl_EndMoveResizeAndHandleWindowActions" [label="0x004B52D0\nUiResizableWindowControl_EndMoveResizeAndHandleWindowActions"];
-  "UiResizableWindowControl_HandleWindowHotkeysCf" [label="0x004B5770\nUiResizableWindowControl_HandleWindowHotkeysCf"];
+  "UiResizableWindowControl_HandleWindowHotkeys" [label="0x004B5770\nUiResizableWindowControl_HandleWindowHotkeysCf"];
   "UiRootStack_Push" [label="0x004B1000\nUiRootStack_Push"];
-  "UiRootStack_PopCf" [label="0x004B1110\nUiRootStack_PopCf"];
+  "UiRootStack_Pop" [label="0x004B1110\nUiRootStack_PopCf"];
   "UiWindowControl_RelocateWithFrameInset" [label="0x004B2790\nUiWindowControl_RelocateWithFrameInset"];
   "UiTitledWindowControl_LayoutFrameTitleAndChildren" [label="0x004B36C0\nUiTitledWindowControl_LayoutFrameTitleAndChildren"];
   "UiContainer_HitTestChildrenOrNoneA" [label="0x004B3C00\nUiContainer_HitTestChildrenOrNoneA"];
@@ -68,10 +68,10 @@ digraph thandor {
   "UiPageStack_SetActiveIndex" -> "UiNodeSubtree_AcquireKeyboardFocusDefaults";
   "UiResizableWindowControl_EndMoveResizeAndHandleWindowActions" -> "UiContainer_LayoutWithOptionalWindowHeaderOffset";
   "UiResizableWindowControl_EndMoveResizeAndHandleWindowActions" -> "UiRootStack_InvalidateAll";
-  "UiResizableWindowControl_HandleWindowHotkeysCf" -> "UiContainer_LayoutWithOptionalWindowHeaderOffset";
-  "UiResizableWindowControl_HandleWindowHotkeysCf" -> "UiRootStack_InvalidateAll";
+  "UiResizableWindowControl_HandleWindowHotkeys" -> "UiContainer_LayoutWithOptionalWindowHeaderOffset";
+  "UiResizableWindowControl_HandleWindowHotkeys" -> "UiRootStack_InvalidateAll";
   "UiRootStack_Push" -> "UiSerializedTree_Relocate";
-  "UiRootStack_PopCf" -> "UiRootStack_InvalidateAll";
+  "UiRootStack_Pop" -> "UiRootStack_InvalidateAll";
   "UiWindowControl_RelocateWithFrameInset" -> "UiContainer_RelocateChildren";
   "UiTitledWindowControl_LayoutFrameTitleAndChildren" -> "UiContainer_LayoutChildren";
   "UiContainer_HitTestChildrenOrNoneA" -> "UiContainer_HitTestChildren";

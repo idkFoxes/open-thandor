@@ -17,8 +17,8 @@
    Typed parameters: p5 recordIndex→RomRecordTableIndex_V331. Nearby but non-identical semantic domains were
    explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged. Typed parameters: p4 suppressActivationSound→FrontendBooleanState32_V342.
-   Local calls: RomRegistry_FindRecordByIdCf, FrontendRomTransition_InitializeFromRecord,
-   RomRuntime_UpdateRecordVisibilityAndDescriptorsCf.
+   Local calls: RomRegistry_FindRecordById, FrontendRomTransition_InitializeFromRecord,
+   RomRuntime_UpdateRecordVisibilityAndDescriptors.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -83,7 +83,7 @@ FrontendRomActionTable_ExecuteRecord
         record[6].recordId = FRONTEND_UI_FIELD(frontendRootNode,menuRoomModelView,0x70,RomRecordId);
         record[7].byteSize = copiedByteSize;
         record[7].rootNodeOffsetOrPointer = 0;
-        targetLookup = RomRegistry_FindRecordByIdCf(recordId);
+        targetLookup = RomRegistry_FindRecordById(recordId);
         targetRecord = targetLookup.recordOrError;
         if (!targetLookup.notFound) {
           actionOrCopiedValue = record[2].recordId;
@@ -97,7 +97,7 @@ FrontendRomActionTable_ExecuteRecord
           *(RomRecordByteSize *)((int)record + transitionSlotIndex * 0x20 + 0x50) = targetRecord[4].byteSize;
           *(uint32_t *)((int)record + transitionSlotIndex * 0x20 + 0x54) = copiedDword;
           FrontendRomTransition_InitializeFromRecord(recordId,record);
-          visibilityLookupFailed = RomRuntime_UpdateRecordVisibilityAndDescriptorsCf(actionOrCopiedValue,recordId);
+          visibilityLookupFailed = RomRuntime_UpdateRecordVisibilityAndDescriptors(actionOrCopiedValue,recordId);
           if (visibilityLookupFailed) {
             g_FrontendRomTransitionPendingCount = 0;
           }
@@ -199,7 +199,7 @@ bool RomRuntime_BuildAllRegistryNodeTrees(WorldRuntimeContext *worldRuntime)
    Ownership: assets/rom/runtime.
    Purpose: Under the frontend ROM-transition spin lock, completes a pending transition request, activates the
    returned record ID when successful, frees the pending allocation, and clears the pending count.
-   Local calls: FrontendRomTransition_ActivateRecordByIdCf.
+   Local calls: FrontendRomTransition_ActivateRecordById.
    Cross-module calls: WorldMotionSpline_EvaluateAndApplyAtTime [core/math/interpolation].
 */
 void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(void)
@@ -219,7 +219,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
                        g_FrontendRomTransitionSplineKeyframes,g_FrontendRomTransitionElapsedTicks,
                        worldRuntime);
     if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)recordId)) {
-      activateResult = FrontendRomTransition_ActivateRecordByIdCf(recordId,worldRuntime);
+      activateResult = FrontendRomTransition_ActivateRecordById(recordId,worldRuntime);
       FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
     }
   }
@@ -398,7 +398,7 @@ RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
    record masks, applies world motion parameters, and returns status through CF. Typed parameters: p0
    recordId→RomRecordId_V308. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RomRegistry_FindRecordByIdCf, RomRegistry_FindSlotValueByRecordIdCf,
+   Local calls: RomRegistry_FindRecordById, RomRegistry_FindSlotValueByRecordId,
    RomRuntime_ApplyIndexedDescriptor.
    Cross-module calls: GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading],
    WorldRuntime_SetPosition60AndDistanceFromPosition80 [world/runtime/core],
@@ -406,7 +406,7 @@ RomRecordTable_FindIndexById(RomRecordId recordId,void *table)
    [ui/core/runtime].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
+FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime)
 
 {
   uint32_t *slotNodeFlags;
@@ -424,7 +424,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
   StatusResult activeRecordResult;
   
   GraphicsShadingRuntime_ClearRecordTable();
-  recordLookup = RomRegistry_FindRecordByIdCf(recordId);
+  recordLookup = RomRegistry_FindRecordById(recordId);
   activeRecordResult.valueOrError = recordLookup.recordOrError;
   if (!recordLookup.notFound) {
     recordCursor = activeRecordResult.valueOrError;
@@ -432,7 +432,7 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
     slotCursor = g_RomRegistrySlots;
     for (companionsRemaining = ((RomAssetRecordPrefix *)(uintptr_t)activeRecordResult.valueOrError)[5].byteSize; g_RomRegistrySlots = slotCursor, companionsRemaining != 0;
         companionsRemaining = companionsRemaining - 1) {
-      statusResult = RomRegistry_FindSlotValueByRecordIdCf(recordCursor[0x2d].byteSize);
+      statusResult = RomRegistry_FindSlotValueByRecordId(recordCursor[0x2d].byteSize);
       if (!statusResult.failed) {
         slotNodeFlags = (uint32_t *)(statusResult.valueOrError + 0x4c);
         *slotNodeFlags = *slotNodeFlags | 0x20;
@@ -490,11 +490,11 @@ FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeCont
    descriptor for visible records. CF clear reports success and CF set reports lookup failure. Typed parameters: p1
    recordId→RomRecordId_V308. Nearby but non-identical semantic domains were explicitly deferred. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RomRegistry_FindRecordByIdCf, RomRuntime_ApplyIndexedDescriptor.
+   Local calls: RomRegistry_FindRecordById, RomRuntime_ApplyIndexedDescriptor.
    Cross-module calls: GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
+RomRuntime_UpdateRecordVisibilityAndDescriptors
           (RomVisibilityFrontendValue frontendValue,RomRecordId recordId)
 
 {
@@ -519,7 +519,7 @@ RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-  recordLookup = RomRegistry_FindRecordByIdCf(recordId);
+  recordLookup = RomRegistry_FindRecordById(recordId);
   if (!recordLookup.notFound) {
     GraphicsShadingRuntime_ClearRecordTable();
     slotsRemaining = 0x100;
@@ -668,7 +668,7 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
    Typed parameters: p3 romNodeRecord→RomRuntimeNodeRecordAddress32_V345, p4 worldObjectArray→WorldRuntimeContext
    *.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecordCf [world/runtime/core].
+   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core].
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 RomRuntime_BuildNodeTreeRecursive
@@ -693,7 +693,7 @@ RomRuntime_BuildNodeTreeRecursive
   WorldObjectAllocResult allocResult;
   ModelNodeCreateResult createResult;
   
-  allocResult = WorldObjectArray_AllocateFreeRecordCf(worldObjectArray);
+  allocResult = WorldObjectArray_AllocateFreeRecord(worldObjectArray);
   newNode = (ModelRuntimeNode *)allocResult.recordOrError;
   if (allocResult.failed) {
     createResult.failed = true;
@@ -803,7 +803,7 @@ FrontendRomTransition_InitializeFromRecord
    flow, globals, locals, and executable data remain unchanged.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId)
+RomRegistry_FindSlotValueByRecordId(RomRecordId recordId)
 
 {
   int slotsRemaining;
@@ -875,7 +875,7 @@ RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordP
    flow, globals, locals, and executable data remain unchanged.
 */
 RomRecordResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindRecordByIdCf(RomRecordId recordId)
+RomRegistry_FindRecordById(RomRecordId recordId)
 
 {
   RomAssetRecordPrefix *slotRecord;

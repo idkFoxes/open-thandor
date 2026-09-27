@@ -52,19 +52,19 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
 
 /* 0x00504520 */
 TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-TerrainTriangle_IntersectRayDistanceCf
+TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12);
 
-/* ESI/EDX/ECX results of TerrainRay_AdvanceGridTraversalCf: next cell and grid corner. */
+/* ESI/EDX/ECX results of TerrainRay_AdvanceGridTraversal: next cell and grid corner. */
 extern FieldGridCell *g_TerrainRayNextCell;
 extern Q12 g_TerrainRayNextCoord0Q12;
 extern Q12 g_TerrainRayNextCoord1Q12;
 
 /* 0x005049E0 */
 bool __thandor_cf_preserve_eax
-TerrainRay_AdvanceGridTraversalCf
+TerrainRay_AdvanceGridTraversal
           (Q12 rayEndCoord0Q12,Q12 rayEndCoord1Q12,Q12 rayStartCoord0Q12,Q12 rayStartCoord1Q12,
           FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *currentCell,Q12 currentGridCoord0Q12
           ,Q12 currentGridCoord1Q12);

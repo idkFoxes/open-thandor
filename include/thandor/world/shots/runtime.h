@@ -27,7 +27,7 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
 
 /* 0x0052B660 */
 ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId);
+ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B750 */
 void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void);

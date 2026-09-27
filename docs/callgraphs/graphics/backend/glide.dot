@@ -4,7 +4,7 @@ digraph thandor {
   "Glide3_TextureSet_CreateBackend" [label="0x005801B0\nGlide3_TextureSet_CreateBackend"];
   "Glide3_TextureResource_ReinitializeAll" [label="0x00580430\nGlide3_TextureResource_ReinitializeAll"];
   "GlideBackend_ShutdownWrapper" [label="0x0057F0C0\nGlideBackend_ShutdownWrapper"];
-  "GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf" [label="0x0057F0F0\nGraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf"];
+  "GraphicsGlide3_ApplyDisplayModeAndInitializeResources" [label="0x0057F0F0\nGraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf"];
   "Glide3_DrawPrimitiveQueue" [label="0x0057F7B0\nGlide3_DrawPrimitiveQueue"];
   "Glide3_TextureSet_DestroyBackend" [label="0x005802F0\nGlide3_TextureSet_DestroyBackend"];
   "Glide3_Framebuffer_Present" [label="0x00580470\nGlide3_Framebuffer_Present"];
@@ -40,7 +40,7 @@ digraph thandor {
   "Glide3_TextureResource_ReinitializeAll" -> "Glide3_TextureResource_Release";
   "Glide3_TextureResource_ReinitializeAll" -> "Glide3_TextureResource_Initialize";
   "GlideBackend_ShutdownWrapper" -> "Glide3_Shutdown";
-  "GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf" -> "Glide3_TextureResource_Initialize";
+  "GraphicsGlide3_ApplyDisplayModeAndInitializeResources" -> "Glide3_TextureResource_Initialize";
   "Glide3_DrawPrimitiveQueue" -> "Glide3_TextureResource_EnsureResident";
   "Glide3_TextureSet_DestroyBackend" -> "Glide3_TextureResource_Release";
   "Glide3_Framebuffer_Present" -> "Glide3_Cursor_ComposeBeforePresent";

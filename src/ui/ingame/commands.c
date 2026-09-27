@@ -106,7 +106,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select2(UiSelectable
    Local calls: UiCommandModeG_SelectAndSyncPages, UiCommandModeG_ClearNodeFlag00100000,
    UiCommandModeG_ClearNodeFlag00200000, UiCommandModeG_SetNodeFlag00000400, UiCommandModeG_SetNodeFlag00800000,
    UiCommandModeG_ClearNodeFlag01000000, UiCommandModeG_ApplyRawColorVariant, UiCommandModeG_ClearNodeFlag02000000.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog], InGameSelectionDetailPanel_Rebuild
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], InGameSelectionDetailPanel_Rebuild
    [ui/ingame/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectableControl *source)
@@ -126,7 +126,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   UiCommandModeG_ClearNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
   UiCommandModeG_ClearNodeFlag02000000(node);
-  armyAssetLookup = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
+  armyAssetLookup = ArmyAssetRegistry_FindById(g_UiCommandModeGArmyAssetId);
   checkedAssetLookup = FatalError_ExitIfFailed((uint32_t)armyAssetLookup.recordOrError,armyAssetLookup.notFound);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
   InGameSelectionDetailPanel_Rebuild();
@@ -535,10 +535,10 @@ InGameCommandMode_TogglePlayerFlagBit0AndReconcileGlobal
    globals, locals, and executable data remain unchanged. Typed parameters: p1
    payloadDword04→CommandPayloadDword04_V343, p2 payloadDword08→CommandPayloadDword08_V343, p3
    payloadDword0C→CommandPayloadDword0C_V343.
-   Cross-module calls: ArmyPlacement_ValidateAssetAtPointAndCellCornersCf [gameplay/army/placement],
-   ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
+   Cross-module calls: ArmyPlacement_ValidateAssetAtPointAndCellCorners [gameplay/army/placement],
+   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
    [world/model/hierarchy], ArmyRuntime_DispatchClassCommand [gameplay/army/runtime],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime], UiCatalogGroup48_RebuildGrid
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime], UiCatalogGroup48_RebuildGrid
    [ui/ingame/technology].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -570,13 +570,13 @@ InGameCommand_ExecuteLocalPlacementFromSelection
   UNLOCK();
   if (pendingEntryOrFactionToken != 0) {
     worldXQ12 = playerBlock;
-    placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+    placementRejected = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,payloadDword04,payloadDword08,payloadDword0C,
                        *(ArmyPlacementContext *)(pendingEntryOrFactionToken + 8),playerBlock->primaryEntityOrFactionToken8080,
                        worldRuntime);
     if (!placementRejected) {
       /* ECX/EDX of the validator: the accepted (possibly snapped) point. */
-      createResult = ArmyRuntime_CreateInstanceFromAssetCf
+      createResult = ArmyRuntime_CreateInstanceFromAsset
                         (4,payloadDword04,g_ArmyPlacementValidatedWorldYQ12,
                          g_ArmyPlacementValidatedWorldXQ12,
                          playerBlock->primaryEntityOrFactionToken8080,
@@ -595,7 +595,7 @@ InGameCommand_ExecuteLocalPlacementFromSelection
         slotModelRuntime = (armySlot->modelRuntimeOrSavedOffset).modelRuntime;
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(createdArmySlots,worldRuntime);
-        EffectRuntimePool_CreateInstanceFromDefinitionCf
+        EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
@@ -1020,7 +1020,7 @@ InGameCommandSprite_DispatchVariantAControl24(UiCommandSpriteButtonControl *cont
    through g_UiAction100AControlOffsets, decodes low-nibble, alternate, and repeat markers from
    activationInputState, and dispatches the backend command. Queued UI action handler for INGAME_PAGE10[10]
    (0x100A). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: SelectionInfo_AllEntriesEmptyOrMatchOwnerCf [gameplay/selection/runtime],
+   Cross-module calls: SelectionInfo_AllEntriesEmptyOrMatchOwner [gameplay/selection/runtime],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh [ui/frontend/player].
 */
@@ -1056,7 +1056,7 @@ InGameCommandSprite_DispatchFixedControl8(UiCommandSpriteButtonControl *control)
           transferModeFlags = transferModeFlags | 4;
         }
         if ((transferModeFlags != 0) &&
-           (selectionBlocked = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf
+           (selectionBlocked = SelectionInfo_AllEntriesEmptyOrMatchOwner
                               ((FactionRuntimeIndex)root[0x15].sprite.primaryTextureSource), selectionBlocked
            )) {
           return;
@@ -1100,7 +1100,7 @@ void InGameCommandState_SetRuntimeFlag1000(UiNodeBase *source)
    results charts (root offsets 0x454, 0x4D0, 0x54C) and the subresource of the results screen panel (0x3A8). Queued UI action handler for
    INGAME_PAGE10[38] (0x1026). Return datatype is preserved for non-queue direct callers.
    Cross-module calls: UiSelectableGroup_SelectExclusive [ui/controls/lists],
-   UiSelectableGroup_NoneVisibleSelectedCf [ui/controls/lists].
+   UiSelectableGroup_NoneVisibleSelected [ui/controls/lists].
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
@@ -1120,7 +1120,7 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
   UiSelectableGroup_SelectExclusive(2,&source->base,
       INGAME_UI(root,resultsChartModeButtonB),
       INGAME_UI(root,resultsChartModeButtonA));
-  selectionResult = UiSelectableGroup_NoneVisibleSelectedCf(2,
+  selectionResult = UiSelectableGroup_NoneVisibleSelected(2,
       INGAME_UI(root,resultsChartModeButtonA),
       INGAME_UI(root,resultsChartModeButtonB));
   selectedIndexValue = (UiNodeVtable *)selectionResult.controlIndexOrCount;
@@ -1972,7 +1972,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(Worl
    The helper preserves the exclusive-selection EAX value, but no caller in this executable consumes it. Typed
    parameters: p0 modeIndex→UiCommandModeIndex_V342. Calling convention, exact VariableStorage serialization,
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: UiSelectableGroup_NoneVisibleSelectedCf [ui/controls/lists],
+   Cross-module calls: UiSelectableGroup_NoneVisibleSelected [ui/controls/lists],
    UiSelectableGroup_SelectExclusive [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout].
 */
 InGameRuntimeRootImageC3E4 * __thandor_eax_edx_cf_preserve_ecx
@@ -1988,7 +1988,7 @@ UiCommandModeG_SelectAndSyncPages(UiCommandModeIndex modeIndex,UiSelectableContr
     root = (InGameRuntimeRootImageC3E4 *)(root->rootUi0000).base.parent;
     parentCursor = (root->rootUi0000).base.parent;
   }
-  UiSelectableGroup_NoneVisibleSelectedCf(6,
+  UiSelectableGroup_NoneVisibleSelected(6,
       INGAME_UI(root,editorModeTabRegion),
       INGAME_UI(root,editorModeTabObjectPlacement),
       INGAME_UI(root,editorModeTabUnitPlacement),

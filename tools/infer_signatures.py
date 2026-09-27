@@ -1,10 +1,10 @@
 """Recover function-signature types that Ghidra leaves out of its C export.
 
-Ghidra's "Export C" writes `FileSystemOpenCfProc *g_FileSystemOpenCf;` but never
-the FunctionDefinition `FileSystemOpenCfProc` itself. Two sources recover it:
+Ghidra's "Export C" writes `FileSystemOpenProc *g_FileSystemOpen;` but never
+the FunctionDefinition `FileSystemOpenProc` itself. Two sources recover it:
 
-  1. assignment: `g_FileSystemOpenCf = Win32File_OpenCf;` -> copy the full
-     prototype of Win32File_OpenCf from the public headers;
+  1. assignment: `g_FileSystemOpen = Win32File_Open;` -> copy the full
+     prototype of Win32File_Open from the public headers;
   2. call site:  `FVar10 = (*g_FatalErrorPrimaryDispatchCf)(...)` -> the return
      type is the declared type of FVar10; parameters stay unprototyped.
 

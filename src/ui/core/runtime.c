@@ -15,7 +15,7 @@
    Purpose: Binary entry is anchored by g_CodePointerTable_004229A0[0]@004229A0;
    g_CodePointerTable_00424324[0]@00424324. UiRootCallbacks root callback with one stack argument.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_FreeCf(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root)
 
 {
   ArenaFreeResult freeResult;
@@ -76,7 +76,7 @@ void __thandor_void_preserve_eax_ecx UiRuntime_FormatSignedValues140And144(void 
    [assets/text/richtext], UiRootStack_Push [ui/controls/layout], UiRootStack_InvalidateAll [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRuntime_OpenFourValueDialogCf
+UiRuntime_OpenFourValueDialog
           (UiPixelCoordinate value0,UiPixelCoordinate value1,UiPixelCoordinate value2,
           UiPixelCoordinate value3)
 
@@ -123,7 +123,7 @@ UiRuntime_OpenFourValueDialogCf
    discarded; CF set means the ring was empty.
 */
 RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
-UiRuntimeRecordRing_DiscardOldestCf(void)
+UiRuntimeRecordRing_DiscardOldest(void)
 
 {
   uint32_t nextReadIndex;
@@ -171,7 +171,7 @@ void __thandor_preserve_eax UiRuntimeRecordRing_Clear(void)
    Purpose: Compares the 256-entry write and read indices. CF set means at least one record is pending; CF clear
    means empty.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPendingCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void)
 
 {
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
@@ -187,7 +187,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPendingCf(void)
    means absent or lock unavailable.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
+UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sequenceToken)
 
 {
   uint32_t ringIndex;
@@ -504,7 +504,7 @@ void UiNode_DefaultTick(UiNodeBase *control)
    Purpose: Registers one 256-entry action-handler page when pageIndex is below 256.
 */
 void __thandor_preserve_eax
-UiActionHandlers_SetPageCf(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
+UiActionHandlers_SetPage(UiActionHandlerPageIndex pageIndex,UiActionHandlerPage *page)
 
 {
   if (pageIndex < 0x100) {

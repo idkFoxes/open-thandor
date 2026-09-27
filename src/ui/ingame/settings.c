@@ -251,7 +251,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameMissionHelpPage_SelectTab2(UiNode
    Purpose: Registered under UI actions 0x105C, 0x1134, and 0x1216. Updates bit 2 of optionFlags40 and the
    corresponding in-game runtime state. The original label remains unresolved. Queued UI action handler for
    INGAME_PAGE12[22] (0x1216). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], UiPageStack_SetActiveIndex [ui/controls/layout], UiContainer_LayoutChildren
    [ui/controls/layout], PersistentSettings_WriteDword [core/settings/persistent].
 */
@@ -267,7 +267,7 @@ InGameGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *control)
   optionFlags = PersistentSettings_Read(0,0x40);
   /* control is rightButtonNoScrollCheckbox of the in-game UI template copy */
   stack = (UiPageStackControl *)THANDOR_UI_SIBLING(control,InGameUiImage,rightButtonNoScrollCheckbox,sidePanelStack);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 4;
     UiPageStack_SetActiveIndex(1,stack);
@@ -317,7 +317,7 @@ InGameGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
    Purpose: Registered under UI actions 0x1058, 0x1130, and 0x1212. Updates bit 0 of optionFlags40 and its
    corresponding in-game runtime value. The original label remains unresolved. Queued UI action handler for
    INGAME_PAGE12[18] (0x1212). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -329,7 +329,7 @@ InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x40);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 1;
     /* control is autoZoomOffCheckbox; reset the minimap zoom */
@@ -349,7 +349,7 @@ InGameGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
    Purpose: Registered under UI actions 0x1059, 0x1131, and 0x1213. Updates bit 1 of optionFlags40 and its
    corresponding in-game runtime value. The original label remains unresolved. Queued UI action handler for
    INGAME_PAGE12[19] (0x1213). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -361,7 +361,7 @@ InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x40);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 2;
     /* control is autoRotationOffCheckbox; reset the minimap rotation */
@@ -381,7 +381,7 @@ InGameGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
    Purpose: Registered under UI actions 0x105A, 0x1132, and 0x1214. Updates bit 0 of optionFlags5C and runtime bit
    0x40000000. Selecting it suppresses paired action 0x1215. Queued UI action handler for INGAME_PAGE12[20]
    (0x1214). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
@@ -395,7 +395,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 1;
     /* control is linkRotationZoomCheckbox; the world view's runtime flags */
@@ -422,7 +422,7 @@ InGameGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
    Purpose: Registered under UI actions 0x105B, 0x1133, and 0x1215. Updates bit 1 of optionFlags5C and runtime bit
    0x80000000. Selecting it suppresses paired action 0x1214. Queued UI action handler for INGAME_PAGE12[21]
    (0x1215). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
@@ -436,7 +436,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 2;
     /* control is linkRotationTiltCheckbox; the world view's runtime flags */
@@ -463,7 +463,7 @@ InGameGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
    Purpose: Registered under UI actions 0x1061, 0x1139, and 0x121B. Updates bit 2 of optionFlags5C and runtime bit
    0x04000000. The original label remains unresolved. Queued UI action handler for INGAME_PAGE12[27] (0x121B).
    Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -476,7 +476,7 @@ InGameGameplaySettings_SetHidePanel(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 4;
     /* control is hidePanelCheckbox; the world view's runtime flags */
@@ -651,7 +651,7 @@ InGameAudioSettings_OpenAndSynchronize(InGamePersistentSettingsPageSourceNodePtr
    Purpose: Updates the in-game Shading toggle, persists shadingEnabled at settings offset 0x1C, and mirrors it to
    runtime bit 0x00020000. Queued UI action handler for INGAME_PAGE12[4] (0x1204). Return datatype is preserved for
    non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], UiNodeList_SuppressActionId
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], PersistentSettings_WriteDword
    [core/settings/persistent].
 */
@@ -661,7 +661,7 @@ void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectab
   uint8_t selectedState;
   UiNodeBase *parentCursor;
   
-  selectedState = UiSelectableControl_IsSelectedCf(control);
+  selectedState = UiSelectableControl_IsSelected(control);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -688,7 +688,7 @@ void __thandor_void_preserve_eax_ecx InGameShadingSettings_SetEnabled(UiSelectab
    0x14, and 0x18 tuple. Queued UI action handler for INGAME_PAGE12[5] (0x1205). Return datatype is preserved for
    non-queue direct callers.
    Cross-module calls: GraphicsShadingRuntime_Shutdown [graphics/render/shading],
-   GraphicsShadingRuntime_InitializeGeneratedTextureCf [graphics/render/shading], PersistentSettings_WriteDword
+   GraphicsShadingRuntime_InitializeGeneratedTexture [graphics/render/shading], PersistentSettings_WriteDword
    [core/settings/persistent], UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent].
 */
@@ -716,7 +716,7 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   newGridHalfSize = (PersistentSettingsValue)((UiNumericPairTextButton *)control)->firstValue;
   newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();
-  initStatus = GraphicsShadingRuntime_InitializeGeneratedTextureCf
+  initStatus = GraphicsShadingRuntime_InitializeGeneratedTexture
                     (subresourceCount,newGridHalfSize,newTextureDimension);
   fatalResult = FatalError_ReportIfFailed(initStatus.valueOrError,initStatus.failed);
   if (!fatalResult.failed) {
@@ -756,7 +756,7 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   textureDimension = PersistentSettings_Read(0x40,0x14);
   gridHalfSize = PersistentSettings_Read(0x20,0x10);
   storedSubresourceCount = PersistentSettings_Read(0x10,0x18);
-  GraphicsShadingRuntime_InitializeGeneratedTextureCf
+  GraphicsShadingRuntime_InitializeGeneratedTexture
             (storedSubresourceCount,gridHalfSize,textureDimension);
   return;
 }
@@ -830,7 +830,7 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
    Purpose: Updates SOUND_OPTIONS_EFFECTS_ENABLED in the in-game settings screen, stops the active effects test
    voice when disabling, updates related controls, and loads or clears the three effects/movie gain globals. Queued
    UI action handler for INGAME_PAGE12[8] (0x1208). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
@@ -845,7 +845,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   MovieAudioGainQ15 movieAlternateGainQ15;
   bool isEnabled;
   
-  isEnabled = (bool)UiSelectableControl_IsSelectedCf(control);
+  isEnabled = (bool)UiSelectableControl_IsSelected(control);
   if (!isEnabled) {
     g_SoundStopVoice(g_InGameActiveEffectVoice);
     g_InGameActiveEffectVoice = (IDirectSoundBuffer *)0x0;
@@ -905,7 +905,7 @@ InGameAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
    Purpose: Updates SOUND_OPTIONS_MUSIC_ENABLED in the in-game settings screen, stops the active looping voice when
    disabling, and updates related controls. Queued UI action handler for INGAME_PAGE12[9] (0x1209). Return datatype
    is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
@@ -919,7 +919,7 @@ InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   bool isEnabled;
   
   musicEnabledBit = 0;
-  isEnabled = (bool)UiSelectableControl_IsSelectedCf(control);
+  isEnabled = (bool)UiSelectableControl_IsSelected(control);
   if (isEnabled) {
     musicEnabledBit = 2;
   }
@@ -965,7 +965,7 @@ InGameAudioSettings_SetMusicEnabled(UiSelectableControl *control)
    Ownership: ui/ingame/settings.
    Purpose: Updates SOUND_OPTIONS_REVERSE_STEREO and writes g_ReverseStereoMask as zero or 0xFFFFFFFF. Queued UI
    action handler for INGAME_PAGE12[10] (0x120A). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -979,7 +979,7 @@ InGameAudioSettings_SetReverseStereo(UiSelectableControl *control)
   
   reverseStereoBit = 0;
   reverseStereoMask = 0;
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     reverseStereoBit = 4;
     reverseStereoMask = -1;
@@ -1079,7 +1079,7 @@ InGameAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
    g_UiCommandRuntimeFlags. When cleared, restores page index 0 and clears the corresponding root/runtime state.
    Queued UI action handler for INGAME_PAGE10[3] (0x1003). Return datatype is preserved for non-queue direct
    callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], UiPageStack_SetActiveIndex
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout], UiSelectableControl_SetSelected [ui/controls/lists], UiKeyboardFocus_ReleaseNode
    [ui/controls/input], PersistentSettings_ReadDword [core/settings/persistent], UiNodeList_SuppressActionId
    [ui/controls/lists].
@@ -1099,7 +1099,7 @@ InGameSettingsPage_ToggleAndSynchronizeControls(UiSelectableControl *settingsTog
     uiRoot = uiRoot->parent;
     parentCursor = uiRoot->parent;
   }
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(settingsToggle);
+  isSelected = (bool)UiSelectableControl_IsSelected(settingsToggle);
   if (!isSelected) {
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(uiRoot,gameWindowPageStack));
     INGAME_UI(uiRoot,worldView)->nodeFlags = INGAME_UI(uiRoot,worldView)->nodeFlags & 0xfffffff7;

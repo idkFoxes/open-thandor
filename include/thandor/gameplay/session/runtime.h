@@ -22,7 +22,7 @@ InGameRuntime_RunSessionUntilExit
 
 /* 0x00566290 */
 void __thandor_void_preserve_eax_ecx_edx
-EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
+EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
 
 /* 0x0050EA90 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -33,7 +33,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void);
 
 /* 0x00567060 */
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameHotkeys_DispatchCommandByFlagsCf
+InGameHotkeys_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime);
 
@@ -72,6 +72,6 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
 
 /* 0x0050E0B0 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(uint32_t unusedArgument);
+InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument);
 
 #endif /* THANDOR_GAMEPLAY_SESSION_RUNTIME_H */

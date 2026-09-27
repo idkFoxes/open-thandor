@@ -31,12 +31,12 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
 
 /* 0x00533E70 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestRuntimePairReachabilityFromWorldPointCf
+GridScratch_TestRuntimePairReachabilityFromWorldPoint
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair);
 
 /* 0x005332C0 */
 GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
-GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid);
+GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid);
 
 /* 0x00533360 */
 void __thandor_preserve_eax GridScratch_ReleaseBuffers(void);
@@ -47,7 +47,7 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid);
 
 /* 0x00533BA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestProjectedCellMaskBandsCf
+GridScratch_TestProjectedCellMaskBands
           (Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex);
 
 /* 0x00536C90 */
@@ -69,7 +69,7 @@ EntityPathing_UpdateRouteSegment
 
 /* 0x00533D60 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestWorldPointReachabilityCf
+GridScratch_TestWorldPointReachability
           (uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
           GraphicsWorldCoordinateQ12 targetWorldXQ12);
@@ -96,7 +96,7 @@ GridScratch_FloodFillConnectedCellsRegs
 
 /* 0x00533C50 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestConnectedReachabilityRecursiveCfRegs
+GridScratch_TestConnectedReachabilityRecursiveRegs
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell);
 
 /* 0x00533EF0 */
@@ -140,7 +140,7 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
 
 /* 0x005344B0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridPathLine_TestHexSegmentClearCf
+GridPathLine_TestHexSegmentClear
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell);
 

@@ -2,9 +2,9 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "UiTooltip_TickCountdown" [label="0x004B0200\nUiTooltip_TickCountdown"];
-  "UiNumericTextEditControl_HandleKeyboardAndCommitCf" [label="0x004B5F20\nUiNumericTextEditControl_HandleKeyboardAndCommitCf"];
-  "UiPathTextEditControl_HandleKeyboardAndValidateCf" [label="0x004B68C0\nUiPathTextEditControl_HandleKeyboardAndValidateCf"];
-  "UiRequiredTextEditControl_HandleKeyboardAndValidateCf" [label="0x004B7110\nUiRequiredTextEditControl_HandleKeyboardAndValidateCf"];
+  "UiNumericTextEditControl_HandleKeyboardAndCommit" [label="0x004B5F20\nUiNumericTextEditControl_HandleKeyboardAndCommitCf"];
+  "UiPathTextEditControl_HandleKeyboardAndValidate" [label="0x004B68C0\nUiPathTextEditControl_HandleKeyboardAndValidateCf"];
+  "UiRequiredTextEditControl_HandleKeyboardAndValidate" [label="0x004B7110\nUiRequiredTextEditControl_HandleKeyboardAndValidateCf"];
   "UiGraphicsAdapterTextButton_DrawFormattedAdapterText" [label="0x004227B0\nUiGraphicsAdapterTextButton_DrawFormattedAdapterText"];
   "UiNumericTextEditControl_RelocateAndRebuildText" [label="0x004B58F0\nUiNumericTextEditControl_RelocateAndRebuildText"];
   "UiTextEditControl_DrawTextSelectionAndCaret" [label="0x004B5960\nUiTextEditControl_DrawTextSelectionAndCaret"];
@@ -17,7 +17,7 @@ digraph thandor {
   "UiNumericPairTextButton_DrawFormattedValues" [label="0x005156A0\nUiNumericPairTextButton_DrawFormattedValues"];
   "UiPayloadPairTextButton_DrawFormattedPayloads" [label="0x00515780\nUiPayloadPairTextButton_DrawFormattedPayloads"];
   "UiTooltip_Draw" [label="0x004B0320\nUiTooltip_Draw"];
-  "UiRootStack_PopUntilWindowTextureBoundaryCf" [label="0x004B0F90\nUiRootStack_PopUntilWindowTextureBoundaryCf"];
+  "UiRootStack_PopUntilWindowTextureBoundary" [label="0x004B0F90\nUiRootStack_PopUntilWindowTextureBoundaryCf"];
   "UiFramedTextButtonControl_Relocate" [label="0x004B1DD0\nUiFramedTextButtonControl_Relocate"];
   "UiFramedTextButtonControl_DrawClipped" [label="0x004B1E10\nUiFramedTextButtonControl_DrawClipped"];
   "UiFramedTextButtonControl_NonRightPress" [label="0x004B22A0\nUiFramedTextButtonControl_NonRightPress"];
@@ -27,7 +27,7 @@ digraph thandor {
   "UiWindowControl_DrawFramedTextAndChrome" [label="0x004B27D0\nUiWindowControl_DrawFramedTextAndChrome"];
   "UiTextButtonControl_Relocate" [label="0x004B2E40\nUiTextButtonControl_Relocate"];
   "UiTextButtonControl_NonRightPress" [label="0x004B31B0\nUiTextButtonControl_NonRightPress"];
-  "UiTextButtonControl_KeyboardEventCf" [label="0x004B32C0\nUiTextButtonControl_KeyboardEventCf"];
+  "UiTextButtonControl_KeyboardEvent" [label="0x004B32C0\nUiTextButtonControl_KeyboardEventCf"];
   "UiImagePanelControl_DrawAlignedTextureAndChildren" [label="0x004B37C0\nUiImagePanelControl_DrawAlignedTextureAndChildren"];
   "UiImagePanelControl_HitTestAlignedTextureAndChildren" [label="0x004B3960\nUiImagePanelControl_HitTestAlignedTextureAndChildren"];
   "UiFillPanelControl_DrawColorOrTiledTextureAndChildren" [label="0x004B3AA0\nUiFillPanelControl_DrawColorOrTiledTextureAndChildren"];
@@ -38,7 +38,7 @@ digraph thandor {
   "UiSingleLineTextControl_DrawClipped" [label="0x004B95E0\nUiSingleLineTextControl_DrawClipped"];
   "UiTextListControl_DrawRowsAndSelection" [label="0x004B9E90\nUiTextListControl_DrawRowsAndSelection"];
   "UiTextListControl_SelectRowFromPointer" [label="0x004BA040\nUiTextListControl_SelectRowFromPointer"];
-  "UiTextListControl_HandleKeyboardNavigationAndSearchCf" [label="0x004BA130\nUiTextListControl_HandleKeyboardNavigationAndSearchCf"];
+  "UiTextListControl_HandleKeyboardNavigationAndSearch" [label="0x004BA130\nUiTextListControl_HandleKeyboardNavigationAndSearchCf"];
   "UiTextListControl_TickActivationPulse" [label="0x004BA390\nUiTextListControl_TickActivationPulse"];
   "UiTextListControl_UnsuppressIfActionId" [label="0x004BA3D0\nUiTextListControl_UnsuppressIfActionId"];
   "UiTextListControl_SuppressIfActionId" [label="0x004BA400\nUiTextListControl_SuppressIfActionId"];
@@ -51,7 +51,7 @@ digraph thandor {
   "UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren" [label="0x00519110\nUiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren"];
   "UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress" [label="0x00519190\nUiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress"];
   "UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress" [label="0x005191B0\nUiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress"];
-  "UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf" [label="0x005191D0\nUiSoftwareTexturePreviewControl_HandleKeyboardActivationCf"];
+  "UiSoftwareTexturePreviewControl_HandleKeyboardActivation" [label="0x005191D0\nUiSoftwareTexturePreviewControl_HandleKeyboardActivationCf"];
   "UiTooltip_UpdateHoverTarget" [label="0x004B0150\nUiTooltip_UpdateHoverTarget"];
   "UiNumericTextControl_RebuildTextFromValue" [label="0x004B6520\nUiNumericTextControl_RebuildTextFromValue"];
   "UiNumericTextControl_ParseAndCommitValue" [label="0x004B65F0\nUiNumericTextControl_ParseAndCommitValue"];
@@ -66,12 +66,12 @@ digraph thandor {
   "UiTextButtonControl_DrawClipped" [label="0x004B2E60\nUiTextButtonControl_DrawClipped"];
   "UiTooltip_TickCountdown" -> "UiTooltip_PrepareTargetText";
   "UiTooltip_TickCountdown" -> "UiTooltip_UpdateHoverTarget";
-  "UiNumericTextEditControl_HandleKeyboardAndCommitCf" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
-  "UiNumericTextEditControl_HandleKeyboardAndCommitCf" -> "UiNumericTextControl_ParseAndCommitValue";
-  "UiPathTextEditControl_HandleKeyboardAndValidateCf" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
-  "UiPathTextEditControl_HandleKeyboardAndValidateCf" -> "UiPathTextControl_UpdateDos83Validity";
-  "UiRequiredTextEditControl_HandleKeyboardAndValidateCf" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
-  "UiRequiredTextEditControl_HandleKeyboardAndValidateCf" -> "UiTextControl_UpdateNonEmptyValidity";
+  "UiNumericTextEditControl_HandleKeyboardAndCommit" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
+  "UiNumericTextEditControl_HandleKeyboardAndCommit" -> "UiNumericTextControl_ParseAndCommitValue";
+  "UiPathTextEditControl_HandleKeyboardAndValidate" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
+  "UiPathTextEditControl_HandleKeyboardAndValidate" -> "UiPathTextControl_UpdateDos83Validity";
+  "UiRequiredTextEditControl_HandleKeyboardAndValidate" -> "UiTextEditControl_RecomputeLayoutAndClampScroll";
+  "UiRequiredTextEditControl_HandleKeyboardAndValidate" -> "UiTextControl_UpdateNonEmptyValidity";
   "UiGraphicsAdapterTextButton_DrawFormattedAdapterText" -> "UiTextButtonControl_DrawClipped";
   "UiNumericTextEditControl_RelocateAndRebuildText" -> "UiNumericTextControl_RebuildTextFromValue";
   "UiTextEditControl_DrawTextSelectionAndCaret" -> "UiTextEditControl_MeasurePrefixWidth";

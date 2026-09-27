@@ -17,7 +17,7 @@
    rendering. Inputs: SPR header, including group count at header +0xB0. Outputs: Carry/status result used by the
    caller to reject malformed images.
 */
-void SpriteAsset_ValidateGroupCountCf(void)
+void SpriteAsset_ValidateGroupCount(void)
 
 {
   return;

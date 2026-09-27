@@ -15,10 +15,10 @@
    Purpose: Handles ui timed list control handle keyboard navigation carry-flag result.
    Local calls: UiScrollableControl_QueryContentSizeRegs, UiTimedListTree_CountRecordArrayAndNestedChildren,
    UiScrollableControl_ClampOffsetsToViewport.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigationCf
+UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
 
 {
@@ -44,7 +44,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
   stepCounter = 1;
   previousSelection = control->selectedRecord;
   if ((keyCode & 0xffff0000) == 0) {
-    handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return handled;
   }
   switch (keyCode) {
@@ -166,7 +166,7 @@ UiTimedListControl_HandleKeyboardNavigationCf
               (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
     return false;
   default:
-    handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return handled;
   }
   countRecord = control->selectedRecord;
@@ -202,11 +202,11 @@ UiTimedListControl_HandleKeyboardNavigationCf
    Ownership: ui/controls/lists.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004BA590[12]@004BA590.
    Local calls: UiScrollableControl_QueryContentSizeRegs, UiScrollableControl_ClampOffsetsToViewport.
-   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_DefaultKeyboardEventMoveFocusNextCf
+   Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_DefaultKeyboardEventMoveFocusNext
    [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiListControl_HandleKeyboardNavigationCf
+UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control)
 
 {
@@ -261,7 +261,7 @@ UiListControl_HandleKeyboardNavigationCf
       }
     }
     else {
-      handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return handled;
     }
     newSelectedSlot = control->selectedRowSlot;
@@ -281,7 +281,7 @@ UiListControl_HandleKeyboardNavigationCf
     }
     return false;
   }
-  handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+  handled = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   return handled;
 }
 
@@ -290,7 +290,7 @@ UiListControl_HandleKeyboardNavigationCf
    Ownership: ui/controls/lists.
    Purpose: Recomputes content height from count and row height, invokes the child layout callback, reselects the
    current pointer-derived index, then queues the action ID at +0x5C.
-   Local calls: UiPointerList_GetSelectedIndexVariantBCf, UiPointerList_SelectIndexVariantB.
+   Local calls: UiPointerList_GetSelectedIndexVariantB, UiPointerList_SelectIndexVariantB.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime].
 */
 void __thandor_preserve_eax_edx
@@ -305,7 +305,7 @@ UiPointerList_RefreshSelectionAndQueueAction(UiPointerListControl *control)
   parentVtable = parentNode->vtable;
   (control->base).bottomOffset = control->rowHeight * control->rowCount + 1;
   parentVtable->layout(parentNode);
-  selectedIndex = UiPointerList_GetSelectedIndexVariantBCf(control);
+  selectedIndex = UiPointerList_GetSelectedIndexVariantB(control);
   UiPointerList_SelectIndexVariantB(selectedIndex.rowIndex,control);
   UiActionQueue_Enqueue(control->actionId,control);
   return;
@@ -1142,7 +1142,7 @@ UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *
    Purpose: Builds a timed-list directory record block and exposes the recovered carry/error contract.
 */
 DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
+UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16)
 
 {
   uint32_t *recordCursor;
@@ -1221,7 +1221,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
         mediaCheckResult = g_FileSystemCheckDriveMediaReady(scanValue);
         closeLabelEmpty = mediaCheckResult;
         if (!closeLabelEmpty) {
-          enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+          enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                              (FILESYSTEM_ENUMERATE_VOLUME_LABEL,0xffffffff,0x1f8,
                               (uint8_t *)((int)labelCursor + 6),(uint8_t *)u________0040ff58);
           closeLabelEmpty = enumResult.failed;
@@ -1244,7 +1244,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
               ((uint16_t *)((int)nextScanPointer + -2))[0] = 0x5d;
               ((uint16_t *)((int)nextScanPointer + -2))[1] = 0;
             }
-            enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+            enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                 (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                 (uint8_t *)u________0040ff58);
@@ -1278,7 +1278,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
     largestBlock = g_MemoryApi.allocLargestFreeBlock();
     outputRecords = (uint32_t *)largestBlock.allocationOrError;
     if (!largestBlock.failed) {
-      enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+      enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                          (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,largestBlock.blockSizeOrSentinel,
                           (uint8_t *)outputRecords,(uint8_t *)g_UiTimedListRecordPathScratch.codeUnits);
       directoryEntryCount = enumResult.entryCount;
@@ -1313,7 +1313,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
                 WidePath_CombineDirectoryAndLeaf
                           (g_UiTimedListSecondaryPathScratch.codeUnits,(uint16_t *)THANDOR_ADDR(g_WildcardAllFilesUtf16,0),
                            g_UiTimedListRecordPathScratch.codeUnits);
-                enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+                enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                    (FILESYSTEM_ENUMERATE_DIRECTORIES,0xffffffff,0x200,
                                     (uint8_t *)g_UiTimedListRecordPathScratch.codeUnits,
                                     (uint8_t *)g_UiTimedListSecondaryPathScratch.codeUnits);
@@ -1374,7 +1374,7 @@ UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16)
    Purpose: Builds the timed-list directory hierarchy.
 */
 DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
+UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16)
 
 {
   /* The original keeps one (record, block) pair per level on the machine stack (PUSH record,
@@ -1410,7 +1410,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
       builtBlock.recordBlockOrError = (UiTimedListTreeRecord16 *)0x0;
       goto fail;
     }
-    builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf
+    builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
                        (g_UiTimedListHierarchyPathScratch.codeUnits);
     if (builtBlock.failed) goto fail;
     WidePath_SplitParentAndLeaf
@@ -1425,7 +1425,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
     selectedPathUtf16 = (uint16_t *)&g_UiTimedListHierarchyParentPathScratch;
   }
   /* Root level: find the record whose label starts with the drive letter (case-insensitive). */
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
+  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
   if (builtBlock.failed) goto fail;
   levelBlock = builtBlock.recordBlockOrError;
   recordsRemaining = levelBlock->recordCountOrRowPayload00;
@@ -1443,7 +1443,7 @@ UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16)
   levelStack[levelStackTop++] = levelBlock;
   levelCount = levelCount + 1;
   g_UiTimedListHierarchyPathScratch.codeUnits[0] = 0;
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf(g_UiTimedListHierarchyPathScratch.codeUnits);
+  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock(g_UiTimedListHierarchyPathScratch.codeUnits);
   if (builtBlock.failed) goto fail;
   /* Link each level block to its parent block and to the parent record that opens it,
      from the drive list down to the selected path. */
@@ -1485,7 +1485,7 @@ fail:
    Purpose: Recursively frees a timed-list record block while testing containment.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock)
 
 {
@@ -1503,7 +1503,7 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
       }
       if ((((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) &&
           ((recordCursor[1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0)) &&
-         (childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+         (childContains = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
                             (targetRecord,recordCursor[1].nestedRecordBlockOrParentLink08), childContains)) {
         containsCount = containsCount + 1;
       }
@@ -1519,7 +1519,7 @@ UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
    Purpose: Attaches a directory record block to the timed-list hierarchy.
 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
+UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record)
 
 {
   uint32_t *directory;
@@ -1587,7 +1587,7 @@ UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record)
     g_UiTimedListHierarchyParentPathScratch.firstTwoCodeUnits = 0x3a0061;
     THANDOR_PART(uint32_t, g_UiTimedListHierarchyParentPathScratch, 4) = 0;
   }
-  builtBlock = UiTimedListTree_BuildDirectoryRecordBlockCf
+  builtBlock = UiTimedListTree_BuildDirectoryRecordBlock
                     (g_UiTimedListHierarchyParentPathScratch.codeUnits);
   linkedRecord = builtBlock.recordBlockOrError;
   if (builtBlock.failed) {
@@ -1619,7 +1619,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
   targetRecord = UiTimedListControl_GetSelectedRecord(control);
   if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_OBSERVED_BIT0) != 0) {
     if ((record->recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
-      cfResult = UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+      cfResult = UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
                         (targetRecord,record->nestedRecordBlockOrParentLink08);
       if (cfResult) {
         UiActionQueue_Enqueue((control->base).actionId,control);
@@ -1631,7 +1631,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
       UiTimedListControl_SelectRecordAndScrollIntoView(targetRecord,control);
       return;
     }
-    cfResult = UiTimedListTree_AttachDirectoryRecordBlockCf(record);
+    cfResult = UiTimedListTree_AttachDirectoryRecordBlock(record);
     if (!cfResult) {
       record->recordFlags0C =
            record->recordFlags0C | UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL;
@@ -1647,7 +1647,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
    Purpose: Builds the recovered path for a timed-list tree record.
 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPathCf(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
+UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record)
 
 {
   uint32_t *directory;
@@ -1754,10 +1754,10 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
    sound, toggles or sets selected state, queues actionId, invalidates the root, and returns consumption through
    CF.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime],
-   UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
+   UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_KeyboardEventCf
+UiSelectableControl_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control)
 
@@ -1781,7 +1781,7 @@ UiSelectableControl_KeyboardEventCf
     }
   }
   if (!activates) {
-    handled = UiNode_DefaultKeyboardEventMoveFocusNextCf
+    handled = UiNode_DefaultKeyboardEventMoveFocusNext
                         (keyboardStateMask,keyCode,&(control->selectable).base);
     return handled;
   }
@@ -1817,7 +1817,7 @@ UiSelectableControl_KeyboardEventCf
     return false;
   }
   /* Persistent, non-toggling control that is already selected: not consumed. */
-  handled = UiNode_DefaultKeyboardEventMoveFocusNextCf
+  handled = UiNode_DefaultKeyboardEventMoveFocusNext
                       (keyboardStateMask,keyCode,&(control->selectable).base);
   return handled;
 }
@@ -1873,7 +1873,7 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
    remain unchanged.
 */
 SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
+UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...)
 
 {
   int controlAddress;
@@ -1909,7 +1909,7 @@ UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...)
    remain unchanged.
 */
 SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...)
+UiSelectableGroup_NoneSelected(UiControlCount controlCount,...)
 
 {
   uint32_t controlIndex;
@@ -1973,7 +1973,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
    set; otherwise CF=0.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_IsSelectedCf(UiSelectableControl *control)
+UiSelectableControl_IsSelected(UiSelectableControl *control)
 
 {
   if ((((control->base).nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
@@ -2009,7 +2009,7 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
    Purpose: CF=0 when base.firstChild matches an entry in the page array; CF=1 when the active child is absent.
 */
 PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
-UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack)
+UiPageStack_ActivePageNotInList(UiPageStackControl *stack)
 
 {
   uint32_t pageIndex;
@@ -2752,7 +2752,7 @@ void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control)
    Ownership: ui/controls/lists.
    Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04: clear when absent and set when present.
 */
-UiListRowIndex UiPointerList_GetSelectedIndexVariantACf(UiPointerListControl *control)
+UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;
@@ -3537,7 +3537,7 @@ UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *con
    Purpose: Returns (+0x60 - +0x50)/4 in EAX. CF mirrors control flag 0x04 exactly.
 */
 ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
-UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control)
+UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control)
 
 {
   UiListRowIndex selectedRowIndex;

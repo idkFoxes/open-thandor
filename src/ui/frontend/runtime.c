@@ -124,7 +124,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
           if ((playerBlock->snapshotTransferFlags & FRONTEND_SNAPSHOT_HOST_PUBLICATION_READY) == 0) {
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) !=
                 SESSION_NETWORK_ROLE_LOCAL) {
-              receivedBuffer = UiTransferMailbox_GetReceivedBufferCf();
+              receivedBuffer = UiTransferMailbox_GetReceivedBuffer();
               if (!receivedBuffer.unavailable) {
                 PckCodec_DecodeHuffmanRle
                           (*(PckDecodedByteCount *)receivedBuffer.buffer,g_PackageScratchBuffer,receivedBuffer.byteCount - 4,
@@ -997,7 +997,7 @@ EndSceneAndDrawOverlays:
                    (overlayClipTop,originY,overlayClipBottom,
                     overlayClipRight),
         control->selectedOverlayEntity != (GameEntityRuntime *)0x0)) &&
-       (entryFound = SelectionInfo_FindEntryCf(control->selectedOverlayEntity), entryFound)) {
+       (entryFound = SelectionInfo_FindEntry(control->selectedOverlayEntity), entryFound)) {
       SelectionOverlay_RenderArmyMetricsForEntity
                 (overlayClipTop,originY,overlayClipBottom,
                  overlayClipRight,control->selectedOverlayEntity);
@@ -1273,22 +1273,22 @@ FrontendModelPointerContext_PointerWheel
    Ownership: ui/frontend/runtime.
    Purpose: Exact packed function-table or callback-registration provenance plus immutable body topology prove this
    callable entry.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendModelPointerContext_KeyboardEventCf
+FrontendModelPointerContext_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerContextRuntimeState118 *control)
 
 {
   bool keyboardEventCarry;
   
-  if ((control->keyboardFallbackCf != (UiRootKeyboardFallbackCf *)0x0) &&
-     (keyboardEventCarry = control->keyboardFallbackCf(keyboardStateMask,keyCode,(UiRootNode *)control),
+  if ((control->keyboardFallback != (UiRootKeyboardFallback *)0x0) &&
+     (keyboardEventCarry = control->keyboardFallback(keyboardStateMask,keyCode,(UiRootNode *)control),
      !keyboardEventCarry)) {
     return keyboardEventCarry;
   }
-  keyboardEventCarry = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+  keyboardEventCarry = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
   return keyboardEventCarry;
 }
 
@@ -1427,7 +1427,7 @@ void __cdecl FrontendRuntime_IncrementActiveTickCounter(void)
    locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
+FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime)
 
 {
@@ -1472,7 +1472,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
   }
   switch (target) {
   case 0x548140:
-    if (UiPageStack_ActivePageNotInListCf((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex == 0xb) {
+    if (UiPageStack_ActivePageNotInList((UiPageStackControl *)FRONTEND_UI(root,frontendPageStack)).pageIndex == 0xb) {
       if ((g_SessionNetworkRoleFlags & 3) != 0) {
         FrontendCommandQueue_EnqueueLocalPlayerCommand(0x3b0,0,0,1);
       }
@@ -1500,7 +1500,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
            FRONTEND_UI_FIELD(root,menuRoomModelView,0x4C,uint32_t) & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
-      FrontendRomTransition_ActivateRecordByIdCf
+      FrontendRomTransition_ActivateRecordById
                 (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       break;
     }
@@ -1518,7 +1518,7 @@ FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
       player = (FrontendPlayerRuntimeRecord *)g_FrontendPlayerRuntimeBlocks;
-      FrontendRomTransition_ActivateRecordByIdCf
+      FrontendRomTransition_ActivateRecordById
                 (1,(WorldRuntimeContext *)FRONTEND_UI(root,menuRoomModelView));
       text = TextResource_Resolve(wasHost ? 0xff02 : 0xff04);
       RichTextCommandStream_PatchPayloadBySelector(0,(uint8_t *)player + 0x18,text.text);
@@ -1574,13 +1574,13 @@ void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStat
    67108864=FRONTEND_POINTER_CONTEXT_OBSERVED_BUTTON_BRANCH_04000000,
    1073741824=FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_40000000,
    2147483648=FRONTEND_POINTER_CONTEXT_OBSERVED_CODE_OVERRIDE_80000000
-   Cross-module calls: UiPageStack_ActivePageNotInListCf [ui/controls/lists], RomRegistry_FindRecordBySlotValue
+   Cross-module calls: UiPageStack_ActivePageNotInList [ui/controls/lists], RomRegistry_FindRecordBySlotValue
    [assets/rom/runtime], RomRecordTable_FindRecordById [assets/rom/runtime],
    WorldMotionSpline_BuildSixChannelCurves [core/math/interpolation], TextResource_Resolve [assets/text/resources],
    RichTextCommandStream_MeasureRegs [assets/text/richtext].
 */
 uint32_t __thandor_eax_preserve_ecx_edx
-FrontendRuntime_UpdatePointerContextAndSceneViewCf
+FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,uint32_t pointerValue3,
           void *pointedRecord,FrontendPointerSceneRuntimeView43E8 *frontendRuntime)
 
@@ -1605,7 +1605,7 @@ FrontendRuntime_UpdatePointerContextAndSceneViewCf
   resultCode = 0;
   channel3OrHintValue = 0;
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) &&
-     (pageStackStatus = UiPageStack_ActivePageNotInListCf(&frontendRuntime->activePageStack1A0),
+     (pageStackStatus = UiPageStack_ActivePageNotInList(&frontendRuntime->activePageStack1A0),
      pageStackStatus.pageIndex == 0)) {
     pointedRomRecord = RomRegistry_FindRecordBySlotValue((RomRegistrySlotValue)pointedRecord);
     recordId = 0xf0000000;
@@ -2444,9 +2444,9 @@ void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNod
 /* Address: 0x0054D4A0.
    Ownership: ui/frontend/runtime.
    Purpose: Recovered action-table target FRONTEND_PAGE20[15] (0x200F).
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantACf [ui/controls/lists], UiNodeList_SuppressActionId
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantA [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer], FrontendSession_ReturnToMainPage
+   UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer], FrontendSession_ReturnToMainPage
    [ui/frontend/session], FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -2463,7 +2463,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   NetworkSessionContext *staleSessionContext;
   UiListRowIndex staleBackendIndex;
   
-  selectedBackendIndex = UiPointerList_GetSelectedIndexVariantACf(backendList);
+  selectedBackendIndex = UiPointerList_GetSelectedIndexVariantA(backendList);
   staleSessionContext = g_NetworkBackendSessionContext;
   if (g_NetworkBackendInstanceCount <= selectedBackendIndex) {
     return;
@@ -2490,7 +2490,7 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
       UiNodeList_SuppressActionId(0x2002,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->rootNode);
       UiPointerList_InitializeColumnLayout
                 (0,g_FrontendSessionListRows,&THANDOR_CONTAINER_OF(backendList, FrontendNetworkSetupPageState4BCC, backendList)->sessionList);
-      UiTransfer_SendPacketType10000Value2931Cf();
+      UiTransfer_SendPacketType10000Value2931();
       return;
     }
     g_NetworkBackendSlot1(); /* cleanup takes no arguments; Ghidra passed stale staleBackendIndex */
@@ -2553,8 +2553,8 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   if ((runtimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
      (rootCallbacks = (runtimeRoot->rootUi0000).callbacks, g_EndMoviePath != (uint16_t *)0x0)) {
-    rootCallbacks->keyboardFallbackCf = EndMovieUiRuntime_DispatchCommandByFlagsCf;
-    rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransitionCf;
+    rootCallbacks->keyboardFallback = EndMovieUiRuntime_DispatchCommandByFlags;
+    rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransition;
     if (g_FrontendLoadedCampaignAsset != 0) {
       countOrActiveFactions = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
       recordCursorOrRemaining = g_FrontendLoadedCampaignAsset + 0x200;
@@ -2703,8 +2703,8 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
   }
   rootCallbacks = (g_InGameRuntimeRoot->rootUi0000).callbacks;
-  rootCallbacks->keyboardFallbackCf = InGameHotkeys_DispatchCommandByFlagsCf;
-  rootCallbacks->frameUpdate = EndGameResultsUiRuntime_UpdateAndHandleInputCf;
+  rootCallbacks->keyboardFallback = InGameHotkeys_DispatchCommandByFlags;
+  rootCallbacks->frameUpdate = EndGameResultsUiRuntime_UpdateAndHandleInput;
   return;
 }
 
@@ -2787,7 +2787,7 @@ FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   g_FrontendStateTickSpinLock = 0;
   g_TimerRegisterPeriodic(0x50,FrontendRuntime_TimerCountdownTick);
   UiRuntime_SetSynchronizationHooks(Frontend_StateTick,&g_FrontendStateTickSpinLock);
-  textureSetResult = g_GraphicsTextureSetLoadPackageCf((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc);
+  textureSetResult = g_GraphicsTextureSetLoadPackage((uint16_t *)u_gfx_texturen_zentrale_gfx_00545acc);
   fillCursorOrResult = (FrontendRootResourceSlots5954 *)textureSetResult.textureSet;
   if (!textureSetResult.failed) {
     g_FrontendCentralTextureSet = (FrontendRootResourceSlots5954 *)textureSetResult.textureSet;
@@ -2902,13 +2902,13 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
               /* The 3D pointer-context control lives at root+0x368 (EBX = EDI+0x368 in the asm); the installed
                  handlers do not all match the generic callback field types, hence the casts. */
               pointerContext = (FrontendModelPointerContextRuntimeState17C *)worldRuntime;
-              pointerContext->keyboardFallbackCf =
+              pointerContext->keyboardFallback =
                    (bool (*)(UiKeyboardStateMask,UiActionId,struct UiRootNode *))
-                   FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf;
+                   FrontendRuntime_DispatchCommandByCodeAndModifierFlags;
               pointerContext->resolvedActionCallback104 =
-                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneViewCf;
+                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
               pointerContext->resolvedActionCallback108 =
-                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneViewCf;
+                   (FrontendModelPointerResolvedActionProc *)FrontendRuntime_UpdatePointerContextAndSceneView;
               pointerContext->resolvedActionCallback10C =
                    (FrontendModelPointerResolvedActionProc *)FrontendRuntimeCallback5C_NoOp;
               pointerContext->resolvedActionCallback110 =
@@ -2927,11 +2927,11 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
               WorldRuntime_AttachObjectArray(0x100,g_FrontendWorldObjectRecords,worldRuntime);
               callFailed = RomRuntime_BuildAllRegistryNodeTrees(worldRuntime);
               /* EAX when RomRuntime_BuildAllRegistryNodeTrees fails: its only failure source is
-                 WorldObjectArray_AllocateFreeRecordCf's 0x14 (object array full), passed up unchanged through
+                 WorldObjectArray_AllocateFreeRecord's 0x14 (object array full), passed up unchanged through
                  RomRuntime_BuildNodeTreeRecursive. */
               fillCursorOrResult = (FrontendRootResourceSlots5954 *)0x14;
               if (!callFailed) {
-                statusResult = FrontendRomTransition_ActivateRecordByIdCf(initialRomRecordId,worldRuntime)
+                statusResult = FrontendRomTransition_ActivateRecordById(initialRomRecordId,worldRuntime)
                 ;
                 fillCursorOrResult = (FrontendRootResourceSlots5954 *)statusResult.valueOrError;
                 if (!statusResult.failed) {
@@ -3005,8 +3005,8 @@ Frontend_Init_ReturnInitializationFailure:
    Ownership: ui/frontend/runtime.
    Purpose: Table 00547660: 00547680, 005476B0, 00547700, 00547750, 005477A0, 005477F0.
    Local calls: FrontendDebugOverlay_RefreshCountersAndWorldCoordinates.
-   Cross-module calls: UiTransfer_SendPacketType10000Value2931Cf [network/protocol/transfer],
-   UiRuntimeRecordRing_DiscardOldestCf [ui/core/runtime], FrontendTransfer_HandleSessionListAndJoinAckPackets
+   Cross-module calls: UiTransfer_SendPacketType10000Value2931 [network/protocol/transfer],
+   UiRuntimeRecordRing_DiscardOldest [ui/core/runtime], FrontendTransfer_HandleSessionListAndJoinAckPackets
    [network/protocol/transfer], FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
    [network/protocol/transfer], FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets [network/protocol/transfer],
    FrontendTransfer_SendPacket10006 [network/protocol/transfer].
@@ -3037,10 +3037,10 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
       g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
       g_FrontendTimerCountdownTicks = 4;
       if ((previousTickCounter & 0xf) != 0) {
-        UiTransfer_SendPacketType10000Value2931Cf();
+        UiTransfer_SendPacketType10000Value2931();
       }
       while( true ) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleSessionListAndJoinAckPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
@@ -3055,7 +3055,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
       g_FrontendTimerCountdownTicks = 4;
       FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands(g_FrontendRootNode);
       while( true ) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
@@ -3072,7 +3072,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
         FrontendTransfer_SendPacket10006();
       }
       while( true ) {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
         FrontendTransfer_HandleHostSessionAndCommandBatchPackets
                   ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
@@ -3086,7 +3086,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
     g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
     g_FrontendTimerCountdownTicks = 4;
     while( true ) {
-      discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+      discardedRecord = UiRuntimeRecordRing_DiscardOldest();
       if (discardedRecord.empty) break;
       FrontendNetwork_HandleHandshakeAndPlayerStatePackets
                 ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
@@ -3099,18 +3099,18 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_StateTick(void)
     }
     break;
   case 5:
-    callResult = UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
+    callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
     if (!callResult) goto FrontendStateTick_ReleaseLock;
     g_FrontendNetworkTickCounter = g_FrontendNetworkTickCounter + 1;
     do {
-      discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+      discardedRecord = UiRuntimeRecordRing_DiscardOldest();
       if (discardedRecord.empty) break;
-      callResult = FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
+      callResult = FrontendTransfer_HandleGameplayCommandAndRosterPackets
                         ((UiTransferEndpointDescriptor *)discardedRecord.endpointOrReadIndex,
                          (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex,
                          unusedDispatchArg);
     } while (!callResult);
-    callResult = FrontendTransfer_ConsumeProcessedFlagFrontendCf();
+    callResult = FrontendTransfer_ConsumeProcessedFlagFrontend();
     if (callResult) goto FrontendStateTick_ReleaseLock;
   }
   if ((g_FrontendRuntimeFlags & 0x10) == 0) {
@@ -3505,7 +3505,7 @@ FrontendDebugOverlay_RefreshCountersAndWorldCoordinates(void)
    Ownership: ui/frontend/runtime.
    Purpose: Handles frontend runtime shutdown and release resources register result.
    Cross-module calls: UiRuntime_SetSynchronizationHooks [ui/core/runtime],
-   FrontendTeardown_SaveRootStateSnapshot80 [ui/frontend/network], UiRootStack_PopCf [ui/controls/layout],
+   FrontendTeardown_SaveRootStateSnapshot80 [ui/frontend/network], UiRootStack_Pop [ui/controls/layout],
    FrontendRomRegistry_ClearAndReleaseNestedResources [assets/rom/runtime], Resource_Release
    [assets/resource/runtime], GraphicsShadingRuntime_ClearRecordTable [graphics/render/shading].
 */
@@ -3524,7 +3524,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResou
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   if (g_FrontendRootNode != (UiRootNode *)0x0) {
     FrontendTeardown_SaveRootStateSnapshot80(g_FrontendRootNode);
-    UiRootStack_PopCf(root);
+    UiRootStack_Pop(root);
     g_MemoryApi.free(root);
     g_FrontendRootNode = (UiRootNode *)0x0;
   }
@@ -3534,7 +3534,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResou
   Resource_Release(g_FrontendCentralRomAsset);
   g_FrontendCentralRomAsset = (void *)0x0;
   GraphicsShadingRuntime_ClearRecordTable();
-  g_GraphicsTextureSetReleasePackageCf(g_FrontendCentralTextureSet);
+  g_GraphicsTextureSetReleasePackage(g_FrontendCentralTextureSet);
   g_GraphicsPaletteAssetLifecycleCallbacks3.releasePackage(g_FrontendCentralPaletteAsset);
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_FrontendMenuTextureSource);
   g_FrontendCentralTextureSet = (GraphicsTextureSet *)0x0;
@@ -3563,7 +3563,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_ShutdownAndReleaseResou
 /* Address: 0x0050AD90.
    Ownership: ui/frontend/runtime.
    Purpose: EDX returns selected ModelRuntimeNode and EAX its hit metric.
-   Cross-module calls: ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf [world/model/hierarchy].
+   Cross-module calls: ModelRuntimeNode_HitTestProjectedBoundsAndChildren [world/model/hierarchy].
 */
 uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
                 (int pointerY,int pointerX,FrontendModelPointerContextRuntimeState118 *context)
@@ -3584,7 +3584,7 @@ uint64_t FrontendModelPointerContext_FindBestEligibleModelHitTarget
         ) && (((context->contextFlags &
                FRONTEND_MODEL_POINTER_CONTEXT_ALLOW_MODEL_WITHOUT_RUNTIME_FLAG_20) != 0 ||
               ((modelNode->runtimeFlags & 0x20) != 0)))) {
-      hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
+      hitTestResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                         (pointerY,pointerX,modelNode,context);
       if (hitTestResult.missed) continue;
       if ((context->contextFlags & FRONTEND_MODEL_POINTER_CONTEXT_COMPARE_HITS_BY_METRIC_ONLY) != 0) {

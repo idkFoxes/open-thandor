@@ -17,7 +17,7 @@
    Local calls: FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById, FrontendPlayerMessageBuffer_AppendTripleById,
    FrontendPlayerMessageBuffer_PublishTextById.
    Cross-module calls: UiTextControl_UpdateNonEmptyValidity [ui/controls/text],
-   RichTextCommandStream_CopyToNarrowCf [assets/text/richtext], FrontendCommandQueue_EnqueueLocalPlayerCommand
+   RichTextCommandStream_CopyToNarrow [assets/text/richtext], FrontendCommandQueue_EnqueueLocalPlayerCommand
    [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -29,7 +29,7 @@ FrontendPlayerMessage_SubmitSevenSlotText(UiTextEditControl *textEditControl)
   
   UiTextControl_UpdateNonEmptyValidity(textEditControl);
   if ((textEditControl->editStateFlags & UI_TEXT_EDIT_VALUE_VALID) != 0) {
-    RichTextCommandStream_CopyToNarrowCf
+    RichTextCommandStream_CopyToNarrow
               (0x30,g_UiSevenSlotCommandPayloadText.textBytes,textEditControl->textPrefix6C);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -214,7 +214,7 @@ FrontendPlayerSetup_ExpireSelectedRuntimeBlock(UiRootNode *rootNode)
    Local calls: FrontendPlayerRuntime_RecordReadyAndUpdateWaitState.
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime],
-   UiTransfer_StagePacketAndSendCf [network/protocol/transfer].
+   UiTransfer_StagePacketAndSend [network/protocol/transfer].
 */
 void __thandor_void_preserve_eax_ecx_edx
 FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
@@ -292,7 +292,7 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
       sendRemaining = g_FrontendPlayerRuntimeBlockCount;
       while (sendRemaining = sendRemaining - 1, sendRemaining != 0) {
         commandDestOrPacket = &g_FrontendPlayerRemovalPacket10007;
-        UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
+        UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b;
         removedTokenOrCommandDest = (FrontendCommandPacketRecord *)commandDestOrPacket;
       }
@@ -311,7 +311,7 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void)
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
+FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId)
 
 {
@@ -676,7 +676,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_OpenLocalPageAndResetRoster(UiNo
    for FRONTEND_PAGE20[77] (0x204D). Return datatype is preserved for non-queue direct callers. Typed parameters:
    p0 source→UiNodeBase *. Calling convention, complete VariableStorage serialization, function bytes, control
    flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpandedCf
+   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_CopyExpanded
    [assets/text/richtext].
 */
 void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeBase *source)
@@ -687,7 +687,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
   g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve
                     ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
-  RichTextCommandStream_CopyExpandedCf
+  RichTextCommandStream_CopyExpanded
             (0x40,(uint16_t *)&g_FrontendNetworkPlayerCountLabelUtf16,labelText.text);
   g_SessionNetworkTickInterval = (UiNodeVtable *)((int)g_SessionNetworkTickInterval << 1);
   return;
@@ -1008,7 +1008,7 @@ FrontendPlayerSelection_ClearAndRefreshLocalPanels
    transferModeFlags→FrontendSelectionTransferModeFlags_V343.
    Cross-module calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition [gameplay/selection/runtime],
    InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], UiCatalogGroup48_RebuildGrid [ui/ingame/technology],
-   SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf [gameplay/selection/runtime],
+   SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs [gameplay/selection/runtime],
    WorldRuntime_SetPosition80AndRebuildPosition60FromAngles [world/runtime/core].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1109,7 +1109,7 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
     InGameSelectionDetailPanel_Rebuild();
     UiCatalogGroup48_RebuildGrid((UiNodeBase *)node);
     if ((transferModeFlags & 4) != 0) {
-      averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf();
+      averagePosition = SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs();
       if (!averagePosition.unresolved) {
         WorldRuntime_SetPosition80AndRebuildPosition60FromAngles
                   ((node->worldRuntime0A30).motion.pitchAngle,
@@ -1216,7 +1216,7 @@ FrontendPlayerTextCommand_AppendTripleClamped
    Purpose: Tests two UI-selected packed-state bits and network mode, converts the staged narrow text at +0x80C0 to
    UTF-16, patches two rich-text selectors, and inserts the result into recent-text history. It is separate from
    FactionRuntimeIndex, PlayerRuntimeId, network-player identity, and PCK-backed asset identifiers.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string], TextResource_Resolve [assets/text/resources],
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], TextResource_Resolve [assets/text/resources],
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
    [ui/ingame/runtime].
 */
@@ -1238,7 +1238,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
             0x1f)) != 0)) &&
      ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
       SESSION_NETWORK_ROLE_LOCAL)) {
-    Text_CopyNarrowToUtf16Cf
+    Text_CopyNarrowToUtf16
               (0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,playerBlock->reserved80B0_8117 + 0x10);
     messageText = TextResource_Resolve(0xff07);
     stream = messageText.text;
@@ -1256,7 +1256,7 @@ FrontendPlayerTextCommand_PublishConditionalRichText
    non-null entry when resolution fails. It is separate from FactionRuntimeIndex, PlayerRuntimeId, network-player
    identity, and PCK-backed asset identifiers. Typed parameters: p3 selectionEntryToken→RuntimeToken. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: SelectionPointerArray_ContainsCf [gameplay/selection/runtime],
+   Cross-module calls: SelectionPointerArray_Contains [gameplay/selection/runtime],
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx
@@ -1275,7 +1275,7 @@ FrontendPlayerSelection_ApplyEntryOrAll
   targetEntity = (GameEntityRuntime *)(selectionEntryToken + (int)g_ArmyRuntimeRebaseBaseMinusOne);
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   remainingEntries = 0x20;
-  isSelected = SelectionPointerArray_ContainsCf(targetEntity,&array->selection);
+  isSelected = SelectionPointerArray_Contains(targetEntity,&array->selection);
   if (isSelected) {
     ArmyRuntime_DestroyInstanceAndRefreshUi(worldRuntime,targetEntity);
     return;
@@ -1507,7 +1507,7 @@ FrontendPlayerMessageBuffer_AppendTripleById
    frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset identifiers. Typed
    parameters: p0 playerId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable
    data remain unchanged.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string], TextResource_Resolve [assets/text/resources],
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], TextResource_Resolve [assets/text/resources],
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5
    [ui/frontend/runtime].
 */
@@ -1537,7 +1537,7 @@ FrontendPlayerMessageBuffer_PublishTextById
     playerBlock = playerBlock + 1;
     messageBuffer = messageBuffer + 100;
   }
-  Text_CopyNarrowToUtf16Cf(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,(uint8_t *)(messageBuffer + 4));
+  Text_CopyNarrowToUtf16(0x60,(uint16_t *)&g_FrontendPlayerMessageScratchUtf16,(uint8_t *)(messageBuffer + 4));
   messageText = TextResource_Resolve(0xff07);
   stream = messageText.text;
   RichTextCommandStream_PatchPayloadBySelector(0,&playerBlock->playerName,stream);

@@ -16,9 +16,9 @@
 
 /* 0x004A8040 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-Movie_EncodeFlmBufferFromFrameProviderCf
+Movie_EncodeFlmBufferFromFrameProvider
           (MoviePixelDimension frameHeightPixels,MoviePixelDimension frameWidthPixels,
-          uint32_t *outputBuffer,MovieFrameProviderCfProc *frameProvider);
+          uint32_t *outputBuffer,MovieFrameProviderProc *frameProvider);
 
 /* 0x00563FF0 */
 void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndTick(void);
@@ -42,11 +42,11 @@ void Movie_Rewind(void);
 void __thandor_void_preserve_eax_ecx_edx Movie_Close(void);
 
 /* 0x005657D0 */
-void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransitionCf(void *endMovieRuntime);
+void __thandor_preserve_eax EndMovieUiRuntime_HandleModeTransition(void *endMovieRuntime);
 
 /* 0x00565810 */
 void __thandor_void_preserve_eax_ecx_edx
-EndMovieUiRuntime_DispatchCommandByFlagsCf
+EndMovieUiRuntime_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *endMovieRuntime);
 
 /* 0x005739C0 */

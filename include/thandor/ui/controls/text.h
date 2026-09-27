@@ -19,19 +19,19 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void);
 
 /* 0x004B5F20 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiNumericTextEditControl_HandleKeyboardAndCommitCf
+UiNumericTextEditControl_HandleKeyboardAndCommit
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control);
 
 /* 0x004B68C0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiPathTextEditControl_HandleKeyboardAndValidateCf
+UiPathTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control);
 
 /* 0x004B7110 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRequiredTextEditControl_HandleKeyboardAndValidateCf
+UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control);
 
@@ -102,7 +102,7 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
               UiPixelCoordinate clipLeft);
 
 /* 0x004B0F90 */
-bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundaryCf(void);
+bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void);
 
 /* 0x004B1DD0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -157,7 +157,7 @@ UiTextButtonControl_NonRightPress
 
 /* 0x004B32C0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTextButtonControl_KeyboardEventCf
+UiTextButtonControl_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control);
 
@@ -213,7 +213,7 @@ UiTextListControl_SelectRowFromPointer
 
 /* 0x004BA130 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTextListControl_HandleKeyboardNavigationAndSearchCf
+UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control);
 
@@ -281,7 +281,7 @@ UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
 
 /* 0x005191D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf
+UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
 /* 0x004B0150 */

@@ -52,7 +52,7 @@ ImageData_00401000 g_ImageData_00401000 = {
         (uint32_t)Locale_MapTelephoneCountryCodeToRegionTagPacked},
     0, /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     0, /* 004027B8 g_CPUDetectFeatures */
-    (void *)Utf16String_CompareAsciiCaseInsensitiveFlags, /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
+    (void *)Utf16String_CompareAsciiCaseInsensitiveFlags, /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
     0, /* 004027C0 g_LocaleCountryCodeOverride */
     0, /* 004027C4 g_CpuFeatureFlags */
     {
@@ -527,7 +527,7 @@ ImageData_00407510 g_ImageData_00407510 = {
     0, /* 00407E24 g_FatalErrorDialogDismissed */
     /* 00407E28 g_UiRootCallbacks_00407E28 */
     {
-        .method08 = (void *)ErrorRuntime_CallbackAlwaysFailCf,
+        .method08 = (void *)ErrorRuntime_CallbackAlwaysFail,
         .pointerMissPolicy = (void *)ErrorRuntime_CallbackReturnCode8},
     /* 00407E3C g_FatalErrorUiRootTemplateImage */
     {
@@ -575,28 +575,28 @@ ImageData_0040ABBC g_ImageData_0040ABBC = {
     0, /* 0040AFC0 g_ExecutableDirectoryUtf16 */
     {0},
     {0},
-    0, /* 0040B1C0 g_FileSystemOpenCf */
+    0, /* 0040B1C0 g_FileSystemOpen */
     0, /* 0040B1C4 g_FileSystemClose */
-    0, /* 0040B1C8 g_FileSystemReadExactCf */
-    0, /* 0040B1CC g_FileSystemWriteExactOrFlushCf */
-    0, /* 0040B1D0 g_FileSystemGetSizeCf */
-    0, /* 0040B1D4 g_FileSystemGetPositionCf */
-    0, /* 0040B1D8 g_FileSystemSeekCf */
-    0, /* 0040B1DC g_FileSystemDeleteCf */
-    0, /* 0040B1E0 g_FileSystemGetCurrentDirectoryCf */
-    0, /* 0040B1E4 g_FileSystemSetCurrentDirectoryCf */
-    0, /* 0040B1E8 g_FileSystemCreateDirectoryRecursiveCf */
-    0, /* 0040B1EC g_FileSystemRemoveDirectoryCf */
+    0, /* 0040B1C8 g_FileSystemReadExact */
+    0, /* 0040B1CC g_FileSystemWriteExactOrFlush */
+    0, /* 0040B1D0 g_FileSystemGetSize */
+    0, /* 0040B1D4 g_FileSystemGetPosition */
+    0, /* 0040B1D8 g_FileSystemSeek */
+    0, /* 0040B1DC g_FileSystemDelete */
+    0, /* 0040B1E0 g_FileSystemGetCurrentDirectory */
+    0, /* 0040B1E4 g_FileSystemSetCurrentDirectory */
+    0, /* 0040B1E8 g_FileSystemCreateDirectoryRecursive */
+    0, /* 0040B1EC g_FileSystemRemoveDirectory */
     0, /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
     0, /* 0040B1F4 g_FileSystemGetDriveTypeCode */
     0, /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
     0, /* 0040B1FC g_FileSystemGetFreeAndTotalBytesRegs */
-    0, /* 0040B200 g_FileSystemGetLastWriteDosDateCf */
-    0, /* 0040B204 g_FileSystemGetLastWriteTimeHighCf */
-    0, /* 0040B208 g_FileSystemGetVolumeSerialNumberCf */
-    0, /* 0040B20C g_FileSystemMoveCf */
-    0, /* 0040B210 g_FileSystemCopyCf */
-    0, /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntriesCf */
+    0, /* 0040B200 g_FileSystemGetLastWriteDosDate */
+    0, /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
+    0, /* 0040B208 g_FileSystemGetVolumeSerialNumber */
+    0, /* 0040B20C g_FileSystemMove */
+    0, /* 0040B210 g_FileSystemCopy */
+    0, /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
     0, /* 0040B218 g_FileSystemValidateDos83Path */
     0, /* 0040B21C g_PackageScratchBuffer */
     0, /* 0040B220 g_EnginePackageLowPriorityMountHandle */
@@ -710,13 +710,13 @@ ImageData_0041A53C g_ImageData_0041A53C = {
     0, /* 0041A540 g_NetworkBackendInstanceTable */
     0, /* 0041A544 g_NetworkBackendInstanceCount */
     0, /* 0041A548 g_NetworkBackendSessionContext */
-    (void *)NetworkBackendFallback_Slot0_ReturnError43Cf, /* 0041A54C g_NetworkBackendSlot0 */
+    (void *)NetworkBackendFallback_Slot0_ReturnError43, /* 0041A54C g_NetworkBackendSlot0 */
     (void *)NetworkBackendFallback_Slot1_NoOp, /* 0041A550 g_NetworkBackendSlot1 */
-    (void *)NetworkBackendFallback_Slot2_ReturnError43Cf, /* 0041A554 g_NetworkBackendSlot2 */
+    (void *)NetworkBackendFallback_Slot2_ReturnError43, /* 0041A554 g_NetworkBackendSlot2 */
     (void *)NetworkBackendFallback_Slot3_NoOp, /* 0041A558 g_NetworkBackendSlot3 */
-    (void *)NetworkBackendFallback_Slot4_ThreeArgFailureCf, /* 0041A55C g_NetworkBackendSlot4 */
-    (void *)NetworkBackendFallback_Slot5_ThreeArgSuccessCf, /* 0041A560 g_NetworkBackendSlot5 */
-    (void *)NetworkBackendFallback_Slot6_TwoArgFailureCf, /* 0041A564 g_NetworkBackendSlot6 */
+    (void *)NetworkBackendFallback_Slot4_ThreeArgFailure, /* 0041A55C g_NetworkBackendSlot4 */
+    (void *)NetworkBackendFallback_Slot5_ThreeArgSuccess, /* 0041A560 g_NetworkBackendSlot5 */
+    (void *)NetworkBackendFallback_Slot6_TwoArgFailure, /* 0041A564 g_NetworkBackendSlot6 */
     (void *)NetworkBackendFallback_Slot7_ClearOutput, /* 0041A568 g_NetworkBackendSlot7 */
     {0}, /* 0041A56C g_NetworkLocalEndpointDescriptor16 */
     {
@@ -1121,7 +1121,7 @@ ImageData_0041DE7C g_ImageData_0041DE7C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -1141,7 +1141,7 @@ ImageData_00422978 g_ImageData_00422978 = {
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 00422978 gap */
     /* 004229A0 g_UiDisplaySettingsRootCallbacks */
     {
-        .closeCf = (void *)UiRootCallbacks_FreeCf,
+        .closeCf = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiDisplaySettingsRoot_RefreshModeSelection,
         .method08 = (void *)UiRootCallbacks_NoOpMethod08,
         .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
@@ -1393,7 +1393,7 @@ ImageData_00422978 g_ImageData_00422978 = {
 ImageData_00424324 g_ImageData_00424324 = {
     /* 00424324 g_UiFourValueDialogRootCallbacks */
     {
-        .closeCf = (void *)UiRootCallbacks_FreeCf,
+        .closeCf = (void *)UiRootCallbacks_Free,
         .frameUpdate = (void *)UiFourValueDialog_TickCountdownAndRequestClose,
         .method08 = (void *)UiRootCallbacks_NoOpMethod08,
         .pointerMissPolicy = (void *)UiRootPointerMissPolicy_ReturnCode8},
@@ -1451,14 +1451,14 @@ ImageData_00485808 g_ImageData_00485808 = {
     (void *)SoftwareGraphicsDispatch_SuccessNoOp, /* 00485820 g_GraphicsBeginScene */
     (void *)SoftwareGraphicsDispatch_NoOp, /* 00485824 g_GraphicsEndScene */
     (void *)GraphicsTexture_RebuildNoOp, /* 00485828 g_GraphicsRebuildAllStagingTextures */
-    (void *)GraphicsTextureSet_LoadPackage, /* 0048582C g_GraphicsTextureSetLoadPackageCf */
-    (void *)GraphicsTextureSet_ReleasePackage, /* 00485830 g_GraphicsTextureSetReleasePackageCf */
+    (void *)GraphicsTextureSet_LoadPackage, /* 0048582C g_GraphicsTextureSetLoadPackage */
+    (void *)GraphicsTextureSet_ReleasePackage, /* 00485830 g_GraphicsTextureSetReleasePackage */
     (void *)GraphicsTextureSet_AllocateMetadata, /* 00485834 g_GraphicsCreateTextureSet */
     (void *)GraphicsTextureSet_FreeMetadata, /* 00485838 g_GraphicsDestroyTextureSet */
     (void *)GraphicsTextureSet_RefreshNoOp, /* 0048583C g_GraphicsRefreshTextureColor */
     (void *)GraphicsTextureSet_RefreshNoOp, /* 00485840 g_GraphicsRefreshTextureAlpha */
     (void *)GraphicsPrimitiveQueue_RadixSortForRendering, /* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
-    (void *)GraphicsOffscreen_RenderModelListToTextureSourceCf, /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSourceCf */
+    (void *)GraphicsOffscreen_RenderModelListToTextureSource, /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSource */
     0, /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
     0, /* 00485850 g_PrimitiveDrawCallCount */
     0, /* 00485854 g_TextureBindStateChangeCount */
@@ -1532,7 +1532,7 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
     0, /* 004A8EA8 g_GraphicsAdapterCount */
     {0}, /* 004A8EAC g_SoftwarePixelFormatConfig */
     (void *)SoftwarePixelFormat_BaseDisplayModeHook, /* 004A8ED0 g_GraphicsSetDisplayMode */
-    (void *)GraphicsBackend_RefreshActiveAdapterNoOp, /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
+    (void *)GraphicsBackend_RefreshActiveAdapterNoOp, /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
     (void *)SoftwareFramebuffer_Create, /* 004A8ED8 g_SoftwareFramebufferCreate */
     /* 004A8EDC g_SoftwareFramebufferDestroy */
     {
@@ -1562,7 +1562,7 @@ ImageData_004A8E60 g_ImageData_004A8E60 = {
         (uint32_t)GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd},
     /* 004A8F2C g_GraphicsTextureSourceDecomposeSubresourceRegionsCf */
     {
-        (uint32_t)GraphicsTextureSource_DecomposeSubresourceRegionsCf},
+        (uint32_t)GraphicsTextureSource_DecomposeSubresourceRegions},
     0, /* 004A8F30 g_GraphicsFramebufferFillRectArgb */
     /* 004A8F34 g_GraphicsFramebufferCopyRegionToOrigin */
     {
@@ -1693,7 +1693,7 @@ ImageData_004B0A20 g_ImageData_004B0A20 = {
     0x8, /* 004B0EA4 g_UiTextEditCaretBlinkPhaseStep */
     0x4, /* 004B0EA8 g_UiHorizontalGaugeLabelTopInset */
     0, /* 004B0EAC g_UiHorizontalGaugeLabelTextStyle */
-    {.handlers = {(void *)UiRootStack_PopCf, (void *)FatalErrorDialog_DismissAndPopRoot}}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
+    {.handlers = {(void *)UiRootStack_Pop, (void *)FatalErrorDialog_DismissAndPopRoot}}, /* 004B0EB0 g_UiRootStackActionHandlerPage */
     L"engine\\winclass.gfx", /* 004B0EB8 u_engine_winclass_gfx_004b0eb8 */
     L"texte\\winclass.str", /* 004B0EE0 u_texte_winclass_str_004b0ee0 */
     L"engine\\win.gfx", /* 004B0F06 u_engine_win_gfx_004b0f06 */
@@ -1724,7 +1724,7 @@ ImageData_004B15C8 g_ImageData_004B15C8 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -1750,7 +1750,7 @@ ImageData_004B1D74 g_ImageData_004B1D74 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -1776,7 +1776,7 @@ ImageData_004B2734 g_ImageData_004B2734 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiFramedTextButtonControl_HitTestRect,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -1802,7 +1802,7 @@ ImageData_004B2CD8 g_ImageData_004B2CD8 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -1827,7 +1827,7 @@ ImageData_004B33D0 g_ImageData_004B33D0 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -1853,7 +1853,7 @@ ImageData_004B3760 g_ImageData_004B3760 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -1879,7 +1879,7 @@ ImageData_004B3A48 g_ImageData_004B3A48 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildrenOrNoneA,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -1905,7 +1905,7 @@ ImageData_004B3C1C g_ImageData_004B3C1C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiContainer_PointerMoveReturnCode6,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -1933,7 +1933,7 @@ ImageData_004B3EEC g_ImageData_004B3EEC = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiRangeSliderControl_HandleKeyboardCf,
+        .keyboardEventCf = (void *)UiRangeSliderControl_HandleKeyboard,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiRangeSliderControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiRangeSliderControl_UnsuppressIfActionId,
@@ -1959,7 +1959,7 @@ ImageData_004B4648 g_ImageData_004B4648 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildrenOrNoneB,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiLayoutContainerControl_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiLayoutContainerControl_SuppressActionIdRecursive,
         .unsuppressActionId = (void *)UiLayoutContainerControl_UnsuppressActionIdRecursive,
@@ -1985,7 +1985,7 @@ ImageData_004B494C g_ImageData_004B494C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2011,7 +2011,7 @@ ImageData_004B4CB8 g_ImageData_004B4CB8 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiResizableWindowControl_QueryResizeCursorCode,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiResizableWindowControl_HandleWindowHotkeysCf,
+        .keyboardEventCf = (void *)UiResizableWindowControl_HandleWindowHotkeys,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2037,7 +2037,7 @@ ImageData_004B5890 g_ImageData_004B5890 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNumericTextEditControl_HandleKeyboardAndCommitCf,
+        .keyboardEventCf = (void *)UiNumericTextEditControl_HandleKeyboardAndCommit,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
@@ -2063,7 +2063,7 @@ ImageData_004B67F4 g_ImageData_004B67F4 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiPathTextEditControl_HandleKeyboardAndValidateCf,
+        .keyboardEventCf = (void *)UiPathTextEditControl_HandleKeyboardAndValidate,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
@@ -2089,7 +2089,7 @@ ImageData_004B7048 g_ImageData_004B7048 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiRequiredTextEditControl_HandleKeyboardAndValidateCf,
+        .keyboardEventCf = (void *)UiRequiredTextEditControl_HandleKeyboardAndValidate,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiTextEditControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiTextEditControl_UnsuppressIfActionId,
@@ -2115,7 +2115,7 @@ ImageData_004B7914 g_ImageData_004B7914 = {
         .rightDrag = (void *)UiScrollableControl_UpdateSecondaryScrollDrag,
         .pointerMove = (void *)UiScrollableControl_QueryPointerRegion,
         .hitTest = (void *)UiScrollableControl_HitTestContentAndScrollbars,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2140,7 +2140,7 @@ ImageData_004B9530 g_ImageData_004B9530 = {
         .rightDrag = (void *)UiSingleLineTextControl_ForwardRightDragToChild,
         .pointerMove = (void *)UiSingleLineTextControl_ForwardPointerMoveToChild,
         .hitTest = (void *)UiSingleLineTextControl_HitTestChildProxy,
-        .keyboardEventCf = (void *)UiSingleLineTextControl_ForwardKeyboardEventToChildCf,
+        .keyboardEventCf = (void *)UiSingleLineTextControl_ForwardKeyboardEventToChild,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2166,7 +2166,7 @@ ImageData_004B9E38 g_ImageData_004B9E38 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTextListControl_HandleKeyboardNavigationAndSearchCf,
+        .keyboardEventCf = (void *)UiTextListControl_HandleKeyboardNavigationAndSearch,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiTextListControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiTextListControl_UnsuppressIfActionId,
@@ -2192,7 +2192,7 @@ ImageData_004BA58C g_ImageData_004BA58C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiListControl_HandleKeyboardNavigationCf,
+        .keyboardEventCf = (void *)UiListControl_HandleKeyboardNavigation,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiListControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiListControl_UnsuppressIfActionId,
@@ -2255,7 +2255,7 @@ ImageData_004BB988 g_ImageData_004BB988 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTimedListControl_HandleKeyboardNavigationCf,
+        .keyboardEventCf = (void *)UiTimedListControl_HandleKeyboardNavigation,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2281,7 +2281,7 @@ ImageData_004BC404 g_ImageData_004BC404 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2307,7 +2307,7 @@ ImageData_004BC564 g_ImageData_004BC564 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiImageControl_PointerMove,
         .hitTest = (void *)UiImageControl_HitTestOpaque,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -2333,7 +2333,7 @@ ImageData_004BCC20 g_ImageData_004BCC20 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -2934,7 +2934,7 @@ ImageData_0050BB34 g_ImageData_0050BB34 = {
         .rightDrag = (void *)FrontendModelPointerContext_DispatchWorldCameraPointerInput,
         .pointerMove = (void *)FrontendModelPointerContext_SelectBestModelHitTargetAndResolveAction,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)FrontendModelPointerContext_KeyboardEventCf,
+        .keyboardEventCf = (void *)FrontendModelPointerContext_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3134,7 +3134,7 @@ ImageData_00514FB4 g_ImageData_00514FB4 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiImageActionControl_QueryPointerCode,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiImageActionControl_HandleKeyboardActivationCf,
+        .keyboardEventCf = (void *)UiImageActionControl_HandleKeyboardActivation,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3160,7 +3160,7 @@ ImageData_0051528C g_ImageData_0051528C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiConditionalActionControl_QueryPointerCode,
         .hitTest = (void *)UiConditionalActionControl_HitTestWhenEnabled,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3186,7 +3186,7 @@ ImageData_0051560C g_ImageData_0051560C = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -3218,7 +3218,7 @@ ImageData_00515720 g_ImageData_00515720 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiTextButtonControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -3244,7 +3244,7 @@ ImageData_005157D0 g_ImageData_005157D0 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3270,7 +3270,7 @@ ImageData_00515C60 g_ImageData_00515C60 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3296,7 +3296,7 @@ ImageData_005162BC g_ImageData_005162BC = {
         .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
         .pointerMove = (void *)UiCommandSpriteVariantA_PointerMove,
         .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -3318,7 +3318,7 @@ ImageData_005162BC g_ImageData_005162BC = {
         .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -3345,7 +3345,7 @@ ImageData_0051650C g_ImageData_0051650C = {
         .rightDrag = (void *)UiSpriteButtonControl_NonRightDrag,
         .pointerMove = (void *)UiCatalogEntryControl_PointerMove,
         .hitTest = (void *)UiSpriteButtonControl_HitTestOpaque,
-        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEventCf,
+        .keyboardEventCf = (void *)UiSelectableControl_KeyboardEvent,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiSelectableControl_SuppressIfActionId,
         .unsuppressActionId = (void *)UiSelectableControl_UnsuppressIfActionId,
@@ -3371,7 +3371,7 @@ ImageData_00516CBC g_ImageData_00516CBC = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiImagePanelControl_HitTestAlignedTextureAndChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3403,7 +3403,7 @@ ImageData_00516E90 g_ImageData_00516E90 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3459,7 +3459,7 @@ ImageData_00517DD4 g_ImageData_00517DD4 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3485,7 +3485,7 @@ ImageData_00517F00 g_ImageData_00517F00 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3511,7 +3511,7 @@ ImageData_00517FBC g_ImageData_00517FBC = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)FrontendResultsTable_HitTestAlwaysNone,
-        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNextCf,
+        .keyboardEventCf = (void *)UiNode_DefaultKeyboardEventMoveFocusNext,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3608,7 +3608,7 @@ ImageData_00518074 g_ImageData_00518074 = {
         .rightDrag = (void *)UiNode_DefaultRightDrag,
         .pointerMove = (void *)UiNode_DefaultPointerMove,
         .hitTest = (void *)UiContainer_HitTestChildren,
-        .keyboardEventCf = (void *)UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf,
+        .keyboardEventCf = (void *)UiSoftwareTexturePreviewControl_HandleKeyboardActivation,
         .applyFlags = (void *)UiNode_ApplyFlagsRecursive,
         .suppressActionId = (void *)UiContainer_SuppressActionId,
         .unsuppressActionId = (void *)UiContainer_UnsuppressActionId,
@@ -3810,11 +3810,11 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /*  4 */ (void *)TerrainHeightBand_TestAroundWorldPoint
         },
         .overlayCallbacks = {
-            /*  0 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf,
-            /*  1 */ (void *)FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf,
-            /*  2 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf,
-            /*  3 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf,
-            /*  4 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
+            /*  0 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+            /*  1 */ (void *)FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint,
+            /*  2 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+            /*  3 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint,
+            /*  4 */ (void *)FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
         }},
     0, /* 0051FB18 g_FactionEnergyAllocationPriorityByModelClass */
     {
@@ -4010,82 +4010,82 @@ ImageData_0051EEE4 g_ImageData_0051EEE4 = {
             /* 23 */ (void *)UnifiedRuntimeDefault_TwoArgNoOpB
         },
         .placementValidationCf = {
-            /*  0 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
+            /*  0 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
             /*  1 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
             /*  2 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
             /*  3 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
-            /*  4 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /*  5 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /*  6 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /*  7 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /*  8 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /*  9 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /* 10 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /* 11 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /* 12 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
+            /*  4 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /*  5 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /*  6 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /*  7 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /*  8 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /*  9 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /* 10 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /* 11 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /* 12 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
             /* 13 */ (void *)ArmyPlacement_TestModelTerrainAndRuntimeClearance,
             /* 14 */ (void *)ArmyPlacement_TestGridOccupancyMask,
-            /* 15 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /* 16 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
+            /* 15 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /* 16 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
             /* 17 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
             /* 18 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
             /* 19 */ (void *)ArmyPlacement_TestGridRuntimeAndFieldBlocking,
-            /* 20 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /* 21 */ (void *)UnifiedRuntimeDefault_TwoArgSuccessCf,
-            /* 22 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf,
-            /* 23 */ (void *)ArmyPlacementCollision_TestCurrentRuntimeCf
+            /* 20 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /* 21 */ (void *)UnifiedRuntimeDefault_TwoArgSuccess,
+            /* 22 */ (void *)ArmyPlacementCollision_TestCurrentRuntime,
+            /* 23 */ (void *)ArmyPlacementCollision_TestCurrentRuntime
         },
         .placementAssetClassDispatch = {
-            /*  0 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /*  1 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /*  2 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /*  3 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /*  4 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /*  5 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /*  6 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /*  7 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /*  8 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /*  9 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /* 10 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 11 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 12 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /* 13 */ (void *)ArmyPlacementCandidate_TestOffsetClearanceCf,
-            /* 14 */ (void *)ArmyPlacementCandidate_TestFieldOccupancyCf,
-            /* 15 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 16 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 17 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /* 18 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /* 19 */ (void *)ArmyRuntimeCollision_TestShotSpawnPointCf,
-            /* 20 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 21 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccessCf,
-            /* 22 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf,
-            /* 23 */ (void *)ArmyPlacementCollision_TestCandidateAndClearanceCf
+            /*  0 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /*  1 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /*  2 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /*  3 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /*  4 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /*  5 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /*  6 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /*  7 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /*  8 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /*  9 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /* 10 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 11 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 12 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /* 13 */ (void *)ArmyPlacementCandidate_TestOffsetClearance,
+            /* 14 */ (void *)ArmyPlacementCandidate_TestFieldOccupancy,
+            /* 15 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 16 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 17 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /* 18 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /* 19 */ (void *)ArmyRuntimeCollision_TestShotSpawnPoint,
+            /* 20 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 21 */ (void *)ArmyPlacementAssetClassDispatch_AlwaysSuccess,
+            /* 22 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance,
+            /* 23 */ (void *)ArmyPlacementCollision_TestCandidateAndClearance
         },
         .classCommand = {
             /*  0 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  1 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  2 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  3 */ (void *)ArmyRuntimeClassCommand_NoOp,
-            /*  4 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
+            /*  4 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
             /*  5 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  6 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  7 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  8 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /*  9 */ (void *)ArmyRuntimeClassCommand_NoOp,
-            /* 10 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
-            /* 11 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
+            /* 10 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
+            /* 11 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
             /* 12 */ (void *)ArmyRuntimeClassCommand_NoOp,
-            /* 13 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
-            /* 14 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
-            /* 15 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
-            /* 16 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
+            /* 13 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
+            /* 14 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
+            /* 15 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
+            /* 16 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
             /* 17 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /* 18 */ (void *)ArmyRuntimeClassCommand_NoOp,
             /* 19 */ (void *)ArmyRuntimeClassCommand_NoOp,
-            /* 20 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
+            /* 20 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
             /* 21 */ (void *)ArmyRuntimeClassCommand_NoOp,
-            /* 22 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf,
-            /* 23 */ (void *)ArmyRuntime_ClassCommandHandlerGroupACf
+            /* 22 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA,
+            /* 23 */ (void *)ArmyRuntime_ClassCommandHandlerGroupA
         },
         .gridInfluenceAdd = {
             /*  0 */ (void *)GridInfluence_AddHighDistanceBands,
@@ -4546,7 +4546,7 @@ ImageData_0053DA68 g_ImageData_0053DA68 = {
     /* 0053DA70 g_UiRootCallbacks_0053DA70 */
     {
         .frameUpdate = (void *)FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState,
-        .keyboardFallbackCf = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf},
+        .keyboardFallback = (void *)FrontendRuntime_DispatchCommandByCodeAndModifierFlags},
     0, /* 0053DA84 g_FrontendSessionListRows */
     0, /* 0053DA88 g_FrontendSessionDiscoveryRecords */
     /* 0053DA8C g_FrontendRootInitializationTemplate */
@@ -6645,7 +6645,7 @@ ImageData_005456F0 g_ImageData_005456F0 = {
         .handlers00_54 = {
             /*  0 */ (void *)FrontendSessionAction_ResetNetworkAndReturnToMainPage,
             /*  1 */ (void *)FrontendNetworkSetupPage_InitializeFromCommandLine,
-            /*  2 */ (void *)FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf,
+            /*  2 */ (void *)FrontendNetworkSettings_PublishSelectedPlayerDescriptor,
             /*  3 */ (void *)FrontendTransferPage_OpenAndRequestMailbox,
             /*  4 */ (void *)FrontendNetworkSetupPage_InitializeSingleLocalPlayer,
             /*  5 */ (void *)FrontendPlayerSetup_OpenLocalPageAndResetRoster,
@@ -6847,8 +6847,8 @@ ImageData_0054FBB0 g_ImageData_0054FBB0 = {
     {0x00, 0x00, 0x00, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}, /* 0054FBB0 gap */
     /* 0054FBC0 g_UiRootCallbacks_0054FBC0 */
     {
-        .frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInputCf,
-        .keyboardFallbackCf = (void *)InGameHotkeys_DispatchCommandByFlagsCf},
+        .frameUpdate = (void *)EndGameResultsUiRuntime_UpdateAndHandleInput,
+        .keyboardFallback = (void *)InGameHotkeys_DispatchCommandByFlags},
     0, /* 0054FBD4 g_InGameFactionStatusTextScratchUtf16 */
     0, /* 0054FBD8 g_InGamePlayerListTextScratchUtf16 */
     {0}, /* 0054FBDC g_InGamePlayerStatusTextSlots */
@@ -11963,7 +11963,7 @@ ImageData_00576B04 g_ImageData_00576B04 = {
     0, /* 00576C14 g_MouseWheelDelta */
     0, /* 00576C18 g_MouseButtonMask */
     0, /* 00576C1C g_MouseEventsProcessed */
-    0, /* 00576C20 g_DirectInputMouseChainedSetDisplayModeCf */
+    0, /* 00576C20 g_DirectInputMouseChainedSetDisplayMode */
     0x10, /* 00576C24 g_DirectInputMouseRefreshCountdown */
     {
         0x90909090, 0x90909090},
@@ -12040,7 +12040,7 @@ ImageData_00577BFC g_ImageData_00577BFC = {
     0, /* 00577E18 g_Direct3DAntialiasMode */
     {.zWriteEnable = 0x1, .sourceBlend = 0x2, .destinationBlend = 0x1}, /* 00577E1C g_PrimitiveRenderStateCache */
     0, /* 00577E2C g_BoundTextureHandle */
-    0, /* 00577E30 g_GraphicsDisplayModeFinalizeCf */
+    0, /* 00577E30 g_GraphicsDisplayModeFinalize */
     0, /* 00577E34 g_CursorCurrentVisibilityToken */
     0, /* 00577E38 g_CursorAlternateVisibilityToken */
     0, /* 00577E3C g_CursorCurrentDrawX */

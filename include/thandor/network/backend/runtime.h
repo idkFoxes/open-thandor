@@ -29,7 +29,7 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
 
 /* 0x00572710 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet);
 
 /* 0x00584080 */
@@ -40,7 +40,7 @@ void __thandor_preserve_eax Network_Shutdown(void);
 
 /* 0x00584E50 */
 NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
-NetworkBackend_SetSessionContextCf(void *this,NetworkBackendSessionReturnValue32 returnValue);
+NetworkBackend_SetSessionContext(void *this,NetworkBackendSessionReturnValue32 returnValue);
 
 /* 0x00585210 */
 bool __thandor_cf_preserve_eax_ecx_edx NetworkBackend_SelectInstanceByIndex(uint32_t instanceIndex);

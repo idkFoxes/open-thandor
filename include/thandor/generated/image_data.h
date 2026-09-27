@@ -39,7 +39,7 @@ typedef struct ImageData_00401000 {
     uint32_t at_g_LocaleGetDefaultTelephoneCountryCode_rest[1]; /* beyond the declared type */
     LocaleCopyDefaultComputerLabelUtf16Proc * at_g_LocaleCopyDefaultComputerLabelUtf16; /* 004027B4 g_LocaleCopyDefaultComputerLabelUtf16 */
     CpuDetectFeaturesProc * at_g_CPUDetectFeatures; /* 004027B8 g_CPUDetectFeatures */
-    pointer at_g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf */
+    pointer at_g_Utf16StringCompareAsciiCaseInsensitiveFlags; /* 004027BC g_Utf16StringCompareAsciiCaseInsensitiveFlags */
     uint32_t at_g_LocaleCountryCodeOverride; /* 004027C0 g_LocaleCountryCodeOverride */
     uint32_t at_g_CpuFeatureFlags; /* 004027C4 g_CpuFeatureFlags */
     uint32_t at_g_CpuFeatureFlags_rest[2]; /* beyond the declared type */
@@ -137,29 +137,29 @@ typedef struct ImageData_0040ABBC {
     uint8_t at_g_ExecutableDirectoryUtf16; /* 0040AFC0 g_ExecutableDirectoryUtf16 */
     uint32_t at_g_ExecutableDirectoryUtf16_rest[127]; /* beyond the declared type */
     uint8_t at_g_ExecutableDirectoryUtf16_rest_tail[3];
-    FileSystemOpenCfProc * at_g_FileSystemOpenCf; /* 0040B1C0 g_FileSystemOpenCf */
+    FileSystemOpenProc * at_g_FileSystemOpen; /* 0040B1C0 g_FileSystemOpen */
     FileSystemCloseProc * at_g_FileSystemClose; /* 0040B1C4 g_FileSystemClose */
-    FileSystemReadExactCfProc * at_g_FileSystemReadExactCf; /* 0040B1C8 g_FileSystemReadExactCf */
-    FileSystemWriteExactOrFlushCfProc * at_g_FileSystemWriteExactOrFlushCf; /* 0040B1CC g_FileSystemWriteExactOrFlushCf */
-    FileSystemGetSizeCfProc * at_g_FileSystemGetSizeCf; /* 0040B1D0 g_FileSystemGetSizeCf */
-    FileSystemGetPositionCfProc * at_g_FileSystemGetPositionCf; /* 0040B1D4 g_FileSystemGetPositionCf */
-    FileSystemSeekCfProc * at_g_FileSystemSeekCf; /* 0040B1D8 g_FileSystemSeekCf */
-    FileSystemDeleteCfProc * at_g_FileSystemDeleteCf; /* 0040B1DC g_FileSystemDeleteCf */
-    FileSystemGetCurrentDirectoryCfProc * at_g_FileSystemGetCurrentDirectoryCf; /* 0040B1E0 g_FileSystemGetCurrentDirectoryCf */
-    FileSystemSetCurrentDirectoryCfProc * at_g_FileSystemSetCurrentDirectoryCf; /* 0040B1E4 g_FileSystemSetCurrentDirectoryCf */
-    FileSystemCreateDirectoryRecursiveProc * at_g_FileSystemCreateDirectoryRecursiveCf; /* 0040B1E8 g_FileSystemCreateDirectoryRecursiveCf */
-    FileSystemRemoveDirectoryCfProc * at_g_FileSystemRemoveDirectoryCf; /* 0040B1EC g_FileSystemRemoveDirectoryCf */
+    FileSystemReadExactProc * at_g_FileSystemReadExact; /* 0040B1C8 g_FileSystemReadExact */
+    FileSystemWriteExactOrFlushProc * at_g_FileSystemWriteExactOrFlush; /* 0040B1CC g_FileSystemWriteExactOrFlush */
+    FileSystemGetSizeProc * at_g_FileSystemGetSize; /* 0040B1D0 g_FileSystemGetSize */
+    FileSystemGetPositionProc * at_g_FileSystemGetPosition; /* 0040B1D4 g_FileSystemGetPosition */
+    FileSystemSeekProc * at_g_FileSystemSeek; /* 0040B1D8 g_FileSystemSeek */
+    FileSystemDeleteProc * at_g_FileSystemDelete; /* 0040B1DC g_FileSystemDelete */
+    FileSystemGetCurrentDirectoryProc * at_g_FileSystemGetCurrentDirectory; /* 0040B1E0 g_FileSystemGetCurrentDirectory */
+    FileSystemSetCurrentDirectoryProc * at_g_FileSystemSetCurrentDirectory; /* 0040B1E4 g_FileSystemSetCurrentDirectory */
+    FileSystemCreateDirectoryRecursiveProc * at_g_FileSystemCreateDirectoryRecursive; /* 0040B1E8 g_FileSystemCreateDirectoryRecursive */
+    FileSystemRemoveDirectoryProc * at_g_FileSystemRemoveDirectory; /* 0040B1EC g_FileSystemRemoveDirectory */
     FileSystemEnumerateDriveLettersEaxEcxProc * at_g_FileSystemEnumerateDriveLetters; /* 0040B1F0 g_FileSystemEnumerateDriveLetters */
     FileSystemGetDriveTypeCodePreserveProc * at_g_FileSystemGetDriveTypeCode; /* 0040B1F4 g_FileSystemGetDriveTypeCode */
-    FileSystemDriveReadyCfProc * at_g_FileSystemCheckDriveMediaReady; /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
+    FileSystemDriveReadyProc * at_g_FileSystemCheckDriveMediaReady; /* 0040B1F8 g_FileSystemCheckDriveMediaReady */
     FileSystemGetFreeAndTotalBytesRegsProc * at_g_FileSystemGetFreeAndTotalBytesRegs; /* 0040B1FC g_FileSystemGetFreeAndTotalBytesRegs */
-    FileSystemGetLastWriteDosDateCfProc * at_g_FileSystemGetLastWriteDosDateCf; /* 0040B200 g_FileSystemGetLastWriteDosDateCf */
-    FileSystemGetLastWriteTimeHighCfProc * at_g_FileSystemGetLastWriteTimeHighCf; /* 0040B204 g_FileSystemGetLastWriteTimeHighCf */
-    FileSystemGetVolumeSerialNumberCfProc * at_g_FileSystemGetVolumeSerialNumberCf; /* 0040B208 g_FileSystemGetVolumeSerialNumberCf */
-    FileSystemMoveCfProc * at_g_FileSystemMoveCf; /* 0040B20C g_FileSystemMoveCf */
-    FileSystemCopyCfProc * at_g_FileSystemCopyCf; /* 0040B210 g_FileSystemCopyCf */
-    FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * at_g_FileSystemEnumerateDirectoryOrVolumeEntriesCf; /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntriesCf */
-    FileSystemValidateDos83CfProc * at_g_FileSystemValidateDos83Path; /* 0040B218 g_FileSystemValidateDos83Path */
+    FileSystemGetLastWriteDosDateProc * at_g_FileSystemGetLastWriteDosDate; /* 0040B200 g_FileSystemGetLastWriteDosDate */
+    FileSystemGetLastWriteTimeHighProc * at_g_FileSystemGetLastWriteTimeHigh; /* 0040B204 g_FileSystemGetLastWriteTimeHigh */
+    FileSystemGetVolumeSerialNumberProc * at_g_FileSystemGetVolumeSerialNumber; /* 0040B208 g_FileSystemGetVolumeSerialNumber */
+    FileSystemMoveProc * at_g_FileSystemMove; /* 0040B20C g_FileSystemMove */
+    FileSystemCopyProc * at_g_FileSystemCopy; /* 0040B210 g_FileSystemCopy */
+    FileSystemEnumerateDirectoryOrVolumeEntriesProc * at_g_FileSystemEnumerateDirectoryOrVolumeEntries; /* 0040B214 g_FileSystemEnumerateDirectoryOrVolumeEntries */
+    FileSystemValidateDos83Proc * at_g_FileSystemValidateDos83Path; /* 0040B218 g_FileSystemValidateDos83Path */
     uint8_t * at_g_PackageScratchBuffer; /* 0040B21C g_PackageScratchBuffer */
     uint32_t at_g_EnginePackageLowPriorityMountHandle; /* 0040B220 g_EnginePackageLowPriorityMountHandle */
     PckMountSlot at_g_PackageMountSlots[1024]; /* 0040B224 g_PackageMountSlots */
@@ -586,14 +586,14 @@ typedef struct ImageData_00485808 {
     GraphicsBeginScenePreserveAllProc * at_g_GraphicsBeginScene; /* 00485820 g_GraphicsBeginScene */
     GraphicsEndSceneProc * at_g_GraphicsEndScene; /* 00485824 g_GraphicsEndScene */
     GraphicsTextureRebuildAllProc * at_g_GraphicsRebuildAllStagingTextures; /* 00485828 g_GraphicsRebuildAllStagingTextures */
-    GraphicsTextureSetLoadPackageProc * at_g_GraphicsTextureSetLoadPackageCf; /* 0048582C g_GraphicsTextureSetLoadPackageCf */
-    GraphicsTextureSetReleasePackageProc * at_g_GraphicsTextureSetReleasePackageCf; /* 00485830 g_GraphicsTextureSetReleasePackageCf */
+    GraphicsTextureSetLoadPackageProc * at_g_GraphicsTextureSetLoadPackage; /* 0048582C g_GraphicsTextureSetLoadPackage */
+    GraphicsTextureSetReleasePackageProc * at_g_GraphicsTextureSetReleasePackage; /* 00485830 g_GraphicsTextureSetReleasePackage */
     GraphicsTextureSetCreateProc * at_g_GraphicsCreateTextureSet; /* 00485834 g_GraphicsCreateTextureSet */
     GraphicsTextureSetDestroyProc * at_g_GraphicsDestroyTextureSet; /* 00485838 g_GraphicsDestroyTextureSet */
     GraphicsTextureSetRefreshProc * at_g_GraphicsRefreshTextureColor; /* 0048583C g_GraphicsRefreshTextureColor */
     GraphicsTextureSetRefreshProc * at_g_GraphicsRefreshTextureAlpha; /* 00485840 g_GraphicsRefreshTextureAlpha */
     GraphicsPrimitiveQueueRadixSortProc * at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844; /* 00485844 PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844 */
-    GraphicsOffscreenRenderModelListToTextureSourceProc * at_g_GraphicsOffscreenRenderModelListToTextureSourceCf; /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSourceCf */
+    GraphicsOffscreenRenderModelListToTextureSourceProc * at_g_GraphicsOffscreenRenderModelListToTextureSource; /* 00485848 g_GraphicsOffscreenRenderModelListToTextureSource */
     uint32_t at_g_RenderedFrameCountSinceDebugRefresh; /* 0048584C g_RenderedFrameCountSinceDebugRefresh */
     GraphicsDiagnosticCounter at_g_PrimitiveDrawCallCount; /* 00485850 g_PrimitiveDrawCallCount */
     GraphicsDiagnosticCounter at_g_TextureBindStateChangeCount; /* 00485854 g_TextureBindStateChangeCount */
@@ -669,7 +669,7 @@ typedef struct ImageData_004A8E60 {
     uint32_t at_g_GraphicsAdapterCount; /* 004A8EA8 g_GraphicsAdapterCount */
     SoftwarePixelFormatConfig at_g_SoftwarePixelFormatConfig; /* 004A8EAC g_SoftwarePixelFormatConfig */
     SoftwareDisplayModeHookProc * at_g_GraphicsSetDisplayMode; /* 004A8ED0 g_GraphicsSetDisplayMode */
-    GraphicsBackendRefreshActiveAdapterProc * at_g_GraphicsBackendRefreshActiveAdapterCf; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapterCf */
+    GraphicsBackendRefreshActiveAdapterProc * at_g_GraphicsBackendRefreshActiveAdapter; /* 004A8ED4 g_GraphicsBackendRefreshActiveAdapter */
     SoftwareFramebufferCreateProc * at_g_SoftwareFramebufferCreate; /* 004A8ED8 g_SoftwareFramebufferCreate */
     uint32_t at_g_SoftwareFramebufferDestroy[1]; /* 004A8EDC g_SoftwareFramebufferDestroy */
     GraphicsFramebufferPresentProc * at_g_GraphicsFramebufferPresent; /* 004A8EE0 g_GraphicsFramebufferPresent */
@@ -3308,7 +3308,7 @@ typedef struct ImageData_00576B04 {
     UiPointerWheelDelta at_g_MouseWheelDelta; /* 00576C14 g_MouseWheelDelta */
     GraphicsCursorButtonState at_g_MouseButtonMask; /* 00576C18 g_MouseButtonMask */
     uint32_t at_g_MouseEventsProcessed; /* 00576C1C g_MouseEventsProcessed */
-    SoftwareDisplayModeHookProc * at_g_DirectInputMouseChainedSetDisplayModeCf; /* 00576C20 g_DirectInputMouseChainedSetDisplayModeCf */
+    SoftwareDisplayModeHookProc * at_g_DirectInputMouseChainedSetDisplayMode; /* 00576C20 g_DirectInputMouseChainedSetDisplayMode */
     UiFrameRefreshCountdownFrames at_g_DirectInputMouseRefreshCountdown; /* 00576C24 g_DirectInputMouseRefreshCountdown */
     uint32_t at_g_DirectInputMouseRefreshCountdown_rest[2]; /* beyond the declared type */
 } ImageData_00576B04;
@@ -3353,7 +3353,7 @@ typedef struct ImageData_00577BFC {
     uint32_t at_g_Direct3DAntialiasMode; /* 00577E18 g_Direct3DAntialiasMode */
     GraphicsPrimitiveRenderStateCache at_g_PrimitiveRenderStateCache; /* 00577E1C g_PrimitiveRenderStateCache */
     uint32_t at_g_BoundTextureHandle; /* 00577E2C g_BoundTextureHandle */
-    SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeFinalizeCf; /* 00577E30 g_GraphicsDisplayModeFinalizeCf */
+    SoftwareDisplayModeHookProc * at_g_GraphicsDisplayModeFinalize; /* 00577E30 g_GraphicsDisplayModeFinalize */
     int32_t at_g_CursorCurrentVisibilityToken; /* 00577E34 g_CursorCurrentVisibilityToken */
     int32_t at_g_CursorAlternateVisibilityToken; /* 00577E38 g_CursorAlternateVisibilityToken */
     int32_t at_g_CursorCurrentDrawX; /* 00577E3C g_CursorCurrentDrawX */
@@ -3704,7 +3704,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004027ac ((uintptr_t)&g_ImageData_00401000.at_g_LocaleGetDefaultTelephoneCountryCode)
 #define THANDOR_IMAGE_0x004027b4 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleCopyDefaultComputerLabelUtf16)
 #define THANDOR_IMAGE_0x004027b8 ((uintptr_t)&g_ImageData_00401000.at_g_CPUDetectFeatures)
-#define THANDOR_IMAGE_0x004027bc ((uintptr_t)&g_ImageData_00401000.at_g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
+#define THANDOR_IMAGE_0x004027bc ((uintptr_t)&g_ImageData_00401000.at_g_Utf16StringCompareAsciiCaseInsensitiveFlags)
 #define THANDOR_IMAGE_0x004027c0 ((uintptr_t)&g_ImageData_00401000.at_g_LocaleCountryCodeOverride)
 #define THANDOR_IMAGE_0x004027c4 ((uintptr_t)&g_ImageData_00401000.at_g_CpuFeatureFlags)
 #define THANDOR_IMAGE_0x004027d0 ((uintptr_t)&g_ImageData_00401000.at_g_FileSystemConfigCharacterNormalizationMap)
@@ -3745,28 +3745,28 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0040abc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_InitialWorkingDirectory)
 #define THANDOR_IMAGE_0x0040adc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCombinedPathScratchUtf16)
 #define THANDOR_IMAGE_0x0040afc0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_ExecutableDirectoryUtf16)
-#define THANDOR_IMAGE_0x0040b1c0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemOpenCf)
+#define THANDOR_IMAGE_0x0040b1c0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemOpen)
 #define THANDOR_IMAGE_0x0040b1c4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemClose)
-#define THANDOR_IMAGE_0x0040b1c8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemReadExactCf)
-#define THANDOR_IMAGE_0x0040b1cc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemWriteExactOrFlushCf)
-#define THANDOR_IMAGE_0x0040b1d0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetSizeCf)
-#define THANDOR_IMAGE_0x0040b1d4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetPositionCf)
-#define THANDOR_IMAGE_0x0040b1d8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSeekCf)
-#define THANDOR_IMAGE_0x0040b1dc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemDeleteCf)
-#define THANDOR_IMAGE_0x0040b1e0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetCurrentDirectoryCf)
-#define THANDOR_IMAGE_0x0040b1e4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSetCurrentDirectoryCf)
-#define THANDOR_IMAGE_0x0040b1e8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCreateDirectoryRecursiveCf)
-#define THANDOR_IMAGE_0x0040b1ec ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemRemoveDirectoryCf)
+#define THANDOR_IMAGE_0x0040b1c8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemReadExact)
+#define THANDOR_IMAGE_0x0040b1cc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemWriteExactOrFlush)
+#define THANDOR_IMAGE_0x0040b1d0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetSize)
+#define THANDOR_IMAGE_0x0040b1d4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetPosition)
+#define THANDOR_IMAGE_0x0040b1d8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSeek)
+#define THANDOR_IMAGE_0x0040b1dc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemDelete)
+#define THANDOR_IMAGE_0x0040b1e0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetCurrentDirectory)
+#define THANDOR_IMAGE_0x0040b1e4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemSetCurrentDirectory)
+#define THANDOR_IMAGE_0x0040b1e8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCreateDirectoryRecursive)
+#define THANDOR_IMAGE_0x0040b1ec ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemRemoveDirectory)
 #define THANDOR_IMAGE_0x0040b1f0 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDriveLetters)
 #define THANDOR_IMAGE_0x0040b1f4 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetDriveTypeCode)
 #define THANDOR_IMAGE_0x0040b1f8 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCheckDriveMediaReady)
 #define THANDOR_IMAGE_0x0040b1fc ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetFreeAndTotalBytesRegs)
-#define THANDOR_IMAGE_0x0040b200 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteDosDateCf)
-#define THANDOR_IMAGE_0x0040b204 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteTimeHighCf)
-#define THANDOR_IMAGE_0x0040b208 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetVolumeSerialNumberCf)
-#define THANDOR_IMAGE_0x0040b20c ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemMoveCf)
-#define THANDOR_IMAGE_0x0040b210 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCopyCf)
-#define THANDOR_IMAGE_0x0040b214 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDirectoryOrVolumeEntriesCf)
+#define THANDOR_IMAGE_0x0040b200 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteDosDate)
+#define THANDOR_IMAGE_0x0040b204 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetLastWriteTimeHigh)
+#define THANDOR_IMAGE_0x0040b208 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemGetVolumeSerialNumber)
+#define THANDOR_IMAGE_0x0040b20c ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemMove)
+#define THANDOR_IMAGE_0x0040b210 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemCopy)
+#define THANDOR_IMAGE_0x0040b214 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemEnumerateDirectoryOrVolumeEntries)
 #define THANDOR_IMAGE_0x0040b218 ((uintptr_t)&g_ImageData_0040ABBC.at_g_FileSystemValidateDos83Path)
 #define THANDOR_IMAGE_0x0040b21c ((uintptr_t)&g_ImageData_0040ABBC.at_g_PackageScratchBuffer)
 #define THANDOR_IMAGE_0x0040b220 ((uintptr_t)&g_ImageData_0040ABBC.at_g_EnginePackageLowPriorityMountHandle)
@@ -3921,14 +3921,14 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00485820 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsBeginScene)
 #define THANDOR_IMAGE_0x00485824 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsEndScene)
 #define THANDOR_IMAGE_0x00485828 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRebuildAllStagingTextures)
-#define THANDOR_IMAGE_0x0048582c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetLoadPackageCf)
-#define THANDOR_IMAGE_0x00485830 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetReleasePackageCf)
+#define THANDOR_IMAGE_0x0048582c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetLoadPackage)
+#define THANDOR_IMAGE_0x00485830 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsTextureSetReleasePackage)
 #define THANDOR_IMAGE_0x00485834 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsCreateTextureSet)
 #define THANDOR_IMAGE_0x00485838 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsDestroyTextureSet)
 #define THANDOR_IMAGE_0x0048583c ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRefreshTextureColor)
 #define THANDOR_IMAGE_0x00485840 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsRefreshTextureAlpha)
 #define THANDOR_IMAGE_0x00485844 ((uintptr_t)&g_ImageData_00485808.at_PTR_GraphicsPrimitiveQueue_RadixSortForRendering_00485844)
-#define THANDOR_IMAGE_0x00485848 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsOffscreenRenderModelListToTextureSourceCf)
+#define THANDOR_IMAGE_0x00485848 ((uintptr_t)&g_ImageData_00485808.at_g_GraphicsOffscreenRenderModelListToTextureSource)
 #define THANDOR_IMAGE_0x0048584c ((uintptr_t)&g_ImageData_00485808.at_g_RenderedFrameCountSinceDebugRefresh)
 #define THANDOR_IMAGE_0x00485850 ((uintptr_t)&g_ImageData_00485808.at_g_PrimitiveDrawCallCount)
 #define THANDOR_IMAGE_0x00485854 ((uintptr_t)&g_ImageData_00485808.at_g_TextureBindStateChangeCount)
@@ -3990,7 +3990,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x004a8ea8 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsAdapterCount)
 #define THANDOR_IMAGE_0x004a8eac ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwarePixelFormatConfig)
 #define THANDOR_IMAGE_0x004a8ed0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsSetDisplayMode)
-#define THANDOR_IMAGE_0x004a8ed4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsBackendRefreshActiveAdapterCf)
+#define THANDOR_IMAGE_0x004a8ed4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsBackendRefreshActiveAdapter)
 #define THANDOR_IMAGE_0x004a8ed8 ((uintptr_t)&g_ImageData_004A8E60.at_g_SoftwareFramebufferCreate)
 #define THANDOR_IMAGE_0x004a8ee0 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferPresent)
 #define THANDOR_IMAGE_0x004a8ee4 ((uintptr_t)&g_ImageData_004A8E60.at_g_GraphicsFramebufferCaptureRegion)
@@ -5144,7 +5144,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00576c14 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseWheelDelta)
 #define THANDOR_IMAGE_0x00576c18 ((uintptr_t)&g_ImageData_00576B04.at_g_MouseButtonMask)
 #define THANDOR_IMAGE_0x00576c1c ((uintptr_t)&g_ImageData_00576B04.at_g_MouseEventsProcessed)
-#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseChainedSetDisplayModeCf)
+#define THANDOR_IMAGE_0x00576c20 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseChainedSetDisplayMode)
 #define THANDOR_IMAGE_0x00576c24 ((uintptr_t)&g_ImageData_00576B04.at_g_DirectInputMouseRefreshCountdown)
 #define THANDOR_IMAGE_0x00577c00 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDraw2_Local)
 #define THANDOR_IMAGE_0x00577c10 ((uintptr_t)&g_ImageData_00577BFC.at_IID_IDirectDrawSurface3_Local)
@@ -5182,7 +5182,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00577e18 ((uintptr_t)&g_ImageData_00577BFC.at_g_Direct3DAntialiasMode)
 #define THANDOR_IMAGE_0x00577e1c ((uintptr_t)&g_ImageData_00577BFC.at_g_PrimitiveRenderStateCache)
 #define THANDOR_IMAGE_0x00577e2c ((uintptr_t)&g_ImageData_00577BFC.at_g_BoundTextureHandle)
-#define THANDOR_IMAGE_0x00577e30 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsDisplayModeFinalizeCf)
+#define THANDOR_IMAGE_0x00577e30 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsDisplayModeFinalize)
 #define THANDOR_IMAGE_0x00577e34 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorCurrentVisibilityToken)
 #define THANDOR_IMAGE_0x00577e38 ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorAlternateVisibilityToken)
 #define THANDOR_IMAGE_0x00577e3c ((uintptr_t)&g_ImageData_00577BFC.at_g_CursorCurrentDrawX)

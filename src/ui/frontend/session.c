@@ -224,7 +224,7 @@ void __thandor_preserve_eax FrontendSession_ShowPage9WithCompactLayout(FrontendU
    flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiNodeList_SuppressActionId
    [ui/controls/lists], UiPointerList_InitializeColumnLayout [ui/controls/lists],
-   UiTransferMailbox_RandomizeSequenceToken [network/protocol/transfer], UiTransfer_SendPacketType10000Value2931Cf
+   UiTransferMailbox_RandomizeSequenceToken [network/protocol/transfer], UiTransfer_SendPacketType10000Value2931
    [network/protocol/transfer].
 */
 void __thandor_preserve_eax
@@ -248,7 +248,7 @@ FrontendTransferPage_ResetSessionOpenAndRequestMailbox(UiNodeBase *source)
             (0,g_FrontendSessionListRows,(UiPointerListControl *)FRONTEND_UI(frontendUi,sessionList));
   g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags & ~SESSION_NETWORK_ROLE_NETWORKED_MASK;
   UiTransferMailbox_RandomizeSequenceToken();
-  UiTransfer_SendPacketType10000Value2931Cf();
+  UiTransfer_SendPacketType10000Value2931();
   firstPlayerRecord = g_FrontendPlayerRuntimeBlocks;
   g_FrontendPlayerRuntimeBlockCount = 1;
   g_LocalPlayerRuntimeId = 0;
@@ -339,10 +339,10 @@ FrontendSessionList_DecrementExpiryAndCompactRows
    simulation timing and increments g_EndMoviePendingTicks when ending-movie playback is active. The broader
    session behavior is documented without forcing a movie-only name.
    Cross-module calls: FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer],
-   UiRuntimeRecordRing_DiscardOldestCf [ui/core/runtime], FrontendTransfer_HandleSyncRequest10021AndReply10023
+   UiRuntimeRecordRing_DiscardOldest [ui/core/runtime], FrontendTransfer_HandleSyncRequest10021AndReply10023
    [network/protocol/transfer], FrontendTransfer_BroadcastPendingCommandBatchAndSyncState
-   [network/protocol/transfer], UiRuntimeRecordRing_ContainsIdCf [ui/core/runtime],
-   FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf [network/backend/runtime].
+   [network/protocol/transfer], UiRuntimeRecordRing_ContainsId [ui/core/runtime],
+   FrontendNetwork_HandleCommandBatchAndPlayerTimeout [network/backend/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
 
@@ -367,7 +367,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
       else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
         while( true ) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
           if (discardedRecord.empty) break;
           FrontendTransfer_HandleSyncRequest10021AndReply10023
                     ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
@@ -383,16 +383,16 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
   }
   else {
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      callResult = UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
+      callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
       do {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
-        callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+        callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
                           ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
                            (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
       } while (!callResult);
-      callResult = FrontendTransfer_ConsumeProcessedFlagCf();
+      callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
@@ -416,7 +416,7 @@ FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
    g_FrontendClientPlayerRemovalPacket10007 for each removed player token.
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8 [ui/ingame/runtime],
-   UiTransfer_StagePacketAndSendCf [network/protocol/transfer],
+   UiTransfer_StagePacketAndSend [network/protocol/transfer],
    FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus [ui/frontend/player].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -500,7 +500,7 @@ FrontendClientSession_RemoveExpiredPlayer:
       recipientsRemaining = g_FrontendPlayerRuntimeBlockCount;
       while (recipientsRemaining = recipientsRemaining - 1, recipientsRemaining != 0) {
         destinationCommandOrPacket = &g_FrontendClientPlayerRemovalPacket10007;
-        UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
+        UiTransfer_StagePacketAndSend(endpoint,&g_FrontendClientPlayerRemovalPacket10007.header);
         endpoint = endpoint + 0x13b;
         removedIdOrCommandCursor = (FrontendCommandPacketRecord *)destinationCommandOrPacket;
       }

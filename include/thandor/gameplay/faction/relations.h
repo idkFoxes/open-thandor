@@ -33,7 +33,7 @@ PlayerPairList_RemoveRange
 
 /* 0x0053C3D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_TestPairTransitionAllowedCf
+GameFactionRelations_TestPairTransitionAllowed
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C090 */
@@ -42,12 +42,12 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
 
 /* 0x0053C0F0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_EvaluateTransitionRulesCf
+GameFactionRelations_EvaluateTransitionRules
           (FactionRuntimeIndex focalFactionIndex,FactionActiveMask activeFactionMask);
 
 /* 0x0053C490 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRelations_IsResetEligibleStateCf
+GameFactionRelations_IsResetEligibleState
           (FactionRuntimeIndex sourceFactionIndex,FactionRuntimeIndex targetFactionIndex);
 
 /* 0x0053C4D0 */

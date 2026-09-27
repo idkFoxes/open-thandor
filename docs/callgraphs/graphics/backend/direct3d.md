@@ -6,7 +6,7 @@
 
 ## Functions
 
-- `0x00578270` **[`Direct3D_EnumDeviceCallback`](../../../../src/graphics/backend/direct3d.c#L5)** — cross: [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
+- `0x00578270` **[`Direct3D_EnumDeviceCallback`](../../../../src/graphics/backend/direct3d.c#L5)** — cross: [`Text_CopyNarrowToUtf16`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
 - `0x00578820` **[`GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback`](../../../../src/graphics/backend/direct3d.c#L88)**
 - `0x0057A450` **[`Direct3DRenderer_SetAntialiasMode`](../../../../src/graphics/backend/direct3d.c#L166)**
 - `0x0057A4C0` **[`Direct3DRenderer_SetTextureFilterMode`](../../../../src/graphics/backend/direct3d.c#L189)**

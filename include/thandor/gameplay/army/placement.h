@@ -15,26 +15,26 @@
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x005244B0 */
-PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf (ArmyPlacementDispatchArg0 dispatchArg0, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition, ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
+PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance (ArmyPlacementDispatchArg0 dispatchArg0, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition, ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
 
 /* 0x00524570 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyPlacement_TestModelTerrainAndRuntimeClearance
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
 
-/* ECX/EDX results of ArmyPlacement_ValidateAssetAtPointAndCellCornersCf: the accepted point. */
+/* ECX/EDX results of ArmyPlacement_ValidateAssetAtPointAndCellCorners: the accepted point. */
 extern Q12 g_ArmyPlacementValidatedWorldXQ12;
 extern Q12 g_ArmyPlacementValidatedWorldYQ12;
 
 /* 0x0051D380 */
 bool __thandor_preserve_eax
-ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,PckArmyAssetIdCatalog armyAssetId,Q12 worldYQ12,
           Q12 worldXQ12,ArmyPlacementContext placementContext,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime);
 
 /* 0x00524EB0 */
-PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancyCf (ArmyPlacementDispatchArg0 dispatchArg0, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3, Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition, ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
+PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy (ArmyPlacementDispatchArg0 dispatchArg0, ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12, ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3, Q12 worldYQ12,Q12 worldXQ12,ModelDefinitionRecordPrefix *modelDefinition, ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
 
 /* 0x00524F70 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -47,7 +47,7 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
 
 /* 0x005281A0 */
-PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPointCf
+PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
                (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime);
@@ -98,16 +98,16 @@ ArmyPlacement_ReleaseClassStateReservation
           (ModelDefinitionRecordPrefix *modelDefinition,ModelRuntimeSlot *modelRuntime);
 
 /* 0x00527BD0 */
-PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccessCf (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime);
+PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3, Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition, uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529CB0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointAgainstRuntimeListCf
+ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529E60 */
 ArmyCollisionResult __thandor_eax_cf_preserve_ecx_edx
-ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryViewF4 *currentRuntime,
           WorldRuntimeContext *worldRuntime);
 
@@ -122,24 +122,24 @@ ArmyPlacement_DispatchAssetAtFieldPoint
 
 /* 0x00529D70 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x00529F30 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode100 *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x00527740 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCurrentRuntimeCf
+ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
 
 /* 0x005278D0 */
 PlacementCandidateResult
-ArmyPlacementCollision_TestCandidateAndClearanceCf
+ArmyPlacementCollision_TestCandidateAndClearance
           (ArmyPlacementDispatchArg0 dispatchArg0,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t dispatchArg2,
           ArmyPlacementDispatchArg3 dispatchArg3,Q12 worldXQ12,Q12 worldYQ12,
@@ -148,12 +148,12 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
 
 /* 0x00524650 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCandidate_TestModelAnchorDistanceCf
+ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x00529C40 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime);
 
 #endif /* THANDOR_GAMEPLAY_ARMY_PLACEMENT_H */

@@ -17,14 +17,14 @@
    were explicitly deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and
    executable data remain unchanged.
    Local calls: InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint.
-   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActiveCf [gameplay/selection/runtime],
-   ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
+   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActive [gameplay/selection/runtime],
+   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
    [world/model/hierarchy], ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime],
-   ArmyPlacement_ValidateAssetAtPointAndCellCornersCf [gameplay/army/placement],
+   ArmyPlacement_ValidateAssetAtPointAndCellCorners [gameplay/army/placement],
    ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
+InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime)
 
 {
@@ -70,7 +70,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
     return;
   }
   if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-    checkResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
+    checkResult = SelectionInfo_ValidateOwnerType16AndAnyActive
                        (worldRuntime->activeFactionRuntimeIndex);
     if (!checkResult) {
       if (releaseMode == GRAPHICS_STATE_DISABLED) {
@@ -78,7 +78,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
         if ((((g_InGamePointerInteractionStateFlags & 3) == 0) &&
             (g_InGameCommandPreviewArmyAssetId != 0)) &&
            (g_InGameCommandPreviewSurfaceHeightQ12OrSentinel != 0x7fffffff)) {
-          createdArmy = ArmyRuntime_CreateInstanceFromAssetCf
+          createdArmy = ArmyRuntime_CreateInstanceFromAsset
                              (1,g_InGameCommandPreviewHeading16,g_InGameCommandPreviewWorldXQ12,
                               g_InGameCommandPreviewWorldYQ12,
                               worldRuntime->activeFactionRuntimeIndex,
@@ -103,7 +103,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
        (g_InGamePlacementSurfaceHeightQ12OrSentinel != 0x7fffffff)) {
       previewTint = 0xcfffffff;
       g_ArmyPlacementAcceptedCandidateCount = 1;
-      checkResult = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+      checkResult = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                          (0,g_InGamePlacementHeading16,g_InGamePlacementWorldXQ12,
                           g_InGamePlacementWorldYQ12,
                           *(ArmyPlacementContext *)(g_InGamePendingPlacementArmyAsset + 8),
@@ -128,7 +128,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
         previewTint = previewTint & 0xff707070;
       }
       g_ArmyPlacementAcceptedCandidateCount = 0;
-      createdArmy = ArmyRuntime_CreateInstanceFromAssetCf
+      createdArmy = ArmyRuntime_CreateInstanceFromAsset
                          (1,g_InGamePlacementHeading16,validatedWorldYQ12,worldXQ12,
                           worldRuntime->activeFactionRuntimeIndex,armyAssetId,worldRuntimeCopy);
       entityRuntime = (GameEntityRuntime *)createdArmy.armyRuntimeOrError;
@@ -153,7 +153,7 @@ InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
   }
 InGameWorldOverlay_RefreshTransientEffectMarkers:
   if (releaseMode == GRAPHICS_STATE_DISABLED) {
-    markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0143_EGATH0);
+    markerDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0143_EGATH0);
     if (!markerDefinition.notFound) {
       modelNodeCursor = (ModelRuntimeNode *)worldRuntime->ownerListHead;
       indexOrCount = 0;
@@ -170,7 +170,7 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
           surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                              (armySlot->movementTarget1Q12,armySlot->movementTarget0Q12,
                               worldRuntime->fieldGrid);
-          createdEffect = EffectRuntimePool_CreateInstanceFromDefinitionCf
+          createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                              (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                               0x4000,0,surfaceHeight.heightQ12,armySlot->movementTarget1Q12,
                               armySlot->movementTarget0Q12,markerDefinition.definitionOrError,worldRuntime);
@@ -186,9 +186,9 @@ InGameWorldOverlay_RefreshTransientEffectMarkers:
         modelNodeCursor = (ModelRuntimeNode *)(modelNodeCursor->common).nextNode;
       } while (modelNodeCursor != (ModelRuntimeNode *)0x0);
     }
-    markerDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0148_EWAYP0);
+    markerDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0148_EWAYP0);
     if (!markerDefinition.notFound) {
-      targetDefinition = EffectDefinitionRegistry_FindByIdWithErrorCf(EFF_0149_ETARG0);
+      targetDefinition = EffectDefinitionRegistry_FindByIdWithError(EFF_0149_ETARG0);
       if (!targetDefinition.notFound) {
         recordOrCount = 0x20;
         selectionSlotCursor = g_SelectionInfoEntitySlots->entries;
@@ -978,7 +978,7 @@ SelectionMarkerCoordinates_ApplyType7
    Calling convention, storage, body bytes, control flow, and executable data remain unchanged. Typed parameters:
    p2 worldYQ12→Q12, p3 worldXQ12→Q12.
    Cross-module calls: FieldGrid_InterpolateTopSurfaceHeight [world/terrain/grid],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime].
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
@@ -1008,7 +1008,7 @@ InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint
     }
     surfaceHeight = FieldGrid_InterpolateTopSurfaceHeight
                       (worldYQ12,worldXQ12,*(FieldGridAsset **)((int)inGameRuntime + 0x54));
-    createdEffect = EffectRuntimePool_CreateInstanceFromDefinitionCf
+    createdEffect = EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        surfaceHeight.heightQ12,worldYQ12,worldXQ12,effectDefinition,inGameRuntime);
     *(EffectRuntimeSlot **)(markerSlotIndex * 4 + THANDOR_ADDR(g_InGameCommandTargetTransientEffectMarkers,0)) = createdEffect.effectRuntime;

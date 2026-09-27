@@ -31,12 +31,12 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBas
 
 /* 0x004B4420 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRangeSliderControl_HandleKeyboardCf
+UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control);
 
 /* 0x004B9CB0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSingleLineTextControl_ForwardKeyboardEventToChildCf
+UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control);
 
 /* 0x004B9DA0 */
@@ -166,7 +166,7 @@ UiNode_ForwardPointerWheelToParent
 
 /* 0x004B08C0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiNode_DefaultKeyboardEventMoveFocusNextCf
+UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
 
 /* 0x004AFF60 */

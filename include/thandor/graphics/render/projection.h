@@ -16,7 +16,7 @@
 
 /* 0x00486B00 */
 OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsOffscreen_RenderModelListToTextureSourceCf
+GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputWidth,
           GraphicsPixelDimension outputHeight,ModelRuntimeCount modelCount,
@@ -24,14 +24,14 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
 
 /* 0x0050A6A0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedPoint_IsInsideTriangleCf
+GraphicsProjectedPoint_IsInsideTriangle
           (int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2);
 
 
 /* 0x00486940 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedTriangle_PointOutsideBoundsCf
+GraphicsProjectedTriangle_PointOutsideBounds
           (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
           GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
           GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,

@@ -100,10 +100,10 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     g_FrontendPlayerRuntimeBlocks->capabilityFlags = 0x100;
   }
-  activePageStatus = UiPageStack_ActivePageNotInListCf
+  activePageStatus = UiPageStack_ActivePageNotInList
                      ((UiPageStackControl *)(frontendRoot->opaqueGap0000_4B67 + 0x508));
   if (activePageStatus.pageIndex == 10) {
-    selectedGroup = UiSelectableGroup_NoneSelectedCf(3,
+    selectedGroup = UiSelectableGroup_NoneSelected(3,
       FRONTEND_UI(g_FrontendRootNode,loadGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,singleGameTabButton),
       FRONTEND_UI(g_FrontendRootNode,campaignsTabButton));

@@ -51,11 +51,11 @@ AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry);
 
 /* 0x00538C90 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId);
+AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538CF0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasEntryByIdCf(PckArmyAssetIdCatalog entryId);
+AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538D40 */
 int __thandor_eax_preserve_ecx_edx
@@ -106,11 +106,11 @@ AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell
 
 /* 0x00538B90 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId);
+AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538BF0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasEntryByIdCf(PckArmyAssetIdCatalog entryId);
+AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId);
 
 /* 0x00538C40 */
 int __thandor_eax_preserve_ecx_edx
@@ -123,6 +123,6 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
 
 /* 0x00538FD0 */
 bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf(Q12 worldX,Q12 worldY);
+AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldX,Q12 worldY);
 
 #endif /* THANDOR_GAMEPLAY_AI_WORKSPACES_H */

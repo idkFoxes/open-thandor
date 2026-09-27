@@ -1,7 +1,7 @@
 digraph thandor {
   rankdir=LR;
   node [shape=box];
-  "FncModule_GetBindingModeCf" [label="0x0041A610\nFncModule_GetBindingModeCf"];
-  "FncModule_LoadAndRelocateCf" [label="0x0041A640\nFncModule_LoadAndRelocateCf"];
-  "FncModule_GetExportByIndexCf" [label="0x0041A710\nFncModule_GetExportByIndexCf"];
+  "FncModule_GetBindingMode" [label="0x0041A610\nFncModule_GetBindingModeCf"];
+  "FncModule_LoadAndRelocate" [label="0x0041A640\nFncModule_LoadAndRelocateCf"];
+  "FncModule_GetExportByIndex" [label="0x0041A710\nFncModule_GetExportByIndexCf"];
 }

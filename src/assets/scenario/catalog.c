@@ -16,7 +16,7 @@
    for FRONTEND_PAGE20[57] (0x2039). Return datatype is preserved for non-queue direct callers.
    Local calls: ScenarioCatalog_RefreshSelectedRecordLocalizedText,
    FrontendScenarioSelection_ActivateSelectedRecord.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
 void __thandor_preserve_eax
@@ -25,7 +25,7 @@ FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *list
 {
   ListSelectionResult selectedRow;
   
-  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  selectedRow = UiPointerList_GetSelectedIndexVariantB(listControl);
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -49,7 +49,7 @@ FrontendScenarioSelection_ApplyLocalizedTextSelection(UiPointerListControl *list
    for FRONTEND_PAGE20[58] (0x203A). Return datatype is preserved for non-queue direct callers.
    Local calls: ScenarioCatalog_RefreshSelectedRecordField70DisplayId,
    FrontendScenarioSelection_ActivateSelectedRecord.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
 void __thandor_preserve_eax
@@ -58,7 +58,7 @@ FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listContro
 {
   ListSelectionResult selectedRow;
   
-  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  selectedRow = UiPointerList_GetSelectedIndexVariantB(listControl);
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -83,7 +83,7 @@ FrontendScenarioSelection_ApplyField70Selection(UiPointerListControl *listContro
    for FRONTEND_PAGE20[59] (0x203B). Return datatype is preserved for non-queue direct callers.
    Local calls: ScenarioCatalog_RefreshSelectedRecordField50DisplayId,
    FrontendScenarioSelection_ActivateSelectedRecord.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
 */
 void __thandor_preserve_eax
@@ -92,7 +92,7 @@ FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listContro
 {
   ListSelectionResult selectedRow;
   
-  selectedRow = UiPointerList_GetSelectedIndexVariantBCf(listControl);
+  selectedRow = UiPointerList_GetSelectedIndexVariantB(listControl);
   if (!selectedRow.confirmed) {
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -117,8 +117,8 @@ FrontendScenarioSelection_ApplyField50Selection(UiPointerListControl *listContro
    command-line map option when it matches an existing level, and updates mode-dependent control visibility.
    Local calls: ScenarioCatalog_RefreshSelectedRecordField70DisplayId,
    FrontendScenarioSession_LoadOrRequestLevelAsset.
-   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiSelectableGroup_NoneVisibleSelectedCf
-   [ui/controls/lists], UiSelectableGroup_SelectExclusive [ui/controls/lists], Text_CopyNarrowToUtf16Cf
+   Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], UiSelectableGroup_NoneVisibleSelected
+   [ui/controls/lists], UiSelectableGroup_SelectExclusive [ui/controls/lists], Text_CopyNarrowToUtf16
    [core/text/string], WidePath_SetExtensionCode [core/text/path], Resource_Release [assets/resource/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -147,7 +147,7 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     controlFlags = &(scenarioSelectionPage->compactLayoutControl).nodeFlags;
     *controlFlags = *controlFlags | 0x2000;
   }
-  selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
+  selectedGroup = UiSelectableGroup_NoneVisibleSelected(3,
       FRONTEND_UI(scenarioSelectionPage,loadGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,singleGameTabButton),
       FRONTEND_UI(scenarioSelectionPage,campaignsTabButton));
@@ -198,7 +198,7 @@ FrontendScenarioSelectionPage_InitializeAndApplyMapOption
     }
     *scanCursor = 0;
     if (scanCursor[1] == 0) {
-      Text_CopyNarrowToUtf16Cf(0x800000,(uint16_t *)g_PackageScratchBuffer,textCursor + 7);
+      Text_CopyNarrowToUtf16(0x800000,(uint16_t *)g_PackageScratchBuffer,textCursor + 7);
       WidePath_SetExtensionCode(0,(uint16_t *)g_PackageScratchBuffer);
       *scanCursor = 0x22;
       *textCursor = 0x6b;
@@ -556,7 +556,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  saveEnumeration = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+  saveEnumeration = g_FileSystemEnumerateDirectoryOrVolumeEntries
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   catalog = g_ScenarioCatalog;
@@ -573,14 +573,14 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      openResult = g_FileSystemOpenCf
+      openResult = g_FileSystemOpen
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16
                          );
       checkedResult = FatalError_ExitIfFailed(openResult.handleOrError,openResult.failed);
       handle = (void *)checkedResult.valueOrError;
       handleToClose = handle;
-      g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-      g_FileSystemReadExactCf(0x100,saveRecord,handle);
+      g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
+      g_FileSystemReadExact(0x100,saveRecord,handle);
       g_FileSystemClose(handleToClose);
       saveRecord->localizedStringId70 = saveRecord->localizedStringId70 + 0x2230;
       if (-1 < saveRecord->optionalLocalizedStringId90) {
@@ -617,9 +617,9 @@ ScenarioCatalog_RequestRomTransitionStopCallback(uint32_t unusedArg0,uint32_t un
    Purpose: Consumes the current frontend transfer-mailbox payload according to the pending asset state, decodes
    scenario catalog, level, field-grid, or campaign data, updates player readiness flags, and queues the matching
    local command.
-   Cross-module calls: UiTransferMailbox_GetReceivedBufferCf [network/protocol/transfer], PckCodec_DecodeHuffmanRle
+   Cross-module calls: UiTransferMailbox_GetReceivedBuffer [network/protocol/transfer], PckCodec_DecodeHuffmanRle
    [assets/package/codec], UiTransferMailbox_ClearReceivedState [network/protocol/transfer],
-   DwordBlock64Array_ContainsExactRecordCf [core/memory/allocator], FrontendCommandQueue_EnqueueLocalPlayerCommand
+   DwordBlock64Array_ContainsExactRecord [core/memory/allocator], FrontendCommandQueue_EnqueueLocalPlayerCommand
    [network/protocol/commands], Resource_Release [assets/resource/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceivedAsset(void)
@@ -649,7 +649,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
   if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) &&
      (g_FrontendScenarioTransferState != 0)) {
     if (g_FrontendScenarioTransferState == 1) {
-      received = UiTransferMailbox_GetReceivedBufferCf();
+      received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
@@ -676,7 +676,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
             maskBit = 1;
             maskSlotOrRecordsLeft = 3;
             do {
-              recordAlreadyKnown = DwordBlock64Array_ContainsExactRecordCf
+              recordAlreadyKnown = DwordBlock64Array_ContainsExactRecord
                                  (recordCount,(uint32_t *)((int)oldCatalogBase + oldLevelRecordsOffset),receivedDwords);
               if (!recordAlreadyKnown) {
                 changedLevelMask[maskSlotOrRecordsLeft] = changedLevelMask[maskSlotOrRecordsLeft] | maskBit;
@@ -698,7 +698,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       }
     }
     else if (g_FrontendScenarioTransferState < 3) {
-      received = UiTransferMailbox_GetReceivedBufferCf();
+      received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
@@ -728,7 +728,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       }
     }
     else if (g_FrontendScenarioTransferState == 3) {
-      received = UiTransferMailbox_GetReceivedBufferCf();
+      received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
@@ -751,7 +751,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       }
     }
     else if (g_FrontendScenarioTransferState < 5) {
-      received = UiTransferMailbox_GetReceivedBufferCf();
+      received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
@@ -813,7 +813,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       }
     }
     else {
-      received = UiTransferMailbox_GetReceivedBufferCf();
+      received = UiTransferMailbox_GetReceivedBuffer();
       receivedDwords = (uint32_t *)received.buffer;
       if (!received.unavailable) {
         if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
@@ -1602,8 +1602,8 @@ ScenarioCatalog_RefreshSelectedRecordField50DisplayId
    executable data remain unchanged.
    Local calls: FrontendScenarioSession_LoadOrRequestLevelAsset,
    FrontendScenarioSession_LoadOrRequestCampaignBundle.
-   Cross-module calls: UiSelectableGroup_NoneVisibleSelectedCf [ui/controls/lists], Resource_Release
-   [assets/resource/runtime], UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiSelectableGroup_NoneVisibleSelected [ui/controls/lists], Resource_Release
+   [assets/resource/runtime], UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands], WidePath_CombineDirectoryAndLeaf
    [core/text/path], WidePath_SetExtensionCode [core/text/path].
 */
@@ -1620,7 +1620,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
   /* selectionControl is the frontend template's gameSelectStartButton (+0x1CF4); the offsets below are
      relative to it: +0x60 loadGameTabButton, +0xC0 singleGameTabButton, +0x120 campaignsTabButton,
      +0x2C8 savedGamesList, +0x490 missionsList, +0x670 campaignsList. */
-  selectedGroup = UiSelectableGroup_NoneVisibleSelectedCf(3,
+  selectedGroup = UiSelectableGroup_NoneVisibleSelected(3,
       THANDOR_UI_AT(selectionControl,0x60) /* loadGameTabButton */,
       THANDOR_UI_AT(selectionControl,0xc0) /* singleGameTabButton */,
       THANDOR_UI_AT(selectionControl,0x120) /* campaignsTabButton */);
@@ -1631,7 +1631,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
     if (selectedGroup.controlIndexOrCount < 2) {
       Resource_Release(g_FrontendLoadedCampaignAsset);
       g_FrontendLoadedCampaignAsset = (void *)0x0;
-      selectedRow = UiPointerList_GetSelectedIndexVariantBCf
+      selectedRow = UiPointerList_GetSelectedIndexVariantB
                         ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x490) /* missionsList */);
       selectedRowIndex = selectedRow.rowIndex;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -1646,7 +1646,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
     }
     Resource_Release(g_FrontendLoadedCampaignAsset);
     g_FrontendLoadedCampaignAsset = (void *)0x0;
-    selectedRow = UiPointerList_GetSelectedIndexVariantBCf
+    selectedRow = UiPointerList_GetSelectedIndexVariantB
                       ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x670) /* campaignsList */);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
         SESSION_NETWORK_ROLE_LOCAL) {
@@ -1662,7 +1662,7 @@ FrontendScenarioSelection_ActivateSelectedRecord
        (int)((UiListControl *)THANDOR_UI_AT(selectionControl,0x2c8) /* savedGamesList */)->rowSlots;
   Resource_Release(g_FrontendLoadedCampaignAsset);
   g_FrontendLoadedCampaignAsset = (void *)0x0;
-  selectedRow = UiPointerList_GetSelectedIndexVariantBCf
+  selectedRow = UiPointerList_GetSelectedIndexVariantB
                     ((UiPointerListControl *)THANDOR_UI_AT(selectionControl,0x2c8) /* savedGamesList */);
   WidePath_CombineDirectoryAndLeaf
             (&g_FrontendScenarioPathScratchUtf16,

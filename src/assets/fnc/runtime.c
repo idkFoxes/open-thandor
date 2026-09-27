@@ -15,7 +15,7 @@
    Purpose: Checks the exact little-endian fnc signature. CF clear returns header->bindingMode in EAX; CF set
    returns error code 0x62 when the signature is invalid.
 */
-uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module)
+uint32_t FncModule_GetBindingMode(FncModuleHeader *module)
 
 {
   if (module->magic == ASSET_MAGIC_FNC) {
@@ -29,7 +29,7 @@ uint32_t FncModule_GetBindingModeCf(FncModuleHeader *module)
    Purpose: Validates the fnc signature, copies the complete image into linear memory, relocates export-table dword
    offsets, and binds seven host services when bindingMode is zero. CF reports failure.
 */
-FncModuleLoadResult FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModule)
+FncModuleLoadResult FncModule_LoadAndRelocate(FncModuleHeader *serializedModule)
 
 {
   ArenaFreeProc *arenaFreeProc;
@@ -95,7 +95,7 @@ FncModuleLoadResult FncModule_LoadAndRelocateCf(FncModuleHeader *serializedModul
    unchanged.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FncModule_GetExportByIndexCf(FncExportIndex exportIndex,FncModuleHeader *module)
+FncModule_GetExportByIndex(FncExportIndex exportIndex,FncModuleHeader *module)
 
 {
   StatusResult successResult;

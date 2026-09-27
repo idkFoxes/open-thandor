@@ -25,7 +25,7 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
 
 /* 0x0054F680 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
+FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg);
 
@@ -39,10 +39,10 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
           (int playerRuntimeId,uint32_t callbackArg1,uint32_t callbackArg2,uint32_t callbackArg3);
 
 /* 0x0054E230 */
-bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931Cf(void);
+bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(void);
 
 /* 0x0054E470 */
-bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(void);
+bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(void);
 
 /* 0x0054E4E0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -70,7 +70,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(vo
 
 /* 0x004AF170 */
 MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
-UiTransferMailbox_GetReceivedBufferCf(void);
+UiTransferMailbox_GetReceivedBuffer(void);
 
 /* 0x004AF1C0 */
 void __thandor_preserve_eax_edx UiTransferMailbox_RandomizeSequenceToken(void);
@@ -85,7 +85,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
 void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void *frontendRuntime);
 
 /* 0x0054FBA0 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontendCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontend(void);
 
 /* 0x005722C0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -96,7 +96,7 @@ FrontendTransfer_HandleSyncRequest10021AndReply10023
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandRecords(void);
 
 /* 0x00572AA0 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(void);
 
 /* 0x00407160 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -121,7 +121,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
 
 /* 0x004AEF70 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTransfer_StagePacketAndSendCf
+UiTransfer_StagePacketAndSend
           (UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet);
 
 #endif /* THANDOR_NETWORK_PROTOCOL_TRANSFER_H */

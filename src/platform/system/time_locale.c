@@ -39,7 +39,7 @@ void __thandor_preserve_eax TimerSystem_Shutdown(void)
    Purpose: Detects CPU features, installs nine locale/system services, queries LOCALE_USER_DEFAULT fields through
    GetLocaleInfoA, converts locale strings to UTF-16, and records date/time ordering flags.
    Local calls: Locale_ParseUnsignedDecimalAscii.
-   Cross-module calls: CPU_DetectFeatures [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf
+   Cross-module calls: CPU_DetectFeatures [platform/bootstrap/runtime], Text_CopyNarrowToUtf16
    [core/text/string].
 */
 void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
@@ -59,21 +59,21 @@ void __thandor_void_preserve_eax_ecx_edx Locale_Init(void)
   g_LocaleSystemState.languageIdentifierDigits =
        Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0xe,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.decimalSeparator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.decimalSeparator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0xf,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.thousandsSeparator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.thousandsSeparator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x10,(LPSTR)g_LocaleInfoScratch,0x10);
   g_LocaleSystemState.negativeNumberFormat = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x51,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.numberGrouping,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.numberGrouping,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x1d,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.dateSeparator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.dateSeparator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x1e,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.timeSeparator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.timeSeparator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x28,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.amDesignator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.amDesignator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x29,(LPSTR)g_LocaleInfoScratch,0x10);
-  Text_CopyNarrowToUtf16Cf(0x10,g_LocaleSystemState.pmDesignator,g_LocaleInfoScratch);
+  Text_CopyNarrowToUtf16(0x10,g_LocaleSystemState.pmDesignator,g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x22,(LPSTR)g_LocaleInfoScratch,0x10);
   g_LocaleSystemState.longDateOrder = Locale_ParseUnsignedDecimalAscii(g_LocaleInfoScratch);
   GetLocaleInfoA(0x400,0x23,(LPSTR)g_LocaleInfoScratch,0x10);

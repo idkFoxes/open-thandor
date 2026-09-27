@@ -197,8 +197,8 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboard_DispatchPendingEvents(void)
       }
     }
     if ((dispatchToRoot) && (g_UiRootNode != (UiRootNode *)0xffffffff) &&
-       (g_UiRootNode->callbacks->keyboardFallbackCf != (UiRootKeyboardFallbackCf *)0x0)) {
-      g_UiRootNode->callbacks->keyboardFallbackCf(keyboardStateMask,keyCode,g_UiRootNode);
+       (g_UiRootNode->callbacks->keyboardFallback != (UiRootKeyboardFallback *)0x0)) {
+      g_UiRootNode->callbacks->keyboardFallback(keyboardStateMask,keyCode,g_UiRootNode);
     }
   }
   g_SpinLockReleaseAndInvoke
@@ -273,11 +273,11 @@ void __thandor_void_preserve_eax_ecx_edx UiKeyboardFocus_AcquireIfNone(UiNodeBas
 /* Address: 0x004B4420.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B3EF0[12]@004B3EF0.
-   Local calls: UiNode_DefaultKeyboardEventMoveFocusNextCf.
+   Local calls: UiNode_DefaultKeyboardEventMoveFocusNext.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRangeSliderControl_HandleKeyboardCf
+UiRangeSliderControl_HandleKeyboard
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiRangeSliderControl *control)
 
 {
@@ -287,7 +287,7 @@ UiRangeSliderControl_HandleKeyboardCf
   bool delegatedResult;
 
   if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* sliderFlags bit 0 selects the key pair (0x10019/0x10011 instead of 0x10014/0x10016). */
@@ -314,7 +314,7 @@ UiRangeSliderControl_HandleKeyboardCf
     }
   }
   else {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   control->value = adjustedSliderValue;
@@ -330,11 +330,11 @@ UiRangeSliderControl_HandleKeyboardCf
 /* Address: 0x004B9CB0.
    Ownership: ui/controls/input.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9530[12]@004B9530.
-   Local calls: UiNode_DefaultKeyboardEventMoveFocusNextCf.
+   Local calls: UiNode_DefaultKeyboardEventMoveFocusNext.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSingleLineTextControl_ForwardKeyboardEventToChildCf
+UiSingleLineTextControl_ForwardKeyboardEventToChild
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSingleLineTextControl *control)
 
 {
@@ -349,7 +349,7 @@ UiSingleLineTextControl_ForwardKeyboardEventToChildCf
     }
   }
   else if (keyCode == 0x10002) {
-    eventResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,0x10002,&control->base);
+    eventResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,0x10002,&control->base);
     return eventResult;
   }
   if (childControl != (UiNodeBase *)0x0) {
@@ -1620,7 +1620,7 @@ UiNode_ForwardPointerWheelToParent
    so the focus move its name suggests never happens.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiNode_DefaultKeyboardEventMoveFocusNextCf
+UiNode_DefaultKeyboardEventMoveFocusNext
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
 
 {

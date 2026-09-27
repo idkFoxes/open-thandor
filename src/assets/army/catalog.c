@@ -16,22 +16,22 @@
    forwards the current EAX ID into the wrapped-next search. EAX and CF remain the result channel. Stock ARM
    ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and
    does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf,
-   ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200,
+   ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId)
+ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
   ArmyAssetIdSearchResult searchResult;
   ArmyAssetIdSearchResult normalizedResult;
   
-  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(recordId);
+    searchResult = ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(recordId);
   }
   normalizedResult.armyAssetId = searchResult.armyAssetId;
   normalizedResult.notFound = searchResult.notFound;
@@ -45,10 +45,10 @@ ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog reco
    predicate, with the verified reverse-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200, ArmyAssetRegistry_HasIdWithoutFlag0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -58,14 +58,14 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId - 1;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -80,10 +80,10 @@ ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId)
    predicate, with the verified forward-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf, ArmyAssetRegistry_HasIdWithoutFlag0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlag0100Without0200, ArmyAssetRegistry_HasIdWithoutFlag0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -93,14 +93,14 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId + 1;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -114,17 +114,17 @@ ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId)
    Purpose: Finds the previous ID in the flag-0x0100-set and flag-0x0200-clear class, wrapping signed underflow to
    0x1000. EAX and CF remain intact. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered
    stepping preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200, ArmyAssetRegistry_HasIdWithFlag0100Without0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
+ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
     if (broaderAbsent) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
@@ -134,7 +134,7 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
     if (!searchResult.notFound) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
@@ -152,21 +152,21 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
    current EAX ID into the wrapped-next search. EAX and CF remain the result channel. Stock ARM ledgers contain 675
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_FindNextFlags0100And0200Wrapped.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId)
+ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId)
 
 {
   bool idAbsent;
   ArmyAssetIdSearchResult searchResult;
   ArmyAssetIdSearchResult normalizedResult;
   
-  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+  idAbsent = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
   searchResult.notFound = idAbsent;
   searchResult.armyAssetId = recordId;
   if (idAbsent) {
-    searchResult = ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(recordId);
+    searchResult = ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(recordId);
   }
   normalizedResult.armyAssetId = searchResult.armyAssetId;
   normalizedResult.notFound = searchResult.notFound;
@@ -180,10 +180,10 @@ ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordI
    predicate, with the verified reverse-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_HasIdWithFlag0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -193,14 +193,14 @@ ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId + 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId - 1;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -215,10 +215,10 @@ ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId)
    predicate, with the verified forward-gap fallback. EAX and CF remain intact. Stock ARM ledgers contain 675
    records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay
    class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200Cf, ArmyAssetRegistry_HasIdWithFlag0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlags0100And0200, ArmyAssetRegistry_HasIdWithFlag0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId)
 
 {
   ArmyAssetId baseId;
@@ -228,14 +228,14 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
   while( true ) {
     baseId = recordId;
     stepResult.armyAssetId = baseId - 1;
-    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(stepResult.armyAssetId);
+    stepResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(stepResult.armyAssetId);
     if (!stepResult.notFound) break;
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(stepResult.armyAssetId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(stepResult.armyAssetId);
     recordId = stepResult.armyAssetId;
     if (broaderAbsent) {
       do {
         baseId = baseId + 1;
-        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(baseId);
+        broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(baseId);
         recordId = baseId;
       } while (!broaderAbsent);
     }
@@ -249,17 +249,17 @@ ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId)
    Purpose: Finds the previous ID with flags 0x0100 and 0x0200 set, wrapping signed underflow to 0x1000. EAX and CF
    remain intact. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping preserves the
    32-bit registry key and does not imply gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlag0200, ArmyAssetRegistry_HasIdWithFlags0100And0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
+ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
   for (;;) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
     if (broaderAbsent) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
@@ -269,7 +269,7 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
   }
   /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
     if (!searchResult.notFound) break;
     recordId = recordId - 1;
     if ((int)recordId < 0) {
@@ -331,16 +331,16 @@ StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetH
    Ownership: assets/army/catalog.
    Purpose: Resolves an army asset by registry identifier and returns success only when the asset is present and
    its verified enabled flag is set.
-   Local calls: ArmyAssetRegistry_FindByIdCf.
+   Local calls: ArmyAssetRegistry_FindById.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
+ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId)
 
 {
   bool missingOrDisabled;
   ArmyAssetLookupResult registryLookup;
   
-  registryLookup = ArmyAssetRegistry_FindByIdCf(recordId);
+  registryLookup = ArmyAssetRegistry_FindById(recordId);
   missingOrDisabled = registryLookup.notFound;
   if (!missingOrDisabled) {
     missingOrDisabled = (registryLookup.recordOrError[1].selectionDetailTemplateVariantIndex & 1) == 0;
@@ -355,11 +355,11 @@ ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId)
    unlocked linked definition with the required nonzero state and flag overlap. It is distinct from
    FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
    ModelDefinitionId, and TechnologyId domains.
-   Local calls: ArmyAssetRegistry_FindByIdCf.
-   Cross-module calls: ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf [assets/model/definitions].
+   Local calls: ArmyAssetRegistry_FindById.
+   Cross-module calls: ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction [assets/model/definitions].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
+ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord)
 
@@ -372,10 +372,10 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
   linksRemaining = 0x10;
   do {
     if (armyAssetRecord[3].byteSize != 0) {
-      registryLookup = ArmyAssetRegistry_FindByIdCf(armyAssetRecord[3].byteSize);
+      registryLookup = ArmyAssetRegistry_FindById(armyAssetRecord[3].byteSize);
       definitionNode = registryLookup.recordOrError;
       if ((!registryLookup.notFound) && ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-        technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+        technologyLocked = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                           (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode);
         if ((!technologyLocked) &&
            ((definitionNode[1].rootNodeOffsetOrPointer != 0 &&
@@ -399,7 +399,7 @@ ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
    Ownership: assets/army/catalog.
    Purpose: Clears cached ArmyAsset preview textures, frees existing cache entries, and refreshes the two selected
    preview resources.
-   Local calls: ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf.
+   Local calls: ArmyAssetRegistry_ResolveOrCreatePreviewTexture.
 */
 void __thandor_void_preserve_eax_ecx
 ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedArmyAssetRegistryId)
@@ -421,9 +421,9 @@ ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected(uint32_t selectedAr
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
   } while (registrySlotsRemaining != 0);
-  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandModeGArmyAssetId);
   *(uint32_t *)(selectedArmyAssetRegistryId + 0x9d24) = resolvedTexture;
-  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandMode4ArmyAssetId);
+  resolvedTexture = ArmyAssetRegistry_ResolveOrCreatePreviewTexture(g_UiCommandMode4ArmyAssetId);
   *(uint32_t *)(selectedArmyAssetRegistryId + 0x9ddc) = resolvedTexture;
   return;
 }
@@ -434,7 +434,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
   ModelDefinitionResult selected;
   uint32_t sum;
   uint32_t i;
-  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
   sum = *(uint32_t *)((uint8_t *)selected.modelDefinition + 0x60);
   for (i = 0; i < *(uint32_t *)(node + 8); i++) {
@@ -454,7 +454,7 @@ static uint32_t ArmyAssetHierarchy_SumArmourFrom(FactionRuntimeIndex factionInde
    parameters: p3 definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention, complete
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
+   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
 */
 uint32_t __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedArmour
@@ -473,7 +473,7 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
   EnergyDemandQ4 sum;
   uint32_t childCount;
   uint32_t i;
-  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+  selected = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                        (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node);
   sum = *(EnergyDemandQ4 *)((uint8_t *)selected.modelDefinition + 0x18c);
   childCount = *(uint32_t *)(node + 8);
@@ -495,7 +495,7 @@ static EnergyDemandQ4 ArmyAssetHierarchy_SumEnergyFrom(FactionRuntimeIndex facti
    VariableStorage serialization, function bytes, control flow, globals, locals, and executable data remain
    unchanged. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE] Sums faction-unlocked MDL +0x18C values across the
    model hierarchy.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
+   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
 */
 EnergyDemandQ4 __thandor_eax_preserve_ecx_edx
 ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
@@ -514,22 +514,22 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
    valid record and then wrapping the desired search at 0x1000. EAX and CF remain intact. Stock ARM ledgers contain
    675 records and 326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply
    gameplay class, tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200Cf, ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithoutFlag0200, ArmyAssetRegistry_HasIdWithFlag0100Without0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
+ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200(recordId);
     if (broaderAbsent) break;
     recordId = recordId + 1;
   }
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200(recordId);
     if (!searchResult.notFound) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
@@ -547,22 +547,22 @@ ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId)
    then wrapping the desired search at 0x1000. EAX and CF remain intact. Stock ARM ledgers contain 675 records and
    326 unique ids; flag-filtered stepping preserves the 32-bit registry key and does not imply gameplay class,
    tier, faction, or direction.
-   Local calls: ArmyAssetRegistry_HasIdWithFlag0200Cf, ArmyAssetRegistry_HasIdWithFlags0100And0200Cf.
+   Local calls: ArmyAssetRegistry_HasIdWithFlag0200, ArmyAssetRegistry_HasIdWithFlags0100And0200.
 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
+ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId)
 
 {
   bool broaderAbsent;
   ArmyAssetIdSearchResult searchResult;
   
   while( true ) {
-    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
+    broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200(recordId);
     if (broaderAbsent) break;
     recordId = recordId + 1;
   }
   while( true ) {
-    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
+    searchResult.notFound = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200(recordId);
     if (!searchResult.notFound) break;
     recordId = recordId + 1;
     if (0xfff < recordId) {
@@ -581,8 +581,8 @@ ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId)
    recursively prepares nested model references and child offsets. CF status and EAX errors are preserved. Role:
    Registers an army/placeable record and resolves its root model definition. Inputs: Serialized army asset record
    with model-definition ID/offset. Outputs: Army/placeable definition linked to a ModelDefinition.
-   Local calls: ArmyAssetRegistry_FindByIdCf.
-   Cross-module calls: ModelDefinitionRegistry_FindBuildMetricTupleByIdCf [assets/model/definitions].
+   Local calls: ArmyAssetRegistry_FindById.
+   Cross-module calls: ModelDefinitionRegistry_FindBuildMetricTupleById [assets/model/definitions].
 */
 /* Relocates one node of an army record's model tree and all of its children (offsets 0x0C + 4*i,
    count at +0x08) against assetBase, adding each node's model-definition build metrics (looked up by
@@ -596,7 +596,7 @@ static uint32_t ArmyAssetRecord_RelocateModelTree
   uint32_t error = 0;
   uint32_t childError;
 
-  metrics = ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(*(PckModelDefinitionIdCatalog *)(node + 0x20));
+  metrics = ModelDefinitionRegistry_FindBuildMetricTupleById(*(PckModelDefinitionIdCatalog *)(node + 0x20));
   if (metrics.notFound) {
     error = (uint32_t)metrics.metric0;
   }
@@ -629,7 +629,7 @@ ArmyAssetRecord_RegisterAndRelocate
   ArmyAssetLookupResult existing;
   StatusResult status;
 
-  existing = ArmyAssetRegistry_FindByIdCf(record->registryId);
+  existing = ArmyAssetRegistry_FindById(record->registryId);
   if (!existing.notFound) {
     g_WideNumberFormatUtf16
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,record->registryId,g_PackageLastErrorPath);
@@ -663,10 +663,10 @@ ArmyAssetRecord_RegisterAndRelocate
 /* Address: 0x00571D90.
    Ownership: assets/army/catalog.
    Purpose: Looks up an ArmyAsset registry record by id and returns its cached preview texture; if absent it
-   creates and caches the preview through ArmyRuntime_RenderPreviewTextureCf.
-   Cross-module calls: ArmyRuntime_RenderPreviewTextureCf [gameplay/army/runtime].
+   creates and caches the preview through ArmyRuntime_RenderPreviewTexture.
+   Cross-module calls: ArmyRuntime_RenderPreviewTexture [gameplay/army/runtime].
 */
-uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetRegistryId)
+uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId)
 
 {
   ArmyAssetRecordPrefix *registeredRecord;
@@ -690,7 +690,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetReg
     if (399 < armyAssetRegistryId) {
       factionIndex = 0;
     }
-    renderResult = ArmyRuntime_RenderPreviewTextureCf
+    renderResult = ArmyRuntime_RenderPreviewTexture
                       (*(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        *(GraphicsPixelDimension *)(g_InGameRuntimeRoot->opaque9A74_9B4B + 0x5c),
                        factionIndex,armyAssetRegistryId,&g_InGameRuntimeRoot->worldRuntime0A30);
@@ -712,7 +712,7 @@ uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetReg
    does not imply gameplay class, tier, faction, or direction.
 */
 ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
+ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId)
 
 {
   ArmyAssetRecordPrefix *matchedRecord;
@@ -750,7 +750,7 @@ ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId)
    class, tier, faction, or direction.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -778,7 +778,7 @@ ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId)
    absent. EAX preserves recordId. Stock ARM ledgers contain 675 records and 326 unique ids; flag-filtered stepping
    preserves the 32-bit registry key and does not imply gameplay class, tier, faction, or direction.
 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId)
+uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -808,7 +808,7 @@ uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(
    or direction.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;
@@ -839,7 +839,7 @@ ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId)
    direction.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId)
+ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId)
 
 {
   int registrySlotsRemaining;

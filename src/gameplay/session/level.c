@@ -17,7 +17,7 @@
    [assets/package/runtime].
 */
 EndingMoviePathResult __thandor_eax_cf_preserve_ecx_edx
-LevelAsset_PrepareEndingMoviePathCf(uint16_t *currentLevelPath,LevelAssetHeader *asset)
+LevelAsset_PrepareEndingMoviePath(uint16_t *currentLevelPath,LevelAssetHeader *asset)
 
 {
   int producerNameLeadChars;
@@ -80,7 +80,7 @@ LevelAsset_PrepareEndingMoviePathCf(uint16_t *currentLevelPath,LevelAssetHeader 
 */
 
 LevelDefaultLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
+InGameLevelRuntime_LoadResourcesAfterDefaultReset
           (LevelAssetRuntimeImagePrefix370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
@@ -288,13 +288,13 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
             resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
             if (0x1ff < g_InGameLoadedResourcePointerCount)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
             if (loadEntryResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -303,7 +303,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
             resultOrPointer = (void *)statusResult.valueOrError;
             if (statusResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathOrPlacementCursor = pathOrPlacementCursor + 0x20;
@@ -317,13 +317,13 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
             resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
             if (0x1ff < g_InGameLoadedResourcePointerCount)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
             if (loadEntryResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -332,7 +332,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
             resultOrPointer = (void *)statusResult.valueOrError;
             if (statusResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
             ;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathOrPlacementCursor = pathOrPlacementCursor + 0x20;
@@ -350,13 +350,13 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
               resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
               if (0x1ff < g_InGameLoadedResourcePointerCount)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
               if (loadEntryResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -365,7 +365,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
               resultOrPointer = (void *)statusResult.valueOrError;
               if (statusResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathOrPlacementCursor = pathOrPlacementCursor + 0x20;
@@ -380,13 +380,13 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
               resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
               if (0x1ff < g_InGameLoadedResourcePointerCount)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               loadEntryResult = Package_LoadEntry(pathOrPlacementCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
               if (loadEntryResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -395,7 +395,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
               resultOrPointer = (void *)statusResult.valueOrError;
               if (statusResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
               ;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathOrPlacementCursor = pathOrPlacementCursor + 0x20;
@@ -433,7 +433,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                                       ((levelImage->header).pathOffsets.armyTextureBasePathOffset - 0x28));
                     mutableBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathOffsets.effectTextureBasePathOffset - 0x28));
-                    armyInitResult = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
+                    armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,graphicsBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
                     if (!armyInitResult.failed) {
                       g_MoviePlaybackBaseFrameGroup = 3;
@@ -505,7 +505,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                             if (g_GameFactionRuntimeImage.tail.factionLifecycleStates
                                 [*(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 2)] ==
                                 FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-                              armyCreateResult = ArmyRuntime_CreateInstanceFromAssetCf
+                              armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
                                                  (6,*(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 8),
                                                   *(PckArmyAssetIdCatalog *)(pathOrPlacementCursor + 6),
                                                   *(Q12 *)((AssetProducerSourceNames *)(pathOrPlacementCursor + 4)
@@ -515,7 +515,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                               resultOrPointer = (void *)armyCreateResult.armyRuntimeOrError;
                               if (armyCreateResult.failed)
                               goto 
-                              InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus
+                              InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus
                               ;
                             }
                             pathOrPlacementCursor = pathOrPlacementCursor + 0x10;
@@ -556,7 +556,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                             countOrPackedValue = findEntryResult.matchCount;
                             soundDirectoryRecordSizeBytes = findEntryResult.recordSizeOrError;
                             if (findEntryResult.failed) {
-                              enumerationResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+                              enumerationResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                                                  (FILESYSTEM_ENUMERATE_FILES,0xffffffff,
                                                   outputCapacityBytes,resultOrPointer,assetPath);
                               countOrPackedValue = enumerationResult.entryCount;
@@ -744,7 +744,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                                       if ((registryArmyDefinition != (ArmyAssetRecordPrefix *)0x0) &&
                                          ((registryArmyDefinition[1].selectionDetailTemplateVariantIndex &
                                           1) != 0)) {
-                                        modelLookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf
+                                        modelLookupResult = ModelDefinitionRegistry_FindByIdWithError
                                                            (*(PckModelDefinitionIdCatalog *)
                                                              (registryArmyDefinition->
                                                               rootNodeOffsetOrPointer + 0x20));
@@ -787,7 +787,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
                                               else if (
                                                   g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.
                                                   classCommand[counterOrClassId] ==
-                                                  ArmyRuntime_ClassCommandHandlerGroupACf) {
+                                                  ArmyRuntime_ClassCommandHandlerGroupA) {
                                                 flagsOrRelationMask = flagsOrRelationMask | 1;
                                               }
                                             }
@@ -927,7 +927,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf
       }
     }
   }
-InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFailureStatus:
+InGameLevelRuntime_LoadResourcesAfterDefaultReset_ReturnCurrentResourceLoadFailureStatus:
   failureResult.failed = true;
   failureResult.errorOrValue = (uint32_t)resultOrPointer;
   return failureResult;
@@ -946,7 +946,7 @@ InGameLevelRuntime_LoadResourcesAfterDefaultResetCf_ReturnCurrentResourceLoadFai
 */
 
 LevelLoadResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
+InGameLevelRuntime_LoadResourcesAfterExternalTables
           (FrontendLoadedLevelRuntimeImage370 *levelImage,WorldRuntimeContext *worldRuntime)
 
 {
@@ -1046,13 +1046,13 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
             resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
             if (0x1ff < g_InGameLoadedResourcePointerCount)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
             if (loadEntryResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -1061,7 +1061,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
             resultOrPointer = (void *)statusResult.valueOrError;
             if (statusResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + 0x20;
@@ -1075,13 +1075,13 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
             resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
             if (0x1ff < g_InGameLoadedResourcePointerCount)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             loadEntryResult = Package_LoadEntry(pathTableCursor);
             resultOrPointer = loadEntryResult.bufferOrError;
             if (loadEntryResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             *loadedResourcePointerArray = resultOrPointer;
             g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -1090,7 +1090,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
             resultOrPointer = (void *)statusResult.valueOrError;
             if (statusResult.failed)
             goto 
-            InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+            InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
             ;
             MoviePlayback_AdvanceScheduledFrameAndTick();
             pathTableCursor = pathTableCursor + 0x20;
@@ -1108,13 +1108,13 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
               resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
               if (0x1ff < g_InGameLoadedResourcePointerCount)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
               if (loadEntryResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -1123,7 +1123,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
               resultOrPointer = (void *)statusResult.valueOrError;
               if (statusResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathTableCursor = pathTableCursor + 0x20;
@@ -1138,13 +1138,13 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
               resultOrPointer = (InGameLevelConditionStorageView800 *)0x3a;
               if (0x1ff < g_InGameLoadedResourcePointerCount)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               loadEntryResult = Package_LoadEntry(pathTableCursor);
               resultOrPointer = loadEntryResult.bufferOrError;
               if (loadEntryResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               *loadedResourcePointerArray = resultOrPointer;
               g_InGameLoadedResourcePointerCount = g_InGameLoadedResourcePointerCount + 1;
@@ -1153,7 +1153,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
               resultOrPointer = (void *)statusResult.valueOrError;
               if (statusResult.failed)
               goto 
-              InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus
+              InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus
               ;
               MoviePlayback_AdvanceScheduledFrameAndTick();
               pathTableCursor = pathTableCursor + 0x20;
@@ -1191,7 +1191,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
                                       ((levelImage->header).pathState.armyTextureBasePathOffset - 0x28));
                     mutableBasePath = (uint16_t *)((levelImage->header).common.buildMetadata.assetRelativeAddressAnchor28 +
                                       ((levelImage->header).pathState.effectTextureBasePathOffset - 0x28));
-                    armyInitResult = ArmyRuntime_InitializePoolAndGraphicsCf(worldRuntime,graphicsBasePath);
+                    armyInitResult = ArmyRuntime_InitializePoolAndGraphics(worldRuntime,graphicsBasePath);
                     resultOrPointer = (void *)armyInitResult.errorOrValue;
                     if (!armyInitResult.failed) {
                       g_MoviePlaybackBaseFrameGroup = 3;
@@ -1326,7 +1326,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
                                         countOrPackedValue = findEntryResult.matchCount;
                                         soundDirectoryRecordSizeBytes = findEntryResult.recordSizeOrError;
                                         if (findEntryResult.failed) {
-                                          enumerationResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+                                          enumerationResult = (*g_FileSystemEnumerateDirectoryOrVolumeEntries
                                                    )(FILESYSTEM_ENUMERATE_FILES,0xffffffff,
                                                      outputCapacityBytes,resultOrPointer,assetPath);
                                           countOrPackedValue = enumerationResult.entryCount;
@@ -1603,7 +1603,7 @@ InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
       }
     }
   }
-InGameLevelRuntime_LoadResourcesAfterExternalTablesCf_ReturnCurrentResourceLoadFailureStatus:
+InGameLevelRuntime_LoadResourcesAfterExternalTables_ReturnCurrentResourceLoadFailureStatus:
   failureResult.failed = true;
   failureResult.errorOrValue = (uint32_t)resultOrPointer;
   return failureResult;
@@ -1680,12 +1680,12 @@ InGameLevelRuntime_ShutdownLoadedAssetResources(WorldRuntimeContext *worldRuntim
    Purpose: Copies the base LEV image, serializes live 0x20-byte placements, writes count/size and seven camera
    bookmark records, then writes the level asset. RET 4 and CF report status. No executable bytes changed. It
    serializes placements and the seven camera bookmarks from live world state. It is not the FLD writer.
-   Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], FileSystem_WriteBufferToPathCf
+   Cross-module calls: Package_LoadEntryIntoBuffer [assets/package/runtime], FileSystem_WriteBufferToPath
    [platform/filesystem/win32].
 */
 
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf(InGameLevelSaveWorldView *saveWorldView)
+InGameLevelRuntime_SaveLevelAssetImageFromWorldState(InGameLevelSaveWorldView *saveWorldView)
 
 {
   int offsetOrModelRuntime;
@@ -1810,7 +1810,7 @@ InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf(InGameLevelSaveWorldView 
     *(uint32_t *)(source + 0x2c8) = bookmarkZ;
     *(uint32_t *)(source + 0x2cc) = bookmarkMagnitude;
     *(uint32_t *)(source + 0x2d0) = bookmarkPackedHeadingPitch;
-    statusResult = FileSystem_WriteBufferToPathCf
+    statusResult = FileSystem_WriteBufferToPath
                       (*(FileIoByteCount *)(source + 4),source,g_LevelEndingMovieSourcePath);
     statusOrFieldValue = statusResult.valueOrError;
     if (!statusResult.failed) {

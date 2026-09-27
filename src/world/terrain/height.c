@@ -518,7 +518,7 @@ TerrainHeightDelta_ApplyWedge5(TerrainDirectionalScanStep scanStep,FieldGridCell
    Cross-module calls: FixedMath_Length3 [core/math/fixed].
 */
 TerrainRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-TerrainTriangle_IntersectRayDistanceCf
+TerrainTriangle_IntersectRayDistance
           (Q12 rayDeltaZQ12,Q12 gridRayDelta0Q12,Q12 gridRayDelta1Q12,Q12 rayOriginZQ12,
           Q12 cornerHeight0Q12,Q12 cornerHeight1Q12,Q12 cornerHeight2Q12,Q12 cornerHeight3Q12,
           Q12 cellLocalCoord1Q12,Q12 cellLocalCoord0Q12)
@@ -557,7 +557,7 @@ TerrainTriangle_IntersectRayDistanceCf
   }
   if ((((cornerHeight3Q12 <= lowestRayZQ12) && (cornerHeight2Q12 <= lowestRayZQ12)) &&
       (cornerHeight1Q12 <= lowestRayZQ12)) && (heightDeltaOrLowWord = cornerHeight2Q12, cornerHeight0Q12 <= lowestRayZQ12))
-  goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
   planeTermOrProductA = ((int64_t)(cornerHeight1Q12 - cornerHeight3Q12) * (int64_t)gridRayDelta0Q12 +
           (int64_t)(cornerHeight2Q12 - cornerHeight3Q12) * (int64_t)gridRayDelta1Q12) -
           ((int64_t)rayDeltaZQ12 << 0xc);
@@ -687,10 +687,10 @@ TerrainTriangle_IntersectRayDistanceCf
   edgeHighC = (int)((uint64_t)planeTermOrProductA >> 0x20);
   if (planeTermOrProductA < 0) {
     if ((-1 < planeTermOrProductB) || ((int)((edgeHighC - combinedHigh) - (uint32_t)((uint32_t)planeTermOrProductA < productLowOrDivisor)) < 0))
-    goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
+    goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
   }
   else if ((planeTermOrProductB < 0) || (-1 < (int)((edgeHighC - combinedHigh) - (uint32_t)((uint32_t)planeTermOrProductA < productLowOrDivisor))))
-  goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
   rayCrossLocal = (int64_t)gridRayDelta1Q12 * (int64_t)edgeHighOrCoord1 -
           (int64_t)edgeHighOrCoord0 * (int64_t)gridRayDelta0Q12;
   edgeHighC = (int)(rayCrossLocal >> 0x20);
@@ -718,10 +718,10 @@ TerrainTriangle_IntersectRayDistanceCf
            edgeSumLowA >> 0x14) + (uint32_t)CARRY4(edgeSumLowB,heightDeltaOrLowWord);
   if (edgeHighD < 0) {
     if (-1 < planeTermOrProductB)
-    goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
+    goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
   }
   else if (planeTermOrProductB < 0)
-  goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
+  goto TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet;
   heightDeltaOrLowWord = cornerHeight1Q12 - cornerHeight0Q12;
   if ((int)heightDeltaOrLowWord < 0) {
     planeTermOrProductB = (uint64_t)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
@@ -798,7 +798,7 @@ TerrainTriangle_IntersectRayDistanceCf
       return secondTriangleHit;
     }
   }
-TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet:
+TerrainTriangle_IntersectRayDistance_ReturnHeightOrEdgeRejectWithCarrySet:
   rejectResult.missed = true;
   rejectResult.distanceQ12 = heightDeltaOrLowWord;
   return rejectResult;
@@ -819,7 +819,7 @@ Q12 g_TerrainRayNextCoord1Q12;
    and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax
-TerrainRay_AdvanceGridTraversalCf
+TerrainRay_AdvanceGridTraversal
           (Q12 rayEndCoord0Q12,Q12 rayEndCoord1Q12,Q12 rayStartCoord0Q12,Q12 rayStartCoord1Q12,
           FieldGridRowStrideBytes rowStrideBytes,FieldGridCell *currentCell,Q12 currentGridCoord0Q12
           ,Q12 currentGridCoord1Q12)

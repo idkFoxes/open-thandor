@@ -183,7 +183,7 @@ GraphicsTexture_ReleaseObjects(GraphicsTextureResource *texture);
 
 /* 0x004AC8E0 */
 TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_DecomposeSubresourceRegionsCf
+GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset);
 
 #endif /* THANDOR_GRAPHICS_RESOURCES_TEXTURE_H */

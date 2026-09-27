@@ -16,7 +16,7 @@
    masks, resolves blocked destinations, propagates weighted costs when needed, backtracks a reachable route, and
    delegates final overlapping-group route reconstruction.
    Local calls: GridPathCost_FindNearestUnblockedCell, EntityPathing_RebuildOverlappingGroupRoutes,
-   GridPathLine_TestHexSegmentClearCf, GridScratch_ResetTraversalFlagsAndCosts,
+   GridPathLine_TestHexSegmentClear, GridScratch_ResetTraversalFlagsAndCosts,
    GridPathCost_PropagateWeightedHexNeighbors, GridPathRegion_MarkUnreachableFromCell,
    GridPathCost_BacktrackBestHexRoute.
 */
@@ -143,7 +143,7 @@ EntityPathing_ResolveDestinationAndRebuildRoutes
   else {
     cellCoordOrStrideBytes = g_GridScratchWidth * 8;
     routeScratchCell = g_GridScratchPrimary + gridY * g_GridScratchWidth + startColumnOrScratch;
-    segmentClear = GridPathLine_TestHexSegmentClearCf
+    segmentClear = GridPathLine_TestHexSegmentClear
                        (g_GridPathHighCostMask,gridY,startColumnOrScratch,routeScratchCell,
                         g_GridScratchPrimary + referenceRow * g_GridScratchWidth + referenceColumn);
     if (segmentClear) {
@@ -636,10 +636,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
 /* Address: 0x00533E70.
    Ownership: world/pathing/grid.
    Purpose: Handles grid scratch test runtime pair reachability from world point carry-flag result.
-   Local calls: GridScratch_TestWorldPointReachabilityCf.
+   Local calls: GridScratch_TestWorldPointReachability.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestRuntimePairReachabilityFromWorldPointCf
+GridScratch_TestRuntimePairReachabilityFromWorldPoint
           (WorldPointXYQ12 *sourceWorldPoint,GridReachabilityRuntimePair8 *targetRuntimePair)
 
 {
@@ -648,7 +648,7 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
   
   targetModelDefinition = (ModelDefinitionRuntimeSemanticView280 *)
           (targetRuntimePair->armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-  unreachable = GridScratch_TestWorldPointReachabilityCf
+  unreachable = GridScratch_TestWorldPointReachability
                     (0x100 << ((uint8_t)targetModelDefinition->gridClassification260 & 0x1f) |
                      0x1000000 << ((uint8_t)targetModelDefinition->gridClassification264 & 0x1f),
                      sourceWorldPoint->worldYQ12,sourceWorldPoint->worldXQ12,
@@ -667,7 +667,7 @@ GridScratch_TestRuntimePairReachabilityFromWorldPointCf
    The fixed 0x180000-byte auxiliary allocation is the pointer queue now named g_GridPathCostQueueBegin..End.
 */
 GridScratchAllocResult __thandor_eax_cf_preserve_ecx_edx
-GridScratch_AllocateForFieldGridCf(FieldGridAsset *fieldGrid)
+GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
 
 {
   GridScratchCell *previousSecondaryScratchBuffer;
@@ -869,7 +869,7 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestProjectedCellMaskBandsCf
+GridScratch_TestProjectedCellMaskBands
           (Q12 worldYQ12,Q12 worldXQ12,uint8_t lowBandIndex,uint8_t highBandIndex)
 
 {
@@ -901,7 +901,7 @@ GridScratch_TestProjectedCellMaskBandsCf
    and restores the original scratch buffer.
    Local calls: GridScratch_CopyPrimaryToSecondary, GridScratch_SwapPrimarySecondary,
    EntityPathing_UpdateRouteSegment.
-   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_OverlapCf
+   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_Overlap
    [graphics/render/primitives], PriorityPairHeap_SiftUp [core/memory/allocator], PriorityPairHeap_SiftDown
    [core/memory/allocator], GridInfluence_SetLowDistanceBandsAroundWorldPoint [world/pathing/influence].
 */
@@ -966,7 +966,7 @@ EntityPathing_RebuildOverlappingGroupRoutes
     if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
       candidateEntity = ownerNode->runtimePayload;
       candidateRecord = (candidateEntity->common).ownership.definitionOrClassRecord;
-      masksOverlap = DepthBinMasks_OverlapCf
+      masksOverlap = DepthBinMasks_Overlap
                          (ownerNode->modelDepthBinMaskFar,ownerNode->modelDepthBinMaskNear,
                           secondMaskLow,secondMaskHigh);
       if ((masksOverlap) && (*(int *)((int)candidateRecord + 0x18) != 0)) {
@@ -1175,7 +1175,7 @@ GridFootprint_ClearTraversalFlagsAroundWorldPoint
    Purpose: Resolves one entity or group member route segment against the scratch grid, applies the active
    traversal masks, clips and bisects long world-space spans, publishes low-channel influence bands along the
    route, and updates the destination when it changes.
-   Local calls: GridPathCost_FindNearestUnblockedCell, GridPathLine_TestHexSegmentClearCf.
+   Local calls: GridPathCost_FindNearestUnblockedCell, GridPathLine_TestHexSegmentClear.
    Cross-module calls: GridInfluence_SetLowDistanceBandsAroundWorldPoint [world/pathing/influence],
    ArmyRuntime_SetPendingMoveTarget [gameplay/army/movement].
 */
@@ -1265,7 +1265,7 @@ EntityPathing_UpdateRouteSegment
   targetColumn = nearestCell.selectedColumn;
   targetRow = nearestCell.selectedRow;
   if ((nearestCell.relocated) ||
-     (segmentClear = GridPathLine_TestHexSegmentClearCf
+     (segmentClear = GridPathLine_TestHexSegmentClear
                          (0,startRowOrDeltaY,startColumnOrDeltaX,g_GridScratchPrimary + startRowOrDeltaY * g_GridScratchWidth + startColumnOrDeltaX,
                           g_GridScratchPrimary + (rowLimit - 2) * g_GridScratchWidth + (columnLimitOrRadius - 2)),
      targetColumn = columnLimitOrRadius - 2, targetRow = rowLimit - 2, segmentClear)) {
@@ -1332,10 +1332,10 @@ EntityPathing_UpdateRouteSegment
 /* Address: 0x00533D60.
    Ownership: world/pathing/grid.
    Purpose: Handles grid scratch test world point reachability carry-flag result.
-   Local calls: GridScratch_TestConnectedReachabilityRecursiveCfRegs.
+   Local calls: GridScratch_TestConnectedReachabilityRecursiveRegs.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestWorldPointReachabilityCf
+GridScratch_TestWorldPointReachability
           (uint32_t traversalMask,GraphicsWorldCoordinateQ12 sourceWorldYQ12,
           GraphicsWorldCoordinateQ12 sourceWorldXQ12,GraphicsWorldCoordinateQ12 targetWorldYQ12,
           GraphicsWorldCoordinateQ12 targetWorldXQ12)
@@ -1386,7 +1386,7 @@ GridScratch_TestWorldPointReachabilityCf
     clearCursor = clearCursor + 0x10;
     cellsRemaining = cellsRemaining + -0x10;
   } while (cellsRemaining != 0);
-  unreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+  unreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                     (traversalMask | 0x80000001,scratchWidth << 3,&targetCell->stateMask,
                      &sourceCell->stateMask);
   return unreachable;
@@ -1400,7 +1400,7 @@ GridScratch_TestWorldPointReachabilityCf
    through the engine register convention. Typed parameters: p3 targetRow→FieldGridCellCoordinate_V331, p4
    targetColumn→FieldGridCellCoordinate_V331. Calling convention, parameter storage, body bytes, control flow,
    globals, locals, and executable data remain unchanged. Typed parameters: p2 param_3→FieldGridRegionMask.
-   Local calls: GridPathLine_TestHexSegmentClearCf.
+   Local calls: GridPathLine_TestHexSegmentClear.
 */
 PathBacktrackResult __thandor_eax_cf_preserve_edx
 GridPathCost_BacktrackBestHexRoute
@@ -1455,7 +1455,7 @@ GridPathCost_BacktrackBestHexRoute
     if (bestNeighborCell == (GridScratchCell *)0x0) {
       break; /* local minimum: return the current cell */
     }
-    segmentClear = GridPathLine_TestHexSegmentClearCf
+    segmentClear = GridPathLine_TestHexSegmentClear
                       (callerBlockingMask,targetRow,targetColumn,startCell,bestNeighborCell);
     if (segmentClear) {
       if (currentCell == startCell) {
@@ -1603,7 +1603,7 @@ GridScratch_FloodFillConnectedCellsRegs
    Purpose: Handles grid scratch test connected reachability recursive carry-flag result register result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridScratch_TestConnectedReachabilityRecursiveCfRegs
+GridScratch_TestConnectedReachabilityRecursiveRegs
           (uint32_t traversalMask,uint32_t rowStrideBytes,uint32_t *currentCell,uint32_t *targetCell)
 
 {
@@ -1639,12 +1639,12 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
     secondRowCursor = (uint32_t *)(rowStrideBytes + (int)spanLeftBoundary);
     firstRowCursor = (uint32_t *)((int)spanLeftBoundary + (8 - rowStrideBytes));
     while (((*firstRowCursor & traversalMask) != 0 ||
-           (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+           (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                               (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
       firstRowCursor = firstRowCursor + 2;
       if ((uint32_t *)((int)currentCell - rowStrideBytes) < firstRowCursor) {
         while (((*secondRowCursor & traversalMask) != 0 ||
-               (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+               (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                                   (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
           secondRowCursor = secondRowCursor + 2;
           if ((uint32_t *)((int)((int)currentCell - rowStrideBytes) + rowStrideBytes * 2) <= secondRowCursor) {
@@ -1659,12 +1659,12 @@ GridScratch_TestConnectedReachabilityRecursiveCfRegs
   secondRowCursor = (uint32_t *)((int)spanLeftCell - rowStrideBytes);
   firstRowCursor = (uint32_t *)((int)spanLeftBoundary + rowStrideBytes);
   while (((*firstRowCursor & traversalMask) != 0 ||
-         (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+         (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                             (traversalMask,rowStrideBytes,firstRowCursor,targetCell), subRegionUnreachable))) {
     firstRowCursor = firstRowCursor + 2;
     if ((uint32_t *)((int)currentCell + rowStrideBytes) <= firstRowCursor) {
       while (((*secondRowCursor & traversalMask) != 0 ||
-             (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveCfRegs
+             (subRegionUnreachable = GridScratch_TestConnectedReachabilityRecursiveRegs
                                 (traversalMask,rowStrideBytes,secondRowCursor,targetCell), subRegionUnreachable))) {
         secondRowCursor = secondRowCursor + 2;
         if ((uint32_t *)((int)((int)currentCell + rowStrideBytes) + rowStrideBytes * -2) < secondRowCursor) {
@@ -2339,7 +2339,7 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
    startColumn→FieldGridCellCoordinate_V331.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GridPathLine_TestHexSegmentClearCf
+GridPathLine_TestHexSegmentClear
           (FieldGridRegionMask callerBlockingMask,FieldGridCellCoordinate startRow,
           FieldGridCellCoordinate startColumn,GridScratchCell *startCell,GridScratchCell *endCell)
 

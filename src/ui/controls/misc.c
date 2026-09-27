@@ -114,8 +114,8 @@ void __thandor_preserve_eax UiDisplayModeAction_UpdateColorDepthSelection(UiNode
 /* Address: 0x00424590.
    Ownership: ui/controls/misc.
    Purpose: Display-mode selection action callback.
-   Local calls: UiDisplaySettings_OpenAndPopulateModeSelectionCf.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_PopCf [ui/controls/layout],
+   Local calls: UiDisplaySettings_OpenAndPopulateModeSelection.
+   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_Pop [ui/controls/layout],
    UiFrame_ProcessAndPresentWithLockTransition [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -135,7 +135,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   modeHeight = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,int32_t);
   bitsPerPixel = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,int32_t);
   adapterIndex = FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,int32_t);
-  UiRootStack_PopCf(root);
+  UiRootStack_Pop(root);
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
   modeResult = g_GraphicsSetDisplayMode(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
@@ -158,7 +158,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
     root = root->previousRoot;
   } while (root != (UiRootNode *)0xffffffff);
   g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-  UiDisplaySettings_OpenAndPopulateModeSelectionCf();
+  UiDisplaySettings_OpenAndPopulateModeSelection();
   return;
 }
 
@@ -270,9 +270,9 @@ void __thandor_void_preserve_eax_ecx UiImageControl_TickHover(UiImageControl *co
    Ownership: ui/controls/misc.
    Purpose: Binary entry is anchored by g_CodePointerTable_00423588[0]@00423588. Display-mode selection action
    callback.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_PopCf [ui/controls/layout],
+   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_Pop [ui/controls/layout],
    UiFrame_ProcessAndPresentWithLockTransition [ui/controls/layout], UiRootStack_Relayout [ui/controls/layout],
-   UiRuntime_OpenFourValueDialogCf [ui/core/runtime].
+   UiRuntime_OpenFourValueDialog [ui/core/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
@@ -297,7 +297,7 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
   currentBitsPerPixel = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
             g_SoftwarePixelFormatConfig.blueBitCount;
   pendingAdapterIndex = DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,uint32_t);
-  UiRootStack_PopCf(root);
+  UiRootStack_Pop(root);
   if ((((pendingWidthOrCurrentHeight != g_FramebufferWidth) || (pendingHeightOrCurrentWidth != g_FramebufferHeight)) || (pendingBitsPerPixel != currentBitsPerPixel)) ||
      (pendingAdapterIndex != g_ActiveGraphicsAdapterIndex)) {
     g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
@@ -319,7 +319,7 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     }
     UiRootStack_Relayout();
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-    UiRuntime_OpenFourValueDialogCf(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
+    UiRuntime_OpenFourValueDialog(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
   }
   return;
 }
@@ -329,7 +329,7 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
    Ownership: ui/controls/misc.
    Purpose: Binary entry is anchored by g_CodePointerTable_00423588[14]@00423588. Display-mode selection action
    callback.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_PopCf [ui/controls/layout].
+   Cross-module calls: UiNode_GetRoot [ui/core/runtime], UiRootStack_Pop [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
@@ -342,7 +342,7 @@ UiDisplayModeAction_CancelAndRebuildPixelPacking(UiNodeBase *sourceNode)
   displaySettingsRoot = UiNode_GetRoot(sourceNode);
   colorBiasQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x84,int32_t);
   colorScaleQ16 = DISPLAY_SETTINGS_UI_FIELD(displaySettingsRoot,applyButton,0x88,int32_t);
-  UiRootStack_PopCf((UiRootNode *)sourceNode);
+  UiRootStack_Pop((UiRootNode *)sourceNode);
   g_SoftwareBuildPixelPackTables(colorScaleQ16,colorBiasQ16);
   return;
 }
@@ -814,10 +814,10 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
    Ownership: ui/controls/misc.
    Purpose: Opens and populates the display-mode selection UI; CF carries success/failure.
    Local calls: UiDisplayModeSelection_RefreshEnumeratedOptions.
-   Cross-module calls: UiRuntime_FormatSignedValues140And144 [ui/core/runtime], UiActionHandlers_SetPageCf
+   Cross-module calls: UiRuntime_FormatSignedValues140And144 [ui/core/runtime], UiActionHandlers_SetPage
    [ui/core/runtime], UiRootStack_Push [ui/controls/layout], UiRootStack_InvalidateAll [ui/controls/layout].
 */
-void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelectionCf(void)
+void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelection(void)
 
 {
   DisplayModeScratchWord adapterOption1Or4;
@@ -878,7 +878,7 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     ((UiSingleLineTextControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
          &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,uint16_t);
     UiRuntime_FormatSignedValues140And144(root);
-    UiActionHandlers_SetPageCf(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
+    UiActionHandlers_SetPage(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
     UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
@@ -1152,7 +1152,7 @@ UiImageControl_HitTestOpaque
    Purpose: Queries the enumerated graphics modes, suppresses or restores display-mode actions, updates the
    selected resolution and bit-depth groups, stores the selected tuple, and gates the apply action when the
    selection is unchanged.
-   Cross-module calls: GraphicsDisplayMode_IsEnumeratedCf [graphics/backend/directdraw],
+   Cross-module calls: GraphicsDisplayMode_IsEnumerated [graphics/backend/directdraw],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists],
    UiSelectableGroup_SelectExclusive [ui/controls/lists].
 */
@@ -1178,7 +1178,7 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
 #define DISPLAY_MODE_FIELD(offset) (*(uint32_t *)(root + (offset)))
   for (i = 0; i < 4; i++) {
     uint32_t depth = DISPLAY_MODE_FIELD(depthButtons[i] - 8);
-    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,depth,modeHeight,modeWidth);
+    enumerated = GraphicsDisplayMode_IsEnumerated(adapterIndex,depth,modeHeight,modeWidth);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x201 + i,displaySettingsRoot);
     }
@@ -1198,7 +1198,7 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
   for (i = 0; i < 8; i++) {
     uint32_t height = DISPLAY_MODE_FIELD(sizeButtons[i] - 0xc);
     uint32_t width = DISPLAY_MODE_FIELD(sizeButtons[i] - 8);
-    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapterIndex,bitsPerPixel,height,width);
+    enumerated = GraphicsDisplayMode_IsEnumerated(adapterIndex,bitsPerPixel,height,width);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x205 + i,displaySettingsRoot);
     }
@@ -1220,7 +1220,7 @@ UiDisplayModeSelection_RefreshEnumeratedOptions
       DISPLAY_SETTINGS_UI(displaySettingsRoot,resolutionOption1));
   for (i = 0; i < 5; i++) {
     uint32_t adapter = DISPLAY_MODE_FIELD(adapterButtons[i] - 8);
-    enumerated = GraphicsDisplayMode_IsEnumeratedCf(adapter,bitsPerPixel,modeHeight,modeWidth);
+    enumerated = GraphicsDisplayMode_IsEnumerated(adapter,bitsPerPixel,modeHeight,modeWidth);
     if (enumerated) {
       UiNodeList_SuppressActionId(0x20f + i,displaySettingsRoot);
     }

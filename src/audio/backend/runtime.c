@@ -179,7 +179,7 @@ SoundBackendDisabled_SetVoiceGains
    Ownership: audio/backend/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
-   Memory_ZeroDwords [core/memory/allocator], CosineDerivedLookupTables_InitCf [core/math/fixed].
+   Memory_ZeroDwords [core/memory/allocator], CosineDerivedLookupTables_Init [core/math/fixed].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
 
@@ -262,7 +262,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectSound_Init(void)
                       g_SoundIsVoicePlaying = DirectSound_IsVoicePlaying;
                       g_SoundQueryVoiceRegs = DirectSound_QueryVoiceRegsStub;
                       g_SoundSetVoiceGains = DirectSound_SetVoiceGains;
-                      CosineDerivedLookupTables_InitCf();
+                      CosineDerivedLookupTables_Init();
                       return StatusValue_Ok(0);
                     }
                     return StatusValue_Fail(registryAlloc.payloadOrError);

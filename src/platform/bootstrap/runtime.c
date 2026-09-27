@@ -271,7 +271,7 @@ bool __thandor_cf_preserve_eax_ecx_edx GameData_LoadExternalTables(void)
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns resolved
    function pointer in EAX.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 DynApiResolveResult __thandor_eax_cf_preserve_ecx_edx
 DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
@@ -283,7 +283,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   DynApiResolveResult successResult;
   DynApiResolveResult failureResult;
   
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)procedureName);
+  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)procedureName);
   resolvedProcedure = GetProcAddress(module,procedureName);
   if (resolvedProcedure != (FARPROC)0x0) {
     *destination = resolvedProcedure;
@@ -297,7 +297,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   for (; modulesRemaining != 0; modulesRemaining = modulesRemaining - 1) {
     if (module == moduleEntryCursor->module) {
       /* name the module in the error detail */
-      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
+      Text_CopyNarrowToUtf16(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)moduleEntryCursor->name);
       break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
@@ -312,7 +312,7 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Returns HMODULE in
    EAX.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 
@@ -322,7 +322,7 @@ DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
   DllLoadResult failureResult;
   uint32_t moduleSlotIndex;
   
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
+  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
   if ((g_BootstrapApiBindings[0].destination != (void **)dynapi_9) && (g_DynamicModuleCount < 0x10))
   {
     loadedModule = (HINSTANCE)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(moduleName);
@@ -345,7 +345,7 @@ DllLoadResult __thandor_eax_cf_preserve_ecx_edx DynDLL_Load(char *moduleName)
 /* Address: 0x00573CD0.
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 uint32_t DynDLL_Unload(char *moduleName)
 
@@ -366,14 +366,14 @@ uint32_t DynDLL_Unload(char *moduleName)
     moduleEntryCursor = moduleEntryCursor + 1;
   }
   /* module not loaded, or FreeLibrary failed */
-  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
+  Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)moduleName);
   return 0xf;
 }
 
 /* Address: 0x00573D40.
    Ownership: platform/bootstrap/runtime.
    Purpose: Handles bootstrap api resolve binding by destination.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
 BootstrapApi_ResolveBindingByDestination(void **destination)
@@ -389,7 +389,7 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
   remainingCount = g_DynamicModuleCount;
   for (; remainingCount != 0; remainingCount = remainingCount - 1) {
     if (destination == bindingCursor->destination) {
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)destination);
+      Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)destination);
       /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
          (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
          into the matching binding (MOV [ESI],EDX after POP ESI). The function is unreferenced. */
@@ -463,7 +463,7 @@ LRESULT __stdcall MainWindowProc(HWND hwnd,Win32WindowMessageId message,WPARAM w
         g_MouseDevice->lpVtbl->Unacquire(g_MouseDevice);
       }
       if (g_WindowDestroyDepth == 0) {
-        g_GraphicsBackendRefreshActiveAdapterCf();
+        g_GraphicsBackendRefreshActiveAdapter();
       }
     }
     else {
@@ -538,7 +538,7 @@ uint32_t __cdecl CPU_DetectFeatures(void)
 /* Address: 0x00573070.
    Ownership: platform/bootstrap/runtime.
    Purpose: Handles game run.
-   Local calls: GameRuntime_InitializeSpatialAudioAndRenderingCf, Game_LoadCoreAssets, Game_PlayIntroMovies.
+   Local calls: GameRuntime_InitializeSpatialAudioAndRendering, Game_LoadCoreAssets, Game_PlayIntroMovies.
    Cross-module calls: PersistentSettings_Load [core/settings/persistent], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent], Frontend_MainLoop
    [ui/frontend/runtime].
@@ -560,7 +560,7 @@ void __cdecl Game_Run(void)
   cursorFrameResult = g_GraphicsCursorSetFrame(0);
   fatalResult = FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
   dispatchCarry = fatalResult.failed;
-  renderingInitResult = GameRuntime_InitializeSpatialAudioAndRenderingCf();
+  renderingInitResult = GameRuntime_InitializeSpatialAudioAndRendering();
   fatalResult = FatalError_ExitIfFailed(renderingInitResult.valueOrError,renderingInitResult.failed);
   dispatchCarry = fatalResult.failed;
   loadResultOrWidth = Game_LoadCoreAssets();
@@ -598,11 +598,11 @@ void __cdecl Game_Run(void)
    step runs only after CF-clear success from the preceding step; the final CF reports the first failure or final
    allocation result.
    Cross-module calls: SpatialSoundPool_Init [audio/spatial/runtime], TerrainByteClampLookup_Initialize
-   [world/terrain/visuals], GraphicsIntensityClampTable_InitializeCf [graphics/render/shading],
+   [world/terrain/visuals], GraphicsIntensityClampTable_Initialize [graphics/render/shading],
    SoftwareRenderer_InstallDisplayModeHook [graphics/backend/software], GraphicsPrimitiveQueue_AllocateGlobalPool
    [graphics/render/primitives].
 */
-StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
+StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void)
 
 {
   StatusResult step;
@@ -615,7 +615,7 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
   if (step.failed) {
     return step;
   }
-  step = GraphicsIntensityClampTable_InitializeCf();
+  step = GraphicsIntensityClampTable_Initialize();
   if (step.failed) {
     return step;
   }
@@ -630,7 +630,7 @@ StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void)
 /* Address: 0x00573140.
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string], WidePath_CombineDirectoryAndLeaf
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string], WidePath_CombineDirectoryAndLeaf
    [core/text/path], Package_Mount [assets/package/runtime], LevelPackage_ValidateAndMount
    [assets/package/runtime], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
@@ -671,7 +671,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
                        &g_InstallRegistryValueType,&g_InstallRegistryValueDataA,
                        &g_InstallRegistryValueDataCapacityBytes);
     if ((statusOrCount == 0) && (g_InstallRegistryValueType == 1)) {
-      Text_CopyNarrowToUtf16Cf
+      Text_CopyNarrowToUtf16
                 (0x200,(uint16_t *)&g_InstallDirectoryScratchUtf16,&g_InstallRegistryValueDataA);
       WidePath_CombineDirectoryAndLeaf
                 (g_LooseMoviePathPrefix.codeUnits,(uint16_t *)u_Thandor_00572e10,
@@ -819,7 +819,7 @@ uint32_t __cdecl Game_LoadCoreAssets(void)
                 g_UiButtonSoundVoiceSets7[6] = (DirectSoundVoiceSet *)module;
                 do {
                   do {
-                    openResult = g_FileSystemOpenCf(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
+                    openResult = g_FileSystemOpen(0,(uint16_t *)(u_Dscreen00_pcx_00572e3a + 1));
                     if (openResult.failed)
                     goto Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad;
                     u_Dscreen00_pcx_00572e3a[8] = u_Dscreen00_pcx_00572e3a[8] + L'\x01';
@@ -865,13 +865,13 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                   RichTextCommandStream_PatchPayloadBySelector
                             (0xd,g_FrontendDebugOverlayTextSlot13Utf16,textBuffer);
                 } while (resourceId < 0x118);
-                UiActionHandlers_SetPageCf
+                UiActionHandlers_SetPage
                           (0x10,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage10);
-                UiActionHandlers_SetPageCf
+                UiActionHandlers_SetPage
                           (0x11,(UiActionHandlerPage *)&g_InGameUiCommandModeActionHandlers30);
-                UiActionHandlers_SetPageCf
+                UiActionHandlers_SetPage
                           (0x12,(UiActionHandlerPage *)&g_InGameUiActionHandlersPage12);
-                UiActionHandlers_SetPageCf
+                UiActionHandlers_SetPage
                           (0x20,(UiActionHandlerPage *)&g_FrontendUiActionHandlersPage20);
                 textPageLoadResult = TextResourcePage_Load(0xff,(uint16_t *)u_texte_neterror_str_0050f104);
                 if (textPageLoadResult.failed) {
@@ -937,16 +937,16 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 if (pcxModuleEntry.failed) {
                   return (uint32_t)pcxModuleEntry.bufferOrError;
                 }
-                moduleLoadResult = FncModule_LoadAndRelocateCf(pcxModuleEntry.bufferOrError);
+                moduleLoadResult = FncModule_LoadAndRelocate(pcxModuleEntry.bufferOrError);
                 module = (FncModuleHeader *)moduleLoadResult.moduleBase;
                 loadedResource = (SoundSampleAsset *)pcxModuleEntry.bufferOrError;
                 if (!moduleLoadResult.failed) {
                   g_PcxFunctionModule = module;
-                  status = FncModule_GetExportByIndexCf(3,module);
+                  status = FncModule_GetExportByIndex(3,module);
                   module = (FncModuleHeader *)status.valueOrError;
                   if (!status.failed) {
                     g_PcxFunctionExport3 = (PcxEncodeProc *)module;
-                    status = FncModule_GetExportByIndexCf(2,g_PcxFunctionModule);
+                    status = FncModule_GetExportByIndex(2,g_PcxFunctionModule);
                     module = (FncModuleHeader *)status.valueOrError;
                     if (!status.failed) {
                       g_PcxFunctionExport2 = (PcxDecodeProc *)module;
@@ -1441,7 +1441,7 @@ GameIntroMovies_StopCurrentPlayback:
    Ownership: platform/bootstrap/runtime.
    Purpose: Assembly ABI: CF=0 success, CF=1 failure; EAX carries a result or engine error code. Resolves the
    bootstrap API table.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
 
@@ -1469,7 +1469,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
     hModule = GetModuleHandleA(bindingCursor->moduleName);
     if (hModule == (HMODULE)0x0) {
       if (bindingCursor->destination == (void **)dynapi_9) {
-        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         moduleUnavailableResult.failed = true;
         moduleUnavailableResult.valueOrError = 0xf;
         return moduleUnavailableResult;
@@ -1478,7 +1478,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
                 ((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)(bindingCursor->moduleName);
       moduleSlotIndex = g_DynamicModuleCount;
       if (hModule == (HINSTANCE)0x0) {
-        Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
+        Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->moduleName);
         loadFailedResult.failed = true;
         loadFailedResult.valueOrError = 0x11;
         return loadFailedResult;
@@ -1491,8 +1491,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
     }
     resolvedProcedure = (void **)GetProcAddress(hModule,(LPCSTR)lpProcName);
     if (resolvedProcedure == (void **)0x0) {
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
-      Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
+      Text_CopyNarrowToUtf16(0x100,g_PackageLastErrorPath,(uint8_t *)bindingCursor->destination);
+      Text_CopyNarrowToUtf16(0x100,g_FatalErrorDetail1Utf16,(uint8_t *)bindingCursor->moduleName);
       procedureMissingResult.failed = true;
       procedureMissingResult.valueOrError = 0x10;
       return procedureMissingResult;
@@ -1567,7 +1567,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
    three positional arguments, and slash/dash options. Positional text and unquoted option text are uppercased only
    for ASCII a-z. Quoted positional delimiters are removed; quoted segments inside options are retained and copied
    verbatim. Extra positional arguments are skipped. The fixed 256-byte buffers have no explicit bounds checks.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
 
@@ -1719,11 +1719,11 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
     *argumentWriteCursor = 0;
   }
 CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
-  Text_CopyNarrowToUtf16Cf
+  Text_CopyNarrowToUtf16
             (0x200,g_CommandLineWideArguments.argument1,(uint8_t *)g_CommandLine.argument1);
-  Text_CopyNarrowToUtf16Cf
+  Text_CopyNarrowToUtf16
             (0x200,g_CommandLineWideArguments.argument2,(uint8_t *)g_CommandLine.argument2);
-  Text_CopyNarrowToUtf16Cf
+  Text_CopyNarrowToUtf16
             (0x200,g_CommandLineWideArguments.argument3,(uint8_t *)g_CommandLine.argument3);
   return;
 }

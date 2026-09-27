@@ -89,7 +89,7 @@ FrontendModelPointerContext_PointerWheel
 
 /* 0x0050CF50 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendModelPointerContext_KeyboardEventCf
+FrontendModelPointerContext_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           FrontendModelPointerContextRuntimeState118 *control);
 
@@ -108,7 +108,7 @@ void __cdecl FrontendRuntime_IncrementActiveTickCounter(void);
 
 /* 0x00548030 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf
+FrontendRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,void *frontendRuntime);
 
 /* 0x00548700 */
@@ -116,7 +116,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendState_DispatchCode(FrontendStat
 
 /* 0x00548910 */
 uint32_t __thandor_eax_preserve_ecx_edx
-FrontendRuntime_UpdatePointerContextAndSceneViewCf
+FrontendRuntime_UpdatePointerContextAndSceneView
           (uint32_t pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,uint32_t pointerValue3,
           void *pointedRecord,FrontendPointerSceneRuntimeView43E8 *frontendRuntime);
 

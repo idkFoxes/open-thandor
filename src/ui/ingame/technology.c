@@ -15,7 +15,7 @@
    Purpose: Recovered action-table target INGAME_PAGE10[20],INGAME_PAGE10[21],INGAME_PAGE10[22],INGAME_PAGE10[23],I
    NGAME_PAGE10[24],INGAME_PAGE10[25],INGAME_PAGE10[26] (0x1014,0x1015,0x1016,0x1017,0x1018,0x1019,0x101A).
    Local calls: InGameTechnologyPanel_Rebuild.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], UiSelectableGroup_SelectExclusive
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiSelectableGroup_SelectExclusive
    [ui/controls/lists].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -33,7 +33,7 @@ InGameTechnologyAreaTab_SelectAndRebuild(UiSelectableControl *selectableControl)
     inGameRoot = (UiRootNode *)(inGameRoot->base).parent;
     parentCursor = (inGameRoot->base).parent;
   }
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(selectableControl);
+  isSelected = (bool)UiSelectableControl_IsSelected(selectableControl);
   if (isSelected) {
     UiSelectableGroup_SelectExclusive(7,&selectableControl->base,
       INGAME_UI(inGameRoot,technologyAreaTab7),
@@ -119,9 +119,9 @@ InGameTechnologyPanel_ResetAndSelectCurrentArea(UiRootNode *inGameRoot)
    Purpose: Collects up to 48 matching runtime records, chooses a compact grid, updates catalog controls from each
    record's textureSource and catalogDisplayValueQ4, suppresses unused controls, and relayouts the container.
    Cross-module calls: UiNode_GetRoot [ui/core/runtime], SelectionInfo_CollectCapabilityFlags
-   [gameplay/selection/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
-   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructureCf [gameplay/faction/runtime],
-   ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf [assets/army/catalog], UiGrid_ComputeDimensionsPacked
+   [gameplay/selection/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructure [gameplay/faction/runtime],
+   ArmyAssetRecord_HasFactionUnlockedLinkedDefinition [assets/army/catalog], UiGrid_ComputeDimensionsPacked
    [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase *node)
@@ -179,14 +179,14 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
     if ((((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
            ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
-          (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+          (checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                               (factionIndex,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult)
           ) && (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0xee) != 0 &&
                 (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))) &&
         ((itemCount < 0x30 && ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & capabilityFlagsOrSlotIndex) != 0)))) &&
-       ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructureCf
+       ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
                             (factionIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
-        (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
+        (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                             (factionIndex,capabilityFlagsOrSlotIndex,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))) {
       *recordCursor = catalogRecord;
       itemCount = itemCount + 1;
@@ -262,9 +262,9 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup48_RebuildGrid(UiNodeBase
    Ownership: ui/ingame/technology.
    Purpose: Collects up to 42 matching runtime records, chooses a compact grid, updates catalog controls from each
    record's textureSource and catalogDisplayValueQ4, suppresses unused controls, and relayouts the container.
-   Cross-module calls: UiNode_GetRoot [ui/core/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
-   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructureCf [gameplay/faction/runtime],
-   ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf [assets/army/catalog], UiGrid_ComputeDimensionsPacked
+   Cross-module calls: UiNode_GetRoot [ui/core/runtime], ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
+   [assets/model/definitions], FactionRuntime_HasArmyAssetOrActiveStructure [gameplay/faction/runtime],
+   ArmyAssetRecord_HasFactionUnlockedLinkedDefinition [assets/army/catalog], UiGrid_ComputeDimensionsPacked
    [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase *node)
@@ -313,14 +313,14 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
     catalogRecord = (UiCommandRuntimeRecordPrefix *)*registryCursor;
     if (((((catalogRecord != (UiCommandRuntimeRecordPrefix *)0x0) &&
           ((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 1) != 0)) &&
-         ((checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+         ((checkResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                               (factionOrExtentOrOffset,(ModelDefinitionHierarchyNodeAddress32)catalogRecord), !checkResult &&
           (((*(uint32_t *)((int)catalogRecord->reserved0C_1B + 8) & 0x10) != 0 &&
            (*(int *)((int)catalogRecord->reserved0C_1B + 0x10) != 0)))))) && (itemCount < 0x2a)) &&
        ((structureCountOrHeight != 0 &&
-        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructureCf
+        ((checkResult = FactionRuntime_HasArmyAssetOrActiveStructure
                              (factionOrExtentOrOffset,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult ||
-         (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
+         (checkResult = ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
                              (factionOrExtentOrOffset,0x10,(ArmyAssetRecordPrefix *)catalogRecord), !checkResult)))))) {
       *recordCursor = catalogRecord;
       itemCount = itemCount + 1;
@@ -407,7 +407,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCatalogGroup42_RebuildGrid(UiNodeBase
    Ownership: ui/ingame/technology.
    Purpose: Recovered action-table target INGAME_PAGE10[19] (0x1013).
    Cross-module calls: UiPageStack_SetActiveIndex [ui/controls/layout], SelectionInfo_GetFirstEntry
-   [gameplay/selection/runtime], UiSelectableGroup_NoneVisibleSelectedCf [ui/controls/lists],
+   [gameplay/selection/runtime], UiSelectableGroup_NoneVisibleSelected [ui/controls/lists],
    FrontendPlayerRuntime_ClearArmyTokenAndRestoreOrApplyTechnology [ui/frontend/player],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands].
 */
@@ -433,7 +433,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
     modelOffset = (int)(firstSelectedEntity->common).ownership.definitionOrClassRecord -
                   g_ModelRuntimeRebaseDelta;
     doubledTechnologyId = 0;
-    selectedArea = UiSelectableGroup_NoneVisibleSelectedCf(7,
+    selectedArea = UiSelectableGroup_NoneVisibleSelected(7,
       INGAME_UI(source,technologyAreaTab7),
       INGAME_UI(source,technologyAreaTab6),
       INGAME_UI(source,technologyAreaTab5),
@@ -469,7 +469,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyResearch_StartSelected(
    Cross-module calls: SelectionInfo_GetFirstEntry [gameplay/selection/runtime], UiNodeList_UnsuppressActionId
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], TextResource_Resolve
    [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext],
-   ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNode *inGameRoot)
 
@@ -519,7 +519,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     resolvedText = TextResource_Resolve(0x217c);
     resolvedName = TextResource_Resolve(*(int *)(definitionOrEnergyCost + 4) + 0x18004f);
     RichTextCommandStream_PatchPayloadBySelector(0,resolvedName.text,resolvedText.text);
-    armyRecord = ArmyAssetRegistry_FindByIdCf((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
+    armyRecord = ArmyAssetRegistry_FindById((firstSelectedEntity->common).runtimeIdentityOrArmyAssetId);
     ((UiImagePanelControl *)INGAME_UI(inGameRoot,technologyDescriptionFrame))->textureSource =
          (GraphicsTextureSourceAsset *)armyRecord.recordOrError[1].rootNodeOffsetOrPointer;
     UiNodeList_SuppressActionId(0x1014,&inGameRoot->base);
@@ -532,7 +532,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
     remainingCount = 0x1c;
     areaIndex = 6;
     do {
-      isAvailable = Technology_IsAvailableForFactionCf
+      isAvailable = Technology_IsAvailableForFaction
                          (*(PckTechnologyIdCatalog *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4),
                           (firstSelectedEntity->common).ownership.ownerIndex);
       if (isAvailable) {
@@ -561,7 +561,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
                    (int)g_TechnologyAsset->records[*(int *)(definitionOrEnergyCost + 0x1c4 + remainingCount * 4)].
                         xeniteCostQ4 >> 4,formatBuffer + 0xc0);
         RichTextCommandStream_PatchPayloadBySelector(1,formattedText + 0xc0,stream);
-        RichTextCommandStream_CopyExpandedCf(0x180,labelText,source);
+        RichTextCommandStream_CopyExpanded(0x180,labelText,source);
         UiNodeList_UnsuppressActionId(actionId,&firstNode->base);
       }
       areaIndex = areaIndex + -1;
@@ -570,7 +570,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       }
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
-    selectedArea = UiSelectableGroup_NoneVisibleSelectedCf(7,
+    selectedArea = UiSelectableGroup_NoneVisibleSelected(7,
       INGAME_UI(inGameRoot,technologyAreaTab7),
       INGAME_UI(inGameRoot,technologyAreaTab6),
       INGAME_UI(inGameRoot,technologyAreaTab5),

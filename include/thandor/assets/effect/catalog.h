@@ -23,10 +23,10 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
 
 /* 0x0051DFD0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition);
+EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition);
 
 /* 0x0051E440 */
 EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog definitionId);
+EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId);
 
 #endif /* THANDOR_ASSETS_EFFECT_CATALOG_H */

@@ -22,7 +22,7 @@ WorldMotionSpline_EvaluateAndApplyAtTime
 
 /* 0x0053CBB0 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf
+WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime
           (WorldMotionSplineKeyframeCount keyframeCount,WorldMotionSplineKeyframe *keyframes,
           WorldMotionSplineTimeQ12 timeQ12,WorldRuntimeContext *worldRuntime);
 

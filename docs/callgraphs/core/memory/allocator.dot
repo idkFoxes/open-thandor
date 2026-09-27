@@ -3,7 +3,7 @@ digraph thandor {
   node [shape=box];
   "PriorityPairHeap_SiftUp" [label="0x005368E0\nPriorityPairHeap_SiftUp"];
   "PriorityPairHeap_SiftDown" [label="0x00536930\nPriorityPairHeap_SiftDown"];
-  "DwordBlock64Array_ContainsExactRecordCf" [label="0x00547D20\nDwordBlock64Array_ContainsExactRecordCf"];
+  "DwordBlock64Array_ContainsExactRecord" [label="0x00547D20\nDwordBlock64Array_ContainsExactRecordCf"];
   "ArenaHeap_Init" [label="0x005863C0\nArenaHeap_Init"];
   "ArenaHeap_Shutdown" [label="0x00586470\nArenaHeap_Shutdown"];
   "ArenaHeap_Alloc" [label="0x005864A0\nArenaHeap_Alloc"];

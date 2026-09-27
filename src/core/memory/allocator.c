@@ -110,7 +110,7 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
    executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DwordBlock64Array_ContainsExactRecordCf
+DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord)
 
 {

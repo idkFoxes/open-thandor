@@ -16,7 +16,7 @@
    adapterIndex. CF clear means an exact tuple exists; CF set means absent; EAX is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsDisplayMode_IsEnumeratedCf
+GraphicsDisplayMode_IsEnumerated
           (FrontendDisplayAdapterIndex adapterIndex,FrontendColorDepthBits bitsPerPixel,
           FrontendDisplayDimensionPixels height,FrontendDisplayDimensionPixels width)
 
@@ -44,7 +44,7 @@ GraphicsDisplayMode_IsEnumeratedCf
    and CF set reports that no entry matched.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DisplayModeTable_ContainsExactModeCf
+DisplayModeTable_ContainsExactMode
           (FrontendColorDepthBits bitsPerPixel,FrontendDisplayDimensionPixels height,
           FrontendDisplayDimensionPixels width,FrontendDisplayAdapterIndex adapterIndex)
 
@@ -70,7 +70,7 @@ DisplayModeTable_ContainsExactModeCf
 /* Address: 0x00578080.
    Ownership: graphics/backend/directdraw.
    Purpose: DirectDrawEnumerateA callback. Appends one 0x80-byte GraphicsAdapterRecord.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 int __stdcall DirectDraw_EnumAdapterCallback
               (TH_LEGACY_GUID *adapterGuid,char *driverDescription,char *driverName,
@@ -98,7 +98,7 @@ int __stdcall DirectDraw_EnumAdapterCallback
         adapterRecordCursor = (GraphicsAdapterRecord *)&(adapterRecordCursor->adapterGuid).Data2;
       }
     }
-    Text_CopyNarrowToUtf16Cf(0x28,adapterRecord->driverDescriptionUtf16,(uint8_t *)driverDescription);
+    Text_CopyNarrowToUtf16(0x28,adapterRecord->driverDescriptionUtf16,(uint8_t *)driverDescription);
     g_GraphicsAdapterCount = g_GraphicsAdapterCount + 1;
   }
   return 1;
@@ -192,12 +192,12 @@ int32_t __stdcall DirectDraw_EnumDisplayModeCallback
    viewport; enumerate texture formats and render states; publish framebuffer width, height and bytes-per-pixel
    dispatch; call the previously chained display-mode hook; recreate texture resources. Every failed COM stage
    jumps to the shared formatted-error path, which reports the completed stage count and returns with carry set.
-   Cross-module calls: GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf [graphics/backend/glide],
+   Cross-module calls: GraphicsGlide3_ApplyDisplayModeAndInitializeResources [graphics/backend/glide],
    Glide3_Shutdown [graphics/backend/glide], GraphicsTexture_ReleaseObjects [graphics/resources/texture],
    Memory_ZeroDwords [core/memory/allocator], GraphicsTexture_CreateStagingTexture [graphics/resources/texture].
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
+GraphicsDirectDraw_ApplyDisplayModeAndCreateResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 
@@ -219,7 +219,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
   int completedStages;
 
   completedStages = 0;
-  /* EAX as the Glide path returns it. GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf preserves EAX, so the
+  /* EAX as the Glide path returns it. GraphicsGlide3_ApplyDisplayModeAndInitializeResources preserves EAX, so the
      original hands back whatever EAX held before the call (the caller's EAX on the first call, otherwise the last
      COM Release result). The caller only reads it with CF set; 0x1a is the mode error the Glide callee computes
      but discards, which gives a meaningful message. */
@@ -311,7 +311,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
   if (g_ActiveGraphicsAdapterIndex == -1) {
     /* No backend (first call, or switched away from Glide / to another adapter): create it. */
     if (g_GraphicsAdapters[adapterIndex].adapterGuid.Data1 == 1) {
-      guidMatchOrCarry = GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
+      guidMatchOrCarry = GraphicsGlide3_ApplyDisplayModeAndInitializeResources
                          (adapterIndex,bitsPerPixel,height,width);
       exitResult.failed = guidMatchOrCarry;
       exitResult.valueOrError = displayModeResult.valueOrError;
@@ -671,7 +671,7 @@ GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf
             g_GraphicsFramebufferFillRectArgb = SoftwareFramebuffer_FillRectArgb32;
           }
           g_GraphicsFramebufferPresent = GraphicsFramebuffer_Present;
-          displayModeResult = g_GraphicsDisplayModeFinalizeCf(adapterIndex,bitsPerPixel,height,width);
+          displayModeResult = g_GraphicsDisplayModeFinalize(adapterIndex,bitsPerPixel,height,width);
           if (displayModeResult.failed) {
             displayModeResult.failed = true;
             return displayModeResult;

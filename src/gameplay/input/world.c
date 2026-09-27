@@ -120,13 +120,13 @@ InGameTargetingContext_AdvanceOrResolveTarget
    pointerValue2→InGamePointerCallbackValue2_V344, p3 pointerValue3→InGamePointerCallbackValue3_V344. Calling
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Cross-module calls: ArmyPlacement_ValidateAssetAtPointAndCellCornersCf [gameplay/army/placement],
-   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], SelectionInfo_ValidateOwnerType16AndAnyActiveCf
-   [gameplay/selection/runtime], GameFactionRuntime_TestCapabilityBitClearCf [gameplay/faction/runtime],
-   SelectionInfo_CollectAttachmentEffectVariantMask [gameplay/selection/runtime], SelectionInfo_HasAnyEntryCf
+   Cross-module calls: ArmyPlacement_ValidateAssetAtPointAndCellCorners [gameplay/army/placement],
+   InGameSelectionDetailPanel_Rebuild [ui/ingame/runtime], SelectionInfo_ValidateOwnerType16AndAnyActive
+   [gameplay/selection/runtime], GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime],
+   SelectionInfo_CollectAttachmentEffectVariantMask [gameplay/selection/runtime], SelectionInfo_HasAnyEntry
    [gameplay/selection/runtime].
 */
-uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
+uint32_t InGameWorldInput_ResolveContextActionAndCursor
                 (InGamePointerCallbackValue0 pointerValue0,InGamePointerCallbackValue1 pointerValue1
                 ,InGamePointerCallbackValue2 pointerValue2,InGamePointerCallbackValue3 pointerValue3
                 ,WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
@@ -165,7 +165,7 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
          g_SelectionPlayerRuntimeBlockPointers[(inGameRuntime->selection).activePlayerRuntimeId]->
          pendingSelectionEntityOffset8098;
     cursorOrVariantMask = 0x2e;
-    testResult = ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+    testResult = ArmyPlacement_ValidateAssetAtPointAndCellCorners
                       (0,g_InGamePlacementHeading16,pointerValue1,pointerValue2,
                        g_UiHoverSelectionRecord->armyAssetId,
                        inGameRuntime->activeFactionRuntimeIndex,inGameRuntime);
@@ -175,13 +175,13 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
     InGameSelectionDetailPanel_Rebuild();
     return cursorOrVariantMask;
   }
-  testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
+  testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(ownerIndex);
   if (!testResult) {
     g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags & 0xfffffffe;
     if ((((candidateNode != (WorldOwnerListNode100 *)0x0) &&
          (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
         ((int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
-       (testResult = GameFactionRuntime_TestCapabilityBitClearCf
+       (testResult = GameFactionRuntime_TestCapabilityBitClear
                           (*(uint32_t *)(*(int *)((int)candidateNode->runtimePayload + 8) + 0xc),
                            ownerIndex), !testResult)) {
       g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | 1;
@@ -223,8 +223,8 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
   }
   /* Ownership cursor used by several paths: 0 without a candidate, 0x15 for an own and 0x16 for a foreign
      candidate. */
-  testResult = SelectionInfo_HasAnyEntryCf();
-  if ((!testResult) || (SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex))) {
+  testResult = SelectionInfo_HasAnyEntry();
+  if ((!testResult) || (SelectionInfo_AllEntriesEmptyOrMatchOwner(ownerIndex))) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
       return 0;
     }
@@ -232,11 +232,11 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
   }
   if ((g_KeyboardStateMask & 0xc) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-      testResult = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
+      testResult = SelectionInfo_TestAnyActiveOrSingleClass13();
       if (testResult) {
         return 0;
       }
-      testResult = SelectionInfo_TestPositionCommandAtWorldPointCf
+      testResult = SelectionInfo_TestPositionCommandAtWorldPoint
                         (pointerValue1,pointerValue2,inGameRuntime);
       if (testResult) {
         return 0x18;
@@ -249,9 +249,9 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
     if ((g_KeyboardStateMask & 0x33) != 0) {
       return (ownerIndex == (entry->common).ownership.ownerIndex) ? 0x15 : 0x16;
     }
-    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    testResult = SelectionInfo_TestAnyStateField100Nonnegative();
     if (testResult) {
-      testResult = GameFactionRuntime_TestCapabilityBitClearCf
+      testResult = GameFactionRuntime_TestCapabilityBitClear
                         ((entry->common).ownership.ownerIndex,ownerIndex);
       if (!testResult) {
         return (ownerIndex != (entry->common).ownership.ownerIndex) ? 0x16 : 0x15;
@@ -266,22 +266,22 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
       }
       return (ownerIndex == (entry->common).ownership.ownerIndex) ? 0x15 : 0x16;
     }
-    classifySelectedState = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    classifySelectedState = SelectionInfo_TestAnyStateField100Nonnegative();
   }
   if (classifySelectedState) {
-    testResult = SelectionInfo_TestAllStateField100NonpositiveCf();
+    testResult = SelectionInfo_TestAllStateField100Nonpositive();
     if (testResult) {
       return 0;
     }
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
       return 0x19;
     }
-    testResult = GameFactionRuntime_TestCapabilityBitClearCf
+    testResult = GameFactionRuntime_TestCapabilityBitClear
                       ((entry->common).ownership.ownerIndex,ownerIndex);
     if (testResult) {
       return 0x19;
     }
-    testResult = SelectionInfo_FindEntryCf(entry);
+    testResult = SelectionInfo_FindEntry(entry);
     if (testResult) {
       return 0x1a;
     }
@@ -290,14 +290,14 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
   if (candidateNode == (WorldOwnerListNode100 *)0x0) {
     return 0;
   }
-  testResult = GameFactionRuntime_TestCapabilityBitClearCf
+  testResult = GameFactionRuntime_TestCapabilityBitClear
                     ((entry->common).ownership.ownerIndex,ownerIndex);
   if (testResult) {
     return 0x1a;
   }
   scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
   if ((int)scaleRatio != (int)(scaleRatio >> 0x20)) {
-    testResult = SelectionInfo_FindEntryCf(entry);
+    testResult = SelectionInfo_FindEntry(entry);
     if (testResult) {
       return 0x19;
     }
@@ -313,14 +313,14 @@ uint32_t InGameWorldInput_ResolveContextActionAndCursorCf
    pointerValue0→InGamePointerCallbackValue0_V344, p3 pointerValue3→InGamePointerCallbackValue3_V344. Calling
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActiveCf [gameplay/selection/runtime],
-   GameFactionRuntime_TestCapabilityBitClearCf [gameplay/faction/runtime],
+   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActive [gameplay/selection/runtime],
+   GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
    FrontendPlayerRuntime_AssignModelTokenAndRefreshSelection [ui/frontend/player],
    WorldRuntime_RestoreMotionStateFromSnapshot [world/runtime/core].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_BeginPointerCaptureCf
+InGameWorldInput_BeginPointerCapture
           (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
           InGamePointerCallbackValue3 pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
@@ -340,7 +340,7 @@ InGameWorldInput_BeginPointerCaptureCf
     ownerIndex = inGameRuntime->activeFactionRuntimeIndex;
     if ((inGameRuntime->runtimeFlags & 0x10) == 0) {
       if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-        testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(ownerIndex);
+        testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(ownerIndex);
         if (testResult) {
           g_InGamePointerInteractionStateFlags = g_InGamePointerInteractionStateFlags | 2;
         }
@@ -349,7 +349,7 @@ InGameWorldInput_BeginPointerCaptureCf
                (candidateNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL)) &&
               (payloadEntityAddress = *(int *)((int)candidateNode->runtimePayload + 8),
               (int)(pointerValue3 - 0x1000) <= (int)pointerValue0)) &&
-             (testResult = GameFactionRuntime_TestCapabilityBitClearCf
+             (testResult = GameFactionRuntime_TestCapabilityBitClear
                                 (*(uint32_t *)(payloadEntityAddress + 0xc),ownerIndex), !testResult)) {
             modelToken = payloadEntityAddress - (int)g_ArmyRuntimeRebaseBaseMinusOne;
             if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
@@ -391,14 +391,14 @@ InGameWorldInput_BeginPointerCaptureCf
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum dictionary InGameCameraWorldToggleFlag after
    transferring its complete value vocabulary to code annotation. It is not a safe whole-value storage type.
-   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActiveCf [gameplay/selection/runtime],
+   Cross-module calls: SelectionInfo_ValidateOwnerType16AndAnyActive [gameplay/selection/runtime],
    FrontendPlayerSelection_ClearAndRefreshLocalPanels [ui/frontend/player],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   WorldRuntimeNode_IsPositionInsideBoundsCf [world/runtime/core], SelectionInfo_FindEntryCf
-   [gameplay/selection/runtime], InGameCommandQueue_ContainsTripletValueCf [network/protocol/commands].
+   WorldRuntimeNode_IsPositionInsideBounds [world/runtime/core], SelectionInfo_FindEntry
+   [gameplay/selection/runtime], InGameCommandQueue_ContainsTripletValue [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_UpdateDragSelectionAndCameraCf
+InGameWorldInput_UpdateDragSelectionAndCamera
           (InGamePointerCallbackValue0 pointerValue0,uint32_t pointerValue1,uint32_t pointerValue2,
           uint32_t pointerValue3,WorldOwnerListNode100 *candidateNode,
           WorldRuntimeContext *inGameRuntime)
@@ -418,7 +418,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
        (((inGameRuntime->interaction).interactionFlags48 & 8) == 0)) &&
       ((g_UiCommandRuntimeFlags & 0x100) == 0)) && ((inGameRuntime->runtimeFlags & 0x10) == 0)) {
     if ((g_UiCommandRuntimeFlags & 0x20) == 0) {
-      testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf
+      testResult = SelectionInfo_ValidateOwnerType16AndAnyActive
                         (inGameRuntime->activeFactionRuntimeIndex);
       if (testResult) {
         if ((inGameRuntime->runtimeFlags & 0x80) == 0) {
@@ -459,14 +459,14 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
                   (runtimeNode->runtimeFlags & 0x20) != 0 &&
                   (countOrOwnerOrDelta == (entry->common).ownership.ownerIndex)))) {
                 payloadValue = (int)entry - (int)g_ArmyRuntimeRebaseBaseMinusOne;
-                testResult = WorldRuntimeNode_IsPositionInsideBoundsCf
+                testResult = WorldRuntimeNode_IsPositionInsideBounds
                                   (runtimeNode,
                                    (WorldRuntimeExtendedMapControlView170 *)inGameRuntime);
                 if (testResult) {
-                  testResult = SelectionInfo_FindEntryCf(entry);
+                  testResult = SelectionInfo_FindEntry(entry);
                   deltaXOrTripletCount = g_InGameSelectionInsertTripletDwordCount;
                   if (testResult) {
-                    testResult = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fb90);
+                    testResult = InGameCommandQueue_ContainsTripletValue(payloadValue,0x55fb90);
                     if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
                          (&g_InGameSelectionInsertTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
@@ -477,10 +477,10 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
                   }
                 }
                 else {
-                  testResult = SelectionInfo_FindEntryCf(entry);
+                  testResult = SelectionInfo_FindEntry(entry);
                   deltaXOrTripletCount = g_InGameSelectionRemoveTripletDwordCount;
                   if (!testResult) {
-                    testResult = InGameCommandQueue_ContainsTripletValueCf(payloadValue,0x55fc30);
+                    testResult = InGameCommandQueue_ContainsTripletValue(payloadValue,0x55fc30);
                     if ((!testResult) &&
                        (*(InGameCommandPayloadTripletValue32 *)
                          (&g_InGameSelectionRemoveTripletDwords + deltaXOrTripletCount * 4) = payloadValue,
@@ -577,13 +577,13 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
    function bytes, control flow, globals, locals, and executable data remain unchanged.
    Cross-module calls: InGameCommand_ExecuteLocalPlacementFromSelection [ui/ingame/commands],
    InGameCommandQueue_AppendLocalPlayerCommand [network/protocol/commands],
-   SelectionInfo_ValidateOwnerType16AndAnyActiveCf [gameplay/selection/runtime],
+   SelectionInfo_ValidateOwnerType16AndAnyActive [gameplay/selection/runtime],
    SelectionInfo_CollectAttachmentEffectVariantMask [gameplay/selection/runtime],
-   FrontendPlayerSelection_ClearAndRefreshLocalPanels [ui/frontend/player], SelectionInfo_HasAnyEntryCf
+   FrontendPlayerSelection_ClearAndRefreshLocalPanels [ui/frontend/player], SelectionInfo_HasAnyEntry
    [gameplay/selection/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameWorldInput_CommitPointerActionCf
+InGameWorldInput_CommitPointerAction
           (InGamePointerCallbackValue0 pointerValue0,InGamePointerCallbackValue1 pointerValue1,
           InGamePointerCallbackValue2 pointerValue2,InGamePointerCallbackValue3 pointerValue3,
           WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
@@ -618,7 +618,7 @@ InGameWorldInput_CommitPointerActionCf
     }
     goto InGameWorldInput_ReleasePointerCapture;
   }
-  testResult = SelectionInfo_ValidateOwnerType16AndAnyActiveCf(inGameRuntime->activeFactionRuntimeIndex);
+  testResult = SelectionInfo_ValidateOwnerType16AndAnyActive(inGameRuntime->activeFactionRuntimeIndex);
   if (!testResult) {
     if (((pointerValue0 != 0x7fffffff) && ((g_UiCommandRuntimeFlags & 0x80) != 0)) &&
        ((g_InGamePointerInteractionStateFlags & 3) == 0)) {
@@ -675,8 +675,8 @@ InGameWorldInput_CommitPointerActionCf
       ((entry->common).ownership.ownerIndex == 0)))) {
     candidateNode = (WorldOwnerListNode100 *)0x0;
   }
-  testResult = SelectionInfo_HasAnyEntryCf();
-  if ((!testResult) || (testResult = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex), testResult)) {
+  testResult = SelectionInfo_HasAnyEntry();
+  if ((!testResult) || (testResult = SelectionInfo_AllEntriesEmptyOrMatchOwner(ownerIndex), testResult)) {
     if (candidateNode != (WorldOwnerListNode100 *)0x0) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
@@ -692,7 +692,7 @@ InGameWorldInput_CommitPointerActionCf
   }
   if ((g_KeyboardStateMask & 0xc) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-      testResult = SelectionInfo_TestAnyActiveOrSingleClass13Cf();
+      testResult = SelectionInfo_TestAnyActiveOrSingleClass13();
       if ((!testResult) && (pointerValue0 != 0x7fffffff)) {
         if ((g_KeyboardStateMask & 0x33) == 0) {
           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -716,15 +716,15 @@ InGameWorldInput_CommitPointerActionCf
       goto InGameWorldInput_ReleasePointerCapture;
     }
     if ((g_KeyboardStateMask & 0x33) == 0) {
-      testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+      testResult = SelectionInfo_TestAnyStateField100Nonnegative();
       if (testResult) {
-        testResult = GameFactionRuntime_TestCapabilityBitClearCf
+        testResult = GameFactionRuntime_TestCapabilityBitClear
                           ((entry->common).ownership.ownerIndex,ownerIndex);
         if (testResult) goto InGameWorldInput_SelectCandidateArmy;
       }
       else {
 InGameWorldInput_TestCandidateCapability:
-        testResult = GameFactionRuntime_TestCapabilityBitClearCf
+        testResult = GameFactionRuntime_TestCapabilityBitClear
                           ((entry->common).ownership.ownerIndex,ownerIndex);
         if (testResult) goto InGameWorldInput_ReleasePointerCapture;
         scaleRatio = ModelRuntime_QueryHierarchyScaleRatioQ12Regs((RuntimeModelFactionPrefix10 *)entry);
@@ -773,11 +773,11 @@ InGameWorldInput_TestCandidateCapability:
       }
       goto InGameWorldInput_ReleasePointerCapture;
     }
-    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
+    testResult = SelectionInfo_TestAnyStateField100Nonnegative();
     if (!testResult) goto InGameWorldInput_TestCandidateCapability;
-    testResult = GameFactionRuntime_TestCapabilityBitClearCf
+    testResult = GameFactionRuntime_TestCapabilityBitClear
                       ((entry->common).ownership.ownerIndex,ownerIndex);
-    if ((!testResult) && (testResult = SelectionInfo_FindEntryCf(entry), !testResult))
+    if ((!testResult) && (testResult = SelectionInfo_FindEntry(entry), !testResult))
     goto InGameWorldInput_ReleasePointerCapture;
 InGameWorldInput_SelectCandidateArmy:
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -793,7 +793,7 @@ InGameWorldInput_SelectCandidateArmy:
   }
   if (candidateNode != (WorldOwnerListNode100 *)0x0) {
     if (ownerIndex == (entry->common).ownership.ownerIndex) {
-      testResult = SelectionInfo_FindEntryCf(entry);
+      testResult = SelectionInfo_FindEntry(entry);
       if (testResult) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -840,7 +840,7 @@ InGameWorldInput_ReleasePointerCapture:
    [world/runtime/core].
 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameCameraCommand_DispatchByCodeAndModifierFlagsCf
+InGameCameraCommand_DispatchByCodeAndModifierFlags
           (uint32_t modifierFlags,uint32_t commandCode,WorldRuntimeContext *worldRuntime)
 
 {

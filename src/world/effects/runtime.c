@@ -18,7 +18,7 @@
    distinct from relocated EffectDefinition pointers and consumer-specific union facets.
 */
 EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntime_FindDefinitionByIdCf(PckEffectDefinitionIdCatalog definitionId)
+EffectRuntime_FindDefinitionById(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *registryDefinition;
@@ -64,7 +64,7 @@ StatusResult EffectRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackageCf(mutableBasePath));
+  loadOrAllocResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
   if (!loadOrAllocResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_EffectTextureSet = (GraphicsTextureSet *)loadOrAllocResult.payloadOrError;
@@ -111,7 +111,7 @@ void __thandor_void_preserve_eax_ecx EffectRuntime_ShutdownGraphicsResources(voi
   g_MemoryApi.free(g_EffectRuntimeSlots);
   g_EffectRuntimeSlots = (EffectRuntimeSlot *)0x0;
   if (g_EffectTextureSet != (GraphicsTextureSet *)0x0) {
-    g_GraphicsTextureSetReleasePackageCf(g_EffectTextureSet);
+    g_GraphicsTextureSetReleasePackage(g_EffectTextureSet);
     g_EffectTextureSet = (GraphicsTextureSet *)0x0;
   }
   if (g_EffectPalette != (GraphicsPaletteAsset *)0x0) {
@@ -210,14 +210,14 @@ void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void
    modelPayload.modelResource (SPR) — M7 real kit source; create-time rest euler = world (0, 0x4000, 0), same as
    army placement (W8). Unity def scales clear ModelRuntimeNode flag 0x800 here (M4, L123842). Role: Allocates and
    initializes one live effect instance from an EffectDefinition.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecordCf [world/runtime/core],
-   WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core], ModelLookupTable_ContainsPackedKeyCf
+   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core],
+   WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core], ModelLookupTable_ContainsPackedKey
    [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
    GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading],
    TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint [world/terrain/occupancy].
 */
 EffectCreateResult __thandor_eax_cf_preserve_ecx_edx
-EffectRuntimePool_CreateInstanceFromDefinitionCf
+EffectRuntimePool_CreateInstanceFromDefinition
           (EffectRuntimeCompletionAction completionAction,EffectRuntimeOwnerReference4 ownerRuntime,
           AngleTurn32 orientationAngle0,AngleTurn32 orientationAngle1,AngleTurn32 orientationAngle2,
           Q12 worldZQ12,Q12 worldXQ12,Q12 worldYQ12,EffectDefinition *effectDefinition,
@@ -268,7 +268,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   slotsRemaining = 0x1000;
   do {
     if ((effectRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
-      recordAlloc = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
+      recordAlloc = WorldObjectArray_AllocateFreeRecord(worldRuntime);
       effectModelNode = (EffectModelRuntimeNodeClassView100 *)recordAlloc.recordOrError;
       if (!recordAlloc.failed) {
         WorldRuntime_LinkNodeIntoOwnerListD8((WorldOwnerListNode100 *)effectModelNode);
@@ -326,7 +326,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
         effectRuntimeCursor->stateTintArgb = 0xffffff;
         effectRuntimeCursor->effectAgeTicks = 0;
         if (shadingStartTicks == 0) {
-          lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
+          lookupEntry = ModelLookupTable_ContainsPackedKey(0,4,effectDefinition->ownedNestedResource);
           if (!lookupEntry.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
@@ -365,7 +365,7 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
            (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundTableIndex],
            voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
           worldPosition = &(effectModelNode->worldTransform).translation;
-          projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+          projectedCellMasked = TerrainGrid_TestProjectedCellMaskBits01
                              ((effectModelNode->worldTransform).translation.y,worldPosition->x,
                               worldRuntime);
           if (!projectedCellMasked) {

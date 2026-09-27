@@ -20,13 +20,13 @@
    dispatchArg2→ArmyPlacementDispatchArg2_V344, p3 dispatchArg3→ArmyPlacementDispatchArg3_V344, p7
    dispatchArg7→ArmyPlacementDispatchArg7_V344. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyPlacementCollision_TestCandidateAndClearanceCf,
-   ArmyPlacementCollision_TestPointAgainstRuntimeListCf.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   Local calls: ArmyPlacementCollision_TestCandidateAndClearance,
+   ArmyPlacementCollision_TestPointAgainstRuntimeList.
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_SinCosScaled [core/math/fixed].
 */
 
-PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf
+PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearance
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -46,12 +46,12 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf
   PlacementCandidateResult result;
 
   /* The table dispatch reads EAX and CF; the decompiled int return lost CF. */
-  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
+  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearance
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldXQ12,worldYQ12,modelDefinition,dispatchArg7,worldRuntime);
   eaxOrOffsetYQ12 = clearanceResult.value;
   if (!clearanceResult.rejected) {
-    anchorLookup = ModelLookupTable_ContainsPackedKeyCf
+    anchorLookup = ModelLookupTable_ContainsPackedKey
                       (1,5,*(ModelResourceHitTestAndRenderView210 **)
                             (modelDefinition->serializedNodeOffsetOrPointer64 + 0x30));
     offsetLengthAngle = FixedMath_Vector2AngleAndLengthRegs
@@ -59,7 +59,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf
     rotatedOffset = FixedMath_SinCosScaled(offsetLengthAngle.angle + dispatchArg2 & 0xffff,offsetLengthAngle.length);
     eaxOrOffsetYQ12 = (int)rotatedOffset;
     offsetWorldXQ12 = worldXQ12 + (int)(rotatedOffset >> 0x20);
-    blocked = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+    blocked = ArmyPlacementCollision_TestPointAgainstRuntimeList
                       (dispatchArg0,0xc00,offsetWorldXQ12,worldYQ12 + eaxOrOffsetYQ12,worldRuntime);
     if (!blocked) {
       terrainTest.rejected = (*g_TerrainClassPlacementAndOverlayCallbacks10.placementTests
@@ -83,9 +83,9 @@ PlacementCandidateResult ArmyPlacementCandidate_TestOffsetClearanceCf
    Ownership: gameplay/army/placement.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FE78[37]@0051FE78. Placement-validation partition
    slots 24-47 receive (worldRuntime, armyRuntime), with CF carrying acceptance.
-   Local calls: ArmyPlacementCollision_TestCurrentRuntimeCf,
-   ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   Local calls: ArmyPlacementCollision_TestCurrentRuntime,
+   ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], TerrainAuxHeightThreshold_TestAroundWorldPoint
    [world/terrain/height], TerrainHeightBand_TestAroundWorldPoint [world/terrain/height].
 */
@@ -105,10 +105,10 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
   ModelWorldPoint anchorWorldPoint;
   
   modelNodeRuntime = modelRuntime->rootModelNode;
-  blocked = ArmyPlacementCollision_TestCurrentRuntimeCf(worldRuntime,modelRuntime);
+  blocked = ArmyPlacementCollision_TestCurrentRuntime(worldRuntime,modelRuntime);
   if (!blocked) {
     placementDefinition = modelRuntime->modelDefinition;
-    anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
+    anchorLookup = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource)
     ;
     if (!anchorLookup.notFound) {
       anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
@@ -117,7 +117,7 @@ ArmyPlacement_TestModelTerrainAndRuntimeClearance
       referenceHeightQ12 =
            (anchorWorldPoint.zQ12 - placementDefinition->placementHeightOffsetQ12) -
            ((modelNodeRuntime->modelPayload).modelResource)->placementHeightOffsetQ12;
-      blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+      blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
                         ((WorldOwnerListNode100 *)modelNodeRuntime,worldXQ12,worldYQ12,
                          (IMAGE_DOS_HEADER *)0xc00,worldRuntime);
       if (!blocked) {
@@ -155,7 +155,7 @@ Q12 g_ArmyPlacementValidatedWorldYQ12;
    Local calls: ArmyPlacement_DispatchAssetAtFieldPoint.
 */
 bool __thandor_preserve_eax
-ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
+ArmyPlacement_ValidateAssetAtPointAndCellCorners
           (ArmyPlacementMode placementMode,PckArmyAssetIdCatalog armyAssetId,Q12 worldYQ12,
           Q12 worldXQ12,ArmyPlacementContext placementContext,FactionRuntimeIndex ownerFactionId,
           void *inGameRuntime)
@@ -204,9 +204,9 @@ ArmyPlacement_ValidateAssetAtPointAndCellCornersCf
    dispatchArg2→ArmyPlacementDispatchArg2_V344, p3 dispatchArg3→ArmyPlacementDispatchArg3_V344, p7
    dispatchArg7→ArmyPlacementDispatchArg7_V344. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyPlacementCollision_TestCandidateAndClearanceCf.
+   Local calls: ArmyPlacementCollision_TestCandidateAndClearance.
 */
-PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancyCf
+PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancy
               (ArmyPlacementDispatchArg0 dispatchArg0,
               ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,
               ArmyPlacementDispatchArg2 dispatchArg2,ArmyPlacementDispatchArg3 dispatchArg3,
@@ -223,7 +223,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancyCf
   PlacementCandidateResult clearanceResult;
   FieldGridAsset *activeFieldGrid;
   
-  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearanceCf
+  clearanceResult = ArmyPlacementCollision_TestCandidateAndClearance
                     (dispatchArg0,placementClearancePaddingQ12,dispatchArg2,dispatchArg3,
                      worldYQ12,worldXQ12,(ModelDefinitionRuntimeSemanticView280 *)modelDefinition,
                      dispatchArg7,worldRuntime);
@@ -260,7 +260,7 @@ PlacementCandidateResult ArmyPlacementCandidate_TestFieldOccupancyCf
    slots 24-47 receive (worldRuntime, armyRuntime), with CF carrying acceptance.
    [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Positive support predicate: required mask is 0x00000800 << model
    occupancy class. Missing bit rejects, present bit accepts subject to other placement tests.
-   Local calls: ArmyPlacementCollision_TestCurrentRuntimeCf.
+   Local calls: ArmyPlacementCollision_TestCurrentRuntime.
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -276,7 +276,7 @@ ArmyPlacement_TestGridOccupancyMask
   ModelRuntimeNode *rootNode;
   
   rootNode = modelRuntime->rootModelNode;
-  blocked = ArmyPlacementCollision_TestCurrentRuntimeCf
+  blocked = ArmyPlacementCollision_TestCurrentRuntime
                     (worldRuntime,(ModelRuntimePlacementValidationView200 *)modelRuntime);
   if (!blocked) {
     gridCoordinates = FieldGrid_WorldToGridQ12
@@ -307,9 +307,9 @@ ArmyPlacement_TestGridOccupancyMask
    g_CodePointerTable_0051FE78[41]@0051FE78; g_CodePointerTable_0051FE78[42]@0051FE78;
    g_CodePointerTable_0051FE78[43]@0051FE78. Placement-validation partition slots 24-47 receive (worldRuntime,
    armyRuntime), with CF carrying acceptance.
-   Local calls: ArmyCollision_FindBlockingRuntimeForCurrentUnitCf.
-   Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
-   FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
+   Local calls: ArmyCollision_FindBlockingRuntimeForCurrentUnit.
+   Cross-module calls: GridScratch_TestProjectedCellMaskBands [world/pathing/grid],
+   FieldGrid_TestWorldPointBlocked [world/terrain/grid].
 */
 bool __thandor_cf_preserve_eax
 ArmyPlacement_TestGridRuntimeAndFieldBlocking
@@ -321,19 +321,19 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
   ModelRuntimeNode *modelNode;
   
   modelNode = modelRuntime->rootModelNode;
-  blocked = GridScratch_TestProjectedCellMaskBandsCf
+  blocked = GridScratch_TestProjectedCellMaskBands
                     ((modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,
                      (uint8_t)modelRuntime->modelDefinition->gridClassification260,
                      (uint8_t)modelRuntime->modelDefinition->gridClassification264);
   if (!blocked) {
-    blockingRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingRuntime = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                       ((modelNode->worldTransform).translation.y,
                        (modelNode->worldTransform).translation.x,
                        (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
     blocked = blockingRuntime.blocked;
     if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
-      blocked = FieldGrid_TestWorldPointBlockedCf
+      blocked = FieldGrid_TestWorldPointBlocked
                         (modelRuntime->ownerArmyRuntime->factionIndex,
                          (modelNode->worldTransform).translation.y,
                          (modelNode->worldTransform).translation.x,worldRuntime->fieldGrid);
@@ -350,11 +350,11 @@ ArmyPlacement_TestGridRuntimeAndFieldBlocking
    acceptance and the first four class-specific dwords remain deliberately generic. Typed parameters: p7
    dispatchArg7→ArmyPlacementDispatchArg7_V344. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyCollision_TestPointAgainstRuntimeListCf.
-   Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
-   FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
+   Local calls: ArmyCollision_TestPointAgainstRuntimeList.
+   Cross-module calls: GridScratch_TestProjectedCellMaskBands [world/pathing/grid],
+   FieldGrid_TestWorldPointBlocked [world/terrain/grid].
 */
-PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPointCf
+PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPoint
                (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRuntimeSemanticView280 *modelDefinition,
                ArmyPlacementDispatchArg7 dispatchArg7,WorldRuntimeContext *worldRuntime)
@@ -362,14 +362,14 @@ PlacementCandidateResult ArmyRuntimeCollision_TestShotSpawnPointCf
 {
   bool blocked;
   
-  blocked = GridScratch_TestProjectedCellMaskBandsCf
+  blocked = GridScratch_TestProjectedCellMaskBands
                     (worldXQ12,worldYQ12,(uint8_t)modelDefinition->gridClassification260,
                      (uint8_t)modelDefinition->gridClassification264);
   if (!blocked) {
-    blocked = ArmyCollision_TestPointAgainstRuntimeListCf
+    blocked = ArmyCollision_TestPointAgainstRuntimeList
                       (worldXQ12,worldYQ12,(uint8_t *)modelDefinition,worldRuntime);
     if ((!blocked) && (blocked = false, (g_UiCommandRuntimeFlags & 4) == 0)) {
-      blocked = FieldGrid_TestWorldPointBlockedCf
+      blocked = FieldGrid_TestWorldPointBlocked
                         (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
     }
   }
@@ -671,7 +671,7 @@ ArmyPlacement_ReleaseClassStateReservation
    army placement asset-class dispatch contract; CF carries acceptance and the first four class-specific dwords
    remain deliberately generic.
 */
-PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
+PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccess
                (uint32_t dispatchArg0,uint32_t dispatchArg1,uint32_t dispatchArg2,uint32_t dispatchArg3,
                Q12 worldXQ12,Q12 worldYQ12,ModelDefinitionRecordPrefix *modelDefinition,
                uint32_t dispatchArg7,WorldRuntimeContext *worldRuntime)
@@ -688,13 +688,13 @@ PlacementCandidateResult ArmyPlacementAssetClassDispatch_AlwaysSuccessCf
    Ownership: gameplay/army/placement.
    Purpose: Saved ids, relocated pointers, attachment selectors, and runtime class ids remain separate. It is
    separate from world-unit radii, angles, grid indices, and serialized PCK identities.
-   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf.
-   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_OverlapCf
+   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius.
+   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_Overlap
    [graphics/render/primitives].
 */
 
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointAgainstRuntimeListCf
+ArmyCollision_TestPointAgainstRuntimeList
           (Q12 worldXQ12,Q12 worldYQ12,uint8_t *modelDefinition,WorldRuntimeContext *worldRuntime)
 
 {
@@ -712,11 +712,11 @@ ArmyCollision_TestPointAgainstRuntimeListCf
     firstMaskLow = DepthInterval_BuildBinMask(intervalRadius,worldXQ12);
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-        hit = DepthBinMasks_OverlapCf
+        hit = DepthBinMasks_Overlap
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                            ownerNode->modelDepthBinMaskNear);
         if (hit) {
-          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (intervalRadius,worldXQ12,worldYQ12,ownerNode->runtimePayload);
           if (hit) {
             return true;
@@ -737,11 +737,11 @@ ArmyCollision_TestPointAgainstRuntimeListCf
    parameters: p2 worldXQ12→Q12, p3 worldYQ12→Q12. Nearby but non-identical semantic domains were explicitly
    deferred. Calling convention, parameter storage, body bytes, control flow, globals, locals, and executable data
    remain unchanged.
-   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf.
-   Cross-module calls: DepthBinMasks_OverlapCf [graphics/render/primitives].
+   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius.
+   Cross-module calls: DepthBinMasks_Overlap [graphics/render/primitives].
 */
 ArmyCollisionResult __thandor_eax_cf_preserve_ecx_edx
-ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+ArmyCollision_FindBlockingRuntimeForCurrentUnit
           (Q12 worldXQ12,Q12 worldYQ12,RuntimeCollisionQueryViewF4 *currentRuntime,
           WorldRuntimeContext *worldRuntime)
 
@@ -762,7 +762,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
     for (; candidateModelNode != (ModelRuntimeNode *)0x0;
         candidateModelNode = (ModelRuntimeNode *)(candidateModelNode->common).nextNode) {
       if (((((candidateModelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (hit = DepthBinMasks_OverlapCf
+            (hit = DepthBinMasks_Overlap
                                (currentRuntime->modelNodeRuntime->depthBinMaskFar,
                                 currentRuntime->modelNodeRuntime->depthBinMaskNear,
                                 candidateModelNode->depthBinMaskFar,
@@ -772,7 +772,7 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
           ((currentRuntime == (RuntimeCollisionQueryViewF4 *)0x0 ||
            ((armyRuntime != currentRuntime->linkedRuntimeF0 &&
             ((ArmyRuntimeSlot *)currentRuntime != armyRuntime->linkedArmyRuntime)))))) &&
-         (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+         (hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (clearanceRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)) {
         found.blocked = true;
         found.blockingArmy = (uint32_t)armyRuntime;
@@ -792,8 +792,8 @@ ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
    placementAuxiliaryValue→ArmyPlacementAuxiliaryValue_V344, p8 placementContext→ArmyPlacementContext_V344. Calling
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog],
-   ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog],
+   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
 */
 PlacementDispatchResult __thandor_eax_cf_preserve_ecx_edx
 ArmyPlacement_DispatchAssetAtFieldPoint
@@ -810,9 +810,9 @@ ArmyPlacement_DispatchAssetAtFieldPoint
   HeightSampleResult terrainHeight;
   PlacementDispatchResult dispatchResult;
   
-  lookupResult = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  lookupResult = ArmyAssetRegistry_FindById(armyAssetId);
   if (!lookupResult.notFound) {
-    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithErrorCf
+    lookupResult = THANDOR_BITCAST(ModelDefinitionResult, ArmyAssetLookupResult, ModelDefinitionRegistry_FindByIdWithError
                       (*(PckModelDefinitionIdCatalog *)((lookupResult.recordOrError)->rootNodeOffsetOrPointer + 0x20)
                       ));
     modelDefinition = lookupResult.recordOrError;
@@ -839,14 +839,14 @@ ArmyPlacement_DispatchAssetAtFieldPoint
    indices, and serialized PCK identities. Typed parameters: p2
    placementFilterFlags→ArmyPlacementCollisionFilterFlags_V344. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf,
-   ArmyPlacementCandidate_TestModelAnchorDistanceCf.
-   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_OverlapCf
+   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius,
+   ArmyPlacementCandidate_TestModelAnchorDistance.
+   Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], DepthBinMasks_Overlap
    [graphics/render/primitives].
 */
 
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+ArmyPlacementCollision_TestPointAgainstRuntimeList
           (ArmyPlacementCollisionFilterFlags placementFilterFlags,Q12 queryRadiusQ12,Q12 worldXQ12,
           Q12 worldYQ12,WorldRuntimeContext *worldRuntime)
 
@@ -865,20 +865,20 @@ ArmyPlacementCollision_TestPointAgainstRuntimeListCf
     do {
       if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
         modelClassId = *(int *)(*(int *)ownerNode->runtimePayload + 0x4c);
-        hit = DepthBinMasks_OverlapCf
+        hit = DepthBinMasks_Overlap
                           (firstMaskLow,firstMaskHigh,ownerNode->modelDepthBinMaskFar,
                            ownerNode->modelDepthBinMaskNear);
         if (((hit) &&
             ((((placementFilterFlags & 4) == 0 ||
               (*(int *)(&g_ArmyRuntimeDepthBinClassByModelClass + modelClassId * 4) == 0x90)) &&
              (modelClassId != 0)))) && (modelClassId != 0xc)) {
-          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+          hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                             (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload);
           if (hit) {
             return true;
           }
           if ((modelClassId == 0xd) &&
-             (hit = ArmyPlacementCandidate_TestModelAnchorDistanceCf
+             (hit = ArmyPlacementCandidate_TestModelAnchorDistance
                                 (queryRadiusQ12,worldXQ12,worldYQ12,ownerNode->runtimePayload),
              hit)) {
             return true;
@@ -899,13 +899,13 @@ ArmyPlacementCollision_TestPointAgainstRuntimeListCf
    parameters: p2 excludedWorldObject→WorldRuntimeNode *, p6 worldRuntime→WorldRuntimeContext *. Calling
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf,
-   ArmyPlacementCandidate_TestModelAnchorDistanceCf.
-   Cross-module calls: DepthBinMasks_OverlapCf [graphics/render/primitives].
+   Local calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius,
+   ArmyPlacementCandidate_TestModelAnchorDistance.
+   Cross-module calls: DepthBinMasks_Overlap [graphics/render/primitives].
 */
 
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+ArmyPlacementCollision_TestCandidateAgainstRuntimeList
           (WorldOwnerListNode100 *excludedWorldObject,Q12 worldXQ12,Q12 worldYQ12,
           IMAGE_DOS_HEADER *candidateRuntimeOrRadiusQ12,WorldRuntimeContext *worldRuntime)
 
@@ -930,7 +930,7 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
     for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
       if (((((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             ((((candidateRuntimeOrRadiusQ12 < &IMAGE_DOS_HEADER_00400000 ||
-               (hit = DepthBinMasks_OverlapCf
+               (hit = DepthBinMasks_Overlap
                                   (*(DepthBinMask32 *)
                                     (*(int *)&candidateRuntimeOrRadiusQ12->e_cp + 0xb8),
                                    *(DepthBinMask32 *)
@@ -944,10 +944,10 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
              && ((ArmyRuntimeSlot *)candidateRuntimeOrRadiusQ12 != armyRuntime->linkedArmyRuntime)))
             ))) && ((modelClassId = ((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->
                              definitionValue9C_4C, modelClassId != 0 && (modelClassId != 0xc)))) &&
-         ((hit = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+         ((hit = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                              ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit ||
           ((modelClassId == 0xd &&
-           (hit = ArmyPlacementCandidate_TestModelAnchorDistanceCf
+           (hit = ArmyPlacementCandidate_TestModelAnchorDistance
                               ((Q12)queryRadiusQ12,worldXQ12,worldYQ12,armyRuntime), hit)))))) {
         return true;
       }
@@ -962,12 +962,12 @@ ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
    Purpose: Tests the current runtime against terrain height, field occupancy, and nearby compatible active objects
    before accepting its placement state. Placement-validation partition slots 24-47 receive (worldRuntime,
    armyRuntime), with CF carrying acceptance.
-   Local calls: ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf.
-   Cross-module calls: FieldGrid_TestWorldPointBlockedCf [world/terrain/grid].
+   Local calls: ArmyPlacementCollision_TestCandidateAgainstRuntimeList.
+   Cross-module calls: FieldGrid_TestWorldPointBlocked [world/terrain/grid].
 */
 
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCollision_TestCurrentRuntimeCf
+ArmyPlacementCollision_TestCurrentRuntime
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -994,7 +994,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
     terrainTest = TerrainAuxHeightThreshold_TestAroundWorldPoint;
   }
   heightCopyOrDeltaX = heightRadiusOrDeltaY;
-  blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeListCf
+  blocked = ArmyPlacementCollision_TestCandidateAgainstRuntimeList
                     ((WorldOwnerListNode100 *)rootNode,(rootNode->worldTransform).translation.y,
                      (rootNode->worldTransform).translation.x,(IMAGE_DOS_HEADER *)modelRuntime,
                      worldRuntime);
@@ -1010,7 +1010,7 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
     if ((g_UiCommandRuntimeFlags & 4) != 0) {
       return false;
     }
-    blocked = FieldGrid_TestWorldPointBlockedCf
+    blocked = FieldGrid_TestWorldPointBlocked
                       (ownerArmy->factionIndex,(rootNode->worldTransform).translation.y,
                        (rootNode->worldTransform).translation.x,worldRuntime->fieldGrid);
     if (!blocked) {
@@ -1055,13 +1055,13 @@ ArmyPlacementCollision_TestCurrentRuntimeCf
    dispatchArg1→ArmyPlacementDispatchArg1_V344, p3 dispatchArg3→ArmyPlacementDispatchArg3_V344, p7
    dispatchArg7→ArmyPlacementDispatchArg7_V344. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ArmyPlacementCollision_TestPointAgainstRuntimeListCf.
-   Cross-module calls: FieldGrid_TestWorldPointBlockedCf [world/terrain/grid], FixedMath_UInt64Sqrt
+   Local calls: ArmyPlacementCollision_TestPointAgainstRuntimeList.
+   Cross-module calls: FieldGrid_TestWorldPointBlocked [world/terrain/grid], FixedMath_UInt64Sqrt
    [core/math/fixed].
 */
 
 PlacementCandidateResult
-ArmyPlacementCollision_TestCandidateAndClearanceCf
+ArmyPlacementCollision_TestCandidateAndClearance
           (ArmyPlacementDispatchArg0 dispatchArg0,
           ArmyPlacementClearancePaddingQ12 placementClearancePaddingQ12,uint32_t dispatchArg2,
           ArmyPlacementDispatchArg3 dispatchArg3,Q12 worldXQ12,Q12 worldYQ12,
@@ -1090,7 +1090,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
   
   nearestDistanceSquared = 0x7fffffffffffffff;
   contactKindIndex = modelDefinition->placementContactKindIndex278;
-  blocked = ArmyPlacementCollision_TestPointAgainstRuntimeListCf
+  blocked = ArmyPlacementCollision_TestPointAgainstRuntimeList
                     (dispatchArg0,modelDefinition->placementRadiusOrClearanceDC,worldXQ12,worldYQ12,
                      worldRuntime);
   if (!blocked) {
@@ -1102,7 +1102,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
     if (!terrainTest.rejected) {
       if ((g_UiCommandRuntimeFlags & 4) == 0) {
         ownerNode = worldRuntime->ownerListHead;
-        blocked = FieldGrid_TestWorldPointBlockedCf
+        blocked = FieldGrid_TestWorldPointBlocked
                           (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
         if (blocked) goto ArmyPlacementCollision_TestCandidateAndClearance_Reject;
         if (ownerNode != (WorldOwnerListNode100 *)0x0) {
@@ -1173,11 +1173,11 @@ ArmyPlacementCollision_TestCandidateAndClearance_Reject:
 /* Address: 0x00524650.
    Ownership: gameplay/army/placement.
    Purpose: It is separate from world-unit radii, angles, grid indices, and serialized PCK identities.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], FixedMath_Length2 [core/math/fixed].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyPlacementCandidate_TestModelAnchorDistanceCf
+ArmyPlacementCandidate_TestModelAnchorDistance
           (Q12 queryRadiusQ12,Q12 targetWorldXQ12,Q12 targetWorldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {
@@ -1187,7 +1187,7 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
   ModelWorldPoint anchorWorldPoint;
   
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
-  anchorLookup = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource);
+  anchorLookup = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource);
   if (!anchorLookup.notFound) {
     anchorWorldPoint = ModelNodeRuntime_TransformLocalPointRegs(anchorLookup.entry,modelNodeRuntime);
     anchorDistanceQ12 = FixedMath_Length2(anchorWorldPoint.yQ12 - targetWorldXQ12,anchorWorldPoint.xQ12 - targetWorldYQ12);
@@ -1206,7 +1206,7 @@ ArmyPlacementCandidate_TestModelAnchorDistanceCf
    indices, and serialized PCK identities.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+ArmyCollision_TestPointWithinExpandedRuntimeRadius
           (Q12 queryRadiusQ12,Q12 worldXQ12,Q12 worldYQ12,ArmyRuntimeSlot *armyRuntime)
 
 {

@@ -31,7 +31,7 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode);
 
 /* 0x0050B440 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelRuntime_RaycastCandidateListNearestCf
+ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime);
@@ -78,7 +78,7 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
 
 /* 0x00529140 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimePool_CreateInstanceByDefinitionIdCf
+ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime);

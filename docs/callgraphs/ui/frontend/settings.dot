@@ -32,12 +32,12 @@ digraph thandor {
   "FrontendNetworkSettings_SetGameName" [label="0x0054D1F0\nFrontendNetworkSettings_SetGameName"];
   "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish" [label="0x0054D250\nFrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish"];
   "FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls" [label="0x00549620\nFrontendTaskAssignmentPage_RefreshFactionAndPlayerControls"];
-  "FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf" [label="0x0054CD20\nFrontendNetworkSettings_PublishSelectedPlayerDescriptorCf"];
+  "FrontendNetworkSettings_PublishSelectedPlayerDescriptor" [label="0x0054CD20\nFrontendNetworkSettings_PublishSelectedPlayerDescriptorCf"];
   "FrontendDisplaySettingsPage_UpdateModeActionAvailability" [label="0x0054B160\nFrontendDisplaySettingsPage_UpdateModeActionAvailability"];
   "FrontendTaskAssignmentPage_Initialize" -> "FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls";
   "FrontendDisplaySettingsAction_ApplyPendingResolution" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
   "FrontendDisplaySettingsAction_ApplyPendingColorDepth" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
   "FrontendDisplaySettings_ApplyMode" -> "FrontendDisplaySettingsPage_UpdateModeActionAvailability";
   "FrontendNetworkSettings_SetPlayerName" -> "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish";
-  "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish" -> "FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf";
+  "FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish" -> "FrontendNetworkSettings_PublishSelectedPlayerDescriptor";
 }

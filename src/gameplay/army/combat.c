@@ -18,7 +18,7 @@
    yaw/pitch, solves launch angles and fires from matching attachments. Inputs: Army weapon state, model hierarchy,
    ShotDefinition, target and world context.
    Local calls: ArmyRuntime_EmitDamageThresholdEffect.
-   Cross-module calls: ArmyRuntime_ResolveShotAimPointCf [gameplay/army/runtime],
+   Cross-module calls: ArmyRuntime_ResolveShotAimPoint [gameplay/army/runtime],
    ArmyRuntime_UpdateMovementAndWaypoints [gameplay/army/movement], ModelNodeRuntime_SmoothYawTowardTarget
    [world/model/hierarchy], ModelNodeRuntime_SmoothPitchTowardTarget [world/model/hierarchy],
    ShotDefinition_ComputeLaunchAnglesRegs [assets/shot/catalog], ModelNodeRuntime_ComputeRelativeDirectionAngle
@@ -120,7 +120,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
     weaponDefinitionView = modelRuntime->modelDefinition;
     ownerEntity = (GameEntityRuntime *)modelRuntime->ownerArmyRuntime;
     currentNode = modelRuntime->rootModelNode;
-    aimPoint = ArmyRuntime_ResolveShotAimPointCf
+    aimPoint = ArmyRuntime_ResolveShotAimPoint
                        ((currentNode->worldTransform).translation.z,
                         (currentNode->worldTransform).translation.y,
                         (currentNode->worldTransform).translation.x,weaponDefinitionView->shotDefinition,
@@ -176,7 +176,7 @@ ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments
               if (commandTargetArmy != (ArmyRuntimeSlot *)0x0) {
                 targetRuntimeReference = (commandTargetArmy->modelRuntimeOrSavedOffset).savedIdOrOffset;
               }
-              callCarry = ArmyRuntime_ResolveShotLaunchFromModelAttachmentCf
+              callCarry = ArmyRuntime_ResolveShotLaunchFromModelAttachment
                                 (targetRuntimeReference,point0X,point0Y,point0Z,
                                  attachmentSelectorOrdinal,weaponDefinitionView->shotDefinition,currentNode,attachmentNodeHeader,
                                  worldRuntime);
@@ -322,7 +322,7 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
            relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterC,
            *relationCounter = *relationCounter + 1,
            g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[classId] ==
-           ArmyRuntime_ClassCommandHandlerGroupACf)) {
+           ArmyRuntime_ClassCommandHandlerGroupA)) {
           relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterD;
           *relationCounter = *relationCounter + 1;
           relationCounter = &g_GameFactionRuntimeImage.records[healthOrOwnerIndex].relationCounterC;
@@ -433,12 +433,12 @@ ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
    geometry, ShotDefinition trajectory mode and world collision structures. Outputs: Boolean/carry line-of-fire
    result.
    Cross-module calls: FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], FixedMath_UInt64Sqrt
-   [core/math/fixed], FixedMath_Atan2Angle16 [core/math/fixed], ModelRuntime_RaycastCandidateListNearestCf
+   [core/math/fixed], FixedMath_Atan2Angle16 [core/math/fixed], ModelRuntime_RaycastCandidateListNearest
    [world/model/runtime], FixedMath_VectorToAnglesAndLength3Regs [core/math/fixed],
-   FieldGrid_RaycastTerrainSurfaceDistanceCf [world/terrain/grid].
+   FieldGrid_RaycastTerrainSurfaceDistance [world/terrain/grid].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyWeaponRuntime_TestTargetLineOfFireCf
+ArmyWeaponRuntime_TestTargetLineOfFire
           (Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime)
 
@@ -498,7 +498,7 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
       return true;
     }
     originNode = armyRuntime->modelNodeRuntime;
-    modelHit = ModelRuntime_RaycastCandidateListNearestCf
+    modelHit = ModelRuntime_RaycastCandidateListNearest
                        (angleOrDistance,horizontalVector.angle & 0xffff,horizontalVector.length,
                         (originNode->worldTransform).translation.z,
                         (originNode->worldTransform).translation.y,
@@ -545,12 +545,12 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
   maxAngleOrRange = shotDefinitionWords[3] * shotDefinitionWords[0x34];
   originYQ12 = (originNode->worldTransform).translation.y;
   originZQ12 = (originNode->worldTransform).translation.z;
-  terrainHit = FieldGrid_RaycastTerrainSurfaceDistanceCf
+  terrainHit = FieldGrid_RaycastTerrainSurfaceDistance
                      (elevationAngle,azimuthAngle,maxAngleOrRange,(originNode->worldTransform).translation.z,
                       (originNode->worldTransform).translation.y,
                       (originNode->worldTransform).translation.x,worldRuntime->fieldGrid);
   minAngleOwnerOrDistance = terrainHit.distanceQ12;
-  modelHit = ModelRuntime_RaycastCandidateListNearestCf
+  modelHit = ModelRuntime_RaycastCandidateListNearest
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime);
   if ((!modelHit.hit) ? (minAngleOwnerOrDistance <= 0x7ffffffe) :
@@ -646,10 +646,10 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
    below its verified damage threshold and cooldown expires. Role: Emits an effect when an army/placeable crosses a
    configured damage threshold. Inputs: Army health/damage state, definition threshold/effect and model attachment
    lookup. Outputs: EffectRuntime at the transformed damage attachment point. Edges: Transforms the matching
-   attachment and calls EffectRuntimePool_CreateInstanceFromDefinitionCf.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   attachment and calls EffectRuntimePool_CreateInstanceFromDefinition.
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime].
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_EmitDamageThresholdEffect
@@ -690,14 +690,14 @@ ArmyRuntime_EmitDamageThresholdEffect
   }
   modelNodeRuntime = armyRuntime->modelNodeRuntime;
   armyRuntime->selectionMetric3 = randomOffset + *(int *)(definitionOrRandom + 600);
-  lookupResult = ModelLookupTable_ContainsPackedKeyCf
+  lookupResult = ModelLookupTable_ContainsPackedKey
                     (armyRuntime->selectionMetric4,3,(modelNodeRuntime->modelPayload).modelResource)
   ;
   localPointRecord = lookupResult.entry;
   if (lookupResult.notFound) {
     /* Wrap around to the first emitter point. */
     armyRuntime->selectionMetric4 = -1;
-    lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,(modelNodeRuntime->modelPayload).modelResource)
+    lookupResult = ModelLookupTable_ContainsPackedKey(0,3,(modelNodeRuntime->modelPayload).modelResource)
     ;
     localPointRecord = lookupResult.entry;
   }
@@ -718,7 +718,7 @@ ArmyRuntime_EmitDamageThresholdEffect
   definitionOrRandom = g_RandomGeneratorState.next();
   randomOffset = definitionOrRandom & 0xffff;
   randomValue = g_RandomGeneratorState.next();
-  EffectRuntimePool_CreateInstanceFromDefinitionCf
+  EffectRuntimePool_CreateInstanceFromDefinition
             (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),definitionOrRandom >> 0x10,
              (randomValue & 0x1fff) + 0x1fff,randomOffset,worldZQ12,worldXQ12,randomOrPointX,effectDefinition,worldRuntime
             );

@@ -50,7 +50,7 @@ uint32_t __cdecl CPU_DetectFeatures(void);
 void __cdecl Game_Run(void);
 
 /* 0x0050BB10 */
-StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRenderingCf(void);
+StatusResult __cdecl GameRuntime_InitializeSpatialAudioAndRendering(void);
 
 /* 0x00573140 */
 uint32_t __cdecl Game_LoadCoreAssets(void);

@@ -562,7 +562,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
    Purpose: Handles graphics primitive queue append terrain textured triangle.
 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
+GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -789,7 +789,7 @@ DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCen
    bytes, control flow, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DepthBinMasks_OverlapCf
+DepthBinMasks_Overlap
           (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,DepthBinMask32 secondMaskLow,
           DepthBinMask32 secondMaskHigh)
 

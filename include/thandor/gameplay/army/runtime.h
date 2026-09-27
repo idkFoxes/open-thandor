@@ -37,7 +37,7 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
 
 /* 0x005274D0 */
 void __thandor_void_preserve_eax_ecx_edx
-ArmyRuntime_ClassCommandHandlerGroupACf
+ArmyRuntime_ClassCommandHandlerGroupA
           (WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051D140 */
@@ -57,7 +57,7 @@ ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers
 
 /* 0x0051D6B0 */
 ArmyRuntimeInitResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,uint16_t *graphicsBasePath);
+ArmyRuntime_InitializePoolAndGraphics(void *ownerContext,uint16_t *graphicsBasePath);
 
 /* 0x00528330 */
 void __thandor_void_preserve_eax_ecx_edx ArmyRuntimeClass_UpdateEffectsAndDestroyModelHierarchy (WorldRuntimeContext *worldRuntime,ModelRuntimeDestroyEffectsView200 *modelRuntime);
@@ -83,7 +83,7 @@ ArmyRuntime_ApplyTargetPositionCommand
 
 /* 0x0051C720 */
 WorldPositionResult
-ArmyRuntime_ResolveShotAimPointCf
+ArmyRuntime_ResolveShotAimPoint
           (Q12 sourceWorldZQ12,Q12 sourceWorldYQ12,Q12 sourceWorldXQ12,
           ShotDefinition *shotDefinition,GameEntityRuntime *targetState);
 
@@ -94,11 +94,11 @@ ArmyRuntimeNode_AccumulateTerrainOcclusionAndOccupancyCallback
 
 /* 0x0051D310 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100ZeroCf(ArmyRuntimeSlot *runtimeState);
+ArmyRuntime_TestStateField100Zero(ArmyRuntimeSlot *runtimeState);
 
 /* 0x0051D330 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestStateField100NonnegativeCf(ArmyRuntimeSlot *armyRuntime);
+ArmyRuntime_TestStateField100Nonnegative(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051D350 */
 bool __thandor_cf_preserve_eax_edx
@@ -153,7 +153,7 @@ void __thandor_void_preserve_eax_ecx_edx ArmyRuntimeClass_UpdateVerticalDeployme
 
 /* 0x00529720 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_ResolveShotLaunchFromModelAttachmentCf
+ArmyRuntime_ResolveShotLaunchFromModelAttachment
           (ShotRuntimeState14 shotRuntimeState14,Q12 targetWorldXQ12,Q12 targetWorldYQ12,
           Q12 targetWorldZQ12,SprAttachmentSelectorOrdinal attachmentSelectorOrdinal,
           ShotDefinition *shotDefinition,ModelRuntimeNode *modelNode,
@@ -172,7 +172,7 @@ ArmyRuntime_HandleCollisionPartner
 
 /* 0x0051BC00 */
 ArmyPreviewTextureResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_RenderPreviewTextureCf
+ArmyRuntime_RenderPreviewTexture
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
           FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime);
@@ -184,14 +184,14 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
 
 /* 0x00527010 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntimeSpawner_CreateLinkedChildInstanceCf
+ArmyRuntimeSpawner_CreateLinkedChildInstance
           (WorldMotionValue78 inheritedValue78,WorldMotionValue74 inheritedValue74,
           WorldMotionValue70 inheritedValue70,PckArmyAssetIdCatalog linkedArmyAssetId,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeLinkedChildMaskSlotView *armyRuntime);
 
 /* 0x00527430 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestModelAttachmentProximityCf
+ArmyRuntime_TestModelAttachmentProximity
           (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
 
 /* 0x0051C040 */
@@ -201,7 +201,7 @@ ArmyRuntime_DestroyInstanceAndRefreshUi
 
 /* 0x005246B0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestClass13ProximityCandidateCf
+ArmyRuntime_TestClass13ProximityCandidate
           (ArmyRuntimeSlot *candidateArmyRuntime,ArmyRuntimeSlot *sourceArmyRuntime);
 
 /* 0x00526510 */
@@ -226,7 +226,7 @@ ArmyRuntime_TrySpawnDefinitionEffectAtWorldPoint
 
 /* 0x005273D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestPositionDistanceWithinCombinedRadiusCf
+ArmyRuntime_TestPositionDistanceWithinCombinedRadius
           (UQ12 candidateRadiusQ12,UQ12 sourceRadiusQ12,void *candidatePositionRuntime,
           void *sourcePositionRuntime);
 
@@ -253,11 +253,11 @@ ArmyRuntime_RebuildDerivedSelectionMetrics(ArmyRuntimeSlot *armyRuntime);
 
 /* 0x0051DBA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyRuntime_TestWorldPointAllowedDefaultCf(uint32_t arg0,uint32_t arg1,uint32_t arg2);
+ArmyRuntime_TestWorldPointAllowedDefault(uint32_t arg0,uint32_t arg1,uint32_t arg2);
 
 /* 0x0051B8F0 */
 ArmyRuntimeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ArmyRuntime_CreateInstanceFromAssetCf
+ArmyRuntime_CreateInstanceFromAsset
           (WorldObjectAllocationFlags creationFlags,AngleTurn32 orientationAngle,Q12 worldXQ12,
           Q12 worldYQ12,FactionRuntimeIndex factionIndex,PckArmyAssetIdCatalog armyAssetId,
           WorldRuntimeContext *worldRuntime);

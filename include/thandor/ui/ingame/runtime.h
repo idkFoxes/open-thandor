@@ -16,7 +16,7 @@
 
 /* 0x0056E3C0 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
+InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlags
           (uint32_t keyboardStateMask,uint32_t keyboardEventCode,UiRootNode *uiRoot);
 
 /* 0x0056BAD0 */
@@ -36,7 +36,7 @@ InGameMapAction_RecenterViewFromGridCoordinates(InGameMapViewControlAddress32 ma
 
 /* 0x0055C990 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot);
+InGameUiRuntime_InitializeControlTreeResources(UiRootNode *inGameRoot);
 
 /* 0x00563BD0 */
 void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessionPrompts(void);
@@ -46,7 +46,7 @@ void __thandor_void_preserve_eax_ecx_edx InGamePanel_RebuildPlayerStatusRows(voi
 
 /* 0x005678C0 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf
+InGameUiRuntime_DispatchCommandByCodeAndModifierFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           WorldRuntimeContext *inGameRuntime);
 

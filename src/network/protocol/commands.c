@@ -163,7 +163,7 @@ InGameCommandQueue_DequeueFirstIntoRecord(FrontendCommandPacketRecord *outputRec
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameCommandQueue_ContainsTripletValueCf
+InGameCommandQueue_ContainsTripletValue
           (InGameCommandPayloadTripletValue32 payloadValue,
           InGameCommandHandlerAddress32 commandHandlerAddress)
 

@@ -52,11 +52,11 @@ RomRecordTable_FindIndexById(RomRecordId recordId,void *table);
 
 /* 0x005484D0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FrontendRomTransition_ActivateRecordByIdCf(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
+FrontendRomTransition_ActivateRecordById(RomRecordId recordId,WorldRuntimeContext *worldRuntime);
 
 /* 0x00548600 */
 bool __thandor_cf_preserve_eax_ecx_edx
-RomRuntime_UpdateRecordVisibilityAndDescriptorsCf
+RomRuntime_UpdateRecordVisibilityAndDescriptors
           (RomVisibilityFrontendValue frontendValue,RomRecordId recordId);
 
 /* 0x00546330 */
@@ -76,7 +76,7 @@ FrontendRomTransition_InitializeFromRecord
 
 /* 0x005487A0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindSlotValueByRecordIdCf(RomRecordId recordId);
+RomRegistry_FindSlotValueByRecordId(RomRecordId recordId);
 
 /* 0x00548410 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -84,6 +84,6 @@ RomRuntime_ApplyIndexedDescriptor(RomRecordTableIndex entryIndex,RomAssetRecordP
 
 /* 0x00548740 */
 RomRecordResult __thandor_eax_cf_preserve_ecx_edx
-RomRegistry_FindRecordByIdCf(RomRecordId recordId);
+RomRegistry_FindRecordById(RomRecordId recordId);
 
 #endif /* THANDOR_ASSETS_ROM_RUNTIME_H */

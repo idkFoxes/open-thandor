@@ -1,7 +1,7 @@
 digraph thandor {
   rankdir=LR;
   node [shape=box];
-  "InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf" [label="0x00568300\nInGameWorldOverlay_RebuildOrReleaseTransientMarkersCf"];
+  "InGameWorldOverlay_RebuildOrReleaseTransientMarkers" [label="0x00568300\nInGameWorldOverlay_RebuildOrReleaseTransientMarkersCf"];
   "SelectionOverlay_RenderSelectedArmyMetrics" [label="0x0052F0C0\nSelectionOverlay_RenderSelectedArmyMetrics"];
   "SelectionOverlay_RenderArmyMetricsForEntity" [label="0x0052F1B0\nSelectionOverlay_RenderArmyMetricsForEntity"];
   "SelectionOverlay_DrawBoundsFrame" [label="0x0052F2A0\nSelectionOverlay_DrawBoundsFrame"];
@@ -17,5 +17,5 @@ digraph thandor {
   "SelectionMarkerCoordinates_ApplyType6" [label="0x005600B0\nSelectionMarkerCoordinates_ApplyType6"];
   "SelectionMarkerCoordinates_ApplyType7" [label="0x005600E0\nSelectionMarkerCoordinates_ApplyType7"];
   "InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint" [label="0x00568210\nInGameWorldOverlay_EnsureTransientEffectMarkerAtPoint"];
-  "InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf" -> "InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint";
+  "InGameWorldOverlay_RebuildOrReleaseTransientMarkers" -> "InGameWorldOverlay_EnsureTransientEffectMarkerAtPoint";
 }

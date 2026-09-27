@@ -15,7 +15,7 @@
    Purpose: Advances the selected faction pair through the verified relation-state transition table, using recent-
    timed-state checks for transitional states. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId,
    active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: GameFactionRuntime_IsRecentTimedRelationStateCf,
+   Local calls: GameFactionRuntime_IsRecentTimedRelationState,
    GameFactionRuntime_ApplyPairwiseRelationTransition.
 */
 void __thandor_void_preserve_eax_ecx
@@ -29,7 +29,7 @@ GameFactionRuntime_AdvancePairwiseRelationState
   switch(g_GameFactionRuntimeImage.records[targetFactionIndex].packedRelationStates >>
          ((uint8_t)(sourceFactionIndex << 2) & 0x1f) & 0xf) {
   case 2:
-    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
       return;
     }
@@ -43,7 +43,7 @@ GameFactionRuntime_AdvancePairwiseRelationState
               (2,2,4,4,sourceFactionIndex,targetFactionIndex);
     break;
   case 4:
-    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
       return;
     }
@@ -56,7 +56,7 @@ GameFactionRuntime_AdvancePairwiseRelationState
               (5,5,8,8,sourceFactionIndex,targetFactionIndex);
     break;
   case 8:
-    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationStateCf(sourceFactionIndex,targetFactionIndex);
+    isRecentTimedState = GameFactionRuntime_IsRecentTimedRelationState(sourceFactionIndex,targetFactionIndex);
     if (isRecentTimedState) {
       return;
     }
@@ -230,7 +230,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
    Purpose: Resolves the two serialized army-asset identifier arrays in each faction record through the army
    registry, clears an array count on lookup failure, and rebases the 256 stored runtime pointers with the verified
    army-runtime rebase delta.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
 
@@ -251,7 +251,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
   do {
     assetIdCursor = factionRecordCursor->records[0].secondaryArmyAssetPointersOrIds;
     for (assetsRemaining = factionRecordCursor->records[0].secondaryArmyAssetCount; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
-      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*assetIdCursor);
+      resolvedAsset = ArmyAssetRegistry_FindById(*assetIdCursor);
       if (resolvedAsset.notFound) {
         factionRecordCursor->records[0].secondaryArmyAssetCount = 0;
         break;
@@ -261,7 +261,7 @@ void __fastcall GameFactionRuntime_RebaseLoadedArmyReferences(void)
     }
     assetIdCursor = factionRecordCursor->records[0].primaryArmyAssetPointersOrIds;
     for (assetsRemaining = factionRecordCursor->records[0].primaryArmyAssetCount; assetsRemaining != 0; assetsRemaining = assetsRemaining - 1) {
-      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*assetIdCursor);
+      resolvedAsset = ArmyAssetRegistry_FindById(*assetIdCursor);
       if (resolvedAsset.notFound) {
         factionRecordCursor->records[0].primaryArmyAssetCount = 0;
         break;
@@ -334,7 +334,7 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
    capability bit is clear and clear when the bit is present.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_TestCapabilityBitClearCf
+GameFactionRuntime_TestCapabilityBitClear
           (uint32_t capabilityBitIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -526,7 +526,7 @@ GameFactionRuntime_UpdateImpactAlertAnchorAndNotify
    active army contribution, and the derived score fields for one faction. It is distinct from
    FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId,
    ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RecomputeProgressAndScoreMetrics
@@ -598,7 +598,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (tritiumComponentOrModelRecord = *(int *)((int)ownerNode->runtimePayload + 8), factionIndex == *(int *)(tritiumComponentOrModelRecord + 0xc)
        )) {
-      resolvedAsset = ArmyAssetRegistry_FindByIdCf(*(PckArmyAssetIdCatalog *)(tritiumComponentOrModelRecord + 0xa0));
+      resolvedAsset = ArmyAssetRegistry_FindById(*(PckArmyAssetIdCatalog *)(tritiumComponentOrModelRecord + 0xa0));
       if (!resolvedAsset.notFound) {
         tallyOrComponent = tallyOrComponent + resolvedAsset.recordOrError[2].registryId;
       }
@@ -621,7 +621,7 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
    the one-based group index with carry clear or the original runtime pointer with carry set.
 */
 RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
-GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeEntry)
+GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry)
 
 {
   int slotsRemaining;
@@ -667,7 +667,7 @@ GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeE
    matching identifier, returning the result through carry.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FactionRuntime_HasArmyAssetOrActiveStructureCf
+FactionRuntime_HasArmyAssetOrActiveStructure
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord)
 
 {
@@ -743,7 +743,7 @@ GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRunt
    ordinary return remains void because the three-register result is not a C scalar return.
 */
 WorldPositionResult
-GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
+GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState)
 
 {
   GameEntityRuntime *commandTargetEntity;
@@ -853,7 +853,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
           relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterE;
           *relationCounter = *relationCounter + 1;
           if (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[maxIntegrityOrClassOrCount] ==
-              ArmyRuntime_ClassCommandHandlerGroupACf) {
+              ArmyRuntime_ClassCommandHandlerGroupA) {
             relationCounter = &g_GameFactionRuntimeImage.records[integrityDeltaOrFaction].relationCounterD;
             *relationCounter = *relationCounter + 1;
             relationCounter = &g_GameFactionRuntimeImage.records[sourceFactionIndex].relationCounterF;
@@ -906,7 +906,7 @@ GameEntityRuntime_ApplyImpactDamageAndFactionRelationState
    ModelDefinitionId, and TechnologyId domains. Typed parameters: p3 repetitionCount→FactionArmyAssetCount_V304.
    Nearby but non-identical semantic domains were explicitly deferred. Calling convention, parameter storage, body
    bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_RegisterArmyAssetPointers
@@ -918,7 +918,7 @@ GameFactionRuntime_RegisterArmyAssetPointers
   FactionArmyAssetCount slotIndex;
   ArmyAssetLookupResult resolvedAsset;
   
-  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   if (!resolvedAsset.notFound) {
     slotIndex = g_GameFactionRuntimeImage.records[factionIndex].secondaryArmyAssetCount;
     do {
@@ -944,7 +944,7 @@ GameFactionRuntime_RegisterArmyAssetPointers
    records. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-
    backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
    requestedCount→FactionArmyAssetCount_V304. Nearby but non-identical semantic domains were explicitly deferred.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
@@ -963,7 +963,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
   WorldOwnerListNode100 *ownerNode;
   ArmyAssetLookupResult resolvedAsset;
   
-  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   armyDefinition = resolvedAsset.recordOrError;
   if (!resolvedAsset.notFound) {
     recordOffset = factionIndex * 0x740;
@@ -1066,7 +1066,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
    refund, transfer, and sale paths; cost and eligibility semantics remain those proved by the live consumers and
    PCK records. ArmyAssetId remains the PCK-backed asset identity; transfer, queue, and refund operations do not
    collapse these domains.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
    [ui/ingame/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1083,7 +1083,7 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
   FactionArmyAssetCount assetsRemaining;
   ArmyAssetLookupResult resolvedAsset;
   
-  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   armyDefinition = resolvedAsset.recordOrError;
   if (!resolvedAsset.notFound) {
     playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
@@ -1176,7 +1176,7 @@ GameFactionRuntime_ConsumePendingArmyAssetAndRefreshGrid
    refund, transfer, and sale paths; cost and eligibility semantics remain those proved by the live consumers and
    PCK records. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and
    PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog], UiCommandSpriteVariantA_RebuildGrid
    [ui/ingame/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1192,7 +1192,7 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
   FactionArmyAssetCount assetsRemaining;
   ArmyAssetLookupResult resolvedAsset;
   
-  resolvedAsset = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  resolvedAsset = ArmyAssetRegistry_FindById(armyAssetId);
   if (!resolvedAsset.notFound) {
     byteOffsetOrActiveFaction = factionIndex * 0x740;
     for (assetsRemaining = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount; assetsRemaining != 0;
@@ -1237,7 +1237,7 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
    indices, network endpoint identity, and PCK asset identifiers. Typed parameters: p2
    playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes, control flow, and executable data
    remain unchanged. Typed parameters: p5 lookupToken→RuntimeToken.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime].
+   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 PlayerRuntime_ResolveAndStoreState8094
@@ -1249,7 +1249,7 @@ PlayerRuntime_ResolveAndStoreState8094
   ArmyRuntimeCreateResult createdRuntime;
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
-  createdRuntime = ArmyRuntime_CreateInstanceFromAssetCf
+  createdRuntime = ArmyRuntime_CreateInstanceFromAsset
                     (4,0,lookupValue0,lookupValue1,playerBlock->constructionLookupState8090,lookupToken,
                      &g_InGameRuntimeRoot->worldRuntime0A30);
   if (!createdRuntime.failed) {
@@ -1319,7 +1319,7 @@ PlayerRuntime_ClearState8094
    when runtime state and imported records are available, replays fixed 0x20-byte primary records, runs two
    verified traversal callbacks, and refreshes the paired runtime values. Existing EAX and EDX results are
    preserved.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime],
+   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
    WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], FieldGrid_ClassifyCellFlagsToRuntimeByte
    [world/terrain/grid].
 */
@@ -1358,7 +1358,7 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
     recordsRemaining = g_OldUnitRecordCount;
     primaryRecordCursor = g_OldUnitPrimaryTable;
     do {
-      ArmyRuntime_CreateInstanceFromAssetCf
+      ArmyRuntime_CreateInstanceFromAsset
                 (6,primaryRecordCursor[4],primaryRecordCursor[3],primaryRecordCursor[2],primaryRecordCursor[1],*primaryRecordCursor,worldRuntime);
       primaryRecordCursor = primaryRecordCursor + 8;
       recordsRemaining = recordsRemaining - 1;
@@ -1383,7 +1383,7 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
    2, 5, or 9 whose bidirectional timestamp age is at most 0x258 ticks; EAX is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_IsRecentTimedRelationStateCf
+GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex)
 
 {

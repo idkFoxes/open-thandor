@@ -394,7 +394,7 @@ FixedTransform_RotateDirectionScaledRegs
    Purpose: Allocates one 0x40000-byte image, seeds its fixed prefix, and generates two signed-16-bit lookup
    regions from g_FixedCosQ28. CF reports allocation failure.
 */
-void __cdecl CosineDerivedLookupTables_InitCf(void)
+void __cdecl CosineDerivedLookupTables_Init(void)
 
 {
   short *outputCursor;

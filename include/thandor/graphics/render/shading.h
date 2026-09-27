@@ -20,7 +20,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           (ModelRuntimeNode *modelNode,GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004BCF70 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void);
+StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initialize(void);
 
 /* 0x004CCA90 */
 MmxPackedValue64 __thandor_void_preserve_ecx_edx_mm1
@@ -48,7 +48,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
 
 /* 0x004CCFF0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_InitializeGeneratedTextureCf
+GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension);
 
@@ -64,7 +64,7 @@ void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void);
 
 /* 0x004D1170 */
-void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlockCf
+void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
                (GeneratedTextureRenderContextView *renderContext);
 
 /* 0x004CD880 */

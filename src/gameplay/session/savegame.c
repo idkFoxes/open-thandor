@@ -14,7 +14,7 @@
    Ownership: gameplay/session/savegame.
    Purpose: Recovered action-table target INGAME_PAGE12[15] (0x120F).
    Local calls: InGameSaveGame_SaveSelectedOrTypedName.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists], UiPageStack_SetActiveIndex
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout], TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], UiNode_GetRoot [ui/core/runtime], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
@@ -41,7 +41,7 @@ InGameSaveGameList_SelectAndRefreshDetail(UiPointerListControl *catalogList)
        (UiWrappedTextControl *)THANDOR_UI_SIBLING(catalogList,InGameUiImage,saveGameList,saveGameDescriptionText);
   rowSlotArray = catalogList->rowSlots;
   lastRowIndex = catalogList->rowCount - 1;
-  selectionResult = UiPointerList_GetSelectedIndexVariantBCf(catalogList);
+  selectionResult = UiPointerList_GetSelectedIndexVariantB(catalogList);
   selectedIndex = selectionResult.rowIndex;
   selectedRowRecord = rowSlotArray[selectedIndex];
   if (selectionResult.confirmed) {
@@ -96,7 +96,7 @@ InGameUiAction120F_Handler_UnsuppressAction1210AndReturn:
    saveGamePageControl→InGameSaveGamePageControlAddress32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: InGameSaveGamePage_RebuildCatalog.
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode [core/text/path].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -111,7 +111,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
   ListSelectionResult selectionResult;
   
   g_GraphicsCursorSetFrame(6);
-  selectionResult = UiPointerList_GetSelectedIndexVariantBCf
+  selectionResult = UiPointerList_GetSelectedIndexVariantB
                     ((UiPointerListControl *)(saveGamePageControl + 0xf0));
   rowOrdinal = selectionResult.rowIndex + 1;
   if (rowOrdinal != *(int *)(saveGamePageControl + 0x144)) {
@@ -123,7 +123,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
               ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     carryIn = WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    errorOrValue = g_FileSystemDeleteCf(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
+    errorOrValue = g_FileSystemDelete(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     FatalError_ReportIfFailed(errorOrValue,carryIn);
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
@@ -139,7 +139,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
    non-queue direct callers.
    Local calls: InGameSaveName_UpdateSaveActionValidity.
    Cross-module calls: WidePath_CombineDirectoryAndLeaf [core/text/path], TextResource_Resolve
-   [assets/text/resources], RichTextCommandStream_CopyExpandedCf [assets/text/richtext],
+   [assets/text/resources], RichTextCommandStream_CopyExpanded [assets/text/richtext],
    UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPointerList_SortByDwordPairFieldDescending
    [ui/controls/lists], UiPointerList_SelectIndexVariantB [ui/controls/lists].
 */
@@ -174,7 +174,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
   WidePath_CombineDirectoryAndLeaf
             ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,(uint16_t *)u_save___sve_0050d9c8,
              (uint16_t *)&g_ExecutableDirectoryUtf16);
-  enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntriesCf
+  enumResult = g_FileSystemEnumerateDirectoryOrVolumeEntries
                      (FILESYSTEM_ENUMERATE_FILES,0xffffffff,0x800000,g_PackageScratchBuffer,
                       &g_ScenarioCatalogPathScratchUtf16);
   remainingCount = enumResult.entryCount;
@@ -199,13 +199,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       WidePath_CombineDirectoryAndLeaf
                 ((uint16_t *)&g_ScenarioCatalogPathScratchUtf16,leaf,
                  (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-      openResult = g_FileSystemOpenCf
+      openResult = g_FileSystemOpen
                         (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
       handle = (void *)openResult.handleOrError;
       if (!openResult.failed) {
         closeHandle = handle;
-        g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0x100,handle);
-        g_FileSystemReadExactCf(0x100,destination,handle);
+        g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0x100,handle);
+        g_FileSystemReadExact(0x100,destination,handle);
         g_FileSystemClose(closeHandle);
         destination[0x1c] = destination[0x1c] + 0x2230;
         destination[0x24] = destination[0x24] + 0x2220;
@@ -221,7 +221,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
       clearCursor = clearCursor + 1;
     }
     resolvedText = TextResource_Resolve(0x2151);
-    RichTextCommandStream_CopyExpandedCf(0x100,(uint16_t *)destination,resolvedText.text);
+    RichTextCommandStream_CopyExpanded(0x100,(uint16_t *)destination,resolvedText.text);
     /* The action source is the game menu's Save button (in-game template +0x2550). */
     inGameUi = THANDOR_CONTAINER_OF(saveMenuButton, InGameUiImage, gameMenuSaveButton);
     saveList = (UiPointerListControl *)INGAME_UI(inGameUi, saveGameList);
@@ -244,7 +244,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
     InGameSaveName_UpdateSaveActionValidity(INGAME_UI(firstNode, saveNameEdit));
     listRowCount = saveList->rowCount;
     rowSlots = saveList->rowSlots;
-    selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
+    selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
     selectedRecord = (ScenarioCatalogSaveRecord *)rowSlots[selectionResult.rowIndex];
     /* The description text holds a TextResourceId (labelFlags & 0x10 clear). */
     descriptionText->text = (uint16_t *)0x215d;
@@ -273,7 +273,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGamePage_RebuildCatalog(UiNod
 /* Address: 0x0056C230.
    Ownership: gameplay/session/savegame.
    Purpose: Recovered action-table target INGAME_PAGE12[16] (0x1210).
-   Cross-module calls: UiPointerList_GetSelectedIndexVariantBCf [ui/controls/lists],
+   Cross-module calls: UiPointerList_GetSelectedIndexVariantB [ui/controls/lists],
    WidePath_CombineDirectoryAndLeaf [core/text/path], WidePath_SetExtensionCode [core/text/path],
    InGameUiAction1210_ResourceRegistrationHelper [ui/ingame/runtime], UiSelectableControl_SetSelected
    [ui/controls/lists], InGameSettingsPage_ToggleAndSynchronizeControls [ui/ingame/settings].
@@ -291,7 +291,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
   
   g_GraphicsCursorSetFrame(6);
   saveList = (UiPointerListControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveGameList);
-  selectionResult = UiPointerList_GetSelectedIndexVariantBCf(saveList);
+  selectionResult = UiPointerList_GetSelectedIndexVariantB(saveList);
   errorOrValue = selectionResult.rowIndex + 1;
   /* the typed name of the trailing new-save row, else the selected row's file name */
   leaf = ((UiTextEditControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,saveNameEdit))->

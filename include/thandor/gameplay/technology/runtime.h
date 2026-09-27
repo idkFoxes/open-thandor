@@ -22,12 +22,12 @@ Technology_UnlockForFaction
 
 /* 0x00513AE0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsUnlockedForFactionCf
+Technology_IsUnlockedForFaction
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513B20 */
 bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsAvailableForFactionCf
+Technology_IsAvailableForFaction
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x0052AE10 */

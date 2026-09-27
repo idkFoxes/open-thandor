@@ -9,8 +9,8 @@ digraph thandor {
   "TerrainHeightDelta_ApplyWedge3" [label="0x00508F00\nTerrainHeightDelta_ApplyWedge3"];
   "TerrainHeightDelta_ApplyWedge4" [label="0x00508FA0\nTerrainHeightDelta_ApplyWedge4"];
   "TerrainHeightDelta_ApplyWedge5" [label="0x00509040\nTerrainHeightDelta_ApplyWedge5"];
-  "TerrainTriangle_IntersectRayDistanceCf" [label="0x00504520\nTerrainTriangle_IntersectRayDistanceCf"];
-  "TerrainRay_AdvanceGridTraversalCf" [label="0x005049E0\nTerrainRay_AdvanceGridTraversalCf"];
+  "TerrainTriangle_IntersectRayDistance" [label="0x00504520\nTerrainTriangle_IntersectRayDistanceCf"];
+  "TerrainRay_AdvanceGridTraversal" [label="0x005049E0\nTerrainRay_AdvanceGridTraversalCf"];
   "TerrainHeightBand_TestWedge0" [label="0x00507AB0\nTerrainHeightBand_TestWedge0"];
   "TerrainHeightBand_TestWedge1" [label="0x00507BA0\nTerrainHeightBand_TestWedge1"];
   "TerrainHeightBand_TestWedge2" [label="0x00507C80\nTerrainHeightBand_TestWedge2"];

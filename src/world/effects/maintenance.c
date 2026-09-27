@@ -123,10 +123,10 @@ EffectRuntimeMaintenance_AudioRefreshNoOp(WorldRuntimeContext *worldRuntime,void
    shading ownership, tint and scale interpolation, and dispatches the sealed effect transition modes. Maintenance
    table phase primaryUpdate, object kind effect.
    Cross-module calls: InterpolationState_SetNegatedTargetAndRescaleProgress [core/math/interpolation],
-   WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core], ModelLookupTable_ContainsPackedKeyCf
+   WorldRuntime_UnlinkNodeFromOwnerListD8 [world/runtime/core], ModelLookupTable_ContainsPackedKey
    [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
    GraphicsShadingRuntime_AllocateRecordRegs [graphics/render/shading],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime].
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
@@ -202,7 +202,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       shadingCountdownPtr = &effectSlot->shadingStartCountdownTicksRemaining;
       *shadingCountdownPtr = *shadingCountdownPtr - 1;
       if ((*shadingCountdownPtr == 0) && (modelNode->shadingRecord == (GraphicsShadingRuntimeRecord *)0x0)) {
-        lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
+        lookupResult = ModelLookupTable_ContainsPackedKey(0,4,effectDefinition->ownedNestedResource);
         if (!lookupResult.notFound) {
           localPoint = ModelNodeRuntime_TransformLocalPointRegs
                              (lookupResult.entry,(ModelRuntimeNode *)modelNode);
@@ -273,7 +273,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
     *periodicCountdownPtr = *periodicCountdownPtr - 1;
     if (*periodicCountdownPtr == 0) {
       effectSlot->periodicEffectCountdownTicks = effectDefinition->periodicEffectIntervalTicks;
-      lookupResult = ModelLookupTable_ContainsPackedKeyCf(1,3,effectDefinition->ownedNestedResource);
+      lookupResult = ModelLookupTable_ContainsPackedKey(1,3,effectDefinition->ownedNestedResource);
       if (!lookupResult.notFound) {
         periodicDefinition = effectDefinition->periodicEffectDefinition;
         spawnWorldRuntime = worldRuntime;
@@ -281,7 +281,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
                            (lookupResult.entry,(ModelRuntimeNode *)modelNode);
         worldZQ12 = localPoint.zQ12;
         worldXQ12 = localPoint.yQ12;
-        EffectRuntimePool_CreateInstanceFromDefinitionCf
+        EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                    worldZQ12,worldXQ12,localPoint.xQ12,periodicDefinition,spawnWorldRuntime);
       }
@@ -293,11 +293,11 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         linkedCountdownPtr = &effectSlot->linkedEffectPresent;
         *linkedCountdownPtr = *linkedCountdownPtr - 1;
         if (*linkedCountdownPtr == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
+          lookupResult = ModelLookupTable_ContainsPackedKey(0,3,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
@@ -316,7 +316,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
           effectSlot->linkedShotPresent = effectDefinition->linkedShotPresent;
           (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 =
                (effectSlot->lifecycleOwnerAndDefinition).runtimeState14 + 1;
-          lookupResult = ModelLookupTable_ContainsPackedKeyCf
+          lookupResult = ModelLookupTable_ContainsPackedKey
                              (keyIndex,2,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
@@ -335,11 +335,11 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
         linkedCountdownPtr = &effectSlot->linkedEffectPresent;
         *linkedCountdownPtr = *linkedCountdownPtr - 1;
         if (*linkedCountdownPtr == 0) {
-          lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,effectDefinition->ownedNestedResource);
+          lookupResult = ModelLookupTable_ContainsPackedKey(0,3,effectDefinition->ownedNestedResource);
           if (!lookupResult.notFound) {
             localPoint = ModelNodeRuntime_TransformLocalPointRegs
                                (lookupResult.entry,(ModelRuntimeNode *)modelNode);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNode->modelPayload).worldRotationAngle2,
                        (modelNode->modelPayload).worldRotationAngle1,
@@ -368,7 +368,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
                 ownerModelNode = (spawnArmyCompletionEntity->common).ownership.modelNode;
                 frameAdvancedOrScratch = *ownerClassRecord;
                 if (*(int *)(frameAdvancedOrScratch + 0x4c) == 0x12) {
-                  armyCreateResult = ArmyRuntime_CreateInstanceFromAssetCf
+                  armyCreateResult = ArmyRuntime_CreateInstanceFromAsset
                                      (6,(ownerModelNode->modelPayload).worldRotationAngle2,
                                       (ownerModelNode->worldTransform).translation.y,
                                       (ownerModelNode->worldTransform).translation.x,
@@ -479,7 +479,7 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
 EffectModelRuntimeMaintenance_TransitionType2InvokeLinkedHandler:
             if ((linkedHandlerCompletionOwner != (EffectCompletionLinkedHandlerOwnerColumns104 *)0x0
                 ) && (0 < (int)linkedHandlerCompletionOwner->auxiliaryValue80)) {
-              FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
+              FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
                         (linkedHandlerCompletionOwner->terrainMaterialIndex100,
                          linkedHandlerCompletionOwner->auxiliaryValue80,
                          linkedHandlerCompletionOwner->ownerSlot0,

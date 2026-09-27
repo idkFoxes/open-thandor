@@ -16,7 +16,7 @@
 
 /* 0x00568300 */
 void __thandor_void_preserve_eax_ecx_edx
-InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf
+InGameWorldOverlay_RebuildOrReleaseTransientMarkers
           (GraphicsBooleanState releaseMode,WorldRuntimeContext *worldRuntime);
 
 /* 0x0052F0C0 */

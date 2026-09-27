@@ -5,5 +5,5 @@ digraph thandor {
   "FrontendCommandQueue_DequeueFirstIntoRecord" [label="0x00543FB0\nFrontendCommandQueue_DequeueFirstIntoRecord"];
   "InGameCommandQueue_AppendLocalPlayerCommand" [label="0x0055F130\nInGameCommandQueue_AppendLocalPlayerCommand"];
   "InGameCommandQueue_DequeueFirstIntoRecord" [label="0x0055F190\nInGameCommandQueue_DequeueFirstIntoRecord"];
-  "InGameCommandQueue_ContainsTripletValueCf" [label="0x0055F200\nInGameCommandQueue_ContainsTripletValueCf"];
+  "InGameCommandQueue_ContainsTripletValue" [label="0x0055F200\nInGameCommandQueue_ContainsTripletValueCf"];
 }

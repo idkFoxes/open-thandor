@@ -16,7 +16,7 @@
    PersistentSettings_WriteDword. If dirtyWriteCount is nonzero, writes exactly 200 bytes to runtime.path and then
    resets dirtyWriteCount to zero without checking the save result.
    Local calls: PersistentSettings_WriteDword.
-   Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32].
+   Cross-module calls: FileSystem_WriteBufferToPath [platform/filesystem/win32].
 */
 void __thandor_preserve_eax PersistentSettings_Flush(void)
 
@@ -24,7 +24,7 @@ void __thandor_preserve_eax PersistentSettings_Flush(void)
   if (g_PersistentSettings.image != (PersistentSettingsImage *)0x0) {
     PersistentSettings_Write(g_LocaleCountryCodeOverride,0x38);
     if (g_PersistentSettings.dirtyWriteCount != 0) {
-      FileSystem_WriteBufferToPathCf(200,g_PersistentSettings.image,g_PersistentSettings.path);
+      FileSystem_WriteBufferToPath(200,g_PersistentSettings.image,g_PersistentSettings.path);
       g_PersistentSettings.dirtyWriteCount = 0;
     }
   }
@@ -41,7 +41,7 @@ void __thandor_preserve_eax PersistentSettings_Flush(void)
    offset 0x38 as g_LocaleCountryCodeOverride only when at least 0x3C bytes were loaded. Read, size, open, or
    allocation failure frees the new allocation and leaves image null. No stable scalar return is defined.
    Cross-module calls: Resource_Release [assets/resource/runtime], WidePath_CombineDirectoryAndLeaf
-   [core/text/path], RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
+   [core/text/path], RichTextCommandStream_CopyExpanded [assets/text/richtext].
 */
 void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
 
@@ -69,31 +69,31 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     settingsClearCursor = settingsClearCursor + 1;
   }
   destination = (PersistentSettingsImage *)(settingsClearCursor + -0x32);
-  openResult = g_FileSystemOpenCf(0,g_PersistentSettings.path);
+  openResult = g_FileSystemOpen(0,g_PersistentSettings.path);
   handle = (void *)openResult.handleOrError;
   if (openResult.failed) {
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     if (openResult.failed) {
       g_MemoryApi.free(destination);
       return;
     }
     /* The original also continues with EAX = the byte count returned by the path copy below as the
        file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
-    pathCopyResult = RichTextCommandStream_CopyExpandedCf
+    pathCopyResult = RichTextCommandStream_CopyExpanded
                       (0x200,g_PersistentSettings.path,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16
                       );
     handle = (void *)pathCopyResult.bytesWritten;
   }
-  sizeResult = g_FileSystemGetSizeCf(handle);
+  sizeResult = g_FileSystemGetSize(handle);
   if (!sizeResult.failed) {
     byteCount = 200;
     if (sizeResult.sizeOrError < 200) {
       byteCount = sizeResult.sizeOrError;
     }
-    readResult = g_FileSystemReadExactCf(byteCount,destination,handle);
+    readResult = g_FileSystemReadExact(byteCount,destination,handle);
     if (!readResult.failed) {
       g_FileSystemClose(handle);
       if (byteCount < 0x3c) {

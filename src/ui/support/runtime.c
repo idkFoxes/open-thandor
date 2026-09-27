@@ -70,7 +70,7 @@ RecentTextHistory_SortAndBuildPointerList_AdvanceSerialAfterBuildOrEmptyStop:
    Ownership: ui/support/runtime.
    Purpose: Finds the slot with the lowest serial, assigns the current serial counter, and copies up to 0x100 bytes
    of UTF-16 text into that slot.
-   Cross-module calls: RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
+   Cross-module calls: RichTextCommandStream_CopyExpanded [assets/text/richtext].
 */
 void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text)
 
@@ -97,7 +97,7 @@ void __thandor_void_preserve_eax_ecx_edx RecentTextHistory_Insert(uint16_t *text
   } while (slotsRemaining != 0);
   if (-1 < oldestIndex) {
     g_RecentTextEntrySerials[oldestIndex] = g_RecentTextSerialCounter;
-    RichTextCommandStream_CopyExpandedCf(0x100,g_RecentTextSlotStorage[oldestIndex].text,text);
+    RichTextCommandStream_CopyExpanded(0x100,g_RecentTextSlotStorage[oldestIndex].text,text);
   }
   return;
 }
@@ -201,7 +201,7 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView)
    [core/text/path], Resource_Load [assets/resource/runtime], Resource_Release [assets/resource/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sourcePath)
+PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath)
 
 {
   uint16_t pathChar;

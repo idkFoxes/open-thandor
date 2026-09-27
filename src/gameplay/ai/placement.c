@@ -63,8 +63,8 @@ AiPlacement_ReserveAdditionalSpecialSite
    is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
    Local calls: AiCandidatePlanning_ComputeSpecialSiteWeight.
-   Cross-module calls: AiSecondaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
-   AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces], ArmyAssetRegistry_FindEnabledByIdCf
+   Cross-module calls: AiSecondaryWorkspace_HasEntryById [gameplay/ai/workspaces],
+   AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces], ArmyAssetRegistry_FindEnabledById
    [assets/army/catalog], AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -75,11 +75,11 @@ AiCandidatePlanning_AddSpecialSiteCandidate
   bool hasEntry;
   SiteWeightResult weightResult;
   
-  hasEntry = AiSecondaryWorkspace_HasEntryByIdCf(ARM_0050_UNIT_MDL0103);
+  hasEntry = AiSecondaryWorkspace_HasEntryById(ARM_0050_UNIT_MDL0103);
   if (!hasEntry) {
-    hasEntry = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0301_BUILDING_MDL0318);
+    hasEntry = AiPrimaryWorkspace_HasEntryById(ARM_0301_BUILDING_MDL0318);
     if (hasEntry) {
-      hasEntry = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0050_UNIT_MDL0103);
+      hasEntry = ArmyAssetRegistry_FindEnabledById(ARM_0050_UNIT_MDL0103);
       if (!hasEntry) {
         if ((g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits[0] & 0x800) == 0
            ) {
@@ -268,7 +268,7 @@ AiSiteCandidate_AddFlaggedCellIfSeparated(FieldGridCell *currentCell)
    entity. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Terrain-feature site split reads FLD +0x50 0x0800. This is FLD
    support state, not a render-color classification. [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum
    dictionary AiKnowledgePackedParameterIndex after transferring its complete value vocabulary to code annotation.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy], FixedMath_Length2 [core/math/fixed].
 */
 void __thandor_void_preserve_ecx_edx
@@ -303,7 +303,7 @@ AiSiteCandidate_AddTerrainFeatureCellIfSeparated
     runtimeSlot = (int *)workspace00Entry->runtimeSlotAddressOrZero;
     if ((runtimeSlot != (int *)0x0) &&
        (modelNodeRuntime = (ModelRuntimeNode *)runtimeSlot[1], *(int *)(*runtimeSlot + 0x4c) == 0xd)) {
-      markerLookup = ModelLookupTable_ContainsPackedKeyCf
+      markerLookup = ModelLookupTable_ContainsPackedKey
                          (1,5,(modelNodeRuntime->modelPayload).modelResource);
       if (!markerLookup.notFound) {
         markerPoint = ModelNodeRuntime_TransformLocalPointRegs(markerLookup.entry,modelNodeRuntime);
@@ -710,7 +710,7 @@ AiPlacement_FindNearestValidWorkspace09Anchor
    workspaceRecord→AiPlacementWorkspaceRecordAddress32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: AiPlacement_FindNearestValidWorkspace09Anchor.
-   Cross-module calls: ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime],
+   Cross-module calls: ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -739,7 +739,7 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
   if (anchor.notFound) {
     return true;
   }
-  firstInstance = ArmyRuntime_CreateInstanceFromAssetCf
+  firstInstance = ArmyRuntime_CreateInstanceFromAsset
                     (1,0,worldXQ12,worldYQ12,factionIndex,ARM_0333_BUILDING_MDL0307,worldRuntime);
   if (firstInstance.failed) {
     return true;
@@ -758,7 +758,7 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
                     (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                      factionIndex,worldRuntime);
   if (anchor.notFound) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
-  secondInstance = ArmyRuntime_CreateInstanceFromAssetCf
+  secondInstance = ArmyRuntime_CreateInstanceFromAsset
                     (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
                      worldRuntime);
   if (secondInstance.failed) goto AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyFirstAndReturnCarrySet;
@@ -775,7 +775,7 @@ AiPlacement_ReserveSeparatedSpecialSiteChain
                       (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307,
                        factionIndex,worldRuntime);
     if (!anchor.notFound) {
-      thirdInstance = ArmyRuntime_CreateInstanceFromAssetCf
+      thirdInstance = ArmyRuntime_CreateInstanceFromAsset
                         (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,ARM_0333_BUILDING_MDL0307,
                          worldRuntime);
       if (!thirdInstance.failed) {
@@ -796,7 +796,7 @@ AiPlacement_ReserveSeparatedSpecialSiteChain_DestroyThirdSecondFirstAndReturnCar
                           (workspaceRecord->worldY,workspaceRecord->worldX,ARM_0333_BUILDING_MDL0307
                            ,factionIndex,worldRuntime);
         if (!anchor.notFound) {
-          fourthInstance = ArmyRuntime_CreateInstanceFromAssetCf
+          fourthInstance = ArmyRuntime_CreateInstanceFromAsset
                             (1,0,anchor.worldYQ12,anchor.worldXQ12,factionIndex,
                              ARM_0333_BUILDING_MDL0307,worldRuntime);
           if (!fourthInstance.failed) {

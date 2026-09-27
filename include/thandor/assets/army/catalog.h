@@ -16,46 +16,46 @@
 
 /* 0x005719F0 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlag0100Without0200Cf(PckArmyAssetIdCatalog recordId);
+ArmyAssetRegistry_NormalizeIdForFlag0100Without0200(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571A10 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlag0100Without0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_StepForwardFlag0100Without0200(ArmyAssetId recordId);
 
 /* 0x00571A60 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlag0100Without0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_StepBackwardFlag0100Without0200(ArmyAssetId recordId);
 
 /* 0x00571B00 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId);
+ArmyAssetRegistry_FindPreviousFlag0100Without0200Wrapped(ArmyAssetId recordId);
 
 /* 0x00571C30 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_NormalizeIdForFlags0100And0200Cf(PckArmyAssetIdCatalog recordId);
+ArmyAssetRegistry_NormalizeIdForFlags0100And0200(PckArmyAssetIdCatalog recordId);
 
 /* 0x00571C50 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepForwardFlags0100And0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_StepForwardFlags0100And0200(ArmyAssetId recordId);
 
 /* 0x00571CA0 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_StepBackwardFlags0100And0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_StepBackwardFlags0100And0200(ArmyAssetId recordId);
 
 /* 0x00571D40 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId);
+ArmyAssetRegistry_FindPreviousFlags0100And0200Wrapped(ArmyAssetId recordId);
 
 /* 0x0051B5E0 */
 StatusResult __thandor_void_preserve_ecx_edx ArmyAsset_PrepareRecords(ArmyAssetHeader *asset);
 
 /* 0x0051B740 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_FindEnabledByIdCf(PckArmyAssetIdCatalog recordId);
+ArmyAssetRegistry_FindEnabledById(PckArmyAssetIdCatalog recordId);
 
 /* 0x0051B770 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRecord_HasFactionUnlockedLinkedDefinitionCf
+ArmyAssetRecord_HasFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,uint32_t requiredDefinitionFlags,
           ArmyAssetRecordPrefix *armyAssetRecord);
 
@@ -75,11 +75,11 @@ ArmyAssetHierarchy_SumFactionUnlockedDisplayedEnergyQ4
 
 /* 0x00571AB0 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlag0100Without0200WrappedCf(ArmyAssetId recordId);
+ArmyAssetRegistry_FindNextFlag0100Without0200Wrapped(ArmyAssetId recordId);
 
 /* 0x00571CF0 */
 ArmyAssetIdSearchResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindNextFlags0100And0200WrappedCf(ArmyAssetId recordId);
+ArmyAssetRegistry_FindNextFlags0100And0200Wrapped(ArmyAssetId recordId);
 
 /* 0x0051B4A0 */
 StatusResult __thandor_void_preserve_ecx_edx
@@ -87,25 +87,25 @@ ArmyAssetRecord_RegisterAndRelocate
           (ArmyAssetRuntimeSemanticView80 *record,ArmyAssetHeader *assetBase);
 
 /* 0x00571D90 */
-uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(uint32_t armyAssetRegistryId);
+uint32_t ArmyAssetRegistry_ResolveOrCreatePreviewTexture(uint32_t armyAssetRegistryId);
 
 /* 0x0051B6D0 */
 ArmyAssetLookupResult __thandor_eax_cf_preserve_ecx_edx
-ArmyAssetRegistry_FindByIdCf(PckArmyAssetIdCatalog registryId);
+ArmyAssetRegistry_FindById(PckArmyAssetIdCatalog registryId);
 
 /* 0x00571910 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithoutFlag0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_HasIdWithoutFlag0200(ArmyAssetId recordId);
 
 /* 0x00571B50 */
-uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200Cf(ArmyAssetId recordId);
+uint8_t __thandor_cf_preserve_eax_ecx_edx ArmyAssetRegistry_HasIdWithFlag0200(ArmyAssetId recordId);
 
 /* 0x00571980 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_HasIdWithFlag0100Without0200(ArmyAssetId recordId);
 
 /* 0x00571BC0 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(ArmyAssetId recordId);
+ArmyAssetRegistry_HasIdWithFlags0100And0200(ArmyAssetId recordId);
 
 #endif /* THANDOR_ASSETS_ARMY_CATALOG_H */

@@ -7,7 +7,7 @@
 ## Functions
 
 - `0x005867B0` **[`TimerSystem_Shutdown`](../../../../src/platform/system/time_locale.c#L5)** — local: [`TimerSystem_UnregisterPeriodic`](../../../../src/platform/system/time_locale.c#L543)
-- `0x00586BA0` **[`Locale_Init`](../../../../src/platform/system/time_locale.c#L28)** — local: [`Locale_ParseUnsignedDecimalAscii`](../../../../src/platform/system/time_locale.c#L568); cross: [`CPU_DetectFeatures`](../../../../src/platform/bootstrap/runtime.c#L491) → [`platform/bootstrap/runtime`](../bootstrap/runtime.md), [`Text_CopyNarrowToUtf16Cf`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
+- `0x00586BA0` **[`Locale_Init`](../../../../src/platform/system/time_locale.c#L28)** — local: [`Locale_ParseUnsignedDecimalAscii`](../../../../src/platform/system/time_locale.c#L568); cross: [`CPU_DetectFeatures`](../../../../src/platform/bootstrap/runtime.c#L491) → [`platform/bootstrap/runtime`](../bootstrap/runtime.md), [`Text_CopyNarrowToUtf16`](../../../../src/core/text/string.c#L185) → [`core/text/string`](../../core/text/string.md)
 - `0x00402F70` **[`Locale_MapTelephoneCountryCodeToRegionTagPacked`](../../../../src/platform/system/time_locale.c#L75)**
 - `0x00586790` **[`TimerSystem_Init`](../../../../src/platform/system/time_locale.c#L125)**
 - `0x005867E0` **[`WinMM_TimerDispatchCallback`](../../../../src/platform/system/time_locale.c#L139)**

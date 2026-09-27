@@ -16,7 +16,7 @@
    entries beginning at +0x200. Preparation stops on the first CF-set entry failure. Invalid headers are copied to
    the package last-error path. Payload fields remain opaque. Role: Walks the SHT asset table and registers every
    shot definition.
-   Local calls: ShotDefinition_RegisterAndResolveReferencesCf.
+   Local calls: ShotDefinition_RegisterAndResolveReferences.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
 StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetHeader *asset)
@@ -40,7 +40,7 @@ StatusResult __thandor_void_preserve_ecx_edx ShotAsset_PrepareEntries(ShotAssetH
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
       }
-      registrationResult = ShotDefinition_RegisterAndResolveReferencesCf(definition);
+      registrationResult = ShotDefinition_RegisterAndResolveReferences(definition);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
       definition = definition + 1;
@@ -115,7 +115,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
    g_PackageLastErrorPath and returns error 0x44 with CF set.
 */
 ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinitionRegistry_FindByIdWithErrorCf(PckShotDefinitionIdCatalog definitionId)
+ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registeredDefinition;
@@ -293,13 +293,13 @@ ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition)
    periodic fields and resource path. Outputs: ShotDefinition with SpriteAsset, primary/launch/secondary and
    material-impact EffectDefinition pointers. Edges: Package_LoadEntry -> SpriteAsset registration -> effect
    registry lookups.
-   Cross-module calls: ShotRuntime_FindDefinitionByIdCf [world/shots/runtime], WidePath_SetExtensionCode
+   Cross-module calls: ShotRuntime_FindDefinitionById [world/shots/runtime], WidePath_SetExtensionCode
    [core/text/path], Package_LoadEntry [assets/package/runtime], SpriteAssetRegistry_FindById
    [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers [assets/sprite/catalog], Resource_Release
    [assets/resource/runtime].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
+ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition)
 
 {
   ShotDefinition *asset;
@@ -317,7 +317,7 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
 
   registrySlotCursor = g_ShotDefinitionRegistry;
   slotsRemainingOrIndex = 0x100;
-  existingLookup = ShotRuntime_FindDefinitionByIdCf(definition->definitionId);
+  existingLookup = ShotRuntime_FindDefinitionById(definition->definitionId);
   asset = existingLookup.definitionOrError;
   if (existingLookup.notFound) {
     do {
@@ -340,17 +340,17 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
           definition->ownedNestedResource = existingSprite;
           Resource_Release(asset);
         }
-        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->launchEffectDefinition);
         asset = (ShotDefinition *)effectLookup.definitionOrError;
         if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
         definition->launchEffectDefinition = (EffectDefinition *)asset;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->secondaryEffectDefinition);
         asset = (ShotDefinition *)effectLookup.definitionOrError;
         if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
         definition->secondaryEffectDefinition = (EffectDefinition *)asset;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)definition->primaryEffectDefinition);
         asset = (ShotDefinition *)effectLookup.definitionOrError;
         if (effectLookup.notFound) goto ShotDefinition_ReturnReferenceResolutionResult;
@@ -358,7 +358,7 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
         slotsRemainingOrIndex = 0;
         referencesRemaining = 0x1f;
         do {
-          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+          effectLookup = EffectDefinitionRegistry_FindByIdWithError
                             ((PckEffectDefinitionIdCatalog)
                              definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex]);
           asset = (ShotDefinition *)effectLookup.definitionOrError;
@@ -370,7 +370,7 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
         slotsRemainingOrIndex = 0;
         referencesRemaining = 8;
         do {
-          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+          effectLookup = EffectDefinitionRegistry_FindByIdWithError
                             ((PckEffectDefinitionIdCatalog)
                              definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex]);
           asset = (ShotDefinition *)effectLookup.definitionOrError;

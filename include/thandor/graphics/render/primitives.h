@@ -67,7 +67,7 @@ GraphicsPrimitiveQueue_OffsetTextureCoordinates
 
 /* 0x004D0DA0 */
 PrimitivePacketResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
+GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
           (uint32_t *textureAndMaterialIndices,PackedArgb32 vertex2DiffuseColor,
           PackedArgb32 vertex1DiffuseColor,PackedArgb32 vertex0DiffuseColor,
           GraphicsProjectedVertexSource *vertex2Projected,
@@ -91,7 +91,7 @@ DepthInterval_BuildBinMask(DepthIntervalRadius32 intervalRadius,DepthIntervalCen
 
 /* 0x004FFC50 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DepthBinMasks_OverlapCf
+DepthBinMasks_Overlap
           (DepthBinMask32 firstMaskLow,DepthBinMask32 firstMaskHigh,DepthBinMask32 secondMaskLow,
           DepthBinMask32 secondMaskHigh);
 

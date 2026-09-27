@@ -152,7 +152,7 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
+FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
@@ -250,7 +250,7 @@ FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
    Cross-module calls: FieldGrid_WorldToGridQ12 [world/terrain/grid].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
+FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid)
@@ -1968,7 +1968,7 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
                            g_PackedLightingLookupTable[vertex1->lightingLookupIndexOrSentinel]);
       litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
                            g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
-      GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
+      GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangle
                 ((uint32_t *)(surfacePacketIndex * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
                  TerrainProjection_PackWordsUnsignedSaturate(litProduct2),
                  TerrainProjection_PackWordsUnsignedSaturate(litProduct1),

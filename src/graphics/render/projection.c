@@ -17,7 +17,7 @@
    Purpose: Tests whether a projected point lies outside the recovered triangle bounds contract.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedTriangle_PointOutsideBoundsCf
+GraphicsProjectedTriangle_PointOutsideBounds
           (GraphicsProjectedCoordinate vertexAY,GraphicsProjectedCoordinate vertexAX,
           GraphicsProjectedCoordinate vertexBY,GraphicsProjectedCoordinate vertexBX,
           GraphicsProjectedCoordinate vertexCY,GraphicsProjectedCoordinate vertexCX,
@@ -43,7 +43,7 @@ GraphicsProjectedTriangle_PointOutsideBoundsCf
    Graphics_RebuildFrustumPlanes [graphics/core/runtime].
 */
 OffscreenRenderResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsOffscreen_RenderModelListToTextureSourceCf
+GraphicsOffscreen_RenderModelListToTextureSource
           (GraphicsOffscreenSceneExtents *sceneExtents,AngleTurn32 *auxiliaryOrientationAngles,
           GraphicsOffscreenViewParameters *viewParameters,GraphicsPixelDimension outputWidth,
           GraphicsPixelDimension outputHeight,ModelRuntimeCount modelCount,
@@ -161,7 +161,7 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
    Purpose: CF set means inside; scalar registers are preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsProjectedPoint_IsInsideTriangleCf
+GraphicsProjectedPoint_IsInsideTriangle
           (int pointerY,int pointerX,GraphicsProjectedPoint2i *vertex0,
           GraphicsProjectedPoint2i *vertex1,GraphicsProjectedPoint2i *vertex2)
 

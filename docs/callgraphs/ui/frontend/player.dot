@@ -6,7 +6,7 @@ digraph thandor {
   "FrontendPlayerConsensus_SubmitSelectedValue" [label="0x00549AF0\nFrontendPlayerConsensus_SubmitSelectedValue"];
   "FrontendPlayerSetup_ExpireSelectedRuntimeBlock" [label="0x0054D3A0\nFrontendPlayerSetup_ExpireSelectedRuntimeBlock"];
   "FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers" [label="0x0054F540\nFrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers"];
-  "FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf" [label="0x00514EF0\nFrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf"];
+  "FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken" [label="0x00514EF0\nFrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf"];
   "FrontendPlayerRuntime_ClearAssignmentTokenFromAll" [label="0x00514F60\nFrontendPlayerRuntime_ClearAssignmentTokenFromAll"];
   "FrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08" [label="0x00544130\nFrontendPlayerRuntime_MarkReadyAndUpdateActionFlag08"];
   "FrontendPlayerRuntime_MarkFlag08ById" [label="0x005442B0\nFrontendPlayerRuntime_MarkFlag08ById"];

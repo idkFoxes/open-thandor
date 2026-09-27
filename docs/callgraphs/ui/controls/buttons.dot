@@ -12,7 +12,7 @@ digraph thandor {
   "UiImageActionControl_QueryPointerCode" [label="0x005151F0\nUiImageActionControl_QueryPointerCode"];
   "UiImageActionControl_EnqueuePrimaryAction" [label="0x00515210\nUiImageActionControl_EnqueuePrimaryAction"];
   "UiImageActionControl_EnqueueSecondaryAction" [label="0x00515230\nUiImageActionControl_EnqueueSecondaryAction"];
-  "UiImageActionControl_HandleKeyboardActivationCf" [label="0x00515250\nUiImageActionControl_HandleKeyboardActivationCf"];
+  "UiImageActionControl_HandleKeyboardActivation" [label="0x00515250\nUiImageActionControl_HandleKeyboardActivationCf"];
   "UiConditionalActionControl_DrawClipped" [label="0x005152E0\nUiConditionalActionControl_DrawClipped"];
   "UiConditionalActionControl_QueryPointerCode" [label="0x005155A0\nUiConditionalActionControl_QueryPointerCode"];
   "UiConditionalActionControl_HitTestWhenEnabled" [label="0x005155C0\nUiConditionalActionControl_HitTestWhenEnabled"];

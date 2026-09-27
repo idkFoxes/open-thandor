@@ -22,14 +22,14 @@ TerrainProjectedOcclusion_AccumulateMaskAroundWorldPoint
 
 /* 0x005099D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantA_ApplyAroundWorldPointCf
+FieldGridTerrainOverlayVariantA_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x0050A190 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGridTerrainOverlayVariantB_ApplyAroundWorldPointCf
+FieldGridTerrainOverlayVariantB_ApplyAroundWorldPoint
           (FieldCellFlagMask cellFlagMask,TerrainOverlayCellRuntimeValue cellValue,
           FieldGridRadiusUnits radiusWorldUnits,Q12 worldXQ12,Q12 worldYQ12,
           FieldGridAsset *fieldGrid);

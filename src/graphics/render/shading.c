@@ -59,7 +59,7 @@ static __inline uint32_t Shading_PackWordLanesUnsignedSaturate(uint64_t lanes)
    Cross-module calls: FixedVec3_DotQ28 [core/math/fixed], FixedTransform_ApplyPoint [core/math/fixed],
    FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed], FieldGrid_InterpolateTopSurfaceHeight
    [world/terrain/grid], FieldGrid_RaycastTerrainTrianglesAlongDirection [world/terrain/grid],
-   FieldGrid_RaycastTerrainSurfaceDistanceCf [world/terrain/grid].
+   FieldGrid_RaycastTerrainSurfaceDistance [world/terrain/grid].
 */
 void __thandor_void_preserve_eax_ecx_edx
 GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
@@ -494,7 +494,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0].worldPoint.y,
@@ -622,7 +622,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[2].worldPoint.y,
@@ -750,7 +750,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[1].worldPoint.y,
@@ -878,7 +878,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[3].worldPoint.y,
@@ -1006,7 +1006,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[4].worldPoint.y,
@@ -1134,7 +1134,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[5].worldPoint.y,
@@ -1262,7 +1262,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[6].worldPoint.y,
@@ -1390,7 +1390,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[7].worldPoint.y,
@@ -1518,7 +1518,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[8].worldPoint.y,
@@ -1646,7 +1646,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[10].worldPoint.y,
@@ -1774,7 +1774,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[9].worldPoint.y,
@@ -1902,7 +1902,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
                    g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z + direction.z;
               heightDeltaOrIntensityA = renderContext->viewAngleB8 ^ 0x8000;
-              terrainRay = FieldGrid_RaycastTerrainSurfaceDistanceCf
+              terrainRay = FieldGrid_RaycastTerrainSurfaceDistance
                                  (-renderContext->viewAngleBC - 0x4000,heightDeltaOrIntensityA,remainingRayLength,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z,
                                   g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.y,
@@ -2480,7 +2480,7 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
    Purpose: Allocates and aligns a 256 by 256 byte lookup table and fills each entry with the first input clamped
    to within plus or minus 0x15 of the second input. Carry reports allocation failure.
 */
-StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_InitializeCf(void)
+StatusResult __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_Initialize(void)
 
 {
   int rowsRemaining;
@@ -2761,7 +2761,7 @@ GraphicsShadingRuntime_CollectNearbyRecords
    gridHalfSize→GraphicsPixelDimension_V302, p2 textureDimension→GraphicsPixelDimension_V302.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsShadingRuntime_InitializeGeneratedTextureCf
+GraphicsShadingRuntime_InitializeGeneratedTexture
           (GraphicsAssetSubresourceCount subresourceCount,GraphicsPixelDimension gridHalfSize,
           GraphicsPixelDimension textureDimension)
 
@@ -2946,7 +2946,7 @@ GraphicsShadingGeneratedTexture_RefreshTouchedAlphaSubresources(void)
    Ownership: graphics/render/shading.
    Purpose: Handles graphics shading generated texture reserve one projected point block carry-flag result.
 */
-void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlockCf
+void GraphicsShadingGeneratedTexture_ReserveOneProjectedPointBlock
                (GeneratedTextureRenderContextView *renderContext)
 
 {

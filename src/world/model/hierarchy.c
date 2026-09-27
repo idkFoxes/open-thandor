@@ -373,11 +373,11 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
    Ownership: world/model/hierarchy.
    Purpose: CF clear returns EAX distance metric; CF set reports miss.
    Cross-module calls: FixedTransform_Compose [core/math/fixed], FixedTransform_ApplyPoint [core/math/fixed],
-   Graphics_ProjectViewPoint [graphics/core/runtime], GraphicsProjectedPoint_IsInsideTriangleCf
+   Graphics_ProjectViewPoint [graphics/core/runtime], GraphicsProjectedPoint_IsInsideTriangle
    [graphics/render/projection], FixedMath_Length3 [core/math/fixed].
 */
 ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
+ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context)
 
@@ -507,62 +507,62 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
       g_ModelProjectedBoundsCornerScratch8[7].x = (GraphicsProjectedCoordinate)transformA;
     }
     if (((((((clippedCornerMask & 7) == 0) &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                g_ModelProjectedBoundsCornerScratch8 + 1,
                                g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
           (((clippedCornerMask & 0xe) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                g_ModelProjectedBoundsCornerScratch8 + 1,
                                g_ModelProjectedBoundsCornerScratch8 + 3), cornerVisibleOrHit)))) ||
          (((clippedCornerMask & 0x70) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 5,
                               g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
         (((((clippedCornerMask & 0xe0) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 6,
                                g_ModelProjectedBoundsCornerScratch8 + 5,
                                g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)) ||
           ((((clippedCornerMask & 0x15) == 0 &&
-            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                                (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                 g_ModelProjectedBoundsCornerScratch8 + 4,
                                 g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
            (((clippedCornerMask & 0x54) == 0 &&
-            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+            (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                                (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 2,
                                 g_ModelProjectedBoundsCornerScratch8 + 6,
                                 g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))))) ||
          ((((clippedCornerMask & 0x2a) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                                g_ModelProjectedBoundsCornerScratch8 + 5,
                                g_ModelProjectedBoundsCornerScratch8 + 1), cornerVisibleOrHit)) ||
           (((clippedCornerMask & 0xa8) == 0 &&
-           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+           (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                               (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                                g_ModelProjectedBoundsCornerScratch8 + 7,
                                g_ModelProjectedBoundsCornerScratch8 + 5), cornerVisibleOrHit)))))))) ||
        (((((clippedCornerMask & 0x13) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 4,
                               g_ModelProjectedBoundsCornerScratch8 + 1,
                               g_ModelProjectedBoundsCornerScratch8), cornerVisibleOrHit)) ||
          (((clippedCornerMask & 0x32) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 1,
                               g_ModelProjectedBoundsCornerScratch8 + 5,
                               g_ModelProjectedBoundsCornerScratch8 + 4), cornerVisibleOrHit)))) ||
         ((((clippedCornerMask & 0x4c) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 2), cornerVisibleOrHit)) ||
          (((clippedCornerMask & 200) == 0 &&
-          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangleCf
+          (cornerVisibleOrHit = GraphicsProjectedPoint_IsInsideTriangle
                              (pointerY,pointerX,g_ModelProjectedBoundsCornerScratch8 + 3,
                               g_ModelProjectedBoundsCornerScratch8 + 6,
                               g_ModelProjectedBoundsCornerScratch8 + 7), cornerVisibleOrHit)))))))) {
@@ -601,7 +601,7 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
     }
     childNode = *(ModelRuntimeNode **)((int)modelNode->childNodes + childByteOffset);
     if (childNode != (ModelRuntimeNode *)0x0) {
-      hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
+      hitOrChildResult = ModelRuntimeNode_HitTestProjectedBoundsAndChildren
                          (pointerY,pointerX,childNode,context);
       transformA = (GraphicsFixedMatrix3x4 *)hitOrChildResult.distanceQ12;
       if (!hitOrChildResult.missed) {
@@ -619,10 +619,10 @@ ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
    Purpose: Returns nearest Q12 ray distance with CF set. EDX is the nearest ModelRuntimeNode side channel on
    success; CF clear returns 0x7fffffff.
    Cross-module calls: FixedTransform_BuildRotationBasis [core/math/fixed], FixedTransform_ApplyPoint
-   [core/math/fixed], ModelMesh_IntersectTriangleRayDistanceCf [assets/model/definitions].
+   [core/math/fixed], ModelMesh_IntersectTriangleRayDistance [assets/model/definitions].
 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
+ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime)
 
 {
   GraphicsFixedVec3 **triangleCountField;
@@ -710,7 +710,7 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
                       reservedVertex2Metadata1C_23 + 4);
           for (trianglesRemaining = *triangleCountField; trianglesRemaining != (GraphicsFixedVec3 *)0x0;
               trianglesRemaining = (GraphicsFixedVec3 *)((int)&trianglesRemaining[-1].z + 3)) {
-            triangleHit = ModelMesh_IntersectTriangleRayDistanceCf(triangle);
+            triangleHit = ModelMesh_IntersectTriangleRayDistance(triangle);
             if ((triangleHit.hit) && (triangleHit.distanceQ12 <= radiusNodeXOrNearest)) {
               radiusNodeXOrNearest = triangleHit.distanceQ12;
             }
@@ -721,7 +721,7 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
         nearestModelNode = modelNodeRuntime;
         for (childrenRemaining = modelNodeRuntime->childCount; childrenRemaining != 0; childrenRemaining = childrenRemaining - 1) {
           if (modelNodeRuntime->childNodes[childrenRemaining - 1] != (ModelRuntimeNode *)0x0) {
-            childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearestCf
+            childOrNearestHit = ModelNodeRuntime_RaycastHierarchyNearest
                                (modelNodeRuntime->childNodes[childrenRemaining - 1]);
             edxCarrier = childOrNearestHit.nearestNodeOrScratch;
             if ((childOrNearestHit.hit) && (childOrNearestHit.nearestDistanceQ12 < radiusNodeXOrNearest)) {
@@ -754,11 +754,11 @@ ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime)
    descriptors and runtime selection context. Outputs: Attached child ModelRuntimeNode trees; deferred links may be
    repaired later. Edges: Calls model selection/creation, ModelRuntimePool_RepairDeferredChild and itself
    recursively.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedIdCf [assets/model/definitions],
+   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedId [assets/model/definitions],
    ModelRuntimePool_RepairDeferredChild [world/model/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
+ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime)
@@ -779,14 +779,14 @@ ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
       linkedDefinitionList =
            *(ModelLinkedDefinitionListAddress32 *)(definitionNode + 0xc + childSlotIndex * 4);
       childDefinitionId =
-           ModelDefinition_SelectFactionUnlockedLinkedIdCf(factionIndex,linkedDefinitionList);
+           ModelDefinition_SelectFactionUnlockedLinkedId(factionIndex,linkedDefinitionList);
       repairResult = ModelRuntimePool_RepairDeferredChild
                         (paletteAsset,textureSet,childSlotIndex,childDefinitionId,
                          modelRuntimeSlot,worldRuntime);
       if (repairResult.failed) {
         return true;
       }
-      childFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
+      childFailed = ModelNodeRuntime_InstantiateLinkedChildrenRecursive
                         (factionIndex,paletteAsset,textureSet,(ModelRuntimeSlot *)repairResult.modelNode,
                          linkedDefinitionList,worldRuntime);
       if (childFailed) {
@@ -987,11 +987,11 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
    ModelRuntimeNode hierarchy from a model definition and its visual-node tree. Inputs: ModelDefinition visual
    nodes, SpriteAsset references, local rotations/translations and child offsets. Outputs: Runtime nodes with
    parent/child links and copied local model state. Edges: Called by
-   ModelRuntimePool_CreateInstanceByDefinitionIdCf.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecordCf [world/runtime/core].
+   ModelRuntimePool_CreateInstanceByDefinitionId.
+   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core].
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelNodeRuntime_CreateHierarchyRecursiveCf
+ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
           WorldRuntimeContext *worldRuntime)
@@ -1020,7 +1020,7 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
     childResult.failed = false;
     return childResult;
   }
-  allocationResult = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
+  allocationResult = WorldObjectArray_AllocateFreeRecord(worldRuntime);
   newNode = (ModelRuntimeNode *)allocationResult.recordOrError;
   childOrFailedNode = newNode;
   if (allocationResult.failed) {
@@ -1080,7 +1080,7 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
     for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0; transformRecordsRemaining = transformRecordsRemaining - 1) {
       attachmentKindOrSlot = attachmentTransform->packedKindAndSelector & 0xf;
       if (((attachmentKindOrSlot == 0) || (attachmentKindOrSlot == 1)) && (childIndex == attachmentTransform->packedKindAndSelector >> 4)) {
-        childResult = ModelNodeRuntime_CreateHierarchyRecursiveCf
+        childResult = ModelNodeRuntime_CreateHierarchyRecursive
                            (paletteAsset,textureSet,modelRuntime,
                             (MdlSerializedNodeHeader38 *)
                             definitionNode->childSerializedOffsets[childIndex],worldRuntime);
@@ -1585,8 +1585,8 @@ ModelNodeRuntime_ComposeChildTransformsRecursive(ModelRuntimeNode *modelNodeRunt
    model definition while preserving the scaled current metric, and rebuilds derived hierarchy metrics. It is
    distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Cross-module calls: ModelDefinition_IsFactionTechnologyUnlockedCf [assets/model/definitions],
-   ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions],
+   Cross-module calls: ModelDefinition_IsFactionTechnologyUnlocked [assets/model/definitions],
+   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions],
    ArmyRuntime_RebuildDerivedSelectionMetrics [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1605,11 +1605,11 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
   do {
     modelDefinitionId = *(PckModelDefinitionIdCatalog *)(variantCursorOrRemaining + 0x238);
     if ((modelDefinitionId != 0) &&
-       (isUnlocked = ModelDefinition_IsFactionTechnologyUnlockedCf
+       (isUnlocked = ModelDefinition_IsFactionTechnologyUnlocked
                           (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                            modelDefinitionId), !isUnlocked)) {
       /* swap to this variant, keeping the scaled metric */
-      lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
+      lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
       variantCursorOrRemaining = *modelRuntime;
       *modelRuntime = (int)lookupResult.modelDefinition;
       modelRuntime[0xf] =

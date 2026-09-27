@@ -14,7 +14,7 @@
    Ownership: network/backend/runtime.
    Purpose: Recv: 0x10000 Handshake (magic check 0x2931), 0x20002 PlayerDescriptor, roster/state sync
    (exe_net_lobby_session.md).
-   Cross-module calls: Random_GetSecondarySeed [core/math/random], UiTransfer_StagePacketAndSendCf
+   Cross-module calls: Random_GetSecondarySeed [core/math/random], UiTransfer_StagePacketAndSend
    [network/protocol/transfer].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -101,7 +101,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
            FRONTEND_PACKET_30005_PLAYER_SNAPSHOT;
       g_FrontendPacket30005Buffer.playerIndex = sequenceTokenOrPlayerIndex;
       g_FrontendPacket30005Buffer.secondaryRandomSeed = Random_GetSecondarySeed();
-      UiTransfer_StagePacketAndSendCf(senderEndpoint,&g_FrontendPacket30005Buffer.header);
+      UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket30005Buffer.header);
       return;
     }
   }
@@ -140,7 +140,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
       g_FrontendPacket10009Buffer.snapshotChunkOffset = packetChunkOffset + 0xe8;
       playerRecord->snapshotChunkOffset = playerRecord->snapshotChunkOffset + 0xe8;
       g_FrontendPacket10009Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10009;
-      UiTransfer_StagePacketAndSendCf(senderEndpoint,&g_FrontendPacket10009Buffer.header);
+      UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket10009Buffer.header);
       g_FrontendHostSnapshotTransferCountdown = 4;
     }
   }
@@ -151,7 +151,7 @@ FrontendNetwork_HandleHandshakeAndPlayerStatePackets
 /* Address: 0x0054F240.
    Ownership: network/backend/runtime.
    Purpose: Handles frontend network host tick command and snapshot transfer.
-   Cross-module calls: UiTransfer_StagePacketAndSendCf [network/protocol/transfer],
+   Cross-module calls: UiTransfer_StagePacketAndSend [network/protocol/transfer],
    FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands], PckCodec_EncodeHuffmanRle
    [assets/package/codec], UiTransferMailbox_SetOutgoingBuffer [network/protocol/transfer],
    FrontendCommandQueue_EnqueueLocalPlayerCommand [network/protocol/commands].
@@ -189,11 +189,11 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
         remainingPlayerCount = g_FrontendPlayerRuntimeBlockCount;
         while (remainingPlayerCount = remainingPlayerCount - 1, remainingPlayerCount != 0) {
           if (peerEndpoint[1].addressHeader.packedFamilyAndPort == 0) {
-            UiTransfer_StagePacketAndSendCf(peerEndpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
+            UiTransfer_StagePacketAndSend(peerEndpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
           }
           else {
             g_FrontendPacket10012Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10012;
-            UiTransfer_StagePacketAndSendCf(peerEndpoint,&g_FrontendPacket10012Buffer.header);
+            UiTransfer_StagePacketAndSend(peerEndpoint,&g_FrontendPacket10012Buffer.header);
           }
           peerEndpoint = peerEndpoint + 0x13b;
         }
@@ -245,7 +245,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
   peerEndpoint = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
   remainingPlayerCount = g_FrontendPlayerRuntimeBlockCount;
   while (remainingPlayerCount = remainingPlayerCount - 1, remainingPlayerCount != 0) {
-    UiTransfer_StagePacketAndSendCf(peerEndpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
+    UiTransfer_StagePacketAndSend(peerEndpoint,&g_FrontendCommandBatchPacketBuffer[0].header);
     peerEndpoint = peerEndpoint + 0x13b;
   }
   /* Execute the batch locally as well. */
@@ -275,7 +275,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
          ((transferPlayer->snapshotTransferFlags & FRONTEND_SNAPSHOT_PAYLOAD_COMPLETE) == 0)) {
         g_FrontendPacket10009Buffer.snapshotChunkOffset = transferPlayer->snapshotChunkOffset;
         g_FrontendPacket10009Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10009;
-        UiTransfer_StagePacketAndSendCf
+        UiTransfer_StagePacketAndSend
                   (&transferPlayer->endpoint,&g_FrontendPacket10009Buffer.header);
         g_FrontendHostSnapshotTransferCountdown = 4;
         return false;
@@ -337,7 +337,7 @@ FrontendNetwork_HostTickCommandAndSnapshotTransfer(uint32_t callbackArg)
    Purpose: Ticks the frontend disconnect timeout and, when it expires, clears mailbox/network state, resets page
    and ROM state, and collapses the player/session runtime to its local baseline.
    Cross-module calls: UiTransferMailbox_ClearReceivedState [network/protocol/transfer], UiPageStack_SetActiveIndex
-   [ui/controls/layout], FrontendRomTransition_ActivateRecordByIdCf [assets/rom/runtime], TextResource_Resolve
+   [ui/controls/layout], FrontendRomTransition_ActivateRecordById [assets/rom/runtime], TextResource_Resolve
    [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext],
    FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime].
 */
@@ -366,7 +366,7 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
       *frontendRootFlags = *frontendRootFlags & 0xffffdfff;
       g_FrontendPendingPageAction = 0;
       g_FrontendRomTransitionContextValue = 0;
-      FrontendRomTransition_ActivateRecordByIdCf
+      FrontendRomTransition_ActivateRecordById
                 (1,(WorldRuntimeContext *)FRONTEND_UI(frontendRootBase,menuRoomModelView));
     }
     resolvedText = TextResource_Resolve(0xff01);
@@ -416,12 +416,12 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
    0xFF00. CF is set only after processing a new command batch. In-game recv: (n<<16)|0x20 batches + per-peer
    timeout tracking (host-leave Zeitueberschreitung path, exe_net_host_timeout.md).
    Cross-module calls: FrontendTransfer_SendCommandBatchRequest10021 [network/protocol/transfer],
-   UiTransfer_StagePacketAndSendCf [network/protocol/transfer], TextResource_Resolve [assets/text/resources],
+   UiTransfer_StagePacketAndSend [network/protocol/transfer], TextResource_Resolve [assets/text/resources],
    RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
    [ui/ingame/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+FrontendNetwork_HandleCommandBatchAndPlayerTimeout
           (NetworkSessionContext *sessionContext,FrontendTransferPacketUnion *packet)
 
 {
@@ -462,7 +462,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
       g_FrontendTransferResponsePending = 1;
       return true;
     }
-    UiTransfer_StagePacketAndSendCf
+    UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
     return false;
   }
@@ -472,7 +472,7 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
       sessionContext->ipv4AddressNetworkOrder)) {
     g_SessionTransferTimeoutTicks = 0x100;
     g_FrontendPacket10023Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10023;
-    UiTransfer_StagePacketAndSendCf
+    UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10023Buffer.header);
     return false;
   }
@@ -752,19 +752,19 @@ uint32_t __cdecl Network_Init(void)
                                                     if (resultOrError == (HINSTANCE)0x0) {
                                                       g_NetworkBackendMode = 1;
                                                       g_NetworkBackendSlot0 =
-                                                           NetworkBackend_SetSessionContextCf;
+                                                           NetworkBackend_SetSessionContext;
                                                       g_NetworkBackendSlot1 =
                                                            NetworkFallback_NoOpBackendCleanup;
                                                       g_NetworkBackendSlot2 =
-                                                           NetworkFallback_OpenAndBindUdpSocketCf;
+                                                           NetworkFallback_OpenAndBindUdpSocket;
                                                       g_NetworkBackendSlot3 =
                                                            NetworkFallback_CloseActiveSocket;
                                                       g_NetworkBackendSlot4 =
-                                                           NetworkFallback_ReceiveDatagramCf;
+                                                           NetworkFallback_ReceiveDatagram;
                                                       g_NetworkBackendSlot5 =
-                                                           NetworkFallback_SendDatagramCf;
+                                                           NetworkFallback_SendDatagram;
                                                       g_NetworkBackendSlot6 =
-                                                           NetworkFallback_ParsePeerEndpointCf;
+                                                           NetworkFallback_ParsePeerEndpoint;
                                                       g_NetworkBackendSlot7 =
                                                            NetworkFallback_FormatPeerAddress;
                                                       g_NetworkBackendInstanceTable =
@@ -853,7 +853,7 @@ void __thandor_preserve_eax Network_Shutdown(void)
    unchanged.
 */
 NetworkSetSessionResult __thandor_this_eax_cf_preserve_ecx_edx
-NetworkBackend_SetSessionContextCf(void *this,NetworkBackendSessionReturnValue32 returnValue)
+NetworkBackend_SetSessionContext(void *this,NetworkBackendSessionReturnValue32 returnValue)
 
 {
   NetworkSetSessionResult sessionResult;

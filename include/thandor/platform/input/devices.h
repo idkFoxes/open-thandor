@@ -42,7 +42,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
 
 /* 0x005772F0 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-DirectInputMouse_SetDisplayModeCf
+DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth);
 

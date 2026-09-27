@@ -236,9 +236,9 @@ AiCombatTarget_SelectBestCandidate
    income / group-attack paths. Typed parameters: p4 sourceDepthMask0→DepthBinMask32_V338, p5
    sourceDepthMask1→DepthBinMask32_V338. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
-   Cross-module calls: DepthBinMasks_OverlapCf [graphics/render/primitives],
-   GameFactionRuntime_TestCapabilityBitClearCf [gameplay/faction/runtime], FixedMath_UInt64Sqrt [core/math/fixed],
-   ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime], ArmyWeaponRuntime_TestTargetLineOfFireCf
+   Cross-module calls: DepthBinMasks_Overlap [graphics/render/primitives],
+   GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime], FixedMath_UInt64Sqrt [core/math/fixed],
+   ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime], ArmyWeaponRuntime_TestTargetLineOfFire
    [gameplay/army/combat].
 */
 AiCandidateScore32 __thandor_eax_preserve_ecx_edx
@@ -265,18 +265,18 @@ AiCombatTarget_EvaluateCandidateScore
   
   factionOrDefinitionAddress = candidateArmyRuntime->factionIndex;
   candidateModelNode = candidateArmyRuntime->modelNodeRuntime;
-  testPassed = DepthBinMasks_OverlapCf
+  testPassed = DepthBinMasks_Overlap
                     (candidateModelNode->depthBinMaskFar,candidateModelNode->depthBinMaskNear,sourceDepthMask0,
                      sourceDepthMask1);
   if (testPassed) {
     if (sourceClassCount < 1) {
-      testPassed = GameFactionRuntime_TestCapabilityBitClearCf(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      testPassed = GameFactionRuntime_TestCapabilityBitClear(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
       if (testPassed) {
         return 0;
       }
     }
     else {
-      testPassed = GameFactionRuntime_TestCapabilityBitClearCf(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
+      testPassed = GameFactionRuntime_TestCapabilityBitClear(factionOrDefinitionAddress,sourceArmyRuntime->factionIndex);
       if (!testPassed) {
         return 0;
       }
@@ -346,7 +346,7 @@ AiCombatTarget_EvaluateCandidateScore
                 if (*(int *)(factionOrDefinitionAddress + 0x4c) == 0x15) {
                   candidateAimModelNode = candidateAimModelNode->childNodes[0];
                 }
-                testPassed = ArmyWeaponRuntime_TestTargetLineOfFireCf
+                testPassed = ArmyWeaponRuntime_TestTargetLineOfFire
                                   (*(int *)(factionOrDefinitionAddress + 0x50) +
                                    (candidateAimModelNode->worldTransform).translation.z,
                                    (candidateAimModelNode->worldTransform).translation.y,

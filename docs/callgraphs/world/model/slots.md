@@ -9,7 +9,7 @@
 - `0x005200C0` **[`ModelRuntimeSlotClassInit_ApplyDefinitionTextureAnimationIndices`](../../../../src/world/model/slots.c#L5)**
 - `0x00522A90` **[`ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming`](../../../../src/world/model/slots.c#L39)**
 - `0x00522B90` **[`ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform`](../../../../src/world/model/slots.c#L80)**
-- `0x00523CA0` **[`ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters`](../../../../src/world/model/slots.c#L109)** — cross: [`ModelLookupTable_FindPackedKeyEntryRegsCf`](../../../../src/assets/model/definitions.c#L188) → [`assets/model/definitions`](../../assets/model/definitions.md)
+- `0x00523CA0` **[`ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters`](../../../../src/world/model/slots.c#L109)** — cross: [`ModelLookupTable_FindPackedKeyEntryRegs`](../../../../src/assets/model/definitions.c#L188) → [`assets/model/definitions`](../../assets/model/definitions.md)
 - `0x005243D0` **[`ModelRuntimeSlotClassInit_ClearFields64_68_74_B8`](../../../../src/world/model/slots.c#L182)**
 - `0x00524CB0` **[`ModelRuntimeSlot_UnrebaseClassArmyLinkOffset6C`](../../../../src/world/model/slots.c#L198)**
 - `0x00524CE0` **[`ModelRuntimeSlot_RebaseClassArmyLinkOffset6C`](../../../../src/world/model/slots.c#L216)**

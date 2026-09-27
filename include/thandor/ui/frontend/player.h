@@ -38,7 +38,7 @@ FrontendPlayerRuntime_DecrementTimeoutsAndRemoveExpiredPeers(void);
 
 /* 0x00514EF0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendPlayerRuntime_HasOtherPlayerWithAssignmentTokenCf
+FrontendPlayerRuntime_HasOtherPlayerWithAssignmentToken
           (RuntimeToken assignmentToken,PlayerRuntimeId excludedPlayerId);
 
 /* 0x00514F60 */

@@ -18,7 +18,7 @@
    message and handle it.
    FatalError_ExitIfFailed: always FatalError_Exit, which shows the message box, shuts down and exits.
    FatalError_ReportIfFailed: FatalError_Exit until the UI error state exists
-   (ErrorRuntime_InstallUiHandlerAndAllocateState), then FatalErrorRuntime_DispatchPendingErrorCf, which
+   (ErrorRuntime_InstallUiHandlerAndAllocateState), then FatalErrorRuntime_DispatchPendingError, which
    shows the error in a modal in-game dialog and returns. */
 #define FatalError_ExitIfFailed(valueOrError, failed) (g_FatalErrorExitHandler((valueOrError), (failed)))
 #define FatalError_ReportIfFailed(valueOrError, failed) (g_FatalErrorReportHandler((valueOrError), (failed)))
@@ -33,7 +33,7 @@
 void __cdecl ErrorSystem_Init(void);
 
 /* 0x00407F50 */
-bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFailCf(UiRootNode *root);
+bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNode *root);
 
 /* 0x00407F60 */
 int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *root);
@@ -43,20 +43,20 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
 
 /* 0x00407F90 */
 FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn);
+FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn);
 
 /* 0x00408090 */
 void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void);
 
 /* 0x0041BC50 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
+FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x005758D0 */
 FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
 FatalError_Exit(uint32_t errorOrValue,bool carryIn);
 
 /* 0x0041BB00 */
-int FatalError_CopyRichTextToNarrowCf (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
+int FatalError_CopyRichTextToNarrow (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 #endif /* THANDOR_CORE_ERROR_RUNTIME_H */

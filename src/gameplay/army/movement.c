@@ -19,9 +19,9 @@
    ArmyArticulatedRuntime_UpdateSelectedTerrainContact, ArmyArticulatedRuntime_InitializeLeftTerrainContact,
    ArmyArticulatedRuntime_InitializeRightTerrainContact, ArmyArticulatedRuntime_UpdateSuspensionHierarchy.
    Cross-module calls: ArmyRuntime_EmitDamageThresholdEffect [gameplay/army/combat],
-   ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf [gameplay/army/placement], FieldGrid_InterpolateWaterDelta
+   ArmyCollision_TestPointWithinExpandedRuntimeRadius [gameplay/army/placement], FieldGrid_InterpolateWaterDelta
    [world/terrain/grid], ArmyRuntime_ApplyDamageAndPropagateToParent [gameplay/army/combat],
-   GameEntityRuntime_ResolveCommandTargetPositionCf [gameplay/faction/runtime], FixedMath_Atan2Angle16
+   GameEntityRuntime_ResolveCommandTargetPosition [gameplay/faction/runtime], FixedMath_Atan2Angle16
    [core/math/fixed].
 */
 
@@ -59,7 +59,7 @@ ArmyRuntimeClass_UpdateArticulatedMovement
   if ((entityRuntime1 != (ArmyRuntimeSlot *)0x0) &&
      ((((((entityRuntime1->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0
        || (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
-      (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+      (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                           (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
                            (modelNode1->worldTransform).translation.y,
                            (modelNode1->worldTransform).translation.x,entityRuntime1), !withinLinkRadius)))) {
@@ -144,7 +144,7 @@ ArmyRuntimeClass_UpdateArticulatedMovement
     waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                        (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
     if (waypointResult.arrived) {
-      commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPositionCf
+      commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPosition
                          ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
       x.signedValue = commandTargetPosition.worldZQ12;
       if (!commandTargetPosition.unresolved) {
@@ -186,7 +186,7 @@ ArmyArticulatedMovement_ClearContactTransitionAndAdvanceWaypoint:
       waypointResult = ArmyRuntime_UpdateMovementAndWaypoints
                          (worldRuntime,(ArmyMovementRuntime *)modelRuntime->ownerArmyRuntime);
       if (waypointResult.arrived) {
-        commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPositionCf
+        commandTargetPosition = GameEntityRuntime_ResolveCommandTargetPosition
                            ((GameEntityRuntime *)modelRuntime->ownerArmyRuntime);
         x.signedValue = commandTargetPosition.worldZQ12;
         if (commandTargetPosition.unresolved) goto ArmyArticulatedMovement_SharedContinuation;
@@ -412,7 +412,7 @@ ArmyRuntimeClass_UpdateSpecialBehaviorAndGroundMovement
    movement/aim/model state and possible emitted projectiles/effects.
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints, ArmyRuntimeCommand_UpdateTargetFollowingState.
    Cross-module calls: FixedVector_StepBackwardAlongOwnDirection [core/math/fixed],
-   ArmyRuntime_ResolveShotAimPointCf [gameplay/army/runtime], ModelNodeRuntime_SmoothYawTowardTarget
+   ArmyRuntime_ResolveShotAimPoint [gameplay/army/runtime], ModelNodeRuntime_SmoothYawTowardTarget
    [world/model/hierarchy], ModelNodeRuntime_SmoothPitchTowardTarget [world/model/hierarchy],
    ShotDefinition_ComputeLaunchAnglesRegs [assets/shot/catalog], ModelNodeRuntime_ComputeRelativeDirectionAngle
    [world/model/hierarchy].
@@ -483,7 +483,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
       *nodeFlags = *nodeFlags | 1;
     }
     modelNode2 = modelRuntime->rootModelNode;
-    aimPoint = ArmyRuntime_ResolveShotAimPointCf
+    aimPoint = ArmyRuntime_ResolveShotAimPoint
                        ((modelNode2->worldTransform).translation.z,
                         (modelNode2->worldTransform).translation.y,
                         (modelNode2->worldTransform).translation.x,weaponDefinition->shotDefinition,
@@ -567,7 +567,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantA
    movement/aim/model state and possible emitted projectiles/effects.
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints, ArmyRuntimeCommand_UpdateTargetFollowingState.
    Cross-module calls: FixedVector_StepBackwardAlongOwnDirection [core/math/fixed],
-   ArmyRuntime_ResolveShotAimPointCf [gameplay/army/runtime], ModelNodeRuntime_SmoothYawTowardTarget
+   ArmyRuntime_ResolveShotAimPoint [gameplay/army/runtime], ModelNodeRuntime_SmoothYawTowardTarget
    [world/model/hierarchy], ModelNodeRuntime_SmoothPitchTowardTarget [world/model/hierarchy],
    ShotDefinition_ComputeLaunchAnglesRegs [assets/shot/catalog], ModelNodeRuntime_ComputeRelativeDirectionAngle
    [world/model/hierarchy].
@@ -653,7 +653,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
       *nodeFlags = *nodeFlags | 1;
     }
     modelNode2 = modelRuntime->rootModelNode;
-    aimPoint = ArmyRuntime_ResolveShotAimPointCf
+    aimPoint = ArmyRuntime_ResolveShotAimPoint
                        ((modelNode2->worldTransform).translation.z,
                         (modelNode2->worldTransform).translation.y,
                         (modelNode2->worldTransform).translation.x,weaponDefinition->shotDefinition,
@@ -746,7 +746,7 @@ ArmyRuntimeClass_UpdateMovementAimAndProjectilesVariantB
    and runtime collision response, model orientation, track-texture animation, and timed shot/effect emitters.
    Runtime-update partition slots 0-23 receive (worldRuntime, armyRuntime).
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
-   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf [gameplay/army/placement],
+   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius [gameplay/army/placement],
    FieldGrid_InterpolateWaterDelta [world/terrain/grid], ArmyRuntime_ApplyDamageAndPropagateToParent
    [gameplay/army/combat], FixedMath_Vector2AngleAndLengthRegs [core/math/fixed],
    ArmyRuntime_UpdateActivationMetricAndPlayStartSound [gameplay/army/runtime], FixedTrig_ProjectPlanarPointRegs
@@ -795,7 +795,7 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
       ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
-       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                            (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
                             (modelNode2->worldTransform).translation.y,
                             (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
@@ -897,7 +897,7 @@ ArmyGroundMovementCollision_SnapFacingToDesiredHeading:
     modelNode2 = modelRuntime->rootModelNode;
     heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
     dispatchWorldRuntime = worldRuntime;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
     if (blockingCollision.blocked) {
@@ -1030,8 +1030,8 @@ ArmyGroundMovementCollision_FinalizeEffectsAnimationAndTransforms:
    animation, terrain contact, collision response, and timed effects for the class-table implementation. Runtime-
    update partition slots 0-23 receive (worldRuntime, armyRuntime).
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
-   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf [gameplay/army/placement],
-   TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid], SpatialSound_PlayPositionedOneShot
+   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius [gameplay/army/placement],
+   TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid], SpatialSound_PlayPositionedOneShot
    [audio/spatial/runtime], FixedMath_Vector2AngleAndLengthRegs [core/math/fixed],
    ArmyRuntime_UpdateActivationMetricAndPlayStartSound [gameplay/army/runtime], FixedTrig_ProjectPlanarPointRegs
    [core/math/fixed].
@@ -1082,7 +1082,7 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
       (movementDefinition = modelRuntime->modelDefinition,
       (((((armyOrWaypointY->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
         (movementDefinition->placementRadiusOrClearanceDC == 0)) ||
-       (testResult = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+       (testResult = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                      (movementDefinition->placementRadiusOrClearanceDC,
                       (modelNode2->worldTransform).translation.y,
                       (modelNode2->worldTransform).translation.x,armyOrWaypointY), !testResult))) {
@@ -1097,7 +1097,7 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
         voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[turnVelocityOrIndex];
         if (voiceSetRef != (DirectSoundVoiceSet **)0x0) {
           worldPosition = &(modelRuntime->rootModelNode->worldTransform).translation;
-          testResult = TerrainGrid_TestProjectedCellMaskBits01Cf
+          testResult = TerrainGrid_TestProjectedCellMaskBits01
                              ((modelRuntime->rootModelNode->worldTransform).translation.y,
                               worldPosition->x,worldRuntime);
           if (!testResult) {
@@ -1217,7 +1217,7 @@ ArmyMovementBanking_SnapFacingToDesiredHeading:
     modelNode2 = modelRuntime->rootModelNode;
     heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
     dispatchWorldRuntime = worldRuntime;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
     if (blockingCollision.blocked) {
@@ -1350,7 +1350,7 @@ static void ArmyRuntime_ClearModelTreeFlags218(uint8_t *node)
    Ownership: gameplay/army/movement.
    Purpose: Resets movement flags and target state from the current model position, updates the verified command-
    state word, and clears inherited movement flags through the attached model hierarchy.
-   Cross-module calls: ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime].
+   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
@@ -1366,7 +1366,7 @@ ArmyRuntime_ResetMovementStateFromModel(ArmyRuntimeSlot *armyRuntime)
   standardGeneration = g_ArmyCommandGenerationStandard;
   modelNode1 = armyRuntime->modelNodeRuntime;
   armyRuntime->movementStateFlags = armyRuntime->movementStateFlags & 0xffffffc6;
-  stateField100Zero = ArmyRuntime_TestStateField100ZeroCf(armyRuntime);
+  stateField100Zero = ArmyRuntime_TestStateField100Zero(armyRuntime);
   if ((!stateField100Zero) && ((armyRuntime->commandModeFlags & 3) != 0)) {
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags & 0xfffffffc;
     armyRuntime->commandModeFlags = armyRuntime->commandModeFlags | 4;
@@ -1671,7 +1671,7 @@ ArmyRuntime_QueueOrStartMoveCommandVariantB
    and depth-bin state for the first verified ground-movement runtime class. Runtime-update partition slots 0-23
    receive (worldRuntime, armyRuntime).
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
-   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf [gameplay/army/placement],
+   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius [gameplay/army/placement],
    FieldGrid_InterpolateWaterDelta [world/terrain/grid], ArmyRuntime_ApplyDamageAndPropagateToParent
    [gameplay/army/combat], FixedMath_Vector2AngleAndLengthRegs [core/math/fixed],
    ArmyRuntime_UpdateActivationMetricAndPlayStartSound [gameplay/army/runtime], FixedTrig_ProjectPlanarPointRegs
@@ -1718,7 +1718,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
       ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
-       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                            (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
                             (modelNode2->worldTransform).translation.y,
                             (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
@@ -1820,7 +1820,7 @@ ArmyGroundMovementVariantA_SnapFacingToDesiredHeading:
     modelNode2 = modelRuntime->rootModelNode;
     heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
     dispatchWorldRuntime = worldRuntime;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
     if (blockingCollision.blocked) {
@@ -1906,7 +1906,7 @@ ArmyGroundMovementVariantA_FinalizeEffectsAnimationAndTransforms:
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
    Cross-module calls: FixedMath_SinCosScaled [core/math/fixed], FixedMath_Length2 [core/math/fixed],
    FieldGrid_InterpolateTerrainHeightAndNormal [world/terrain/grid],
-   ArmyCollision_FindBlockingRuntimeForCurrentUnitCf [gameplay/army/placement], ArmyRuntime_HandleCollisionPartner
+   ArmyCollision_FindBlockingRuntimeForCurrentUnit [gameplay/army/placement], ArmyRuntime_HandleCollisionPartner
    [gameplay/army/runtime], FixedMath_Length3 [core/math/fixed].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1973,7 +1973,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
     armyRuntime->articulatedHeightOrStateA0 = terrainSample.heightQ12;
     contactCoordOrLength = armyRuntime->runtimeState98;
     contactXOrHeight = armyRuntime->articulatedHeightOrStateA0;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        (contactCoordOrLength,armyRuntime->runtimeState90,(RuntimeCollisionQueryViewF4 *)armyRuntime
                         ,worldRuntime);
     if (!blockingCollision.blocked) {
@@ -2037,7 +2037,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact:
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
    Cross-module calls: FixedMath_SinCosScaled [core/math/fixed], FixedMath_Length2 [core/math/fixed],
    FieldGrid_InterpolateTerrainHeightAndNormal [world/terrain/grid],
-   ArmyCollision_FindBlockingRuntimeForCurrentUnitCf [gameplay/army/placement], ArmyRuntime_HandleCollisionPartner
+   ArmyCollision_FindBlockingRuntimeForCurrentUnit [gameplay/army/placement], ArmyRuntime_HandleCollisionPartner
    [gameplay/army/runtime], FixedMath_Length3 [core/math/fixed].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -2103,7 +2103,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
     armyRuntime->runtimeStateA4 = terrainSample.heightQ12;
     contactCoordOrDistance = armyRuntime->articulatedCoordinateOrState9C;
     contactCoordOrLength = armyRuntime->runtimeStateA4;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        (contactCoordOrDistance,armyRuntime->runtimeState94,(RuntimeCollisionQueryViewF4 *)armyRuntime
                         ,worldRuntime);
     if (!blockingCollision.blocked) {
@@ -2165,10 +2165,10 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact:
    second verified ground-movement runtime class. Runtime-update partition slots 0-23 receive (worldRuntime,
    armyRuntime).
    Local calls: ArmyRuntime_UpdateMovementAndWaypoints.
-   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf [gameplay/army/placement],
+   Cross-module calls: ArmyCollision_TestPointWithinExpandedRuntimeRadius [gameplay/army/placement],
    FixedMath_Vector2AngleAndLengthRegs [core/math/fixed], ArmyRuntime_UpdateActivationMetricAndPlayStartSound
    [gameplay/army/runtime], FixedTrig_ProjectPlanarPointRegs [core/math/fixed],
-   ArmyCollision_FindBlockingRuntimeForCurrentUnitCf [gameplay/army/placement],
+   ArmyCollision_FindBlockingRuntimeForCurrentUnit [gameplay/army/placement],
    FixedTransform_ComposeEulerAnglesRegs [core/math/fixed].
 */
 
@@ -2211,7 +2211,7 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
       ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
-       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadius
                            (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
                             (modelNode2->worldTransform).translation.y,
                             (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
@@ -2307,7 +2307,7 @@ ArmyGroundMovementVariantB_SnapFacingToDesiredHeading:
     modelNode2 = modelRuntime->rootModelNode;
     heightOffsetQ12 = movementDefinition->placementHeightOffsetQ12;
     dispatchWorldRuntime = worldRuntime;
-    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnitCf
+    blockingCollision = ArmyCollision_FindBlockingRuntimeForCurrentUnit
                        ((Q12)(nextPosition >> 0x20),(Q12)nextPosition,
                         (RuntimeCollisionQueryViewF4 *)modelRuntime,worldRuntime);
     if (blockingCollision.blocked) {
@@ -2467,9 +2467,9 @@ ArmyRuntime_StartDirectMoveCommand
 /* Address: 0x00521580.
    Ownership: gameplay/army/movement.
    Purpose: Updates one articulated contact child, resolves terrain interaction, and emits the linked effect state.
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_PlayPositionedOneShot [audio/spatial/runtime], FieldGrid_GetNearestWaterDelta [world/terrain/grid],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime].
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ArmyArticulatedRuntime_UpdateContactChildAndEffects
@@ -2493,7 +2493,7 @@ ArmyArticulatedRuntime_UpdateContactChildAndEffects
      (voiceSetRef = (DirectSoundVoiceSet **)worldRuntime->dwordArray[soundIndex],
      voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
     worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                        worldPosition->x,worldRuntime);
     if (!cellMasked) {
@@ -2513,7 +2513,7 @@ ArmyArticulatedRuntime_UpdateContactChildAndEffects
     effectDefinition = (EffectDefinition *)armyModelRuntime->definitionValueB4_58;
   }
   if (effectDefinition != (EffectDefinition *)0x0) {
-    EffectRuntimePool_CreateInstanceFromDefinitionCf
+    EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (modelNode1->modelPayload).worldRotationAngle2,
                (modelNode1->modelPayload).worldRotationAngle1,
@@ -3169,7 +3169,7 @@ ArmyArticulatedRuntime_UpdateSelectedTerrainContact
    parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
    Local calls: ArmyRuntime_StartMoveCommandWithFallbackWaypoints, ArmyRuntime_StartClampedMoveCommand,
    ArmyRuntime_ResetMovementStatePreserveQueuedTarget, ArmyRuntime_ResetMovementStateFromCurrentPosition.
-   Cross-module calls: ArmyWeaponRuntime_TestTargetLineOfFireCf [gameplay/army/combat].
+   Cross-module calls: ArmyWeaponRuntime_TestTargetLineOfFire [gameplay/army/combat].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 ArmyRuntimeCommand_UpdateTargetFollowingState
@@ -3182,7 +3182,7 @@ ArmyRuntimeCommand_UpdateTargetFollowingState
   bool lineOfFireClear;
   
   movementRuntime = armyRuntime->linkedEntityRuntime;
-  lineOfFireClear = ArmyWeaponRuntime_TestTargetLineOfFireCf
+  lineOfFireClear = ArmyWeaponRuntime_TestTargetLineOfFire
                     (targetWorldZQ12,targetWorldYQ12,targetWorldXQ12,worldRuntime,armyRuntime);
   definitionRecord = (movementRuntime->common).ownership.definitionOrClassRecord;
   if (lineOfFireClear) {

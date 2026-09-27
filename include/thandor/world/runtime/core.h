@@ -59,7 +59,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel (Q12 worldYQ12,Q12 w
 
 /* 0x0050A610 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WorldRuntimeNode_IsPositionInsideBoundsCf
+WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl);
 
 /* 0x0050D260 */
@@ -68,7 +68,7 @@ WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D330 */
 void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_MotionStateMatchesSnapshotCf(WorldRuntimeContext *worldRuntime);
+WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D4F0 */
 void __thandor_preserve_eax WorldRuntime_CommitScalar7CFrom8C(WorldRuntimeContext *world);
@@ -102,7 +102,7 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world);
 
 /* 0x0050D650 */
 WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
-WorldRuntime_GetFlagsCf(WorldRuntimeContext *world);
+WorldRuntime_GetFlags(WorldRuntimeContext *world);
 
 /* 0x0050D6A0 */
 FieldGridAsset * WorldRuntime_GetFieldGridAsset(WorldRuntimeContext *world);
@@ -123,7 +123,7 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world);
 
 /* 0x0050D7D0 */
 WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
-WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime);
+WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime);
 
 /* 0x0050D830 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -180,7 +180,7 @@ uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(v
 
 /* 0x00527BE0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UnifiedRuntimeDefault_TwoArgSuccessCf
+UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime);
 
 /* 0x00527BF0 */

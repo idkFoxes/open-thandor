@@ -44,7 +44,7 @@ ArmyRuntime_ApplyImpactDamageToRuntimeAndParent
 
 /* 0x0052B9D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ArmyWeaponRuntime_TestTargetLineOfFireCf
+ArmyWeaponRuntime_TestTargetLineOfFire
           (Q12 targetWorldZQ12,Q12 targetWorldYQ12,Q12 targetWorldXQ12,
           WorldRuntimeContext *worldRuntime,ArmyRuntimeSlot *armyRuntime);
 

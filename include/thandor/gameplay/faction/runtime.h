@@ -38,7 +38,7 @@ GameFactionRuntime_ClearRuntimeGroupMemberPointerFromAllFactionTables(void *runt
 
 /* 0x00513CA0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_TestCapabilityBitClearCf
+GameFactionRuntime_TestCapabilityBitClear
           (uint32_t capabilityBitIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00513CD0 */
@@ -62,11 +62,11 @@ GameFactionRuntime_RecomputeProgressAndScoreMetrics
 
 /* 0x00514900 */
 RuntimeGroupIndexResult __thandor_eax_cf_preserve_ecx_edx
-GameFactionRuntime_FindRuntimeGroupIndexCf(RuntimeModelFactionPrefix10 *runtimeEntry);
+GameFactionRuntime_FindRuntimeGroupIndex(RuntimeModelFactionPrefix10 *runtimeEntry);
 
 /* 0x0051B800 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FactionRuntime_HasArmyAssetOrActiveStructureCf
+FactionRuntime_HasArmyAssetOrActiveStructure
           (FactionRuntimeIndex factionIndex,ArmyAssetRecordPrefix *armyAssetRecord);
 
 /* 0x0051C4C0 */
@@ -75,7 +75,7 @@ GameEntityRuntime_ResetMovementFlagsAndAnchorCoordinatesFromModel(GameEntityRunt
 
 /* 0x0051C680 */
 WorldPositionResult
-GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState);
+GameEntityRuntime_ResolveCommandTargetPosition(GameEntityRuntime *targetState);
 
 /* 0x0052A4D0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -142,7 +142,7 @@ void __thandor_void_preserve_eax_ecx_edx OldUnitRuntime_MergeMasksAndReplayRecor
 
 /* 0x00513D00 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GameFactionRuntime_IsRecentTimedRelationStateCf
+GameFactionRuntime_IsRecentTimedRelationState
           (FactionRuntimeIndex otherFactionIndex,FactionRuntimeIndex factionIndex);
 
 /* 0x00565650 */

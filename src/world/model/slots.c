@@ -124,7 +124,7 @@ ModelRuntimeSlotClassInit_SeedFieldsFromRootTransform
    Ownership: world/model/slots.
    Purpose: Builds eight model-key presence counters in the class-state overlay. Class-initialization callback
    table slot selected by model runtime class id.
-   Cross-module calls: ModelLookupTable_FindPackedKeyEntryRegsCf [assets/model/definitions].
+   Cross-module calls: ModelLookupTable_FindPackedKeyEntryRegs [assets/model/definitions].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
@@ -151,42 +151,42 @@ ModelRuntimeSlotClassInit_BuildModelKeyPresenceCounters
   (modelRuntimeSlot->classLinkState).classState74 = 0;
   (modelRuntimeSlot->classLinkState).classState78 = 0;
   (modelRuntimeSlot->classLinkState).classState7C = 0;
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(0,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(0,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     (modelRuntimeSlot->classLinkState).modelLinkOrState60.modelRuntime =
          (ModelRuntimeSlot *)((modelRuntimeSlot->classLinkState).modelLinkOrState60.classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(1,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(1,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     matchedClassCounterField = &(modelRuntimeSlot->classLinkState).classState64;
     *matchedClassCounterField = *matchedClassCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(2,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(2,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState68;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(3,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(3,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     armyLinkCounterField = &(modelRuntimeSlot->classLinkState).armyLinkOrState6C;
     armyLinkCounterField->armyRuntime = (ArmyRuntimeSlot *)(armyLinkCounterField->classState - 1);
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(4,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(4,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState70;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(5,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(5,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState74;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(6,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(6,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState78;
     *classCounterField = *classCounterField - 1;
   }
-  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegsCf(7,2,(modelNode1->modelPayload).modelResource);
+  keyLookupResult = ModelLookupTable_FindPackedKeyEntryRegs(7,2,(modelNode1->modelPayload).modelResource);
   if (keyLookupResult.notFound) {
     classCounterField = &(modelRuntimeSlot->classLinkState).classState7C;
     *classCounterField = *classCounterField - 1;

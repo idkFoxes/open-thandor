@@ -50,7 +50,7 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
 
 /* 0x004B5770 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiResizableWindowControl_HandleWindowHotkeysCf
+UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control);
 
 /* 0x004B1000 */
@@ -58,7 +58,7 @@ void __thandor_void_preserve_eax_ecx_edx
 UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root);
 
 /* 0x004B1110 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root);
+bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root);
 
 /* 0x004B2790 */
 void __thandor_void_preserve_eax_ecx_edx

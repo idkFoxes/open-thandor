@@ -18,7 +18,7 @@
    semantics are not inferred from numeric adjacency. Typed parameters: p2 baseWeight→AiCandidateScore32_V342.
    Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Local calls: AiPrimaryWorkspace_HasUnassignedEntryByIdCf, AiPrimaryWorkspace_CountAssignedEntriesById,
+   Local calls: AiPrimaryWorkspace_HasUnassignedEntryById, AiPrimaryWorkspace_CountAssignedEntriesById,
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry.
    Cross-module calls: AiPlacement_TestMode4AtWorkspaceRecord [gameplay/ai/placement].
 */
@@ -36,7 +36,7 @@ AiWorkspaceAssetCandidate_AddWeightedEntry
   remainingOrCountOrRate = g_AiWorkspace08Count;
   terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
   if ((g_AiWorkspace08Count != 0) &&
-     (testResult = AiPrimaryWorkspace_HasUnassignedEntryByIdCf(armyAssetId), !testResult)) {
+     (testResult = AiPrimaryWorkspace_HasUnassignedEntryById(armyAssetId), !testResult)) {
     do {
       if ((armyAssetId == terrainFeatureEntry->armyAssetId) &&
          (testResult = AiPlacement_TestMode4AtWorkspaceRecord
@@ -75,11 +75,11 @@ AiWorkspaceAssetCandidate_AddWeightedEntry
    over canonical ids 0..255; localized titles do not prove source-building, tier, direction, or effect mappings.
    Local calls: AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents,
    AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents.
-   Cross-module calls: GameFactionRuntime_TestCapabilityBitClearCf [gameplay/faction/runtime],
+   Cross-module calls: GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime],
    AiPlanning_CollectActiveGridMaskClasses [gameplay/ai/planning], AiSiteCandidate_AddGeneralCellIfSeparated
    [gameplay/ai/placement], AiSiteCandidate_AddFlaggedCellIfSeparated [gameplay/ai/placement],
    AiSiteCandidate_AddTerrainFeatureCellIfSeparated [gameplay/ai/placement],
-   ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf [assets/model/definitions].
+   ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction [assets/model/definitions].
 */
 
 void __thandor_void_preserve_eax_ecx_edx
@@ -171,7 +171,7 @@ AiPlanning_RebuildFactionWorkspaces
           countOrMask = *(uint32_t *)((entityRuntime->common).damageState.reserved0C_23 + 0x10) >>
                    ((char)factionIndex * '\x02' & 0x1fU);
           if (((entityRuntime->common).ownership.ownerIndex != 0) &&
-             (testResult = GameFactionRuntime_TestCapabilityBitClearCf
+             (testResult = GameFactionRuntime_TestCapabilityBitClear
                                  ((entityRuntime->common).ownership.ownerIndex,factionIndex),
              countSnapshotOrRemaining = g_AiWorkspace03Count, workspace03Buffer = g_AiWorkspaceBuffer03_Size1000,
              widthOrCount = g_AiWorkspace02Count, runtimeEntryCursor = g_AiWorkspaceBuffer02_Size0400
@@ -180,7 +180,7 @@ AiPlanning_RebuildFactionWorkspaces
                (((countOrMask & 1) == 0 ||
                 (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
                  [*(int *)(*(int *)(entityRuntime->common).ownership.definitionOrClassRecord + 0x4c)] !=
-                 ArmyRuntime_ClassCommandHandlerGroupACf)))) {
+                 ArmyRuntime_ClassCommandHandlerGroupA)))) {
               assetId = (entityRuntime->common).runtimeIdentityOrArmyAssetId;
               if (g_AiWorkspace03Count < 0x200) {
                 g_AiWorkspaceBuffer03_Size1000[g_AiWorkspace03Count].armyRuntime = armySlot;
@@ -432,7 +432,7 @@ AiPlanning_RebuildFactionWorkspaces
     definitionNode = *armyAssetRegistryCursor;
     if (((definitionNode != (ArmyAssetRecordPrefix *)0x0) &&
         ((definitionNode[1].selectionDetailTemplateVariantIndex & 1) != 0)) &&
-       (((testResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+       (((testResult = ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
                              (factionIndex,(ModelDefinitionHierarchyNodeAddress32)definitionNode),
          !testResult && ((definitionNode[1].selectionDetailTemplateVariantIndex & countOrMask) != 0)) &&
         (((definitionNode->registryId < ARM_0300_BUILDING_MDL0301 ||
@@ -472,7 +472,7 @@ AiPlanning_RebuildFactionWorkspaces
       slotModelRuntime = (armySlot->modelRuntimeOrSavedOffset).modelRuntime;
       spacingOrPanelIndex = 0x1c;
       do {
-        testResult = AiTechnologyCandidate_IsCurrentlyAvailableCf
+        testResult = AiTechnologyCandidate_IsCurrentlyAvailable
                            ((PckTechnologyIdCatalog)
                             (&slotModelRuntime->attachments140[4].sourceTransform04)[spacingOrPanelIndex],scratchWidthOrFactionOffset);
         if (!testResult) {
@@ -499,7 +499,7 @@ AiPlanning_RebuildFactionWorkspaces
    selects the highest positive score, applies faction-anchor pressure to the knowledge weight, and adds the chosen
    candidate. It is distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and
    PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: AiPrimaryWorkspace_HasEntryByIdCf, AiCandidateWorkspace_AddOrAccumulateWeightedEntry.
+   Local calls: AiPrimaryWorkspace_HasEntryById, AiCandidateWorkspace_AddOrAccumulateWeightedEntry.
 */
 void __thandor_void_preserve_eax_ecx_edx
 AiStrategicCandidate_AddBestWorkspace12Entry
@@ -515,7 +515,7 @@ AiStrategicCandidate_AddBestWorkspace12Entry
   AiCandidateEntryKind entryKind;
   RuntimeToken entityId;
   
-  hasSpecialAsset = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+  hasSpecialAsset = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (hasSpecialAsset) {
     /* EDX side channel for the category score callback: bit 2 / bit 4 when the faction owns any
        technology of category 2 / 3 (the decompiler kept only the empty loop). */
@@ -699,7 +699,7 @@ void __thandor_void_preserve_eax_ecx_edx AiCandidateWorkspace_SortDescending(voi
    Ownership: gameplay/ai/workspaces.
    Purpose: Decodes the low-nibble entry kind and low-word ID. Kind 2 reads TechnologyRecord.entityValue20; other
    nontrivial kinds resolve an ArmyAsset record and read +0x28, with 0x7FFFFFFF fallback.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 int __thandor_eax_preserve_ecx_edx
 AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
@@ -714,7 +714,7 @@ AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
     resolvedEntityValue = g_TechnologyAsset->records[registryId].xeniteCostQ4;
   }
   else {
-    registryLookup = ArmyAssetRegistry_FindByIdCf(registryId);
+    registryLookup = ArmyAssetRegistry_FindById(registryId);
     resolvedEntityValue = 0x7fffffff;
     if (!registryLookup.notFound) {
       resolvedEntityValue = registryLookup.recordOrError[2].registryId;
@@ -732,7 +732,7 @@ AiCandidateWorkspace_GetEntryEntityValue(AiCandidateWorkspaceEntry *entry)
    control flow, globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId)
+AiSecondaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -761,7 +761,7 @@ AiSecondaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId)
    globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiSecondaryWorkspace_HasEntryByIdCf(PckArmyAssetIdCatalog entryId)
+AiSecondaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1025,9 +1025,9 @@ AiPrimaryWorkspace_GetMinimumManhattanDistanceToPoint(Q12 worldX,Q12 worldY)
    pending asset. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier, class,
    and faction-role semantics are not inferred from numeric adjacency.
    Cross-module calls: AiPlacement_TestWorkspaceRecordAtPoint [gameplay/ai/placement],
-   ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
+   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
    [world/model/hierarchy], ArmyRuntime_DispatchClassCommand [gameplay/army/runtime],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime],
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime],
    AiConstructionPlanner_ConsumeFactionPendingArmyAsset [gameplay/ai/planning].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1057,7 +1057,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
       placementRejected = AiPlacement_TestWorkspaceRecordAtPoint
                         (armyAssetId,workspaceRecord,factionIndex,(UiRootNode *)worldRuntime);
       if (!placementRejected) {
-        createResult = ArmyRuntime_CreateInstanceFromAssetCf
+        createResult = ArmyRuntime_CreateInstanceFromAsset
                           (4,(uint32_t)(uint16_t)workspaceRecord->triangle0NormalAngles,
                            workspaceRecord->worldY,workspaceRecord->worldX,factionIndex,armyAssetId,
                            worldRuntime);
@@ -1071,7 +1071,7 @@ AiConstructionPlanner_PlaceSpecialAssetFromWorkspace
         createdModelRuntime = (primarySlot->modelRuntimeOrSavedOffset).modelRuntime;
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(createdSlotPair,worldRuntime);
-        EffectRuntimePool_CreateInstanceFromDefinitionCf
+        EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
@@ -1202,7 +1202,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx AiRuntime_InitWorkspace(void)
    Ownership: gameplay/ai/workspaces.
    Purpose: Adds the current entity pointer to the 0x400-entry workspace09 list when capacity remains and the
    entity position lies outside every primary-workspace entry extent.
-   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf.
+   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtents.
 */
 void __thandor_void_preserve_ecx_edx
 AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell)
@@ -1215,7 +1215,7 @@ AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell
   entryIndex = g_AiWorkspace09Count;
   cellBuffer = g_AiWorkspaceBuffer09_Size1000;
   if (g_AiWorkspace09Count < 0x400) {
-    isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf
+    isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
                       (currentCell->worldY,currentCell->worldX);
     if (!isOutsideExtents) {
       cellBuffer[entryIndex] = currentCell;
@@ -1230,7 +1230,7 @@ AiEntityCandidateWorkspace09_AddOutsidePrimaryExtents(FieldGridCell *currentCell
    Ownership: gameplay/ai/workspaces.
    Purpose: Adds the current entity pointer to the 0x100-entry workspace10 list under the same outside-primary-
    extents test.
-   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf.
+   Local calls: AiPrimaryWorkspace_IsPointOutsideAllEntryExtents.
 */
 void __thandor_void_preserve_ecx_edx
 AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell)
@@ -1243,7 +1243,7 @@ AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell
   entryIndex = g_AiWorkspace10Count;
   cellBuffer = g_AiWorkspaceBuffer10_Size0400;
   if (g_AiWorkspace10Count < 0x100) {
-    isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf
+    isOutsideExtents = AiPrimaryWorkspace_IsPointOutsideAllEntryExtents
                       (currentCell->worldY,currentCell->worldX);
     if (!isOutsideExtents) {
       cellBuffer[entryIndex] = currentCell;
@@ -1261,7 +1261,7 @@ AiEntityCandidateWorkspace10_AddOutsidePrimaryExtents(FieldGridCell *currentCell
    entryId→RuntimeToken. Nearby but non-identical semantic domains were explicitly deferred.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId)
+AiPrimaryWorkspace_HasUnassignedEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1290,7 +1290,7 @@ AiPrimaryWorkspace_HasUnassignedEntryByIdCf(PckArmyAssetIdCatalog entryId)
    locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPrimaryWorkspace_HasEntryByIdCf(PckArmyAssetIdCatalog entryId)
+AiPrimaryWorkspace_HasEntryById(PckArmyAssetIdCatalog entryId)
 
 {
   int workspaceEntriesRemaining;
@@ -1393,7 +1393,7 @@ AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    unchanged.
 */
 bool __thandor_void_preserve_ecx_edx
-AiPrimaryWorkspace_IsPointOutsideAllEntryExtentsCf(Q12 worldX,Q12 worldY)
+AiPrimaryWorkspace_IsPointOutsideAllEntryExtents(Q12 worldX,Q12 worldY)
 
 {
   Q12 deltaYAbsQ12;

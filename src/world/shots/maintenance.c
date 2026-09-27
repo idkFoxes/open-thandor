@@ -131,7 +131,7 @@ ShotRuntimeMaintenance_OccupancyRebuildNoOp(WorldRuntimeContext *worldRuntime,vo
    audioRefresh, object kind shot. Maintenance audioRefresh.shot callback. The second argument is the
    ModelRuntimeNode whose runtimePayload and world transform drive projected sound gain updates. The 4x3 table
    bytes, target body, calling convention, and RET 0x08 contract remain unchanged.
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -152,7 +152,7 @@ ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     worldPosition = &(modelNode->worldTransform).translation;
     if (slot != (SpatialSoundSlot *)0x0) {
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                         ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
       if (!cellMasked) {
         SpatialSound_UpdateDesiredPositionedGains
@@ -175,11 +175,11 @@ ShotRuntimeMaintenance_UpdateHierarchyProjectedSound
    conservative. Advances projectile animation and motion, resolves terrain, secondary-surface and runtime
    collisions, emits impact effects, applies army-hit relation logic and damage, and unlinks completed projectile
    nodes. Maintenance table phase primaryUpdate, object kind shot.
-   Cross-module calls: ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions],
+   Cross-module calls: ModelLookupTable_ContainsPackedKey [assets/model/definitions],
    ModelNodeRuntime_TransformLocalPointRegs [world/model/hierarchy],
-   EffectRuntimePool_CreateInstanceFromDefinitionCf [world/effects/runtime],
-   ModelRuntime_RaycastCandidateListNearestCf [world/model/runtime], FieldGrid_RaycastTerrainSurfaceDistanceCf
-   [world/terrain/grid], FieldGrid_RaycastSecondarySurfaceDistanceCf [world/terrain/grid].
+   EffectRuntimePool_CreateInstanceFromDefinition [world/effects/runtime],
+   ModelRuntime_RaycastCandidateListNearest [world/model/runtime], FieldGrid_RaycastTerrainSurfaceDistance
+   [world/terrain/grid], FieldGrid_RaycastSecondarySurfaceDistance [world/terrain/grid].
 */
 void __thandor_void_preserve_eax_ecx_edx
 ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
@@ -263,14 +263,14 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
     if (*secondaryCountdownPtr == 0) {
       (shotRuntime->ownerAndTrajectory).secondaryEffectCountdownTicks =
            shotDefinition->secondaryEffectIntervalTicks;
-      emitterLookup = ModelLookupTable_ContainsPackedKeyCf(1,3,shotDefinition->ownedNestedResource);
+      emitterLookup = ModelLookupTable_ContainsPackedKey(1,3,shotDefinition->ownedNestedResource);
       if (!emitterLookup.notFound) {
         effectDefinition = shotDefinition->secondaryEffectDefinition;
         effectWorldRuntime = worldRuntime;
         emitterWorldPoint = ModelNodeRuntime_TransformLocalPointRegs
                            (emitterLookup.entry,(ModelRuntimeNode *)modelNode);
         worldXQ12 = emitterWorldPoint.yQ12;
-        EffectRuntimePool_CreateInstanceFromDefinitionCf
+        EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                    emitterWorldPoint.zQ12,worldXQ12,emitterWorldPoint.xQ12,effectDefinition,effectWorldRuntime);
       }
@@ -284,7 +284,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       if (ownerOrHitArmy != (ArmyRuntimeSlot *)0x0) {
         ownerModelNode = ownerOrHitArmy->modelNodeRuntime;
       }
-      armyRaycast = ModelRuntime_RaycastCandidateListNearestCf
+      armyRaycast = ModelRuntime_RaycastCandidateListNearest
                          (rotationAngle - shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,frameCountDistanceOrAge,
                           (modelNode->worldTransform).translation.z,
@@ -300,7 +300,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
          [targetClassIndex] == (EffectDefinition *)0x0)) {
         frameAccumulatorOrDistance = 0x7fffffff;
       }
-      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistanceCf
+      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistance
                          ((modelNode->modelPayload).worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,frameCountDistanceOrAge,
@@ -314,7 +314,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           == (EffectDefinition *)0x0)) {
         terrainHitDistance = 0x7fffffff;
       }
-      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistanceCf
+      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistance
                          ((modelNode->modelPayload).worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,frameCountDistanceOrAge,
@@ -339,7 +339,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
             directionOffset = FixedMath_DirectionFromAnglesScaledRegs
                                ((modelNode->modelPayload).worldRotationAngle1,
                                 (modelNode->modelPayload).worldRotationAngle0,secondaryHitDistance);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        directionOffset.z + (modelNode->worldTransform).translation.z,
                        directionOffset.y + (modelNode->worldTransform).translation.y,
@@ -376,7 +376,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
               directionOffset = FixedMath_DirectionFromAnglesScaledRegs
                                  ((modelNode->modelPayload).worldRotationAngle1,
                                   (modelNode->modelPayload).worldRotationAngle0,frameAccumulatorOrDistance);
-              EffectRuntimePool_CreateInstanceFromDefinitionCf
+              EffectRuntimePool_CreateInstanceFromDefinition
                         (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
@@ -403,7 +403,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           directionOffset = FixedMath_DirectionFromAnglesScaledRegs
                              ((modelNode->modelPayload).worldRotationAngle1,
                               (modelNode->modelPayload).worldRotationAngle0,terrainHitDistance);
-          EffectRuntimePool_CreateInstanceFromDefinitionCf
+          EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
                      THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 + terrainMaterialIndex)),0,
                      0x4000,0,directionOffset.z + (modelNode->worldTransform).translation.z,
@@ -425,7 +425,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
       if (ownerOrHitArmy != (ArmyRuntimeSlot *)0x0) {
         ownerModelNode = ownerOrHitArmy->modelNodeRuntime;
       }
-      armyRaycast = ModelRuntime_RaycastCandidateListNearestCf
+      armyRaycast = ModelRuntime_RaycastCandidateListNearest
                          ((modelNode->modelPayload).worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
@@ -442,7 +442,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
          [targetClassIndex] == (EffectDefinition *)0x0)) {
         frameCountDistanceOrAge = 0x7fffffff;
       }
-      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistanceCf
+      surfaceRaycast = FieldGrid_RaycastTerrainSurfaceDistance
                          ((modelNode->modelPayload).worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
@@ -456,7 +456,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
           == (EffectDefinition *)0x0)) {
         mixedScalarOrPointerCarrier = 0x7fffffff;
       }
-      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistanceCf
+      surfaceRaycast = FieldGrid_RaycastSecondarySurfaceDistance
                          ((modelNode->modelPayload).worldRotationAngle1 -
                           shotRuntime->elevationOffsetAngle16,
                           (modelNode->modelPayload).worldRotationAngle0,shotRuntime->launchSpeedQ12,
@@ -479,7 +479,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
             directionOffset = FixedMath_DirectionFromAnglesScaledRegs
                                ((modelNode->modelPayload).worldRotationAngle1,
                                 (modelNode->modelPayload).worldRotationAngle0,frameAccumulatorOrDistance);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,0x4000,0,
                        directionOffset.z + (modelNode->worldTransform).translation.z,
                        directionOffset.y + (modelNode->worldTransform).translation.y,
@@ -514,7 +514,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
               directionOffset = FixedMath_DirectionFromAnglesScaledRegs
                                  ((modelNode->modelPayload).worldRotationAngle1,
                                   (modelNode->modelPayload).worldRotationAngle0,frameCountDistanceOrAge);
-              EffectRuntimePool_CreateInstanceFromDefinitionCf
+              EffectRuntimePool_CreateInstanceFromDefinition
                         (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),0,
                          -(modelNode->modelPayload).worldRotationAngle1,
                          (modelNode->modelPayload).worldRotationAngle0 + 0x8000 & 0xffff,
@@ -545,7 +545,7 @@ ShotModelRuntimeMaintenance_UpdateProjectileMotionCollisionAndEffects
                              ((modelNode->modelPayload).worldRotationAngle1,
                               (modelNode->modelPayload).worldRotationAngle0,
                               mixedScalarOrPointerCarrier);
-          EffectRuntimePool_CreateInstanceFromDefinitionCf
+          EffectRuntimePool_CreateInstanceFromDefinition
                     (EFFECT_RUNTIME_COMPLETION_INVOKE_LINKED_HANDLER,
                      THANDOR_BITCAST(ModelRuntimeNode *, EffectRuntimeOwnerReference4, (ModelRuntimeNode *)(shotDefinition->terrainImpactEffectOwnerSlots31 + terrainMaterialIndex)),0,
                      0x4000,0,directionOffset.z + (modelNode->worldTransform).translation.z,

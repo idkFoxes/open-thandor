@@ -21,15 +21,15 @@ digraph thandor {
   "UiImageControl_NonRightRelease" [label="0x004BC7E0\nUiImageControl_NonRightRelease"];
   "UiModelControl_RefreshStateTint" [label="0x004BD2A0\nUiModelControl_RefreshStateTint"];
   "UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw" [label="0x00517E30\nUiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw"];
-  "UiDisplaySettings_OpenAndPopulateModeSelectionCf" [label="0x00423600\nUiDisplaySettings_OpenAndPopulateModeSelectionCf"];
+  "UiDisplaySettings_OpenAndPopulateModeSelection" [label="0x00423600\nUiDisplaySettings_OpenAndPopulateModeSelectionCf"];
   "UiImageControl_HitTestOpaque" [label="0x004BC9B0\nUiImageControl_HitTestOpaque"];
   "UiDisplayModeSelection_RefreshEnumeratedOptions" [label="0x00423D70\nUiDisplayModeSelection_RefreshEnumeratedOptions"];
   "UiDisplaySettingsRoot_RefreshModeSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateAdapterSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateResolutionSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
   "UiDisplayModeAction_UpdateColorDepthSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
-  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelectionCf";
+  "UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings" -> "UiDisplaySettings_OpenAndPopulateModeSelection";
   "UiImageControl_NonRightDrag" -> "UiImageControl_HitTestOpaque";
   "UiImageControl_TickHover" -> "UiImageControl_HitTestOpaque";
-  "UiDisplaySettings_OpenAndPopulateModeSelectionCf" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
+  "UiDisplaySettings_OpenAndPopulateModeSelection" -> "UiDisplayModeSelection_RefreshEnumeratedOptions";
 }

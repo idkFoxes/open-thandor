@@ -157,7 +157,7 @@ void __cdecl GlideBackend_ShutdownWrapper(void)
    DynDLL_Unload [platform/bootstrap/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
+GraphicsGlide3_ApplyDisplayModeAndInitializeResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 
@@ -313,7 +313,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
             g_GlideResidentTextureHead = (GraphicsTextureResource *)0x0;
             g_GlideResidentTextureTail = (GraphicsTextureResource *)g_GlideTmuMinAddress[0];
             g_PrimarySurface3 = (IDirectDrawSurface3 *)0x0;
-            displayModeResult = g_GraphicsDisplayModeFinalizeCf(adapterIndex,bitsPerPixel,height,width);
+            displayModeResult = g_GraphicsDisplayModeFinalize(adapterIndex,bitsPerPixel,height,width);
             output = (void *)displayModeResult.valueOrError;
             if (!displayModeResult.failed) {
               slotsRemaining = 0x1000;
@@ -710,7 +710,7 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
    Purpose: Loads Glide 3 and appends its boards and resolutions to the adapter and display mode
    lists. CF=1 when the DLL or one of its entry points is missing; EAX is then that error code.
    Cross-module calls: DynDLL_Load [platform/bootstrap/runtime], DynAPI_Resolve [platform/bootstrap/runtime],
-   DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16Cf [core/text/string].
+   DynDLL_Unload [platform/bootstrap/runtime], Text_CopyNarrowToUtf16 [core/text/string].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
@@ -760,8 +760,8 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
       source = (uint8_t *)g_GrGetString(0xa2);
       driverDescription = (uint8_t *)g_GrGetString(0xa1);
       adapter = g_GraphicsAdapters + g_GraphicsAdapterCount;
-      Text_CopyNarrowToUtf16Cf(0x28,adapter->driverDescriptionUtf16,driverDescription);
-      Text_CopyNarrowToUtf16Cf(0x28,adapter->deviceNameUtf16,source);
+      Text_CopyNarrowToUtf16(0x28,adapter->driverDescriptionUtf16,driverDescription);
+      Text_CopyNarrowToUtf16(0x28,adapter->deviceNameUtf16,source);
       (adapter->adapterGuid).Data1 = 1;
       (adapter->adapterGuid).Data2 = (uint16_t)sstIndex;
       (adapter->adapterGuid).Data3 = THANDOR_PART(uint16_t, sstIndex, 2);

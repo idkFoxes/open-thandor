@@ -12,7 +12,7 @@ digraph thandor {
   "FixedTransform_ExtractForwardAnglesRegs" [label="0x00484E50\nFixedTransform_ExtractForwardAnglesRegs"];
   "FixedVec3_NormalizeQ28" [label="0x004857A0\nFixedVec3_NormalizeQ28"];
   "FixedTransform_RotateDirectionScaledRegs" [label="0x004BEC20\nFixedTransform_RotateDirectionScaledRegs"];
-  "CosineDerivedLookupTables_InitCf" [label="0x00417620\nCosineDerivedLookupTables_InitCf"];
+  "CosineDerivedLookupTables_Init" [label="0x00417620\nCosineDerivedLookupTables_InitCf"];
   "FixedMath_WriteDirectionQ28" [label="0x004848C0\nFixedMath_WriteDirectionQ28"];
   "FixedMath_SinCosScaled" [label="0x00484B00\nFixedMath_SinCosScaled"];
   "FixedMath_SinCosQ28" [label="0x00484B40\nFixedMath_SinCosQ28"];

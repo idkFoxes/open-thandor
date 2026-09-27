@@ -4,7 +4,7 @@ digraph thandor {
   "ModelRuntimePool_RepairDeferredChild" [label="0x00529360\nModelRuntimePool_RepairDeferredChild"];
   "ModelRuntime_CullAndRenderHierarchyRecursive" [label="0x004BDDB0\nModelRuntime_CullAndRenderHierarchyRecursive"];
   "ModelRuntime_RenderHierarchyRecursiveAlternatePath" [label="0x004BE270\nModelRuntime_RenderHierarchyRecursiveAlternatePath"];
-  "ModelRuntime_RaycastCandidateListNearestCf" [label="0x0050B440\nModelRuntime_RaycastCandidateListNearestCf"];
+  "ModelRuntime_RaycastCandidateListNearest" [label="0x0050B440\nModelRuntime_RaycastCandidateListNearestCf"];
   "ModelRuntime_QueryHierarchyScaleRatioQ12" [label="0x0051C240\nModelRuntime_QueryHierarchyScaleRatioQ12"];
   "ModelRuntime_QueryHierarchyScaleRatioQ12Regs" [label="0x0051C260\nModelRuntime_QueryHierarchyScaleRatioQ12Regs"];
   "ModelRuntime_QueryActiveHierarchyMetric" [label="0x0051C280\nModelRuntime_QueryActiveHierarchyMetric"];
@@ -15,6 +15,6 @@ digraph thandor {
   "ModelRuntimePool_RebaseAfterLoad" [label="0x00528CF0\nModelRuntimePool_RebaseAfterLoad"];
   "ModelRuntimePool_DestroyHierarchyAndDetach" [label="0x00529560\nModelRuntimePool_DestroyHierarchyAndDetach"];
   "ModelRuntime_EmitProjectilesFromAttachmentPoints" [label="0x00529690\nModelRuntime_EmitProjectilesFromAttachmentPoints"];
-  "ModelRuntimePool_CreateInstanceByDefinitionIdCf" [label="0x00529140\nModelRuntimePool_CreateInstanceByDefinitionIdCf"];
-  "ModelRuntimePool_RepairDeferredChild" -> "ModelRuntimePool_CreateInstanceByDefinitionIdCf";
+  "ModelRuntimePool_CreateInstanceByDefinitionId" [label="0x00529140\nModelRuntimePool_CreateInstanceByDefinitionIdCf"];
+  "ModelRuntimePool_RepairDeferredChild" -> "ModelRuntimePool_CreateInstanceByDefinitionId";
 }

@@ -456,10 +456,10 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B4CC0[12]@004B4CC0.
    Local calls: UiContainer_LayoutWithOptionalWindowHeaderOffset, UiRootStack_InvalidateAll.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiActionQueue_Enqueue [ui/core/runtime],
-   UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
+   UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiResizableWindowControl_HandleWindowHotkeysCf
+UiResizableWindowControl_HandleWindowHotkeys
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
@@ -505,7 +505,7 @@ UiResizableWindowControl_HandleWindowHotkeysCf
       return false;
     }
   }
-  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,(UiNodeBase *)control);
+  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,(UiNodeBase *)control);
   return delegateResult;
 }
 
@@ -571,7 +571,7 @@ UiRootStack_Push(UiRootCallbacks *callbacks,UiRootNode *root)
    Local calls: UiRootStack_InvalidateAll.
    Cross-module calls: UiNode_InvalidateRoot [ui/core/runtime], UiKeyboardFocus_SelectInitial [ui/controls/input].
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_Pop(UiRootNode *root)
 
 {
   bool closeCallbackVetoed;
@@ -585,7 +585,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root)
   }
   node = root->previousRoot;
   closeCallbackVetoed = false;
-  if (root->callbacks->closeCf != (UiRootCloseCallbackCf *)0x0) {
+  if (root->callbacks->closeCf != (UiRootCloseCallback *)0x0) {
     closeCallbackVetoed = root->callbacks->closeCf(root);
   }
   if (closeCallbackVetoed) {
@@ -1245,7 +1245,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
    Ownership: ui/controls/layout.
    Purpose: Loads engine\win.gfx and engine\winclass.gfx, registers texte\winclass.str as string-table page 1,
    installs UI action-handler page zero, and resets the UI root stack to its 0xFFFFFFFF sentinel.
-   Cross-module calls: TextResourcePage_Load [assets/text/resources], UiActionHandlers_SetPageCf [ui/core/runtime].
+   Cross-module calls: TextResourcePage_Load [assets/text/resources], UiActionHandlers_SetPage [ui/core/runtime].
 */
 void __thandor_preserve_eax UiWindowResources_Init(void)
 
@@ -1262,7 +1262,7 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   pageLoadResult = TextResourcePage_Load(1,(uint16_t *)u_texte_winclass_str_004b0ee0);
   FatalError_ExitIfFailed(pageLoadResult.errorOrValue,pageLoadResult.failed);
-  UiActionHandlers_SetPageCf(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
+  UiActionHandlers_SetPage(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = (UiRootNode *)0xffffffff;
   return;
 }

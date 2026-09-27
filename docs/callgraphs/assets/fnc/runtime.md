@@ -6,10 +6,10 @@
 
 ## Functions
 
-- `0x0041A610` **[`FncModule_GetBindingModeCf`](../../../../src/assets/fnc/runtime.c#L5)**
-- `0x0041A640` **[`FncModule_LoadAndRelocateCf`](../../../../src/assets/fnc/runtime.c#L19)**
-- `0x0041A710` **[`FncModule_GetExportByIndexCf`](../../../../src/assets/fnc/runtime.c#L76)**
+- `0x0041A610` **[`FncModule_GetBindingMode`](../../../../src/assets/fnc/runtime.c#L5)**
+- `0x0041A640` **[`FncModule_LoadAndRelocate`](../../../../src/assets/fnc/runtime.c#L19)**
+- `0x0041A710` **[`FncModule_GetExportByIndex`](../../../../src/assets/fnc/runtime.c#L76)**
 
 ## Called by
 
-- [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md): [`Game_LoadCoreAssets`](../../../../src/platform/bootstrap/runtime.c#L593) → [`FncModule_LoadAndRelocateCf`](../../../../src/assets/fnc/runtime.c#L19); [`Game_LoadCoreAssets`](../../../../src/platform/bootstrap/runtime.c#L593) → [`FncModule_GetExportByIndexCf`](../../../../src/assets/fnc/runtime.c#L76)
+- [`platform/bootstrap/runtime`](../../platform/bootstrap/runtime.md): [`Game_LoadCoreAssets`](../../../../src/platform/bootstrap/runtime.c#L593) → [`FncModule_LoadAndRelocate`](../../../../src/assets/fnc/runtime.c#L19); [`Game_LoadCoreAssets`](../../../../src/platform/bootstrap/runtime.c#L593) → [`FncModule_GetExportByIndex`](../../../../src/assets/fnc/runtime.c#L76)

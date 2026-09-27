@@ -20,7 +20,7 @@
    FieldGridCell_RecomputeTriangleNormalAngles, FieldGridCell_ComputeDirectionalLightColor.
 */
 void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
+FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
           (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid)
@@ -163,7 +163,7 @@ TerrainGrid_RunDirectionalRelaxationPasses
    synthetic parameters or normal returns.
    Local calls: FieldGridCell_RecomputeTriangleNormalAngles, FieldGridCell_ComputeDirectionalLightColor,
    FieldGrid_ProcessHorizontalSpan.
-   Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
+   Cross-module calls: SelectionPlayerPairList_ContainsPair [gameplay/selection/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyPositiveCellDeltas
@@ -240,7 +240,7 @@ FieldGrid_ApplyPositiveCellDeltas
     scratchHeightCursor = scratchHeightCursor + 1;
     countdownOrDelta = countdownOrDelta + -1;
   } while (countdownOrDelta != 0);
-  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPair(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ProcessHorizontalSpan
               (anchorWorldYQ12,anchorWorldXQ12,(int)packedDragDeltaXY16 >> 0x10,
@@ -319,7 +319,7 @@ FieldGrid_ApplyPositiveCellDeltas
    synthetic parameters or normal returns.
    Local calls: FieldGridCell_RecomputeTriangleNormalAngles, FieldGridCell_ComputeDirectionalLightColor,
    FieldGrid_ProcessVerticalSpan.
-   Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
+   Cross-module calls: SelectionPlayerPairList_ContainsPair [gameplay/selection/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyNegativeCellDeltas
@@ -396,7 +396,7 @@ FieldGrid_ApplyNegativeCellDeltas
     scratchHeightCursor = scratchHeightCursor + 1;
     countdownOrDelta = countdownOrDelta + -1;
   } while (countdownOrDelta != 0);
-  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPair(anchorWorldYQ12,anchorWorldXQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ProcessVerticalSpan
               ((int)packedDragDeltaXY16 >> 0x10,(int)(short)packedDragDeltaXY16,anchorWorldYQ12,
@@ -468,7 +468,7 @@ FieldGrid_ApplyNegativeCellDeltas
    synthetic parameters or normal returns.
    Local calls: FieldGrid_ApplyRectangularTransition, FieldGridCell_RecomputeTriangleNormalAngles,
    FieldGridCell_ComputeDirectionalLightColor.
-   Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
+   Cross-module calls: SelectionPlayerPairList_ContainsPair [gameplay/selection/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_RebuildLocalInfluenceState
@@ -490,7 +490,7 @@ FieldGrid_RebuildLocalInfluenceState
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPair(worldYQ12,worldXQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ApplyRectangularTransition(worldYQ12,worldXQ12,fieldGrid);
   }
@@ -648,7 +648,7 @@ FieldGrid_RecomputeInteriorDirectionalLighting
    [world/terrain/height].
 */
 void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
+FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
           (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
           Q12 worldXQ12,FieldGridAsset *fieldGrid)
 
@@ -741,7 +741,7 @@ FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
    dirty. EAX, ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal
    returns.
    Local calls: FieldGrid_ApplySingleCellTransition.
-   Cross-module calls: SelectionPlayerPairList_ContainsPairCf [gameplay/selection/runtime].
+   Cross-module calls: SelectionPlayerPairList_ContainsPair [gameplay/selection/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyLocalCellUpdate
@@ -757,7 +757,7 @@ FieldGrid_ApplyLocalCellUpdate
   
   playerBlock = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId];
   fieldGrid = (g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid;
-  containsAnchorPair = SelectionPlayerPairList_ContainsPairCf(worldYQ12,worldXQ12,playerRuntimeId);
+  containsAnchorPair = SelectionPlayerPairList_ContainsPair(worldYQ12,worldXQ12,playerRuntimeId);
   if (containsAnchorPair) {
     FieldGrid_ApplySingleCellTransition(transitionValue,worldYQ12,worldXQ12,fieldGrid);
   }
@@ -1730,7 +1730,7 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
    [core/math/fixed].
 */
 HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
+FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid)
 
@@ -1909,7 +1909,7 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
    state; CF=1 reports outside or clear.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGrid_TestWorldPointBlockedCf
+FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset stateByteOffset,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           )
 
@@ -2187,11 +2187,11 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
    resource scales, attachment ordinals, and raw renderer flags. Explicit Q12 fixed-point value proved by the
    accepted parameter name and fixed-math/geometry consumer. Storage remains one signed 32-bit word.
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
+   TerrainTriangle_IntersectRayDistance [world/terrain/height], TerrainRay_AdvanceGridTraversal
    [world/terrain/height].
 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainSurfaceDistanceCf
+FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
@@ -2245,7 +2245,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
         ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
        ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
       cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
-      triangleHit = TerrainTriangle_IntersectRayDistanceCf
+      triangleHit = TerrainTriangle_IntersectRayDistance
                          (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight,currentCell[rowLength].terrainHeight,
@@ -2260,7 +2260,7 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
       endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
       currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    traversalDone = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversal
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
                         rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
@@ -2282,11 +2282,11 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
    value proved by the accepted parameter name and fixed-math/geometry consumer. Storage remains one signed 32-bit
    word.
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
+   TerrainTriangle_IntersectRayDistance [world/terrain/height], TerrainRay_AdvanceGridTraversal
    [world/terrain/height].
 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastSecondarySurfaceDistanceCf
+FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid)
 
@@ -2340,7 +2340,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
         ((int)endHalfCoordOrCurrentCoord1Q12 < (int)((boundsGridWidth - 1) * 0x1000))) &&
        ((int)currentGridCoord0Q12 < (int)((boundsGridHeight - 1) * 0x1000))) {
       cellLocalCoord1Q12 = currentGridCoord0Q12 + rayStartHalfCoord0Q12 * -2;
-      triangleHit = TerrainTriangle_IntersectRayDistanceCf
+      triangleHit = TerrainTriangle_IntersectRayDistance
                          (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,
                           rayEndCoord1Q12 - rayStartCoord1Q12,rayOriginZQ12,
                           currentCell[rowLength + 1].terrainHeight +
@@ -2358,7 +2358,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
       endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
       currentGridCoord0Q12 = cellLocalCoord1Q12 + rayStartCoord0Q12;
     }
-    traversalDone = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversal
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
                         rowLength * 0x80,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
@@ -2376,7 +2376,7 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
    Ownership: world/terrain/grid.
    Purpose: Handles field grid raycast terrain triangles along direction.
    Cross-module calls: FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   TerrainTriangle_IntersectRayDistanceCf [world/terrain/height], TerrainRay_AdvanceGridTraversalCf
+   TerrainTriangle_IntersectRayDistance [world/terrain/height], TerrainRay_AdvanceGridTraversal
    [world/terrain/height].
 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
@@ -2509,7 +2509,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
         cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
       }
     }
-    triangleHit = TerrainTriangle_IntersectRayDistanceCf
+    triangleHit = TerrainTriangle_IntersectRayDistance
                        (rayDirection.z,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
                         cornerHeight3Q12,cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
@@ -2519,7 +2519,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
       hitResult.materialOrCellIndex = sampleCell->flagsAndMaterial & 0xff; /* low byte: material */
       return hitResult;
     }
-    traversalDone = TerrainRay_AdvanceGridTraversalCf
+    traversalDone = TerrainRay_AdvanceGridTraversal
                        (rayEndCoord0Q12,rayEndCoord1Q12,rayStartCoord0Q12,rayStartCoord1Q12,
                         rowStrideBytes,currentCell,currentGridCoord0Q12,endHalfCoordOrCurrentCoord1Q12);    
     currentCell = g_TerrainRayNextCell; /* ESI/ECX/EDX results of the step */
@@ -2653,7 +2653,7 @@ FieldGrid_ClearOccupancyMaskByteBit0AllCells
    executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TerrainGrid_TestProjectedCellMaskBits01Cf
+TerrainGrid_TestProjectedCellMaskBits01
           (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime)
 
 {
@@ -2726,12 +2726,12 @@ FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGr
 /* Address: 0x00532B60.
    Ownership: world/terrain/grid.
    Purpose: Builds a temporary serialized FieldGrid/runtime image, clears or initializes derived per-cell state,
-   writes it through FileSystem_WriteBufferToPathCf, frees the temporary allocation and returns its 32-bit status
+   writes it through FileSystem_WriteBufferToPath, frees the temporary allocation and returns its 32-bit status
    with carry semantics outside the C prototype.
-   Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32].
+   Cross-module calls: FileSystem_WriteBufferToPath [platform/filesystem/win32].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
+FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords)
 
 {
   FieldGridAsset *writeErrorValue;
@@ -2791,7 +2791,7 @@ FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords)
       fieldGridCellSaveView = fieldGridCellSaveView + 1;
       cellsRemaining = cellsRemaining + -1;
     } while (cellsRemaining != 0);
-    writeStatus = FileSystem_WriteBufferToPathCf
+    writeStatus = FileSystem_WriteBufferToPath
                       ((fieldGridImageCopy->common).allocationSizeBytes,fieldGridImageCopy,
                        (uint16_t *)&g_LevelResourcePathScratchUtf16);
     if (!writeStatus.failed) {

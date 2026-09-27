@@ -35,7 +35,7 @@ void __cdecl ErrorSystem_Init(void)
    Ownership: core/error/runtime.
    Purpose: Fallback error callback that sets carry and returns after consuming one stack argument.
 */
-bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFailCf(UiRootNode *root)
+bool __thandor_cf_preserve_eax_ecx_edx ErrorRuntime_CallbackAlwaysFail(UiRootNode *root)
 
 {
   return true;
@@ -56,12 +56,12 @@ int __thandor_eax_preserve_ecx_edx ErrorRuntime_CallbackReturnCode8(UiRootNode *
 /* Address: 0x00407F70.
    Ownership: core/error/runtime.
    Purpose: Handles fatal error dialog dismiss and pop root.
-   Cross-module calls: UiRootStack_PopCf [ui/controls/layout].
+   Cross-module calls: UiRootStack_Pop [ui/controls/layout].
 */
 void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootNode)
 
 {
-  UiRootStack_PopCf(rootNode);
+  UiRootStack_Pop(rootNode);
   g_FatalErrorDialogDismissed = g_FatalErrorDialogDismissed + 1;
   return;
 }
@@ -78,7 +78,7 @@ void __thandor_preserve_eax FatalErrorDialog_DismissAndPopRoot(UiRootNode *rootN
    [ui/controls/layout].
 */
 FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx
-FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
+FatalErrorRuntime_DispatchPendingError(uint32_t errorOrValue,bool carryIn)
 
 {
   int32_t *topOffsetField;
@@ -154,7 +154,7 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
   allocResult = g_MemoryApi.alloc(0x110);
   allocatedFatalErrorUiRootTemplate = (void *)allocResult.payloadOrError;
   if (!allocResult.failed) {
-    g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingErrorCf;
+    g_FatalErrorReportHandler = FatalErrorRuntime_DispatchPendingError;
     g_FatalErrorUiRootTemplate = allocatedFatalErrorUiRootTemplate;
   }
   return;
@@ -166,7 +166,7 @@ void __fastcall ErrorRuntime_InstallUiHandlerAndAllocateState(void)
    Purpose: EXACT_DUPLICATE_FATAL_DIALOG_NARROW_TO_UTF16_TWIN.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
+FatalError_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source)
 
 {
   uint8_t sourceByte;
@@ -199,7 +199,7 @@ FatalError_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *d
 /* Address: 0x005758D0.
    Ownership: core/error/runtime.
    Purpose: Consumes EAX/CF engine error state, shuts down, displays a message, and exits.
-   Local calls: FatalError_CopyRichTextToNarrowCf.
+   Local calls: FatalError_CopyRichTextToNarrow.
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], Runtime_Shutdown [core/memory/synchronization].
 */
@@ -226,7 +226,7 @@ FatalError_Exit(uint32_t errorOrValue,bool carryIn)
   RichTextCommandStream_PatchPayloadBySelector(1,g_FatalErrorDetail1Utf16,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(2,&g_FatalErrorDetail2Utf16,(uint16_t *)errorOrValue);
   RichTextCommandStream_PatchPayloadBySelector(3,&g_FatalErrorDetail3Utf16,(uint16_t *)errorOrValue);
-  FatalError_CopyRichTextToNarrowCf(0x400,g_FatalErrorNarrowBuffer,(uint16_t *)errorOrValue);
+  FatalError_CopyRichTextToNarrow(0x400,g_FatalErrorNarrowBuffer,(uint16_t *)errorOrValue);
   Runtime_Shutdown();
   DestroyWindow(g_MainWindow);
   MessageBoxA((HWND)0x0,(LPCSTR)g_FatalErrorNarrowBuffer,(LPCSTR)0x0,0x30);
@@ -242,7 +242,7 @@ FatalError_Exit(uint32_t errorOrValue,bool carryIn)
    parameters: p0 capacityBytes→TextOutputCapacityBytes_V342. Calling convention, exact VariableStorage
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
-int FatalError_CopyRichTextToNarrowCf
+int FatalError_CopyRichTextToNarrow
               (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {

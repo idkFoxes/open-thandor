@@ -463,7 +463,7 @@ uint32_t WorldRuntime_InterpolateTopSurfaceHeightOrSentinel
    [graphics/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-WorldRuntimeNode_IsPositionInsideBoundsCf
+WorldRuntimeNode_IsPositionInsideBounds
           (WorldOwnerListNode100 *runtimeNode,WorldRuntimeExtendedMapControlView170 *boundsControl)
 
 {
@@ -541,7 +541,7 @@ WorldRuntime_CaptureMotionStateToSnapshot(WorldRuntimeContext *worldRuntime)
    Purpose: Handles world runtime motion state matches snapshot carry-flag result.
 */
 void __thandor_void_preserve_eax_ecx_edx
-WorldRuntime_MotionStateMatchesSnapshotCf(WorldRuntimeContext *worldRuntime)
+WorldRuntime_MotionStateMatchesSnapshot(WorldRuntimeContext *worldRuntime)
 
 {
   if ((((worldRuntime->motion).positionXQ12 == (worldRuntime->snapshot).positionXQ12) &&
@@ -688,7 +688,7 @@ WorldVector1EaxEcxEdx12 WorldRuntime_GetVector1Regs(WorldRuntimeContext *world)
    Purpose: Returns the dword at context offset 0xCC in EAX and explicitly clears CF.
 */
 WorldFlagsResult __thandor_eax_cf_preserve_ecx_edx
-WorldRuntime_GetFlagsCf(WorldRuntimeContext *world)
+WorldRuntime_GetFlags(WorldRuntimeContext *world)
 
 {
   WorldFlagsResult flagsResult;
@@ -771,7 +771,7 @@ uint32_t * WorldRuntime_GetDwordArray(WorldRuntimeContext *world)
    marks the selected slot, stores its owning world runtime, and reports exhaustion or success through carry.
 */
 WorldObjectAllocResult __thandor_eax_cf_preserve_ecx_edx
-WorldObjectArray_AllocateFreeRecordCf(WorldRuntimeContext *worldRuntime)
+WorldObjectArray_AllocateFreeRecord(WorldRuntimeContext *worldRuntime)
 
 {
   WorldObjectRecordCount recordsRemaining;
@@ -967,7 +967,7 @@ WorldRuntimeNode_ClearOwnedModelReferencesCallback(void *releasedObject,WorldOwn
 /* Address: 0x0051D500.
    Ownership: world/runtime/core.
    Purpose: Handles world runtime emit model definition overlay for matching entries.
-   Cross-module calls: ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions].
+   Cross-module calls: ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
 */
 void __thandor_void_preserve_eax_ecx_edx
 WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
@@ -983,7 +983,7 @@ WorldRuntime_EmitModelDefinitionOverlayForMatchingEntries
   uint32_t overlayExtent;
   
   if (sourceRuntime != (void *)0x0) {
-    definitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
+    definitionLookup = ModelDefinitionRegistry_FindByIdWithError
                       (*(PckModelDefinitionIdCatalog *)(*(int *)((int)sourceRuntime + 0xc) + 0x20));
     definitionRecord = definitionLookup.modelDefinition;
     if (!definitionLookup.notFound) {
@@ -1083,7 +1083,7 @@ uint32_t __thandor_eax_preserve_ecx_edx UnifiedRuntimeDefault_OneArgReturnZero(v
    validation partition slots 24-47 receive (worldRuntime, armyRuntime), with CF carrying acceptance.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UnifiedRuntimeDefault_TwoArgSuccessCf
+UnifiedRuntimeDefault_TwoArgSuccess
           (WorldRuntimeContext *worldRuntime,ModelRuntimePlacementValidationView200 *modelRuntime)
 
 {
@@ -1172,8 +1172,8 @@ WorldRuntimeNode_ReleaseShutdownBindingsCallback
    chooses the nearest accepted travel distance, rebuilds the endpoint coordinates and distance, and clears the
    field-grid dirty flag.
    Local calls: WorldRuntime_ClearFieldGridDirtyFlag.
-   Cross-module calls: FieldGrid_RaycastTerrainSurfaceDistanceCf [world/terrain/grid], FixedMath_SinCosScaled
-   [core/math/fixed], FixedMath_Length3 [core/math/fixed], FieldGrid_RaycastSecondarySurfaceDistanceCf
+   Cross-module calls: FieldGrid_RaycastTerrainSurfaceDistance [world/terrain/grid], FixedMath_SinCosScaled
+   [core/math/fixed], FixedMath_Length3 [core/math/fixed], FieldGrid_RaycastSecondarySurfaceDistance
    [world/terrain/grid], FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1191,14 +1191,14 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
   
   if ((worldRuntime->runtimeFlags & 0x1000000) == 0) {
     rayLengthOrOffsetY = worldRuntime->maximumCameraDistanceQ12 << 2;
-    raycastResult = FieldGrid_RaycastTerrainSurfaceDistanceCf
+    raycastResult = FieldGrid_RaycastTerrainSurfaceDistance
                       ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                        (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
     scale = raycastResult.distanceQ12;
     if (raycastResult.hit) {
       /* terrain hit: a nearer secondary-surface hit wins */
-      secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistanceCf
+      secondaryRaycastResult = FieldGrid_RaycastSecondarySurfaceDistance
                         ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,rayLengthOrOffsetY,
                          (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,
                          (worldRuntime->motion).positionXQ12,worldRuntime->fieldGrid);
@@ -1208,7 +1208,7 @@ WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(WorldRuntimeContext *wor
     }
   }
   else {
-    raycastResult = FieldGrid_RaycastSecondarySurfaceDistanceCf
+    raycastResult = FieldGrid_RaycastSecondarySurfaceDistance
                       ((worldRuntime->motion).pitchAngle,(worldRuntime->motion).headingAngle,
                        worldRuntime->maximumCameraDistanceQ12 << 2,
                        (worldRuntime->motion).positionZQ12,(worldRuntime->motion).positionYQ12,

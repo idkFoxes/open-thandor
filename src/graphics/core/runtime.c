@@ -691,10 +691,10 @@ StatusResult __cdecl Graphics_Init(void)
                   } while (remainingAdapters != 0);
                   cursorOrResult = (GraphicsAdapterRecord *)0x18;
                   if (g_GraphicsDisplayModeCount != 0) {
-                    g_GraphicsBackendRefreshActiveAdapterCf =
+                    g_GraphicsBackendRefreshActiveAdapter =
                          GraphicsBackend_RefreshActiveAdapterIfReady;
                     g_GraphicsSetDisplayMode =
-                         GraphicsDirectDraw_ApplyDisplayModeAndCreateResourcesCf;
+                         GraphicsDirectDraw_ApplyDisplayModeAndCreateResources;
                     g_GraphicsFramebufferBeginAccess = GraphicsFramebuffer_BeginAccess;
                     g_GraphicsFramebufferEndAccess = GraphicsFramebuffer_EndAccess;
                     g_GraphicsSetViewportAndClearDepth = Graphics_SetViewportAndClearDepth;
@@ -706,7 +706,7 @@ StatusResult __cdecl Graphics_Init(void)
                     g_GraphicsRefreshTextureColor = GraphicsTextureSet_RefreshColor;
                     g_GraphicsRefreshTextureAlpha = GraphicsTextureSet_RefreshAlpha;
                     g_GraphicsRebuildAllStagingTextures = GraphicsTexture_RebuildAllStagingTextures;
-                    g_GraphicsDisplayModeFinalizeCf = displayModeHook;
+                    g_GraphicsDisplayModeFinalize = displayModeHook;
                     return StatusValue_Ok((uint32_t)displayModeHook);
                   }
                 }

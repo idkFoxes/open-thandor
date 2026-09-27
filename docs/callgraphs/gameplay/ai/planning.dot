@@ -14,7 +14,7 @@ digraph thandor {
   "AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor" [label="0x005397C0\nAiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor"];
   "AiArmyCandidate_AddBestScoredVariantB" [label="0x0053A800\nAiArmyCandidate_AddBestScoredVariantB"];
   "AiArmyCandidate_AddBestScoredVariantC" [label="0x0053A8D0\nAiArmyCandidate_AddBestScoredVariantC"];
-  "AiPurchaseCandidate_HasEligibleProducerCf" [label="0x00537630\nAiPurchaseCandidate_HasEligibleProducerCf"];
+  "AiPurchaseCandidate_HasEligibleProducer" [label="0x00537630\nAiPurchaseCandidate_HasEligibleProducerCf"];
   "AiPurchaseCandidate_ApplyToFaction" [label="0x00537800\nAiPurchaseCandidate_ApplyToFaction"];
   "AiFactionPlanning_UpdateActiveEntityPressureFlag" [label="0x00539A40\nAiFactionPlanning_UpdateActiveEntityPressureFlag"];
   "AiStructureCandidate_AddWeightedId14BOr14CCandidate" [label="0x00539D20\nAiStructureCandidate_AddWeightedId14BOr14CCandidate"];
@@ -23,7 +23,7 @@ digraph thandor {
   "AiStrategicClass_SelectWeightedClass141To143" [label="0x0053AF00\nAiStrategicClass_SelectWeightedClass141To143"];
   "AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate" [label="0x00539600\nAiConstructionPlanner_PlaceArmyAssetAtReachableCandidate"];
   "AiConstructionPlanner_ConsumeFactionPendingArmyAsset" [label="0x00539190\nAiConstructionPlanner_ConsumeFactionPendingArmyAsset"];
-  "AiFactionRuntime_TestPlanningCapacityExceededCf" [label="0x0053A980\nAiFactionRuntime_TestPlanningCapacityExceededCf"];
+  "AiFactionRuntime_TestPlanningCapacityExceeded" [label="0x0053A980\nAiFactionRuntime_TestPlanningCapacityExceededCf"];
   "AiArmyCandidate_ComputeFactionWeightedScore" [label="0x0053A2A0\nAiArmyCandidate_ComputeFactionWeightedScore"];
   "AiFactionRuntime_RebuildPlanningCapacityState" -> "AiRuntime_DispatchFactionPlanningPhase";
   "AiArmyCandidate_ComputeAverageCompatibleAssetScore" -> "AiArmyCandidate_ComputeFactionWeightedScore";
@@ -40,15 +40,15 @@ digraph thandor {
   "AiConstructionPlanner_ProcessPendingAssetRequests" -> "AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate";
   "AiConstructionPlanner_ProcessPendingAssetRequests" -> "AiConstructionPlanner_PlaceDerivedAsset14D";
   "AiConstructionPlanner_ProcessPendingAssetRequests" -> "AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor";
-  "AiPurchasePlanner_ExecuteAffordableCandidates" -> "AiPurchaseCandidate_HasEligibleProducerCf";
+  "AiPurchasePlanner_ExecuteAffordableCandidates" -> "AiPurchaseCandidate_HasEligibleProducer";
   "AiPurchasePlanner_ExecuteAffordableCandidates" -> "AiPurchaseCandidate_ApplyToFaction";
   "AiConstructionPlanner_PlaceDerivedAsset14D" -> "AiConstructionPlanner_ConsumeFactionPendingArmyAsset";
   "AiConstructionPlanner_PlaceDerivedAsset14D" -> "AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate";
-  "AiArmyCandidate_AddBestScoredVariantA" -> "AiFactionRuntime_TestPlanningCapacityExceededCf";
+  "AiArmyCandidate_AddBestScoredVariantA" -> "AiFactionRuntime_TestPlanningCapacityExceeded";
   "AiArmyCandidate_AddBestScoredVariantA" -> "AiArmyCandidate_ComputeFactionWeightedScore";
-  "AiStrategicClass_AddCandidate12DOr12FTo132" -> "AiFactionRuntime_TestPlanningCapacityExceededCf";
+  "AiStrategicClass_AddCandidate12DOr12FTo132" -> "AiFactionRuntime_TestPlanningCapacityExceeded";
   "AiStrategicClass_AddCandidate12DOr12FTo132" -> "AiStrategicClass_SelectBestCandidate12FTo132";
-  "AiStrategicClass_AddWeightedClassCandidate" -> "AiFactionRuntime_TestPlanningCapacityExceededCf";
+  "AiStrategicClass_AddWeightedClassCandidate" -> "AiFactionRuntime_TestPlanningCapacityExceeded";
   "AiStrategicClass_AddWeightedClassCandidate" -> "AiStrategicClass_SelectWeightedClass141To143";
   "AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor" -> "AiConstructionPlanner_ConsumeFactionPendingArmyAsset";
   "AiArmyCandidate_AddBestScoredVariantB" -> "AiArmyCandidate_ComputeFactionWeightedScore";

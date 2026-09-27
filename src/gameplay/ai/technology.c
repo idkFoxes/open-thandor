@@ -14,10 +14,10 @@
    Ownership: gameplay/ai/technology.
    Purpose: Common stdcall stack ABI: FactionRuntimeIndex, TechnologyId, WorldRuntimeContext*. Signed score returns
    in EAX. Target group: stack-only callback target. Exact binary and live ownership are preflight locked.
-   Local calls: AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf,
+   Local calls: AiTechnologyCompatibility_AcceptRuntimeClassCandidate,
    AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8.
    Cross-module calls: ModelDefinitionRegistry_FindByRuntimeClassId [assets/model/definitions],
-   AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces].
+   AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces].
 */
 AiTechnologyCandidateScore __thandor_eax_preserve_ecx_edx
 AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
@@ -43,29 +43,29 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
     {
       return (AiTechnologyCandidateScore)candidateDefinition;
     }
-    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,candidateDefinition);
+    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
     if (!cfResult) {
       relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
       return (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
     }
     return 0;
   }
-  cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0302_BUILDING_MDL0300);
+  cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0302_BUILDING_MDL0300);
   if (cfResult) {
     return 0;
   }
-  cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0303_BUILDING_MDL0316);
+  cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316);
   if (!cfResult) {
-    cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0304_BUILDING_MDL0324);
+    cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324);
     if (cfResult) {
       return 0;
     }
-    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf(factionIndex,candidateDefinition);
+    cfResult = AiTechnologyCompatibility_AcceptRuntimeClassCandidate(factionIndex,candidateDefinition);
     if (!cfResult) {
       relationScaleQ8 = AiTechnologyCompatibility_ComputeAverageRuntimeRelationScaleQ8(candidateDefinition);
       candidateScore = (relationScaleQ8 * 40000 >> 8) * technologyAsset->records[technologyId].baseCandidateScore >> 8;
-      cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0305_BUILDING_MDL0317);
-      if ((cfResult) || (cfResult = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0306_BUILDING_MDL0310), cfResult))
+      cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0305_BUILDING_MDL0317);
+      if ((cfResult) || (cfResult = AiPrimaryWorkspace_HasEntryById(ARM_0306_BUILDING_MDL0310), cfResult))
       {
         candidateScore = candidateScore * 3 >> 2;
       }
@@ -87,7 +87,7 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCandidate_IsCurrentlyAvailableCf
+AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           )
 
@@ -338,7 +338,7 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
    second stack argument; the helper preserves EAX and clears CF.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf
+AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition)
 
 {

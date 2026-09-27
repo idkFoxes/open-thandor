@@ -74,7 +74,7 @@ ArmyGraphics_CopyFrontendPlayerPaletteAndTexture
    Purpose: Table membership RUNTIME_UPDATE[26]. Updates the two definition-selected projected looping sound
    channels when movement or turn state is active and the projected terrain cell is valid. Class method-D partition
    slots 24-47 receive (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -102,7 +102,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != (SpatialSoundSlot *)0x0) {
         worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-        cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+        cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                           ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
         if (!cellMasked) {
@@ -119,7 +119,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantA
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
       if (!cellMasked) {
@@ -163,7 +163,7 @@ ArmyRuntimeAudio_DispatchPositionedSoundVariant
    Purpose: Table membership RUNTIME_UPDATE[41]. Second exact class-table implementation of the dual projected
    looping-sound update used by a different runtime class. Class method-D partition slots 24-47 receive
    (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -191,7 +191,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
       soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
       if (soundSlot != (SpatialSoundSlot *)0x0) {
         worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-        cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+        cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                           ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
         if (!cellMasked) {
@@ -208,7 +208,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
     soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (soundSlot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                          worldRuntime);
       if (!cellMasked) {
@@ -227,7 +227,7 @@ ArmyRuntimeAudio_UpdateDualProjectedLoopingSoundsVariantB
    Purpose: Table membership RUNTIME_UPDATE[29],RUNTIME_UPDATE[30],RUNTIME_UPDATE[31],RUNTIME_UPDATE[32]. Updates
    the movement-linked projected looping sound while movement or turn velocity is active and the projected terrain
    cell is valid. Class method-D partition slots 24-47 receive (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -249,7 +249,7 @@ ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
       if (!cellMasked) {
@@ -267,7 +267,7 @@ ArmyRuntimeAudio_UpdateMovementProjectedLoopingSound
    Ownership: gameplay/army/audio.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FC98[35]@0051FC98. Class method-D partition slots
    24-47 receive (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -290,7 +290,7 @@ ArmyRuntimeAudio_UpdateConditionalProjectedSound
       (slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex], slot != (SpatialSoundSlot *)0x0))
      )) {
     worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                        worldPosition->x,worldRuntime);
     if (!cellMasked) {
@@ -307,7 +307,7 @@ ArmyRuntimeAudio_UpdateConditionalProjectedSound
    Ownership: gameplay/army/audio.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FC98[37]@0051FC98. Class method-D partition slots
    24-47 receive (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -332,7 +332,7 @@ ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
       soundSlot != (SpatialSoundSlot *)0x0)))) {
     worldPosition = &(modelNode->worldTransform).translation;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
     if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
@@ -349,7 +349,7 @@ ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
        (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
        soundSlot != (SpatialSoundSlot *)0x0)))))) {
     worldPosition = &(modelNode->worldTransform).translation;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,worldPosition->x,worldRuntime);
     if (!cellMasked) {
       SpatialSound_UpdateDesiredPositionedGains
@@ -365,7 +365,7 @@ ArmyRuntimeAudio_UpdatePrimaryAndSecondaryProjectedSounds
    Ownership: gameplay/army/audio.
    Purpose: Binary entry is anchored by g_CodePointerTable_0051FC98[45]@0051FC98. Class method-D partition slots
    24-47 receive (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -386,7 +386,7 @@ ArmyRuntimeAudio_UpdateAssetProjectedSound
     slot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex];
     if (slot != (SpatialSoundSlot *)0x0) {
       worldPosition = &(armyRuntime->modelNodeRuntime->worldTransform).translation;
-      cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+      cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                         ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,
                          worldPosition->x,worldRuntime);
       if (!cellMasked) {
@@ -405,7 +405,7 @@ ArmyRuntimeAudio_UpdateAssetProjectedSound
    Purpose: Table membership RUNTIME_UPDATE[46]. Updates the terrain-contact and articulated-state projected sound
    channels when their definition-selected sound slots are active. Class method-D partition slots 24-47 receive
    (worldRuntime, armyRuntime).
-   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01Cf [world/terrain/grid],
+   Cross-module calls: TerrainGrid_TestProjectedCellMaskBits01 [world/terrain/grid],
    SpatialSound_UpdateDesiredPositionedGains [audio/spatial/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -430,7 +430,7 @@ ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
       (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
       soundSlot != (SpatialSoundSlot *)0x0)))) {
     modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
     if (!cellMasked) {
@@ -447,7 +447,7 @@ ArmyRuntimeAudio_UpdateTerrainContactAndArticulatedProjectedSounds
        (soundSlot = (SpatialSoundSlot *)worldRuntime->dwordArray[soundSlotIndex],
        soundSlot != (SpatialSoundSlot *)0x0)))))) {
     modelSlot = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime;
-    cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
+    cellMasked = TerrainGrid_TestProjectedCellMaskBits01
                       ((modelNode->worldTransform).translation.y,(modelNode->worldTransform).translation.x
                        ,worldRuntime);
     if (!cellMasked) {

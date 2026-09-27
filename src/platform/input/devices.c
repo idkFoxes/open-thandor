@@ -150,9 +150,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
                             (g_MouseDevice,(TH_LEGACY_GUID *)0x1,&MouseBufferProperty.diph);
           if (directInputResult == 0) {
             g_MouseDevice->lpVtbl->Acquire(g_MouseDevice);
-            g_DirectInputMouseChainedSetDisplayModeCf = g_GraphicsSetDisplayMode;
+            g_DirectInputMouseChainedSetDisplayMode = g_GraphicsSetDisplayMode;
             LOCK();
-            g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayModeCf;
+            g_GraphicsSetDisplayMode = DirectInputMouse_SetDisplayMode;
             UNLOCK();
             TimerSystem_RegisterPeriodic(0x14,GraphicsCursor_AdvanceAnimationAndRefreshPrimaryTimer)
             ;
@@ -465,7 +465,7 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
    globals, locals, and executable data remain unchanged.
 */
 DisplayModeResult __thandor_eax_cf_preserve_ecx_edx
-DirectInputMouse_SetDisplayModeCf
+DirectInputMouse_SetDisplayMode
           (DisplayModeHookArgument0 hookArg0,DisplayModeHookArgument1 hookArg1,
           GraphicsPixelDimension framebufferHeight,GraphicsPixelDimension framebufferWidth)
 
@@ -484,7 +484,7 @@ DirectInputMouse_SetDisplayModeCf
   g_CursorSavedBackground = (SoftwareFramebufferAccess *)0x0;
   g_CursorCompositeBuffer = (SoftwareFramebufferAccess *)0x0;
   g_CursorAlternateSavedBackground = (SoftwareFramebufferAccess *)0x0;
-  previousHookResult = g_DirectInputMouseChainedSetDisplayModeCf
+  previousHookResult = g_DirectInputMouseChainedSetDisplayMode
                     (hookArg0,hookArg1,framebufferHeight,framebufferWidth);
   primaryFramebuffer = g_FramebufferAccess;
   previousHookFailed = previousHookResult.failed;

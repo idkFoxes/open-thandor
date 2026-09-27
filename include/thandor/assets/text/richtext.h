@@ -21,7 +21,7 @@ RichTextCommandStream_MeasureWrappedBlockRegs
 
 /* 0x0041D7C0 */
 void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_DrawWrappedBlockCf
+RichTextCommandStream_DrawWrappedBlock
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX);
@@ -74,7 +74,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
 
 /* 0x0041B950 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyToNarrowCf
+RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source);
 
 /* 0x0041BCB0 */
@@ -83,7 +83,7 @@ RichTextMarkup_ParseAndBuildStringAsset(uint8_t *markupBytes);
 
 /* 0x0041C8D0 */
 RichTextCopyResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyExpandedCf
+RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source);
 
 /* 0x0041CF30 */
@@ -92,11 +92,11 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
 
 /* 0x0041D0F0 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth);
+RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth);
 
 /* 0x0041D9F0 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_DrawNextWrappedLineCf
+RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX);

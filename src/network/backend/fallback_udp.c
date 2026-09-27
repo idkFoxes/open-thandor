@@ -16,7 +16,7 @@
    argument, and performs no other work.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot0_ReturnError43Cf(uint32_t argument)
+NetworkBackendFallback_Slot0_ReturnError43(uint32_t argument)
 
 {
   StatusResult status;
@@ -43,7 +43,7 @@ void __cdecl NetworkBackendFallback_Slot1_NoOp(void)
    argument, and performs no other work.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackendFallback_Slot2_ReturnError43Cf(uint32_t argument)
+NetworkBackendFallback_Slot2_ReturnError43(uint32_t argument)
 
 {
   StatusResult status;
@@ -69,7 +69,7 @@ void __cdecl NetworkBackendFallback_Slot3_NoOp(void)
    Purpose: Default three-argument implementation for network backend slot 4. It sets CF and otherwise preserves
    the incoming register state.
 */
-NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailureCf
+NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot4_ThreeArgFailure
                (WinSockAddress *sourceAddress,uint32_t argument1,uint8_t *buffer)
 
 {
@@ -82,10 +82,10 @@ NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Sl
 /* Address: 0x0041A5D0.
    Ownership: network/backend/fallback_udp.
    Purpose: Default three-argument implementation for network backend slot 5. It clears CF and performs no backend
-   operation. The live slot is the submission callback used by UiTransfer_StagePacketAndSendCf. Typed parameters:
+   operation. The live slot is the submission callback used by UiTransfer_StagePacketAndSend. Typed parameters:
    p1 byteCount→NetworkByteCount_V302. Nearby but non-identical semantic domains were explicitly deferred.
 */
-NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccessCf
+NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5_ThreeArgSuccess
                (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -101,7 +101,7 @@ NetworkSendResult __thandor_eax_cf_preserve_ecx_edx NetworkBackendFallback_Slot5
    operation.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackendFallback_Slot6_TwoArgFailureCf
+NetworkBackendFallback_Slot6_TwoArgFailure
           (UiTransferEndpointDescriptor *endpoint,char *endpointText)
 
 {
@@ -142,7 +142,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_NoOpBackendCleanup(void
    failure and EAX carries engine error 0x2A on setup errors.
 */
 NetworkOpenBindResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
+NetworkFallback_OpenAndBindUdpSocket(NetworkPortHostOrder localPort)
 
 {
   uint8_t copiedByte;
@@ -264,7 +264,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkFallback_CloseActiveSocket(void)
    on nonnegative Winsock result and set on failure.
 */
 NetworkReceiveResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_ReceiveDatagramCf
+NetworkFallback_ReceiveDatagram
           (WinSockAddress *sourceAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -297,7 +297,7 @@ NetworkFallback_ReceiveDatagramCf
    preserves the legacy error-reporting path and returns status through EAX and CF.
 */
 NetworkSendResult __thandor_eax_cf_preserve_ecx_edx
-NetworkFallback_SendDatagramCf
+NetworkFallback_SendDatagram
           (WinSockAddress *destinationAddress,NetworkByteCount byteCount,uint8_t *buffer)
 
 {
@@ -329,10 +329,10 @@ NetworkFallback_SendDatagramCf
    Ownership: network/backend/fallback_udp.
    Purpose: Parses a narrow peer endpoint string into the backend 16-byte address descriptor. Uses numeric IPv4
    conversion first and host lookup as fallback. CF reports parse failure.
-   Cross-module calls: RichTextCommandStream_CopyToNarrowCf [assets/text/richtext].
+   Cross-module calls: RichTextCommandStream_CopyToNarrow [assets/text/richtext].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-NetworkFallback_ParsePeerEndpointCf
+NetworkFallback_ParsePeerEndpoint
           (UiTransferEndpointDescriptor *endpointDescriptor16,char *endpointText)
 
 {
@@ -342,7 +342,7 @@ NetworkFallback_ParsePeerEndpointCf
   StatusResult copyStatus;
   NetworkPortNetworkOrder portNetworkOrder;
   
-  copyStatus = RichTextCommandStream_CopyToNarrowCf
+  copyStatus = RichTextCommandStream_CopyToNarrow
                     (0xff,(uint8_t *)&g_NetworkEndpointTextScratchA,(uint16_t *)endpointText);
   if (copyStatus.failed) {
     return true;
@@ -376,7 +376,7 @@ NetworkFallback_ParsePeerEndpointCf
    Ownership: network/backend/fallback_udp.
    Purpose: Fallback network callback that formats the address field at socket-address offset +4 into a bounded
    0x200-byte narrow output string, or writes an empty string when conversion fails.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 void __thandor_void_preserve_eax_ecx_edx
 NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress)
@@ -386,7 +386,7 @@ NetworkFallback_FormatPeerAddress(char *outputText,WinSockAddress *socketAddress
   
   source = g_WinSock_inet_ntoa(socketAddress->ipv4AddressNetworkOrder);
   if (source != (uint8_t *)0x0) {
-    Text_CopyNarrowToUtf16Cf(0x200,(uint16_t *)outputText,source);
+    Text_CopyNarrowToUtf16(0x200,(uint16_t *)outputText,source);
     return;
   }
   outputText[0] = '\0';
@@ -412,7 +412,7 @@ void __thandor_void_preserve_eax_ecx_edx NetworkBackend_NoOpCleanup(void)
    Purpose: Opens and binds the active backend socket with the recovered carry/error contract.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-NetworkBackend_OpenAndBindActiveSocketCf(uint16_t portHostOrder)
+NetworkBackend_OpenAndBindActiveSocket(uint16_t portHostOrder)
 
 {
   uint16_t networkPort;
@@ -430,7 +430,7 @@ NetworkBackend_OpenAndBindActiveSocketCf(uint16_t portHostOrder)
     socketHandle = socketOrAddressLength;
     networkPort = g_Ws2_32_htons(portHostOrder);
     /* The asm stores all of EAX after htons; the high word is whatever htons left there. Every reader
-       (this function and NetworkBackend_ParseEndpointTextCf) uses only the low word (CX). */
+       (this function and NetworkBackend_ParseEndpointText) uses only the low word (CX). */
     g_NetworkBackendPortNetworkOrderCarrier = (uint32_t)networkPort;
     g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
     THANDOR_PART(uint32_t, g_NetworkBackendBindAddress, 8) = 0;
@@ -586,7 +586,7 @@ NetworkFallbackUdp_SendDatagram(WinSockAddress *destinationAddress,int byteCount
    Purpose: Parses endpoint text into the recovered backend address representation.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-NetworkBackend_ParseEndpointTextCf(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText)
+NetworkBackend_ParseEndpointText(NetworkEndpointAddressHeader4 *endpointOut,uint16_t *addressText)
 
 {
   NetworkEndpointAddressHeader4 resolvedAddress;
@@ -598,7 +598,7 @@ NetworkBackend_ParseEndpointTextCf(NetworkEndpointAddressHeader4 *endpointOut,ui
   StatusResult copyStatus;
   int addressLength;
   
-  copyStatus = RichTextCommandStream_CopyToNarrowCf
+  copyStatus = RichTextCommandStream_CopyToNarrow
                     (0xff,(uint8_t *)&g_NetworkEndpointTextScratchA,addressText);
   if (copyStatus.failed) {
     return true;
@@ -642,7 +642,7 @@ NetworkBackend_ParseEndpointTextCf(NetworkEndpointAddressHeader4 *endpointOut,ui
 /* Address: 0x00585640.
    Ownership: network/backend/fallback_udp.
    Purpose: Handles network fallback format address utf16.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address)
@@ -657,7 +657,7 @@ NetworkFallback_FormatAddressUtf16(uint16_t *outputUtf16,WinSockAddress *address
                     (address,g_NetworkBackendActiveSocketAddressLength,(void *)0x0,
                      &g_NetworkEndpointTextScratchA,&textLength);
   if (conversionResult == 0) {
-    copyStatus = Text_CopyNarrowToUtf16Cf(0x200,outputUtf16,&g_NetworkEndpointTextScratchA);
+    copyStatus = Text_CopyNarrowToUtf16(0x200,outputUtf16,&g_NetworkEndpointTextScratchA);
     return copyStatus.failed;
   }
   outputUtf16[0] = 0;

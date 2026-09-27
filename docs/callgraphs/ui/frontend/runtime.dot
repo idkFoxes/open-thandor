@@ -16,14 +16,14 @@ digraph thandor {
   "FrontendModelPointerContext_RightRelease" [label="0x0050C730\nFrontendModelPointerContext_RightRelease"];
   "FrontendModelPointerContext_RightDrag" [label="0x0050CC80\nFrontendModelPointerContext_RightDrag"];
   "FrontendModelPointerContext_PointerWheel" [label="0x0050CED0\nFrontendModelPointerContext_PointerWheel"];
-  "FrontendModelPointerContext_KeyboardEventCf" [label="0x0050CF50\nFrontendModelPointerContext_KeyboardEventCf"];
+  "FrontendModelPointerContext_KeyboardEvent" [label="0x0050CF50\nFrontendModelPointerContext_KeyboardEventCf"];
   "FrontendModelPointerContext_Tick" [label="0x0050CF90\nFrontendModelPointerContext_Tick"];
   "FrontendRuntime_UpdateCurrentFactionMetricCache" [label="0x00514E40\nFrontendRuntime_UpdateCurrentFactionMetricCache"];
   "FrontendRuntime_TimerCountdownTick" [label="0x00547620\nFrontendRuntime_TimerCountdownTick"];
   "FrontendRuntime_IncrementActiveTickCounter" [label="0x00547FB0\nFrontendRuntime_IncrementActiveTickCounter"];
-  "FrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf" [label="0x00548030\nFrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf"];
+  "FrontendRuntime_DispatchCommandByCodeAndModifierFlags" [label="0x00548030\nFrontendRuntime_DispatchCommandByCodeAndModifierFlagsCf"];
   "FrontendState_DispatchCode" [label="0x00548700\nFrontendState_DispatchCode"];
-  "FrontendRuntime_UpdatePointerContextAndSceneViewCf" [label="0x00548910\nFrontendRuntime_UpdatePointerContextAndSceneViewCf"];
+  "FrontendRuntime_UpdatePointerContextAndSceneView" [label="0x00548910\nFrontendRuntime_UpdatePointerContextAndSceneViewCf"];
   "FrontendRuntimeCallback5C_NoOp" [label="0x00548BE0\nFrontendRuntimeCallback5C_NoOp"];
   "FrontendRuntimeCallback60_NoOp" [label="0x00548BF0\nFrontendRuntimeCallback60_NoOp"];
   "FrontendRuntimeCallback64_DispatchRecord1350" [label="0x00548C00\nFrontendRuntimeCallback64_DispatchRecord1350"];

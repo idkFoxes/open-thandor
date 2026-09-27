@@ -19,7 +19,7 @@
    lines, and returns maximum width in EAX with total height in EDX. Typed parameters: p2
    maximumWidth→UiPixelExtent_V301. Calling convention, parameter storage, body bytes, control flow, globals,
    locals, and executable data remain unchanged.
-   Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_MeasureNextWrappedLineCf.
+   Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_MeasureNextWrappedLine.
 */
 RichTextExtentRegs __thandor_eax_edx_cf_preserve_ecx
 RichTextCommandStream_MeasureWrappedBlockRegs
@@ -40,7 +40,7 @@ RichTextCommandStream_MeasureWrappedBlockRegs
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    lineResult = RichTextCommandStream_MeasureNextWrappedLineCf(maximumWidth);
+    lineResult = RichTextCommandStream_MeasureNextWrappedLine(maximumWidth);
     if (lineResult.endOfText) break;
     totalHeight = totalHeight + lineResult.lineAdvancePixels;
   }
@@ -57,10 +57,10 @@ RichTextCommandStream_MeasureWrappedBlockRegs
    clipLeft→UiPixelCoordinate_V297, p2 clipBottom→UiPixelCoordinate_V297, p3 clipRight→UiPixelCoordinate_V297, p6
    maximumWidth→UiPixelExtent_V301, p7 drawY→UiPixelCoordinate_V297, p8 drawX→UiPixelCoordinate_V297. Calling
    convention, parameter storage, body bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_DrawNextWrappedLineCf.
+   Local calls: RichTextCommandStream_FlattenNestedToRuntimeBuffer, RichTextCommandStream_DrawNextWrappedLine.
 */
 void __thandor_void_preserve_eax_ecx_edx
-RichTextCommandStream_DrawWrappedBlockCf
+RichTextCommandStream_DrawWrappedBlock
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,uint32_t packedStyle,uint16_t *commandStream,
           UiPixelExtent maximumWidth,UiPixelCoordinate drawY,UiPixelCoordinate drawX)
@@ -77,7 +77,7 @@ RichTextCommandStream_DrawWrappedBlockCf
   g_RichTextSavedColorArgb = g_RichTextCurrentColorArgb;
   g_RichTextSavedShadowOffset = g_RichTextCurrentShadowOffset;
   while( true ) {
-    lineResult = RichTextCommandStream_DrawNextWrappedLineCf
+    lineResult = RichTextCommandStream_DrawNextWrappedLine
                       (clipTop,clipLeft,clipBottom,clipRight,maximumWidth,drawY,drawX);
     if (lineResult.endOfText) break;
     drawY = drawY + lineResult.lineAdvancePixels;
@@ -625,7 +625,7 @@ RichTextCommandStream_QueryNthCommandFlags(int commandOrdinal,uint16_t *commandS
    serialization, function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyToNarrowCf
+RichTextCommandStream_CopyToNarrow
           (TextOutputCapacityBytes capacityBytes,uint8_t *destination,uint16_t *source)
 
 {
@@ -1119,7 +1119,7 @@ RichTextMarkup_ParseAndBuildStringAsset_ReportUnknownCharacter:
    body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 RichTextCopyResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_CopyExpandedCf
+RichTextCommandStream_CopyExpanded
           (TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint16_t *source)
 
 {
@@ -1329,7 +1329,7 @@ RichTextCommandStream_MeasureRegs(UiPackedTextStyle packedStyle,uint16_t *comman
    Cross-module calls: FontGlyph_GetLogicalSizeActiveRegs [assets/text/resources].
 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_MeasureNextWrappedLineCf(UiPixelExtent maximumWidth)
+RichTextCommandStream_MeasureNextWrappedLine(UiPixelExtent maximumWidth)
 
 {
   GraphicsSubresourceIndex glyphSubresource;
@@ -1440,7 +1440,7 @@ RichTextCommandStream_MeasureNextWrappedLine_CommitWrapBoundary:
    [assets/text/resources].
 */
 WrappedLineResult __thandor_eax_cf_preserve_ecx_edx
-RichTextCommandStream_DrawNextWrappedLineCf
+RichTextCommandStream_DrawNextWrappedLine
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
           UiPixelCoordinate clipRight,UiPixelExtent maximumWidth,UiPixelCoordinate drawY,
           UiPixelCoordinate drawX)
@@ -1468,7 +1468,7 @@ RichTextCommandStream_DrawNextWrappedLineCf
   lineTop = glyphSize.lineHeight;
   scanCursor = drawCursor;
   fontIndexOrImageWidth = g_ActiveFontIndex;
-  /* Measure pass (same rules as RichTextCommandStream_MeasureNextWrappedLineCf): find the wrap point and
+  /* Measure pass (same rules as RichTextCommandStream_MeasureNextWrappedLine): find the wrap point and
      the line height. */
   for (;;) {
     measureCommand = scanCursor;

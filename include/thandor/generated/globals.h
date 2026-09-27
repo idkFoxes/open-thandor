@@ -60,28 +60,28 @@ typedef CommandLineOptionResult __thandor_ebx_cf_preserve_eax_ecx_edx CommandLin
 typedef uint32_t __cdecl CpuDetectFeaturesProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef FatalErrorCheckResult __thandor_eax_cf_io_preserve_ecx_edx FatalErrorPassThroughProc(uint32_t errorOrValue, bool carryIn); /* Ghidra FunctionDefinition /Thandor/ABI */
 typedef void __thandor_void_preserve_eax_ecx_edx FileSystemCloseProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemCopyCfProc(uint16_t * destinationPath, uint16_t * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemCopyProc(uint16_t * destinationPath, uint16_t * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemCreateDirectoryRecursiveProc(FileSystemCreateDirectoryFlags flags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef uint32_t FileSystemDeleteCfProc(uint32_t unusedFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemDriveReadyCfProc(uint32_t driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef DirectoryEnumerationResult __thandor_eax_ecx_cf_preserve_edx FileSystemEnumerateDirectoryOrVolumeEntriesCfProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef uint32_t FileSystemDeleteProc(uint32_t unusedFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemDriveReadyProc(uint32_t driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef DirectoryEnumerationResult __thandor_eax_ecx_cf_preserve_edx FileSystemEnumerateDirectoryOrVolumeEntriesProc(FileSystemEnumerationMode mode, uint32_t reserved, FileSystemOutputCapacityBytes outputCapacityBytes, uint8_t * outputRecords, uint8_t * pathOrVolumeText); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef DriveLetterEnumerationEaxEcx8 __thandor_eax_ecx_preserve_edx FileSystemEnumerateDriveLettersEaxEcxProc(uint8_t * lettersOut); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetCurrentDirectoryCfProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetCurrentDirectoryProc(uint16_t * destination); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef EngineDriveTypeCode __thandor_eax_preserve_ecx_edx FileSystemGetDriveTypeCodePreserveProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
 typedef Win32DriveCapacityEdxEax8 FileSystemGetFreeAndTotalBytesRegsProc(DosDriveLetterCode32 driveLetter); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteDosDateCfProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteTimeHighCfProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef uint32_t FileSystemGetPositionCfProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef FileSystemSizeResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetSizeCfProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef uint32_t FileSystemGetVolumeSerialNumberCfProc(uint8_t * outputLabel, char * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemMoveCfProc(uint16_t * destinationPath, uint16_t * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef FileSystemOpenResult __thandor_eax_cf_preserve_ecx_edx FileSystemOpenCfProc(FileSystemOpenFlags openFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef FileSystemReadResult __thandor_eax_cf_preserve_ecx_edx FileSystemReadExactCfProc(FileIoByteCount byteCount, void * destination, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemRemoveDirectoryCfProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef FileSystemSeekResult __thandor_eax_cf_preserve_ecx_edx FileSystemSeekCfProc(FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
-typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemSetCurrentDirectoryCfProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemValidateDos83CfProc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
-typedef FileSystemWriteResult __thandor_eax_cf_preserve_ecx_edx FileSystemWriteExactOrFlushCfProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteDosDateProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetLastWriteTimeHighProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef uint32_t FileSystemGetPositionProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef FileSystemSizeResult __thandor_eax_cf_preserve_ecx_edx FileSystemGetSizeProc(void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef uint32_t FileSystemGetVolumeSerialNumberProc(uint8_t * outputLabel, char * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemMoveProc(uint16_t * destinationPath, uint16_t * sourcePath); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemOpenResult __thandor_eax_cf_preserve_ecx_edx FileSystemOpenProc(FileSystemOpenFlags openFlags, uint16_t * path); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef FileSystemReadResult __thandor_eax_cf_preserve_ecx_edx FileSystemReadExactProc(FileIoByteCount byteCount, void * destination, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemRemoveDirectoryProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemSeekResult __thandor_eax_cf_preserve_ecx_edx FileSystemSeekProc(FileSystemSeekOrigin moveMethod, FileSystemFilePosition distance, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
+typedef StatusResult __thandor_eax_cf_preserve_ecx_edx FileSystemSetCurrentDirectoryProc(uint16_t * path); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef bool __thandor_cf_preserve_eax_ecx_edx FileSystemValidateDos83Proc(FileSystemDos83ValidationFlags flags, uint8_t * pathAnsi); /* Ghidra FunctionDefinition /Thandor/System/FileSystem */
+typedef FileSystemWriteResult __thandor_eax_cf_preserve_ecx_edx FileSystemWriteExactOrFlushProc(FileIoByteCount byteCount, void * source, void * handle); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint32_t FrontendModelPointerContextUpdateCallbackProc(int pointerY, int pointerX, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef uint32_t FrontendModelPointerResolvedActionCallbackProc(uint32_t callbackArgumentF0, uint32_t callbackArgumentEC, uint32_t callbackArgumentE8, int selectedHitMetric, ModelRuntimeNode * selectedModelNode, FrontendModelPointerContextRuntimeState118 * context); /* Ghidra FunctionDefinition /Thandor/Canonical/FunctionDefinitions */
 typedef void __thandor_void_preserve_eax_ecx_edx GlideTextureUploadProc(GraphicsTextureResource * arg0); /* Ghidra FunctionDefinition /Thandor/Graphics/Methods */
@@ -150,7 +150,7 @@ typedef uint32_t LocaleFormatTimeFieldsUtf16Proc(uint32_t arg0, uint32_t arg1, u
 typedef uint32_t __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentDateProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t __thandor_eax_preserve_ecx_edx LocaleGetPackedCurrentTimeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef uint32_t __thandor_eax_preserve_ecx_edx LocaleGetTelephoneCountryCodeProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef FrameProviderResult __thandor_eax_cf_preserve_ecx_edx MovieFrameProviderCfProc(void * frameToReleaseOrNull); /* Ghidra FunctionDefinition /Thandor/Assets/Movie/Callbacks */
+typedef FrameProviderResult __thandor_eax_cf_preserve_ecx_edx MovieFrameProviderProc(void * frameToReleaseOrNull); /* Ghidra FunctionDefinition /Thandor/Assets/Movie/Callbacks */
 typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCleanupCallback(void); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
 typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendCloseCallback(void); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
 typedef void __thandor_void_preserve_eax_ecx_edx NetworkBackendFormatAddressCallback(char * outputText, WinSockAddress * socketAddress); /* Ghidra FunctionDefinition /Thandor/Network/Backend */
@@ -179,9 +179,9 @@ typedef bool __thandor_cf_preserve_eax_ecx_edx TerrainClassOverlayCallback(uint3
 typedef void __cdecl TimerCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void TimerRegisterPeriodicProc(uint32_t arg0, TimerCallbackProc * arg1); /* Ghidra FunctionDefinition /Thandor/System/Methods */
 typedef void TimerUnregisterPeriodicProc(TimerCallbackProc * arg0); /* Ghidra FunctionDefinition /Thandor/System/Methods */
-typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootCloseCallbackCf(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootCloseCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef void __thandor_void_preserve_eax_ecx_edx UiRootFrameCallback(UiRootNode * arg0); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
-typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootKeyboardFallbackCf(UiKeyboardStateMask modifierFlags, UiActionId commandCode, UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
+typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootKeyboardFallback(UiKeyboardStateMask modifierFlags, UiActionId commandCode, UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef bool __thandor_cf_preserve_eax_ecx_edx UiRootMethod08Callback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef int __thandor_eax_preserve_ecx_edx UiRootPointerMissPolicyCallback(UiRootNode * root); /* Ghidra FunctionDefinition /Thandor/UI/Callbacks */
 typedef void UiRuntimePostUnlockCallbackProc(void); /* Ghidra FunctionDefinition /Thandor/UI/Runtime */
@@ -242,14 +242,14 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
  * platform/bootstrap/image.c. Neighbouring accesses, tables and absolute addresses in the
  * recovered code therefore behave exactly as in the original.
  */
-#define g_FileSystemOpenCf (*(FileSystemOpenCfProc * *)THANDOR_IMAGE(0x0040b1c0))
+#define g_FileSystemOpen (*(FileSystemOpenProc * *)THANDOR_IMAGE(0x0040b1c0))
 #define g_FileSystemCombinedPathScratchUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0040adc0))
 #define g_FileSystemClose (*(FileSystemCloseProc * *)THANDOR_IMAGE(0x0040b1c4))
 #define g_ExecutableDirectoryUtf16 (*(uint8_t *)THANDOR_IMAGE(0x0040afc0))
 #define g_MemoryApi (*(MemoryApiTable *)THANDOR_IMAGE(0x00402000))
-#define g_FileSystemReadExactCf (*(FileSystemReadExactCfProc * *)THANDOR_IMAGE(0x0040b1c8))
+#define g_FileSystemReadExact (*(FileSystemReadExactProc * *)THANDOR_IMAGE(0x0040b1c8))
 #define g_LocaleCountryCodeOverride (*(uint32_t *)THANDOR_IMAGE(0x004027c0))
-#define g_FileSystemGetSizeCf (*(FileSystemGetSizeCfProc * *)THANDOR_IMAGE(0x0040b1d0))
+#define g_FileSystemGetSize (*(FileSystemGetSizeProc * *)THANDOR_IMAGE(0x0040b1d0))
 #define g_PersistentSettings (*(PersistentSettingsRuntime *)THANDOR_IMAGE(0x004028d0))
 #define g_WideNumberFormatState (*(WideNumberFormatState *)THANDOR_IMAGE(0x0040262c))
 #define g_RandomGeneratorState (*(RandomGeneratorState *)THANDOR_IMAGE(0x004030a0))
@@ -288,20 +288,20 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_LocaleCopyDefaultComputerLabelUtf16 (*(LocaleCopyDefaultComputerLabelUtf16Proc * *)THANDOR_IMAGE(0x004027b4))
 #define g_PackageScratchBuffer (*(uint8_t * *)THANDOR_IMAGE(0x0040b21c))
 #define g_PackageMountSlots (*(PckMountSlot (*)[1024])THANDOR_IMAGE(0x0040b224))
-#define g_FileSystemSeekCf (*(FileSystemSeekCfProc * *)THANDOR_IMAGE(0x0040b1d8))
-#define g_FileSystemWriteExactOrFlushCf (*(FileSystemWriteExactOrFlushCfProc * *)THANDOR_IMAGE(0x0040b1cc))
+#define g_FileSystemSeek (*(FileSystemSeekProc * *)THANDOR_IMAGE(0x0040b1d8))
+#define g_FileSystemWriteExactOrFlush (*(FileSystemWriteExactOrFlushProc * *)THANDOR_IMAGE(0x0040b1cc))
 #define g_PckEncoderTable (*(PckCodecProc * (*)[3])THANDOR_IMAGE(0x0040e224))
 #define g_PckDecoderTable (*(PckCodecProc * (*)[3])THANDOR_IMAGE(0x0040e230))
 #define g_WideNumberFormatUtf16 (*(WideNumberFormatUtf16Proc * *)THANDOR_IMAGE(0x00402628))
-#define g_FileSystemDeleteCf (*(FileSystemDeleteCfProc * *)THANDOR_IMAGE(0x0040b1dc))
-#define g_FileSystemEnumerateDirectoryOrVolumeEntriesCf (*(FileSystemEnumerateDirectoryOrVolumeEntriesCfProc * *)THANDOR_IMAGE(0x0040b214))
+#define g_FileSystemDelete (*(FileSystemDeleteProc * *)THANDOR_IMAGE(0x0040b1dc))
+#define g_FileSystemEnumerateDirectoryOrVolumeEntries (*(FileSystemEnumerateDirectoryOrVolumeEntriesProc * *)THANDOR_IMAGE(0x0040b214))
 #define u________0040ff58 (*(uint16_t (*)[7])THANDOR_IMAGE(0x0040ff58))
 #define g_FileSystemEnumerateDriveLetters (*(FileSystemEnumerateDriveLettersEaxEcxProc * *)THANDOR_IMAGE(0x0040b1f0))
 #define g_FileSystemGetDriveTypeCode (*(FileSystemGetDriveTypeCodePreserveProc * *)THANDOR_IMAGE(0x0040b1f4))
 #define g_UiTimedListRecordPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f550))
 #define g_UiTimedListCombinedPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f750))
 #define g_UiTimedListSecondaryPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040f950))
-#define g_FileSystemCheckDriveMediaReady (*(FileSystemDriveReadyCfProc * *)THANDOR_IMAGE(0x0040b1f8))
+#define g_FileSystemCheckDriveMediaReady (*(FileSystemDriveReadyProc * *)THANDOR_IMAGE(0x0040b1f8))
 #define g_UiTimedListHierarchyPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040fb50))
 #define g_UiTimedListHierarchyParentPathScratch (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040fd50))
 #define g_CursorFrameIndex (*(GraphicsCursorFrameIndex *)THANDOR_IMAGE(0x00416814))
@@ -419,7 +419,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_MovieDeltaRgbHighNibbleMask2Pixels (*(uint64_t *)THANDOR_IMAGE(0x004a6d90))
 #define g_MovieChromaLumaToArgb (*(uint32_t (*)[1024][32])THANDOR_IMAGE(0x00486d90))
 #define g_LooseMoviePathPrefix (*(WidePathBuffer256 *)THANDOR_IMAGE(0x004a6da4))
-#define g_FileSystemGetPositionCf (*(FileSystemGetPositionCfProc * *)THANDOR_IMAGE(0x0040b1d4))
+#define g_FileSystemGetPosition (*(FileSystemGetPositionProc * *)THANDOR_IMAGE(0x0040b1d4))
 #define g_SoundCreateSampleVoiceSet (*(SoundCreateSampleVoiceSetProc * *)THANDOR_IMAGE(0x00417338))
 #define g_ActiveMovie (*(MovieRuntime * *)THANDOR_IMAGE(0x004a6d98))
 #define g_MovieDefaultAudioGainQ15 (*(MovieAudioGainQ15 *)THANDOR_IMAGE(0x004a6d9c))
@@ -524,7 +524,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_UiTextEditInactiveTextStyle (*(uint32_t *)THANDOR_IMAGE(0x004b0e9c))
 #define g_UiTextEditDisabledTextStyle (*(uint32_t *)THANDOR_IMAGE(0x004b0ea0))
 #define g_UiTextEditCaretBlinkPhaseStep (*(uint32_t *)THANDOR_IMAGE(0x004b0ea4))
-#define g_FileSystemValidateDos83Path (*(FileSystemValidateDos83CfProc * *)THANDOR_IMAGE(0x0040b218))
+#define g_FileSystemValidateDos83Path (*(FileSystemValidateDos83Proc * *)THANDOR_IMAGE(0x0040b218))
 #define g_CursorUseOverridePosition (*(uint32_t *)THANDOR_IMAGE(0x00416818))
 #define g_UiScrollWheelDefaultStep (*(uint32_t *)THANDOR_IMAGE(0x004b0e50))
 #define g_UiScrollWheelListStep (*(uint32_t *)THANDOR_IMAGE(0x004b0e54))
@@ -537,7 +537,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_UiListActivationPulseFrames (*(uint32_t *)THANDOR_IMAGE(0x004b0e60))
 #define g_UiPointerListExpandedLeftTextUtf16 (*(uint8_t *)THANDOR_IMAGE(0x004ba5d8))
 #define g_UiPointerListExpandedRightTextUtf16 (*(uint8_t *)THANDOR_IMAGE(0x004ba9d8))
-#define g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf (*(pointer *)THANDOR_IMAGE(0x004027bc))
+#define g_Utf16StringCompareAsciiCaseInsensitiveFlags (*(pointer *)THANDOR_IMAGE(0x004027bc))
 #define g_UiTimedListActionDelayFrames (*(UiFrameDelayFrames *)THANDOR_IMAGE(0x004b0e5c))
 #define g_GraphicsIntensityClampTableBase (*(uint32_t *)THANDOR_IMAGE(0x004bcf68))
 #define g_ModelBoundsMinimumX (*(int32_t *)THANDOR_IMAGE(0x004bd2e0))
@@ -627,10 +627,10 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_TerrainByteClampLookup (*(uint8_t * *)THANDOR_IMAGE(0x005019a4))
 #define g_TerrainDirectionRecordTable256 (*(TerrainDirectionRecord (*)[256])THANDOR_IMAGE(0x005019a8))
 #define g_TerrainMaterialTextureSuffixLettersUtf16AtoZ (*(TerrainMaterialSuffixEntry (*)[26])THANDOR_IMAGE(0x00503a90))
-#define g_GraphicsTextureSetLoadPackageCf (*(GraphicsTextureSetLoadPackageProc * *)THANDOR_IMAGE(0x0048582c))
+#define g_GraphicsTextureSetLoadPackage (*(GraphicsTextureSetLoadPackageProc * *)THANDOR_IMAGE(0x0048582c))
 #define g_GraphicsPaletteAssetLoadPackage (*(GraphicsPaletteAssetLoadPackageProc * *)THANDOR_IMAGE(0x004a8f54))
 #define g_MoviePlaybackScheduleSpan (*(uint32_t *)THANDOR_IMAGE(0x00563328))
-#define g_GraphicsTextureSetReleasePackageCf (*(GraphicsTextureSetReleasePackageProc * *)THANDOR_IMAGE(0x00485830))
+#define g_GraphicsTextureSetReleasePackage (*(GraphicsTextureSetReleasePackageProc * *)THANDOR_IMAGE(0x00485830))
 #define g_GraphicsPaletteAssetLifecycleCallbacks3 (*(GraphicsPaletteAssetLifecycleCallbackTable3 *)THANDOR_IMAGE(0x004a8f58))
 #define g_FieldGridOccupancyMmxHighBitMask (*(uint64_t *)THANDOR_IMAGE(0x0041f6c0))
 #define g_TerrainDirectionalLightColorLut (*(PackedArgb32 (*)[257])THANDOR_IMAGE(0x00501590))
@@ -767,7 +767,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_OldUnitSecondaryTable (*(uint32_t * *)THANDOR_IMAGE(0x00563bbc))
 #define g_OldUnitRecordCount (*(OldUnitRecordCount *)THANDOR_IMAGE(0x00563bc4))
 #define g_InGameLevelTitleTextResourceIndex (*(uint32_t *)THANDOR_IMAGE(0x00531028))
-#define g_FileSystemCreateDirectoryRecursiveCf (*(FileSystemCreateDirectoryRecursiveProc * *)THANDOR_IMAGE(0x0040b1e8))
+#define g_FileSystemCreateDirectoryRecursive (*(FileSystemCreateDirectoryRecursiveProc * *)THANDOR_IMAGE(0x0040b1e8))
 #define g_InGameLevelCampaignAssociationIndex (*(uint32_t *)THANDOR_IMAGE(0x0053102c))
 #define g_RecentTextSlotStorage (*(RecentTextHistorySlot * *)THANDOR_IMAGE(0x0050f0e0))
 #define g_RecentTextEntrySerials (*(uint32_t (*)[8])THANDOR_IMAGE(0x0050f0e4))
@@ -839,7 +839,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_ArmyPreviewProjectionShift (*(uint32_t *)THANDOR_IMAGE(0x00485a20))
 #define g_ArmyPreviewAuxiliaryOrientation0 (*(uint32_t *)THANDOR_IMAGE(0x00485a24))
 #define g_ArmyPreviewAverageAlphaReciprocalMmxLut256 (*(uint8_t *)THANDOR_IMAGE(0x0051ab80))
-#define g_GraphicsOffscreenRenderModelListToTextureSourceCf (*(GraphicsOffscreenRenderModelListToTextureSourceProc * *)THANDOR_IMAGE(0x00485848))
+#define g_GraphicsOffscreenRenderModelListToTextureSource (*(GraphicsOffscreenRenderModelListToTextureSourceProc * *)THANDOR_IMAGE(0x00485848))
 #define g_ArmyPreviewAuxiliaryOrientation1 (*(uint32_t *)THANDOR_IMAGE(0x00485a28))
 #define g_ArmyPreviewDownsampleAlphaRoundingBiasMmx (*(uint64_t *)THANDOR_IMAGE(0x0051b380))
 #define g_ArmyPreviewModelNodePointer (*(uint32_t *)THANDOR_IMAGE(0x00485a34))
@@ -1447,15 +1447,15 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define g_FileSystemInitComputerNameCapacityOrConfigCursor (*(pointer *)THANDOR_IMAGE(0x00575a94))
 #define g_FileSystemConfigRemainingBytes (*(uint32_t *)THANDOR_IMAGE(0x00575a98))
 #define g_EnginePackageLowPriorityMountHandle (*(uint32_t *)THANDOR_IMAGE(0x0040b220))
-#define g_FileSystemGetCurrentDirectoryCf (*(FileSystemGetCurrentDirectoryCfProc * *)THANDOR_IMAGE(0x0040b1e0))
-#define g_FileSystemSetCurrentDirectoryCf (*(FileSystemSetCurrentDirectoryCfProc * *)THANDOR_IMAGE(0x0040b1e4))
-#define g_FileSystemRemoveDirectoryCf (*(FileSystemRemoveDirectoryCfProc * *)THANDOR_IMAGE(0x0040b1ec))
+#define g_FileSystemGetCurrentDirectory (*(FileSystemGetCurrentDirectoryProc * *)THANDOR_IMAGE(0x0040b1e0))
+#define g_FileSystemSetCurrentDirectory (*(FileSystemSetCurrentDirectoryProc * *)THANDOR_IMAGE(0x0040b1e4))
+#define g_FileSystemRemoveDirectory (*(FileSystemRemoveDirectoryProc * *)THANDOR_IMAGE(0x0040b1ec))
 #define g_FileSystemGetFreeAndTotalBytesRegs (*(FileSystemGetFreeAndTotalBytesRegsProc * *)THANDOR_IMAGE(0x0040b1fc))
-#define g_FileSystemGetLastWriteDosDateCf (*(FileSystemGetLastWriteDosDateCfProc * *)THANDOR_IMAGE(0x0040b200))
-#define g_FileSystemGetLastWriteTimeHighCf (*(FileSystemGetLastWriteTimeHighCfProc * *)THANDOR_IMAGE(0x0040b204))
-#define g_FileSystemGetVolumeSerialNumberCf (*(FileSystemGetVolumeSerialNumberCfProc * *)THANDOR_IMAGE(0x0040b208))
-#define g_FileSystemMoveCf (*(FileSystemMoveCfProc * *)THANDOR_IMAGE(0x0040b20c))
-#define g_FileSystemCopyCf (*(FileSystemCopyCfProc * *)THANDOR_IMAGE(0x0040b210))
+#define g_FileSystemGetLastWriteDosDate (*(FileSystemGetLastWriteDosDateProc * *)THANDOR_IMAGE(0x0040b200))
+#define g_FileSystemGetLastWriteTimeHigh (*(FileSystemGetLastWriteTimeHighProc * *)THANDOR_IMAGE(0x0040b204))
+#define g_FileSystemGetVolumeSerialNumber (*(FileSystemGetVolumeSerialNumberProc * *)THANDOR_IMAGE(0x0040b208))
+#define g_FileSystemMove (*(FileSystemMoveProc * *)THANDOR_IMAGE(0x0040b20c))
+#define g_FileSystemCopy (*(FileSystemCopyProc * *)THANDOR_IMAGE(0x0040b210))
 #define g_InitialWorkingDirectory (*(WidePathBuffer256 *)THANDOR_IMAGE(0x0040abc0))
 #define g_Win32PathScratchA (*(uint8_t (*)[256])THANDOR_IMAGE(0x00575a9c))
 #define g_Win32FileBytesTransferred (*(uint32_t *)THANDOR_IMAGE(0x00575950))
@@ -1482,7 +1482,7 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define u_engine_mouse_gfx_00416864 (*(uint16_t (*)[17])THANDOR_IMAGE(0x00416864))
 #define g_MouseDevice (*(IDirectInputDeviceA * *)THANDOR_IMAGE(0x00576b14))
 #define u_engine_mouse_dat_00416886 (*(uint16_t (*)[17])THANDOR_IMAGE(0x00416886))
-#define g_DirectInputMouseChainedSetDisplayModeCf (*(SoftwareDisplayModeHookProc * *)THANDOR_IMAGE(0x00576c20))
+#define g_DirectInputMouseChainedSetDisplayMode (*(SoftwareDisplayModeHookProc * *)THANDOR_IMAGE(0x00576c20))
 #define dynapi_3 (*(char (*)[7])THANDOR_IMAGE(0x005744ba))
 #define g_hInstance (*(HINSTANCE *)THANDOR_IMAGE(0x005856b0))
 #define pDirectInputCreateA (*(DirectInputCreateA * *)THANDOR_IMAGE(0x00573fc4))
@@ -1518,8 +1518,8 @@ typedef void __thandor_preserve_eax_edx WorldRuntimeNodeTraversalCallback(void *
 #define pDirectDrawEnumerateA (*(DirectDrawEnumerateA * *)THANDOR_IMAGE(0x00573fc0))
 #define dynapi_17 (*(char (*)[17])THANDOR_IMAGE(0x0057455e))
 #define dynapi_18 (*(char (*)[21])THANDOR_IMAGE(0x00574570))
-#define g_GraphicsBackendRefreshActiveAdapterCf (*(GraphicsBackendRefreshActiveAdapterProc * *)THANDOR_IMAGE(0x004a8ed4))
-#define g_GraphicsDisplayModeFinalizeCf (*(SoftwareDisplayModeHookProc * *)THANDOR_IMAGE(0x00577e30))
+#define g_GraphicsBackendRefreshActiveAdapter (*(GraphicsBackendRefreshActiveAdapterProc * *)THANDOR_IMAGE(0x004a8ed4))
+#define g_GraphicsDisplayModeFinalize (*(SoftwareDisplayModeHookProc * *)THANDOR_IMAGE(0x00577e30))
 #define g_Direct3DOpaqueTextureFormatBitsPerPixel (*(uint32_t *)THANDOR_IMAGE(0x00577d9c))
 #define g_Direct3DOpaqueTextureFormatRedBitMask (*(uint8_t *)THANDOR_IMAGE(0x00577da0))
 #define g_Direct3DOpaqueTextureFormatGreenBitMask (*(uint8_t *)THANDOR_IMAGE(0x00577da4))

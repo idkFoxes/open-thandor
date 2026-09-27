@@ -115,42 +115,42 @@ void __thandor_void_preserve_eax_ecx_edx
 SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target);
 
 /* 0x0052FB70 */
-WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void);
+WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void);
 
 /* 0x0052FD60 */
 void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
 /* 0x0052FDC0 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntryCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void);
 
 /* 0x0052FDE0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex ownerIndex);
+SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex);
 
 /* 0x0052FE30 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex);
+SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex);
 
 /* 0x0052FEB0 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13Cf(void);
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13(void);
 
 /* 0x0052FF30 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_TestPositionCommandAtWorldPointCf
+SelectionInfo_TestPositionCommandAtWorldPoint
           (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime);
 
 /* 0x00530050 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100NonpositiveCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonpositive(void);
 
 /* 0x005300A0 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100NonnegativeCf(void);
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnegative(void);
 
 /* 0x005300E0 */
 GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void);
 
 /* 0x00530100 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntryCf(GameEntityRuntime *entry);
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime *entry);
 
 /* 0x00530770 */
 uint32_t __thandor_eax_preserve_ecx_edx SelectionInfo_CollectAttachmentEffectVariantMask(void);
@@ -166,7 +166,7 @@ SelectionPlayerRuntime_ClearTerrainEditSelectionState
 
 /* 0x00571020 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPlayerPairList_ContainsPairCf
+SelectionPlayerPairList_ContainsPair
           (SelectionPlayerPairValue pairValue,SelectionPlayerPairKey pairKey,
           PlayerRuntimeId playerRuntimeId);
 
@@ -280,11 +280,11 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
 
 /* 0x0052FD90 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray32 *array);
+SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array);
 
 /* 0x005301F0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *selection);
+SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection);
 
 /* 0x00530650 */
 void __thandor_void_preserve_eax_ecx_edx

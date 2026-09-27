@@ -38,11 +38,11 @@ void __thandor_void_preserve_eax_ecx_edx UiTooltip_TickCountdown(void)
    Ownership: ui/controls/text.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B58A0[12]@004B58A0.
    Local calls: UiTextEditControl_RecomputeLayoutAndClampScroll, UiNumericTextControl_ParseAndCommitValue.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input], UiActionQueue_Enqueue
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input], UiActionQueue_Enqueue
    [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiNumericTextEditControl_HandleKeyboardAndCommitCf
+UiNumericTextEditControl_HandleKeyboardAndCommit
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiNumericTextControl *control)
 
@@ -62,7 +62,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
 
   if ((((control->editStateFlags & UI_NUMERIC_TEXT_READ_ONLY) != 0) ||
       (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & 0x30) != 0)) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* Handled keys end in the shared tail: optional layout recompute, then parse/commit, invalidate
@@ -87,7 +87,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
       characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) != 0;
     }
     if (!characterAccepted) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return delegatedResult;
     }
     insertIndex = control->cursorIndex;
@@ -138,7 +138,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
         keyCode = 0x10018;
       }
       else {
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -227,7 +227,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
         break;
       case 0x10001:
         if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
           return delegatedResult;
         }
         UiActionQueue_Enqueue(control->actionId,control);
@@ -240,7 +240,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
         if ((keyCode & 0x30000) == 0x30000) {
           return false;
         }
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -312,7 +312,7 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
         }
         break;
       default:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
       if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
@@ -342,11 +342,11 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
    Ownership: ui/controls/text.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B6800[12]@004B6800.
    Local calls: UiTextEditControl_RecomputeLayoutAndClampScroll, UiPathTextControl_UpdateDos83Validity.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input], UiActionQueue_Enqueue
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input], UiActionQueue_Enqueue
    [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiPathTextEditControl_HandleKeyboardAndValidateCf
+UiPathTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiPathTextEditControl *control)
 
@@ -368,7 +368,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
 
   if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* Characters typed with AltGr skip the modifier checks (of these, only the backslash passes the
@@ -383,7 +383,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
      (((keyboardStateMask & 0x30) != 0) ||
       ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & 0x3c) != 0)) &&
        ((0x40 < keyCode) && ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))))) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* Handled keys end in the shared tail: optional selection normalization and layout recompute,
@@ -418,7 +418,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
       characterAccepted = (0x61 <= keyCode) && (keyCode <= 0x7a);
     }
     if (!characterAccepted) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return delegatedResult;
     }
     insertIndex = control->cursorIndex;
@@ -545,7 +545,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
         break;
       case 0x10001:
         if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
           return delegatedResult;
         }
         UiActionQueue_Enqueue(control->actionId,control);
@@ -558,7 +558,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
         if ((keyCode & 0x30000) == 0x30000) {
           return false;
         }
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -630,7 +630,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
         }
         break;
       default:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -638,7 +638,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
   else {
     /* Ctrl+Left/Right: jump to the previous/next path segment ('\' or '.'), Shift extends. */
     if ((keyCode != 0x10014) && (keyCode != 0x10016)) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return delegatedResult;
     }
     if ((keyboardStateMask & 3) == 0) {
@@ -737,11 +737,11 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
    Ownership: ui/controls/text.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B7050[12]@004B7050.
    Local calls: UiTextEditControl_RecomputeLayoutAndClampScroll, UiTextControl_UpdateNonEmptyValidity.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input], UiActionQueue_Enqueue
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input], UiActionQueue_Enqueue
    [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRequiredTextEditControl_HandleKeyboardAndValidateCf
+UiRequiredTextEditControl_HandleKeyboardAndValidate
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiRequiredTextEditControl *control)
 
@@ -766,7 +766,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
   insertIndex = control->cursorIndex;
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* Characters typed with AltGr are inserted without the modifier checks. */
@@ -780,7 +780,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
      (((keyboardStateMask & 0x30) != 0) ||
       ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & 0x3c) != 0)) &&
        ((0x40 < keyCode) && ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))))) {
-    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
   /* Handled keys end in the shared tail: optional selection normalization and layout recompute,
@@ -914,7 +914,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         break;
       case 0x10001:
         if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
           return delegatedResult;
         }
         UiActionQueue_Enqueue(control->actionId,control);
@@ -925,7 +925,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         return false;
       case 0x10000:
         if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
-          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
           return delegatedResult;
         }
         sourceCursor = control->textPrefix6C;
@@ -946,7 +946,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         if ((keyCode & 0x30000) == 0x30000) {
           return false;
         }
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -1018,7 +1018,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
         }
         break;
       default:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
         return delegatedResult;
       }
     }
@@ -1026,7 +1026,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
   else {
     /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
     if ((keyCode != 0x10014) && (keyCode != 0x10016)) {
-      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return delegatedResult;
     }
     codeUnitIndex = control->cursorIndex;
@@ -1869,9 +1869,9 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
    Ownership: ui/controls/text.
    Purpose: Pops UI roots until the current root equals the protected global boundary pointer at 004B0E34 or the
    stack sentinel. CF set from a pop stops the loop; EAX is preserved.
-   Cross-module calls: UiRootStack_PopCf [ui/controls/layout].
+   Cross-module calls: UiRootStack_Pop [ui/controls/layout].
 */
-bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundaryCf(void)
+bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void)
 
 {
   bool rootWasValid;
@@ -1879,7 +1879,7 @@ bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundaryCf(void)
   
   while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
          (g_UiRootNode != (UiRootNode *)0xffffffff))) {
-    popStopped = UiRootStack_PopCf(g_UiRootNode);
+    popStopped = UiRootStack_Pop(g_UiRootNode);
     if (popStopped) {
       return true;
     }
@@ -2539,10 +2539,10 @@ UiTextButtonControl_NonRightPress
    Purpose: Handles focused Space-key activation, optionally plays activationSoundId, updates selected/toggle
    state, queues actionId, invalidates the root, and conveys consumption through CF.
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiNode_InvalidateRoot [ui/core/runtime],
-   UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
+   UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTextButtonControl_KeyboardEventCf
+UiTextButtonControl_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextButtonControl *control)
 
@@ -2582,7 +2582,7 @@ UiTextButtonControl_KeyboardEventCf
       return false;
     }
   }
-  delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
+  delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNext
                     (keyboardStateMask,keyCode,(UiNodeBase *)control);
   return delegatedResult;
 }
@@ -3206,12 +3206,12 @@ UiTextListControl_SelectRowFromPointer
 /* Address: 0x004BA130.
    Ownership: ui/controls/text.
    Purpose: Binary entry is anchored by g_UiNodeVtable_004B9E40[12]@004B9E40.
-   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input], UiActionQueue_Enqueue
+   Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNext [ui/controls/input], UiActionQueue_Enqueue
    [ui/core/runtime], UiScrollableControl_QueryContentSizeRegs [ui/controls/lists],
    UiScrollableControl_ClampOffsetsToViewport [ui/controls/lists].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTextListControl_HandleKeyboardNavigationAndSearchCf
+UiTextListControl_HandleKeyboardNavigationAndSearch
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiTextListControl *control)
 
@@ -3229,7 +3229,7 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
   if ((keyCode & 0xffff0000) == 0) {
     if (((keyboardStateMask & 0x3c) != 0) ||
        ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
-      delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
       return delegatedOrMismatch;
     }
     remainingRows = control->rowCount;
@@ -3286,7 +3286,7 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
     }
   }
   else {
-    delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNext(keyboardStateMask,keyCode,&control->base);
     return delegatedOrMismatch;
   }
   slotCursorOrSelection = control->selectedRowSlot;
@@ -3414,7 +3414,7 @@ UiPointerList_InitializeMeasuredTextRows
    Ownership: ui/controls/text.
    Purpose: Draws a wrapped rich-text control inside a clip rectangle, resolving either a localized resource or
    direct command stream, then draws intersecting children.
-   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawWrappedBlockCf
+   Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_DrawWrappedBlock
    [assets/text/richtext], UiContainer_DrawIntersectingChildren [ui/controls/layout].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -3453,7 +3453,7 @@ UiWrappedTextControl_DrawClipped
       resolvedText = TextResource_Resolve((TextResourceId)commandStream);
       commandStream = resolvedText.text;
     }
-    RichTextCommandStream_DrawWrappedBlockCf
+    RichTextCommandStream_DrawWrappedBlock
               (clipTop,clipLeft,clipBottom,clipRight,(textStyle | packedStyleOverride) & 0xffff0000,
                commandStream,control->wrapWidth,(control->base).top,(control->base).left
               );
@@ -3912,7 +3912,7 @@ UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
    Cross-module calls: UiActionQueue_Enqueue [ui/core/runtime], UiKeyboardFocus_MoveNext [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf
+UiSoftwareTexturePreviewControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control)
 
 {
@@ -4270,7 +4270,7 @@ UiTextControl_UpdateNonEmptyValidity(UiTextEditControl *control)
    Ownership: ui/controls/text.
    Purpose: Expands both rich-text streams into fixed buffers, then compares them with the ASCII-case-insensitive
    UTF-16 comparator. EAX and EDX remain preserved.
-   Cross-module calls: RichTextCommandStream_CopyExpandedCf [assets/text/richtext].
+   Cross-module calls: RichTextCommandStream_CopyExpanded [assets/text/richtext].
 */
 TextCompareResult __thandor_void_preserve_eax_ecx_edx
 UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
@@ -4278,11 +4278,11 @@ UiPointerList_CompareExpandedTextFlags(uint16_t *rightText,uint16_t *leftText)
 {
   TextCompareResult compareFlags;
   
-  RichTextCommandStream_CopyExpandedCf(0x400,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText)
+  RichTextCommandStream_CopyExpanded(0x400,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16,leftText)
   ;
-  RichTextCommandStream_CopyExpandedCf(0x400,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
+  RichTextCommandStream_CopyExpanded(0x400,(uint16_t *)&g_UiPointerListExpandedRightTextUtf16,rightText);
   /* CF and ZF are the comparator's: nothing after the call changes the flags (0x004BB5A5). */
-  compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlagsCf)
+  compareFlags = (*(TextCompareResult (*)(uint16_t *,uint16_t *))g_Utf16StringCompareAsciiCaseInsensitiveFlags)
             ((uint16_t *)&g_UiPointerListExpandedRightTextUtf16,(uint16_t *)&g_UiPointerListExpandedLeftTextUtf16);
   return compareFlags;
 }

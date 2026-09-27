@@ -136,7 +136,7 @@ void FrontendTaskAssignmentPage_RefreshFactionAndPlayerControls(UiRootNode *task
 
 /* 0x0054CD20 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
+FrontendNetworkSettings_PublishSelectedPlayerDescriptor
           (FrontendNetworkSettingsControlView250 *networkSettings);
 
 /* 0x0054B160 */

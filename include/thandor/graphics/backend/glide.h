@@ -27,7 +27,7 @@ void __cdecl GlideBackend_ShutdownWrapper(void);
 
 /* 0x0057F0F0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
+GraphicsGlide3_ApplyDisplayModeAndInitializeResources
           (FrontendDisplayAdapterIndex adapterIndex,GraphicsBitsPerPixel bitsPerPixel,
           GraphicsPixelDimension height,GraphicsPixelDimension width);
 

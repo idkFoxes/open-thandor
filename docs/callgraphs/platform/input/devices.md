@@ -14,7 +14,7 @@
 - `0x00576F20` **[`DirectInputMouse_RefreshDeviceIfIdle`](../../../../src/platform/input/devices.c#L202)**
 - `0x00577000` **[`DirectInputMouse_Shutdown`](../../../../src/platform/input/devices.c#L246)** — cross: [`TimerSystem_UnregisterPeriodic`](../../../../src/platform/system/time_locale.c#L543) → [`platform/system/time_locale`](../system/time_locale.md)
 - `0x00577080` **[`DirectInputMouse_PollBufferedEvents`](../../../../src/platform/input/devices.c#L271)**
-- `0x005772F0` **[`DirectInputMouse_SetDisplayModeCf`](../../../../src/platform/input/devices.c#L412)**
+- `0x005772F0` **[`DirectInputMouse_SetDisplayMode`](../../../../src/platform/input/devices.c#L412)**
 - `0x00577420` **[`DirectInputMouse_SetPosition`](../../../../src/platform/input/devices.c#L470)**
 - `0x00577460` **[`DirectInputMouse_FlushBufferedEvents`](../../../../src/platform/input/devices.c#L491)**
 - `0x005774A0` **[`Keyboard_OnKeyDown`](../../../../src/platform/input/devices.c#L506)**

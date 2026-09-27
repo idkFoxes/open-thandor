@@ -25,7 +25,7 @@
    SelectionPanel_DrawNumberCellAndAdvanceRegs, SelectionPanel_DrawProportionalCappedBar,
    SelectionPanel_DrawSolidCappedBar, SelectionPanel_DrawSegmentedCappedBar, SelectionPanel_DrawForwardCappedBar.
    Cross-module calls: ModelRuntime_QueryActiveAndTotalHierarchyMetricsRegs [world/model/runtime],
-   GameFactionRuntime_FindRuntimeGroupIndexCf [gameplay/faction/runtime],
+   GameFactionRuntime_FindRuntimeGroupIndex [gameplay/faction/runtime],
    ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime], ArmyRuntime_QueryMetric6CAndDefinitionC4Regs
    [gameplay/army/runtime].
 */
@@ -79,7 +79,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -131,7 +131,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
                                 activeMetricMaximum,(UiNumericValue32)activeTotalMetrics,0x12);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -196,7 +196,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,capacityOrMetric,
                                   (UiNumericValue32)activeTotalMetrics,0x12);
             }
-            groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+            groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
             if (groupIndexResult.notFound) {
               topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                  (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -237,7 +237,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
           topLeftAdvance = SelectionPanel_DrawSteppedMeterCellAndAdvanceRegs
                              (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,
                               (UiNumericValue32)(activeTotalMetrics >> 0x20),(UiNumericValue32)activeTotalMetrics,0x12);
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -282,7 +282,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,0x12);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -326,7 +326,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
                                 (UiNumericValue32)activeTotalMetrics,0x12);
           }
-          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+          groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
           if (groupIndexResult.notFound) {
             topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                                (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -374,7 +374,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,0x12);
       }
-      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -414,7 +414,7 @@ SelectionPanel_RenderArmyRuntimeMetrics
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelLeft,workingValue,
                             (UiNumericValue32)activeTotalMetrics,0x12);
       }
-      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndexCf(runtimeEntry);
+      groupIndexResult = GameFactionRuntime_FindRuntimeGroupIndex(runtimeEntry);
       if (groupIndexResult.notFound) {
         topRightAdvance = SelectionPanel_DrawIconCellAndAdvanceRegs
                            (clipTop,clipLeft,clipBottom,clipRight,panelTop,panelRight,1);
@@ -749,7 +749,7 @@ InGameSelection_ApplyType16MarkerCoordinatesVariant2
    Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK asset
    identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body bytes,
    control flow, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_ContainsCf.
+   Local calls: SelectionPointerArray_Contains.
    Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
    ModelNodeRuntime_UpdateDepthBinMasks [world/model/hierarchy].
 */
@@ -771,7 +771,7 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (primaryEntityOffset != 0) {
     target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
-    SelectionPointerArray_ContainsCf
+    SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNode = (target->common).ownership.modelNode;
     worldYQ12 = deltaXQ12 + (modelNode->worldTransform).translation.x;
@@ -803,7 +803,7 @@ SelectionPlayerRuntime_ReissuePrimarySelectionPosition
    Purpose: Kept distinct from frontend slot indices, faction runtime indices, network endpoint identity, and PCK
    asset identifiers. Typed parameters: p2 playerRuntimeId→PlayerRuntimeId. Calling convention, storage, body
    bytes, control flow, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_ContainsCf.
+   Local calls: SelectionPointerArray_Contains.
    Cross-module calls: ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -818,7 +818,7 @@ SelectionPlayerRuntime_AdvancePrimarySelectionCycle
   primaryEntityOffset = g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->primarySelectionEntityOffset8094;
   if (primaryEntityOffset != 0) {
     target = (GameEntityRuntime *)((int)g_ArmyRuntimeRebaseBaseMinusOne + primaryEntityOffset);
-    SelectionPointerArray_ContainsCf
+    SelectionPointerArray_Contains
               (target,&g_SelectionPlayerRuntimeBlockPointers[playerRuntimeId]->selection);
     modelNodeRuntime = (target->common).ownership.modelNode;
     (modelNodeRuntime->modelPayload).worldRotationAngle2 =
@@ -1165,7 +1165,7 @@ SelectionPlayerBlocks_RemovePointer(GameEntityRuntime *target)
    Purpose: Scans the 32 global selection-info entity slots, sums entity position fields +0x94/+0x98/+0x9C, and
    returns their signed averages in EAX/ECX/EDX. CF is set when no slot is populated and clear on success.
 */
-WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegsCf(void)
+WorldPositionResult __cdecl SelectionInfoEntitySlots_ComputeAverageWorldPositionRegs(void)
 
 {
   ModelRuntimeNode *slotModelNode;
@@ -1235,7 +1235,7 @@ SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointe
    Purpose: Scans the global exact 32-entry selection array. CF set means at least one entry is non-null; CF clear
    means all entries are null. EAX is restored before return.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntryCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntry(void)
 
 {
   int entriesRemaining;
@@ -1265,7 +1265,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_HasAnyEntryCf(void)
    codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex ownerIndex)
+SelectionInfo_AllEntriesEmptyOrMatchOwner(FactionRuntimeIndex ownerIndex)
 
 {
   int entriesRemaining;
@@ -1294,7 +1294,7 @@ SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(FactionRuntimeIndex ownerIndex)
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
+SelectionInfo_ValidateOwnerType16AndAnyActive(FactionRuntimeIndex ownerIndex)
 
 {
   int *classRecord;
@@ -1337,7 +1337,7 @@ SelectionInfo_ValidateOwnerType16AndAnyActiveCf(FactionRuntimeIndex ownerIndex)
    Purpose: Returns through CF whether the current selection contains an active definition or the exact single-
    class-13 fallback condition.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13Cf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass13(void)
 
 {
   int entriesRemaining;
@@ -1373,11 +1373,11 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyActiveOrSingleClass1
 /* Address: 0x0052FF30.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection info test position command at world point carry-flag result.
-   Cross-module calls: GridScratch_TestProjectedCellMaskBandsCf [world/pathing/grid],
+   Cross-module calls: GridScratch_TestProjectedCellMaskBands [world/pathing/grid],
    ArmyRuntimeNode_DispatchTypedCallback [gameplay/army/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionInfo_TestPositionCommandAtWorldPointCf
+SelectionInfo_TestPositionCommandAtWorldPoint
           (Q12 worldXQ12,Q12 worldYQ12,WorldRuntimeContext *inGameRuntime)
 
 {
@@ -1419,7 +1419,7 @@ SelectionInfo_TestPositionCommandAtWorldPointCf
       if (((capabilityFlags & 0x80) == 0) && (highBandIndex = 1, (capabilityFlags & 4) == 0)) {
         highBandIndex = 6;
       }
-      testResult = GridScratch_TestProjectedCellMaskBandsCf(worldXQ12,worldYQ12,7,highBandIndex);
+      testResult = GridScratch_TestProjectedCellMaskBands(worldXQ12,worldYQ12,7,highBandIndex);
       return testResult;
     }
   }
@@ -1443,10 +1443,10 @@ SelectionInfo_TestPositionCommandAtWorldPointCf
 /* Address: 0x00530050.
    Ownership: gameplay/selection/runtime.
    Purpose: Returns through CF when no selected runtime reports a positive state value at offset 0x100.
-   Cross-module calls: ArmyRuntime_TestStateField100NonnegativeCf [gameplay/army/runtime],
-   ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime].
+   Cross-module calls: ArmyRuntime_TestStateField100Nonnegative [gameplay/army/runtime],
+   ArmyRuntime_TestStateField100Zero [gameplay/army/runtime].
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100NonpositiveCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonpositive(void)
 
 {
   GameEntityRuntime *armyRuntime;
@@ -1459,9 +1459,9 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
   do {
     armyRuntime = *selectionEntryCursor;
     if (armyRuntime != (GameEntityRuntime *)0x0) {
-      stateTestResult = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)armyRuntime);
+      stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)armyRuntime);
       if (stateTestResult) {
-        stateTestResult = ArmyRuntime_TestStateField100ZeroCf((ArmyRuntimeSlot *)armyRuntime);
+        stateTestResult = ArmyRuntime_TestStateField100Zero((ArmyRuntimeSlot *)armyRuntime);
         if (!stateTestResult) {
           return false;
         }
@@ -1477,9 +1477,9 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAllStateField100Nonposi
 /* Address: 0x005300A0.
    Ownership: gameplay/selection/runtime.
    Purpose: Returns through CF when any selected runtime reports a nonnegative state value at offset 0x100.
-   Cross-module calls: ArmyRuntime_TestStateField100NonnegativeCf [gameplay/army/runtime].
+   Cross-module calls: ArmyRuntime_TestStateField100Nonnegative [gameplay/army/runtime].
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100NonnegativeCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnegative(void)
 
 {
   int entriesRemaining;
@@ -1490,7 +1490,7 @@ bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_TestAnyStateField100Nonnega
   selectionEntryCursor = g_SelectionInfoEntitySlots->entries;
   do {
     if (*selectionEntryCursor != (GameEntityRuntime *)0x0) {
-      stateTestResult = ArmyRuntime_TestStateField100NonnegativeCf((ArmyRuntimeSlot *)*selectionEntryCursor);
+      stateTestResult = ArmyRuntime_TestStateField100Nonnegative((ArmyRuntimeSlot *)*selectionEntryCursor);
       if (stateTestResult) {
         return true;
       }
@@ -1539,7 +1539,7 @@ GameEntityRuntime * __cdecl SelectionInfo_GetFirstEntry(void)
    Purpose: Scans the fixed 32-entry selection-info array for entry. CF is clear when found and set when absent;
    EAX is preserved.
 */
-bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntryCf(GameEntityRuntime *entry)
+bool __thandor_cf_preserve_eax_ecx_edx SelectionInfo_FindEntry(GameEntityRuntime *entry)
 
 {
   /* REPNE SCASD over the 32 selection slots; CF set when the entry is not among them. */
@@ -1646,7 +1646,7 @@ SelectionPlayerRuntime_ClearTerrainEditSelectionState
    ECX, and EDX are preserved or incidental caller state rather than synthetic parameters or normal returns.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPlayerPairList_ContainsPairCf
+SelectionPlayerPairList_ContainsPair
           (SelectionPlayerPairValue pairValue,SelectionPlayerPairKey pairKey,
           PlayerRuntimeId playerRuntimeId)
 
@@ -1673,7 +1673,7 @@ SelectionPlayerPairList_ContainsPairCf
    Ownership: gameplay/selection/runtime.
    Purpose: Typed parameters: p0 coordinateA→Q12, p1 coordinateB→Q12. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: SelectionPointerArray_IsSpatialSpreadTooLargeCf, SelectionPointerArray_Clear32.
+   Local calls: SelectionPointerArray_IsSpatialSpreadTooLarge, SelectionPointerArray_Clear32.
    Cross-module calls: ArmyRuntime_QueueOrStartMoveCommandVariantA [gameplay/army/movement].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1694,7 +1694,7 @@ SelectionPointerArray_ApplyPositionCommandVariantB
   int entityDefinitionAddress;
   
   entriesRemaining = 0x20;
-  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
+  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   targetWorldY = coordinateA;
   targetWorldX = coordinateB;
   commandEntryCursor = selection->entries;
@@ -1750,7 +1750,7 @@ SelectionPointerArray_ApplyPositionCommandVariantB
    Purpose: Handles selection runtime reset movement prune and recenter entries.
    Local calls: SelectionPointerArray_RecenterOffsetsAroundAveragePosition, SelectionPointerArray_Clear32.
    Cross-module calls: ArmyRuntime_ResetMovementStateFromModel [gameplay/army/movement],
-   ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
+   ModelLookupTable_ContainsPackedKey [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
    [world/model/hierarchy].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1815,7 +1815,7 @@ SelectionRuntime_ResetMovementPruneAndRecenterEntries(GameEntityRuntime **select
     class13Record = (currentEntity->common).ownership.definitionOrClassRecord;
     modelNodeRuntime = (currentEntity->common).ownership.modelNode;
     *(uint32_t *)((int)class13Record + 0xec) = *(uint32_t *)((int)class13Record + 0xec) & 0xfffff7ff;
-    lookupEntry = ModelLookupTable_ContainsPackedKeyCf(1,5,(modelNodeRuntime->modelPayload).modelResource)
+    lookupEntry = ModelLookupTable_ContainsPackedKey(1,5,(modelNodeRuntime->modelPayload).modelResource)
     ;
     if (!lookupEntry.notFound) {
       localPoint = ModelNodeRuntime_TransformLocalPointRegs(lookupEntry.entry,modelNodeRuntime);
@@ -1867,7 +1867,7 @@ SelectionPointerArray_AddWorldEntriesMatchingRuntimeIdentity
    entries. EAX and CF-derived behavior are preserved. Typed parameters: p0 coordinateA→Q12, p1 coordinateB→Q12.
    Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Local calls: SelectionPointerArray_IsSpatialSpreadTooLargeCf.
+   Local calls: SelectionPointerArray_IsSpatialSpreadTooLarge.
    Cross-module calls: ArmyRuntime_QueueWaypointOrStartMoveVariantA [gameplay/army/movement].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1880,7 +1880,7 @@ SelectionPointerArray_ApplyPositionCommand
   bool spreadTooLarge;
   
   entriesRemaining = 0x20;
-  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLargeCf(selection);
+  spreadTooLarge = SelectionPointerArray_IsSpatialSpreadTooLarge(selection);
   do {
     movementRuntime = *(ArmyMovementRuntime **)selection;
     if (movementRuntime != (ArmyMovementRuntime *)0x0) {
@@ -2700,7 +2700,7 @@ SelectionPanel_DrawSegmentedCappedBar
 /* Address: 0x00530130.
    Ownership: gameplay/selection/runtime.
    Purpose: Handles selection pointer array apply army runtime target.
-   Cross-module calls: ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime],
+   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime],
    ArmyRuntime_ResolveCommandTarget [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -2716,7 +2716,7 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != (ArmyRuntimeSlot *)0x0) {
-      stateIsZero = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
+      stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ResolveCommandTarget(targetArmyRuntime,runtimeState);
         runtimeState->runtimeState98 = (uint32_t)targetArmyRuntime;
@@ -2736,7 +2736,7 @@ SelectionPointerArray_ApplyArmyRuntimeTarget
    Purpose: Applies the target-position command tuple to every eligible selected runtime. Typed parameters: p0
    coordinateA→Q12, p2 coordinateC→Q12. Calling convention, complete VariableStorage serialization, function bytes,
    control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ArmyRuntime_TestStateField100ZeroCf [gameplay/army/runtime],
+   Cross-module calls: ArmyRuntime_TestStateField100Zero [gameplay/army/runtime],
    ArmyRuntime_ApplyTargetPositionCommand [gameplay/army/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -2752,7 +2752,7 @@ SelectionPointerArray_ApplyTargetPositionCommand
   do {
     runtimeState = *(ArmyRuntimeSlot **)selection;
     if (runtimeState != (ArmyRuntimeSlot *)0x0) {
-      stateIsZero = ArmyRuntime_TestStateField100ZeroCf(runtimeState);
+      stateIsZero = ArmyRuntime_TestStateField100Zero(runtimeState);
       if (!stateIsZero) {
         ArmyRuntime_ApplyTargetPositionCommand(coordinateA,coordinateB,coordinateC,runtimeState);
         runtimeState->commandModeFlags = runtimeState->commandModeFlags | 0x14;
@@ -2947,7 +2947,7 @@ SelectionPointerArray_RecenterOffsetsAroundAveragePosition(SelectionPointerArray
    is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray32 *array)
+SelectionPointerArray_Contains(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
   int entryIndex;
@@ -2969,7 +2969,7 @@ SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray
    compact selection. EAX is preserved.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-SelectionPointerArray_IsSpatialSpreadTooLargeCf(SelectionPointerArray32 *selection)
+SelectionPointerArray_IsSpatialSpreadTooLarge(SelectionPointerArray32 *selection)
 
 {
   int entryAddress;

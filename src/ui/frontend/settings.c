@@ -476,7 +476,7 @@ FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Registered as UI action 0x2049. The original user-facing label remains unresolved. Queued UI action
    handler for FRONTEND_PAGE20[73] (0x2049). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -488,7 +488,7 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x40);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 4;
   }
@@ -519,7 +519,7 @@ FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Registered as UI action 0x203C. The original user-facing label remains unresolved. Queued UI action
    handler for FRONTEND_PAGE20[60] (0x203C). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -531,7 +531,7 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x40);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 1;
   }
@@ -547,7 +547,7 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Registered as UI action 0x203D. The original user-facing label remains unresolved. Queued UI action
    handler for FRONTEND_PAGE20[61] (0x203D). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -559,7 +559,7 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x40);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 2;
   }
@@ -576,7 +576,7 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
    Purpose: Registered as UI action 0x203E. Updates bit 0 of optionFlags5C. Selecting it suppresses the paired
    action 0x203F; clearing it restores that action. The original label remains unresolved. Queued UI action handler
    for FRONTEND_PAGE20[62] (0x203E).
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
@@ -589,7 +589,7 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 1;
     UiNodeList_SuppressActionId(0x203f,(control->base).parent);
@@ -608,7 +608,7 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
    Purpose: Registered as UI action 0x203F. Updates bit 1 of optionFlags5C. Selecting it suppresses the paired
    action 0x203E; clearing it restores that action. The original label remains unresolved. Queued UI action handler
    for FRONTEND_PAGE20[63] (0x203F).
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
@@ -621,7 +621,7 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 2;
     UiNodeList_SuppressActionId(0x203e,(control->base).parent);
@@ -639,7 +639,7 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Registered as UI action 0x2051. The original user-facing label remains unresolved. Queued UI action
    handler for FRONTEND_PAGE20[81] (0x2051). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelectedCf
+   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiSelectableControl_IsSelected
    [ui/controls/lists], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -651,7 +651,7 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
   bool isSelected;
   
   optionFlags = PersistentSettings_Read(0,0x5c);
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     value = optionFlags | 4;
   }
@@ -861,7 +861,7 @@ FrontendAudioSettings_OpenAndSynchronize
    Purpose: Updates the user-facing Shading toggle, persists shadingEnabled at settings offset 0x1C, and mirrors it
    to frontend runtime bit 0x00020000. Queued UI action handler for FRONTEND_PAGE20[20] (0x2014). Return datatype
    is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], UiNodeList_SuppressActionId
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], UiNodeList_SuppressActionId
    [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists], PersistentSettings_WriteDword
    [core/settings/persistent].
 */
@@ -872,7 +872,7 @@ FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
   uint8_t isSelected;
   UiNodeBase *parentCursor;
   
-  isSelected = UiSelectableControl_IsSelectedCf(control);
+  isSelected = UiSelectableControl_IsSelected(control);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -1007,7 +1007,7 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Queued UI action handler for FRONTEND_PAGE20[24] (0x2018). Return datatype is preserved for non-queue
    direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists].
 */
@@ -1022,7 +1022,7 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   MovieAudioGainQ15 movieAlternateGain;
   bool isSelected;
   
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   audioFlags = PersistentSettings_Read(3,0x20);
   PersistentSettings_Write((uint32_t)isSelected | audioFlags & 0xfffffffe,0x20);
   parentCursor = (control->base).parent;
@@ -1077,7 +1077,7 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
    Purpose: Updates SOUND_OPTIONS_MUSIC_ENABLED, creates or stops the frontend looping-music voice, applies
    musicGainQ15, and updates related frontend controls. Queued UI action handler for FRONTEND_PAGE20[25] (0x2019).
    Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], Resource_Load
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], Resource_Load
    [assets/resource/runtime], Resource_Release [assets/resource/runtime], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent],
    UiNodeList_SuppressActionId [ui/controls/lists].
@@ -1099,7 +1099,7 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
   ResourceLoadResult loadResult;
   
   musicEnabledBit = 0;
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     musicEnabledBit = 2;
     g_GraphicsCursorSetFrame(6);
@@ -1173,7 +1173,7 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
    Ownership: ui/frontend/settings.
    Purpose: Updates SOUND_OPTIONS_REVERSE_STEREO and writes g_ReverseStereoMask as zero or 0xFFFFFFFF. Queued UI
    action handler for FRONTEND_PAGE20[26] (0x201A). Return datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiSelectableControl_IsSelectedCf [ui/controls/lists], PersistentSettings_ReadDword
+   Cross-module calls: UiSelectableControl_IsSelected [ui/controls/lists], PersistentSettings_ReadDword
    [core/settings/persistent], PersistentSettings_WriteDword [core/settings/persistent].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1187,7 +1187,7 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
   
   reverseStereoBit = 0;
   reverseStereoMask = 0;
-  isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
+  isSelected = (bool)UiSelectableControl_IsSelected(control);
   if (isSelected) {
     reverseStereoBit = 4;
     reverseStereoMask = -1;
@@ -1333,7 +1333,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditContro
    Purpose: Updates action 0x2002 availability from the network-settings control state and player-name presence,
    then publishes the player descriptor when the control dirty bit requires it. Queued UI action handler for
    FRONTEND_PAGE20[9] (0x2009). Return datatype is preserved for non-queue direct callers.
-   Local calls: FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf.
+   Local calls: FrontendNetworkSettings_PublishSelectedPlayerDescriptor.
    Cross-module calls: UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId
    [ui/controls/lists].
 */
@@ -1363,7 +1363,7 @@ FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
     if (((uint32_t)(networkSettings->textEditView).textEdit.base.parent & 4) != 0) {
       dirtyFlagsSlot = &(networkSettings->textEditView).textEdit.base.parent;
       *dirtyFlagsSlot = (UiNodeBase *)((uint32_t)*dirtyFlagsSlot & 0xfffffffb);
-      FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
+      FrontendNetworkSettings_PublishSelectedPlayerDescriptor
                 ((FrontendNetworkSettingsControlView250 *)FRONTEND_UI(firstNode,networkGameJoinButton));
     }
   }
@@ -1655,13 +1655,13 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
 /* Address: 0x0054CD20.
    Ownership: ui/frontend/settings.
    Purpose: Copies the selected frontend player endpoint descriptor into the active transfer endpoint, publishes
-   its sender context, resets the sequence token to -1, and invokes UiTransfer_SendPlayerDescriptorPacket20002Cf
+   its sender context, resets the sequence token to -1, and invokes UiTransfer_SendPlayerDescriptorPacket20002
    while preserving the backend CF result. Queued UI action handler for FRONTEND_PAGE20[2] (0x2002). Return
    datatype is preserved for non-queue direct callers.
-   Cross-module calls: UiTransfer_SendPlayerDescriptorPacket20002Cf [network/protocol/transfer].
+   Cross-module calls: UiTransfer_SendPlayerDescriptorPacket20002 [network/protocol/transfer].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
+FrontendNetworkSettings_PublishSelectedPlayerDescriptor
           (FrontendNetworkSettingsControlView250 *networkSettings)
 
 {
@@ -1679,7 +1679,7 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
     selectedEndpointDwordCursor = selectedEndpointDwordCursor + 1;
   }
   g_FrontendSelectedPlayerToken = 0xffffffff;
-  sendCarry = UiTransfer_SendPlayerDescriptorPacket20002Cf();
+  sendCarry = UiTransfer_SendPlayerDescriptorPacket20002();
   return sendCarry;
 }
 
@@ -1689,7 +1689,7 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
    Purpose: Walks to the display-settings root, checks the pending adapter, width, height, and bit-depth tuple
    against enumerated modes, updates actions 0x201E through 0x2030, selects the matching groups, and gates action
    0x2031 when settings are unchanged.
-   Cross-module calls: DisplayModeTable_ContainsExactModeCf [graphics/backend/directdraw],
+   Cross-module calls: DisplayModeTable_ContainsExactMode [graphics/backend/directdraw],
    UiNodeList_SuppressActionId [ui/controls/lists], UiNodeList_UnsuppressActionId [ui/controls/lists],
    UiSelectableGroup_SelectExclusive [ui/controls/lists], PersistentSettings_ReadDword [core/settings/persistent].
 */
@@ -1721,7 +1721,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
     frontendRoot = frontendRoot->parent;
     parentCursorOrSelectedRow = frontendRoot->parent;
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t),
                      g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.
                      persistentSelection.height,
@@ -1739,7 +1739,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   if (bitsPerPixel == FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption1,0x60,uint32_t)) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayColorDepthOption1);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     ((FrontendColorDepthBits)FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption2,0x60,struct UiNodeBase *),pendingHeight,pendingWidth
                      ,adapterIndex);
   if (modeCheckCarry) {
@@ -1748,7 +1748,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x201f,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption3,0x60,int32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2020,frontendRoot);
@@ -1756,7 +1756,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2020,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (FRONTEND_UI_FIELD(frontendRoot,displayColorDepthOption4,0x60,uint32_t),pendingHeight,pendingWidth,adapterIndex);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2021,frontendRoot);
@@ -1769,7 +1769,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
       FRONTEND_UI(frontendRoot,displayColorDepthOption3),
       FRONTEND_UI(frontendRoot,displayColorDepthOption2),
       FRONTEND_UI(frontendRoot,displayColorDepthOption1));
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x60,int32_t),adapterIndex);
   parentCursorOrSelectedRow = frontendRoot;
@@ -1783,7 +1783,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
      (pendingHeight == FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption1,0x64,enum UiNodeFlags))) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayResolutionOption1);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption2,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
@@ -1792,7 +1792,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2023,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x64,uint32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption3,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
@@ -1801,7 +1801,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2024,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x64,struct UiNodeBase *),
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption4,0x60,struct UiNodeBase *),
@@ -1812,7 +1812,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2025,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption5,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
@@ -1821,7 +1821,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2026,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x64,uint32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption6,0x60,uint32_t),adapterIndex);
   if (modeCheckCarry) {
@@ -1830,7 +1830,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2027,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,(FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x64,struct UiNodeVtable *),
                      (FrontendDisplayDimensionPixels)FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption7,0x60,struct UiNodeBase *),adapterIndex);
   if (modeCheckCarry) {
@@ -1839,7 +1839,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2028,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption8,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
@@ -1848,7 +1848,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x2029,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x64,int32_t),
                      FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption9,0x60,int32_t),adapterIndex);
   if (modeCheckCarry) {
@@ -1857,7 +1857,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   else {
     UiNodeList_UnsuppressActionId(0x202a,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf
+  modeCheckCarry = DisplayModeTable_ContainsExactMode
                     (bitsPerPixel,FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x64,int32_t),FRONTEND_UI_FIELD(frontendRoot,displayResolutionOption10,0x60,int32_t),
                      adapterIndex);
   if (modeCheckCarry) {
@@ -1877,7 +1877,7 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
       FRONTEND_UI(frontendRoot,displayResolutionOption3),
       FRONTEND_UI(frontendRoot,displayResolutionOption2),
       FRONTEND_UI(frontendRoot,displayResolutionOption1));
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,0);
+  modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,0);
   parentCursorOrSelectedRow = frontendRoot;
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202c,frontendRoot);
@@ -1888,28 +1888,28 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
   if (adapterIndex == 0) {
     parentCursorOrSelectedRow = (UiNodeBase *)FRONTEND_UI(frontendRoot,displayAdapterOption1);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,1);
+  modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,1);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202d,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202d,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,2);
+  modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,2);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202e,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202e,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,3);
+  modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,3);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x202f,frontendRoot);
   }
   else {
     UiNodeList_UnsuppressActionId(0x202f,frontendRoot);
   }
-  modeCheckCarry = DisplayModeTable_ContainsExactModeCf(bitsPerPixel,pendingHeight,pendingWidth,4);
+  modeCheckCarry = DisplayModeTable_ContainsExactMode(bitsPerPixel,pendingHeight,pendingWidth,4);
   if (modeCheckCarry) {
     UiNodeList_SuppressActionId(0x2030,frontendRoot);
   }

@@ -16,7 +16,7 @@
    entries beginning at +0x200. Preparation stops on the first CF-set entry failure. Invalid headers are copied to
    the package last-error path. Payload fields remain opaque. Role: Walks the EFF asset table and registers every
    serialized effect definition.
-   Local calls: EffectDefinition_RegisterAndLoadSpriteCf.
+   Local calls: EffectDefinition_RegisterAndLoadSprite.
    Cross-module calls: Package_SetLastErrorPath [assets/package/runtime].
 */
 StatusResult __thandor_void_preserve_ecx_edx
@@ -41,7 +41,7 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
       }
-      registrationResult = EffectDefinition_RegisterAndLoadSpriteCf((EffectDefinition *)definition);
+      registrationResult = EffectDefinition_RegisterAndLoadSprite((EffectDefinition *)definition);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
       definition = (EffectAssetHeader *)(definition->reservedB4_1FF + 0xc);
@@ -61,8 +61,8 @@ EffectAsset_PrepareEntries(EffectAssetHeader *asset)
    Ownership: assets/effect/catalog.
    Purpose: Walks all effect definitions and resolves stored effect and shot definition identifiers into runtime
    pointers.
-   Local calls: EffectDefinitionRegistry_FindByIdWithErrorCf.
-   Cross-module calls: ShotDefinitionRegistry_FindByIdWithErrorCf [assets/shot/catalog].
+   Local calls: EffectDefinitionRegistry_FindByIdWithError.
+   Cross-module calls: ShotDefinitionRegistry_FindByIdWithError [assets/shot/catalog].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossReferences(void)
 
@@ -82,7 +82,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
     currentDefinition = *registryCursor;
     if (currentDefinition != (EffectDefinition *)0x0) {
       if (currentDefinition->linkedEffectPresent != 0) {
-        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
         lastResolvedDefinition = (uint32_t)effectLookup.definitionOrError;
         if (effectLookup.notFound) {
@@ -91,7 +91,7 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
         currentDefinition->linkedEffectDefinition = effectLookup.definitionOrError;
       }
       if (currentDefinition->linkedShotPresent != 0) {
-        shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
+        shotLookup = ShotDefinitionRegistry_FindByIdWithError
                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
         lastResolvedDefinition = (uint32_t)shotLookup.definitionOrError;
         if (shotLookup.notFound) {
@@ -117,13 +117,13 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCrossRef
    Registers an EFF record, loads its referenced SPR resource and resolves effect/shot links. Inputs: Serialized
    EFF record and UTF-16 resource path; extension is normalized to .spr. Outputs: EffectDefinition with SpriteAsset
    and linked effect/shot pointers.
-   Cross-module calls: EffectRuntime_FindDefinitionByIdCf [world/effects/runtime], WidePath_SetExtensionCode
+   Cross-module calls: EffectRuntime_FindDefinitionById [world/effects/runtime], WidePath_SetExtensionCode
    [core/text/path], Package_LoadEntry [assets/package/runtime], SpriteAssetRegistry_FindById
    [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers [assets/sprite/catalog], Resource_Release
    [assets/resource/runtime].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
+EffectDefinition_RegisterAndLoadSprite(EffectDefinition *definition)
 
 {
   SpriteAssetHeader *asset;
@@ -139,18 +139,18 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
   
   registrySlotCursor = g_EffectDefinitionRegistry;
   registrySlotsRemaining = 0x100;
-  duplicateLookup = EffectRuntime_FindDefinitionByIdCf(definition->definitionId);
+  duplicateLookup = EffectRuntime_FindDefinitionById(definition->definitionId);
   asset = (SpriteAssetHeader *)duplicateLookup.definitionOrError;
   if (duplicateLookup.notFound) {
     do {
       if (*registrySlotCursor == (EffectDefinition *)0x0) {
         *registrySlotCursor = definition;
         extensionFailed = WidePath_SetExtensionCode(0x727073,definition->resourcePathUtf16);
-        if (extensionFailed) goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+        if (extensionFailed) goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
         packageLoad = Package_LoadEntry(definition->resourcePathUtf16);
         asset = packageLoad.bufferOrError;
         if (packageLoad.failed)
-        goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+        goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
         existingSpriteAsset = SpriteAssetRegistry_FindById((asset->registryHeader).registryId);
         if (existingSpriteAsset == (SpriteAssetHeader *)0x0) {
           definition->ownedNestedResourcePresent = definition->ownedNestedResourcePresent + 1;
@@ -158,7 +158,7 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
           spriteRegistration = SpriteAsset_RegisterAndRelocatePointers(asset);
           asset = spriteRegistration.assetOrError;
           if (spriteRegistration.failed)
-          goto EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError;
+          goto EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError;
         }
         else {
           definition->ownedNestedResource = existingSpriteAsset;
@@ -180,7 +180,7 @@ EffectDefinition_RegisterAndLoadSpriteCf(EffectDefinition *definition)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     asset = (SpriteAssetHeader *)0x4e;
   }
-EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError:
+EffectDefinition_RegisterAndLoadSprite_ReturnRegistryOrSpriteLoadError:
   failureResult.failed = true;
   failureResult.valueOrError = (uint32_t)asset;
   return failureResult;
@@ -193,7 +193,7 @@ EffectDefinition_RegisterAndLoadSpriteCf_ReturnRegistryOrSpriteLoadError:
    the identifier into g_PackageLastErrorPath and returns error 0x48 with CF set.
 */
 EffectDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-EffectDefinitionRegistry_FindByIdWithErrorCf(PckEffectDefinitionIdCatalog definitionId)
+EffectDefinitionRegistry_FindByIdWithError(PckEffectDefinitionIdCatalog definitionId)
 
 {
   EffectDefinition *candidateDefinition;

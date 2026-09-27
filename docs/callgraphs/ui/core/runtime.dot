@@ -1,14 +1,14 @@
 digraph thandor {
   rankdir=LR;
   node [shape=box];
-  "UiRootCallbacks_FreeCf" [label="0x004228F0\nUiRootCallbacks_FreeCf"];
+  "UiRootCallbacks_Free" [label="0x004228F0\nUiRootCallbacks_FreeCf"];
   "UiRootCallbacks_NoOpMethod08" [label="0x00422980\nUiRootCallbacks_NoOpMethod08"];
   "UiRuntime_FormatSignedValues140And144" [label="0x00424270\nUiRuntime_FormatSignedValues140And144"];
-  "UiRuntime_OpenFourValueDialogCf" [label="0x004244E0\nUiRuntime_OpenFourValueDialogCf"];
-  "UiRuntimeRecordRing_DiscardOldestCf" [label="0x004AEF00\nUiRuntimeRecordRing_DiscardOldestCf"];
+  "UiRuntime_OpenFourValueDialog" [label="0x004244E0\nUiRuntime_OpenFourValueDialogCf"];
+  "UiRuntimeRecordRing_DiscardOldest" [label="0x004AEF00\nUiRuntimeRecordRing_DiscardOldestCf"];
   "UiRuntimeRecordRing_Clear" [label="0x004AF020\nUiRuntimeRecordRing_Clear"];
-  "UiRuntimeRecordRing_HasPendingCf" [label="0x004AF030\nUiRuntimeRecordRing_HasPendingCf"];
-  "UiRuntimeRecordRing_ContainsIdCf" [label="0x004AF050\nUiRuntimeRecordRing_ContainsIdCf"];
+  "UiRuntimeRecordRing_HasPending" [label="0x004AF030\nUiRuntimeRecordRing_HasPendingCf"];
+  "UiRuntimeRecordRing_ContainsId" [label="0x004AF050\nUiRuntimeRecordRing_ContainsIdCf"];
   "UiRuntime_SetSynchronizationHooks" [label="0x004AF0F0\nUiRuntime_SetSynchronizationHooks"];
   "UiRuntime_Initialize" [label="0x004AF210\nUiRuntime_Initialize"];
   "UiRuntime_Shutdown" [label="0x004AF2F0\nUiRuntime_Shutdown"];
@@ -23,7 +23,7 @@ digraph thandor {
   "UiNode_DefaultRightDrag" [label="0x004B07E0\nUiNode_DefaultRightDrag"];
   "UiNode_ApplyFlagsRecursive" [label="0x004B08E0\nUiNode_ApplyFlagsRecursive"];
   "UiNode_DefaultTick" [label="0x004B09E0\nUiNode_DefaultTick"];
-  "UiActionHandlers_SetPageCf" [label="0x004B0FD0\nUiActionHandlers_SetPageCf"];
+  "UiActionHandlers_SetPage" [label="0x004B0FD0\nUiActionHandlers_SetPageCf"];
   "UiNode_GetRoot" [label="0x004B14B0\nUiNode_GetRoot"];
   "UiNode_InvalidateRoot" [label="0x004B1510\nUiNode_InvalidateRoot"];
   "UiActionQueue_Enqueue" [label="0x004B1590\nUiActionQueue_Enqueue"];

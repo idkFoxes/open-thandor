@@ -16,12 +16,12 @@
 
 /* 0x004BBE60 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigationCf
+UiTimedListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control);
 
 /* 0x004BB100 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiListControl_HandleKeyboardNavigationCf
+UiListControl_HandleKeyboardNavigation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiListControl *control);
 
 /* 0x004BB480 */
@@ -97,7 +97,7 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 
 /* 0x004B2550 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_KeyboardEventCf
+UiSelectableControl_KeyboardEvent
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
           UiSoundSelectableControl *control);
 
@@ -111,11 +111,11 @@ UiSelectableControl_UnsuppressIfActionId(UiActionId actionId,UiSelectableControl
 
 /* 0x004B2D30 */
 SelectableGroupNodeResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneVisibleSelectedCf(UiControlCount controlCount,...);
+UiSelectableGroup_NoneVisibleSelected(UiControlCount controlCount,...);
 
 /* 0x004B2D70 */
 SelectableGroupIndexResult __thandor_eax_ecx_cf_preserve_edx
-UiSelectableGroup_NoneSelectedCf(UiControlCount controlCount,...);
+UiSelectableGroup_NoneSelected(UiControlCount controlCount,...);
 
 /* 0x004B2DA0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -123,7 +123,7 @@ UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *select
 
 /* 0x004B2DE0 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-UiSelectableControl_IsSelectedCf(UiSelectableControl *control);
+UiSelectableControl_IsSelected(UiSelectableControl *control);
 
 /* 0x004B2E10 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -131,7 +131,7 @@ UiSelectableControl_SetSelected(UiBooleanState32 selected,UiSelectableControl *c
 
 /* 0x004B4920 */
 PageStackSearchResult __thandor_eax_cf_preserve_ecx_edx
-UiPageStack_ActivePageNotInListCf(UiPageStackControl *stack);
+UiPageStack_ActivePageNotInList(UiPageStackControl *stack);
 
 /* 0x004B7970 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -173,7 +173,7 @@ UiScrollableControl_HitTestContentAndScrollbars
 void ** UiPointerList_GetRowSlotsVariantA(UiPointerListControl *control);
 
 /* 0x004BA560 */
-UiListRowIndex UiPointerList_GetSelectedIndexVariantACf(UiPointerListControl *control);
+UiListRowIndex UiPointerList_GetSelectedIndexVariantA(UiPointerListControl *control);
 
 /* 0x004BADE0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -245,7 +245,7 @@ UiPointerList_SelectIndexVariantB(UiListRowIndex index,UiPointerListControl *con
 
 /* 0x004BB540 */
 ListSelectionResult __thandor_eax_cf_preserve_ecx_edx
-UiPointerList_GetSelectedIndexVariantBCf(UiPointerListControl *control);
+UiPointerList_GetSelectedIndexVariantB(UiPointerListControl *control);
 
 /* 0x004B9460 */
 UiScrollableContentDimensionsEdxEax8 UiScrollableControl_QueryContentSizeRegs(UiScrollableControl *control);
@@ -271,20 +271,20 @@ UiTimedListTree_FindRecordByLabel(uint16_t *labelUtf16,UiTimedListTreeRecord16 *
 
 /* 0x0040FFE0 */
 DirectoryRecordBlockResult __thandor_eax_cf_preserve_ecx_edx
-UiTimedListTree_BuildDirectoryRecordBlockCf(uint16_t *pathUtf16);
+UiTimedListTree_BuildDirectoryRecordBlock(uint16_t *pathUtf16);
 
 /* 0x00410380 */
 DirectoryHierarchyResult __thandor_eax_edx_cf_preserve_ecx
-UiTimedListTree_BuildDirectoryHierarchyCf(uint16_t *selectedPathUtf16);
+UiTimedListTree_BuildDirectoryHierarchy(uint16_t *selectedPathUtf16);
 
 /* 0x004104B0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListTree_FreeRecordBlockRecursiveAndTestContainsCf
+UiTimedListTree_FreeRecordBlockRecursiveAndTestContains
           (UiTimedListTreeRecord16 *targetRecord,UiTimedListTreeRecord16 *recordBlock);
 
 /* 0x00410520 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_AttachDirectoryRecordBlockCf(UiTimedListTreeRecord16 *record);
+UiTimedListTree_AttachDirectoryRecordBlock(UiTimedListTreeRecord16 *record);
 
 /* 0x00410670 */
 void __thandor_void_preserve_eax_ecx
@@ -293,7 +293,7 @@ UiTimedListControl_ToggleDirectoryRecordExpansion
 
 /* 0x00410700 */
 bool __thandor_cf_preserve_ecx_edx
-UiTimedListTree_BuildRecordPathCf(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
+UiTimedListTree_BuildRecordPath(uint32_t *outputPathDwords,UiTimedListTreeRecord16 *record);
 
 /* 0x004BC1C0 */
 void __thandor_void_preserve_eax_ecx_edx

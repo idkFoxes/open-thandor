@@ -532,7 +532,7 @@ UiImageActionControl_EnqueueSecondaryAction
    Cross-module calls: UiKeyboardFocus_MoveNext [ui/controls/input], UiActionQueue_Enqueue [ui/core/runtime].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiImageActionControl_HandleKeyboardActivationCf
+UiImageActionControl_HandleKeyboardActivation
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {

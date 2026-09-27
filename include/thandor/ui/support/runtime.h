@@ -31,7 +31,7 @@ CreditsScreen_Open(FrontendCreditsUiStateView *frontendCreditsView);
 
 /* 0x0054D5D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,uint16_t *sourcePath);
+PcxPreview_Load64x64PaletteAndPixels(PcxPreview64 *outputPreview,uint16_t *sourcePath);
 
 /* 0x0050F1A0 */
 void __thandor_void_preserve_eax_ecx_edx

@@ -7,7 +7,7 @@ digraph thandor {
   "ArmyRuntime_ApplyImpactDamageAndFinalizeState" [label="0x0052A2E0\nArmyRuntime_ApplyImpactDamageAndFinalizeState"];
   "ArmyRuntime_ApplyDamageAndFactionRelationState" [label="0x0052A3E0\nArmyRuntime_ApplyDamageAndFactionRelationState"];
   "ArmyRuntime_ApplyImpactDamageToRuntimeAndParent" [label="0x0052A640\nArmyRuntime_ApplyImpactDamageToRuntimeAndParent"];
-  "ArmyWeaponRuntime_TestTargetLineOfFireCf" [label="0x0052B9D0\nArmyWeaponRuntime_TestTargetLineOfFireCf"];
+  "ArmyWeaponRuntime_TestTargetLineOfFire" [label="0x0052B9D0\nArmyWeaponRuntime_TestTargetLineOfFireCf"];
   "ArmyRuntime_ApplyDamageAndPropagateToParent" [label="0x0052A200\nArmyRuntime_ApplyDamageAndPropagateToParent"];
   "ArmyRuntime_EmitDamageThresholdEffect" [label="0x00528200\nArmyRuntime_EmitDamageThresholdEffect"];
   "ArmyRuntimeWeapon_UpdateTargetAimAndFireAttachments" -> "ArmyRuntime_EmitDamageThresholdEffect";

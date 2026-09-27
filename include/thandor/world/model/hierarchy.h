@@ -58,17 +58,17 @@ ModelRelativeDirectionAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx ModelNodeR
 
 /* 0x0050A7A0 */
 ModelHitTestResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf
+ModelRuntimeNode_HitTestProjectedBoundsAndChildren
           (int pointerY,int pointerX,ModelRuntimeNode *modelNode,
           FrontendModelPointerContextRuntimeState118 *context);
 
 /* 0x0050B1D0 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelNodeRuntime_RaycastHierarchyNearestCf(ModelRuntimeNode *modelNodeRuntime);
+ModelNodeRuntime_RaycastHierarchyNearest(ModelRuntimeNode *modelNodeRuntime);
 
 /* 0x0051B650 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf
+ModelNodeRuntime_InstantiateLinkedChildrenRecursive
           (FactionRuntimeIndex factionIndex,GraphicsPaletteAsset *paletteAsset,
           GraphicsTextureSet *textureSet,ModelRuntimeSlot *modelRuntimeSlot,
           ModelDefinitionHierarchyNodeAddress32 definitionNode,WorldRuntimeContext *worldRuntime);
@@ -99,7 +99,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
 
 /* 0x00528E90 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelNodeRuntime_CreateHierarchyRecursiveCf
+ModelNodeRuntime_CreateHierarchyRecursive
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ModelRuntimeSlot *modelRuntime,MdlSerializedNodeHeader38 *definitionNode,
           WorldRuntimeContext *worldRuntime);

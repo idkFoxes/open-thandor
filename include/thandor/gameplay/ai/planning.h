@@ -76,7 +76,7 @@ AiArmyCandidate_AddBestScoredVariantC
 
 /* 0x00537630 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPurchaseCandidate_HasEligibleProducerCf
+AiPurchaseCandidate_HasEligibleProducer
           (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex);
 
 /* 0x00537800 */
@@ -121,7 +121,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
 
 /* 0x0053A980 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiFactionRuntime_TestPlanningCapacityExceededCf
+AiFactionRuntime_TestPlanningCapacityExceeded
           (uint32_t additionalPlanningCapacity,FactionRuntimeIndex factionIndex);
 
 /* 0x0053A2A0 */

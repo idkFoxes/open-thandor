@@ -27,7 +27,7 @@ Utf16String_CompareAsciiCaseInsensitiveFlags(uint16_t *rightText,uint16_t *leftT
 
 /* 0x0041BAA0 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-Text_CopyNarrowToUtf16Cf(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
+Text_CopyNarrowToUtf16(TextOutputCapacityBytes capacityBytes,uint16_t *destination,uint8_t *source);
 
 /* 0x00586DA0 */
 uint32_t Utf16_CopyAndReturnByteLength(uint16_t *destination,uint16_t *source);

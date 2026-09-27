@@ -19,8 +19,8 @@
    serialized local transform and parent link. Role: Repairs a child model link that could not be instantiated
    during the first recursive pass. Inputs: Deferred child descriptor and parent/runtime context. Outputs: Created
    child ModelRuntimeSlot/Node linked into the parent graph. Edges: Re-enters
-   ModelRuntimePool_CreateInstanceByDefinitionIdCf.
-   Local calls: ModelRuntimePool_CreateInstanceByDefinitionIdCf.
+   ModelRuntimePool_CreateInstanceByDefinitionId.
+   Local calls: ModelRuntimePool_CreateInstanceByDefinitionId.
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
 ModelRuntimePool_RepairDeferredChild
@@ -41,7 +41,7 @@ ModelRuntimePool_RepairDeferredChild
   ModelRuntimeNode *childRootNode;
   
   if (attachmentIndex < modelRuntime->attachmentCount0C) {
-    createResult = ModelRuntimePool_CreateInstanceByDefinitionIdCf
+    createResult = ModelRuntimePool_CreateInstanceByDefinitionId
                       (paletteAsset,textureSet,
                        (modelRuntime->ownerArmyRuntimeOrSavedOffset).armyRuntime,childDefinitionId,
                        worldRuntime);
@@ -74,7 +74,7 @@ ModelRuntimePool_RepairDeferredChild
     return repairResult;
   }
   /* Index past the attachment count: the original leaves EAX untouched, and in its only caller
-     (ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf) EAX holds childDefinitionId at the call. */
+     (ModelNodeRuntime_InstantiateLinkedChildrenRecursive) EAX holds childDefinitionId at the call. */
   repairResult.failed = false;
   repairResult.modelNode = (ModelRuntimeNode *)(uintptr_t)childDefinitionId;
   return repairResult;
@@ -245,11 +245,11 @@ ModelRuntime_RenderHierarchyRecursiveAlternatePath(ModelRuntimeNode *modelNode)
    maximumDistanceQ12→Q12. Calling convention, storage, body bytes, control flow, and executable data remain
    unchanged.
    Cross-module calls: DepthInterval_BuildBinMask [graphics/render/primitives], FixedMath_WriteDirectionQ28
-   [core/math/fixed], DepthBinMasks_OverlapCf [graphics/render/primitives],
-   ModelNodeRuntime_RaycastHierarchyNearestCf [world/model/hierarchy].
+   [core/math/fixed], DepthBinMasks_Overlap [graphics/render/primitives],
+   ModelNodeRuntime_RaycastHierarchyNearest [world/model/hierarchy].
 */
 ModelRaycastResult __thandor_eax_edx_cf_preserve_ecx
-ModelRuntime_RaycastCandidateListNearestCf
+ModelRuntime_RaycastCandidateListNearest
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 maximumDistanceQ12,Q12 originZQ12
           ,Q12 originYQ12,Q12 originXQ12,WorldOwnerRuntimeClassId requiredOwnerId,
           ModelRuntimeNode *excludedNode,WorldRuntimeContext *worldRuntime)
@@ -279,10 +279,10 @@ ModelRuntime_RaycastCandidateListNearestCf
       modelNodeRuntime = (ModelRuntimeNode *)(modelNodeRuntime->common).nextNode) {
     if ((((modelNodeRuntime != excludedNode) && (modelNodeRuntime->ownerClassId == requiredOwnerId))
         && ((modelNodeRuntime->runtimeFlags & 0x2000) == 0)) &&
-       (masksOverlap = DepthBinMasks_OverlapCf
+       (masksOverlap = DepthBinMasks_Overlap
                           (modelNodeRuntime->depthBinMaskFar,modelNodeRuntime->depthBinMaskNear,
                            secondMaskLow,secondMaskHigh), masksOverlap)) {
-      raycastHit = ModelNodeRuntime_RaycastHierarchyNearestCf(modelNodeRuntime);
+      raycastHit = ModelNodeRuntime_RaycastHierarchyNearest(modelNodeRuntime);
       if (raycastHit.nearestDistanceQ12 <= bestDistanceQ12) {
         bestDistanceQ12 = raycastHit.nearestDistanceQ12;
         nearestModelNode = raycastHit.nearestNodeOrScratch.nearestModelNode;
@@ -651,7 +651,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
    (modelDefinition, modelRuntime).
    Cross-module calls: FrontendPlayerRuntime_ClearAssignmentTokenFromAll [ui/frontend/player],
    WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], ModelRuntimeNode_ReleaseRecursiveAndDetachParent
-   [world/model/hierarchy], ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime],
+   [world/model/hierarchy], ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime],
    ArmyRuntime_DestroyInstanceAndRefreshUi [gameplay/army/runtime], ArmyRuntime_RebuildDerivedSelectionMetrics
    [gameplay/army/runtime].
 */
@@ -705,7 +705,7 @@ ModelRuntimePool_DestroyHierarchyAndDetach
       UNLOCK();
       ownerDefinition = *ownerRecord;
       if (((ownerRecord[0x3b] & 0x20U) == 0) && (*(int *)(ownerDefinition + 0x74) != -1)) {
-        ArmyRuntime_CreateInstanceFromAssetCf
+        ArmyRuntime_CreateInstanceFromAsset
                   (0,orientationAngle,worldXQ12,worldYQ12,0,*(PckArmyAssetIdCatalog *)(ownerDefinition + 0x74)
                    ,worldRuntime);
       }
@@ -780,14 +780,14 @@ ModelRuntime_EmitProjectilesFromAttachmentPoints
    image, creates the root hierarchy, and runs the class-specific initialization handler. Role: Allocates a
    ModelRuntimeSlot, creates its node hierarchy and initializes transforms/radius. Inputs: Model definition ID,
    world context and initial orientation/position. Outputs: ModelRuntimeSlot with root ModelRuntimeNode and class-
-   selected initialization. Edges: ModelNodeRuntime_CreateHierarchyRecursiveCf -> radius recompute -> transform
+   selected initialization. Edges: ModelNodeRuntime_CreateHierarchyRecursive -> radius recompute -> transform
    rebuild.
-   Cross-module calls: ModelNodeRuntime_CreateHierarchyRecursiveCf [world/model/hierarchy],
+   Cross-module calls: ModelNodeRuntime_CreateHierarchyRecursive [world/model/hierarchy],
    ModelNodeRuntime_RecomputeSubtreeBoundingRadius [world/model/hierarchy],
    ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
 ModelNodeCreateResult __thandor_eax_cf_preserve_ecx_edx
-ModelRuntimePool_CreateInstanceByDefinitionIdCf
+ModelRuntimePool_CreateInstanceByDefinitionId
           (GraphicsPaletteAsset *paletteAsset,GraphicsTextureSet *textureSet,
           ArmyRuntimeSlot *armyRuntime,PckModelDefinitionIdCatalog modelDefinitionId,
           WorldRuntimeContext *worldRuntime)
@@ -901,7 +901,7 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
       state44CandidateOrFlags = definitionView->runtimeValue68;
       if ((MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64 !=
           (MdlSerializedNodeHeader38 *)0x0) {
-        createResult = ModelNodeRuntime_CreateHierarchyRecursiveCf
+        createResult = ModelNodeRuntime_CreateHierarchyRecursive
                           (paletteAsset,textureSet,modelRuntime,
                            (MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64,
                            worldRuntime);

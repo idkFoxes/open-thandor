@@ -82,7 +82,7 @@ Technology_UnlockForFaction
    result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsUnlockedForFactionCf
+Technology_IsUnlockedForFaction
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -104,7 +104,7 @@ Technology_IsUnlockedForFactionCf
    mappings.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-Technology_IsAvailableForFactionCf
+Technology_IsAvailableForFaction
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeIndex factionIndex)
 
 {
@@ -204,7 +204,7 @@ Technology_ApplyRecordToEntity(PckTechnologyIdCatalog technologyIndex,GameEntity
    256-bit category masks for categories 2 and 3 (category field @+0x34, domain counts {0:29, 1:54, 2:48, 3:24} on
    disk) plus derived per-faction limits. Stock tech.tec has 512 records over canonical ids 0..255; localized
    titles do not prove source-building, tier, direction, or effect mappings.
-   Cross-module calls: ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions].
+   Cross-module calls: ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions].
 */
 void __thandor_void_preserve_eax_ecx_edx
 TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
@@ -236,7 +236,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
     armyAssetRecord = *armyAssetRegistryCursor;
     if ((armyAssetRecord != (ArmyAssetRecordPrefix *)0x0) &&
        ((armyAssetRecord[1].selectionDetailTemplateVariantIndex & 1) != 0)) {
-      modelLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
+      modelLookup = ModelDefinitionRegistry_FindByIdWithError
                         (*(PckModelDefinitionIdCatalog *)
                           (armyAssetRecord->rootNodeOffsetOrPointer + 0x20));
       definitionRecord = modelLookup.modelDefinition;

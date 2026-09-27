@@ -14,11 +14,11 @@
    Ownership: assets/resource/runtime.
    Purpose: Carry-flag success/failure semantics are preserved in the comment rather than fabricated as an ordinary
    return.
-   Cross-module calls: FileSystem_WriteBufferToPathCf [platform/filesystem/win32], Package_Mount
+   Cross-module calls: FileSystem_WriteBufferToPath [platform/filesystem/win32], Package_Mount
    [assets/package/runtime].
 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-ResourceRegistration_OpenSourceCf(void *packagePath)
+ResourceRegistration_OpenSource(void *packagePath)
 
 {
   uint8_t *source;
@@ -68,7 +68,7 @@ ResourceRegistration_OpenSourceCf(void *packagePath)
   source[0xb1] = 0;
   source[0xb2] = 0;
   source[0xb3] = 0;
-  FileSystem_WriteBufferToPathCf(0x200,source,packagePath);
+  FileSystem_WriteBufferToPath(0x200,source,packagePath);
   mountResult = Package_Mount(packagePath);
   return mountResult;
 }
@@ -105,14 +105,14 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
     WidePath_CombineDirectoryAndLeaf
               ((uint16_t *)&g_FileSystemCombinedPathScratchUtf16,path,
                (uint16_t *)&g_ExecutableDirectoryUtf16);
-    openResult = g_FileSystemOpenCf(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
+    openResult = g_FileSystemOpen(0,(uint16_t *)&g_FileSystemCombinedPathScratchUtf16);
     fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
     if (openResult.failed) {
-      openResult = g_FileSystemOpenCf(0,path);
+      openResult = g_FileSystemOpen(0,path);
       fileOrPackageResult.bufferOrError = (uint8_t *)openResult.handleOrError;
       if (openResult.failed) goto Resource_Load_ReturnOpenAllocationOrDecodeResult;
     }
-    sizeResult = g_FileSystemGetSizeCf(fileOrPackageResult.bufferOrError);
+    sizeResult = g_FileSystemGetSize(fileOrPackageResult.bufferOrError);
     bytes = (uint8_t *)sizeResult.sizeOrError;
     sizeOrFailureCode = bytes;
     if (!sizeResult.failed) {
@@ -125,7 +125,7 @@ ResourceLoadResult __thandor_eax_ecx_cf_preserve_edx Resource_Load(uint16_t *pat
         sizeOrFailureCode = (uint8_t *)0x5;
       }
       else {
-        readResult = g_FileSystemReadExactCf((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
+        readResult = g_FileSystemReadExact((FileIoByteCount)bytes,fileLoadResult.bufferOrError,fileOrPackageResult.bufferOrError);
         sizeOrFailureCode = (uint8_t *)readResult.valueOrError;
         if (!readResult.failed) {
           g_FileSystemClose(fileOrPackageResult.bufferOrError);

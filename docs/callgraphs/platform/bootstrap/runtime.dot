@@ -12,7 +12,7 @@ digraph thandor {
   "MainWindowProc" [label="0x00585F50\nMainWindowProc"];
   "CPU_DetectFeatures" [label="0x00587370\nCPU_DetectFeatures"];
   "Game_Run" [label="0x00573070\nGame_Run"];
-  "GameRuntime_InitializeSpatialAudioAndRenderingCf" [label="0x0050BB10\nGameRuntime_InitializeSpatialAudioAndRenderingCf"];
+  "GameRuntime_InitializeSpatialAudioAndRendering" [label="0x0050BB10\nGameRuntime_InitializeSpatialAudioAndRenderingCf"];
   "Game_LoadCoreAssets" [label="0x00573140\nGame_LoadCoreAssets"];
   "Game_PlayIntroMovies" [label="0x005739D0\nGame_PlayIntroMovies"];
   "DynAPI_Bootstrap" [label="0x00573DB0\nDynAPI_Bootstrap"];
@@ -22,7 +22,7 @@ digraph thandor {
   "ProcessEntry" -> "DynAPI_Bootstrap";
   "ProcessEntry" -> "CommandLine_FindOption";
   "ProcessEntry" -> "Game_Run";
-  "Game_Run" -> "GameRuntime_InitializeSpatialAudioAndRenderingCf";
+  "Game_Run" -> "GameRuntime_InitializeSpatialAudioAndRendering";
   "Game_Run" -> "Game_LoadCoreAssets";
   "Game_Run" -> "Game_PlayIntroMovies";
 }

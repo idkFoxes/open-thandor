@@ -24,7 +24,7 @@ PriorityPairHeap_SiftDown(PriorityPairHeapCount heapSize,EntityPathingPriorityPa
 
 /* 0x00547D20 */
 bool __thandor_cf_preserve_eax_ecx_edx
-DwordBlock64Array_ContainsExactRecordCf
+DwordBlock64Array_ContainsExactRecord
           (DwordBlockRecordCount recordCount,uint32_t *recordArray,uint32_t *candidateRecord);
 
 /* 0x005863C0 */

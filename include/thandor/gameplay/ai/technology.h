@@ -22,7 +22,7 @@ AiTechnologyScore_ComputeRuntimeClassCompatibleCandidateValue
 
 /* 0x00538000 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCandidate_IsCurrentlyAvailableCf
+AiTechnologyCandidate_IsCurrentlyAvailable
           (PckTechnologyIdCatalog technologyIndex,FactionRuntimeRecordByteOffset factionRecordOffset
           );
 
@@ -62,7 +62,7 @@ extern AiTechnologyCategoryMask g_AiTechnologyScoreCategoryMaskEdx;
 
 /* 0x0053BC00 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiTechnologyCompatibility_AcceptRuntimeClassCandidateCf
+AiTechnologyCompatibility_AcceptRuntimeClassCandidate
           (FactionRuntimeIndex factionIndex,ModelDefinitionRecordPrefix *candidateDefinition);
 
 /* 0x0053BC20 */

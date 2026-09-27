@@ -23,7 +23,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void);
 
 /* 0x0052B860 */
 ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinitionRegistry_FindByIdWithErrorCf(PckShotDefinitionIdCatalog definitionId);
+ShotDefinitionRegistry_FindByIdWithError(PckShotDefinitionIdCatalog definitionId);
 
 /* 0x0052B8C0 */
 ShotLaunchAnglesEaxEdx8 __thandor_eax_edx_cf_preserve_ecx
@@ -44,6 +44,6 @@ ShotDefinition_ComputeMode3LeadAdjustment(ShotDefinition *definition);
 
 /* 0x0052B350 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition);
+ShotDefinition_RegisterAndResolveReferences(ShotDefinition *definition);
 
 #endif /* THANDOR_ASSETS_SHOT_CATALOG_H */

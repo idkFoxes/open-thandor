@@ -15,5 +15,5 @@ digraph thandor {
   "GraphicsPrimitiveQueue_AppendTerrainTexturedTriangle" [label="0x004D0DA0\nGraphicsPrimitiveQueue_AppendTerrainTexturedTriangle"];
   "GraphicsPrimitiveQueue_AppendTexturedTriangleRegs" [label="0x004D0F20\nGraphicsPrimitiveQueue_AppendTexturedTriangleRegs"];
   "DepthInterval_BuildBinMask" [label="0x004FFC10\nDepthInterval_BuildBinMask"];
-  "DepthBinMasks_OverlapCf" [label="0x004FFC50\nDepthBinMasks_OverlapCf"];
+  "DepthBinMasks_Overlap" [label="0x004FFC50\nDepthBinMasks_OverlapCf"];
 }

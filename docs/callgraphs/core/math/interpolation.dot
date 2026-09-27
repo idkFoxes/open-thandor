@@ -2,7 +2,7 @@ digraph thandor {
   rankdir=LR;
   node [shape=box];
   "WorldMotionSpline_EvaluateAndApplyAtTime" [label="0x0053CA30\nWorldMotionSpline_EvaluateAndApplyAtTime"];
-  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" [label="0x0053CBB0\nWorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf"];
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime" [label="0x0053CBB0\nWorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf"];
   "WorldMotionSpline_BuildSixChannelCurves" [label="0x0053CD10\nWorldMotionSpline_BuildSixChannelCurves"];
   "InterpolationState_SetNegatedTargetAndRescaleProgress" [label="0x004CCC00\nInterpolationState_SetNegatedTargetAndRescaleProgress"];
   "InterpolationStateTable_Advance256ByTicks" [label="0x004CCC80\nInterpolationStateTable_Advance256ByTicks"];
@@ -16,9 +16,9 @@ digraph thandor {
   "WorldMotionSpline_EvaluateAndApplyAtTime" -> "CubicSpline_EvaluateValueQ12";
   "WorldMotionSpline_EvaluateAndApplyAtTime" -> "CubicSpline_EvaluateDerivativeQ12";
   "WorldMotionSpline_EvaluateAndApplyAtTime" -> "WorldMotionSpline_ClearCachedDerivatives";
-  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "CubicSpline_EvaluateValueQ12";
-  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "CubicSpline_EvaluateDerivativeQ12";
-  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTimeCf" -> "WorldMotionSpline_ClearCachedDerivatives";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime" -> "CubicSpline_EvaluateValueQ12";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime" -> "CubicSpline_EvaluateDerivativeQ12";
+  "WorldMotionSpline_EvaluateAndApplyOriginDistanceAtTime" -> "WorldMotionSpline_ClearCachedDerivatives";
   "WorldMotionSpline_BuildSixChannelCurves" -> "CubicSpline_BuildNaturalCoefficientSystem";
   "WorldMotionSpline_BuildSixChannelCurves" -> "CubicSpline_SolveCoefficientSystem";
   "CubicSpline_SolveCoefficientSystem" -> "CubicSpline_ForwardEliminateColumn";

@@ -44,7 +44,7 @@ static __inline PackedArgb32 Direct3D_MmxPackColorWords(uint64_t words)
 /* Address: 0x00578270.
    Ownership: graphics/backend/direct3d.
    Purpose: IDirect3D2::EnumDevices callback. Context points at the adapter record being expanded.
-   Cross-module calls: Text_CopyNarrowToUtf16Cf [core/text/string].
+   Cross-module calls: Text_CopyNarrowToUtf16 [core/text/string].
 */
 int32_t __stdcall Direct3D_EnumDeviceCallback
                  (TH_LEGACY_GUID *deviceGuid,char *description,char *deviceName,
@@ -104,7 +104,7 @@ int32_t __stdcall Direct3D_EnumDeviceCallback
         deviceGuid = (TH_LEGACY_GUID *)&deviceGuid->Data2;
         guidCursor = (TH_LEGACY_GUID *)&guidCursor->Data2;
       }
-      Text_CopyNarrowToUtf16Cf(0x28,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
+      Text_CopyNarrowToUtf16(0x28,filledRecord->deviceNameUtf16,(uint8_t *)deviceName);
       filledRecord->hardwareDesc = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
       descCursor = (D3DDEVICEDESC_DX6 *)descAllocation.payloadOrError;
       for (remainingDwords = 0x33; remainingDwords != 0; remainingDwords = remainingDwords + -1) {

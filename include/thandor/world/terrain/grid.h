@@ -16,7 +16,7 @@
 
 /* 0x00505930 */
 void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurfaceCf
+FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
           (TerrainMaterialIndex terrainMaterialIndexOrNegativeSentinel,
           FieldGridRadiusUnits radiusWorldUnits,Q12 terrainHeightDeltaAmplitudeQ12,
           Q12 centerWorldYQ12,Q12 centerWorldXQ12,FieldGridAsset *fieldGrid);
@@ -56,7 +56,7 @@ FieldGrid_RecomputeInteriorDirectionalLighting
 
 /* 0x005090E0 */
 void __thandor_void_preserve_eax_ecx_edx
-FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighborsCf
+FieldGrid_ApplyHeightAtWorldPointAndRefreshNeighbors
           (TerrainHeightBrushDeltaSource heightDeltaSourceValue,Q12 worldZQ12,Q12 worldYQ12,
           Q12 worldXQ12,FieldGridAsset *fieldGrid);
 
@@ -132,13 +132,13 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
 
 /* 0x004FF830 */
 HeightNormalSampleResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
+FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesRegs
           (GraphicsWorldCoordinateQ12 worldYQ12,GraphicsWorldCoordinateQ12 worldXQ12,
           FieldGridAsset *fieldGrid);
 
 /* 0x004FFB80 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FieldGrid_TestWorldPointBlockedCf
+FieldGrid_TestWorldPointBlocked
           (FieldGridByteOffset stateByteOffset,Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *fieldGrid
           );
 
@@ -165,13 +165,13 @@ void __thandor_void_preserve_eax_ecx_edx TerrainDirectionTable_AdvanceAndRebuild
 
 /* 0x00504B10 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastTerrainSurfaceDistanceCf
+FieldGrid_RaycastTerrainSurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
 
 /* 0x00504CA0 */
 TerrainRaycastResult __thandor_eax_edx_cf_preserve_ecx
-FieldGrid_RaycastSecondarySurfaceDistanceCf
+FieldGrid_RaycastSecondarySurfaceDistance
           (AngleTurn32 elevationAngle,AngleTurn32 azimuthAngle,Q12 rayScaleQ12,Q12 rayOriginZQ12,
           Q12 rayOriginXQ12,Q12 rayOriginYQ12,FieldGridAsset *fieldGrid);
 
@@ -196,7 +196,7 @@ FieldGrid_ClearOccupancyMaskByteBit0AllCells
 
 /* 0x00507580 */
 bool __thandor_cf_preserve_eax_ecx_edx
-TerrainGrid_TestProjectedCellMaskBits01Cf
+TerrainGrid_TestProjectedCellMaskBits01
           (Q12 worldYQ12,Q12 worldXQ12,WorldRuntimeContext *worldRuntime);
 
 /* 0x005092A0 */
@@ -208,7 +208,7 @@ FieldGrid_SetAllCellOverlayColors(PackedArgb32 argbColor,FieldGridAsset *fieldGr
 
 /* 0x00532B60 */
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-FieldGrid_SaveAssetImageFromRuntimeStateCf(uint32_t *sourceImageDwords);
+FieldGrid_SaveAssetImageFromRuntimeState(uint32_t *sourceImageDwords);
 
 /* 0x00561050 */
 void __thandor_void_preserve_eax_ecx_edx

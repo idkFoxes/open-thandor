@@ -4,7 +4,7 @@ digraph thandor {
   "ShotRuntime_ApplyArmyHitRelationAndNotifications" [label="0x0052CC60\nShotRuntime_ApplyArmyHitRelationAndNotifications"];
   "ShotRuntime_InitGraphicsResources" [label="0x0052B540\nShotRuntime_InitGraphicsResources"];
   "ShotRuntime_ShutdownGraphicsResources" [label="0x0052B5C0\nShotRuntime_ShutdownGraphicsResources"];
-  "ShotRuntime_FindDefinitionByIdCf" [label="0x0052B660\nShotRuntime_FindDefinitionByIdCf"];
+  "ShotRuntime_FindDefinitionById" [label="0x0052B660\nShotRuntime_FindDefinitionByIdCf"];
   "ShotRuntime_RebaseSlotsAfterLoad" [label="0x0052B750\nShotRuntime_RebaseSlotsAfterLoad"];
   "ShotRuntimePool_CreateProjectileFromDefinition" [label="0x0052BDB0\nShotRuntimePool_CreateProjectileFromDefinition"];
   "ShotRuntime_PostImpactRelationNotificationNoOp" [label="0x00514710\nShotRuntime_PostImpactRelationNotificationNoOp"];

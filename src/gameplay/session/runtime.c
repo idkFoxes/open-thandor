@@ -22,7 +22,7 @@
    Cross-module calls: UiRootStack_InvalidateAll [ui/controls/layout], UiFrame_ProcessAndPresent
    [ui/controls/layout], GridScratch_ReleaseBuffers [world/pathing/grid],
    OldUnitRuntime_RebuildScenarioReplayTables [gameplay/faction/runtime], UiRuntime_SetSynchronizationHooks
-   [ui/core/runtime], UiRootStack_PopUntilWindowTextureBoundaryCf [ui/controls/text].
+   [ui/core/runtime], UiRootStack_PopUntilWindowTextureBoundary [ui/controls/text].
 */
 SessionRunResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_RunSessionUntilExit
@@ -66,7 +66,7 @@ InGameRuntime_RunSessionUntilExit
       OldUnitRuntime_RebuildScenarioReplayTables();
       UiRuntime_SetSynchronizationHooks
                 ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
-      UiRootStack_PopUntilWindowTextureBoundaryCf();
+      UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       quitResult.exitCodeOrError = 0xc;
       quitResult.failed = false;
@@ -81,7 +81,7 @@ InGameRuntime_RunSessionUntilExit
       OldUnitRuntime_RebuildScenarioReplayTables();
       UiRuntime_SetSynchronizationHooks
                 ((UiRuntimePostUnlockCallbackProc *)0x0,(RuntimeSpinLockValue *)0x0);
-      UiRootStack_PopUntilWindowTextureBoundaryCf();
+      UiRootStack_PopUntilWindowTextureBoundary();
       InGameRuntime_ShutdownAndReleaseResources();
       g_FrontendScenarioPathScratchUtf16 = 0;
       endMovieResult.exitCodeOrError = 0xc;
@@ -122,7 +122,7 @@ InGameRuntime_RunSessionUntilExit_ShutdownAndReturnStartupOrUiRootFailureWithCar
 */
 
 void __thandor_void_preserve_eax_ecx_edx
-EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
+EndGameResultsUiRuntime_UpdateAndHandleInput(EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
 {
   Q12 *motionCoordinate;
@@ -196,7 +196,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
     currentPresentationTick = g_GameFactionRuntimeImage.tail.presentationTick;
     worldRuntime = &endGameResultsRuntime->worldRuntime0A30;
     InGameHud_UpdateStatusCountersAndSessionPrompts();
-    pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->endGameResultsPageStack09DC);
+    pageStackStatus = UiPageStack_ActivePageNotInList(&endGameResultsRuntime->endGameResultsPageStack09DC);
     if ((((((endGameResultsRuntime->worldRuntime0A30).runtimeFlags & 0x90) == 0) &&
          (pageStackStatus.pageIndex == 0)) &&
         (((endGameResultsRuntime->worldRuntime0A30).interaction.interactionFlags48 & 8) == 0)) &&
@@ -329,7 +329,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       }
       if ((g_UiCommandRuntimeFlags & 1) != 0)
       goto EndGameResultsUiRuntime_UpdateAndHandleInput_UpdateCursorGridAndReturn;
-      pageStackStatus = UiPageStack_ActivePageNotInListCf(&endGameResultsRuntime->gameWindowPageStack0BD0);
+      pageStackStatus = UiPageStack_ActivePageNotInList(&endGameResultsRuntime->gameWindowPageStack0BD0);
       if (pageStackStatus.pageIndex == 2) {
         InGameTechnologyPanel_Rebuild(&endGameResultsRuntime->rootUi0000);
       }
@@ -608,7 +608,7 @@ void __cdecl InGameRuntime_PeriodicCountdownAndClockTick(void)
    locals, and executable data remain unchanged.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-InGameHotkeys_DispatchCommandByFlagsCf
+InGameHotkeys_DispatchCommandByFlags
           (UiKeyboardStateMask modifierFlags,UiActionId commandCode,
           EndGameResultsRuntimeView44C4 *endGameResultsRuntime)
 
@@ -673,7 +673,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       for (i = 0; i < 0x18; i++) {
         INGAME_UI_FIELD(rt,chatInputTextEdit,0x6c + i * 4,uint32_t) = 0;
       }
-      visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
+      visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
       (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
                 (visible.node);
@@ -718,7 +718,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       break;
     }
     stack = (UiPageStackControl *)INGAME_UI(rt,gameWindowPageStack);
-    index = (UiPageStack_ActivePageNotInListCf(stack).pageIndex == 1) ? 0 : 1;
+    index = (UiPageStack_ActivePageNotInList(stack).pageIndex == 1) ? 0 : 1;
     UiPageStack_SetActiveIndex(index,stack);
     INGAME_UI(rt,worldView)->nodeFlags =
          INGAME_UI(rt,worldView)->nodeFlags & ~UI_NODE_SUPPRESSED;
@@ -734,7 +734,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
     for (i = 0; i < 0x18; i++) {
       INGAME_UI_FIELD(rt,messageTextEdit,0x6c + i * 4,uint32_t) = 0;
     }
-    visible = UiSelectableGroup_NoneVisibleSelectedCf(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
+    visible = UiSelectableGroup_NoneVisibleSelected(3,INGAME_UI(rt,messageRecipientAllTab),INGAME_UI(rt,messageRecipientGroupsTab),
                                                     INGAME_UI(rt,messageRecipientPlayersTab));
     (*(void (**)(void *))(uintptr_t)(THANDOR_ADDR(g_InGameUiActionHandlersPage10,0) + (*(uint32_t *)((uint8_t *)visible.node + 0x50) & 0xff) * 4))
               (visible.node);
@@ -763,7 +763,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
   case 0x5676a0: {
     uint32_t settings = PersistentSettings_Read(0,0x40);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
-    if (UiPageStack_ActivePageNotInListCf(stack).pageIndex != 0) {
+    if (UiPageStack_ActivePageNotInList(stack).pageIndex != 0) {
       UiPageStack_SetActiveIndex(0,stack);
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,resourceBarModeStack));
       UiPageStack_SetActiveIndex(0,(UiPageStackControl *)INGAME_UI(rt,gamePanelsModeStack));
@@ -795,7 +795,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       g_MemoryApi.free(capture.capture);
       break;
     }
-    FileSystem_WriteBufferToPathCf(pcx.encodedByteCount,pcx.encodedBytesOrError,
+    FileSystem_WriteBufferToPath(pcx.encodedByteCount,pcx.encodedBytesOrError,
                                    (uint16_t *)(uintptr_t)THANDOR_ADDR(g_ScreenshotFileNameUtf16,0));
     g_MemoryApi.free(pcx.encodedBytesOrError);
     g_MemoryApi.free(capture.capture);
@@ -917,11 +917,11 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
    Purpose: Initializes a new in-game session from a level asset, builds player and UI runtime state, opens the
    level movie, prepares world, terrain, shading, technology, army, model, shot, effect, and audio resources, and
    reports failure through CF.
-   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf,
+   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess,
    InGameRuntime_UpdateSimulationAndNetworkTick.
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiRuntime_SetSynchronizationHooks
    [ui/core/runtime], TextResource_Resolve [assets/text/resources], SelectionInfoPanel_InitResources
-   [gameplay/selection/runtime], InGameUiRuntime_InitializeControlTreeResourcesCf [ui/ingame/runtime],
+   [gameplay/selection/runtime], InGameUiRuntime_InitializeControlTreeResources [ui/ingame/runtime],
    UiRootStack_Push [ui/controls/layout].
 */
 NewSessionInitResult __thandor_eax_cf_preserve_ecx_edx
@@ -1066,23 +1066,23 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
         }
         world = &inGameRoot->worldRuntime0A30;
-        statusResult = InGameUiRuntime_InitializeControlTreeResourcesCf((UiRootNode *)inGameRoot);
+        statusResult = InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot);
         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
         if (!statusResult.failed) {
           inGameRoot->worldOverlayCallback0B8C =
-               InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
+               InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
           (inGameRoot->worldRuntime0A30).selection.dispatchCommandCallback =
-               InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf;
+               InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
           (inGameRoot->worldRuntime0A30).selection.resolveContextActionPrimaryCallback =
-               InGameWorldInput_ResolveContextActionAndCursorCf;
+               InGameWorldInput_ResolveContextActionAndCursor;
           (inGameRoot->worldRuntime0A30).selection.resolveContextActionSecondaryCallback =
-               InGameWorldInput_ResolveContextActionAndCursorCf;
+               InGameWorldInput_ResolveContextActionAndCursor;
           (inGameRoot->worldRuntime0A30).selection.beginPointerCaptureCallback =
-               InGameWorldInput_BeginPointerCaptureCf;
+               InGameWorldInput_BeginPointerCapture;
           (inGameRoot->worldRuntime0A30).selection.updateDragSelectionCallback =
-               InGameWorldInput_UpdateDragSelectionAndCameraCf;
+               InGameWorldInput_UpdateDragSelectionAndCamera;
           (inGameRoot->worldRuntime0A30).selection.commitPointerActionCallback =
-               InGameWorldInput_CommitPointerActionCf;
+               InGameWorldInput_CommitPointerAction;
           (inGameRoot->worldRuntime0A30).fieldRegion.clearTransientStateCallback =
                InGameUiRuntime_ClearTransientState1BCallback;
           (inGameRoot->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
@@ -1098,7 +1098,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
           inGameRoot->localPlayerPairCount0BA4 = 0;
           inGameRoot->localPlayerPairRecords0BA0 = selectionBlockCursor->pairRecords80_807F;
           UiRootStack_Push(&g_UiRootCallbacks_0054FBC0,(UiRootNode *)inGameRoot);
-          endingMoviePath = LevelAsset_PrepareEndingMoviePathCf(levelMoviePath,&levelAsset->header);
+          endingMoviePath = LevelAsset_PrepareEndingMoviePath(levelMoviePath,&levelAsset->header);
           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)endingMoviePath.moviePath;
           if (!endingMoviePath.failed) {
             movieOpen = Movie_Open(0x80000000,(uint16_t *)rootCursorOrError);
@@ -1127,7 +1127,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                 statusResult = GameData_ResetDefaults();
                 rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                 if (!statusResult.failed) {
-                  levelLoad = InGameLevelRuntime_LoadResourcesAfterDefaultResetCf(levelAsset,world);
+                  levelLoad = InGameLevelRuntime_LoadResourcesAfterDefaultReset(levelAsset,world);
                   rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelLoad.errorOrValue;
                   if (!levelLoad.failed) {
                     queueRecord = inGameRoot->notificationQueue9E60;
@@ -1143,7 +1143,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                       settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
                       gridHalfSize = PersistentSettings_Read(0x20,0x10);
                       subresourceCount = PersistentSettings_Read(0x10,0x18);
-                      GraphicsShadingRuntime_InitializeGeneratedTextureCf
+                      GraphicsShadingRuntime_InitializeGeneratedTexture
                                 (subresourceCount,gridHalfSize,settingOrFactionToken);
                       settingOrFactionToken = PersistentSettings_Read(1,0x1c);
                       if (settingOrFactionToken == 0) {
@@ -1190,7 +1190,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         inGameRoot->optionalUiLayoutState0A04 = 0;
                         UiContainer_LayoutChildren((UiNodeBase *)inGameRoot);
                       }
-                      subsystemFailed = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
+                      subsystemFailed = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess
                                                ((uint32_t)(inGameRoot->worldRuntime0A30).fieldGrid);
                       if (!subsystemFailed) {
                         if (g_FrontendLoadedCampaignAsset == 0) {
@@ -1199,7 +1199,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         else {
                           OldUnitRuntime_MergeMasksAndReplayRecords();
                         }
-                        gridScratch = GridScratch_AllocateForFieldGridCf
+                        gridScratch = GridScratch_AllocateForFieldGrid
                                            ((inGameRoot->worldRuntime0A30).fieldGrid);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)gridScratch.valueOrError;
                         if (!gridScratch.failed) {
@@ -1290,12 +1290,12 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
    Ownership: gameplay/session/runtime.
    Purpose: Initializes an in-game session from persisted save state, reconstructs player and world runtime data,
    restores assets and subsystem state, installs callbacks, and reports failure through CF.
-   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf,
+   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess,
    InGameRuntime_UpdateSimulationAndNetworkTick.
    Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], Package_Mount
    [assets/package/runtime], Package_LoadEntry [assets/package/runtime], UiRuntime_SetSynchronizationHooks
    [ui/core/runtime], SelectionInfoPanel_InitResources [gameplay/selection/runtime],
-   InGameUiRuntime_InitializeControlTreeResourcesCf [ui/ingame/runtime].
+   InGameUiRuntime_InitializeControlTreeResources [ui/ingame/runtime].
 */
 LoadedSessionInitResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
@@ -1347,8 +1347,8 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
       *sessionNameClearCursor = 0;
       sessionNameClearCursor = sessionNameClearCursor + 1;
     }
-    g_FileSystemSeekCf(FILESYSTEM_SEEK_BEGIN,0,mountResult);
-    g_FileSystemReadExactCf(0x200,saveNameSource,mountResult);
+    g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,mountResult);
+    g_FileSystemReadExact(0x200,saveNameSource,mountResult);
     saveNameSource = saveNameSource + 0x100;
     terminatorOrFailure = true;
     remainingCount = 0x24;
@@ -1442,23 +1442,23 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
             }
             world = &inGameRoot->worldRuntime0A30;
-            statusResult = InGameUiRuntime_InitializeControlTreeResourcesCf((UiRootNode *)inGameRoot);
+            statusResult = InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot);
             rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
             if (!statusResult.failed) {
               inGameRoot->worldOverlayCallback0B8C =
-                   InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
+                   InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
               (inGameRoot->worldRuntime0A30).selection.dispatchCommandCallback =
-                   InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf;
+                   InGameUiRuntime_DispatchCommandByCodeAndModifierFlags;
               (inGameRoot->worldRuntime0A30).selection.resolveContextActionPrimaryCallback =
-                   InGameWorldInput_ResolveContextActionAndCursorCf;
+                   InGameWorldInput_ResolveContextActionAndCursor;
               (inGameRoot->worldRuntime0A30).selection.resolveContextActionSecondaryCallback =
-                   InGameWorldInput_ResolveContextActionAndCursorCf;
+                   InGameWorldInput_ResolveContextActionAndCursor;
               (inGameRoot->worldRuntime0A30).selection.beginPointerCaptureCallback =
-                   InGameWorldInput_BeginPointerCaptureCf;
+                   InGameWorldInput_BeginPointerCapture;
               (inGameRoot->worldRuntime0A30).selection.updateDragSelectionCallback =
-                   InGameWorldInput_UpdateDragSelectionAndCameraCf;
+                   InGameWorldInput_UpdateDragSelectionAndCamera;
               (inGameRoot->worldRuntime0A30).selection.commitPointerActionCallback =
-                   InGameWorldInput_CommitPointerActionCf;
+                   InGameWorldInput_CommitPointerAction;
               (inGameRoot->worldRuntime0A30).fieldRegion.clearTransientStateCallback =
                    InGameUiRuntime_ClearTransientState1BCallback;
               (inGameRoot->worldRuntime0A30).selection.dispatchWorldContextActionCallback =
@@ -1478,7 +1478,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                         (&g_FrontendScenarioPathScratchUtf16,
                          (uint16_t *)(levelImage->header).opaque100_16F,(uint16_t *)u_level_0050daac);
               WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
-              endingMoviePath = LevelAsset_PrepareEndingMoviePathCf
+              endingMoviePath = LevelAsset_PrepareEndingMoviePath
                                  (savePackagePath,(LevelAssetHeader *)levelImage);
               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)endingMoviePath.moviePath;
               if (!endingMoviePath.failed) {
@@ -1511,7 +1511,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                       if (!packageEntry.failed) {
                         (levelImage->header).pathState.levelPathOffsetOrLoadedFieldGrid =
                              (uint32_t)rootCursorOrError;
-                        levelLoad = InGameLevelRuntime_LoadResourcesAfterExternalTablesCf
+                        levelLoad = InGameLevelRuntime_LoadResourcesAfterExternalTables
                                            (levelImage,world);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelLoad.errorOrValue;
                         if (!levelLoad.failed) {
@@ -1532,7 +1532,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                             settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
                             gridHalfSize = PersistentSettings_Read(0x20,0x10);
                             subresourceCount = PersistentSettings_Read(0x10,0x18);
-                            GraphicsShadingRuntime_InitializeGeneratedTextureCf
+                            GraphicsShadingRuntime_InitializeGeneratedTexture
                                       (subresourceCount,gridHalfSize,settingOrFactionToken);
                             settingOrFactionToken = PersistentSettings_Read(1,0x1c);
                             if (settingOrFactionToken == 0) {
@@ -1569,11 +1569,11 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x4000000;
                             }
-                            terminatorOrFailure = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf
+                            terminatorOrFailure = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess
                                                      ((uint32_t)(inGameRoot->worldRuntime0A30).
                                                              fieldGrid);
                             if (!terminatorOrFailure) {
-                              gridScratch = GridScratch_AllocateForFieldGridCf
+                              gridScratch = GridScratch_AllocateForFieldGrid
                                                  ((inGameRoot->worldRuntime0A30).fieldGrid);
                               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)gridScratch.valueOrError;
                               if (!gridScratch.failed) {
@@ -1654,7 +1654,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
    Local calls: InGameRuntime_PublishRootWorldStatePointer, InGameRuntime_ReleaseFactionScratchBuffers.
    Cross-module calls: GraphicsShadingRuntime_Shutdown [graphics/render/shading],
    WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], InGameLevelRuntime_ShutdownLoadedAssetResources
-   [gameplay/session/level], UiRootStack_PopCf [ui/controls/layout], Movie_Close [movie/runtime/playback],
+   [gameplay/session/level], UiRootStack_Pop [ui/controls/layout], Movie_Close [movie/runtime/playback],
    TerrainCompositeTexture_Destroy [world/terrain/visuals].
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResources(void)
@@ -1683,7 +1683,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
               (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
     if ((inGameRoot->rootUi0000).previousRoot != (UiRootNode *)0x0) {
-      UiRootStack_PopCf(&inGameRoot->rootUi0000);
+      UiRootStack_Pop(&inGameRoot->rootUi0000);
     }
     g_MemoryApi.free(inGameRoot);
     g_InGameRuntimeRoot = (InGameRuntimeRootImageC3E4 *)0x0;
@@ -1811,7 +1811,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
              [*(int *)(*(int *)worldNode->runtimePayload + 0x4c)] ==
-             ArmyRuntime_ClassCommandHandlerGroupACf)) &&
+             ArmyRuntime_ClassCommandHandlerGroupA)) &&
            (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
             scheduledCondition->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
@@ -1909,7 +1909,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (operandValue = *(uint32_t *)(*(int *)worldNode->runtimePayload + 0x4c),
             g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[operandValue] !=
-            ArmyRuntime_ClassCommandHandlerGroupACf)) &&
+            ArmyRuntime_ClassCommandHandlerGroupA)) &&
            (operandValue == scheduledCondition->conditions[0].payload.operands[0]))
         goto InGameScheduledCondition_AdvanceToNextRecord;
       }
@@ -2465,11 +2465,11 @@ InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
    than, switch(simulationTick & 7). Do not rename the whole function to a narrow wheel-only name.
    Local calls: InGameConditionRuntime_UpdateScheduledRecords,
    InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState.
-   Cross-module calls: UiRuntimeRecordRing_DiscardOldestCf [ui/core/runtime],
+   Cross-module calls: UiRuntimeRecordRing_DiscardOldest [ui/core/runtime],
    FrontendTransfer_BroadcastPendingCommandBatchAndSyncState [network/protocol/transfer],
    FrontendTransfer_HandleSyncRequest10021AndReply10023 [network/protocol/transfer],
-   FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer], UiRuntimeRecordRing_ContainsIdCf
-   [ui/core/runtime], FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf [network/backend/runtime].
+   FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer], UiRuntimeRecordRing_ContainsId
+   [ui/core/runtime], FrontendNetwork_HandleCommandBatchAndPlayerTimeout [network/backend/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
@@ -2498,7 +2498,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
         while (g_HostCommandBatchSyncSentThisInterval == 0) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
           if (discardedRecord.empty) {
             boolResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
             if (boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
@@ -2513,7 +2513,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
       }
       else {
         while( true ) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
           if (discardedRecord.empty) break;
           FrontendTransfer_HandleSyncRequest10021AndReply10023
                     ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
@@ -2528,16 +2528,16 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
   }
   else {
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      boolResult = UiRuntimeRecordRing_ContainsIdCf(g_FrontendSessionToken);
+      boolResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
       do {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldestCf();
+        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
         if (discardedRecord.empty) break;
-        boolResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeoutCf
+        boolResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
                           ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
                            (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
       } while (!boolResult);
-      boolResult = FrontendTransfer_ConsumeProcessedFlagCf();
+      boolResult = FrontendTransfer_ConsumeProcessedFlag();
       if (boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
@@ -2673,7 +2673,7 @@ InGameRuntime_ReleaseSimulationTickLockAndReturn:
    and are not included in the function range.
 */
 uint8_t __thandor_cf_preserve_eax_ecx_edx
-InGameRuntime_InitializeOptionalSubsystemAlwaysSuccessCf(uint32_t unusedArgument)
+InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess(uint32_t unusedArgument)
 
 {
   return 0;

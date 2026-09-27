@@ -51,7 +51,7 @@ static __inline uint32_t ShotTint_PackWordsUnsignedSaturate(uint64_t words)
    Local calls: ShotRuntime_PostImpactRelationNotificationNoOp.
    Cross-module calls: ModelRuntime_QueryHierarchyScaleRatioQ12Regs [world/model/runtime],
    ArmyRuntimeCommand_InterruptActiveTargetAndStampGeneration [gameplay/army/movement],
-   GameFactionRuntime_TestCapabilityBitClearCf [gameplay/faction/runtime],
+   GameFactionRuntime_TestCapabilityBitClear [gameplay/faction/runtime],
    GameFactionRuntime_UpdateImpactAlertAnchorAndNotify [gameplay/faction/runtime],
    GameFactionRuntime_GetPackedStateNibble [gameplay/faction/runtime],
    GameFactionRuntime_ApplyPairwiseRelationTransition [gameplay/faction/runtime].
@@ -99,7 +99,7 @@ ShotRuntime_ApplyArmyHitRelationAndNotifications
             8 + factionIndex] + 0x100;
       if (((factionIndex != 0) && (capabilityBitIndex != 0)) && (factionIndex != capabilityBitIndex)
          ) {
-        capabilityBitClear = GameFactionRuntime_TestCapabilityBitClearCf(capabilityBitIndex,factionIndex);
+        capabilityBitClear = GameFactionRuntime_TestCapabilityBitClear(capabilityBitIndex,factionIndex);
         inGameRoot = g_InGameRuntimeRoot;
         currentTick = g_GameFactionRuntimeImage.tail.simulationTick;
         if (capabilityBitClear) {
@@ -153,7 +153,7 @@ StatusResult ShotRuntime_InitGraphicsResources(uint16_t *mutableBasePath)
   
   WidePath_SetExtensionCode(0x786667,mutableBasePath);
   MoviePlayback_AdvanceScheduledFrameAndTick();
-  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackageCf(mutableBasePath));
+  loadResult = THANDOR_BITCAST(TextureSetResult, ArenaAllocResult, g_GraphicsTextureSetLoadPackage(mutableBasePath));
   if (!loadResult.failed) {
     MoviePlayback_AdvanceScheduledFrameAndTick();
     g_ShotTextureSet = (GraphicsTextureSet *)loadResult.payloadOrError;
@@ -201,7 +201,7 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
   g_MemoryApi.free(g_ShotRuntimeSlots);
   g_ShotRuntimeSlots = (ShotRuntimeSlot *)0x0;
   if (g_ShotTextureSet != (GraphicsTextureSet *)0x0) {
-    g_GraphicsTextureSetReleasePackageCf(g_ShotTextureSet);
+    g_GraphicsTextureSetReleasePackage(g_ShotTextureSet);
     g_ShotTextureSet = (GraphicsTextureSet *)0x0;
   }
   if (g_ShotPalette != (GraphicsPaletteAsset *)0x0) {
@@ -232,7 +232,7 @@ void __thandor_void_preserve_eax_ecx ShotRuntime_ShutdownGraphicsResources(void)
    aliases/variants, not permission to invent distinct gameplay meanings.
 */
 ShotDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ShotRuntime_FindDefinitionByIdCf(PckShotDefinitionIdCatalog definitionId)
+ShotRuntime_FindDefinitionById(PckShotDefinitionIdCatalog definitionId)
 
 {
   ShotDefinition *registryDefinition;
@@ -337,10 +337,10 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
    channels. Fire-chain terminus: allocates a shot runtime record from the pool, seeds trajectory from the
    transformed launch point, and links it for the projectile motion maintenance pass. CF-style allocation failure.
    Role: Allocates and initializes a live projectile from a ShotDefinition.
-   Cross-module calls: WorldObjectArray_AllocateFreeRecordCf [world/runtime/core],
+   Cross-module calls: WorldObjectArray_AllocateFreeRecord [world/runtime/core],
    WorldRuntime_LinkNodeIntoOwnerListD8 [world/runtime/core], ShotDefinition_ComputeLaunchAnglesRegs
    [assets/shot/catalog], FixedMath_DirectionFromAnglesScaledRegs [core/math/fixed],
-   ModelLookupTable_ContainsPackedKeyCf [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
+   ModelLookupTable_ContainsPackedKey [assets/model/definitions], ModelNodeRuntime_TransformLocalPointRegs
    [world/model/hierarchy].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -389,7 +389,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
               ((int)&slotsRemaining[-1].ownerAndTrajectory.secondaryEffectCountdownTicks + 3);
     slotsRemainingOrPool = slotsRemaining;
   }
-  allocatedRecord = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
+  allocatedRecord = WorldObjectArray_AllocateFreeRecord(worldRuntime);
   shotModelNode = (ShotModelRuntimeNodeClassView100 *)allocatedRecord.recordOrError;
   if (allocatedRecord.failed) {
     return;
@@ -446,7 +446,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   (shotRuntimeCursor->ownerAndTrajectory).secondaryEffectCountdownTicks = secondaryEffectInterval;
   shotModelNode->textureSubresourceBaseIndex = 0;
   shotModelNode->modelRuntimeLinkOrSavedOffset = (void *)0x0;
-  lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,shotDefinition->ownedNestedResource);
+  lookupEntry = ModelLookupTable_ContainsPackedKey(0,4,shotDefinition->ownedNestedResource);
   if (lookupEntry.notFound) {
     shotModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
   }
@@ -476,12 +476,12 @@ ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
-  lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,3,shotDefinition->ownedNestedResource);
+  lookupEntry = ModelLookupTable_ContainsPackedKey(0,3,shotDefinition->ownedNestedResource);
   if (!lookupEntry.notFound) {
     localPoint = ModelNodeRuntime_TransformLocalPointRegs
                        (lookupEntry.entry,(ModelRuntimeNode *)shotModelNode);
     worldXQ12 = localPoint.yQ12;
-    EffectRuntimePool_CreateInstanceFromDefinitionCf
+    EffectRuntimePool_CreateInstanceFromDefinition
               (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                (shotModelNode->modelPayload).worldRotationAngle2,
                (shotModelNode->modelPayload).worldRotationAngle1,

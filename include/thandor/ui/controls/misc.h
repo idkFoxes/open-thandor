@@ -104,7 +104,7 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
           (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control);
 
 /* 0x00423600 */
-void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelectionCf(void);
+void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelection(void);
 
 /* 0x004BC9B0 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx

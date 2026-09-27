@@ -18,10 +18,10 @@
    ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
    linkedDefinitionList→ModelLinkedDefinitionListAddress32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlockedCf, ModelDefinitionRegistry_FindByIdWithErrorCf.
+   Local calls: ModelDefinition_IsFactionTechnologyUnlocked, ModelDefinitionRegistry_FindByIdWithError.
 */
 ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+ModelDefinition_SelectFactionUnlockedLinkedDefinition
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
@@ -36,7 +36,7 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
   do {
     modelDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
     if (modelDefinitionId != 0) {
-      technologyLocked = ModelDefinition_IsFactionTechnologyUnlockedCf
+      technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          modelDefinitionId);
       if (!technologyLocked) {
@@ -46,7 +46,7 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
     linkedDefinitionList = linkedDefinitionList + 4;
     linkedSlotsRemaining = linkedSlotsRemaining + -1;
   } while (linkedSlotsRemaining != 0);
-  lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(definitionId);
+  lookupResult = ModelDefinitionRegistry_FindByIdWithError(definitionId);
   lookupResult.notFound = false; /* the original ends with CLC after the lookup */
   return lookupResult;
 }
@@ -55,8 +55,8 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
 static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex,uint8_t *node)
 {
   uint32_t i;
-  ModelDefinition_UnlockLinkedTechnologyForFactionCf
-            (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedIdCf
+  ModelDefinition_UnlockLinkedTechnologyForFaction
+            (factionIndex,ModelDefinition_SelectFactionUnlockedLinkedId
                                     (factionIndex,(ModelLinkedDefinitionListAddress32)(uintptr_t)node));
   for (i = 0; i < *(uint32_t *)(node + 8); i++) {
     ModelDefinitionHierarchy_UnlockFrom(factionIndex,*(uint8_t **)(node + 0xc + i * 4));
@@ -71,8 +71,8 @@ static void ModelDefinitionHierarchy_UnlockFrom(FactionRuntimeIndex factionIndex
    domains. Typed parameters: p3 definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention,
    complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
    remain unchanged.
-   Local calls: ModelDefinition_SelectFactionUnlockedLinkedIdCf,
-   ModelDefinition_UnlockLinkedTechnologyForFactionCf.
+   Local calls: ModelDefinition_SelectFactionUnlockedLinkedId,
+   ModelDefinition_UnlockLinkedTechnologyForFaction.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
@@ -85,16 +85,16 @@ ModelDefinitionHierarchy_UnlockSelectedLinkedTechnology
 }
 
 
-/* True (CF set) as soon as one node's technology reports CF from ModelDefinition_IsFactionTechnologyUnlockedCf. */
-static bool ModelDefinitionHierarchy_AnyTechnologyCfFrom(uint32_t *technologyMasks,uint8_t *node)
+/* True (CF set) as soon as one node's technology reports CF from ModelDefinition_IsFactionTechnologyUnlocked. */
+static bool ModelDefinitionHierarchy_AnyTechnologyFrom(uint32_t *technologyMasks,uint8_t *node)
 {
   uint32_t i;
-  if (ModelDefinition_IsFactionTechnologyUnlockedCf
+  if (ModelDefinition_IsFactionTechnologyUnlocked
                 (technologyMasks,*(PckModelDefinitionIdCatalog *)(node + 0x20))) {
     return true;
   }
   for (i = 0; i < *(uint32_t *)(node + 8); i++) {
-    if (ModelDefinitionHierarchy_AnyTechnologyCfFrom(technologyMasks,*(uint8_t **)(node + 0xc + i * 4))) {
+    if (ModelDefinitionHierarchy_AnyTechnologyFrom(technologyMasks,*(uint8_t **)(node + 0xc + i * 4))) {
       return true;
     }
   }
@@ -109,16 +109,16 @@ static bool ModelDefinitionHierarchy_AnyTechnologyCfFrom(uint32_t *technologyMas
    ModelDefinitionId, and TechnologyId domains. Typed parameters: p3
    definitionNode→ModelDefinitionHierarchyNodeAddress32_V345. Calling convention, complete VariableStorage
    serialization, function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlockedCf.
+   Local calls: ModelDefinition_IsFactionTechnologyUnlocked.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
+ModelDefinitionHierarchy_AllTechnologyUnlockedForFaction
           (FactionRuntimeIndex factionIndex,ModelDefinitionHierarchyNodeAddress32 definitionNode)
 
 {
   /* Rewritten from the assembly: the original walks the definition tree (child count at +0x08,
      children at +0x0C + 4*i) depth-first with frames on the machine stack. */
-  return ModelDefinitionHierarchy_AnyTechnologyCfFrom
+  return ModelDefinitionHierarchy_AnyTechnologyFrom
                    (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                     *(uint8_t **)(uintptr_t)(definitionNode + 0xc));
 }
@@ -130,7 +130,7 @@ ModelDefinitionHierarchy_AllTechnologyUnlockedForFactionCf
    records beginning at +0x200. Each successful record advances by its leading byte-size dword. The per-record
    preparer receives the asset base for stored-offset relocation. Payload fields remain opaque. Role: Walks
    variable-size MDL records and registers each model definition.
-   Local calls: ModelDefinition_RegisterAndResolveReferencesCf.
+   Local calls: ModelDefinition_RegisterAndResolveReferences.
 */
 StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAssetHeader *asset)
 
@@ -153,7 +153,7 @@ StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAsse
         registrationResult.valueOrError = registrationStatusCode;
         return registrationResult;
       }
-      registrationResult = ModelDefinition_RegisterAndResolveReferencesCf(definition,asset);
+      registrationResult = ModelDefinition_RegisterAndResolveReferences(definition,asset);
       registrationStatusCode = registrationResult.valueOrError;
       if (registrationResult.failed) break;
       definition = (ModelDefinitionResolvePhaseView280 *)
@@ -176,7 +176,7 @@ StatusResult __thandor_void_preserve_ecx_edx ModelAsset_PrepareRecords(ModelAsse
    keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
 */
 ModelLookupPayloadResult
-ModelLookupTable_FindPackedKeyEntryRegsCf
+ModelLookupTable_FindPackedKeyEntryRegs
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition)
 
@@ -218,7 +218,7 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
    domains. Typed parameters: p0 keyIndex→ModelLookupKeyIndex_V338, p1 keyClass→ModelLookupKeyClass_V338.
 */
 ModelLookupEntryResult __thandor_eax_cf_preserve_ecx_edx
-ModelLookupTable_ContainsPackedKeyCf
+ModelLookupTable_ContainsPackedKey
           (ModelLookupKeyIndex keyIndex,ModelLookupKeyClass keyClass,
           ModelResourceHitTestAndRenderView210 *modelDefinition)
 
@@ -254,7 +254,7 @@ ModelLookupTable_ContainsPackedKeyCf
    set means hit, CF clear means no hit.
 */
 MeshRayTriangleResult __thandor_eax_cf_preserve_ecx_edx
-ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangle)
+ModelMesh_IntersectTriangleRayDistance(ModelRaycastTriangleDescriptor *triangle)
 
 {
   int edge1Z;
@@ -311,11 +311,11 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
     if ((int64_t)planeOffsetDot < 0) {
       if (((int)offsetHighOrCrossZ < scaledHighOrEdge1X) ||
          ((halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && (distanceOrCrossX = (uint32_t)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY))))
-      goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
+      goto ModelMesh_IntersectTriangleRayDistance_ReturnMiss;
     }
     else if ((scaledHighOrEdge1X < (int)offsetHighOrCrossZ) ||
             (((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (distanceOrCrossX = (uint32_t)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y))))
-    goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
+    goto ModelMesh_IntersectTriangleRayDistance_ReturnMiss;
     hitResult.distanceQ12 =
          (int)((int64_t)planeOffsetDot / (int64_t)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
@@ -384,7 +384,7 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
       return hitResult;
     }
   }
-ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
+ModelMesh_IntersectTriangleRayDistance_ReturnMiss:
   missResult.hit = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;
@@ -397,7 +397,7 @@ ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
    record +0x188; error 0x3E reports a miss.
 */
 BuildMetricResult
-ModelDefinitionRegistry_FindBuildMetricTupleByIdCf(PckModelDefinitionIdCatalog definitionId)
+ModelDefinitionRegistry_FindBuildMetricTupleById(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;
@@ -466,10 +466,10 @@ ModelDefinitionRegistry_FindByRuntimeClassId(ModelRuntimeClassId runtimeClassId)
    domains. Typed parameters: p3 linkedDefinitionList→ModelLinkedDefinitionListAddress32_V345. Calling convention,
    complete VariableStorage serialization, function bytes, control flow, globals, locals, and executable data
    remain unchanged.
-   Local calls: ModelDefinition_IsFactionTechnologyUnlockedCf.
+   Local calls: ModelDefinition_IsFactionTechnologyUnlocked.
 */
 PckModelDefinitionIdCatalog __thandor_eax_preserve_ecx_edx
-ModelDefinition_SelectFactionUnlockedLinkedIdCf
+ModelDefinition_SelectFactionUnlockedLinkedId
           (FactionRuntimeIndex factionIndex,ModelLinkedDefinitionListAddress32 linkedDefinitionList)
 
 {
@@ -483,7 +483,7 @@ ModelDefinition_SelectFactionUnlockedLinkedIdCf
   do {
     modelDefinitionId = *(PckModelDefinitionIdCatalog *)(linkedDefinitionList + 0x20);
     if (modelDefinitionId != 0) {
-      technologyLocked = ModelDefinition_IsFactionTechnologyUnlockedCf
+      technologyLocked = ModelDefinition_IsFactionTechnologyUnlocked
                         (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                          modelDefinitionId);
       if (!technologyLocked) {
@@ -500,7 +500,7 @@ ModelDefinition_SelectFactionUnlockedLinkedIdCf
 /* Serialized model node tree: flags +0x04 (low nibble 0 = has a sprite), sprite path +0x38, sprite
    asset +0x30, owned-copy count +0x34, child count +0x14, child offsets +0x18 + 4*i (relative to the
    asset, relocated in place). Loads or reuses each node's sprite; true (CF) with *error on failure. */
-static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node,uint8_t *asset,uint32_t *error)
+static bool ModelDefinition_ResolveNodeSprites(MdlSerializedNodeHeader38 *node,uint8_t *asset,uint32_t *error)
 {
   uint32_t i;
   if ((node->nodeFlags & 0xf) == 0) {
@@ -532,7 +532,7 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
   }
   for (i = 0; i < (uint32_t)node->childCount; i++) {
     node->childSerializedOffsets[i] = node->childSerializedOffsets[i] + (int)(uintptr_t)asset;
-    if (ModelDefinition_ResolveNodeSpritesCf
+    if (ModelDefinition_ResolveNodeSprites
                   ((MdlSerializedNodeHeader38 *)(uintptr_t)node->childSerializedOffsets[i],asset,error)) {
       return true;
     }
@@ -548,15 +548,15 @@ static bool ModelDefinition_ResolveNodeSpritesCf(MdlSerializedNodeHeader38 *node
    through CF/EAX. Role: Registers one MDL definition and resolves its SPR, linked MDL, SHT and EFF references.
    Inputs: Variable-size MDL record beginning after the 0x200-byte image header. Outputs: ModelDefinition whose
    serialized IDs/offsets are replaced by runtime pointers.
-   Local calls: ModelDefinitionRegistry_FindByIdWithErrorCf.
+   Local calls: ModelDefinitionRegistry_FindByIdWithError.
    Cross-module calls: WidePath_SetExtensionCode [core/text/path], Package_LoadEntry [assets/package/runtime],
    SpriteAssetRegistry_FindById [assets/sprite/catalog], SpriteAsset_RegisterAndRelocatePointers
-   [assets/sprite/catalog], Resource_Release [assets/resource/runtime], ShotDefinitionRegistry_FindByIdWithErrorCf
+   [assets/sprite/catalog], Resource_Release [assets/resource/runtime], ShotDefinitionRegistry_FindByIdWithError
    [assets/shot/catalog].
 */
 
 StatusResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinition_RegisterAndResolveReferencesCf
+ModelDefinition_RegisterAndResolveReferences
           (ModelDefinitionResolvePhaseView280 *definition,ModelAssetHeader *asset)
 
 {
@@ -586,7 +586,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
   
   registrySlotCursor = g_ModelDefinitionRegistry;
   slotsRemainingOrClassIndex = 0x300;
-  existingLookup = ModelDefinitionRegistry_FindByIdWithErrorCf(definition->definitionId);
+  existingLookup = ModelDefinitionRegistry_FindByIdWithError(definition->definitionId);
   if (!existingLookup.notFound) {
     /* Duplicate identifier. */
     g_WideNumberFormatUtf16
@@ -616,60 +616,60 @@ ModelDefinition_RegisterAndResolveReferencesCf
          (nodeOffsetOrGridClass - 0x28));
     /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
        {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
-    if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(uint8_t *)asset,&resolverStatusOrSentinel)) {
+    if (ModelDefinition_ResolveNodeSprites(serializedNodeCursor,(uint8_t *)asset,&resolverStatusOrSentinel)) {
       goto ModelDefinition_ReturnReferenceResolutionResult;
     }
   }
-  shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
+  shotLookup = ShotDefinitionRegistry_FindByIdWithError
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
   resolvedShotDefinition2C = shotLookup.definitionOrError;
   resolverStatusOrSentinel = (uint32_t)resolvedShotDefinition2C;
   if (!shotLookup.notFound) {
     definition->shotDefinitionReference2C = resolvedShotDefinition2C;
-    effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+    effectLookup = EffectDefinitionRegistry_FindByIdWithError
                        ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference80);
     resolvedEffectDefinition80ToB8 = effectLookup.definitionOrError;
     resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinition80ToB8;
     if (!effectLookup.notFound) {
       definition->effectDefinitionReference80 = resolvedEffectDefinition80ToB8;
-      effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+      effectLookup = EffectDefinitionRegistry_FindByIdWithError
                          ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference88);
       resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
       if (!effectLookup.notFound) {
         definition->effectDefinitionReference88 = (EffectDefinition *)resolverStatusOrSentinel;
-        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                            ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference90);
         resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
         if (!effectLookup.notFound) {
           definition->effectDefinitionReference90 = (EffectDefinition *)resolverStatusOrSentinel;
-          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+          effectLookup = EffectDefinitionRegistry_FindByIdWithError
                              ((PckEffectDefinitionIdCatalog)definition->effectDefinitionReference98)
           ;
           resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
           if (!effectLookup.notFound) {
             definition->effectDefinitionReference98 = (EffectDefinition *)resolverStatusOrSentinel;
-            effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+            effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                ((PckEffectDefinitionIdCatalog)
                                 definition->effectDefinitionReferenceA0);
             resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
             if (!effectLookup.notFound) {
               definition->effectDefinitionReferenceA0 = (EffectDefinition *)resolverStatusOrSentinel
               ;
-              effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+              effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                  ((PckEffectDefinitionIdCatalog)
                                   definition->effectDefinitionReferenceA8);
               resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
               if (!effectLookup.notFound) {
                 definition->effectDefinitionReferenceA8 =
                      (EffectDefinition *)resolverStatusOrSentinel;
-                effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                    ((PckEffectDefinitionIdCatalog)
                                     definition->effectDefinitionReferenceB0);
                 resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                 if (!effectLookup.notFound) {
                   definition->effectDefinitionReferenceB0 =
                        (EffectDefinition *)resolverStatusOrSentinel;
-                  effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                  effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                      ((PckEffectDefinitionIdCatalog)
                                       definition->effectDefinitionReferenceB8);
                   resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
@@ -677,7 +677,7 @@ ModelDefinition_RegisterAndResolveReferencesCf
                     definition->effectDefinitionReferenceB8 =
                          (EffectDefinition *)resolverStatusOrSentinel;
                     if (definition->shotDefinitionReference168 != (ShotDefinition *)0xffffffff) {
-                      shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
+                      shotLookup = ShotDefinitionRegistry_FindByIdWithError
                                          ((PckShotDefinitionIdCatalog)
                                           definition->shotDefinitionReference168);
                       resolvedShotDefinition168 = shotLookup.definitionOrError;
@@ -685,28 +685,28 @@ ModelDefinition_RegisterAndResolveReferencesCf
                       if (shotLookup.notFound) goto ModelDefinition_ReturnReferenceResolutionResult;
                       definition->shotDefinitionReference168 = resolvedShotDefinition168;
                     }
-                    effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                    effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                        ((PckEffectDefinitionIdCatalog)
                                         definition->effectDefinitionReference174);
                     resolvedEffectDefinitionTail = effectLookup.definitionOrError;
                     resolverStatusOrSentinel = (uint32_t)resolvedEffectDefinitionTail;
                     if (!effectLookup.notFound) {
                       definition->effectDefinitionReference174 = resolvedEffectDefinitionTail;
-                      effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                      effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                          ((PckEffectDefinitionIdCatalog)
                                           definition->effectDefinitionReference58);
                       resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                       if (!effectLookup.notFound) {
                         definition->effectDefinitionReference58 =
                              (EffectDefinition *)resolverStatusOrSentinel;
-                        effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                        effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                            ((PckEffectDefinitionIdCatalog)
                                             definition->effectDefinitionReference190);
                         resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
                         if (!effectLookup.notFound) {
                           definition->effectDefinitionReference190 =
                                (EffectDefinition *)resolverStatusOrSentinel;
-                          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                          effectLookup = EffectDefinitionRegistry_FindByIdWithError
                                              ((PckEffectDefinitionIdCatalog)
                                               definition->effectDefinitionReference254);
                           resolverStatusOrSentinel = (uint32_t)effectLookup.definitionOrError;
@@ -779,17 +779,17 @@ ModelDefinition_ReturnReferenceResolutionResult:
 /* Address: 0x0052ADE0.
    Ownership: assets/model/definitions.
    Purpose: The original lookup/unlock CF contract is preserved.
-   Local calls: ModelDefinitionRegistry_FindByIdWithErrorCf.
+   Local calls: ModelDefinitionRegistry_FindByIdWithError.
    Cross-module calls: Technology_UnlockForFaction [gameplay/technology/runtime].
 */
 void __thandor_preserve_eax
-ModelDefinition_UnlockLinkedTechnologyForFactionCf
+ModelDefinition_UnlockLinkedTechnologyForFaction
           (FactionRuntimeIndex factionIndex,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
   ModelDefinitionResult lookupResult;
   
-  lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
+  lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if (!lookupResult.notFound) {
     Technology_UnlockForFaction(0,0,lookupResult.modelDefinition[0x25].definitionId,factionIndex);
   }
@@ -800,17 +800,17 @@ ModelDefinition_UnlockLinkedTechnologyForFactionCf
 /* Address: 0x0052AD90.
    Ownership: assets/model/definitions.
    Purpose: CF clear means the bit is unlocked; lookup failure or a clear bit returns CF set while preserving EAX.
-   Local calls: ModelDefinitionRegistry_FindByIdWithErrorCf.
+   Local calls: ModelDefinitionRegistry_FindByIdWithError.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-ModelDefinition_IsFactionTechnologyUnlockedCf
+ModelDefinition_IsFactionTechnologyUnlocked
           (uint32_t *factionTechnologyMasks,PckModelDefinitionIdCatalog modelDefinitionId)
 
 {
   uint32_t technologyBitIndex;
   ModelDefinitionResult lookupResult;
   
-  lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
+  lookupResult = ModelDefinitionRegistry_FindByIdWithError(modelDefinitionId);
   if ((!lookupResult.notFound) &&
      (technologyBitIndex = lookupResult.modelDefinition[0x25].flags,
      (factionTechnologyMasks[technologyBitIndex >> 5] & 1 << ((uint8_t)technologyBitIndex & 0x1f)) != 0)) {
@@ -826,7 +826,7 @@ ModelDefinition_IsFactionTechnologyUnlockedCf
    g_PackageLastErrorPath and returns error 0x3E with CF set.
 */
 ModelDefinitionResult __thandor_eax_cf_preserve_ecx_edx
-ModelDefinitionRegistry_FindByIdWithErrorCf(PckModelDefinitionIdCatalog definitionId)
+ModelDefinitionRegistry_FindByIdWithError(PckModelDefinitionIdCatalog definitionId)
 
 {
   ModelDefinitionRecordPrefix *registeredDefinition;

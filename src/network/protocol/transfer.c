@@ -14,7 +14,7 @@
    Ownership: network/protocol/transfer.
    Purpose: 125 ms transfer-mailbox service timer. Locks the mailbox/ring, consumes validated records, handles
    segmented payload and acknowledgement/retry records, and updates retransmission state.
-   Local calls: UiTransferBlock_Transform64BitBlocksWithRoundKeys16, UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransferBlock_Transform64BitBlocksWithRoundKeys16, UiTransfer_StagePacketAndSend.
 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void)
 
@@ -114,7 +114,7 @@ UiTransferMailbox_ReceiveNextRecord:
                   s_mohTG_sakere___e_004ae9d8[0x12] = '\x01';
                   s_mohTG_sakere___e_004ae9d8[0x13] = '\0';
                   g_UiTransferChunkPacketSequenceToken = g_UiTransferSequenceToken;
-                  UiTransfer_StagePacketAndSendCf
+                  UiTransfer_StagePacketAndSend
                             ((UiTransferEndpointDescriptor *)auxiliaryEndpointRecord,
                              (UiTransferPacketHeader *)(s_mohTG_sakere___e_004ae9d8 + 0x10));
                 }
@@ -158,7 +158,7 @@ UiTransferMailbox_ReceiveNextRecord:
               chunkPayloadCursor = chunkPayloadCursor + 1;
             }
             g_UiTransferChunkPacketSequenceToken = g_UiTransferSequenceToken;
-            UiTransfer_StagePacketAndSendCf
+            UiTransfer_StagePacketAndSend
                       ((UiTransferEndpointDescriptor *)auxiliaryEndpointRecord,
                        (UiTransferPacketHeader *)(s_mohTG_sakere___e_004ae9d8 + 0x10));
           }
@@ -167,7 +167,7 @@ UiTransferMailbox_ReceiveNextRecord:
           g_UiTransferMailboxReplyPacket10033EchoedTick = *(uint32_t *)ringRecord->payload10_FF;
           g_UiTransferMailboxReplyPacket10033 = 0x10033;
           g_UiTransferMailboxReplyPacket10033SequenceToken = g_UiTransferSequenceToken;
-          UiTransfer_StagePacketAndSendCf
+          UiTransfer_StagePacketAndSend
                     ((UiTransferEndpointDescriptor *)auxiliaryEndpointRecord,
                      (UiTransferPacketHeader *)&g_UiTransferMailboxReplyPacket10033);
         }
@@ -219,7 +219,7 @@ UiTransferMailbox_ReceiveNextRecord:
       s_mohTG_sakere___e_004ae9d8[0x12] = '\x01';
       s_mohTG_sakere___e_004ae9d8[0x13] = '\0';
       g_UiTransferChunkPacketSequenceToken = g_UiTransferSequenceToken;
-      UiTransfer_StagePacketAndSendCf
+      UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,
                  (UiTransferPacketHeader *)(s_mohTG_sakere___e_004ae9d8 + 0x10));
     }
@@ -236,7 +236,7 @@ UiTransferMailbox_ReceiveNextRecord:
    (n<<16)|0x10 LOBBY command batches (the 0x10 low-word side of the N4 phase split). Typed parameters: p4
    frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: FrontendTransfer_SendQueued10011AndOptional10004, UiTransfer_StagePacketAndSendCf.
+   Local calls: FrontendTransfer_SendQueued10011AndOptional10004, UiTransfer_StagePacketAndSend.
    Cross-module calls: UiPointerList_InitializeColumnLayout [ui/controls/lists], UiPageStack_SetActiveIndex
    [ui/controls/layout], FrontendState_DispatchCode [ui/frontend/runtime],
    FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
@@ -331,7 +331,7 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
     g_FrontendPacket10011Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10011;
     FrontendCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10011Buffer);
     if (g_FrontendPacket10011Buffer.command.packedCommandAndPlayerId != 0) {
-      UiTransfer_StagePacketAndSendCf
+      UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10011Buffer.header);
     }
     return;
@@ -344,13 +344,13 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
    Ownership: network/protocol/transfer.
    Purpose: Validates and handles gameplay command batches plus packet types 0x00010012, 0x00010007, 0x00030005,
    and 0x00010009. Carry is set only when a new command batch is accepted.
-   Local calls: UiTransfer_StagePacketAndSendCf, FrontendTransfer_SendQueued10011AndOptional10004.
+   Local calls: UiTransfer_StagePacketAndSend, FrontendTransfer_SendQueued10011AndOptional10004.
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
    [assets/text/richtext], FrontendRecentTextHistory_InsertAndRebuild5 [ui/frontend/runtime], Random_SetBothSeeds
    [core/math/random], Random_SelectSecondaryStream [core/math/random].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
+FrontendTransfer_HandleGameplayCommandAndRosterPackets
           (UiTransferEndpointDescriptor *senderEndpoint,FrontendTransferPacketUnion *packet,
           uint32_t unusedDispatchArg)
 
@@ -376,7 +376,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
     batchSenderContext = (packet->packet10000Handshake).header.senderContext;
     g_SessionTransferTimeoutTicks = 0x100;
     if (batchSenderContext == g_FrontendSelectedPlayerToken) {
-      UiTransfer_StagePacketAndSendCf
+      UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10011Buffer.header);
       return false;
     }
@@ -407,7 +407,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
       senderEndpoint->ipv4AddressNetworkOrder)) {
     g_SessionTransferTimeoutTicks = 0x100;
     g_FrontendPacket10013Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10013;
-    UiTransfer_StagePacketAndSendCf
+    UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10013Buffer.header);
     return false;
   }
@@ -483,7 +483,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
       chunkDestinationCursor = chunkDestinationCursor + 4;
     }
     if (expectedBlockCount == g_FrontendPlayerRuntimeBlockCount) {
-      UiTransfer_StagePacketAndSendCf
+      UiTransfer_StagePacketAndSend
                 (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket8000ABuffer.header);
     }
     return false;
@@ -556,16 +556,16 @@ FrontendSnapshotTransfer_MarkPlayerHostPublicationReadyAndReleaseWhenAllReady
    Purpose: Builds the fixed packet header with packed type 0x00010000 and payload value 0x2931, then submits it
    through the exact endpoint descriptor while preserving the backend CF result. Key sender: 0x10000 Handshake with
    magic 0x2931 (typed opcode census, exe_net_packets.md section 4b).
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
 */
-bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931Cf(void)
+bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931(void)
 
 {
   bool sendCarry;
   
   g_FrontendPacket10000Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10000_HANDSHAKE;
   g_FrontendPacket10000Buffer.protocolMagic2931 = 0x2931;
-  sendCarry = UiTransfer_StagePacketAndSendCf
+  sendCarry = UiTransfer_StagePacketAndSend
                     (&g_FrontendNetworkEndpointScratch,&g_FrontendPacket10000Buffer.header);
   return sendCarry;
 }
@@ -576,10 +576,10 @@ bool __thandor_cf_preserve_eax_ecx_edx UiTransfer_SendPacketType10000Value2931Cf
    Purpose: Builds packet 0x00020002 with a 0x40-byte payload, copies exactly ten dwords from the current player
    descriptor, derives status bits 0x0001 and 0x0100, and submits the packet while preserving the existing EDX and
    CF contracts. Key sender: 0x20002 PlayerDescriptor (10 dwords).
-   Local calls: UiTransfer_StagePacketAndSendCf.
-   Cross-module calls: PcxPreview_Load64x64PaletteAndPixelsCf [ui/support/runtime].
+   Local calls: UiTransfer_StagePacketAndSend.
+   Cross-module calls: PcxPreview_Load64x64PaletteAndPixels [ui/support/runtime].
 */
-bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(void)
+bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002(void)
 
 {
   int dwordCount;
@@ -597,13 +597,13 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(
     payloadCursor = payloadCursor + 1;
   }
   *(uint16_t *)((int)payloadCursor + -2) = 0;
-  callCarry = PcxPreview_Load64x64PaletteAndPixelsCf
+  callCarry = PcxPreview_Load64x64PaletteAndPixels
                     (g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
   if (!callCarry) {
     *(uint16_t *)((int)payloadCursor + -2) = *(uint16_t *)((int)payloadCursor + -2) | 1;
   }
   *(uint16_t *)((int)payloadCursor + -2) = *(uint16_t *)((int)payloadCursor + -2) | 0x100;
-  callCarry = UiTransfer_StagePacketAndSendCf
+  callCarry = UiTransfer_StagePacketAndSend
                     (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket20002Buffer.header);
   return callCarry;
 }
@@ -615,9 +615,9 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(
    0x00010011, formatting discovery replies and updating player records. Typed parameters: p4
    frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
    Cross-module calls: TextResource_Resolve [assets/text/resources], RichTextCommandStream_PatchPayloadBySelector
-   [assets/text/richtext], RichTextCommandStream_CopyExpandedCf [assets/text/richtext],
+   [assets/text/richtext], RichTextCommandStream_CopyExpanded [assets/text/richtext],
    FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands],
    FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction [ui/frontend/player].
 */
@@ -653,23 +653,23 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     }
     textResolveResult = TextResource_Resolve(0x211a);
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)THANDOR_ADDR(g_GameVersionUtf16,0),textResolveResult.text);
-    RichTextCommandStream_CopyExpandedCf
+    RichTextCommandStream_CopyExpanded
               (0x28,g_FrontendPacket50001Buffer.sessionTitleUtf16,textResolveResult.text);
     textResolveResult = TextResource_Resolve(0x211b);
     resolvedText = textResolveResult.text;
     RichTextCommandStream_PatchPayloadBySelector(0,(void *)(rootNodeOrCount + 0x50c0),resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,g_FrontendLocalPlayerNameUtf16,resolvedText);
-    RichTextCommandStream_CopyExpandedCf
+    RichTextCommandStream_CopyExpanded
               (0x58,g_FrontendPacket50001Buffer.hostDescriptionUtf16,resolvedText);
     textResolveResult = TextResource_Resolve(0x211c);
     resolvedText = textResolveResult.text;
     RichTextCommandStream_PatchPayloadBySelector(0,&g_FrontendNetworkRuntimeCountTextUtf16,resolvedText);
     RichTextCommandStream_PatchPayloadBySelector(1,&g_FrontendNetworkPlayerCountTextUtf16,resolvedText);
-    RichTextCommandStream_CopyExpandedCf(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);
+    RichTextCommandStream_CopyExpanded(8,g_FrontendPacket50001Buffer.playerCountTextUtf16,resolvedText);
     g_FrontendPacket50001Buffer.header.packedTypeAndUnitCount =
          FRONTEND_PACKET_50001_SESSION_ADVERTISEMENT;
     g_FrontendPacket50001Buffer.payloadByteCount = 0x20;
-    UiTransfer_StagePacketAndSendCf(senderEndpoint,&g_FrontendPacket50001Buffer.header);
+    UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket50001Buffer.header);
     return;
   }
   if (((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_20002) ||
@@ -726,7 +726,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
         endpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
         rootNodeOrCount = g_FrontendPlayerRuntimeCount;
         while (rootNodeOrCount = rootNodeOrCount + -1, rootNodeOrCount != 0) {
-          UiTransfer_StagePacketAndSendCf(endpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
+          UiTransfer_StagePacketAndSend(endpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
           endpointCursor = endpointCursor + 0x13b;
         }
         commandRecordCursor = g_FrontendCommandBatchPacketBuffer;
@@ -827,7 +827,7 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
   g_FrontendPacket10003Buffer.networkTickInterval = g_SessionNetworkTickInterval;
   g_FrontendPacket10003Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10003_JOIN_ACK;
   g_FrontendPacket10003Buffer.assignedPlayerRuntimeId = countFlagsOrId;
-  UiTransfer_StagePacketAndSendCf(senderEndpoint,&g_FrontendPacket10003Buffer.header);
+  UiTransfer_StagePacketAndSend(senderEndpoint,&g_FrontendPacket10003Buffer.header);
   g_FrontendPlayerRuntimeCount = g_FrontendPlayerRuntimeCount + 1;
   FrontendPlayerRuntime_UpdateAction2006ByFlag100Fraction();
   return;
@@ -842,7 +842,7 @@ FrontendTransfer_InitializeJoiningPlayerWithFreeId:
    queued lobby command dispatch. Typed parameters: p2 frontendRuntime→FrontendRootRuntimeAddress32_V345. Calling
    convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
    Cross-module calls: FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -898,8 +898,8 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
     g_FrontendPacket10032Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10032;
     g_FrontendPacket10032Buffer.backendSessionValue = g_UiTransferMailboxTickCounter;
     do {
-      UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendPacket40008Buffer.header);
-      UiTransfer_StagePacketAndSendCf(endpoint,&g_FrontendPacket10032Buffer.header);
+      UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPacket40008Buffer.header);
+      UiTransfer_StagePacketAndSend(endpoint,&g_FrontendPacket10032Buffer.header);
       endpoint = endpoint + 0x13b;
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
@@ -934,7 +934,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
     peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
     remainingCount = g_FrontendPlayerRuntimeCount;
     while (remainingCount = remainingCount + -1, remainingCount != 0) {
-      UiTransfer_StagePacketAndSendCf(peerEndpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
+      UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendCommandBatchPacketBuffer[0].header);
       peerEndpointCursor = peerEndpointCursor + 0x13b;
     }
     commandRecordCursor = g_FrontendCommandBatchPacketBuffer;
@@ -961,7 +961,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
    Ownership: network/protocol/transfer.
    Purpose: Stages and sends packet 0x00010006 with the fixed 0x100 and 0x40 payload fields to the current frontend
    endpoint.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
 
@@ -970,7 +970,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
        FRONTEND_PACKET_10006_CAPABILITY_HEARTBEAT;
   g_FrontendPacket10006Buffer.capabilityFlags = 0x100;
   g_FrontendPacket10006Buffer.heartbeatExpiryTicks = 0x40;
-  UiTransfer_StagePacketAndSendCf
+  UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10006Buffer.header);
   return;
 }
@@ -986,7 +986,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
    senior for the ring layout). Typed parameters: p2 sendStateReplies→FrontendBooleanState32_V342. Calling
    convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
    executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
    Cross-module calls: InGameCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -1011,12 +1011,12 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
           peersRemaining = g_FrontendPlayerRuntimeBlockCount;
           while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
             if (peerEndpointCursor[1].addressHeader.packedFamilyAndPort == 0) {
-              UiTransfer_StagePacketAndSendCf
+              UiTransfer_StagePacketAndSend
                         (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
             }
             else {
               g_FrontendPacket10022Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10022;
-              UiTransfer_StagePacketAndSendCf(peerEndpointCursor,&g_FrontendPacket10022Buffer.header);
+              UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendPacket10022Buffer.header);
             }
             peerEndpointCursor = peerEndpointCursor + 0x13b;
           }
@@ -1070,7 +1070,7 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
   peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
   peersRemaining = g_FrontendPlayerRuntimeBlockCount;
   while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
-    UiTransfer_StagePacketAndSendCf
+    UiTransfer_StagePacketAndSend
               (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
     peerEndpointCursor = peerEndpointCursor + 0x13b;
   }
@@ -1081,9 +1081,9 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
 /* Address: 0x00572920.
    Ownership: network/protocol/transfer.
    Purpose: Builds request type 0x00010021 in the fixed frontend packet, increments g_UiTransferSenderContext, runs
-   the packet preparation helper, and submits it through UiTransfer_StagePacketAndSendCf with the fixed endpoint
+   the packet preparation helper, and submits it through UiTransfer_StagePacketAndSend with the fixed endpoint
    descriptor. EAX and CF remain authoritative. Key sender: 0x10021 in-game command single/batch request mirror.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
    Cross-module calls: InGameCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchRequest10021(void)
@@ -1092,7 +1092,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchReques
   g_FrontendPacket10021Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10021;
   g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
   InGameCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10021Buffer);
-  UiTransfer_StagePacketAndSendCf
+  UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
   return;
 }
@@ -1120,7 +1120,7 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ClearReceivedState(vo
    and byte count in ECX with CF clear. Otherwise CF is set.
 */
 MailboxReceiveResult __thandor_eax_ecx_cf_preserve_edx
-UiTransferMailbox_GetReceivedBufferCf(void)
+UiTransferMailbox_GetReceivedBuffer(void)
 
 {
   MailboxReceiveResult receivedResult;
@@ -1268,9 +1268,9 @@ void __thandor_preserve_eax FrontendTransfer_TickRequestTimeoutAndResetPage(void
 /* Address: 0x0054FBA0.
    Ownership: network/protocol/transfer.
    Purpose: Atomically clears the frontend processed flag and returns carry set when the prior value was nonzero.
-   The instruction body is byte-identical to FrontendTransfer_ConsumeProcessedFlagCf at 0x00572AA0.
+   The instruction body is byte-identical to FrontendTransfer_ConsumeProcessedFlag at 0x00572AA0.
 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontendCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFrontend(void)
 
 {
   int previousFlag;
@@ -1383,7 +1383,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
    Purpose: Atomically exchanges the processed flag at 0x0050F0A8 with zero. CF is set when the consumed value was
    zero and clear when work had been marked processed; EAX is restored.
 */
-bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagCf(void)
+bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(void)
 
 {
   int previousFlag;
@@ -1572,7 +1572,7 @@ UiTransferMailbox_SetOutgoingBuffer(UiTransferPayloadByteCount byteCount,void *a
    Ownership: network/protocol/transfer.
    Purpose: Dequeues and sends a packet 0x00010011 record, then conditionally sends packet 0x00010004 for the next
    active player index.
-   Local calls: UiTransfer_StagePacketAndSendCf.
+   Local calls: UiTransfer_StagePacketAndSend.
    Cross-module calls: FrontendCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOptional10004(void)
@@ -1584,13 +1584,13 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
   g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
   FrontendCommandQueue_DequeueFirstIntoRecord(&g_FrontendPacket10011Buffer);
   nextPlayerIndex = g_FrontendPlayerRuntimeBlockCount;
-  UiTransfer_StagePacketAndSendCf
+  UiTransfer_StagePacketAndSend
             (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10011Buffer.header);
   if (nextPlayerIndex < g_FrontendExpectedPlayerRuntimeBlockCount) {
     g_FrontendPacket10004Buffer.header.packedTypeAndUnitCount =
          FRONTEND_PACKET_10004_SNAPSHOT_REQUEST;
     g_FrontendPacket10004Buffer.requestedPlayerIndex = nextPlayerIndex;
-    UiTransfer_StagePacketAndSendCf
+    UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10004Buffer.header);
   }
   return;
@@ -1609,7 +1609,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendQueued10011AndOpti
    Local calls: UiTransfer_TransformPacketBlocks.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTransfer_StagePacketAndSendCf
+UiTransfer_StagePacketAndSend
           (UiTransferEndpointDescriptor *endpoint,UiTransferPacketHeader *packet)
 
 {

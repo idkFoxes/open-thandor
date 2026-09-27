@@ -136,7 +136,7 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
    tier, direction, or effect mappings.
    Local calls: AiArmyCandidate_ComputeFactionWeightedScore.
    Cross-module calls: ModelDefinitionRegistry_FindByRuntimeClassId [assets/model/definitions],
-   ModelDefinition_IsFactionTechnologyUnlockedCf [assets/model/definitions].
+   ModelDefinition_IsFactionTechnologyUnlocked [assets/model/definitions].
 */
 AiCandidateScore32
 AiArmyCandidate_ComputeAverageCompatibleAssetScore
@@ -181,7 +181,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
               (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x34))) &&
              (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x38))))) &&
            (candidateModelDefinitionId != *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x3c))) {
-          technologyUnlocked = ModelDefinition_IsFactionTechnologyUnlockedCf
+          technologyUnlocked = ModelDefinition_IsFactionTechnologyUnlocked
                             (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
                              *(PckModelDefinitionIdCatalog *)(assetDefinitionListAddress + 0x20));
           if (((technologyUnlocked) ||
@@ -403,9 +403,9 @@ AiRuntime_DispatchFactionPlanningPhase
    class, and faction-role semantics are not inferred from numeric adjacency.
    Local calls: AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate,
    AiConstructionPlanner_PlaceDerivedAsset14D, AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor.
-   Cross-module calls: AiPrimaryWorkspace_HasUnassignedEntryByIdCf [gameplay/ai/workspaces],
-   AiConstructionPlanner_PlaceSpecialAssetFromWorkspace [gameplay/ai/workspaces], ArmyAssetRegistry_FindByIdCf
-   [assets/army/catalog], ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
+   Cross-module calls: AiPrimaryWorkspace_HasUnassignedEntryById [gameplay/ai/workspaces],
+   AiConstructionPlanner_PlaceSpecialAssetFromWorkspace [gameplay/ai/workspaces], ArmyAssetRegistry_FindById
+   [assets/army/catalog], ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 AiConstructionPlanner_ProcessPendingAssetRequests
@@ -428,7 +428,7 @@ AiConstructionPlanner_ProcessPendingAssetRequests
     }
     armyAssetId = requestEntry->armyAssetId;
     if (armyAssetId == ARM_0300_BUILDING_MDL0301) {
-      hasUnassignedEntry = AiPrimaryWorkspace_HasUnassignedEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+      hasUnassignedEntry = AiPrimaryWorkspace_HasUnassignedEntryById(ARM_0330_BUILDING_MDL0303);
       if (!hasUnassignedEntry) {
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
@@ -447,11 +447,11 @@ AiConstructionPlanner_ProcessPendingAssetRequests
                 (ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime);
     }
     else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
-      armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+      armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
       if (!armyAssetLookup.notFound) {
         /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
            CF), but both outcomes call the same placement handler. */
-        linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+        linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                           (factionIndex,(armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer);
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
@@ -476,7 +476,7 @@ AiConstructionPlanner_ProcessPendingAssetRequests
    an eligible producer, and applies the first affordable supported candidate. It returns a carry-derived status
    through the original convention. Stock tech.tec has 512 records over canonical ids 0..255; localized titles do
    not prove source-building, tier, direction, or effect mappings.
-   Local calls: AiPurchaseCandidate_HasEligibleProducerCf, AiPurchaseCandidate_ApplyToFaction.
+   Local calls: AiPurchaseCandidate_HasEligibleProducer, AiPurchaseCandidate_ApplyToFaction.
    Cross-module calls: AiCandidateWorkspace_SortDescending [gameplay/ai/workspaces],
    AiCandidateWorkspace_GetEntryEntityValue [gameplay/ai/workspaces].
 */
@@ -506,7 +506,7 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
       if (insufficientOrNoProducer) {
         return noCandidateApplied;
       }
-      insufficientOrNoProducer = AiPurchaseCandidate_HasEligibleProducerCf(entry,factionIndex);
+      insufficientOrNoProducer = AiPurchaseCandidate_HasEligibleProducer(entry,factionIndex);
       if (!insufficientOrNoProducer) {
         AiPurchaseCandidate_ApplyToFaction(entry,factionIndex);
         noCandidateApplied = false;
@@ -528,9 +528,9 @@ AiPurchasePlanner_ExecuteAffordableCandidates(FactionRuntimeIndex factionIndex)
    Local calls: AiConstructionPlanner_ConsumeFactionPendingArmyAsset,
    AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate.
    Cross-module calls: AiPlacement_ReserveAdditionalSpecialSite [gameplay/ai/placement],
-   AiPlacement_FindNearestValidWorkspace09Anchor [gameplay/ai/placement], ArmyRuntime_CreateInstanceFromAssetCf
+   AiPlacement_FindNearestValidWorkspace09Anchor [gameplay/ai/placement], ArmyRuntime_CreateInstanceFromAsset
    [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
-   ArmyRuntime_DispatchClassCommand [gameplay/army/runtime], EffectRuntimePool_CreateInstanceFromDefinitionCf
+   ArmyRuntime_DispatchClassCommand [gameplay/army/runtime], EffectRuntimePool_CreateInstanceFromDefinition
    [world/effects/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -564,7 +564,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
-            createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
+            createdInstance = ArmyRuntime_CreateInstanceFromAsset
                               (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
                                worldRuntime);
             armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
@@ -577,7 +577,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
             createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
             ArmyRuntime_DispatchClassCommand(armyRuntime,worldRuntime);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (createdModelNode->movementControl).turnVelocityAngle16,
                        (createdModelNode->movementControl).movementAdvancePerTickQ12,
@@ -605,7 +605,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
           anchorResult = AiPlacement_FindNearestValidWorkspace09Anchor
                             (sourceCell->worldY,sourceCell->worldX,armyAssetId,factionIndex,worldRuntime);
           if (!anchorResult.notFound) {
-            createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
+            createdInstance = ArmyRuntime_CreateInstanceFromAsset
                               (4,0,anchorResult.worldYQ12,anchorResult.worldXQ12,factionIndex,armyAssetId,
                                worldRuntime);
             armyRuntime = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
@@ -618,7 +618,7 @@ AiConstructionPlanner_PlaceDerivedAsset14D
             createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)createdModelNode);
             ArmyRuntime_DispatchClassCommand(armyRuntime,worldRuntime);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (createdModelNode->movementControl).turnVelocityAngle16,
                        (createdModelNode->movementControl).movementAdvancePerTickQ12,
@@ -646,8 +646,8 @@ AiConstructionPlanner_PlaceDerivedAsset14D
    Purpose: Scores eligible workspace11 army candidates with coefficient profile A, selects the highest positive
    result, adjusts its planning weight for existing pending extended assets and faction state, and adds the
    selected registry ID to the candidate workspace.
-   Local calls: AiFactionRuntime_TestPlanningCapacityExceededCf, AiArmyCandidate_ComputeFactionWeightedScore.
-   Cross-module calls: Technology_IsUnlockedForFactionCf [gameplay/technology/runtime],
+   Local calls: AiFactionRuntime_TestPlanningCapacityExceeded, AiArmyCandidate_ComputeFactionWeightedScore.
+   Cross-module calls: Technology_IsUnlockedForFaction [gameplay/technology/runtime],
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -669,9 +669,9 @@ AiArmyCandidate_AddBestScoredVariantA
   armyAssetRegistryCursor = g_AiWorkspaceBuffer11_Size1000;
   if (g_AiWorkspace11Count != 0) {
     bestScore = 0;
-    blockingCondition = AiFactionRuntime_TestPlanningCapacityExceededCf(4,factionIndex);
+    blockingCondition = AiFactionRuntime_TestPlanningCapacityExceeded(4,factionIndex);
     if ((!blockingCondition) &&
-       (blockingCondition = Technology_IsUnlockedForFactionCf(TEC_001_ARMS_FACTORIES,factionIndex), !blockingCondition)) {
+       (blockingCondition = Technology_IsUnlockedForFaction(TEC_001_ARMS_FACTORIES,factionIndex), !blockingCondition)) {
       do {
         if (((((ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor)->flags14 & 1) != 0) &&
            (candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
@@ -718,9 +718,9 @@ AiArmyCandidate_AddBestScoredVariantA
    Purpose: Adds strategic candidate 0x12D when its prerequisite state is appropriate, otherwise selects an
    available class in the 0x12E through 0x132 family and adds it with a knowledge-derived weight reduced by the
    existing class count.
-   Local calls: AiFactionRuntime_TestPlanningCapacityExceededCf, AiStrategicClass_SelectBestCandidate12ETo132.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
-   Technology_IsUnlockedForFactionCf [gameplay/technology/runtime],
+   Local calls: AiFactionRuntime_TestPlanningCapacityExceeded, AiStrategicClass_SelectBestCandidate12ETo132.
+   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
+   Technology_IsUnlockedForFaction [gameplay/technology/runtime],
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -734,13 +734,13 @@ AiStrategicClass_AddCandidate12DOr12FTo132
   AiKnowledgeDataImage *knowledgeData;
   
   knowledgeData = g_AiKnowledgeData;
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (conditionMet) {
-    conditionMet = Technology_IsUnlockedForFactionCf(TEC_001_ARMS_FACTORIES,factionIndex);
+    conditionMet = Technology_IsUnlockedForFaction(TEC_001_ARMS_FACTORIES,factionIndex);
     if (conditionMet) {
-      conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0301_BUILDING_MDL0318);
+      conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0301_BUILDING_MDL0318);
       if (!conditionMet) {
-        conditionMet = AiFactionRuntime_TestPlanningCapacityExceededCf
+        conditionMet = AiFactionRuntime_TestPlanningCapacityExceeded
                           ((knowledgeData->parameters).
                            strategic12dAnd141To143AdditionalPlanningCapacity,factionIndex);
         if (!conditionMet) {
@@ -750,7 +750,7 @@ AiStrategicClass_AddCandidate12DOr12FTo132
       }
     }
     else {
-      conditionMet = AiFactionRuntime_TestPlanningCapacityExceededCf
+      conditionMet = AiFactionRuntime_TestPlanningCapacityExceeded
                         ((knowledgeData->parameters).strategic12fTo132AdditionalPlanningCapacity,
                          factionIndex);
       if (!conditionMet) {
@@ -776,8 +776,8 @@ AiStrategicClass_AddCandidate12DOr12FTo132
    and adds it to the candidate workspace with a knowledge weight divided by the existing class pressure. It is
    distinct from FrontendPlayerIndex_V306, PlayerRuntimeId, active-faction masks or codes, and PCK-backed
    ArmyAssetId, ModelDefinitionId, and TechnologyId domains.
-   Local calls: AiFactionRuntime_TestPlanningCapacityExceededCf, AiStrategicClass_SelectWeightedClass141To143.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
+   Local calls: AiFactionRuntime_TestPlanningCapacityExceeded, AiStrategicClass_SelectWeightedClass141To143.
+   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -791,9 +791,9 @@ AiStrategicClass_AddWeightedClassCandidate
   AiStrategicClassSelectionRegs8 classSelection;
   
   knowledgeData = g_AiKnowledgeData;
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (conditionMet) {
-    conditionMet = AiFactionRuntime_TestPlanningCapacityExceededCf
+    conditionMet = AiFactionRuntime_TestPlanningCapacityExceeded
                       ((knowledgeData->parameters).strategic12dAnd141To143AdditionalPlanningCapacity,
                        factionIndex);
     if (!conditionMet) {
@@ -821,7 +821,7 @@ AiStrategicClass_AddWeightedClassCandidate
    Cross-module calls: AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint [gameplay/ai/workspaces],
    AiWorkspace02_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces],
    ArmyPlacement_DispatchAssetAtFieldPoint [gameplay/army/placement],
-   AiWorkspace03_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces], ArmyRuntime_CreateInstanceFromAssetCf
+   AiWorkspace03_GetMinimumManhattanDistanceToPoint [gameplay/ai/workspaces], ArmyRuntime_CreateInstanceFromAsset
    [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -898,7 +898,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
       remainingCells = remainingCells + -1;
     } while (remainingCells != 0);
     if (bestScore < 0x7fffffff) {
-      createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
+      createdInstance = ArmyRuntime_CreateInstanceFromAsset
                         (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                          bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
       createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
@@ -909,7 +909,7 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
         createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
         ArmyRuntime_DispatchClassCommand(createdSlots,worldRuntime);
-        EffectRuntimePool_CreateInstanceFromDefinitionCf
+        EffectRuntimePool_CreateInstanceFromDefinition
                   (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                    (modelNodeRuntime->movementControl).turnVelocityAngle16,
                    (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
@@ -1038,11 +1038,11 @@ AiArmyCandidate_AddBestScoredVariantC
    entity. The scan covers technology lists, army class masks, production state, and relevant entity categories; CF
    is clear when support is found and set otherwise. Stock tech.tec has 512 records over canonical ids 0..255;
    localized titles do not prove source-building, tier, direction, or effect mappings.
-   Cross-module calls: Technology_IsAvailableForFactionCf [gameplay/technology/runtime],
-   ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: Technology_IsAvailableForFaction [gameplay/technology/runtime],
+   ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiPurchaseCandidate_HasEligibleProducerCf
+AiPurchaseCandidate_HasEligibleProducer
           (AiCandidateWorkspaceEntry *candidateEntry,FactionRuntimeIndex factionIndex)
 
 {
@@ -1058,7 +1058,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
   
   technologyIndex = candidateEntry->entityIdAndMultiplicity & 0xffff;
   if ((candidateEntry->weightedScoreAndKind & 0xf) == 2) {
-    technologyAvailable = Technology_IsAvailableForFactionCf(technologyIndex,factionIndex);
+    technologyAvailable = Technology_IsAvailableForFaction(technologyIndex,factionIndex);
     workspaceEntry = g_AiWorkspaceBuffer00_Size0400;
     countOrClassMask = g_AiWorkspace00Count;
     if (technologyAvailable) {
@@ -1078,7 +1078,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
     }
   }
   else {
-    armyAssetLookup = ArmyAssetRegistry_FindByIdCf(technologyIndex);
+    armyAssetLookup = ArmyAssetRegistry_FindById(technologyIndex);
     countOrClassMask = armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
     if ((g_AiWorkspace00Count != 0) && ((g_AiPurchaseAppliedArmyClassMask & countOrClassMask) == 0)) {
       remainingEntries = g_AiWorkspace00Count;
@@ -1133,7 +1133,7 @@ AiPurchaseCandidate_HasEligibleProducerCf
    eligible entity and removed from its workspace slot; army candidates are registered for the faction and their
    class mask is accumulated.
    Cross-module calls: Technology_ApplyRecordToEntity [gameplay/technology/runtime],
-   GameFactionRuntime_RegisterArmyAssetPointers [gameplay/faction/runtime], ArmyAssetRegistry_FindByIdCf
+   GameFactionRuntime_RegisterArmyAssetPointers [gameplay/faction/runtime], ArmyAssetRegistry_FindById
    [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1172,7 +1172,7 @@ AiPurchaseCandidate_ApplyToFaction
   }
   else {
     GameFactionRuntime_RegisterArmyAssetPointers(0xffffffff,1,technologyIndex,factionIndex);
-    armyAssetLookup = ArmyAssetRegistry_FindByIdCf(technologyIndex);
+    armyAssetLookup = ArmyAssetRegistry_FindById(technologyIndex);
     if (!armyAssetLookup.notFound) {
       g_AiPurchaseAppliedArmyClassMask =
            g_AiPurchaseAppliedArmyClassMask | armyAssetLookup.recordOrError[1].selectionDetailTemplateVariantIndex;
@@ -1263,8 +1263,8 @@ AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionInde
    producer, tier, class, and faction-role semantics are not inferred from numeric adjacency. Typed parameters: p2
    baseWeight→AiCandidateScore32_V342. Calling convention, complete VariableStorage serialization, function bytes,
    control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: AiPrimaryWorkspace_HasUnassignedEntryByIdCf [gameplay/ai/workspaces],
-   AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces], AiCandidateWorkspace_AddOrAccumulateWeightedEntry
+   Cross-module calls: AiPrimaryWorkspace_HasUnassignedEntryById [gameplay/ai/workspaces],
+   AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces], AiCandidateWorkspace_AddOrAccumulateWeightedEntry
    [gameplay/ai/workspaces], AiPlacement_ReserveAdditionalSpecialSite [gameplay/ai/placement],
    AiPrimaryWorkspace_CountAssignedEntriesById [gameplay/ai/workspaces].
 */
@@ -1282,13 +1282,13 @@ AiStructureCandidate_AddWeightedId14BOr14CCandidate
   bool conditionMet;
   AiKnowledgeDataImage *knowledgeData;
   
-  conditionMet = AiPrimaryWorkspace_HasUnassignedEntryByIdCf(candidateArmyAssetId);
+  conditionMet = AiPrimaryWorkspace_HasUnassignedEntryById(candidateArmyAssetId);
   knowledgeData = g_AiKnowledgeData;
   if (!conditionMet) {
     storageLimit = g_GameFactionRuntimeImage.records[factionIndex].tritiumStorageLimitQ4;
     if (candidateArmyAssetId == ARM_0331_BUILDING_MDL0308) {
       storageLimit = g_GameFactionRuntimeImage.records[factionIndex].xeniteStorageLimitQ4;
-      conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+      conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
       if (((conditionMet) && (storageLimit != 0)) &&
          (storageLimit < (knowledgeData->parameters).structure14bPrerequisite14aCountLimit)) {
         xeniteCurrent = g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4;
@@ -1301,7 +1301,7 @@ AiStructureCandidate_AddWeightedId14BOr14CCandidate
       }
     }
     else {
-      conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0332_BUILDING_MDL0302);
+      conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0332_BUILDING_MDL0302);
       terrainFeatureEntry = g_AiWorkspaceBuffer08_Size0200;
       remainingOrAssignedCount = g_AiWorkspace08Count;
       if (((conditionMet) && (storageLimit != 0)) &&
@@ -1338,8 +1338,8 @@ AiStructureCandidate_AddWeightedId14BOr14CCandidate
    Purpose: Adds candidate ID 0x136 when the faction resource and capacity relationship indicates a deficit. The
    weight is scaled by the current production, storage, and AI knowledge parameters. Stock tech.tec has 512 records
    over canonical ids 0..255; localized titles do not prove source-building, tier, direction, or effect mappings.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
-   AiPrimaryWorkspace_HasUnassignedEntryByIdCf [gameplay/ai/workspaces],
+   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
+   AiPrimaryWorkspace_HasUnassignedEntryById [gameplay/ai/workspaces],
    AiCandidateWorkspace_AddOrAccumulateWeightedEntry [gameplay/ai/workspaces].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1352,9 +1352,9 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
   int generationCapacity;
   bool conditionMet;
   
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0330_BUILDING_MDL0303);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0330_BUILDING_MDL0303);
   if (conditionMet) {
-    conditionMet = AiPrimaryWorkspace_HasUnassignedEntryByIdCf(ARM_0310_BUILDING_MDL0305);
+    conditionMet = AiPrimaryWorkspace_HasUnassignedEntryById(ARM_0310_BUILDING_MDL0305);
     if (!conditionMet) {
       generationCapacity = (int)g_GameFactionRuntimeImage.records[factionIndex].energyGenerationCapacityQ4 >> 4;
       energyDemand = (int)(g_GameFactionRuntimeImage.records[factionIndex].suppliedEnergyDemandQ4 +
@@ -1387,8 +1387,8 @@ AiResourceCandidate_AddWeightedId136(FactionRuntimeIndex factionIndex)
    Purpose: Evaluates strategic class IDs 0x12E through 0x132 using faction category totals, class-specific
    coefficient tables, current workspace presence, and randomized tie variation. The best available class and
    comparison state are returned through the engine register convention.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
-   ArmyAssetRegistry_FindEnabledByIdCf [assets/army/catalog].
+   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
+   ArmyAssetRegistry_FindEnabledById [assets/army/catalog].
 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
 AiStrategicClass_SelectBestCandidate12ETo132
@@ -1443,11 +1443,11 @@ AiStrategicClass_SelectBestCandidate12ETo132
   bestCandidateScore = 0;
   selectedToken = 0;
   existingClassCount = 5;
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0302_BUILDING_MDL0300);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0302_BUILDING_MDL0300);
   pendingExistingCount = existingClassCount;
   if (!conditionMet) {
     existingClassCount = 4;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0302_BUILDING_MDL0300);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0302_BUILDING_MDL0300);
     pendingExistingCount = 4;
     if (!conditionMet) {
       selectedToken = 0x12e;
@@ -1461,10 +1461,10 @@ AiStrategicClass_SelectBestCandidate12ETo132
     }
   }
   existingClassCount = pendingExistingCount;
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0303_BUILDING_MDL0316);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0303_BUILDING_MDL0316);
   if (!conditionMet) {
     existingClassCount = existingClassCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0303_BUILDING_MDL0316);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0303_BUILDING_MDL0316);
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
@@ -1477,10 +1477,10 @@ AiStrategicClass_SelectBestCandidate12ETo132
       }
     }
   }
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0304_BUILDING_MDL0324);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0304_BUILDING_MDL0324);
   if (!conditionMet) {
     existingClassCount = existingClassCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0304_BUILDING_MDL0324);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0304_BUILDING_MDL0324);
     if (!conditionMet) {
       remainingCellsOrTieBits = randomizedTieBits & 0x3fff;
       randomizedTieBits = randomizedTieBits >> 5;
@@ -1493,10 +1493,10 @@ AiStrategicClass_SelectBestCandidate12ETo132
       }
     }
   }
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0305_BUILDING_MDL0317);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0305_BUILDING_MDL0317);
   if (!conditionMet) {
     existingClassCount = existingClassCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0305_BUILDING_MDL0317);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0305_BUILDING_MDL0317);
     if (!conditionMet) {
       freeBits25To27PercentOrScore = freeBits28To30Percent * g_AiStrategicClassTerrainWeights[3][0] +
               freeBits25To27PercentOrScore * g_AiStrategicClassTerrainWeights[3][1] +
@@ -1507,10 +1507,10 @@ AiStrategicClass_SelectBestCandidate12ETo132
       }
     }
   }
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0306_BUILDING_MDL0310);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0306_BUILDING_MDL0310);
   if (!conditionMet) {
     existingClassCount = existingClassCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0306_BUILDING_MDL0310);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0306_BUILDING_MDL0310);
     if (!conditionMet) {
       /* the original also scores class 0x132 with g_AiStrategicClassTerrainWeights[4] but
          discards the result (XOR EDX,EDX): 0x132 wins only over a negative best score */
@@ -1532,8 +1532,8 @@ AiStrategicClass_SelectBestCandidate12ETo132
    are returned through the original register convention. It is distinct from FrontendPlayerIndex_V306,
    PlayerRuntimeId, active-faction masks or codes, and PCK-backed ArmyAssetId, ModelDefinitionId, and TechnologyId
    domains.
-   Cross-module calls: AiPrimaryWorkspace_HasEntryByIdCf [gameplay/ai/workspaces],
-   ArmyAssetRegistry_FindEnabledByIdCf [assets/army/catalog].
+   Cross-module calls: AiPrimaryWorkspace_HasEntryById [gameplay/ai/workspaces],
+   ArmyAssetRegistry_FindEnabledById [assets/army/catalog].
 */
 AiStrategicClassSelectionRegs8 __thandor_regs_ebx_ecx_preserve_eax_edx
 AiStrategicClass_SelectWeightedClass141To143
@@ -1596,28 +1596,28 @@ AiStrategicClass_SelectWeightedClass141To143
   bestScore = 0;
   class141Coefficient0OrExistingCount = 3;
   selectedToken = 0;
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0321_BUILDING_MDL0326);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0321_BUILDING_MDL0326);
   if (!conditionMet) {
     class141Coefficient0OrExistingCount = 2;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0321_BUILDING_MDL0326);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0321_BUILDING_MDL0326);
     if ((!conditionMet) && (class141Score != 0)) {
       selectedToken = 0x141;
       bestScore = class141Score;
     }
   }
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0322_BUILDING_MDL0327);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0322_BUILDING_MDL0327);
   if (!conditionMet) {
     class141Coefficient0OrExistingCount = class141Coefficient0OrExistingCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0322_BUILDING_MDL0327);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0322_BUILDING_MDL0327);
     if ((!conditionMet) && (bestScore < class142Score)) {
       selectedToken = 0x142;
       bestScore = class142Score;
     }
   }
-  conditionMet = AiPrimaryWorkspace_HasEntryByIdCf(ARM_0323_BUILDING_MDL0328);
+  conditionMet = AiPrimaryWorkspace_HasEntryById(ARM_0323_BUILDING_MDL0328);
   if (!conditionMet) {
     class141Coefficient0OrExistingCount = class141Coefficient0OrExistingCount - 1;
-    conditionMet = ArmyAssetRegistry_FindEnabledByIdCf(ARM_0323_BUILDING_MDL0328);
+    conditionMet = ArmyAssetRegistry_FindEnabledById(ARM_0323_BUILDING_MDL0328);
     if ((!conditionMet) &&
        (bestScore < ((pressure2For143 + 1) * class143Coefficient0 + (pressure3For143 + 1) * class143Coefficient1 + (pressure4For143 + 1) * class143Coefficient2) / pressureSumPlusOne +
                  (randomBits >> 7 & 0x7f))) {
@@ -1637,10 +1637,10 @@ AiStrategicClass_SelectWeightedClass141To143
    consumed. Stock ARM contains 675 records and 326 unique ids; placement workspace, producer, tier, class, and
    faction-role semantics are not inferred from numeric adjacency.
    Local calls: AiConstructionPlanner_ConsumeFactionPendingArmyAsset.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog],
-   ModelDefinitionRegistry_FindByIdWithErrorCf [assets/model/definitions], ArmyPlacement_DispatchAssetAtFieldPoint
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog],
+   ModelDefinitionRegistry_FindByIdWithError [assets/model/definitions], ArmyPlacement_DispatchAssetAtFieldPoint
    [gameplay/army/placement], GridReachability_RebuildConnectedRegionAroundWorldPoint [world/pathing/grid],
-   ArmyRuntime_CreateInstanceFromAssetCf [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
+   ArmyRuntime_CreateInstanceFromAsset [gameplay/army/runtime], ModelNodeRuntime_RebuildTransformsFromRoot
    [world/model/hierarchy].
 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -1668,10 +1668,10 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
   FieldGridCell *bestCell;
   int bestScore;
   
-  armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
   if ((!armyAssetLookup.notFound) && (g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown == 0)
      ) {
-    modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithErrorCf
+    modelDefinitionLookup = ModelDefinitionRegistry_FindByIdWithError
                        (*(PckModelDefinitionIdCatalog *)
                          ((armyAssetLookup.recordOrError)->rootNodeOffsetOrPointer + 0x20));
     if (!modelDefinitionLookup.notFound) {
@@ -1715,7 +1715,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
           remainingCells = remainingCells + -1;
         } while (remainingCells != 0);
         if (bestScore < 0x7fffffff) {
-          createdInstance = ArmyRuntime_CreateInstanceFromAssetCf
+          createdInstance = ArmyRuntime_CreateInstanceFromAsset
                              (4,(uint32_t)(uint16_t)bestCell->triangle0NormalAngles,bestCell->worldY,
                               bestCell->worldX,factionIndex,armyAssetId,worldRuntime);
           createdSlots = (ArmyRuntimeSlot **)createdInstance.armyRuntimeOrError;
@@ -1726,7 +1726,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
             createdModelRuntime = (createdArmySlot->modelRuntimeOrSavedOffset).modelRuntime;
             ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNodeRuntime);
             ArmyRuntime_DispatchClassCommand(createdSlots,worldRuntime);
-            EffectRuntimePool_CreateInstanceFromDefinitionCf
+            EffectRuntimePool_CreateInstanceFromDefinition
                       (EFFECT_RUNTIME_COMPLETION_NONE,THANDOR_BITCAST(int, EffectRuntimeOwnerReference4, 0x0),
                        (modelNodeRuntime->movementControl).turnVelocityAngle16,
                        (modelNodeRuntime->movementControl).movementAdvancePerTickQ12,
@@ -1753,7 +1753,7 @@ AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
    preserved through candidate, queue, refund, transfer, and sale paths; cost and eligibility semantics remain
    those proved by the live consumers and PCK records. Stock ARM contains 675 records and 326 unique ids; placement
    workspace, producer, tier, class, and faction-role semantics are not inferred from numeric adjacency.
-   Cross-module calls: ArmyAssetRegistry_FindByIdCf [assets/army/catalog].
+   Cross-module calls: ArmyAssetRegistry_FindById [assets/army/catalog].
 */
 void __thandor_void_preserve_eax_ecx
 AiConstructionPlanner_ConsumeFactionPendingArmyAsset
@@ -1768,7 +1768,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
   
   g_AiConstructionPendingAssetConsumedCount = g_AiConstructionPendingAssetConsumedCount + 1;
   remainingAssets = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetCount;
-  armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+  armyAssetLookup = ArmyAssetRegistry_FindById(armyAssetId);
   assetPointerCursor = g_GameFactionRuntimeImage.records[factionIndex].primaryArmyAssetPointersOrIds;
   relationCounter = &g_GameFactionRuntimeImage.records[factionIndex].relationCounterB;
   *relationCounter = *relationCounter + 1;
@@ -1795,7 +1795,7 @@ AiConstructionPlanner_ConsumeFactionPendingArmyAsset
    Purpose: Handles ai faction runtime test planning capacity exceeded carry-flag result.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-AiFactionRuntime_TestPlanningCapacityExceededCf
+AiFactionRuntime_TestPlanningCapacityExceeded
           (uint32_t additionalPlanningCapacity,FactionRuntimeIndex factionIndex)
 
 {
@@ -1820,7 +1820,7 @@ AiFactionRuntime_TestPlanningCapacityExceededCf
    0..255; localized titles do not prove source-building, tier, direction, or effect mappings. Typed parameters: p4
    armyAssetRecord→AiArmyAssetRecordAddress32_V345. Calling convention, complete VariableStorage serialization,
    function bytes, control flow, globals, locals, and executable data remain unchanged.
-   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf [assets/model/definitions].
+   Cross-module calls: ModelDefinition_SelectFactionUnlockedLinkedDefinition [assets/model/definitions].
 */
 AiCandidateScore32 __thandor_eax_preserve_ecx_edx
 AiArmyCandidate_ComputeFactionWeightedScore
@@ -1849,7 +1849,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
   int definitionScaleDivisor30;
   
   linkedDefinitionList = (AiLinkedDefinitionListView *)armyAssetRecord->rootNodeOffsetOrPointer;
-  definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+  definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                     (factionIndex,(ModelLinkedDefinitionListAddress32)linkedDefinitionList);
   selectedModelDefinition = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
   if (definitionLookup.notFound) {
@@ -1870,7 +1870,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
             (int64_t)
             (&g_TechnologyCategoryMaximum0)[selectedModelDefinition->categoryMaximumIndex5C])) * 8;
   if (childCountOrWeightedDamage != 0) {
-    definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+    definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                       (factionIndex,linkedDefinitionList->childList0Address);
     selectedChildModelDefinition0 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
     if (definitionLookup.notFound) {
@@ -1957,7 +1957,7 @@ AiArmyCandidate_ComputeFactionWeightedScore
       }
     }
     if (1 < childCountOrWeightedDamage) {
-      definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+      definitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinition
                         (factionIndex,linkedDefinitionList->childList1Address);
       selectedChildModelDefinition1 = (ModelDefinitionResolvePhaseView280 *)definitionLookup.modelDefinition;
       if (definitionLookup.notFound) {

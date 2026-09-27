@@ -658,7 +658,7 @@ GraphicsTextureSource_BlitTiledHalfRgbSaturatedAdd
    Purpose: Decomposes texture-source subresource regions and returns the recovered EAX/CF asset result.
 */
 TextureSourceDecomposeResult __thandor_eax_cf_preserve_ecx_edx
-GraphicsTextureSource_DecomposeSubresourceRegionsCf
+GraphicsTextureSource_DecomposeSubresourceRegions
           (GraphicsSubresourceIndex entryIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {

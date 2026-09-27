@@ -216,15 +216,15 @@ typedef struct FrontendDisplayModeEnumerationState280 FrontendDisplayModeEnumera
 typedef struct FrontendTaskAssignmentGeneratedFactionTextRow50 FrontendTaskAssignmentGeneratedFactionTextRow50, *PFrontendTaskAssignmentGeneratedFactionTextRow50;
 typedef union FrontendDisplayModeScratch28 FrontendDisplayModeScratch28, *PFrontendDisplayModeScratch28;
 typedef struct FrontendDisplayModePersistentSelection10 FrontendDisplayModePersistentSelection10, *PFrontendDisplayModePersistentSelection10;
-typedef struct GridPathNearestCellCfRegisterResult GridPathNearestCellCfRegisterResult, *PGridPathNearestCellCfRegisterResult;
-typedef struct ModelTechnologyHierarchyCfVolatileContinuityResult ModelTechnologyHierarchyCfVolatileContinuityResult, *PModelTechnologyHierarchyCfVolatileContinuityResult;
-typedef struct GridPathBacktrackCfRegisterResult GridPathBacktrackCfRegisterResult, *PGridPathBacktrackCfRegisterResult;
+typedef struct GridPathNearestCellRegisterResult GridPathNearestCellRegisterResult, *PGridPathNearestCellRegisterResult;
+typedef struct ModelTechnologyHierarchyVolatileContinuityResult ModelTechnologyHierarchyVolatileContinuityResult, *PModelTechnologyHierarchyVolatileContinuityResult;
+typedef struct GridPathBacktrackRegisterResult GridPathBacktrackRegisterResult, *PGridPathBacktrackRegisterResult;
 typedef struct AiPreservedFactionIndexEdxResult AiPreservedFactionIndexEdxResult, *PAiPreservedFactionIndexEdxResult;
 typedef struct AiTechnologyPlanningLoopRegisterContinuityResult AiTechnologyPlanningLoopRegisterContinuityResult, *PAiTechnologyPlanningLoopRegisterContinuityResult;
-typedef struct GameFactionCapabilityCfVolatileContinuityResult GameFactionCapabilityCfVolatileContinuityResult, *PGameFactionCapabilityCfVolatileContinuityResult;
+typedef struct GameFactionCapabilityVolatileContinuityResult GameFactionCapabilityVolatileContinuityResult, *PGameFactionCapabilityVolatileContinuityResult;
 typedef struct EntityPathingDestinationRegisterResult EntityPathingDestinationRegisterResult, *PEntityPathingDestinationRegisterResult;
-typedef struct ModelRaycastNearestHitCfRegisterResult ModelRaycastNearestHitCfRegisterResult, *PModelRaycastNearestHitCfRegisterResult;
-typedef struct AiWorkspace09AnchorCfRegisterResult AiWorkspace09AnchorCfRegisterResult, *PAiWorkspace09AnchorCfRegisterResult;
+typedef struct ModelRaycastNearestHitRegisterResult ModelRaycastNearestHitRegisterResult, *PModelRaycastNearestHitRegisterResult;
+typedef struct AiWorkspace09AnchorRegisterResult AiWorkspace09AnchorRegisterResult, *PAiWorkspace09AnchorRegisterResult;
 typedef struct AiPlanningGridScanLoopContinuityResult AiPlanningGridScanLoopContinuityResult, *PAiPlanningGridScanLoopContinuityResult;
 typedef struct AiFactionPlanningCallerLoopRegisterContinuityResult AiFactionPlanningCallerLoopRegisterContinuityResult, *PAiFactionPlanningCallerLoopRegisterContinuityResult;
 typedef struct AiPlanningDispatchRegisterContinuityResult AiPlanningDispatchRegisterContinuityResult, *PAiPlanningDispatchRegisterContinuityResult;
@@ -4228,7 +4228,7 @@ typedef uint64_t ArmyUnlockedArmourAggregateEaxPreservedEdxCarrier64;
 
 typedef int FieldGridCellCoordinate;
 
-struct GridPathNearestCellCfRegisterResult {
+struct GridPathNearestCellRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
     FieldGridCellCoordinate selectedRow; 
     uint32_t preservedEdxCompatibility; 
@@ -4238,7 +4238,7 @@ typedef uint64_t AiWorkspaceCountEaxPreservedEdxCarrier64;
 
 typedef int ModelDefinitionHierarchyNodeAddress32;
 
-struct ModelTechnologyHierarchyCfVolatileContinuityResult {
+struct ModelTechnologyHierarchyVolatileContinuityResult {
     ModelDefinitionHierarchyNodeAddress32 preservedEaxDefinitionNodeAddress; 
     uint32_t preservedEcxCallerValue; 
     uint32_t preservedEdxCallerValue; 
@@ -4246,7 +4246,7 @@ struct ModelTechnologyHierarchyCfVolatileContinuityResult {
 
 typedef uint64_t AiCandidateScoreCfEaxPreservedEdxCarrier64;
 
-struct GridPathBacktrackCfRegisterResult {
+struct GridPathBacktrackRegisterResult {
     FieldGridCellCoordinate selectedColumn; 
     FieldGridCellCoordinate selectedRow; 
     FieldGridRegionMask routeStateMask; 
@@ -4264,7 +4264,7 @@ struct AiTechnologyPlanningLoopRegisterContinuityResult {
     uint32_t preservedEdxFactionRecordOffset; 
 };
 
-struct GameFactionCapabilityCfVolatileContinuityResult {
+struct GameFactionCapabilityVolatileContinuityResult {
     uint32_t preservedEaxCallerValue; 
     uint32_t preservedEcxCallerValue; 
     uint32_t preservedEdxCallerValue; 
@@ -4283,12 +4283,12 @@ typedef uint64_t DepthBinMaskEaxPreservedEdxCarrier64;
 
 typedef uint64_t AiWorkspaceEntryValueEaxPreservedEdxCarrier64;
 
-struct ModelRaycastNearestHitCfRegisterResult {
+struct ModelRaycastNearestHitRegisterResult {
     Q12 nearestDistanceQ12; 
     struct ModelRuntimeNode *nearestModelNode; 
 };
 
-struct AiWorkspace09AnchorCfRegisterResult {
+struct AiWorkspace09AnchorRegisterResult {
     Q12 worldYQ12; 
     Q12 worldXQ12; 
 };
@@ -5235,7 +5235,7 @@ struct UiSelectableControl {
     UiActionId actionId;
 };
 
-/* How UiSelectableControl_KeyboardEventCf sees its controls: the third dword after the selectable part is
+/* How UiSelectableControl_KeyboardEvent sees its controls: the third dword after the selectable part is
    the activation sound, played when stateFlags bit 0x80 is set (activationSoundId of UiTextButtonControl and
    UiFramedTextButtonControl, keyboardActivationSoundId of UiImageControl). The two dwords before it differ
    per subclass. */
@@ -6509,7 +6509,7 @@ struct FrontendModelPointerContextRuntimeState118 {
     uint32_t callbackArgumentEC; // Passed unchanged to resolved-action callbacks.
     uint32_t callbackArgumentF0; // Passed unchanged to resolved-action callbacks.
     uint8_t reservedF4_FF[12]; // reserved bytes before keyboard fallback callback
-    bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
+    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
     uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
@@ -6915,7 +6915,7 @@ struct UiRootCallbacks {
     bool (*closeCf)(struct UiRootNode *); // Optional close/pop callback. CF set vetoes removal of the root; CF clear permits the pop.
     void (*frameUpdate)(struct UiRootNode *); // Optional per-frame callback invoked by UiFrame_Update while this root is active.
     bool (*method08)(struct UiRootNode *); // Caller-cleanup root method invoked with UiRootNode *; mixed convention is intentional.
-    bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. CF conveys handling/traversal state.
+    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // Optional root-level keyboard fallback used after focused controls decline an event. CF conveys handling/traversal state.
     int (*pointerMissPolicy)(struct UiRootNode *); // Signed EAX policy; nonnegative stops pointer root traversal, negative continues to previousRoot; preserves ECX/EDX.
 };
 
@@ -11079,7 +11079,7 @@ struct TerrainRayTriangleResult {
     bool missed; // CF status
 };
 
-/* Result of UiPageStack_ActivePageNotInListCf: the active page's index in the stack (or the page
+/* Result of UiPageStack_ActivePageNotInList: the active page's index in the stack (or the page
    count), notFound when the active child is not one of the stack's pages. */
 typedef struct PageStackSearchResult PageStackSearchResult;
 struct PageStackSearchResult {
@@ -11087,7 +11087,7 @@ struct PageStackSearchResult {
     bool notFound; 
 };
 
-/* Result of ModelRuntimeNode_HitTestProjectedBoundsAndChildrenCf: distance to the hit, missed when
+/* Result of ModelRuntimeNode_HitTestProjectedBoundsAndChildren: distance to the hit, missed when
    neither the node nor a child was hit (the distance is then meaningless). */
 typedef struct ModelHitTestResult ModelHitTestResult;
 struct ModelHitTestResult {
@@ -11103,7 +11103,7 @@ struct RichTextCommandQueryResult {
     bool endOfStream; 
 };
 
-/* Result of ModelMesh_IntersectTriangleRayDistanceCf: hit is set when the ray hits the triangle
+/* Result of ModelMesh_IntersectTriangleRayDistance: hit is set when the ray hits the triangle
    (the opposite sense to TerrainRayTriangleResult). */
 typedef struct MeshRayTriangleResult MeshRayTriangleResult;
 struct MeshRayTriangleResult {
@@ -11508,7 +11508,7 @@ struct FrontendModelPointerContextRuntimeState17C {
     Q12 cursorWorldXQ12; // Cursor override X converted from pixels to Q12 for overlay hit state.
     Q12 cursorWorldYQ12; // Cursor override Y converted from pixels to Q12 for overlay hit state.
     struct GameEntityRuntime *selectedOverlayEntity; // Optional selected entity used by SelectionInfo/army overlay rendering; relocation clears it.
-    bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
+    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *); // root keyboard fallback callback; CF status, preserves EAX/ECX/EDX
     uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
@@ -11723,7 +11723,7 @@ struct FrontendPointerSceneRuntimeView43E8 {
     Q12 cursorWorldXQ12;
     Q12 cursorWorldYQ12;
     struct GameEntityRuntime *selectedOverlayEntity;
-    bool (*keyboardFallbackCf)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
+    bool (*keyboardFallback)(UiKeyboardStateMask, UiActionId, struct UiRootNode *);
     uint32_t (*resolvedActionCallback104)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
     uint32_t (*resolvedActionCallback108)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
     uint32_t (*resolvedActionCallback10C)(uint32_t, uint32_t, uint32_t, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *);
@@ -11978,7 +11978,7 @@ struct FrontendTaskAssignmentPageInitView26C4 { // Function-specific init view. 
     struct UiNodeBase returnToMainActionControl;
 };
 
-struct FieldGridCellSaveImageView80 { // Function-local physical serialization view for FieldGrid_SaveAssetImageFromRuntimeStateCf. Opaque runtime spans are neutral dwords because this routine writes them with 32-bit stores; canonical FieldGridCell remains unchanged.
+struct FieldGridCellSaveImageView80 { // Function-local physical serialization view for FieldGrid_SaveAssetImageFromRuntimeState. Opaque runtime spans are neutral dwords because this routine writes them with 32-bit stores; canonical FieldGridCell remains unchanged.
     uint32_t runtime00;
     uint32_t runtime04;
     PackedTerrainNormalAngles triangle0NormalAngles;
@@ -12244,7 +12244,7 @@ struct ArmyWeaponDefinitionView68 {
     Q12 postLaunchVector0Q12; // Q12 value passed to the post-launch action-vector update.
     Q12 postLaunchVector1Q12; // Q12 value passed to the post-launch action-vector update.
     uint8_t opaqueGap0048_0063[28]; // Opaque byte span compacted from autogenerated undefined1 components; offsets and all known semantic fields preserved.
-    struct MdlSerializedNodeHeader38 *modelPointSource64; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferencesCf rebases definition +0x64.
+    struct MdlSerializedNodeHeader38 *modelPointSource64; // Live MDL root node pointer after ModelDefinition_RegisterAndResolveReferences rebases definition +0x64.
 };
 
 struct ArmyWeaponRuntimeSlotView {
@@ -12693,9 +12693,9 @@ struct ModelRelativeDirectionAnglesEaxEdx8 {
 };
 
 struct ModelRuntimeLinkedChildSpawnInheritedState0C {
-    WorldMotionValue70 inheritedValue70; // First inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstanceCf.
-    WorldMotionValue74 inheritedValue74; // Second inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstanceCf.
-    WorldMotionValue78 inheritedValue78; // Third inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstanceCf.
+    WorldMotionValue70 inheritedValue70; // First inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstance.
+    WorldMotionValue74 inheritedValue74; // Second inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstance.
+    WorldMotionValue78 inheritedValue78; // Third inherited state word passed to ArmyRuntimeSpawner_CreateLinkedChildInstance.
 };
 
 struct ModelRuntimePositionedSoundClassState7C {
@@ -14648,7 +14648,7 @@ struct UiFormattedContainerWithMarker {
     uint16_t markerValueTextUtf16[12]; // Tooltip payload 2.
 };
 
-/* The two handlers of the root-stack action page: UiRootStack_PopCf, FatalErrorDialog_DismissAndPopRoot. */
+/* The two handlers of the root-stack action page: UiRootStack_Pop, FatalErrorDialog_DismissAndPopRoot. */
 typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;
 struct UiRootStackActionHandlerPage2 {
     void (*handlers[2])(void *);
