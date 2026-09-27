@@ -810,4 +810,59 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
     return 1;
 }
 
+/* ---- B2: saturated add (BlitSaturatedAddRgb, BlitHalfRgbSaturatedAdd) ------------------------ */
+
+/* PADDUSW of one lane: unsigned 16-bit add, clamped at 0xFFFF. */
+static __inline word Blit_AddSaturateWord(word a, word b)
+{
+    dword sum = (dword)a + b;
+    return (word)(sum > 0xffffu ? 0xffffu : sum);
+}
+
+/* A 16-bit framebuffer pixel as lanes without Blit_Unpack16's final >> 2: the masked channel times
+   the unpack scale, low 16 bits (PAND + PMULLW), i.e. the channel at the top of the word. */
+static __inline RasterColor Blit_Unpack16Unshifted(word pixel)
+{
+    const SoftwarePixelMmxConstants *k = &g_SoftwarePixelMmxConstants;
+    const word masks[RASTER_LANE_COUNT] = {k->packedPixelMasks.blue, k->packedPixelMasks.green,
+                                           k->packedPixelMasks.red, (word)k->packedPixelMasks.zero};
+    const word scales[RASTER_LANE_COUNT] = {k->unpackScales.blue, k->unpackScales.green, k->unpackScales.red,
+                                            (word)k->unpackScales.zero};
+    RasterColor result;
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        result.lane[i] = (short)(word)((pixel & masks[i]) * scales[i]);
+    }
+    return result;
+}
+
+/* Adds an ARGB colour to a 16-bit pixel: source lanes (c * 0x101) >> sourceShift, destination
+   Blit_Unpack16Unshifted, PADDUSW, then PSRLW 4 down to the Q12 scale Blit_PackLanes16 expects.
+   The alpha lane goes through the same steps; the pack constants' fourth lane decides whether it
+   reaches the pixel. */
+static __inline word Blit_AddArgb16(dword argb, word destination, int sourceShift)
+{
+    RasterColor source = Blit_ArgbLanes(argb, sourceShift);
+    RasterColor sum = Blit_Unpack16Unshifted(destination);
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        sum.lane[i] = (short)(Blit_AddSaturateWord((word)sum.lane[i], (word)source.lane[i]) >> 4);
+    }
+    return Blit_PackLanes16(sum);
+}
+
+/* Adds an ARGB colour to a 32-bit pixel: both as lanes c * 0x101 (the source >> sourceShift),
+   PADDUSW, PSRLW 8 and PACKUSWB. All four bytes, alpha included, are summed and written. */
+static __inline dword Blit_AddArgb32(dword argb, dword destination, int sourceShift)
+{
+    RasterColor source = Blit_ArgbLanes(argb, sourceShift);
+    RasterColor target = Blit_ArgbLanes(destination, 0);
+    int channel[RASTER_LANE_COUNT];
+    int i;
+    for (i = 0; i < RASTER_LANE_COUNT; i++) {
+        channel[i] = Blit_AddSaturateWord((word)target.lane[i], (word)source.lane[i]) >> 8;
+    }
+    return Raster_Pack32(channel);
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
