@@ -825,6 +825,8 @@ static __inline dword Blit_Modulate(dword argb, dword modulation)
     dword red = (((argb >> 16) & 0xff) * ((modulation >> 16) & 0xff)) & 0xff00u;
     dword alpha = ((argb >> 24) * (modulation >> 24)) & 0xff00u;
     return blue | green | (red << 8) | (alpha << 16);
+}
+
 /* ---- B2: saturated add (BlitSaturatedAddRgb, BlitHalfRgbSaturatedAdd) ------------------------ */
 
 /* PADDUSW of one lane: unsigned 16-bit add, clamped at 0xFFFF. */
@@ -878,6 +880,8 @@ static __inline dword Blit_AddArgb32(dword argb, dword destination, int sourceSh
         channel[i] = Blit_AddSaturateWord((word)target.lane[i], (word)source.lane[i]) >> 8;
     }
     return Raster_Pack32(channel);
+}
+
 /* ---- B3: integer-scaled blit ---------------------------------------------------------------- */
 /*
 SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32 do not clip the source. They walk the whole

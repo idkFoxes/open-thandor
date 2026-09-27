@@ -1438,7 +1438,7 @@ SoftwareFramebuffer_CopyRegionToOrigin
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
         for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
-          *(undefined4 *)sourceRowStartOrDestCursor = *(undefined4 *)destRowStartOrSourceCursor;
+          *(dword *)sourceRowStartOrDestCursor = *(dword *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }
@@ -1533,7 +1533,7 @@ SoftwareFramebuffer_CopyOriginToRegion
         destRowStartOrSourceCursor = sourceRow;
         sourceRowStartOrDestCursor = destRow;
         for (bytesOrWordsLeft = rowBytes >> 2; bytesOrWordsLeft != 0; bytesOrWordsLeft = bytesOrWordsLeft - 1) {
-          *(undefined4 *)sourceRowStartOrDestCursor = *(undefined4 *)destRowStartOrSourceCursor;
+          *(dword *)sourceRowStartOrDestCursor = *(dword *)destRowStartOrSourceCursor;
           destRowStartOrSourceCursor = destRowStartOrSourceCursor + 4;
           sourceRowStartOrDestCursor = sourceRowStartOrDestCursor + 4;
         }

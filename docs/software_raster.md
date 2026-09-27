@@ -268,13 +268,13 @@ with the original machine code:
 |---|---|---|
 | `SoftwareTextureSource_BlitSourceAlpha16/32` | 0x4A93C0, 0x4A9710 | rewritten (reference) |
 | `SoftwareFramebuffer_FillRectArgb16/32` | 0x4AD110, 0x4AD2A0 | rewritten (reference) |
-| `SoftwareTextureSource_BlitHalfSourceRgb16/32` | 0x4A9B20, 0x4A9E10 | decompiled, identical |
-| `SoftwareTextureSource_BlitSourceAlphaPaletteBank16/32` | 0x4AADE0, 0x4AB150 | decompiled, identical |
-| `SoftwareTextureSource_BlitModulatedSourceAlpha16/32` | 0x4AC040, 0x4AC4C0 | decompiled, identical |
-| `SoftwareTextureSource_BlitSaturatedAddRgb16/32` | 0x4AB4A0, 0x4AB750 | decompiled, identical |
-| `SoftwareTextureSource_BlitHalfRgbSaturatedAdd16/32` | 0x4ABA70, 0x4ABD20 | decompiled, identical |
-| `SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32` | 0x4AA630, 0x4AAA40 | decompiled, identical |
-| `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | decompiled, identical |
+| `SoftwareTextureSource_BlitHalfSourceRgb16/32` | 0x4A9B20, 0x4A9E10 | rewritten |
+| `SoftwareTextureSource_BlitSourceAlphaPaletteBank16/32` | 0x4AADE0, 0x4AB150 | rewritten |
+| `SoftwareTextureSource_BlitModulatedSourceAlpha16/32` | 0x4AC040, 0x4AC4C0 | rewritten |
+| `SoftwareTextureSource_BlitSaturatedAddRgb16/32` | 0x4AB4A0, 0x4AB750 | rewritten |
+| `SoftwareTextureSource_BlitHalfRgbSaturatedAdd16/32` | 0x4ABA70, 0x4ABD20 | rewritten |
+| `SoftwareTextureSource_BlitIntegerScaledSourceAlpha16/32` | 0x4AA630, 0x4AAA40 | rewritten |
+| `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` | 0x519270 | rewritten |
 
 "Identical" means blitcmp found no difference in 3000 runs on seeds 1 and 7: the decompiled C
 of all 17 functions already matched the original.
@@ -361,7 +361,7 @@ fills". They reuse `RasterColor` and `Raster_MulHigh`.
 | `Blit_PackLanes32` | `PSRLW 4` (logical) + `PACKUSWB` (the alpha lane is written too) |
 | `Blit_BlendArgb16/32` | the source-alpha blend of one ARGB colour over one pixel |
 
-Operations of the functions that are not rewritten yet, read from their asm:
+Pixel operations of the other blits, read from their asm (the rewritten code follows them):
 
 - **HalfSourceRgb**: there is no opaque shortcut, so alpha 0xFF also blends (factor index 0xFF).
   The source lanes are `(c * 0x101) >> 3` (half), except in the 32-bit direct-colour path, which
@@ -431,12 +431,5 @@ A rewrite is done when all of the following hold:
 
 ## Remaining work
 
-These are three independent packages. Each one touches only its own function bodies in
-`software.c`, and they are in separate regions of the file. Add any new blit helper at the end of
-the blit section of `software_raster.h`, under a comment that names your package.
-
-| package | functions | new helpers needed |
-|---|---|---|
-| B1: clipped blend variants | `BlitHalfSourceRgb16/32`, `BlitSourceAlphaPaletteBank16/32`, `BlitModulatedSourceAlpha16/32` (6) | none for PaletteBank (reuse `Blit_SetupSubresource`, then swap `region.palette`); a `>> 3` source for HalfSourceRgb (use `Blit_ArgbLanes(argb, 3)` with `Blit_BlendLanes`); `Blit_Modulate(argb, modulation)` |
-| B2: saturated add | `BlitSaturatedAddRgb16/32`, `BlitHalfRgbSaturatedAdd16/32` (4) | a `PADDUSW` lane add, and the unshifted 16-bit unpack (`(p & mask) * scale`), e.g. `Blit_AddArgb16/32(argb, pixel, sourceShift)` |
-| B3: scaled blit and mask step | `BlitIntegerScaledSourceAlpha16/32`, `SoftwareMaskBuffer_AdvanceNonzeroPixelsSaturating31` (3) | its own validation (it does not use `Blit_SetupSubresource`, because nothing is clipped at the source) and a per-pixel clip test; the mask step is a byte loop |
+None: all raster handlers and blits are rewritten and verified by rastercmp, blitcmp and
+blendscalecmp. The per-function pixel operations above describe the rewritten code.
