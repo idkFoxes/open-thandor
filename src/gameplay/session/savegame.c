@@ -314,7 +314,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
 {
   UiNodeBase *parentWalk;
   UiNodeBase *firstNode;
-  UiNodeVtable *remainingLength;
+  dword remainingLength;
   uint scanRemaining;
   uint nameLength;
   sdword *scanEnd;
@@ -327,23 +327,23 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
     firstNode = firstNode->parent;
     parentWalk = firstNode->parent;
   }
-  if (((uint)nameControl[1].nextSibling & 1) != 0) {
-    remainingLength = nameControl[1].vtable;
+  if ((((UiTextEditControl *)nameControl)->editStateFlags & 1) != 0) {
+    remainingLength = ((UiTextEditControl *)nameControl)->valueOrCapacity58;
     matched = true;
-    charCursor = &nameControl[1].leftOffset;
+    charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
     do {
       scanEnd = charCursor;
-      if (remainingLength == (UiNodeVtable *)0x0) break;
-      remainingLength = (UiNodeVtable *)((int)&remainingLength[-1].pointerWheel + 3);
+      if (remainingLength == 0) break;
+      remainingLength = remainingLength - 1;
       scanEnd = (sdword *)((int)charCursor + 2);
       matched = (short)*charCursor == 0;
       charCursor = scanEnd;
     } while (!matched);
     if (matched) {
-      nameLength = (uint)-((int)&nameControl[1].leftOffset - (int)scanEnd) >> 1;
+      nameLength = (uint)-((int)(sdword *)((UiTextEditControl *)nameControl)->textPrefix6C - (int)scanEnd) >> 1;
       matched = nameLength == 0;
       scanRemaining = nameLength;
-      charCursor = &nameControl[1].leftOffset;
+      charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
       do {
         if (scanRemaining == 0) break;
         scanRemaining = scanRemaining - 1;
@@ -352,7 +352,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
       } while (!matched);
       if (!matched) {
         scanRemaining = nameLength;
-        charCursor = &nameControl[1].leftOffset;
+        charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
         do {
           if (scanRemaining == 0) break;
           scanRemaining = scanRemaining - 1;
@@ -361,7 +361,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
         } while (!matched);
         if (!matched) {
           scanRemaining = nameLength;
-          charCursor = &nameControl[1].leftOffset;
+          charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
           do {
             if (scanRemaining == 0) break;
             scanRemaining = scanRemaining - 1;
@@ -370,7 +370,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
           } while (!matched);
           if (!matched) {
             scanRemaining = nameLength;
-            charCursor = &nameControl[1].leftOffset;
+            charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
             do {
               if (scanRemaining == 0) break;
               scanRemaining = scanRemaining - 1;
@@ -379,7 +379,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
             } while (!matched);
             if (!matched) {
               scanRemaining = nameLength;
-              charCursor = &nameControl[1].leftOffset;
+              charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
               do {
                 if (scanRemaining == 0) break;
                 scanRemaining = scanRemaining - 1;
@@ -388,7 +388,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
               } while (!matched);
               if (!matched) {
                 scanRemaining = nameLength;
-                charCursor = &nameControl[1].leftOffset;
+                charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
                 do {
                   if (scanRemaining == 0) break;
                   scanRemaining = scanRemaining - 1;
@@ -397,7 +397,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                 } while (!matched);
                 if (!matched) {
                   scanRemaining = nameLength;
-                  charCursor = &nameControl[1].leftOffset;
+                  charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
                   do {
                     if (scanRemaining == 0) break;
                     scanRemaining = scanRemaining - 1;
@@ -406,7 +406,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                   } while (!matched);
                   if (!matched) {
                     scanRemaining = nameLength;
-                    charCursor = &nameControl[1].leftOffset;
+                    charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
                     do {
                       if (scanRemaining == 0) break;
                       scanRemaining = scanRemaining - 1;
@@ -415,7 +415,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                     } while (!matched);
                     if (!matched) {
                       scanRemaining = nameLength;
-                      charCursor = &nameControl[1].leftOffset;
+                      charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
                       do {
                         if (scanRemaining == 0) break;
                         scanRemaining = scanRemaining - 1;
@@ -423,7 +423,7 @@ InGameSaveName_UpdateSaveActionValidity(UiNodeBase *nameControl)
                         charCursor = (sdword *)((int)charCursor + 2);
                       } while (!matched);
                       if (!matched) {
-                        charCursor = &nameControl[1].leftOffset;
+                        charCursor = (sdword *)((UiTextEditControl *)nameControl)->textPrefix6C;
                         do {
                           if (nameLength == 0) break;
                           nameLength = nameLength - 1;

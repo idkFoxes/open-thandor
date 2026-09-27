@@ -2431,12 +2431,13 @@ void __thandor_void_preserve_eax_ecx FrontendRecentText_TrimAndSortTopFive(UiNod
 {
   uint currentEntryCount;
   
-  for (currentEntryCount = (uint)source[1].vtable; (UiNodeVtable *)0x4 < currentEntryCount;
-      currentEntryCount = (int)&((UiNodeVtable *)(currentEntryCount + -0x48))->pointerWheel + 3) {
+  for (currentEntryCount = ((UiConditionalActionControl *)source)->lineCount; 4 < currentEntryCount;
+      currentEntryCount = currentEntryCount - 1) {
     RecentTextHistory_RemoveOldest();
   }
   RecentTextHistory_RemoveOldest();
-  RecentTextHistory_SortAndBuildPointerList(5,(RecentTextHistoryPointerList *)&source[1].vtable);
+  RecentTextHistory_SortAndBuildPointerList
+            (5,(RecentTextHistoryPointerList *)&((UiConditionalActionControl *)source)->lineCount);
   return;
 }
 
@@ -3374,7 +3375,7 @@ FrontendUiAction2046_IndexedSelectionHelper
        ((int)&(((UiRootNode *)(uintptr_t)g_FrontendRootNode)->base).nextSibling +
        g_FrontendTaskAssignmentControlOffsets.selectionRows.offsets[selectionIndex + 1]);
   generationCursor = 7;
-  if (((uint)selectedControl[1].nextSibling & 0x400) == 0) {
+  if ((((UiSelectableControl *)selectedControl)->stateFlags & 0x400) == 0) {
     if (argument1 == g_LocalPlayerRuntimeId) {
       do {
         generationCursor = generationCursor - SESSION_NETWORK_ROLE_CLIENT;

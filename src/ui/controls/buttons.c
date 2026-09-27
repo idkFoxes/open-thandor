@@ -408,7 +408,7 @@ UiSpriteButtonControl_HitTestOpaque
 void __thandor_void_preserve_eax_ecx_edx
 UiImageActionControl_DrawImageAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiImageActionControl *control)
 
 {
   int imageBottom;
@@ -420,56 +420,56 @@ UiImageActionControl_DrawImageAndChildren
   int imageTop;
   bool accessFailed;
   
-  if (((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control[1].parent != (UiNodeBase *)0x0))
+  if (((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && (control->textureSource != (GraphicsTextureSourceAsset *)0x0))
   {
     accessFailed = (*g_GraphicsFramebufferBeginAccess)();
     if (!accessFailed) {
-      if (((uint)control[1].nextSibling & 1) == 0) {
+      if ((control->displayFlags & 1) == 0) {
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,
-                   (dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,
+                   control->subresource,control->textureSource,
                    g_FramebufferAccess);
         (*g_GraphicsFramebufferEndAccess)();
       }
       else {
-        sourceWidth = control[1].right;
-        horizontalMargin = control->layoutWidth - sourceWidth;
-        if (((uint)control->layoutWidth < sourceWidth || horizontalMargin == 0) ||
-           (((uint)control[1].nextSibling & 4) == 0)) {
+        sourceWidth = control->letterboxWidth;
+        horizontalMargin = control->base.layoutWidth - sourceWidth;
+        if (((uint)control->base.layoutWidth < sourceWidth || horizontalMargin == 0) ||
+           ((control->displayFlags & 4) == 0)) {
           (*g_GraphicsTextureSourceStretchDirectColorBilinear)
-                    (control->layoutHeight,control->layoutWidth,control->top,control->left,
-                     (dword)control[1].vtable,(GraphicsTextureSourceAsset *)control[1].parent,
+                    (control->base.layoutHeight,control->base.layoutWidth,control->base.top,control->base.left,
+                     control->subresource,control->textureSource,
                      g_FramebufferAccess);
           (*g_GraphicsFramebufferEndAccess)();
         }
         else {
-          scaledHeight = (dword)(((longlong)(int)sourceWidth * (longlong)control->layoutHeight) /
-                        (longlong)control->layoutWidth);
-          imageLeft = (horizontalMargin >> 1) + control->left;
-          imageTop = (control->layoutHeight - scaledHeight >> 1) + control->top;
-          drawWidth = control[1].right;
+          scaledHeight = (dword)(((longlong)(int)sourceWidth * (longlong)control->base.layoutHeight) /
+                        (longlong)control->base.layoutWidth);
+          imageLeft = (horizontalMargin >> 1) + control->base.left;
+          imageTop = (control->base.layoutHeight - scaledHeight >> 1) + control->base.top;
+          drawWidth = control->letterboxWidth;
           imageBottom = scaledHeight + imageTop;
           (*g_GraphicsFramebufferFillRectArgb)
-                    (clipTop,clipLeft,clipBottom,clipRight,imageTop,control->right,control->top,
-                     control->left,0xff000000,g_FramebufferAccess);
+                    (clipTop,clipLeft,clipBottom,clipRight,imageTop,control->base.right,control->base.top,
+                     control->base.left,0xff000000,g_FramebufferAccess);
           (*g_GraphicsFramebufferFillRectArgb)
-                    (clipTop,clipLeft,clipBottom,clipRight,control->bottom,control->right,imageBottom,
-                     control->left,0xff000000,g_FramebufferAccess);
+                    (clipTop,clipLeft,clipBottom,clipRight,control->base.bottom,control->base.right,imageBottom,
+                     control->base.left,0xff000000,g_FramebufferAccess);
           (*g_GraphicsFramebufferFillRectArgb)
-                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->left,0xff000000,
+                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,imageLeft,imageTop,control->base.left,0xff000000,
                      g_FramebufferAccess);
           (*g_GraphicsFramebufferFillRectArgb)
-                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->right,imageTop,imageLeft + drawWidth,
+                    (clipTop,clipLeft,clipBottom,clipRight,imageBottom,control->base.right,imageTop,imageLeft + drawWidth,
                      0xff000000,g_FramebufferAccess);
           (*g_GraphicsTextureSourceStretchDirectColorBilinear)
-                    (scaledHeight,control[1].right,imageTop,imageLeft,(dword)control[1].vtable,
-                     (GraphicsTextureSourceAsset *)control[1].parent,g_FramebufferAccess);
+                    (scaledHeight,control->letterboxWidth,imageTop,imageLeft,control->subresource,
+                     control->textureSource,g_FramebufferAccess);
           (*g_GraphicsFramebufferEndAccess)();
         }
       }
     }
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
+  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
   return;
 }
 
@@ -480,10 +480,10 @@ UiImageActionControl_DrawImageAndChildren
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiImageActionControl_QueryPointerCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageActionControl *control)
 
 {
-  return (GraphicsCursorFrameIndex)control[1].firstChild;
+  return control->cursorFrame;
 }
 
 
@@ -495,10 +495,10 @@ UiImageActionControl_QueryPointerCode
 void __thandor_preserve_eax
 UiImageActionControl_EnqueuePrimaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiImageActionControl *control)
 
 {
-  UiActionQueue_Enqueue(control[1].left,control);
+  UiActionQueue_Enqueue(control->primaryActionId,&control->base);
   return;
 }
 
@@ -511,10 +511,10 @@ UiImageActionControl_EnqueuePrimaryAction
 void __thandor_preserve_eax
 UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiImageActionControl *control)
 
 {
-  UiActionQueue_Enqueue(control[1].top,control);
+  UiActionQueue_Enqueue(control->secondaryActionId,&control->base);
   return;
 }
 
@@ -526,15 +526,15 @@ UiImageActionControl_EnqueueSecondaryAction
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiImageActionControl_HandleKeyboardActivationCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control)
 
 {
   if (keyCode == 0x10002) {
     UiKeyboardFocus_MoveNext();
     return false;
   }
-  if (((uint)control[1].nextSibling & 2) != 0) {
-    UiActionQueue_Enqueue(control[1].left,control);
+  if ((control->displayFlags & 2) != 0) {
+    UiActionQueue_Enqueue(control->primaryActionId,&control->base);
     return false;
   }
   return true;
@@ -550,7 +550,7 @@ UiImageActionControl_HandleKeyboardActivationCf
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiConditionalActionControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control)
 
 {
   dword tileEnd;
@@ -558,60 +558,60 @@ UiConditionalActionControl_DrawClipped
   dword tileStart;
   int drawX;
   int innerHeightOrBottom;
-  UiNodeVtable *lineIndexOrCount;
+  dword lineIndexOrCount;
   int innerWidthOrRight;
   bool accessFailed;
   RichTextExtentRegs textExtent;
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
   GraphicsSubresourceIndex backgroundSubresource;
   
-  if ((control[1].vtable != (UiNodeVtable *)0x0) &&
+  if ((control->lineCount != 0) &&
      (accessFailed = (*g_GraphicsFramebufferBeginAccess)(), !accessFailed)) {
     backgroundSubresource = 0x7b;
-    if ((control->layoutWidth == 0x1a0) && (control->layoutHeight == 0x3a)) {
+    if ((control->base.layoutWidth == 0x1a0) && (control->base.layoutHeight == 0x3a)) {
       backgroundSubresource = 200;
     }
     cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x72,g_UiWindowTextureSource);
     tileStart = cornerSize.logicalHeightPixels;
     tileEnd = cornerSize.logicalWidthPixels;
-    innerWidthOrRight = control->layoutWidth;
-    innerHeightOrBottom = control->layoutHeight;
+    innerWidthOrRight = control->base.layoutWidth;
+    innerHeightOrBottom = control->base.layoutHeight;
     if (backgroundSubresource == 0x7b) {
       innerWidthOrRight = innerWidthOrRight - tileEnd;
       innerHeightOrBottom = innerHeightOrBottom - tileStart;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x72,
+                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x72,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,innerWidthOrRight + control->left,0x73,
+                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,innerWidthOrRight + control->base.left,0x73,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->top,control->left,0x74,
+                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,control->base.left,0x74,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->top,innerWidthOrRight + control->left,
+                (clipTop,clipLeft,clipBottom,clipRight,innerHeightOrBottom + control->base.top,innerWidthOrRight + control->base.left,
                  0x75,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x76,innerWidthOrRight,0,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x76,innerWidthOrRight,0,tileEnd,&control->base);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x77,innerHeightOrBottom,tileStart,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x77,innerHeightOrBottom,tileStart,0,&control->base);
       UiWindow_BlitTiledVerticalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x78,innerHeightOrBottom,tileStart,innerWidthOrRight,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x78,innerHeightOrBottom,tileStart,innerWidthOrRight,&control->base);
       UiWindow_BlitTiledHorizontalEdge
-                (clipTop,clipLeft,clipBottom,clipRight,0x79,innerWidthOrRight,innerHeightOrBottom,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x79,innerWidthOrRight,innerHeightOrBottom,tileEnd,&control->base);
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,0x7b,innerHeightOrBottom,innerWidthOrRight,tileStart,tileEnd,control);
+                (clipTop,clipLeft,clipBottom,clipRight,0x7b,innerHeightOrBottom,innerWidthOrRight,tileStart,tileEnd,&control->base);
     }
     else {
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,backgroundSubresource,innerHeightOrBottom,innerWidthOrRight,0,0,control);
+                (clipTop,clipLeft,clipBottom,clipRight,backgroundSubresource,innerHeightOrBottom,innerWidthOrRight,0,0,&control->base);
       innerWidthOrRight = innerWidthOrRight - tileEnd;
       innerHeightOrBottom = innerHeightOrBottom - tileStart;
     }
-    textLeft = tileEnd + control->left;
-    drawX = tileStart + control->top;
-    innerWidthOrRight = innerWidthOrRight + control->left;
-    innerHeightOrBottom = innerHeightOrBottom + control->top;
+    textLeft = tileEnd + control->base.left;
+    drawX = tileStart + control->base.top;
+    innerWidthOrRight = innerWidthOrRight + control->base.left;
+    innerHeightOrBottom = innerHeightOrBottom + control->base.top;
     if (clipRight < textLeft) {
       clipRight = textLeft;
     }
@@ -624,29 +624,29 @@ UiConditionalActionControl_DrawClipped
     if (innerHeightOrBottom < clipTop) {
       clipTop = innerHeightOrBottom;
     }
-    textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,(word *)control[1].left);
+    textExtent = RichTextCommandStream_MeasureRegs(g_UiTextStyleNormal,control->textLines[0]);
     if (backgroundSubresource == 0x7b) {
-      lineIndexOrCount = (UiNodeVtable *)0x0;
+      lineIndexOrCount = 0;
       do {
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_UiTextStyleNormal,
-                   (word *)(&control[1].left)[(int)lineIndexOrCount],drawX,textLeft + 3);
-        lineIndexOrCount = (UiNodeVtable *)((int)&lineIndexOrCount->relocate + 1);
+                   control->textLines[lineIndexOrCount],drawX,textLeft + 3);
+        lineIndexOrCount = lineIndexOrCount + 1;
         drawX = drawX + textExtent.heightPixels;
-      } while (lineIndexOrCount < control[1].vtable);
+      } while (lineIndexOrCount < control->lineCount);
     }
     else {
-      lineIndexOrCount = control[1].vtable;
-      if ((UiNodeVtable *)0x4 < lineIndexOrCount) {
-        lineIndexOrCount = (UiNodeVtable *)0x4;
+      lineIndexOrCount = control->lineCount;
+      if (4 < lineIndexOrCount) {
+        lineIndexOrCount = 4;
       }
       do {
         RichTextCommandStream_DrawSingleLine
                   (clipTop,clipLeft,clipBottom,clipRight,g_UiTextStyleNormal,
-                   (word *)(&control[1].vtable)[(int)lineIndexOrCount],drawX,textLeft + 3);
+                   control->textLines[lineIndexOrCount - 1],drawX,textLeft + 3);
         drawX = drawX + textExtent.heightPixels;
-        lineIndexOrCount = (UiNodeVtable *)((int)&lineIndexOrCount[-1].pointerWheel + 3);
-      } while (lineIndexOrCount != (UiNodeVtable *)0x0);
+        lineIndexOrCount = lineIndexOrCount - 1;
+      } while (lineIndexOrCount != 0);
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -660,10 +660,10 @@ UiConditionalActionControl_DrawClipped
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_QueryPointerCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control)
 
 {
-  return (GraphicsCursorFrameIndex)control[1].firstChild;
+  return control->cursorFrame;
 }
 
 
@@ -674,14 +674,14 @@ UiConditionalActionControl_QueryPointerCode
 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_HitTestWhenEnabled
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control)
 
 {
   UiNodeBase *hitNode;
   
   hitNode = (UiNodeBase *)0xffffffff;
-  if (control[1].vtable != (UiNodeVtable *)0x0) {
-    hitNode = UiContainer_HitTestChildren(pointerY,pointerX,control);
+  if (control->lineCount != 0) {
+    hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
   }
   return hitNode;
 }
@@ -695,11 +695,11 @@ UiConditionalActionControl_HitTestWhenEnabled
 void __thandor_preserve_eax
 UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiConditionalActionControl *control)
 
 {
-  if (control[1].vtable != (UiNodeVtable *)0x0) {
-    UiActionQueue_Enqueue((UiActionId)control[1].parent,control);
+  if (control->lineCount != 0) {
+    UiActionQueue_Enqueue(control->actionId,&control->base);
   }
   return;
 }

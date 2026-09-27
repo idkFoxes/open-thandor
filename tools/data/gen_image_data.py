@@ -120,6 +120,11 @@ for a in sorted(strings):
     t = types.get(owner[2], '')
     if t and not re.match(r'^(?:word|char|byte|undefined[12]?)\s*(?:\*|\(\*\)\[)', t.strip()):
         continue
+    # the next string of a list follows a terminator; otherwise Ghidra only broke the string at a
+    # character it did not read as text (the 0xF6 of "erlöse" in g_DeveloperChatPhraseUtf16)
+    unit = 2 if 'unicode' in strings[a][0].lower() or 'utf16' in strings[a][0].lower() else 1
+    if any(byte_at(a - 1 - i) for i in range(unit)):
+        continue
     split.append(a)
 if split:
     new_objects = []

@@ -10949,12 +10949,7 @@ ImageData_00562498 g_ImageData_00562498 = {
     L"texte\\help.str", /* 00563170 u_texte_help_str_00563170 */
     L"gfx\\panel\\window.gfx", /* 0056318E u_gfx_panel_window_gfx_0056318e */
     L"texte\\tastatur.str", /* 005631B8 u_texte_tastatur_str_005631b8 */
-    /* 005631DE g_DeveloperChatPhraseUtf16 */
-    {
-        0x0068004F, 0x00670020, 0x006F0072, 0x00730073, 0x00720065, 0x00540020, 0x006F0068, 0x0061006D,
-        0x002C0073, 0x00650020, 0x006C0072},
-    {0xF6},
-    L"se mich!", /* 0056320C str_0056320C */
+    L"Oh grosser Thomas, erl\366se mich!", /* 005631DE g_DeveloperChatPhraseUtf16 */
     L"Hmmm, na gut... ;-)", /* 0056321E u_Hmmm__na_gut________0056321e */
     {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90},
     0, /* 00563260 g_UiCommandRuntimeFlags */
@@ -12160,16 +12155,8 @@ ImageData_0057ECC8 g_ImageData_0057ECC8 = {
     0, /* 0057ED18 g_GlideRuntimeActiveCount */
     {
         0x90909090},
-    0x14, /* 0057ED20 g_GlidePrimaryLfbInfo */
-    {0},
-    0, /* 0057ED24 g_GlidePrimaryLfbPixels */
-    0, /* 0057ED28 g_GlidePrimaryLfbStrideBytes */
-    {0},
-    0x14, /* 0057ED34 g_GlideSecondaryLfbInfo */
-    {0},
-    {0},
-    0, /* 0057ED3C g_GlideSecondaryLfbStrideBytes */
-    {0},
+    {.size = 0x14}, /* 0057ED20 g_GlidePrimaryLfbInfo */
+    {.size = 0x14}, /* 0057ED34 g_GlideSecondaryLfbInfo */
     /* 0057ED48 g_GlideTextureRefreshHandlers */
     {
         (dword)&g_GlideVertex0ScreenX,
@@ -12273,14 +12260,10 @@ ImageData_005856A0 g_ImageData_005856A0 = {
     0, /* 005856B4 g_MainWindow */
     0, /* 005856B8 g_WindowDestroyDepth */
     0x1, /* 005856BC g_AppActive */
-    {.pointY = 0x3}, /* 005856C0 g_MainMessage */
+    /* 005856C0 g_MainMessageStorage */
     {
-        (dword)MainWindowProc},
-    0, /* 005856E8 g_MainWindowClassInstanceHandle */
-    0, /* 005856EC g_MainWindowClassIconHandle */
-    0, /* 005856F0 g_MainWindowClassCursorHandle */
-    {
-        0x00000000, 0x00000000, (dword)&sz_MainWindowClass},
+        .overlay = {.windowClass = {.style = 0x3, .windowProc = (void *)MainWindowProc, .className = (void *)&sz_MainWindowClass}}},
+    {0},
     {.linearCursor = (void *)&g_Arena_3, .linearLimit = (void *)&g_Arena_4}, /* 00585708 g_Arena */
     {0}, /* 0058571C g_TimerSystemState */
     {0}, /* 0058581C g_CommandLine */

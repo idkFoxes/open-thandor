@@ -150,4 +150,9 @@ the data moves into C definitions. Array sizes are the extent up to the next kno
 #define g_UiCatalogGroup42Offsets6Columns (*(sdword (*)[42])THANDOR_IMAGE(0x00562bb8))
 #define g_UiCommandSpriteVariantAOffsets (*(sdword (*)[24])THANDOR_IMAGE(0x00562c60))
 
+/* ---- platform/bootstrap: the main message buffer and the main window's class, which overlap in
+   the original (see Win32MainMessageStorage). */
+#define g_MainMessage (g_MainMessageStorage.message)
+#define g_MainWindowClass (g_MainMessageStorage.overlay.windowClass)
+
 #endif /* THANDOR_DATA_RECOVERED_H */

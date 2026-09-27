@@ -54,10 +54,10 @@ void __cdecl ProcessEntry(void)
   CommandLine_Parse();
   windowHandle = FindWindowA(sz_MainWindowClass,(LPCSTR)0x0);
   if (windowHandle == (HWND)0x0) {
-    g_MainWindowClassInstanceHandle = g_hInstance;
-    g_MainWindowClassIconHandle = LoadIconA(g_hInstance,(LPCSTR)0x1);
-    g_MainWindowClassCursorHandle = LoadCursorA((HINSTANCE)0x0,&k_LowAddressLiteral00007F00);
-    windowClassAtom = RegisterClassA((WNDCLASSA *)&g_MainMessage.pointY);
+    g_MainWindowClass.instance = g_hInstance;
+    g_MainWindowClass.icon = LoadIconA(g_hInstance,(LPCSTR)1);
+    g_MainWindowClass.cursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00); /* IDC_ARROW */
+    windowClassAtom = RegisterClassA((WNDCLASSA *)&g_MainWindowClass);
     if (windowClassAtom != 0) { /* Ghidra: CONCAT22(extraout_var,AVar1); only the 16-bit ATOM in AX is set */
       lpParam = (LPVOID)0x0;
       hMenu = (HMENU)0x0;

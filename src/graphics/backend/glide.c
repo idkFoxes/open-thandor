@@ -132,7 +132,6 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
           GraphicsPixelDimension height,GraphicsPixelDimension width)
 
 {
-  void **nextImportName;
   uint refreshRateCode;
   uint refreshRateHz;
   uint resolutionKeyOrBestHz;
@@ -143,7 +142,7 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
   int slotsRemaining;
   GraphicsTextureResidentTmuIndex tmuIndex;
   dword selectedRefreshRateCode;
-  void **destination;
+  GlideImportBinding *binding;
   void *resolutionCursor;
   GraphicsTextureResource **textureSlotCursor;
   DynDllLoadEaxCf5 glideDll;
@@ -163,13 +162,12 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
     glideDll = DynDLL_Load(dynapi_5);
     if (!glideDll.carry) {
       g_GlideRuntimeActiveCount = g_GlideRuntimeActiveCount + 1;
-      destination = (void **)&g_GrAADrawTriangle;
+      binding = g_GlideImportBindings;
       do {
-        resolveResult = DynAPI_Resolve(destination,glideDll.moduleOrError,destination[1]);
+        resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
         if (resolveResult.carry) goto Glide3_ReleaseRuntimeAfterInitializationFailure;
-        nextImportName = destination + 3;
-        destination = destination + 2;
-      } while (*nextImportName != (void *)0x0);
+        binding = binding + 1;
+      } while (binding->importName != (char *)0x0);
       (*g_GrGlideInit)();
       THANDOR_PART(word, sstIndexOrSizeOrCount, 0) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data2;
       THANDOR_PART(word, sstIndexOrSizeOrCount, 2) = g_GraphicsAdapters[adapterIndex].adapterGuid.Data3;
@@ -681,7 +679,6 @@ Glide3_Framebuffer_Present(SoftwareFramebufferAccess *framebuffer)
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void)
 
 {
-  void **nextImportName;
   byte *source;
   byte *driverDescription;
   dword querySizeOrAdapterIndex;
@@ -690,7 +687,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
   uint remainingResolutions;
   FrontendDisplayDimensionPixels modeHeight;
   int *resolutionCursor;
-  void **destination;
+  GlideImportBinding *binding;
   GraphicsAdapterRecord *adapter;
   GraphicsDisplayMode *displayMode;
   DynDllLoadEaxCf5 glideDll;
@@ -706,18 +703,17 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
     result.carry = true;
     return result;
   }
-  destination = (void **)&g_GrAADrawTriangle;
+  binding = g_GlideImportBindings;
   do {
-    resolveResult = DynAPI_Resolve(destination,glideDll.moduleOrError,destination[1]);
+    resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
     if (resolveResult.carry) {
       DynDLL_Unload(dynapi_5);
       result.valueOrError = (dword)resolveResult.procedureOrError;
       result.carry = true;
       return result;
     }
-    nextImportName = destination + 3;
-    destination = destination + 2;
-  } while (*nextImportName != (void *)0x0);
+    binding = binding + 1;
+  } while (binding->importName != (char *)0x0);
   (*g_GrGet)(0xf,4,&remainingBoards);
   if (remainingBoards != 0) {
     sstIndex = 0;
@@ -4404,15 +4400,17 @@ bool __thandor_cf_preserve_eax_ecx_edx Glide3_Framebuffer_BeginAccess(void)
     (*g_GrFinish)();
     lfbLockSucceeded = (*g_GrLfbLock)(0x11,1,0,0,0,&g_GlidePrimaryLfbInfo);
     if (lfbLockSucceeded != 0) {
-      g_FramebufferRowStrideBytes = g_GlidePrimaryLfbStrideBytes;
-      g_DisplayFramebufferAccess.width = g_GlidePrimaryLfbStrideBytes >> 1;
-      g_DisplayFramebufferAccess.pixels = g_GlidePrimaryLfbPixels;
+      g_FramebufferRowStrideBytes = g_GlidePrimaryLfbInfo.strideBytes;
+      g_DisplayFramebufferAccess.width = g_GlidePrimaryLfbInfo.strideBytes >> 1;
+      g_DisplayFramebufferAccess.pixels = g_GlidePrimaryLfbInfo.pixels;
       secondaryLfbLockSucceeded = (*g_GrLfbLock)(0x10,1,0,0,0,&g_GlideSecondaryLfbInfo);
       if ((secondaryLfbLockSucceeded != 0) &&
-         (g_FramebufferRowStrideBytes == g_GlideSecondaryLfbStrideBytes)) {
-        g_GlideSecondBufferBase = g_GlidePrimaryLfbPixels;
+         (g_FramebufferRowStrideBytes == g_GlideSecondaryLfbInfo.strideBytes)) {
+        /* The original reads the primary buffer's pointer here, not g_GlideSecondaryLfbInfo.pixels, so
+           the second-buffer offset is always 0 and blending reads back the buffer it draws to. */
+        g_GlideSecondBufferBase = g_GlidePrimaryLfbInfo.pixels;
         g_GlideSecondBufferOffset =
-             (int)g_GlidePrimaryLfbPixels - (int)g_DisplayFramebufferAccess.pixels;
+             (int)g_GlidePrimaryLfbInfo.pixels - (int)g_DisplayFramebufferAccess.pixels;
       }
       return false;
     }

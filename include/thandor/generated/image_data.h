@@ -2426,9 +2426,7 @@ typedef struct ImageData_00562498 {
     word at_u_texte_help_str_00563170[15]; /* 00563170 u_texte_help_str_00563170 */
     word at_u_gfx_panel_window_gfx_0056318e[21]; /* 0056318E u_gfx_panel_window_gfx_0056318e */
     word at_u_texte_tastatur_str_005631b8[19]; /* 005631B8 u_texte_tastatur_str_005631b8 */
-    dword at_g_DeveloperChatPhraseUtf16[11]; /* 005631DE g_DeveloperChatPhraseUtf16 */
-    byte at_g_DeveloperChatPhraseUtf16_tail[2];
-    word at_str_0056320C[9]; /* 0056320C str_0056320C */
+    word at_g_DeveloperChatPhraseUtf16[32]; /* 005631DE g_DeveloperChatPhraseUtf16 */
     word at_u_Hmmm__na_gut________0056321e[20]; /* 0056321E u_Hmmm__na_gut________0056321e */
     byte at_u_Hmmm__na_gut________0056321e_padding[26];
     dword at_g_UiCommandRuntimeFlags; /* 00563260 g_UiCommandRuntimeFlags */
@@ -3392,16 +3390,8 @@ typedef struct ImageData_0057ECC8 {
     undefined4 at_g_GlideWindowContextHandle; /* 0057ED14 g_GlideWindowContextHandle */
     undefined4 at_g_GlideRuntimeActiveCount; /* 0057ED18 g_GlideRuntimeActiveCount */
     dword at_g_GlideRuntimeActiveCount_rest[1]; /* beyond the declared type */
-    undefined at_g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
-    byte at_g_GlidePrimaryLfbInfo_rest_tail[3];
-    undefined4 at_g_GlidePrimaryLfbPixels; /* 0057ED24 g_GlidePrimaryLfbPixels */
-    undefined4 at_g_GlidePrimaryLfbStrideBytes; /* 0057ED28 g_GlidePrimaryLfbStrideBytes */
-    dword at_g_GlidePrimaryLfbStrideBytes_rest[2]; /* beyond the declared type */
-    undefined at_g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
-    dword at_g_GlideSecondaryLfbInfo_rest[1]; /* beyond the declared type */
-    byte at_g_GlideSecondaryLfbInfo_rest_tail[3];
-    undefined4 at_g_GlideSecondaryLfbStrideBytes; /* 0057ED3C g_GlideSecondaryLfbStrideBytes */
-    dword at_g_GlideSecondaryLfbStrideBytes_rest[2]; /* beyond the declared type */
+    GlideLfbInfo at_g_GlidePrimaryLfbInfo; /* 0057ED20 g_GlidePrimaryLfbInfo */
+    GlideLfbInfo at_g_GlideSecondaryLfbInfo; /* 0057ED34 g_GlideSecondaryLfbInfo */
     dword at_g_GlideTextureRefreshHandlers[3]; /* 0057ED48 g_GlideTextureRefreshHandlers */
     dword at_g_GlideVertex0ScreenX; /* 0057ED54 g_GlideVertex0ScreenX */
     dword at_g_GlideVertex0ScreenY; /* 0057ED58 g_GlideVertex0ScreenY */
@@ -3504,12 +3494,8 @@ typedef struct ImageData_005856A0 {
     HWND at_g_MainWindow; /* 005856B4 g_MainWindow */
     dword at_g_WindowDestroyDepth; /* 005856B8 g_WindowDestroyDepth */
     dword at_g_AppActive; /* 005856BC g_AppActive */
-    Win32Message32 at_g_MainMessage; /* 005856C0 g_MainMessage */
-    dword at_g_MainMessage_rest[3]; /* beyond the declared type */
-    HINSTANCE at_g_MainWindowClassInstanceHandle; /* 005856E8 g_MainWindowClassInstanceHandle */
-    HICON at_g_MainWindowClassIconHandle; /* 005856EC g_MainWindowClassIconHandle */
-    HCURSOR at_g_MainWindowClassCursorHandle; /* 005856F0 g_MainWindowClassCursorHandle */
-    dword at_g_MainWindowClassCursorHandle_rest[5]; /* beyond the declared type */
+    Win32MainMessageStorage at_g_MainMessageStorage; /* 005856C0 g_MainMessageStorage */
+    dword at_g_MainMessageStorage_rest[2]; /* beyond the declared type */
     ArenaState at_g_Arena; /* 00585708 g_Arena */
     TimerSystemState at_g_TimerSystemState; /* 0058571C g_TimerSystemState */
     CommandLineArgumentMirrorState500 at_g_CommandLine; /* 0058581C g_CommandLine */
@@ -5222,10 +5208,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0057ed14 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideWindowContextHandle)
 #define THANDOR_IMAGE_0x0057ed18 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideRuntimeActiveCount)
 #define THANDOR_IMAGE_0x0057ed20 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlidePrimaryLfbInfo)
-#define THANDOR_IMAGE_0x0057ed24 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlidePrimaryLfbPixels)
-#define THANDOR_IMAGE_0x0057ed28 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlidePrimaryLfbStrideBytes)
 #define THANDOR_IMAGE_0x0057ed34 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondaryLfbInfo)
-#define THANDOR_IMAGE_0x0057ed3c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondaryLfbStrideBytes)
 #define THANDOR_IMAGE_0x0057ed54 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ScreenX)
 #define THANDOR_IMAGE_0x0057ed58 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ScreenY)
 #define THANDOR_IMAGE_0x0057ed5c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideVertex0ReciprocalDepth)
@@ -5289,10 +5272,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x005856b4 ((uintptr_t)&g_ImageData_005856A0.at_g_MainWindow)
 #define THANDOR_IMAGE_0x005856b8 ((uintptr_t)&g_ImageData_005856A0.at_g_WindowDestroyDepth)
 #define THANDOR_IMAGE_0x005856bc ((uintptr_t)&g_ImageData_005856A0.at_g_AppActive)
-#define THANDOR_IMAGE_0x005856c0 ((uintptr_t)&g_ImageData_005856A0.at_g_MainMessage)
-#define THANDOR_IMAGE_0x005856e8 ((uintptr_t)&g_ImageData_005856A0.at_g_MainWindowClassInstanceHandle)
-#define THANDOR_IMAGE_0x005856ec ((uintptr_t)&g_ImageData_005856A0.at_g_MainWindowClassIconHandle)
-#define THANDOR_IMAGE_0x005856f0 ((uintptr_t)&g_ImageData_005856A0.at_g_MainWindowClassCursorHandle)
+#define THANDOR_IMAGE_0x005856c0 ((uintptr_t)&g_ImageData_005856A0.at_g_MainMessageStorage)
 #define THANDOR_IMAGE_0x00585708 ((uintptr_t)&g_ImageData_005856A0.at_g_Arena)
 #define THANDOR_IMAGE_0x0058571c ((uintptr_t)&g_ImageData_005856A0.at_g_TimerSystemState)
 #define THANDOR_IMAGE_0x0058581c ((uintptr_t)&g_ImageData_005856A0.at_g_CommandLine)

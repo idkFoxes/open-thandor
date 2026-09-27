@@ -54,14 +54,14 @@ void __thandor_preserve_eax FrontendSessionAction_CloseMovieAndReturnToMainPage(
     parentNodeAddress = (int)source->parent;
   }
   Movie_Close();
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&source[1].vtable);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)FRONTEND_UI(source,frontendViewModeStack));
   (*g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage)
-            ((GraphicsTextureSourceAsset *)source[7].left);
-  (*g_MemoryApi.free)((void *)source[7].leftOffset);
-  (*g_MemoryApi.free)((void *)source[7].topOffset);
-  source[7].left = 0;
-  source[7].leftOffset = 0;
-  source[7].topOffset = 0;
+            (FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *));
+  (*g_MemoryApi.free)(FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *));
+  (*g_MemoryApi.free)(FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *));
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x50,GraphicsTextureSourceAsset *) = (GraphicsTextureSourceAsset *)0x0;
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x60,void *) = (void *)0x0;
+  FRONTEND_UI_FIELD(source,moviePlaybackView,0x64,void *) = (void *)0x0;
   g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
       SESSION_NETWORK_ROLE_LOCAL) {
@@ -156,7 +156,7 @@ FrontendSessionAction_RandomizeSeedsAndReturnWithStartFlag(UiNodeBase *source)
     source = source->parent;
     parentNode = source->parent;
   }
-  g_FrontendPlayerRuntimeBlockCount = source[0x122].rightOffset;
+  g_FrontendPlayerRuntimeBlockCount = ((UiListControl *)FRONTEND_UI(source,hostLobbyPlayerList))->rowCount;
   g_FrontendExpectedPlayerRuntimeBlockCount = 0;
   g_FrontendPendingSessionPlayerCount = g_FrontendPlayerRuntimeBlockCount;
   seed = Random_NextPrimary();

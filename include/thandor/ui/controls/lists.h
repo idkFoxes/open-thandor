@@ -16,7 +16,8 @@
 
 /* 0x004BBE60 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigationCf(dword keyCode,dword stateMask,UiNodeBase *control);
+UiTimedListControl_HandleKeyboardNavigationCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control);
 
 /* 0x004BB100 */
 bool __thandor_cf_preserve_eax_ecx_edx
@@ -37,7 +38,7 @@ UiScrollableControl_BeginPrimaryScrollInteraction
 void __thandor_preserve_eax
 UiScrollableControl_EndPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiScrollableControl *control);
 
 /* 0x004B8BF0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -98,7 +99,7 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode);
 bool __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_KeyboardEventCf
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiSelectableControl *control);
+          UiSoundSelectableControl *control);
 
 /* 0x004B26E0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -161,7 +162,7 @@ UiScrollableControl_BeginSecondaryScrollInteraction
 /* 0x004B8BC0 */
 void UiScrollableControl_EndSecondaryScrollInteraction
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control);
+               ,UiScrollableControl *control);
 
 /* 0x004B9000 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
@@ -177,7 +178,7 @@ UiListRowIndex UiPointerList_GetSelectedIndexVariantACf(UiPointerListControl *co
 /* 0x004BADE0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control);
 
 /* 0x004BB310 */
 void __thandor_preserve_eax UiListControl_TickActivationPulse(UiListControl *control);
@@ -214,7 +215,7 @@ void __thandor_preserve_eax UiTimedListControl_TickActionDelay(UiTimedListContro
 /* 0x004BC460 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListOffsetControl_RelocateAndApplyDeferredOffset
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
+          (UiSerializedRelocationDelta relocationDelta,UiListOffsetControl *control);
 
 /* 0x00516580 */
 void __thandor_void_preserve_eax_ecx_edx

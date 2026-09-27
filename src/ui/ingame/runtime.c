@@ -1206,7 +1206,7 @@ InGameUiRuntime_InitializeControlTreeResourcesCf(UiRootNode *inGameRoot)
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x24,struct UiNodeBase *) = (UiNodeBase *)0x0;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x28,struct UiNodeBase *) = (UiNodeBase *)0x0;
     INGAME_UI_FIELD(inGameRoot,modePreviewPageStack,0x2C,struct UiNodeBase *) = (UiNodeBase *)0x0;
-    INGAME_UI_FIELD(inGameRoot,notificationTargetButton,0x54,enum UiNodeFlags) = (UiNodeFlags)textureSourceValue;
+    ((UiImageActionControl *)INGAME_UI(inGameRoot,notificationTargetButton))->textureSource = textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,heightToolPreview,0x54,struct UiRootNode *) = (UiRootNode *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,smoothingToolPreview,0x54,struct UiNodeBase *) = (UiNodeBase *)textureSourceValue;
     INGAME_UI_FIELD(inGameRoot,regionToolPreview,0x54,sdword) = (sdword)textureSourceValue;
@@ -3408,22 +3408,23 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
         UiPageStack_SetActiveIndex
                   (0,(UiPageStackControl *)
                      ((int)&node->nextSibling + g_UiAction1012SlotPageOffsets[slotIndex]));
-        *(int *)((int)&node[1].parent + g_UiAction1012PlayerLabelTextOffsets[slotIndex]) =
-             *(int *)(factionIndexOrRecord + 0x38) + 0x2173;
-        *(uint *)((int)&node[1].parent + g_UiAction1012PlayerIndexTextOffsets[slotIndex]) =
-             candidateFactionIndex + 0x2190;
+        ((UiFocusProxyControl *)((int)node + g_UiAction1012PlayerLabelTextOffsets[slotIndex]))->text =
+             (word *)(*(int *)(factionIndexOrRecord + 0x38) + 0x2173);
+        ((UiFocusProxyControl *)((int)node + g_UiAction1012PlayerIndexTextOffsets[slotIndex]))->text =
+             (word *)(candidateFactionIndex + 0x2190);
         relationState = g_GameFactionRuntimeImage.records[node[0x23].bottom].packedRelationStates >>
                 ((byte)(candidateFactionIndex << 2) & 0x1f) & 0xf;
         candidateFactionIndex = candidateFactionIndex & 0x3fffffff;
-        *(uint *)((int)&node[1].parent + g_UiAction1012StateTextOffsets[slotIndex]) = relationState + 0x21a3;
+        ((UiFocusProxyControl *)((int)node + g_UiAction1012StateTextOffsets[slotIndex]))->text =
+             (word *)(relationState + 0x21a3);
         controlOffset = g_UiAction1012IconImageOffsets[slotIndex];
-        *(undefined **)((int)&node[1].parent + controlOffset) = &g_EmptyFrontendPlayerNameUtf16;
+        ((UiFocusProxyControl *)((int)node + controlOffset))->text = (word *)&g_EmptyFrontendPlayerNameUtf16;
         playerBlock = g_FrontendPlayerRuntimeBlocks;
         remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
         remainingNetworkPlayers = g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK;
         while (remainingNetworkPlayers != SESSION_NETWORK_ROLE_LOCAL) {
           if ((playerBlock->factionAssignment).factionAssignmentIndex == candidateFactionIndex) {
-            *(FrontendPlayerNameUtf16_28 **)((int)&node[1].parent + controlOffset) = &playerBlock->playerName;
+            ((UiFocusProxyControl *)((int)node + controlOffset))->text = (word *)&playerBlock->playerName;
             break;
           }
           playerBlock = playerBlock + 1;
@@ -3435,7 +3436,8 @@ InGameOtherPlayerCommand_RebuildTargetEntries(UiNodeBase *node)
         slotIndex = slotIndex + 1;
         controlFlags = (uint *)((int)&node->nodeFlags + controlOffset);
         *controlFlags = *controlFlags & 0xfffffff7;
-        *(dword *)((int)&node[1].vtable + controlOffset) = remainingFactions;
+        ((UiCommandSpriteButtonControl *)((int)node + controlOffset))->sprite.normalSubresourceStartOrDescriptor =
+             remainingFactions;
         nextRemainingCount = otherActiveCount;
         if (((g_GameFactionRuntimeImage.tail.relationUiFlags & 1) != 0) &&
            ((7 < relationState ||
@@ -5115,7 +5117,7 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
       UiPageStack_SetActiveIndex(0,&root->optionalUiPageStack4644);
     }
     UiPageStack_SetActiveIndex(0,(UiPageStackControl *)(root->opaque4100_452F + 0x22c));
-    UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)&root->worldRuntime0A30);
+    UiCommandModeG_ClearNodeFlag00100000(&root->worldRuntime0A30);
     root->worldOverlayCallback0B8C = InGameWorldOverlay_RebuildOrReleaseTransientMarkersCf;
     (root->worldRuntime0A30).selection.dispatchCommandCallback =
          InGameUiRuntime_DispatchCommandByCodeAndModifierFlagsCf;
@@ -5160,13 +5162,13 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
     FieldGrid_ClassifyCellFlagsToRuntimeByte
               ((root->worldRuntime0A30).activeFactionRuntimeIndex,(root->worldRuntime0A30).fieldGrid
               );
-    UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)node);
-    UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
-    UiCommandModeG_SetNodeFlag00000400((UiNodeBase *)node);
-    UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+    UiCommandModeG_ClearNodeFlag00100000(node);
+    UiCommandModeG_ClearNodeFlag00200000(node);
+    UiCommandModeG_SetNodeFlag00000400(node);
+    UiCommandModeG_ClearNodeFlag01000000(node);
     UiCommandModeG_ApplyRawColorVariant(node);
-    UiCommandModeG_ClearNodeFlag00800000((UiNodeBase *)node);
-    UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+    UiCommandModeG_ClearNodeFlag00800000(node);
+    UiCommandModeG_ClearNodeFlag02000000(node);
     runtimeFlagsField = &(root->worldRuntime0A30).runtimeFlags;
     *runtimeFlagsField = *runtimeFlagsField & 0xffbfffff;
     TerrainDirectionTable_AdvanceAndRebuildVectors();

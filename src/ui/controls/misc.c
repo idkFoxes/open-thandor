@@ -389,13 +389,13 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root)
 void __thandor_void_preserve_eax_ecx_edx
 UiRangeSliderControl_DrawTrackAndThumb
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiRangeSliderControl *control)
 
 {
-  UiNodeBase *rangeMax;
+  sdword rangeMax;
   ulonglong scaledOffset;
   uint rangeOrValueOffset;
-  UiNodeBase *clampedValue;
+  sdword clampedValue;
   dword subresourceBase;
   int edgeLength;
   uint valueOffsetOrRange;
@@ -405,80 +405,80 @@ UiRangeSliderControl_DrawTrackAndThumb
   accessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!accessFailed) {
     subresourceBase = 0xac;
-    if ((control->nodeFlags & UI_NODE_SUPPRESSED) != 0) {
+    if ((control->base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
       subresourceBase = 0xb0;
     }
-    if (((uint)control[1].nextSibling & 1) != 0) {
+    if ((control->sliderFlags & 1) != 0) {
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,subresourceBase + 8,
+                (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,subresourceBase + 8,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 8,g_UiWindowTextureSource);
-      edgeLength = control->layoutHeight - textureSize.logicalHeightPixels;
+      edgeLength = control->base.layoutHeight - textureSize.logicalHeightPixels;
       UiWindow_BlitTiledVerticalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 9,edgeLength,textureSize.logicalHeightPixels,0,
-                 control);
+                 &control->base);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->top,control->left,subresourceBase + 10,
+                (clipTop,clipLeft,clipBottom,clipRight,edgeLength + control->base.top,control->base.left,subresourceBase + 10,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 0xb,g_UiWindowTextureSource);
-      rangeMax = control[1].parent;
-      clampedValue = (UiNodeBase *)control[1].vtable;
-      if ((int)rangeMax < (int)control[1].vtable) {
+      rangeMax = control->maximumValue;
+      clampedValue = control->value;
+      if (rangeMax < control->value) {
         clampedValue = rangeMax;
       }
-      rangeOrValueOffset = (int)rangeMax - (int)control[1].firstChild;
+      rangeOrValueOffset = rangeMax - control->minimumValue;
       if (rangeOrValueOffset == 0) {
         rangeOrValueOffset = 1;
       }
-      valueOffsetOrRange = (int)clampedValue - (int)control[1].firstChild;
+      valueOffsetOrRange = clampedValue - control->minimumValue;
       if ((int)valueOffsetOrRange < 0) {
         valueOffsetOrRange = 0;
       }
-      if (((uint)control[1].nextSibling & 8) == 0) {
+      if ((control->sliderFlags & 8) == 0) {
         valueOffsetOrRange = rangeOrValueOffset - valueOffsetOrRange;
       }
-      scaledOffset = (ulonglong)valueOffsetOrRange * (ulonglong)(control->layoutHeight - textureSize.logicalHeightPixels);
+      scaledOffset = (ulonglong)valueOffsetOrRange * (ulonglong)(control->base.layoutHeight - textureSize.logicalHeightPixels);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
                 (clipTop,clipLeft,clipBottom,clipRight,
                  (int)(scaledOffset / rangeOrValueOffset) + (uint)(rangeOrValueOffset < (uint)((int)(scaledOffset % (ulonglong)rangeOrValueOffset) * 2))
-                 + control->top,control->left,subresourceBase + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
+                 + control->base.top,control->base.left,subresourceBase + 0xb,g_UiWindowTextureSource,g_FramebufferAccess
                 );
       (*g_GraphicsFramebufferEndAccess)();
       return;
     }
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,subresourceBase,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,subresourceBase,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase,g_UiWindowTextureSource);
-    edgeLength = control->layoutWidth - textureSize.logicalWidthPixels;
+    edgeLength = control->base.layoutWidth - textureSize.logicalWidthPixels;
     UiWindow_BlitTiledHorizontalEdge
               (clipTop,clipLeft,clipBottom,clipRight,subresourceBase + 1,edgeLength,0,textureSize.logicalWidthPixels,
-               control);
+               &control->base);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,edgeLength + control->left,subresourceBase + 2,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,edgeLength + control->base.left,subresourceBase + 2,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(subresourceBase + 3,g_UiWindowTextureSource);
-    rangeMax = control[1].parent;
-    clampedValue = (UiNodeBase *)control[1].vtable;
-    if ((int)rangeMax < (int)control[1].vtable) {
+    rangeMax = control->maximumValue;
+    clampedValue = control->value;
+    if (rangeMax < control->value) {
       clampedValue = rangeMax;
     }
-    rangeOrValueOffset = (int)clampedValue - (int)control[1].firstChild;
+    rangeOrValueOffset = clampedValue - control->minimumValue;
     if ((int)rangeOrValueOffset < 0) {
       rangeOrValueOffset = 0;
     }
-    valueOffsetOrRange = (int)rangeMax - (int)control[1].firstChild;
+    valueOffsetOrRange = rangeMax - control->minimumValue;
     if (valueOffsetOrRange == 0) {
       valueOffsetOrRange = 1;
     }
-    if (((uint)control[1].nextSibling & 8) != 0) {
+    if ((control->sliderFlags & 8) != 0) {
       rangeOrValueOffset = valueOffsetOrRange - rangeOrValueOffset;
     }
-    scaledOffset = (ulonglong)rangeOrValueOffset * (ulonglong)(control->layoutWidth - textureSize.logicalWidthPixels);
+    scaledOffset = (ulonglong)rangeOrValueOffset * (ulonglong)(control->base.layoutWidth - textureSize.logicalWidthPixels);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,
                (int)(scaledOffset / valueOffsetOrRange) + (uint)(valueOffsetOrRange < (uint)((int)(scaledOffset % (ulonglong)valueOffsetOrRange) * 2)) +
-               control->left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
+               control->base.left,subresourceBase + 3,g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsFramebufferEndAccess)();
   }
   return;
@@ -492,34 +492,33 @@ UiRangeSliderControl_DrawTrackAndThumb
 void __thandor_void_preserve_eax_ecx_edx
 UiRangeSliderControl_BeginThumbDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiRangeSliderControl *control)
 
 {
   int localX;
   int localY;
   GraphicsTextureSizeEaxEdxCf9 thumbSize;
   
-  if (((((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
-       (localX = pointerX - control->left, control->left <= pointerX)) &&
-      (localY = pointerY - control->top, control->top <= pointerY)) &&
-     ((localX < control->layoutWidth && (localY < control->layoutHeight)))) {
-    if (((uint)control[1].nextSibling & 1) == 0) {
+  if (((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) &&
+       (localX = pointerX - control->base.left, control->base.left <= pointerX)) &&
+      (localY = pointerY - control->base.top, control->base.top <= pointerY)) &&
+     ((localX < control->base.layoutWidth && (localY < control->base.layoutHeight)))) {
+    if ((control->sliderFlags & 1) == 0) {
       thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xaf,g_UiWindowTextureSource);
       if ((int)thumbSize.logicalHeightPixels <= localY) {
         return;
       }
-      control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 2);
+      control->sliderFlags = control->sliderFlags | 2;
     }
     else {
       thumbSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xb7,g_UiWindowTextureSource);
       if ((int)thumbSize.logicalWidthPixels <= localX) {
         return;
       }
-      control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 2);
+      control->sliderFlags = control->sliderFlags | 2;
     }
-    if ((((uint)control[1].nextSibling & 4) != 0) && (control[1].right != 0)) {
-      (*g_SoundPlayOneShot)
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control[1].right);
+    if (((control->sliderFlags & 4) != 0) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
     }
   }
   return;
@@ -532,14 +531,13 @@ UiRangeSliderControl_BeginThumbDrag
 */
 void UiRangeSliderControl_EndThumbDrag
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+               ,UiRangeSliderControl *control)
 
 {
-  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xfffffffd);
-  if ((((control->nodeFlags & UI_NODE_SUPPRESSED) == 0) && (((uint)control[1].nextSibling & 4) != 0)
-      ) && (control[1].right != 0)) {
-    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control[1].right)
-    ;
+  control->sliderFlags = control->sliderFlags & 0xfffffffd;
+  if ((((control->base.nodeFlags & UI_NODE_SUPPRESSED) == 0) && ((control->sliderFlags & 4) != 0)
+      ) && (control->clickSound != (DirectSoundVoiceSet *)0x0)) {
+    (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->clickSound);
   }
   return;
 }
@@ -551,13 +549,13 @@ void UiRangeSliderControl_EndThumbDrag
    Cross-module calls: UiKeyboardFocus_ReleaseNode [ui/controls/input], UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiNodeBase *control)
+UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
 
 {
-  if (actionId == control[1].top) {
-    control->nodeFlags = control->nodeFlags | UI_NODE_SUPPRESSED;
-    UiKeyboardFocus_ReleaseNode(control);
-    UiNode_InvalidateRoot(control);
+  if (actionId == control->actionId) {
+    control->base.nodeFlags = control->base.nodeFlags | UI_NODE_SUPPRESSED;
+    UiKeyboardFocus_ReleaseNode(&control->base);
+    UiNode_InvalidateRoot(&control->base);
   }
   return;
 }
@@ -569,13 +567,13 @@ UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiNodeBase *control)
    Cross-module calls: UiKeyboardFocus_AcquireIfNone [ui/controls/input], UiNode_InvalidateRoot [ui/core/runtime].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiNodeBase *control)
+UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control)
 
 {
-  if (actionId == control[1].top) {
-    control->nodeFlags = control->nodeFlags & ~UI_NODE_SUPPRESSED;
-    UiKeyboardFocus_AcquireIfNone(control);
-    UiNode_InvalidateRoot(control);
+  if (actionId == control->actionId) {
+    control->base.nodeFlags = control->base.nodeFlags & ~UI_NODE_SUPPRESSED;
+    UiKeyboardFocus_AcquireIfNone(&control->base);
+    UiNode_InvalidateRoot(&control->base);
   }
   return;
 }
@@ -759,18 +757,18 @@ void __thandor_preserve_eax UiModelControl_RefreshStateTint(ModelRuntimeNode *co
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control)
 
 {
   UiTransferPayloadByteCount receivedTotal;
-  UiNodeBase *minimumProgress;
-  UiNodeVtable *receivedDone;
+  dword minimumProgress;
+  dword receivedDone;
   int remainingPlayers;
   FrontendPlayerRuntimeRecord *playerRecord;
-  
+
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   receivedTotal = g_UiTransferMailbox.receivedByteCount;
-  minimumProgress = (UiNodeBase *)g_UiTransferMailbox.outgoingByteCount;
+  minimumProgress = g_UiTransferMailbox.outgoingByteCount;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_UiTransferMailbox.outgoingByteCount == 0) {
       return;
@@ -779,17 +777,17 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
     if (remainingPlayers == 0) {
       return;
     }
-    control[1].firstChild = (UiNodeBase *)0x0;
-    control[1].parent = minimumProgress;
+    control->minimumValue = 0;
+    control->maximumValue = minimumProgress;
     do {
       if ((int)playerRecord[1].runtimeState70 < (int)minimumProgress) {
-        minimumProgress = (UiNodeBase *)playerRecord[1].runtimeState70;
+        minimumProgress = playerRecord[1].runtimeState70;
       }
       remainingPlayers = remainingPlayers + -1;
       playerRecord = playerRecord + 1;
     } while (remainingPlayers != 0);
-    control[1].vtable = (UiNodeVtable *)minimumProgress;
-    if (control[1].parent <= minimumProgress) {
+    control->value = minimumProgress;
+    if (control->maximumValue <= minimumProgress) {
       return;
     }
   }
@@ -798,11 +796,10 @@ UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
        (g_UiTransferMailbox.receivedRemainingBytes == 0)) {
       return;
     }
-    receivedDone = (UiNodeVtable *)
-             (g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes);
-    control[1].firstChild = (UiNodeBase *)0x0;
-    control[1].parent = (UiNodeBase *)receivedTotal;
-    control[1].vtable = receivedDone;
+    receivedDone = g_UiTransferMailbox.receivedByteCount - g_UiTransferMailbox.receivedRemainingBytes;
+    control->minimumValue = 0;
+    control->maximumValue = receivedTotal;
+    control->value = receivedDone;
     if (receivedTotal <= receivedDone) {
       return;
     }
@@ -835,8 +832,8 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
   int copyCountOrRgBits;
   UiNodeFlags colorDepthBits;
   GraphicsDisplayModeCount remainingModes;
-  UiRootNode *copyCursorOrLowWord;
-  UiNodeVtable *lowWordValue;
+  undefined4 *copyCursor;
+  dword lowWordValue;
   undefined4 *templateCursor;
   GraphicsDisplayMode *displayMode;
   ArenaAllocEaxCf5 allocResult;
@@ -848,33 +845,37 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       return;
     }
     templateCursor = (undefined4 *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
-    copyCursorOrLowWord = root;
+    copyCursor = (undefined4 *)root;
     for (copyCountOrRgBits = 0x2f5; activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
         framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits = copyCountOrRgBits + -1) {
-      (copyCursorOrLowWord->base).nextSibling = (UiNodeBase *)*templateCursor;
+      *copyCursor = *templateCursor;
       templateCursor = templateCursor + 1;
-      copyCursorOrLowWord = (UiRootNode *)&(copyCursorOrLowWord->base).firstChild;
+      copyCursor = copyCursor + 1;
     }
     colorDepthBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount +
              g_SoftwarePixelFormatConfig.blueBitCount;
-    root[3].base.rightOffset = g_FramebufferWidth;
-    root[3].base.bottomOffset = framebufferHeight;
-    root[3].base.leftAnchorQ31 = colorDepthBits;
-    root[3].base.topAnchorQ31 = activeAdapterIndex;
-    root[3].base.layoutWidth = framebufferWidth;
-    root[3].base.layoutHeight = framebufferHeight;
-    root[3].base.nodeFlags = colorDepthBits;
-    root[3].rootFlags = activeAdapterIndex;
+    /* applyButton tail: selected mode tuple (+0x5C..+0x70) and the original one (+0x74..+0x88). */
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x5C,sdword) = g_FramebufferWidth;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x60,sdword) = framebufferHeight;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x64,dword) = colorDepthBits;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x68,dword) = activeAdapterIndex;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x74,sdword) = framebufferWidth;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x78,sdword) = framebufferHeight;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x7C,dword) = colorDepthBits;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x80,dword) = activeAdapterIndex;
     colorBiasQ16 = g_SoftwareColorBiasQ16;
     colorScaleQ16 = g_SoftwareColorScaleQ16;
-    root[3].base.rightAnchorQ31 = g_SoftwareColorBiasQ16;
-    root[3].base.bottomAnchorQ31 = colorScaleQ16;
-    root[3].callbacks = (UiRootCallbacks *)colorBiasQ16;
-    root[3].previousRoot = (UiRootNode *)colorScaleQ16;
-    root[0x1f].base.rightOffset = colorBiasQ16;
-    root[0x1d].base.right = colorScaleQ16;
-    root[0x21].base.topAnchorQ31 = (UiAnchorFractionQ31)&root[0x22].base.firstChild;
-    root[0x20].base.leftAnchorQ31 = (UiAnchorFractionQ31)&root[0x21].base.bottomAnchorQ31;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x6C,dword) = g_SoftwareColorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x70,dword) = colorScaleQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x84,sdword) = colorBiasQ16;
+    DISPLAY_SETTINGS_UI_FIELD(root,applyButton,0x88,sdword) = colorScaleQ16;
+    ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorBiasSlider))->value = colorBiasQ16;
+    ((UiRangeSliderControl *)DISPLAY_SETTINGS_UI(root,colorScaleSlider))->value = colorScaleQ16;
+    /* The two readouts show the number buffers kept in the tail of colorBiasValueText. */
+    ((UiFocusProxyControl *)DISPLAY_SETTINGS_UI(root,colorBiasValueText))->text =
+         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x7C,word);
+    ((UiFocusProxyControl *)DISPLAY_SETTINGS_UI(root,colorScaleValueText))->text =
+         &DISPLAY_SETTINGS_UI_FIELD(root,colorBiasValueText,0x5C,word);
     UiRuntime_FormatSignedValues140And144(root);
     UiActionHandlers_SetPageCf(2,(UiActionHandlerPage *)&g_UiDisplayModeSelectionActionHandlers20);
     UiRootStack_Push(&g_UiDisplaySettingsRootCallbacks,root);
@@ -920,10 +921,12 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       displayMode = displayMode + 1;
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
-    root[7].base.left = g_UiDisplayModeDistinctValueScratch0;
-    root[8].base.leftOffset = g_UiDisplayModeDistinctValueScratch1;
-    root[9].base.leftAnchorQ31 = g_UiDisplayModeDistinctValueScratch2;
-    root[10].base.layoutWidth = g_UiDisplayModeDistinctValueScratch3;
+    /* Each option button's mode value(s) sit in the dwords just before the button (read back by the
+       action callbacks as sourceNode[-1].layoutHeight / .layoutWidth). */
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption2,-8,dword) = g_UiDisplayModeDistinctValueScratch1;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption3,-8,dword) = g_UiDisplayModeDistinctValueScratch2;
+    DISPLAY_SETTINGS_UI_FIELD(root,colorDepthOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1002,25 +1005,26 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       displayMode = displayMode + 1;
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
-    root[0xb].callbacks = (UiRootCallbacks *)(g_UiDisplayModeDistinctValueScratch0 >> 0x10);
-    root[0xb].rootFlags = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
-    root[0xd].base.parent = (UiNodeBase *)(g_UiDisplayModeDistinctValueScratch1 >> 0x10);
-    root[0xd].base.firstChild = (UiNodeBase *)(g_UiDisplayModeDistinctValueScratch1 & 0xffff);
-    root[0xe].base.right = g_UiDisplayModeDistinctValueScratch2 >> 0x10;
-    root[0xe].base.top = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
-    root[0xf].base.rightOffset = g_UiDisplayModeDistinctValueScratch3 >> 0x10;
-    root[0xf].base.topOffset = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
-    root[0x10].base.rightAnchorQ31 = g_UiDisplayModeDistinctValueScratch4 >> 0x10;
-    root[0x10].base.topAnchorQ31 = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
+    /* Resolution buttons: width at -8, height at -0xC. */
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption1,-0xC,dword) = g_UiDisplayModeDistinctValueScratch0 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-8,dword) = g_UiDisplayModeDistinctValueScratch1 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption2,-0xC,dword) = g_UiDisplayModeDistinctValueScratch1 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-8,dword) = g_UiDisplayModeDistinctValueScratch2 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption3,-0xC,dword) = g_UiDisplayModeDistinctValueScratch2 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption4,-0xC,dword) = g_UiDisplayModeDistinctValueScratch3 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-8,dword) = g_UiDisplayModeDistinctValueScratch4 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption5,-0xC,dword) = g_UiDisplayModeDistinctValueScratch4 & 0xffff;
     insertValueA = g_UiDisplayModeDistinctValueScratch5 & 0xffff;
-    root[0x11].base.nodeFlags = g_UiDisplayModeDistinctValueScratch5 >> 0x10;
-    root[0x11].base.layoutHeight = insertValueA;
-    copyCursorOrLowWord = (UiRootNode *)(g_UiDisplayModeDistinctValueScratch6 & 0xffff);
-    root[0x13].base.nextSibling = (UiNodeBase *)(g_UiDisplayModeDistinctValueScratch6 >> 0x10);
-    root[0x12].previousRoot = copyCursorOrLowWord;
-    lowWordValue = (UiNodeVtable *)(g_UiDisplayModeDistinctValueScratch7 & 0xffff);
-    root[0x14].base.left = g_UiDisplayModeDistinctValueScratch7 >> 0x10;
-    root[0x14].base.vtable = lowWordValue;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-8,dword) = g_UiDisplayModeDistinctValueScratch5 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption6,-0xC,dword) = insertValueA;
+    lowWordValue = g_UiDisplayModeDistinctValueScratch6 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-8,dword) = g_UiDisplayModeDistinctValueScratch6 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption7,-0xC,dword) = lowWordValue;
+    lowWordValue = g_UiDisplayModeDistinctValueScratch7 & 0xffff;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-8,dword) = g_UiDisplayModeDistinctValueScratch7 >> 0x10;
+    DISPLAY_SETTINGS_UI_FIELD(root,resolutionOption8,-0xC,dword) = lowWordValue;
     g_UiDisplayModeDistinctValueScratch0 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch1 = 0xffffffff;
     g_UiDisplayModeDistinctValueScratch2 = 0xffffffff;
@@ -1074,13 +1078,14 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
       displayMode = displayMode + 1;
       remainingModes = remainingModes - 1;
     } while (remainingModes != 0);
-    root[0x15].base.leftOffset = g_UiDisplayModeDistinctValueScratch0;
-    root[0x16].base.leftAnchorQ31 = adapterOption1Or4;
-    root[0x17].base.layoutWidth = adapterOption2;
+    /* Adapter buttons: adapter index at -8. */
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption1,-8,dword) = g_UiDisplayModeDistinctValueScratch0;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption2,-8,dword) = adapterOption1Or4;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption3,-8,dword) = adapterOption2;
     adapterOption1Or4 = g_UiDisplayModeDistinctValueScratch4;
     copyCountOrRgBits = g_SoftwarePixelFormatConfig.redBitCount + g_SoftwarePixelFormatConfig.greenBitCount;
-    root[0x18].callbacks = (UiRootCallbacks *)g_UiDisplayModeDistinctValueScratch3;
-    root[0x1a].base.parent = (UiNodeBase *)adapterOption1Or4;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption4,-8,dword) = g_UiDisplayModeDistinctValueScratch3;
+    DISPLAY_SETTINGS_UI_FIELD(root,adapterOption5,-8,dword) = adapterOption1Or4;
     UiDisplayModeSelection_RefreshEnumeratedOptions
               (g_ActiveGraphicsAdapterIndex,
                (UiNodeBase *)(copyCountOrRgBits + g_SoftwarePixelFormatConfig.blueBitCount),g_FramebufferHeight

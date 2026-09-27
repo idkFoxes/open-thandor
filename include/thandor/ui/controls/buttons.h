@@ -55,50 +55,50 @@ UiSpriteButtonControl_HitTestOpaque
 void __thandor_void_preserve_eax_ecx_edx
 UiImageActionControl_DrawImageAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiImageActionControl *control);
 
 /* 0x005151F0 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiImageActionControl_QueryPointerCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiImageActionControl *control);
 
 /* 0x00515210 */
 void __thandor_preserve_eax
 UiImageActionControl_EnqueuePrimaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiImageActionControl *control);
 
 /* 0x00515230 */
 void __thandor_preserve_eax
 UiImageActionControl_EnqueueSecondaryAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiImageActionControl *control);
 
 /* 0x00515250 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiImageActionControl_HandleKeyboardActivationCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiImageActionControl *control);
 
 /* 0x005152E0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiConditionalActionControl_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiConditionalActionControl *control);
 
 /* 0x005155A0 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_QueryPointerCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control);
 
 /* 0x005155C0 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
 UiConditionalActionControl_HitTestWhenEnabled
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiConditionalActionControl *control);
 
 /* 0x005155F0 */
 void __thandor_preserve_eax
 UiConditionalActionControl_EnqueuePrimaryActionIfEnabled
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiConditionalActionControl *control);
 
 /* 0x004B1C80 */
 void __thandor_void_preserve_eax_ecx_edx

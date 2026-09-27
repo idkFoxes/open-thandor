@@ -5293,9 +5293,21 @@ struct IDirectSound_Vtbl {
 };
 
 struct UiSelectableControl {
-    struct UiNodeBase base; 
-    enum UiSelectableStateFlags stateFlags; 
-    UiActionId actionId; 
+    struct UiNodeBase base;
+    enum UiSelectableStateFlags stateFlags;
+    UiActionId actionId;
+};
+
+/* How UiSelectableControl_KeyboardEventCf sees its controls: the third dword after the selectable part is
+   the activation sound, played when stateFlags bit 0x80 is set (activationSoundId of UiTextButtonControl and
+   UiFramedTextButtonControl, keyboardActivationSoundId of UiImageControl). The two dwords before it differ
+   per subclass. */
+typedef struct UiSoundSelectableControl UiSoundSelectableControl;
+struct UiSoundSelectableControl {
+    struct UiSelectableControl selectable;
+    dword subclassField54;
+    dword subclassField58;
+    struct DirectSoundVoiceSet *activationSound;
 };
 
 struct UiNodeVtable {
@@ -5445,6 +5457,8 @@ typedef dword UiTextResourceId;
 
 typedef dword UiListRowCount;
 
+/* The first 0x64 bytes of a UiListControl (g_UiListControlVtable); pages embed it with the column tail in
+   the following reserved bytes, and methods that need columnCount/columns view it as UiListControl. */
 struct UiPointerListControl {
     struct UiNodeBase base; 
     enum UiListStateFlags listStateFlags; 
@@ -6352,34 +6366,40 @@ struct TerrainDirectionRecord {
     dword reserved1C;
 };
 
+/* One 16-byte entry of a timed-list tree. A record block is an array of these: element 0 is the block
+   header (count = number of rows that follow, rowPayload04 = parent block, link = parent row record,
+   flags has UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY), elements 1..count are rows (payload00 = label text,
+   rowPayload04 = icon subresource, link = child block when flags 1|2 say expanded). */
 struct UiTimedListTreeRecord16 {
-    dword recordCountOrRowPayload00; 
-    dword rowPayload04; 
-    struct UiTimedListTreeRecord16 *nestedRecordBlockOrParentLink08; 
-    enum UiTimedListRecordFlags recordFlags0C; 
+    dword recordCountOrRowPayload00;
+    dword rowPayload04;
+    struct UiTimedListTreeRecord16 *nestedRecordBlockOrParentLink08;
+    enum UiTimedListRecordFlags recordFlags0C;
 };
 
+/* Tree list (g_UiTimedListControlVtable), e.g. the directory browser; the full object is
+   UiTimedListRuntimeExtendedView88 (0x88 bytes). No UI template instantiates it. */
 struct UiTimedListControl {
-    struct UiNodeBase base; 
-    enum UiTimedListStateFlags listStateAndDelay; 
-    struct UiTimedListTreeRecord16 *recordTree; 
-    UiListRowCount rowCount; 
-    UiPixelExtent rowHeight; 
-    UiActionId actionId; 
-    struct UiTimedListTreeRecord16 *selectedRecord; 
-    void (*recordSelectionCallback)(struct UiTimedListTreeRecord16 *, struct UiTimedListRuntimeExtendedView88 *); 
-    struct GraphicsTextureSourceAsset *rowTextureSource; 
-    dword observedDrawParameter6C; 
+    struct UiNodeBase base;
+    enum UiTimedListStateFlags listStateAndDelay;
+    struct UiTimedListTreeRecord16 *recordTree;
+    UiListRowCount rowCount;
+    UiPixelExtent rowHeight;
+    UiActionId actionId;
+    struct UiTimedListTreeRecord16 *selectedRecord;
+    void (*recordSelectionCallback)(struct UiTimedListTreeRecord16 *, struct UiTimedListRuntimeExtendedView88 *);
+    struct GraphicsTextureSourceAsset *rowTextureSource;
+    dword observedDrawParameter6C; // subresource of the collapsed-node icon (expandable row, flag 2 clear)
 };
 
 struct UiTimedListRuntimeExtendedView88 {
-    struct UiTimedListControl base; 
-    dword observedDrawParameter70; 
-    dword observedDrawParameter74; 
-    dword observedDrawParameter78; 
-    dword observedDrawParameter7C; 
-    dword observedDrawParameter80; 
-    dword observedDrawParameter84; 
+    struct UiTimedListControl base;
+    dword observedDrawParameter70; // subresource of the expanded-node icon
+    dword observedDrawParameter74; // subresource of the vertical connector of an ancestor level
+    dword observedDrawParameter78; // subresource of the connector of a row with more siblings below
+    dword observedDrawParameter7C; // subresource of the connector of the last row of a block
+    dword observedDrawParameter80; // indent width in pixels per tree level
+    dword observedDrawParameter84; // horizontal space in pixels reserved for the row icon
 };
 
 struct FrontendResultsColumnDrawDispatchTable18 {
@@ -6632,16 +6652,29 @@ struct TerrainMaterialSuffixEntry {
     word terminator;
 };
 
+/* One column of a UiListControl: the rich-text string at rowRecord + rowTextOffset is drawn in a column
+   of width pixels; a negative width is a right-aligned column of -width pixels. */
+typedef struct UiListColumn UiListColumn;
+struct UiListColumn {
+    sdword width;
+    dword rowTextOffset;
+};
+
+/* Multi-column text list (g_UiListControlVtable): rowSlots points at rowCount row records whose
+   column strings are drawn per columns[]. columns is variable length (columnCount entries: 2, 3 or 5 in
+   the templates, instance sizes 0x7C..0x98); three templates carry one more dword (0x21DB..0x21DD) after
+   the columns that no list method reads. UiPointerListControl is the 0x64-byte prefix of this class. */
 struct UiListControl {
-    struct UiNodeBase base; 
-    enum UiListStateFlags listStateFlags; 
-    void **rowSlots; 
-    UiListRowCount rowCount; 
-    UiPixelExtent rowHeight; 
-    UiActionId actionId; 
-    void **selectedRowSlot; 
-    dword reserved64; 
-    struct DirectSoundVoiceSet *activationSound; 
+    struct UiNodeBase base;
+    enum UiListStateFlags listStateFlags;
+    void **rowSlots;
+    UiListRowCount rowCount;
+    UiPixelExtent rowHeight;
+    UiActionId actionId;
+    void **selectedRowSlot;
+    dword columnCount;
+    struct DirectSoundVoiceSet *activationSound;
+    struct UiListColumn columns[1];
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
@@ -6815,10 +6848,38 @@ struct MovieFileHeader {
 };
 
 struct UiRootNode {
-    struct UiNodeBase base; 
-    enum UiRootFlags rootFlags; 
-    struct UiRootCallbacks *callbacks; 
-    struct UiRootNode *previousRoot; 
+    struct UiNodeBase base;
+    enum UiRootFlags rootFlags;
+    struct UiRootCallbacks *callbacks;
+    struct UiRootNode *previousRoot;
+};
+
+typedef struct UiPanelControl UiPanelControl;
+/* Panel (g_UiPanelControlVtable): the plain root-capable container; rootFlags bit 0x1 tiled background, 0x2 frame, 0x200 alternate background/frame. */
+struct UiPanelControl {
+    struct UiRootNode root;
+};
+
+typedef struct UiResizableWindowControl UiResizableWindowControl;
+/* Resizable window (g_UiResizableWindowControlVtable): root-capable window with title bar, close/maximize buttons, move and resize. */
+struct UiResizableWindowControl {
+    struct UiRootNode root; // rootFlags: 0x1 tiled interior, 0x2 frame, 0x4 title bar, 0x8 close button, 0x10 maximize button, 0x20 movable, 0x40 resizable, 0x80 maximized, 0x800/0x1000 close/maximize pressed, 0x2000 moving, 0x4000 resizing, 0x80000/0x100000 close/maximize armed, 0xFF000000 resized edges.
+    UiTextResourceId titleTextResourceId;
+    dword field5C; // Not read by any window method; zero in the template.
+    sdword restoredLeft; // Rectangle saved on maximize and restored on un-maximize.
+    sdword restoredTop;
+    sdword restoredRight;
+    sdword restoredBottom;
+    sdword dragAnchorXOrPendingRight; // Move: pointer x relative to left at grab time. Resize: new right edge being applied.
+    sdword dragAnchorYOrPendingBottom; // Move: pointer y relative to top at grab time. Resize: new bottom edge being applied.
+};
+
+typedef struct UiTitledWindowControl UiTitledWindowControl;
+/* Titled box (g_UiTitledWindowControlVtable): framed group box with a title text in its top edge. */
+struct UiTitledWindowControl {
+    struct UiNodeBase base;
+    dword titleFlags; // Bit 0x1: title centered (otherwise at the left corner).
+    UiTextResourceId titleTextResourceId;
 };
 
 #pragma pack(push, 1) /* Ghidra layout: no alignment padding */
@@ -9517,8 +9578,26 @@ struct RandomGeneratorState {
 struct UiTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
-    UiPackedTextStyle packedTextStyle; 
-    dword activationSoundId; 
+    UiPackedTextStyle packedTextStyle;
+    dword activationSoundId;
+};
+
+/* Text button that formats two numbers into rich-text payload selectors 0 and 1 of its text before drawing
+   (g_UiNumericPairTextButtonVtable; e.g. the display-resolution options: width, height). 0x68 bytes. */
+typedef struct UiNumericPairTextButton UiNumericPairTextButton;
+struct UiNumericPairTextButton {
+    struct UiTextButtonControl base;
+    sdword firstValue;
+    sdword secondValue;
+};
+
+/* Text button that patches two payload pointers into rich-text payload selectors 0 and 1 of its text before
+   drawing (g_UiPayloadPairTextButtonVtable; the display-adapter options). 0x68 bytes. */
+typedef struct UiPayloadPairTextButton UiPayloadPairTextButton;
+struct UiPayloadPairTextButton {
+    struct UiTextButtonControl base;
+    void *firstPayload;
+    void *secondPayload;
 };
 
 struct UiCommandRuntimeRecordPrefix {
@@ -9576,15 +9655,53 @@ struct UiImageControl {
     GraphicsSubresourceIndex normalSubresource; 
     dword keyboardActivationSoundId; 
     GraphicsSubresourceIndex alternateSubresource; 
-    struct UiNodeBase *activeChild; 
-    dword pointerActivationSoundId; 
+    struct UiNodeBase *activeChild;
+    dword pointerActivationSoundId;
+};
+
+/* Image/movie surface that queues one action on left and one on right click (g_UiImageActionControlVtable).
+   letterboxWidth is only read with UI_IMAGE_ACTION_STRETCH set; most template instances end before it (0x64
+   bytes, the end movie view is 0x68). */
+typedef struct UiImageActionControl UiImageActionControl;
+struct UiImageActionControl {
+    struct UiNodeBase base;
+    dword displayFlags; /* 1: stretch to the node, 2: Enter queues primaryActionId, 4: letterbox to letterboxWidth */
+    GraphicsCursorFrameIndex cursorFrame;
+    struct GraphicsTextureSourceAsset *textureSource;
+    GraphicsSubresourceIndex subresource;
+    UiActionId primaryActionId;
+    UiActionId secondaryActionId;
+    sdword letterboxWidth;
+};
+
+/* Framed text box drawing lineCount rich-text lines; left clicks queue actionId while it has lines
+   (g_UiConditionalActionControlVtable). textLines is variable length: 1, 5 or 8 slots in the templates. */
+typedef struct UiConditionalActionControl UiConditionalActionControl;
+struct UiConditionalActionControl {
+    struct UiNodeBase base;
+    dword field4C;
+    GraphicsCursorFrameIndex cursorFrame;
+    UiActionId actionId;
+    dword lineCount;
+    word *textLines[1];
 };
 
 struct UiFramedTextButtonControl {
     struct UiSelectableControl selectable; 
     UiTextResourceId textResourceId; 
-    UiPackedTextStyle packedTextStyle; 
-    dword activationSoundId; 
+    UiPackedTextStyle packedTextStyle;
+    dword activationSoundId;
+};
+
+typedef struct UiWindowControl UiWindowControl;
+/* Framed icon-and-text button (g_UiWindowControlVtable); shares the UiFramedTextButtonControl input methods, which only rely on the UiSelectableControl prefix. No template instance; the size past 0x68 is unknown. */
+struct UiWindowControl {
+    struct UiSelectableControl selectable;
+    struct GraphicsTextureSourceAsset *iconTextureSource;
+    GraphicsSubresourceIndex iconSubresource;
+    struct UiSpriteButtonDrawOffsets iconDrawOffsets; // Offset of the dimmed icon copy drawn under the icon: normal pair, or selected pair when selected.
+    UiTextResourceId textResourceId;
+    UiPackedTextStyle packedTextStyle;
 };
 
 struct UiActionHandlerPage {
@@ -10065,8 +10182,47 @@ struct Win32Message32 {
     Win32WParam32 wParam; 
     Win32LParam32 lParam; 
     Win32MessageTimestamp32 time; 
-    Win32CursorCoordinate32 pointX; 
-    Win32CursorCoordinate32 pointY; 
+    Win32CursorCoordinate32 pointX;
+    Win32CursorCoordinate32 pointY;
+};
+
+/* WNDCLASSA as the image stores it (the main window's class, see g_MainWindowClass). */
+typedef struct Win32WindowClass32 Win32WindowClass32;
+struct Win32WindowClass32 {
+    dword style;
+    void *windowProc;
+    int classExtraBytes;
+    int windowExtraBytes;
+    HINSTANCE instance;
+    HICON icon;
+    HCURSOR cursor;
+    void *backgroundBrush;
+    char *menuName;
+    char *className;
+};
+
+/* The original overlaps the main window's class with its message buffer: the class starts at
+   MSG.pt.y. The first PeekMessageA overwrites the style only after RegisterClassA copied the class. */
+typedef struct Win32MessageWindowClassOverlay Win32MessageWindowClassOverlay;
+struct Win32MessageWindowClassOverlay {
+    dword messageHead[6];
+    struct Win32WindowClass32 windowClass;
+};
+
+typedef union Win32MainMessageStorage Win32MainMessageStorage;
+union Win32MainMessageStorage {
+    struct Win32MessageWindowClassOverlay overlay;
+    struct Win32Message32 message;
+};
+
+/* Glide 3 GrLfbInfo_t: what grLfbLock reports about a locked frame buffer. */
+typedef struct GlideLfbInfo GlideLfbInfo;
+struct GlideLfbInfo {
+    dword size;
+    byte *pixels;
+    dword strideBytes;
+    dword writeMode;
+    dword origin;
 };
 
 struct PcxRgb24 {
@@ -14392,6 +14548,145 @@ struct LevelInitialArmyPlacementRecord20 {
     byte reserved14_1F[12]; // Unresolved trailing bytes of the 0x20 placement record.
 };
 
+
+/* Single-line rich-text label (g_UiFocusProxyControlVtable, g_UiCommandVisibilitySingleLineTextVtable) that
+   optionally forwards focus and pointer/keyboard input to one child (a slider or button it frames). 0x5C bytes;
+   template extents beyond 0x5C are unrelated data placed after the node. */
+typedef struct UiFocusProxyControl UiFocusProxyControl;
+struct UiFocusProxyControl {
+    struct UiNodeBase base;
+    dword labelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 hide while suppressed, 0x100/0x200 keep the style override bytes 3/2, 0x400 pointer-wheel forwarding in progress, 0x800/0x1000 command-visibility conditions, 0x8000 do not forward navigation keys 0x30.
+    struct UiNodeBase *focusChild; // Child that receives focus and forwarded input; relocated, may be null.
+    word *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
+};
+
+/* Wrapped multi-line rich-text block (g_UiListOffsetControlVtable, g_UiCommandVisibilityWrappedTextVtable).
+   0x5C bytes; template extents beyond 0x5C are unrelated data placed after the node (e.g. countdown state). */
+typedef struct UiListOffsetControl UiListOffsetControl;
+struct UiListOffsetControl {
+    struct UiNodeBase base;
+    dword labelFlags; // 0x10 text is a command stream (else a TextResourceId), 0x20 text pointer still needs relocation, 0x40 keep wrapWidth (else it follows layoutWidth), 0x100/0x200 keep the style override bytes 3/2, 0x800 command-visibility condition.
+    UiPixelExtent wrapWidth; // Maximum line width for wrapping.
+    word *text; // Rich-text command stream, or a TextResourceId when labelFlags & 0x10 is clear.
+    UiPackedTextStyle styleOverride; // Packed style bits OR-ed over g_UiTextStyleNormal (top two bytes used).
+};
+
+/* Horizontal or vertical range slider with a draggable thumb (g_UiRangeSliderControlVtable); every value change
+   enqueues actionId. 0x68 bytes; the display-settings template allocates only 0x64 bytes for its two color
+   sliders, which never set sliderFlags & 4 and so never touch clickSound. */
+typedef struct UiRangeSliderControl UiRangeSliderControl;
+struct UiRangeSliderControl {
+    struct UiNodeBase base;
+    dword sliderFlags; // 1 vertical (else horizontal), 2 thumb drag in progress, 4 play clickSound on press/release/key step, 8 reversed direction.
+    sdword minimumValue;
+    sdword maximumValue;
+    sdword value; // Current value, kept within minimumValue..maximumValue.
+    sdword stepValue; // Increment per arrow key; per wheel notch it is scaled by g_UiRangeSliderDragScale.
+    UiActionId actionId; // Enqueued on every value change; also the id matched by suppress/unsuppress.
+    struct DirectSoundVoiceSet *clickSound; // Set at runtime; may be null.
+};
+
+/* Horizontal progress gauge drawing a framed fill for value within minimumValue..maximumValue, optionally with a
+   centered percent label (g_UiHorizontalGaugeControlVtable). g_UiNodeVtable_00517DE0 is a subclass with no extra
+   fields that first reloads the range from the network transfer mailbox (file-transfer progress). 0x5C bytes. */
+typedef struct UiHorizontalGaugeControl UiHorizontalGaugeControl;
+struct UiHorizontalGaugeControl {
+    struct UiNodeBase base;
+    dword gaugeFlags; // 1 draw the percent label.
+    dword minimumValue;
+    dword maximumValue; // Compared unsigned with value.
+    dword value;
+};
+
+/* Panel drawing one texture subresource aligned (or stretched) inside its layout box, optionally over a drop shadow,
+   and hit-testing the texture's opaque pixels (g_UiImagePanelControlVtable). Neither the texture nor the children
+   are drawn while textureSource is null. 0x5C bytes. */
+typedef struct UiImagePanelControl UiImagePanelControl;
+struct UiImagePanelControl {
+    struct UiNodeBase base;
+    dword panelFlags; // 1 center X, 2 align right, 4 center Y, 8 align bottom, 0x10 draw a drop shadow, 0x20 never hit, 0x40 hit the whole box (skip the opaque-pixel test), 0x80 stretch the texture over the layout box.
+    sbyte shadowOffsetX; // Drop-shadow offset from the texture position (panelFlags & 0x10).
+    sbyte shadowOffsetY;
+    word reserved52;
+    struct GraphicsTextureSourceAsset *textureSource;
+    GraphicsSubresourceIndex subresource;
+};
+
+/* Image panel that also draws the metrics (portrait, health, value) of one selected entity over its texture
+   (g_UiArmyMetricsPanelVtable; shares UiImagePanelControl_HitTestAlignedTextureAndChildren). Its draw ignores the
+   drop-shadow and stretch flags. 0x60 bytes. */
+typedef struct UiArmyMetricsPanel UiArmyMetricsPanel;
+struct UiArmyMetricsPanel {
+    struct UiImagePanelControl base;
+    struct RuntimeModelFactionPrefix10 *entity; // Drawn by SelectionPanel_RenderArmyRuntimeMetrics; null draws only the texture.
+};
+
+/* Panel filling its box with a solid ARGB color, or tiling a texture subresource over it
+   (g_UiFillPanelControlVtable). 0x5C bytes. */
+typedef struct UiFillPanelControl UiFillPanelControl;
+struct UiFillPanelControl {
+    struct UiNodeBase base;
+    dword fillFlags; // 1 tile horizontally, 2 tile vertically (else one tile), 0x10 draw a drop shadow under each tile.
+    sbyte shadowOffsetX; // Drop-shadow offset from each tile (fillFlags & 0x10).
+    sbyte shadowOffsetY;
+    word reserved52;
+    struct GraphicsTextureSourceAsset *textureSource; // Null: fill the box with the color instead.
+    GraphicsSubresourceIndex subresourceOrFillArgb; // Subresource of textureSource; the ARGB fill color while textureSource is null.
+};
+
+/* Panel drawing a nine-slice texture frame: four corners, four tiled edges and a tiled center
+   (g_UiNineSlicePanelControlVtable). 0x5C bytes; a template extent of 0x60 includes the next node's tooltip id. */
+typedef struct UiNineSlicePanelControl UiNineSlicePanelControl;
+struct UiNineSlicePanelControl {
+    struct UiNodeBase base;
+    dword field4C; // Not read by the class methods; 0 in every template.
+    struct GraphicsTextureSourceAsset *textureSource;
+    GraphicsSubresourceIndex firstFrameSubresource; // Eight consecutive subresources: +0 top-left, +1 top-right, +2 top edge, +3 left edge, +4 right edge, +5 bottom-left, +6 bottom-right, +7 bottom edge.
+    GraphicsSubresourceIndex centerSubresource; // Tiled over the interior.
+};
+
+/* Software-rendered view blending two subresources of a texture through a per-pixel mask, enqueueing actionId on a
+   press or key (g_UiSoftwareTexturePreviewControlVtable; the frontend movie view). The mask animation
+   (SoftwareMaskBuffer_*) addresses the same object as SoftwareMaskRuntimeView. 0x6C bytes. */
+typedef struct UiSoftwareTexturePreviewControl UiSoftwareTexturePreviewControl;
+struct UiSoftwareTexturePreviewControl {
+    struct UiNodeBase base;
+    dword field4C; // Not read by the class methods; 0 in the template.
+    struct GraphicsTextureSourceAsset *textureSource; // Nothing is drawn while null.
+    GraphicsSubresourceIndex outgoingSubresource; // Blend source B (SoftwareMaskRuntimeView.patternState54).
+    GraphicsSubresourceIndex incomingSubresource; // Blend source A (SoftwareMaskRuntimeView.patternState58).
+    UiActionId actionId; // Enqueued on primary/secondary press and on every key except 0x10002 (which moves focus).
+    qword *blendFactorPixels; // Per-pixel blend mask (SoftwareMaskRuntimeView.maskPixels).
+    qword *blendedSourcePixels;
+    sdword tickCounter; // Mask animation tick (SoftwareMaskRuntimeView.tickCounter).
+};
+
+/* Resource gauge (g_UiFormattedContainerVtable; xenite, tritium and energy on the in-game resource panel): a
+   three-part bar filled to currentValue with a marker at limitValue, both scaled against initialScaleRange
+   (multiplied by 4 until every value fits); the fill texture variant follows currentValue / limitValue. The values
+   are also formatted into the node's tooltip text (payload selectors 0, 1 and 2), whose TextResourceId is the dword
+   in front of the node. 0x94 bytes; with gaugeFlags & 2 the node continues as UiFormattedContainerWithMarker. */
+typedef struct UiFormattedContainer UiFormattedContainer;
+struct UiFormattedContainer {
+    struct UiNodeBase base;
+    dword gaugeFlags; // 1 two-sided variant scale (below 40% and above 85% both use the late variants; else they rise from 80%), 2 has the markerValue tail (UiFormattedContainerWithMarker).
+    sdword currentValue;
+    sdword limitValue; // Nothing but the texts is drawn while 0.
+    struct GraphicsTextureSourceAsset *textureSource;
+    GraphicsSubresourceIndex firstFrameSubresource; // +0/+1/+2 empty bar left/middle/right, +3..+0x14 six fill variants of three parts each, +0x15 marker.
+    word currentValueTextUtf16[12]; // Tooltip payload 0.
+    word limitValueTextUtf16[12]; // Tooltip payload 1.
+    sdword initialScaleRange;
+};
+
+/* Resource gauge with a second marker (gaugeFlags & 2; the energy gauge). 0xB0 bytes. */
+typedef struct UiFormattedContainerWithMarker UiFormattedContainerWithMarker;
+struct UiFormattedContainerWithMarker {
+    struct UiFormattedContainer base;
+    sdword markerValue; // Second marker; also caps the fill-percentage divisor when smaller than limitValue.
+    word markerValueTextUtf16[12]; // Tooltip payload 2.
+};
 
 /* The two handlers of the root-stack action page: UiRootStack_PopCf, FatalErrorDialog_DismissAndPopRoot. */
 typedef struct UiRootStackActionHandlerPage2 UiRootStackActionHandlerPage2;

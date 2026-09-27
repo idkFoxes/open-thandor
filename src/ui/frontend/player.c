@@ -677,7 +677,7 @@ void __thandor_preserve_eax FrontendPlayerSetup_SelectCountAndBuildLabel(UiNodeB
 {
   TextResourceResolveEaxCf5 labelText;
   
-  g_SessionNetworkTickInterval = source[1].vtable;
+  g_SessionNetworkTickInterval = ((UiRangeSliderControl *)source)->value;
   labelText = TextResource_Resolve
                     ((TextResourceId)((int)&((UiNodeVtable *)(uintptr_t)g_SessionNetworkTickInterval)[0x75].rightDrag + 1 /* TODO: Ghidra read a constant as an address */));
   RichTextCommandStream_CopyExpandedCf

@@ -99,15 +99,16 @@ UiRuntime_OpenFourValueDialogCf
       templateCursor = templateCursor + 1;
       copyCursor = (UiRootNode *)&(copyCursor->base).firstChild;
     }
-    valueTextBuffer = &root[4].base.topOffset;
+    valueTextBuffer = &FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x74,sdword);
     resolvedText = TextResource_Resolve(0x109);
     RichTextCommandStream_PatchPayloadBySelector(0,valueTextBuffer,resolvedText.eax);
     (*g_WideNumberFormatUtf16)
-              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)root[4].base.vtable,(word *)valueTextBuffer);
-    root[4].base.top = value3;
-    root[4].base.right = value2;
-    root[4].base.bottom = value1;
-    root[4].base.leftOffset = value0;
+              (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x5C,sdword),
+               (word *)valueTextBuffer);
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x64,sdword) = value3;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x68,sdword) = value2;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x6C,sdword) = value1;
+    FOUR_VALUE_DIALOG_UI_FIELD(root,countdownMessageText,0x70,sdword) = value0;
     UiRootStack_Push(&g_UiFourValueDialogRootCallbacks,root);
     UiRootStack_InvalidateAll();
     return;
@@ -592,18 +593,19 @@ void __thandor_void_preserve_eax_ecx_edx UiActionQueue_Enqueue(UiActionId action
 
 /* Address: 0x004BD160.
    Ownership: ui/core/runtime.
-   Purpose: Returns the ARGB state tint selected from UiNodeBase.nodeFlags bits 0x04, 0x08, and 0x10.
+   Purpose: Returns the ARGB state tint selected from ModelRuntimeNode.runtimeFlags bits 0x04, 0x08, and 0x10
+   (both callers pass a model runtime node).
 */
 PackedArgb32 UiNode_GetStateTintArgb(UiNodeBase *node)
 
 {
   PackedArgb32 tintArgb;
-  UiNodeBase *stateFlags;
+  ModelRuntimeFlags stateFlags;
   
   tintArgb = 0xffffffff;
-  stateFlags = node[1].nextSibling;
-  if (((((uint)stateFlags & 4) == 0) && (tintArgb = 0, ((uint)stateFlags & 8) != 0)) &&
-     (tintArgb = 0xffffff, ((uint)stateFlags & 0x10) == 0)) {
+  stateFlags = ((ModelRuntimeNode *)node)->runtimeFlags;
+  if ((((stateFlags & 4) == 0) && (tintArgb = 0, (stateFlags & 8) != 0)) &&
+     (tintArgb = 0xffffff, (stateFlags & 0x10) == 0)) {
     tintArgb = 0xff878787;
   }
   return tintArgb;

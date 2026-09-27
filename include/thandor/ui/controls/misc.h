@@ -56,26 +56,26 @@ UiFourValueDialog_TickCountdownAndRequestClose(UiRootNode *root);
 void __thandor_void_preserve_eax_ecx_edx
 UiRangeSliderControl_DrawTrackAndThumb
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiRangeSliderControl *control);
 
 /* 0x004B41C0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiRangeSliderControl_BeginThumbDrag
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiRangeSliderControl *control);
 
 /* 0x004B4280 */
 void UiRangeSliderControl_EndThumbDrag
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control);
+               ,UiRangeSliderControl *control);
 
 /* 0x004B45F0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiNodeBase *control);
+UiRangeSliderControl_SuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
 
 /* 0x004B4620 */
 void __thandor_void_preserve_eax_ecx_edx
-UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiNodeBase *control);
+UiRangeSliderControl_UnsuppressIfActionId(UiActionId actionId,UiRangeSliderControl *control);
 
 /* 0x004BC5C0 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -101,7 +101,7 @@ void __thandor_preserve_eax UiModelControl_RefreshStateTint(ModelRuntimeNode *co
 /* 0x00517E30 */
 void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_UpdateRuntimeRangeAndDraw
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiHorizontalGaugeControl *control);
 
 /* 0x00423600 */
 void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSelectionCf(void);

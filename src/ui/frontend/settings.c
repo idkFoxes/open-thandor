@@ -895,34 +895,34 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
 
 {
-  UiNodeVtable *shadingGridSize;
+  sdword shadingGridSize;
   UiNodeBase *shadingGroupRoot;
   uint shadingDepthQuarter;
   UiNodeBase *selectedControl;
   
-  shadingGridSize = control[1].base.vtable;
-  shadingDepthQuarter = (uint)control[1].base.left >> 2;
+  shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
+  shadingDepthQuarter = (uint)((UiNumericPairTextButton *)control)->secondValue >> 2;
   PersistentSettings_WriteDword((int)shadingGridSize * 2,0x14);
   PersistentSettings_WriteDword((PersistentSettingsDwordValue)shadingGridSize,0x10);
   PersistentSettings_WriteDword(shadingDepthQuarter,0x18);
   shadingGroupRoot = (control->base).parent;
-  if (shadingGridSize == (UiNodeVtable *)0x20) {
-    selectedControl = (UiNodeBase *)&shadingGroupRoot[1].parent;
+  if (shadingGridSize == 0x20) {
+    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x54);
     if (shadingDepthQuarter == 0x10) {
-      selectedControl = (UiNodeBase *)&shadingGroupRoot[2].topOffset;
+      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0xbc);
     }
     else if (shadingDepthQuarter == 0x20) {
-      selectedControl = (UiNodeBase *)&shadingGroupRoot[3].layoutWidth;
+      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x124);
     }
   }
-  else if (shadingGridSize == (UiNodeVtable *)0x40) {
-    selectedControl = (UiNodeBase *)&shadingGroupRoot[5].left;
+  else if (shadingGridSize == 0x40) {
+    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x18c);
     if (shadingDepthQuarter == 0x20) {
-      selectedControl = (UiNodeBase *)&shadingGroupRoot[6].bottomOffset;
+      selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x1f4);
     }
   }
   else {
-    selectedControl = (UiNodeBase *)&shadingGroupRoot[7].nodeFlags;
+    selectedControl = THANDOR_UI_AT(shadingGroupRoot,0x25c);
   }
   UiSelectableGroup_SelectExclusive(6,selectedControl,
       THANDOR_UI_AT((control->base).parent,0x25c),
@@ -972,17 +972,17 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
   UiNodeBase *graphicsSettingsRoot;
   
   graphicsSettingsRoot = (control->base).parent;
-  if ((UiSelectableControl *)&graphicsSettingsRoot[1].parent == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x54) == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[1].parent;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x54);
   }
-  if ((UiSelectableControl *)&graphicsSettingsRoot[2].bottom == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0xb4) == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[2].bottom;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0xb4);
   }
-  if ((UiSelectableControl *)&graphicsSettingsRoot[3].leftAnchorQ31 == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x114) == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x114);
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
       THANDOR_UI_AT((control->base).parent,0x114),

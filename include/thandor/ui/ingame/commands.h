@@ -127,7 +127,7 @@ void __thandor_void_preserve_eax_ecx_edx
 InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source);
 
 /* 0x0056D920 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context);
 
 /* 0x0056DD50 */
 void __thandor_void_preserve_eax_ecx_edx InGameCommandModeC_Select0(UiSpriteButtonControl *source);
@@ -205,7 +205,7 @@ InGameCommand150_HandlePlayerDepartureAndOwnership
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(void *visualState);
 
 /* 0x0056DA50 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context);
 
 /* 0x00571440 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -218,37 +218,37 @@ UiCommandRuntimeFlags_ApplyClearSetToggleMasks
           UiCommandRuntimeFlagMask setMask,UiCommandRuntimeFlagMask clearMask);
 
 /* 0x0056D860 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context);
 
 /* 0x0056D880 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context);
 
 /* 0x0056D940 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context);
 
 /* 0x0056D8C0 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context);
 
 /* 0x0056D8E0 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context);
 
 /* 0x0056D840 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context);
 
 /* 0x0056D8A0 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context);
 
 /* 0x0056D960 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context);
 
 /* 0x0056D9F0 */
 void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(void *visualState);
 
 /* 0x0056DA70 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context);
 
 /* 0x0056D900 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(UiNodeBase *node);
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context);
 
 /* 0x0056DA90 */
 InGameRuntimeRootImageC3E4 * __thandor_eax_edx_cf_preserve_ecx

@@ -88,13 +88,13 @@ UiPointerList_SortByExpandedTextFieldDescending
 void __thandor_void_preserve_eax_ecx_edx
 UiNumericPairTextButton_DrawFormattedValues
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextButtonControl *control);
+          UiPixelCoordinate clipRight,UiNumericPairTextButton *control);
 
 /* 0x00515780 */
 void __thandor_void_preserve_eax_ecx_edx
 UiPayloadPairTextButton_DrawFormattedPayloads
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiTextButtonControl *control);
+          UiPixelCoordinate clipRight,UiPayloadPairTextButton *control);
 
 /* 0x004B0320 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -142,7 +142,7 @@ UiFramedTextButtonControl_HitTestRect
 void __thandor_void_preserve_eax_ecx_edx
 UiWindowControl_DrawFramedTextAndChrome
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiWindowControl *control);
 
 /* 0x004B2E40 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -165,22 +165,22 @@ UiTextButtonControl_KeyboardEventCf
 void __thandor_void_preserve_eax_ecx_edx
 UiImagePanelControl_DrawAlignedTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiImagePanelControl *control);
 
 /* 0x004B3960 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
-UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiNodeBase *control);
+UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,UiImagePanelControl *control);
 
 /* 0x004B3AA0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiFillPanelControl_DrawColorOrTiledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiFillPanelControl *control);
 
 /* 0x004B5E60 */
 void UiTextEditControl_EndSelection
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control);
+               ,UiTextEditControl *control);
 
 /* 0x004B6480 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -197,7 +197,7 @@ void __thandor_preserve_eax UiTextEditControl_TickCaretBlink(UiTextEditControl *
 void __thandor_void_preserve_eax_ecx_edx
 UiSingleLineTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiFocusProxyControl *control);
 
 /* 0x004B9E90 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -237,52 +237,52 @@ UiPointerList_InitializeMeasuredTextRows
 void __thandor_void_preserve_eax_ecx_edx
 UiWrappedTextControl_DrawClipped
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiListOffsetControl *control);
 
 /* 0x004BCC80 */
 void __thandor_void_preserve_eax_ecx_edx
 UiNineSlicePanelControl_DrawTextureFrameAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiNineSlicePanelControl *control);
 
 /* 0x00515830 */
 void __thandor_void_preserve_eax_ecx_edx
 UiFormattedContainer_RelocateWithPatchedTextPayloads
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
+          (UiSerializedRelocationDelta relocationDelta,UiFormattedContainer *control);
 
 /* 0x005158B0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiFormattedContainer_DrawClipped
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control);
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiFormattedContainer *control);
 
 /* 0x00516D10 */
 void __thandor_void_preserve_eax_ecx_edx
 UiArmyMetricsPanel_DrawTextureMetricsAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiArmyMetricsPanel *control);
 
 /* 0x00519110 */
 void __thandor_void_preserve_eax_ecx_edx
 UiSoftwareTexturePreviewControl_DrawScaledTextureAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiSoftwareTexturePreviewControl *control);
 
 /* 0x00519190 */
 void __thandor_preserve_eax
 UiSoftwareTexturePreviewControl_EnqueueActionOnPrimaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiSoftwareTexturePreviewControl *control);
 
 /* 0x005191B0 */
 void __thandor_preserve_eax
 UiSoftwareTexturePreviewControl_EnqueueActionOnSecondaryPress
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiSoftwareTexturePreviewControl *control);
 
 /* 0x005191D0 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiSoftwareTexturePreviewControl_HandleKeyboardActivationCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiSoftwareTexturePreviewControl *control);
 
 /* 0x004B0150 */
 void __thandor_void_preserve_eax_ecx_edx

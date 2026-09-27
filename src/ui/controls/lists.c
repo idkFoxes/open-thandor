@@ -18,167 +18,178 @@
    Cross-module calls: UiNode_DefaultKeyboardEventMoveFocusNextCf [ui/controls/input].
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiTimedListControl_HandleKeyboardNavigationCf(dword keyCode,dword stateMask,UiNodeBase *control)
+UiTimedListControl_HandleKeyboardNavigationCf
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiTimedListControl *control)
 
 {
-  uint *startRecord;
-  uint *scanRecord;
+  UiTimedListTreeRecord16 *startRecord;
+  UiTimedListTreeRecord16 *scanRecord;
   UiFrameDelayFrames actionDelayFrames;
-  UiNodeBase *childBlock;
-  int *recordCursor;
-  uint *stepRecord;
-  int previousSelection;
+  UiTimedListTreeRecord16 *childBlock;
+  UiTimedListTreeRecord16 *recordCursor;
+  UiTimedListTreeRecord16 *stepRecord;
+  UiTimedListTreeRecord16 *previousSelection;
+  UiTimedListTreeRecord16 *countRecord;
   dword nestedRecordCount;
-  UiNodeBase **lastRecord;
+  UiTimedListTreeRecord16 *lastRecord;
   uint siblingIndex;
   int rowAccumulator;
   int rowIndex;
   int stepCounter;
   bool handled;
   UiScrollableContentDimensionsEdxEax8 contentSize;
-  
+
+  /* A record block is a header record (count, parent block, parent record, ANCESTOR_BOUNDARY flag)
+     followed by count row records; an expanded row (flags 1|2) links its child block. */
   stepCounter = 1;
-  previousSelection = control[1].top;
-  if ((stateMask & 0xffff0000) == 0) {
+  previousSelection = control->selectedRecord;
+  if ((keyCode & 0xffff0000) == 0) {
 UiTimedListKeyboard_DelegateUnhandledEvent:
-    handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyCode,stateMask,control);
+    handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
     return handled;
   }
-  if (stateMask == 0x10010) {
-    control[1].top = (sdword)&(control[1].firstChild)->left;
+  if (keyCode == 0x10010) {
+    control->selectedRecord = control->recordTree + 1;
     goto UiTimedListKeyboard_CommitSelectionAndScheduleAction;
   }
-  if (stateMask == 0x10018) {
-    childBlock = control[1].firstChild;
+  if (keyCode == 0x10018) {
+    childBlock = control->recordTree;
     do {
-      lastRecord = &childBlock->nextSibling + (int)childBlock->nextSibling * 4;
-      control[1].top = (sdword)lastRecord;
-      if ((((uint)lastRecord[3] & 1) == 0) || (((uint)lastRecord[3] & 2) == 0)) break;
-      childBlock = lastRecord[2];
-    } while (childBlock != (UiNodeBase *)0x0);
+      lastRecord = childBlock + (int)childBlock->recordCountOrRowPayload00;
+      control->selectedRecord = lastRecord;
+      if (((lastRecord->recordFlags0C & 1) == 0) || ((lastRecord->recordFlags0C & 2) == 0)) break;
+      childBlock = lastRecord->nestedRecordBlockOrParentLink08;
+    } while (childBlock != (UiTimedListTreeRecord16 *)0x0);
     goto UiTimedListKeyboard_CommitSelectionAndScheduleAction;
   }
-  if (stateMask == 0x10012) {
-    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
-    rowAccumulator = (int)((contentSize >> 0x20) / ZEXT48(control[1].vtable));
+  if (keyCode == 0x10012) {
+    contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+    rowAccumulator = (int)((contentSize >> 0x20) / ZEXT48(control->rowHeight));
     stepCounter = rowAccumulator + -1;
     if (rowAccumulator < 1) {
       stepCounter = 1;
     }
 UiTimedListKeyboard_MoveSelectionBackwardLoop:
     do {
-      rowAccumulator = control[1].top;
-      recordCursor = (int *)(rowAccumulator + -0x10);
-      control[1].top = (sdword)recordCursor;
-      if ((*(uint *)(rowAccumulator + -4) & 0x80000000) == 0) {
-        while ((((recordCursor[3] & 1U) != 0 && ((recordCursor[3] & 2U) != 0)) &&
-               (recordCursor = (int *)recordCursor[2], recordCursor != (int *)0x0))) {
-          recordCursor = recordCursor + *recordCursor * 4;
-          control[1].top = (sdword)recordCursor;
+      stepRecord = control->selectedRecord;
+      recordCursor = stepRecord - 1;
+      control->selectedRecord = recordCursor;
+      if ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) {
+        while ((((recordCursor->recordFlags0C & 1U) != 0 && ((recordCursor->recordFlags0C & 2U) != 0)) &&
+               (recordCursor = recordCursor->nestedRecordBlockOrParentLink08,
+               recordCursor != (UiTimedListTreeRecord16 *)0x0))) {
+          recordCursor = recordCursor + (int)recordCursor->recordCountOrRowPayload00;
+          control->selectedRecord = recordCursor;
         }
       }
       else {
-        rowIndex = *(int *)(rowAccumulator + -8);
-        control[1].top = rowAccumulator;
-        if (rowIndex != 0) {
-          control[1].top = rowIndex;
+        recordCursor = stepRecord[-1].nestedRecordBlockOrParentLink08;
+        control->selectedRecord = stepRecord;
+        if (recordCursor != (UiTimedListTreeRecord16 *)0x0) {
+          control->selectedRecord = recordCursor;
         }
       }
       stepCounter = stepCounter + -1;
     } while (stepCounter != 0);
   }
   else {
-    if (stateMask == 0x1001a) {
-      contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)control->parent);
-      rowAccumulator = (int)((contentSize >> 0x20) / ZEXT48(control[1].vtable));
+    if (keyCode == 0x1001a) {
+      contentSize = UiScrollableControl_QueryContentSizeRegs((UiScrollableControl *)(control->base).parent);
+      rowAccumulator = (int)((contentSize >> 0x20) / ZEXT48(control->rowHeight));
       stepCounter = rowAccumulator + -1;
       if (rowAccumulator < 1) {
         stepCounter = 1;
       }
     }
     else {
-      if (stateMask == 0x10011) goto UiTimedListKeyboard_MoveSelectionBackwardLoop;
-      if (stateMask != 0x10019) {
-        if (stateMask == 0x10014) {
-          if ((*(uint *)(previousSelection + 0xc) & 1) == 0) {
+      if (keyCode == 0x10011) goto UiTimedListKeyboard_MoveSelectionBackwardLoop;
+      if (keyCode != 0x10019) {
+        if (keyCode == 0x10014) {
+          if ((previousSelection->recordFlags0C & 1) == 0) {
             return false;
           }
-          if ((*(uint *)(previousSelection + 0xc) & 2) == 0) {
+          if ((previousSelection->recordFlags0C & 2) == 0) {
             return false;
           }
-          if (control[1].right == 0) {
+          if (control->recordSelectionCallback == 0) {
             return false;
           }
-          (*(code *)control[1].right)(previousSelection,control);
+          (*control->recordSelectionCallback)
+                    (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
           return false;
         }
-        if (stateMask == 0x10016) {
-          if ((*(uint *)(previousSelection + 0xc) & 1) == 0) {
+        if (keyCode == 0x10016) {
+          if ((previousSelection->recordFlags0C & 1) == 0) {
             return false;
           }
-          if ((*(uint *)(previousSelection + 0xc) & 2) != 0) {
+          if ((previousSelection->recordFlags0C & 2) != 0) {
             return false;
           }
-          if (control[1].right == 0) {
+          if (control->recordSelectionCallback == 0) {
             return false;
           }
-          (*(code *)control[1].right)(previousSelection,control);
+          (*control->recordSelectionCallback)
+                    (previousSelection,(UiTimedListRuntimeExtendedView88 *)control);
           return false;
         }
         goto UiTimedListKeyboard_DelegateUnhandledEvent;
       }
     }
     do {
-      startRecord = (uint *)control[1].top;
+      startRecord = control->selectedRecord;
       siblingIndex = 0;
       scanRecord = startRecord;
-      if ((((startRecord[3] & 1) == 0) || ((startRecord[3] & 2) == 0)) ||
-         ((recordCursor = (int *)startRecord[2], recordCursor == (int *)0x0 || (*recordCursor == 0)))) {
+      if ((((startRecord->recordFlags0C & 1) == 0) || ((startRecord->recordFlags0C & 2) == 0)) ||
+         ((recordCursor = startRecord->nestedRecordBlockOrParentLink08,
+          recordCursor == (UiTimedListTreeRecord16 *)0x0 || (recordCursor->recordCountOrRowPayload00 == 0))))
+      {
         do {
           do {
             stepRecord = scanRecord;
             siblingIndex = siblingIndex + 1;
-            scanRecord = stepRecord + -4;
-          } while ((stepRecord[-1] & 0x80000000) == 0);
-          control[1].top = control[1].top + 0x10;
-          if (siblingIndex < stepRecord[-4]) goto UiTimedListKeyboard_ForwardTraversalStepComplete;
-          scanRecord = (uint *)stepRecord[-2];
+            scanRecord = stepRecord - 1;
+          } while ((stepRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0);
+          control->selectedRecord = control->selectedRecord + 1;
+          if (siblingIndex < stepRecord[-1].recordCountOrRowPayload00)
+          goto UiTimedListKeyboard_ForwardTraversalStepComplete;
+          scanRecord = stepRecord[-1].nestedRecordBlockOrParentLink08;
           siblingIndex = 0;
-          control[1].top = (sdword)scanRecord;
-        } while (scanRecord != (uint *)0x0);
-        control[1].top = (sdword)startRecord;
+          control->selectedRecord = scanRecord;
+        } while (scanRecord != (UiTimedListTreeRecord16 *)0x0);
+        control->selectedRecord = startRecord;
       }
       else {
-        control[1].top = (sdword)(recordCursor + 4);
+        control->selectedRecord = recordCursor + 1;
       }
 UiTimedListKeyboard_ForwardTraversalStepComplete:
       stepCounter = stepCounter + -1;
     } while (stepCounter != 0);
   }
 UiTimedListKeyboard_CommitSelectionAndScheduleAction:
-  stepCounter = control[1].top;
+  countRecord = control->selectedRecord;
   rowAccumulator = 0;
-  if (stepCounter != previousSelection) {
+  if (countRecord != previousSelection) {
     do {
-      previousSelection = stepCounter + -0x10;
+      previousSelection = countRecord - 1;
       rowIndex = rowAccumulator;
-      if ((*(uint *)(stepCounter + -4) & 2) != 0) {
+      if ((countRecord[-1].recordFlags0C & UI_TIMED_LIST_RECORD_ENABLES_NESTED_CHILD_TRAVERSAL) != 0) {
         nestedRecordCount = UiTimedListTree_CountRecordArrayAndNestedChildren
-                          (*(UiTimedListTreeRecord16 **)(stepCounter + -8));
+                          (countRecord[-1].nestedRecordBlockOrParentLink08);
         rowIndex = rowAccumulator + nestedRecordCount;
       }
-      stepCounter = previousSelection;
+      countRecord = previousSelection;
       rowAccumulator = rowIndex + 1;
-    } while (((*(uint *)(stepCounter + 0xc) & 0x80000000) == 0) ||
-            (stepCounter = *(int *)(stepCounter + 8), stepCounter != 0));
-    rowIndex = rowIndex * (int)control[1].vtable;
+    } while (((countRecord->recordFlags0C & UI_TIMED_LIST_RECORD_ANCESTOR_BOUNDARY) == 0) ||
+            (countRecord = countRecord->nestedRecordBlockOrParentLink08,
+            countRecord != (UiTimedListTreeRecord16 *)0x0));
+    rowIndex = rowIndex * (int)control->rowHeight;
     UiScrollableControl_ClampOffsetsToViewport
-              ((int)&(control[1].vtable)->relocate + rowIndex + 1,control->rightOffset,rowIndex,0,
-               (UiScrollableControl *)control->parent);
+              ((int)control->rowHeight + rowIndex + 1,(control->base).rightOffset,rowIndex,0,
+               (UiScrollableControl *)(control->base).parent);
     actionDelayFrames = g_UiTimedListActionDelayFrames;
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 2);
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffff);
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | actionDelayFrames << 0x18);
+    control->listStateAndDelay = control->listStateAndDelay | UI_TIMED_LIST_ACTION_DELAY_PENDING;
+    control->listStateAndDelay = control->listStateAndDelay & 0xffffff;
+    control->listStateAndDelay = control->listStateAndDelay | actionDelayFrames << 0x18;
   }
   return false;
 }
@@ -453,27 +464,27 @@ UiScrollableControl_InvalidateAfterPrimaryScrollInteraction:
 void __thandor_preserve_eax
 UiScrollableControl_EndPrimaryScrollInteraction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiScrollableControl *control)
 
 {
-  if (((uint)control[1].nextSibling & 0x20000) != 0) {
-    control[1].bottom = control[1].bottom + ((int)control[1].firstChild >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+    control->scrollOffsetX = control->scrollOffsetX + ((int)control->viewportWidth >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if (((uint)control[1].nextSibling & 0x80000) != 0) {
-    control[1].bottom = control[1].bottom - ((int)control[1].firstChild >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
+  if ((control->scrollStateFlags & UI_SCROLL_HORIZONTAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+    control->scrollOffsetX = control->scrollOffsetX - ((int)control->viewportWidth >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if (((uint)control[1].nextSibling & 0x2000000) != 0) {
-    control[1].leftOffset = control[1].leftOffset + ((int)control[1].parent >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_BEFORE_THUMB_ACTIVE) != 0) {
+    control->scrollOffsetY = control->scrollOffsetY + ((int)control->viewportHeight >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  if (((uint)control[1].nextSibling & 0x8000000) != 0) {
-    control[1].leftOffset = control[1].leftOffset - ((int)control[1].parent >> 1);
-    UiScrollableControl_RefreshChildAndScrollThumbs((UiScrollableControl *)control);
+  if ((control->scrollStateFlags & UI_SCROLL_VERTICAL_TRACK_AFTER_THUMB_ACTIVE) != 0) {
+    control->scrollOffsetY = control->scrollOffsetY - ((int)control->viewportHeight >> 1);
+    UiScrollableControl_RefreshChildAndScrollThumbs(control);
   }
-  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xe0e0dfff);
-  UiNode_InvalidateRoot(control);
+  control->scrollStateFlags = control->scrollStateFlags & 0xe0e0dfff;
+  UiNode_InvalidateRoot(&control->base);
   return;
 }
 
@@ -1720,61 +1731,64 @@ UiNodeList_SuppressActionId(UiActionId actionId,UiNodeBase *firstNode)
 bool __thandor_cf_preserve_eax_ecx_edx
 UiSelectableControl_KeyboardEventCf
           (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,
-          UiSelectableControl *control)
+          UiSoundSelectableControl *control)
 
 {
   bool handled;
   UiSelectableStateFlags activationKeyBindingFlag;
   
-  if (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)
+  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)
   goto UiSelectableControl_DelegateUnhandledKeyboardEvent;
   if (keyCode == 0x20) {
-    if ((control != (UiSelectableControl *)g_UiKeyboardFocusNode) ||
-       ((control->stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) != 0))
+    if ((&(control->selectable).base != g_UiKeyboardFocusNode) ||
+       (((control->selectable).stateFlags & UI_SELECTABLE_IGNORE_FOCUSED_SPACE_ACTIVATION) != 0))
     goto UiSelectableControl_DelegateUnhandledKeyboardEvent;
   }
   else {
     if ((keyCode & 0xffff0000) == 0) goto UiSelectableControl_DelegateUnhandledKeyboardEvent;
     if (keyCode == 0x10001) {
-      activationKeyBindingFlag = control->stateFlags & 4;
+      activationKeyBindingFlag = (control->selectable).stateFlags & 4;
     }
     else {
       if (keyCode != 0x10000) goto UiSelectableControl_DelegateUnhandledKeyboardEvent;
-      activationKeyBindingFlag = control->stateFlags & 8;
+      activationKeyBindingFlag = (control->selectable).stateFlags & 8;
     }
     if (activationKeyBindingFlag == 0) goto UiSelectableControl_DelegateUnhandledKeyboardEvent;
   }
-  if ((control->stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
-    if (((control->stateFlags & 0x80) != 0) && (control[1].base.parent != (UiNodeBase *)0x0)) {
-      (*g_SoundPlayOneShot)
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control[1].base.parent);
+  if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
+    if ((((control->selectable).stateFlags & 0x80) != 0) &&
+       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
-    UiActionQueue_Enqueue(control->actionId,control);
-    UiNode_InvalidateRoot(&control->base);
+    UiActionQueue_Enqueue((control->selectable).actionId,control);
+    UiNode_InvalidateRoot(&(control->selectable).base);
     return false;
   }
-  if ((control->stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
-    if (((control->stateFlags & 0x80) != 0) && (control[1].base.parent != (UiNodeBase *)0x0)) {
-      (*g_SoundPlayOneShot)
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control[1].base.parent);
+  if (((control->selectable).stateFlags & UI_SELECTABLE_TOGGLE_ON_ACTIVATION) != 0) {
+    if ((((control->selectable).stateFlags & 0x80) != 0) &&
+       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
-    control->stateFlags = control->stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiActionQueue_Enqueue(control->actionId,control);
-    UiNode_InvalidateRoot(&control->base);
+    (control->selectable).stateFlags =
+         (control->selectable).stateFlags ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
+    UiActionQueue_Enqueue((control->selectable).actionId,control);
+    UiNode_InvalidateRoot(&(control->selectable).base);
     return false;
   }
-  if ((control->stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
-    if (((control->stateFlags & 0x80) != 0) && (control[1].base.parent != (UiNodeBase *)0x0)) {
-      (*g_SoundPlayOneShot)
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,(DirectSoundVoiceSet *)control[1].base.parent);
+  if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) == 0) {
+    if ((((control->selectable).stateFlags & 0x80) != 0) &&
+       (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+      (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
     }
-    control->stateFlags = control->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
-    UiActionQueue_Enqueue(control->actionId,control);
-    UiNode_InvalidateRoot(&control->base);
+    (control->selectable).stateFlags =
+         (control->selectable).stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
+    UiActionQueue_Enqueue((control->selectable).actionId,control);
+    UiNode_InvalidateRoot(&(control->selectable).base);
     return false;
   }
 UiSelectableControl_DelegateUnhandledKeyboardEvent:
-  handled = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+  handled = UiNode_DefaultKeyboardEventMoveFocusNextCf
+                      (keyboardStateMask,keyCode,&(control->selectable).base);
   return handled;
 }
 
@@ -1901,21 +1915,21 @@ void __thandor_void_preserve_eax_ecx_edx
 UiSelectableGroup_SelectExclusive(UiControlCount controlCount,UiNodeBase *selectedControl,...)
 
 {
-  UiNodeBase *node;
+  UiSelectableControl *node;
   uint controlIndex;
   int controlPointerByteOffset;
-  
+
   controlPointerByteOffset = 0;
   controlIndex = 0;
   do {
-    node = *(UiNodeBase **)((byte *)(&selectedControl + 1) + controlPointerByteOffset);
-    if (node == selectedControl) {
-      node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 2);
+    node = *(UiSelectableControl **)((byte *)(&selectedControl + 1) + controlPointerByteOffset);
+    if (&node->base == selectedControl) {
+      node->stateFlags = node->stateFlags | UI_SELECTABLE_SELECTED_OR_CHECKED;
     }
     else {
-      node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xfffffffd);
+      node->stateFlags = node->stateFlags & ~UI_SELECTABLE_SELECTED_OR_CHECKED;
     }
-    UiNode_InvalidateRoot(node);
+    UiNode_InvalidateRoot(&node->base);
     controlIndex = controlIndex + 1;
     controlPointerByteOffset = controlPointerByteOffset + 4;
   } while (controlIndex < controlCount);
@@ -2658,11 +2672,11 @@ UiScrollableControl_BeginSecondaryScrollInteraction
 */
 void UiScrollableControl_EndSecondaryScrollInteraction
                (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX
-               ,UiNodeBase *control)
+               ,UiScrollableControl *control)
 
 {
   g_CursorUseOverridePosition = 0;
-  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffafff);
+  control->scrollStateFlags = control->scrollStateFlags & 0xffffafff;
   (*g_GraphicsCursorSetFrame)(0);
   return;
 }
@@ -2729,42 +2743,43 @@ UiListRowIndex UiPointerList_GetSelectedIndexVariantACf(UiPointerListControl *co
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListControl_DrawRowsAndSelection
-          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiNodeBase *control)
+          (int clipTop,int clipLeft,int clipBottom,int clipRight,UiListControl *control)
 
 {
   int columnWidth;
   int rowTop;
-  UiNodeBase *rowEntry;
+  byte *rowRecord;
+  dword lastRowIndex;
   int columnX;
-  UiNodeBase **lastRowSlot;
+  void **lastRowSlot;
   int widthOrColumnCount;
-  UiNodeBase *columnCursor;
-  UiNodeBase **rowSlot;
+  UiListColumn *column;
+  void **rowSlot;
   word *commandStream;
   bool accessFailed;
   RichTextExtentRegs textExtent;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   
-  if (control[1].parent != (UiNodeBase *)0x0) {
-    rowTop = (clipBottom - control->top) / (int)control[1].vtable;
+  if (control->rowCount != 0) {
+    rowTop = (clipBottom - (control->base).top) / (int)control->rowHeight;
     if (rowTop < 0) {
       rowTop = 0;
     }
-    rowSlot = &(control[1].firstChild)->nextSibling + rowTop;
-    rowEntry = (UiNodeBase *)
-             (((clipTop - control->top) + (int)control[1].vtable) / (int)control[1].vtable);
-    rowTop = rowTop * (int)control[1].vtable;
-    if (control[1].parent <= rowEntry) {
-      rowEntry = (UiNodeBase *)((int)&control[1].parent[-1].nodeFlags + 3);
+    rowSlot = control->rowSlots + rowTop;
+    lastRowIndex =
+         (dword)(((clipTop - (control->base).top) + (int)control->rowHeight) / (int)control->rowHeight);
+    rowTop = rowTop * (int)control->rowHeight;
+    if (control->rowCount <= lastRowIndex) {
+      lastRowIndex = control->rowCount - 1;
     }
-    lastRowSlot = &(control[1].firstChild)->nextSibling + (int)rowEntry;
+    lastRowSlot = control->rowSlots + (int)lastRowIndex;
     if (rowSlot <= lastRowSlot) {
       accessFailed = (*g_GraphicsFramebufferBeginAccess)();
       if (!accessFailed) {
         do {
-          if (rowSlot == (UiNodeBase **)control[1].top) {
-            widthOrColumnCount = control->layoutWidth;
-            if ((control->nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
+          if (rowSlot == control->selectedRowSlot) {
+            widthOrColumnCount = (control->base).layoutWidth;
+            if (((control->base).nodeFlags & UI_NODE_HAS_KEYBOARD_FOCUS) == 0) {
               UiWindow_BlitTiledHorizontalEdge
                         (clipTop,clipLeft,clipBottom,clipRight,0x82,widthOrColumnCount,rowTop,0,control);
             }
@@ -2775,42 +2790,43 @@ UiListControl_DrawRowsAndSelection
                         (clipTop,clipLeft,clipBottom,clipRight,0x84,widthOrColumnCount,rowTop,
                          textureSize.logicalWidthPixels,control);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + control->top,control->left,
-                         0x83,g_UiWindowTextureSource,g_FramebufferAccess);
+                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
+                         (control->base).left,0x83,g_UiWindowTextureSource,g_FramebufferAccess);
               (*g_GraphicsTextureSourceBlitSourceAlpha)
-                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + control->top,
-                         widthOrColumnCount + control->left,0x85,g_UiWindowTextureSource,g_FramebufferAccess);
+                        (clipTop,clipLeft,clipBottom,clipRight,rowTop + (control->base).top,
+                         widthOrColumnCount + (control->base).left,0x85,g_UiWindowTextureSource,
+                         g_FramebufferAccess);
             }
           }
-          widthOrColumnCount = control[1].right;
-          rowEntry = *rowSlot;
+          widthOrColumnCount = control->columnCount;
+          rowRecord = (byte *)*rowSlot;
           if (widthOrColumnCount != 0) {
             columnX = 3;
-            columnCursor = control;
+            column = control->columns;
             do {
-              columnWidth = columnCursor[1].leftOffset;
+              columnWidth = column->width;
               if (columnWidth < 0) {
                 columnX = columnX - columnWidth;
-                commandStream = (word *)((int)&rowEntry->nextSibling + columnCursor[1].topOffset);
+                commandStream = (word *)(rowRecord + column->rowTextOffset);
                 textExtent = RichTextCommandStream_MeasureRegs(g_UiListTextStyle,commandStream);
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,commandStream,
-                           rowTop + 1 + control->top,
-                           (columnX - (textExtent.widthPixels + 6)) + control->left);
+                           rowTop + 1 + (control->base).top,
+                           (columnX - (textExtent.widthPixels + 6)) + (control->base).left);
               }
               else {
                 columnX = columnX + columnWidth;
                 RichTextCommandStream_DrawSingleLine
                           (clipTop,clipLeft,clipBottom,clipRight,g_UiListTextStyle,
-                           (word *)((int)&rowEntry->nextSibling + columnCursor[1].topOffset),
-                           rowTop + 1 + control->top,(columnX - columnWidth) + control->left);
+                           (word *)(rowRecord + column->rowTextOffset),
+                           rowTop + 1 + (control->base).top,(columnX - columnWidth) + (control->base).left);
               }
-              columnCursor = (UiNodeBase *)&columnCursor->parent;
+              column = column + 1;
               widthOrColumnCount = widthOrColumnCount + -1;
             } while (widthOrColumnCount != 0);
           }
           rowSlot = rowSlot + 1;
-          rowTop = (int)&(control[1].vtable)->relocate + rowTop;
+          rowTop = (int)control->rowHeight + rowTop;
         } while (rowSlot <= lastRowSlot);
         (*g_GraphicsFramebufferEndAccess)();
       }
@@ -2889,14 +2905,15 @@ UiPointerList_InitializeColumnLayout
           (UiListRowCount rowCount,void **rowPointers,UiPointerListControl *control)
 
 {
-  UiNodeBase *columnOffset;
+  int columnWidth;
   UiNodeVtable *parentVtable;
-  UiNodeBase *columnsRemainingOrParent;
+  dword columnsRemaining;
+  UiNodeBase *parent;
   UiPixelExtent computedRowHeight;
   int totalWidth;
-  UiPointerListControl *columnCursor;
+  UiListColumn *column;
   FontGlyphSizeEaxEdxCf9 glyphSize;
-  
+
   glyphSize = FontGlyph_GetLogicalSizeForStyleRegs(g_UiListTextStyle,0);
   computedRowHeight = glyphSize.lineHeight + 1;
   control->rowHeight = computedRowHeight;
@@ -2904,23 +2921,24 @@ UiPointerList_InitializeColumnLayout
   control->rowSlots = rowPointers;
   control->selectedRowSlot = rowPointers;
   totalWidth = 6;
-  columnsRemainingOrParent = control[1].base.nextSibling;
+  /* The columns follow the 0x64-byte pointer-list prefix: view the control as the full UiListControl. */
+  columnsRemaining = ((UiListControl *)control)->columnCount;
   (control->base).bottomOffset = computedRowHeight * rowCount + 1;
-  columnCursor = control;
-  for (; columnsRemainingOrParent != (UiNodeBase *)0x0; columnsRemainingOrParent = (UiNodeBase *)((int)&columnsRemainingOrParent[-1].nodeFlags + 3)) {
-    columnOffset = columnCursor[1].base.parent;
-    if ((int)columnOffset < 0) {
-      columnOffset = (UiNodeBase *)-(int)columnOffset;
+  column = ((UiListControl *)control)->columns;
+  for (; columnsRemaining != 0; columnsRemaining = columnsRemaining - 1) {
+    columnWidth = column->width;
+    if (columnWidth < 0) {
+      columnWidth = -columnWidth;
     }
-    totalWidth = (int)&columnOffset->nextSibling + totalWidth;
-    columnCursor = (UiPointerListControl *)&(columnCursor->base).parent;
+    totalWidth = columnWidth + totalWidth;
+    column = column + 1;
   }
-  columnsRemainingOrParent = (control->base).parent;
-  parentVtable = columnsRemainingOrParent->vtable;
+  parent = (control->base).parent;
+  parentVtable = parent->vtable;
   (control->base).rightOffset = totalWidth;
   (control->base).leftOffset = 0;
   (control->base).topOffset = 0;
-  (*parentVtable->layout)(columnsRemainingOrParent);
+  (*parentVtable->layout)(parent);
   return;
 }
 
@@ -3109,13 +3127,13 @@ UiTimedListControl_GetSelectedRecord(UiTimedListRuntimeExtendedView88 *control)
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiListOffsetControl_RelocateAndApplyDeferredOffset
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+          (UiSerializedRelocationDelta relocationDelta,UiListOffsetControl *control)
 
 {
-  UiContainer_RelocateChildren(relocationDelta,control);
-  if (((uint)control[1].nextSibling & 0x20) != 0) {
-    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + relocationDelta);
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffffdf);
+  UiContainer_RelocateChildren(relocationDelta,&control->base);
+  if ((control->labelFlags & 0x20) != 0) {
+    control->text = (word *)((int)control->text + relocationDelta);
+    control->labelFlags = control->labelFlags & 0xffffffdf;
   }
   return;
 }

@@ -18,19 +18,19 @@
 void __thandor_void_preserve_eax_ecx_edx
 UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiPanelControl *control);
 
 /* 0x004B4D40 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiResizableWindowControl *control);
 
 /* 0x004B3420 */
 void __thandor_void_preserve_eax_ecx_edx
 UiTitledWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiTitledWindowControl *control);
 
 /* 0x004AF890 */
 void __cdecl UiFrame_ProcessAndPresentWithLockTransition(void);
@@ -46,12 +46,12 @@ UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack);
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiResizableWindowControl *control);
 
 /* 0x004B5770 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiResizableWindowControl_HandleWindowHotkeysCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control);
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control);
 
 /* 0x004B1000 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -63,11 +63,11 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root);
 /* 0x004B2790 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindowControl_RelocateWithFrameInset
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
+          (UiSerializedRelocationDelta relocationDelta,UiWindowControl *control);
 
 /* 0x004B36C0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control);
+UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control);
 
 /* 0x004B3C00 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
@@ -78,16 +78,16 @@ UiContainer_HitTestChildrenOrNoneA
 void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control);
+          UiPixelCoordinate clipRight,UiHorizontalGaugeControl *control);
 
 /* 0x004B46A0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
+          (UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control);
 
 /* 0x004B4700 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_LayoutChildren(UiNodeBase *control);
+UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control);
 
 /* 0x004B4790 */
 UiNodeBase * __thandor_eax_preserve_ecx_edx
@@ -96,22 +96,22 @@ UiContainer_HitTestChildrenOrNoneB
 
 /* 0x004B47B0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control);
+UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control);
 
 /* 0x004B4800 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control);
+UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control);
 
 /* 0x004B4D10 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_RelocateAndRefreshInteractionState
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control);
+          (UiSerializedRelocationDelta relocationDelta,UiResizableWindowControl *control);
 
 /* 0x004B53E0 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiResizableWindowControl *control);
 
 /* 0x004BC660 */
 void __thandor_void_preserve_eax_ecx_edx
@@ -137,18 +137,18 @@ UiContainer_PointerMoveReturnCode6
 /* 0x004B4740 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_ApplyFlagsRecursive
-          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control);
+          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control);
 
 /* 0x004B5120 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control);
+          UiResizableWindowControl *control);
 
 /* 0x004B5660 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiResizableWindowControl_QueryResizeCursorCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control);
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control);
 
 /* 0x00569A80 */
 UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
@@ -179,7 +179,7 @@ void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNo
 
 /* 0x004B50D0 */
 void __thandor_void_preserve_eax_ecx_edx
-UiContainer_LayoutWithOptionalWindowHeaderOffset(UiNodeBase *control);
+UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control);
 
 /* 0x004AF680 */
 void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessageCode);

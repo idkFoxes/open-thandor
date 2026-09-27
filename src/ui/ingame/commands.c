@@ -28,13 +28,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select0(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(0,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlags00000480((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_SetNodeFlag00100000(node);
+  UiCommandModeG_SetNodeFlag00200000(node);
+  UiCommandModeG_ClearNodeFlags00000480(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_SetNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag02000000(node);
   return;
 }
 
@@ -57,13 +57,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select1(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(1,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlags00000480((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_SetNodeFlag00100000(node);
+  UiCommandModeG_SetNodeFlag00200000(node);
+  UiCommandModeG_ClearNodeFlags00000480(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_ClearNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag02000000(node);
   return;
 }
 
@@ -87,13 +87,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select2(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(2,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlags00000480((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_SetNodeFlag00100000(node);
+  UiCommandModeG_ClearNodeFlag00200000(node);
+  UiCommandModeG_ClearNodeFlags00000480(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_SetNodeFlag01000000(node);
   UiCommandModeG_ApplyMaskedColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag02000000(node);
   return;
 }
 
@@ -119,13 +119,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(3,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00000400((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag00100000(node);
+  UiCommandModeG_ClearNodeFlag00200000(node);
+  UiCommandModeG_SetNodeFlag00000400(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_ClearNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag02000000(node);
   armyAssetLookup = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
   checkedAssetLookup = (*g_FatalErrorPrimaryDispatchCf)((dword)armyAssetLookup.eax,armyAssetLookup.carry);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.eax;
@@ -151,13 +151,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select4(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(4,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_ClearNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00000400((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag00100000(node);
+  UiCommandModeG_ClearNodeFlag00200000(node);
+  UiCommandModeG_SetNodeFlag00000400(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_ClearNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_ClearNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_ClearNodeFlag02000000(node);
   return;
 }
 
@@ -179,13 +179,13 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select5(UiSelectable
   
   runtimeRoot = UiCommandModeG_SelectAndSyncPages(5,source);
   node = &runtimeRoot->worldRuntime0A30;
-  UiCommandModeG_SetNodeFlag00100000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag00200000((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00000400((UiNodeBase *)node);
-  UiCommandModeG_SetNodeFlag00800000((UiNodeBase *)node);
-  UiCommandModeG_ClearNodeFlag01000000((UiNodeBase *)node);
+  UiCommandModeG_SetNodeFlag00100000(node);
+  UiCommandModeG_ClearNodeFlag00200000(node);
+  UiCommandModeG_SetNodeFlag00000400(node);
+  UiCommandModeG_SetNodeFlag00800000(node);
+  UiCommandModeG_ClearNodeFlag01000000(node);
   UiCommandModeG_ApplyRawColorVariant(node);
-  UiCommandModeG_SetNodeFlag02000000((UiNodeBase *)node);
+  UiCommandModeG_SetNodeFlag02000000(node);
   (runtimeRoot->worldRuntime0A30).fieldRegion.reservedCallbackState04 = g_UiCommandModeF;
   return;
 }
@@ -459,9 +459,9 @@ UiCommandVisibilityWrappedText_DrawWhenAllowed
 
 {
   if (((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-     (((((uint)control[1].nextSibling & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)) &&
+     ((((((UiListOffsetControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)) &&
       ((control->nodeFlags & UI_NODE_SUPPRESSED) == 0)))) {
-    UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
+    UiWrappedTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiListOffsetControl *)control);
   }
   return;
 }
@@ -482,12 +482,12 @@ UiCommandVisibilitySingleLineText_DrawWhenAllowed
   
   drawOffsetAdjust = 0;
   if ((((g_UiCommandRuntimeFlags & 0x200) == 0) &&
-      ((((uint)control[1].nextSibling & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
-     ((((uint)control[1].nextSibling & 0x1000) == 0 ||
+      (((((UiFocusProxyControl *)control)->labelFlags & 0x800) == 0 || ((g_UiCommandRuntimeFlags & 1) != 0)))) &&
+     (((((UiFocusProxyControl *)control)->labelFlags & 0x1000) == 0 ||
       (drawOffsetAdjust = g_InGameSimulationStepTicks - 2, 1 < g_InGameSimulationStepTicks)))) {
-    control[1].parent = (UiNodeBase *)((int)&(control[1].parent)->nextSibling + drawOffsetAdjust);
-    UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,control);
-    control[1].parent = (UiNodeBase *)((int)control[1].parent - drawOffsetAdjust);
+    ((UiFocusProxyControl *)control)->text = (word *)((int)((UiFocusProxyControl *)control)->text + drawOffsetAdjust);
+    UiSingleLineTextControl_DrawClipped(clipTop,clipLeft,clipBottom,clipRight,(UiFocusProxyControl *)control);
+    ((UiFocusProxyControl *)control)->text = (word *)((int)((UiFocusProxyControl *)control)->text - drawOffsetAdjust);
   }
   return;
 }
@@ -719,7 +719,7 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandSpriteVariantA_RebuildGrid(UiN
       slotTexture = (GraphicsTextureSourceAsset *)0x0;
     }
     slotIndex = slotIndex + 1;
-    *(GraphicsTextureSourceAsset **)((int)&node[1].parent + countWidthOrOffset) = slotTexture;
+    ((UiCommandSpriteButtonControl *)((int)node + countWidthOrOffset))->sprite.primaryTextureSource = slotTexture;
     recordCursor = recordCursor + 1;
   } while (slotIndex < 0x18);
   (**(code **)(node[0x1d8].rightAnchorQ31 + 0xc))(&node[0x1d8].bottomOffset);
@@ -1134,12 +1134,12 @@ InGameCommandState_SelectAndPropagateBinaryMode(UiSelectableControl *source)
 
 /* Address: 0x0056D920.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bit 0x00800000. The original visual-state label is not preserved.
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00800000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00800000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xff7fffff);
+  context->runtimeFlags = context->runtimeFlags & 0xff7fffff;
   return;
 }
 
@@ -1668,12 +1668,12 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyMaskedColorVariant(
 
 /* Address: 0x0056DA50.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x02000000. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x02000000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag02000000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x2000000);
+  context->runtimeFlags = context->runtimeFlags | 0x2000000;
   return;
 }
 
@@ -1817,97 +1817,97 @@ UiCommandRuntimeFlags_ApplyClearSetToggleMasks
 
 /* Address: 0x0056D860.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bit 0x00100000. The original visual-state label is not preserved.
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00100000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00100000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xffefffff);
+  context->runtimeFlags = context->runtimeFlags & 0xffefffff;
   return;
 }
 
 
 /* Address: 0x0056D880.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x00200000. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00200000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00200000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x200000);
+  context->runtimeFlags = context->runtimeFlags | 0x200000;
   return;
 }
 
 
 /* Address: 0x0056D940.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x01000000. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x01000000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag01000000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x1000000);
+  context->runtimeFlags = context->runtimeFlags | 0x1000000;
   return;
 }
 
 
 /* Address: 0x0056D8C0.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x00000400. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00000400. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00000400(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x400);
+  context->runtimeFlags = context->runtimeFlags | 0x400;
   return;
 }
 
 
 /* Address: 0x0056D8E0.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bits 0x00000400 and 0x00000080, exactly matching mask 0xFFFFFB7F. The
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bits 0x00000400 and 0x00000080, exactly matching mask 0xFFFFFB7F. The
    combined original meaning is unresolved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlags00000480(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xfffffb7f);
+  context->runtimeFlags = context->runtimeFlags & 0xfffffb7f;
   return;
 }
 
 
 /* Address: 0x0056D840.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x00100000. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00100000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00100000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x100000);
+  context->runtimeFlags = context->runtimeFlags | 0x100000;
   return;
 }
 
 
 /* Address: 0x0056D8A0.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bit 0x00200000. The original visual-state label is not preserved.
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x00200000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag00200000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xffdfffff);
+  context->runtimeFlags = context->runtimeFlags & 0xffdfffff;
   return;
 }
 
 
 /* Address: 0x0056D960.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bit 0x01000000. The original visual-state label is not preserved.
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x01000000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag01000000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xfeffffff);
+  context->runtimeFlags = context->runtimeFlags & 0xfeffffff;
   return;
 }
 
@@ -1936,24 +1936,24 @@ void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ApplyRawColorVariant(voi
 
 /* Address: 0x0056DA70.
    Ownership: ui/ingame/commands.
-   Purpose: Clears UiNodeBase.nodeFlags bit 0x02000000. The original visual-state label is not preserved.
+   Purpose: Clears WorldRuntimeContext.runtimeFlags bit 0x02000000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_ClearNodeFlag02000000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling & 0xfdffffff);
+  context->runtimeFlags = context->runtimeFlags & 0xfdffffff;
   return;
 }
 
 
 /* Address: 0x0056D900.
    Ownership: ui/ingame/commands.
-   Purpose: Sets UiNodeBase.nodeFlags bit 0x00800000. The original visual-state label is not preserved.
+   Purpose: Sets WorldRuntimeContext.runtimeFlags bit 0x00800000. The original visual-state label is not preserved.
 */
-void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(UiNodeBase *node)
+void __thandor_void_preserve_eax_ecx_edx UiCommandModeG_SetNodeFlag00800000(WorldRuntimeContext *context)
 
 {
-  node[1].nextSibling = (UiNodeBase *)((uint)node[1].nextSibling | 0x800000);
+  context->runtimeFlags = context->runtimeFlags | 0x800000;
   return;
 }
 

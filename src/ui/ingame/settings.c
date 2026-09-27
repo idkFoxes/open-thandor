@@ -198,7 +198,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab0(UiNodeBas
       THANDOR_UI_AT(sourceNode,0xc0),
       THANDOR_UI_AT(sourceNode,0x60),
       THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)&sourceNode[3].bottomAnchorQ31);
+  UiPageStack_SetActiveIndex(0,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0x120));
   return;
 }
 
@@ -217,7 +217,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab1(UiNodeBas
       THANDOR_UI_AT(sourceNode,0x60),
       THANDOR_UI_AT(sourceNode,-0x60),
       THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)&sourceNode[2].rightOffset);
+  UiPageStack_SetActiveIndex(1,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0xc0));
   return;
 }
 
@@ -236,7 +236,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSettingsPage_SelectTab2(UiNodeBas
       THANDOR_UI_AT(sourceNode,-0xc0),
       THANDOR_UI_AT(sourceNode,-0x60),
       THANDOR_UI_AT(sourceNode,0x0));
-  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)&sourceNode[1].top);
+  UiPageStack_SetActiveIndex(2,(UiPageStackControl *)THANDOR_UI_AT(sourceNode,0x60));
   return;
 }
 
@@ -673,11 +673,11 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
   FatalErrorEaxCf5 fatalResult;
   uint value;
   
-  subresourceCount = (uint)control[1].base.left >> 2;
+  subresourceCount = (uint)((UiNumericPairTextButton *)control)->secondValue >> 2;
   value = subresourceCount;
   /* The option control stores the grid half size at +0x60 (ECX); the texture dimension is twice
      that (EDX). The decompile passed both as uninitialized locals. */
-  newGridHalfSize = (PersistentSettingsDwordValue)control[1].base.vtable;
+  newGridHalfSize = (PersistentSettingsDwordValue)((UiNumericPairTextButton *)control)->firstValue;
   newTextureDimension = newGridHalfSize * 2;
   GraphicsShadingRuntime_Shutdown();
   initStatus = GraphicsShadingRuntime_InitializeGeneratedTextureCf
@@ -690,22 +690,22 @@ InGameShadingSettings_ApplyLevel(UiSelectableControl *control)
     scaledSubresourceCount = value << 2;
     settingsRoot = (control->base).parent;
     if (newGridHalfSize == 0x20) {
-      selectedControl = (UiNodeBase *)&settingsRoot[1].parent;
+      selectedControl = THANDOR_UI_AT(settingsRoot,0x54);
       if (scaledSubresourceCount == 0x40) {
-        selectedControl = (UiNodeBase *)&settingsRoot[2].topOffset;
+        selectedControl = THANDOR_UI_AT(settingsRoot,0xbc);
       }
       else if (scaledSubresourceCount == 0x80) {
-        selectedControl = (UiNodeBase *)&settingsRoot[3].layoutWidth;
+        selectedControl = THANDOR_UI_AT(settingsRoot,0x124);
       }
     }
     else if (newGridHalfSize == 0x40) {
-      selectedControl = (UiNodeBase *)&settingsRoot[5].left;
+      selectedControl = THANDOR_UI_AT(settingsRoot,0x18c);
       if (scaledSubresourceCount == 0x80) {
-        selectedControl = (UiNodeBase *)&settingsRoot[6].bottomOffset;
+        selectedControl = THANDOR_UI_AT(settingsRoot,0x1f4);
       }
     }
     else {
-      selectedControl = (UiNodeBase *)&settingsRoot[7].nodeFlags;
+      selectedControl = THANDOR_UI_AT(settingsRoot,0x25c);
     }
     UiSelectableGroup_SelectExclusive(6,selectedControl,
       THANDOR_UI_AT((control->base).parent,0x25c),
@@ -763,17 +763,17 @@ InGameTextureSettings_SetQuality(UiSelectableControl *control)
   
   (*g_GraphicsCursorSetFrame)(6);
   graphicsSettingsRoot = (control->base).parent;
-  if ((UiSelectableControl *)&graphicsSettingsRoot[1].parent == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x54) == control) {
     qualityLevel = TEXTURE_QUALITY_LOW;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[1].parent;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x54);
   }
-  if ((UiSelectableControl *)&graphicsSettingsRoot[2].bottom == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0xb4) == control) {
     qualityLevel = TEXTURE_QUALITY_MEDIUM;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[2].bottom;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0xb4);
   }
-  if ((UiSelectableControl *)&graphicsSettingsRoot[3].leftAnchorQ31 == control) {
+  if ((UiSelectableControl *)THANDOR_UI_AT(graphicsSettingsRoot,0x114) == control) {
     qualityLevel = TEXTURE_QUALITY_HIGH;
-    selectedQualityControl = (UiNodeBase *)&graphicsSettingsRoot[3].leftAnchorQ31;
+    selectedQualityControl = THANDOR_UI_AT(graphicsSettingsRoot,0x114);
   }
   UiSelectableGroup_SelectExclusive(3,selectedQualityControl,
       THANDOR_UI_AT((control->base).parent,0x114),

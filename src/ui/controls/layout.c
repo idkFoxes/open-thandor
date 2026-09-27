@@ -19,7 +19,7 @@
 void __thandor_void_preserve_eax_ecx_edx
 UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiPanelControl *control)
 
 {
   dword cornerWidth;
@@ -30,35 +30,35 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
   bool beginAccessFailed;
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
   
-  if (((uint)control[1].nextSibling & 3) != 0) {
+  if ((control->root.rootFlags & 3) != 0) {
     beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
     if (!beginAccessFailed) {
-      if (((uint)control[1].nextSibling & 1) != 0) {
+      if ((control->root.rootFlags & 1) != 0) {
         subresource = 0;
-        if (((uint)control[1].nextSibling & 0x200) != 0) {
+        if ((control->root.rootFlags & 0x200) != 0) {
           subresource = 0x2c;
         }
         UiWindow_BlitTiledInterior
-                  (clipTop,clipLeft,clipBottom,clipRight,subresource,control->layoutHeight,
-                   control->layoutWidth,0,0,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,subresource,control->root.base.layoutHeight,
+                   control->root.base.layoutWidth,0,0,control);
       }
-      if (((uint)control[1].nextSibling & 2) != 0) {
+      if ((control->root.rootFlags & 2) != 0) {
         cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
         cornerHeight = cornerSize.logicalHeightPixels;
         cornerWidth = cornerSize.logicalWidthPixels;
-        rightEdgeX = control->layoutWidth - cornerWidth;
-        bottomEdgeY = control->layoutHeight - cornerHeight;
+        rightEdgeX = control->root.base.layoutWidth - cornerWidth;
+        bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x10,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x10,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeX + control->left,0x11,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,0x11,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,control->left,0x12,
+                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,control->root.base.left,0x12,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,rightEdgeX + control->left,
+                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
                    0x13,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
                   (clipTop,clipLeft,clipBottom,clipRight,0x14,rightEdgeX,0,cornerWidth,control);
@@ -69,23 +69,23 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
         UiWindow_BlitTiledHorizontalEdge
                   (clipTop,clipLeft,clipBottom,clipRight,0x17,rightEdgeX,bottomEdgeY,cornerWidth,control);
       }
-      if (((uint)control[1].nextSibling & 0x200) != 0) {
+      if ((control->root.rootFlags & 0x200) != 0) {
         cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x27,g_UiWindowTextureSource);
         cornerHeight = cornerSize.logicalHeightPixels;
         cornerWidth = cornerSize.logicalWidthPixels;
-        rightEdgeX = control->layoutWidth - cornerWidth;
-        bottomEdgeY = control->layoutHeight - cornerHeight;
+        rightEdgeX = control->root.base.layoutWidth - cornerWidth;
+        bottomEdgeY = control->root.base.layoutHeight - cornerHeight;
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x24,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x24,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeX + control->left,0x25,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,0x25,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,control->left,0x26,
+                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,control->root.base.left,0x26,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,rightEdgeX + control->left,
+                  (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->root.base.top,rightEdgeX + control->root.base.left,
                    0x27,g_UiWindowTextureSource,g_FramebufferAccess);
         UiWindow_BlitTiledHorizontalEdge
                   (clipTop,clipLeft,clipBottom,clipRight,0x28,rightEdgeX,0,cornerWidth,control);
@@ -99,7 +99,7 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
       (*g_GraphicsFramebufferEndAccess)();
     }
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
+  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
   return;
 }
 
@@ -115,7 +115,7 @@ UiPanelControl_DrawOptionalTiledBackgroundFrameAndChildren
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiResizableWindowControl *control)
 
 {
   dword cornerWidthOrSubresource;
@@ -129,29 +129,29 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
   
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!beginAccessFailed) {
-    if (((uint)control[1].nextSibling & 1) != 0) {
+    if ((control->root.rootFlags & 1) != 0) {
       UiWindow_BlitTiledInterior
-                (clipTop,clipLeft,clipBottom,clipRight,0,control->layoutHeight,control->layoutWidth,
+                (clipTop,clipLeft,clipBottom,clipRight,0,control->root.base.layoutHeight,control->root.base.layoutWidth,
                  0,0,control);
     }
-    if (((uint)control[1].nextSibling & 2) != 0) {
+    if ((control->root.rootFlags & 2) != 0) {
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x13,g_UiWindowTextureSource);
       cornerHeight = textureSize.logicalHeightPixels;
       cornerWidthOrSubresource = textureSize.logicalWidthPixels;
-      rightEdgeX = control->layoutWidth - cornerWidthOrSubresource;
-      edgeOffset = control->layoutHeight - cornerHeight;
+      rightEdgeX = control->root.base.layoutWidth - cornerWidthOrSubresource;
+      edgeOffset = control->root.base.layoutHeight - cornerHeight;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x10,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,0x10,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeX + control->left,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,rightEdgeX + control->root.base.left,
                  0x11,g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->top,control->left,0x12,
+                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->root.base.top,control->root.base.left,0x12,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->top,
-                 rightEdgeX + control->left,0x13,g_UiWindowTextureSource,g_FramebufferAccess);
+                (clipTop,clipLeft,clipBottom,clipRight,edgeOffset + control->root.base.top,
+                 rightEdgeX + control->root.base.left,0x13,g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,0x14,rightEdgeX,0,cornerWidthOrSubresource,control);
       UiWindow_BlitTiledVerticalEdge
@@ -161,63 +161,63 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
       UiWindow_BlitTiledHorizontalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,0x17,rightEdgeX,edgeOffset,cornerWidthOrSubresource,control);
     }
-    if (((uint)control[1].nextSibling & 4) != 0) {
+    if ((control->root.rootFlags & 4) != 0) {
       cornerWidthOrSubresource = 10;
-      if ((control->nodeFlags & 1) == 0) {
+      if ((control->root.base.nodeFlags & 1) == 0) {
         cornerWidthOrSubresource = 0xb;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,cornerWidthOrSubresource,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(cornerWidthOrSubresource,g_UiWindowTextureSource);
-      edgeOffset = control->layoutWidth;
+      edgeOffset = control->root.base.layoutWidth;
       rightCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(cornerWidthOrSubresource + 4,g_UiWindowTextureSource);
       edgeOffset = edgeOffset - rightCapSize.logicalWidthPixels;
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,edgeOffset + control->left,cornerWidthOrSubresource + 4,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,edgeOffset + control->root.base.left,cornerWidthOrSubresource + 4,
                  g_UiWindowTextureSource,g_FramebufferAccess);
       UiWindow_BlitTiledHorizontalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,cornerWidthOrSubresource + 2,edgeOffset,0,textureSize.logicalWidthPixels,
                  control);
-      titleText = TextResource_Resolve((TextResourceId)control[1].vtable);
+      titleText = TextResource_Resolve(control->titleTextResourceId);
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_UiResizableWindowTitleTextStyle,titleText.eax,
-                 g_UiResizableWindowTitleTextTopOffset + control->top,
-                 (control->layoutWidth >> 1) + control->left);
+                 g_UiResizableWindowTitleTextTopOffset + control->root.base.top,
+                 (control->root.base.layoutWidth >> 1) + control->root.base.left);
     }
-    if (((uint)control[1].nextSibling & 8) != 0) {
+    if ((control->root.rootFlags & 8) != 0) {
       cornerWidthOrSubresource = 1;
-      if (((uint)control[1].nextSibling & 0x80000) != 0) {
+      if ((control->root.rootFlags & 0x80000) != 0) {
         cornerWidthOrSubresource = 3;
       }
-      if ((control->nodeFlags & 1) == 0) {
+      if ((control->root.base.nodeFlags & 1) == 0) {
         cornerWidthOrSubresource = 2;
       }
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,cornerWidthOrSubresource,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,control->root.base.left,cornerWidthOrSubresource,
                  g_UiWindowTextureSource,g_FramebufferAccess);
     }
-    if (((uint)control[1].nextSibling & 0x10) != 0) {
+    if ((control->root.rootFlags & 0x10) != 0) {
       cornerWidthOrSubresource = 4;
-      if (((uint)control[1].nextSibling & 0x100000) != 0) {
+      if ((control->root.rootFlags & 0x100000) != 0) {
         cornerWidthOrSubresource = 6;
       }
-      if ((control->nodeFlags & 1) == 0) {
+      if ((control->root.base.nodeFlags & 1) == 0) {
         cornerWidthOrSubresource = 5;
       }
-      if (((uint)control[1].nextSibling & 0x80) != 0) {
+      if ((control->root.rootFlags & 0x80) != 0) {
         cornerWidthOrSubresource = cornerWidthOrSubresource + 3;
       }
-      edgeOffset = control->layoutWidth;
+      edgeOffset = control->root.base.layoutWidth;
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(cornerWidthOrSubresource,g_UiWindowTextureSource);
       (*g_GraphicsTextureSourceBlitSourceAlpha)
-                (clipTop,clipLeft,clipBottom,clipRight,control->top,
-                 (edgeOffset - textureSize.logicalWidthPixels) + control->left,cornerWidthOrSubresource,g_UiWindowTextureSource,
+                (clipTop,clipLeft,clipBottom,clipRight,control->root.base.top,
+                 (edgeOffset - textureSize.logicalWidthPixels) + control->root.base.left,cornerWidthOrSubresource,g_UiWindowTextureSource,
                  g_FramebufferAccess);
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
+  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
   return;
 }
 
@@ -233,7 +233,7 @@ UiResizableWindowControl_DrawFrameTitleAndChildren
 void __thandor_void_preserve_eax_ecx_edx
 UiTitledWindowControl_DrawFrameTitleAndChildren
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiTitledWindowControl *control)
 
 {
   dword cornerWidth;
@@ -250,22 +250,22 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!beginAccessFailed) {
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x36,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x36,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    rightEdgeOrCursorX = control->layoutWidth;
-    bottomEdgeY = control->layoutHeight;
+    rightEdgeOrCursorX = control->base.layoutWidth;
+    bottomEdgeY = control->base.layoutHeight;
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
     cornerWidth = textureSize.logicalWidthPixels;
     rightEdgeOrCursorX = rightEdgeOrCursorX - cornerWidth;
     bottomEdgeY = bottomEdgeY - textureSize.logicalHeightPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeOrCursorX + control->left,0x37,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightEdgeOrCursorX + control->base.left,0x37,
                g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,control->left,0x38,
+              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->base.top,control->base.left,0x38,
                g_UiWindowTextureSource,g_FramebufferAccess);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->top,rightEdgeOrCursorX + control->left,0x39
+              (clipTop,clipLeft,clipBottom,clipRight,bottomEdgeY + control->base.top,rightEdgeOrCursorX + control->base.left,0x39
                ,g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
     savedRightEdgeX = rightEdgeOrCursorX;
@@ -277,29 +277,29 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
                control);
     UiWindow_BlitTiledHorizontalEdge
               (clipTop,clipLeft,clipBottom,clipRight,0x3d,rightEdgeOrCursorX,bottomEdgeY,cornerWidth,control);
-    titleText = TextResource_Resolve((TextResourceId)control[1].firstChild);
+    titleText = TextResource_Resolve(control->titleTextResourceId);
     commandStream = titleText.eax;
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     titleCapX = cornerWidth;
-    if (((uint)control[1].nextSibling & 1) != 0) {
-      rightEdgeOrCursorX = control->layoutWidth;
+    if ((control->titleFlags & 1) != 0) {
+      rightEdgeOrCursorX = control->base.layoutWidth;
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
       titleCapX = ((int)(rightEdgeOrCursorX - titleExtent.widthPixels) >> 1) - textureSize.logicalWidthPixels;
       UiWindow_BlitTiledHorizontalEdge
                 (clipTop,clipLeft,clipBottom,clipRight,0x3a,titleCapX,0,cornerWidth,control);
     }
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,titleCapX + control->left,0x3e,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,titleCapX + control->base.left,0x3e,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x3e,g_UiWindowTextureSource);
     rightEdgeOrCursorX = titleCapX + textureSize.logicalWidthPixels;
     RichTextCommandStream_DrawSingleLine
               (clipTop,clipLeft,clipBottom,clipRight,g_UiWindowTitleTextStyle,commandStream,
-               control->top,rightEdgeOrCursorX + control->left);
+               control->base.top,rightEdgeOrCursorX + control->base.left);
     titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,commandStream);
     rightEdgeOrCursorX = rightEdgeOrCursorX + titleExtent.widthPixels;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,rightEdgeOrCursorX + control->left,0x3f,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightEdgeOrCursorX + control->base.left,0x3f,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x3f,g_UiWindowTextureSource);
     UiWindow_BlitTiledHorizontalEdge
@@ -307,7 +307,7 @@ UiTitledWindowControl_DrawFrameTitleAndChildren
                rightEdgeOrCursorX + textureSize.logicalWidthPixels,control);
     (*g_GraphicsFramebufferEndAccess)();
   }
-  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,control);
+  UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
   return;
 }
 
@@ -402,7 +402,7 @@ UiPageStack_SetActiveIndex(UiPageIndex pageIndex,UiPageStackControl *stack)
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiResizableWindowControl *control)
 
 {
   sdword topOrRight;
@@ -410,43 +410,43 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
   sdword restoredBottom;
   dword framebufferHeight;
   
-  if (((uint)control[1].nextSibling & 0x2000) != 0) {
+  if ((control->root.rootFlags & 0x2000) != 0) {
     (*g_GraphicsCursorSetFrame)(0);
   }
-  if ((((uint)control[1].nextSibling & 0x80000) != 0) &&
-     ((control->nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
+  if (((control->root.rootFlags & 0x80000) != 0) &&
+     ((control->root.base.nodeFlags & UI_NODE_REPEAT_OR_DOUBLE_CLICK) != 0)) {
     UiActionQueue_Enqueue(0,control);
   }
-  if (((uint)control[1].nextSibling & 0x100000) != 0) {
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling ^ 0x80);
-    if (((uint)control[1].nextSibling & 0x80) == 0) {
-      topOrRight = control[1].right;
-      control->left = control[1].top;
-      rightOrBottom = control[1].bottom;
-      restoredBottom = control[1].leftOffset;
-      control->top = topOrRight;
-      control->bottom = restoredBottom;
-      control->right = rightOrBottom;
+  if ((control->root.rootFlags & 0x100000) != 0) {
+    control->root.rootFlags = control->root.rootFlags ^ 0x80;
+    if ((control->root.rootFlags & 0x80) == 0) {
+      topOrRight = control->restoredTop;
+      control->root.base.left = control->restoredLeft;
+      rightOrBottom = control->restoredRight;
+      restoredBottom = control->restoredBottom;
+      control->root.base.top = topOrRight;
+      control->root.base.bottom = restoredBottom;
+      control->root.base.right = rightOrBottom;
       UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
       UiRootStack_InvalidateAll();
       goto UiResizableWindowControl_ClearInteractionStateAndReturn;
     }
-    control[1].top = control->left;
-    topOrRight = control->right;
-    rightOrBottom = control->bottom;
-    control[1].right = control->top;
-    control[1].leftOffset = rightOrBottom;
-    control[1].bottom = topOrRight;
+    control->restoredLeft = control->root.base.left;
+    topOrRight = control->root.base.right;
+    rightOrBottom = control->root.base.bottom;
+    control->restoredTop = control->root.base.top;
+    control->restoredBottom = rightOrBottom;
+    control->restoredRight = topOrRight;
     framebufferHeight = g_FramebufferHeight;
-    control->right = g_FramebufferWidth;
-    control->left = 0;
-    control->top = 0;
-    control->bottom = framebufferHeight;
+    control->root.base.right = g_FramebufferWidth;
+    control->root.base.left = 0;
+    control->root.base.top = 0;
+    control->root.base.bottom = framebufferHeight;
     UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
   }
-  UiNode_InvalidateRoot(control);
+  UiNode_InvalidateRoot((UiNodeBase *)control);
 UiResizableWindowControl_ClearInteractionStateAndReturn:
-  control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xe787ff);
+  control->root.rootFlags = control->root.rootFlags & 0xe787ff;
   return;
 }
 
@@ -460,7 +460,7 @@ UiResizableWindowControl_ClearInteractionStateAndReturn:
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 UiResizableWindowControl_HandleWindowHotkeysCf
-          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiNodeBase *control)
+          (UiKeyboardStateMask keyboardStateMask,UiKeyboardEventCode keyCode,UiResizableWindowControl *control)
 
 {
   sdword topOrRight;
@@ -470,35 +470,35 @@ UiResizableWindowControl_HandleWindowHotkeysCf
   bool delegateResult;
   
   if ((keyboardStateMask & 0x30) != 0) {
-    if ((((uint)control[1].nextSibling & 8) == 0) || (keyCode != 99)) {
-      if ((((uint)control[1].nextSibling & 0x10) == 0) || (keyCode != 0x7a))
+    if (((control->root.rootFlags & 8) == 0) || (keyCode != 99)) {
+      if (((control->root.rootFlags & 0x10) == 0) || (keyCode != 0x7a))
       goto UiResizableWindowControl_DelegateUnhandledWindowHotkey;
-      control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling ^ 0x80);
-      if (((uint)control[1].nextSibling & 0x80) == 0) {
-        topOrRight = control[1].right;
-        control->left = control[1].top;
-        rightOrBottom = control[1].bottom;
-        restoredBottom = control[1].leftOffset;
-        control->top = topOrRight;
-        control->bottom = restoredBottom;
-        control->right = rightOrBottom;
+      control->root.rootFlags = control->root.rootFlags ^ 0x80;
+      if ((control->root.rootFlags & 0x80) == 0) {
+        topOrRight = control->restoredTop;
+        control->root.base.left = control->restoredLeft;
+        rightOrBottom = control->restoredRight;
+        restoredBottom = control->restoredBottom;
+        control->root.base.top = topOrRight;
+        control->root.base.bottom = restoredBottom;
+        control->root.base.right = rightOrBottom;
         UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
         UiRootStack_InvalidateAll();
       }
       else {
-        control[1].top = control->left;
-        topOrRight = control->right;
-        rightOrBottom = control->bottom;
-        control[1].right = control->top;
-        control[1].leftOffset = rightOrBottom;
-        control[1].bottom = topOrRight;
+        control->restoredLeft = control->root.base.left;
+        topOrRight = control->root.base.right;
+        rightOrBottom = control->root.base.bottom;
+        control->restoredTop = control->root.base.top;
+        control->restoredBottom = rightOrBottom;
+        control->restoredRight = topOrRight;
         framebufferHeight = g_FramebufferHeight;
-        control->right = g_FramebufferWidth;
-        control->left = 0;
-        control->top = 0;
-        control->bottom = framebufferHeight;
+        control->root.base.right = g_FramebufferWidth;
+        control->root.base.left = 0;
+        control->root.base.top = 0;
+        control->root.base.bottom = framebufferHeight;
         UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
-        UiNode_InvalidateRoot(control);
+        UiNode_InvalidateRoot((UiNodeBase *)control);
       }
     }
     else {
@@ -507,7 +507,7 @@ UiResizableWindowControl_HandleWindowHotkeysCf
     return false;
   }
 UiResizableWindowControl_DelegateUnhandledWindowHotkey:
-  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,control);
+  delegateResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,(UiNodeBase *)control);
   return delegateResult;
 }
 
@@ -616,19 +616,19 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_PopCf(UiRootNode *root)
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiWindowControl_RelocateWithFrameInset
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+          (UiSerializedRelocationDelta relocationDelta,UiWindowControl *control)
 
 {
   int frameInset;
   
   frameInset = g_UiWindowFrameInset;
-  if (((uint)control[1].nextSibling & 4) != 0) {
-    control->leftOffset = control->leftOffset - g_UiWindowFrameInset;
-    control->topOffset = control->topOffset - frameInset;
-    control->rightOffset = control->rightOffset + frameInset;
-    control->bottomOffset = control->bottomOffset + frameInset;
+  if ((control->selectable.stateFlags & 4) != 0) {
+    control->selectable.base.leftOffset = control->selectable.base.leftOffset - g_UiWindowFrameInset;
+    control->selectable.base.topOffset = control->selectable.base.topOffset - frameInset;
+    control->selectable.base.rightOffset = control->selectable.base.rightOffset + frameInset;
+    control->selectable.base.bottomOffset = control->selectable.base.bottomOffset + frameInset;
   }
-  UiContainer_RelocateChildren(relocationDelta,control);
+  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
   return;
 }
 
@@ -641,7 +641,7 @@ UiWindowControl_RelocateWithFrameInset
    [assets/text/richtext].
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
+UiTitledWindowControl_LayoutFrameTitleAndChildren(UiTitledWindowControl *control)
 
 {
   dword leftInset;
@@ -652,7 +652,7 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
   TextResourceResolveEaxCf5 titleText;
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
   
-  titleText = TextResource_Resolve((TextResourceId)control[1].firstChild);
+  titleText = TextResource_Resolve(control->titleTextResourceId);
   titleExtent = RichTextCommandStream_MeasureRegs(g_UiWindowTitleTextStyle,titleText.eax);
   titleHeightOrRightInset = titleExtent.heightPixels;
   cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x36,g_UiWindowTextureSource);
@@ -661,22 +661,22 @@ UiTitledWindowControl_LayoutFrameTitleAndChildren(UiNodeBase *control)
   if ((int)cornerSize.logicalHeightPixels < (int)titleHeightOrRightInset) {
     topInset = titleHeightOrRightInset;
   }
-  control->left = control->left + leftInset;
-  control->top = control->top + topInset;
+  control->base.left = control->base.left + leftInset;
+  control->base.top = control->base.top + topInset;
   cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x39,g_UiWindowTextureSource);
   bottomInset = cornerSize.logicalHeightPixels;
   titleHeightOrRightInset = cornerSize.logicalWidthPixels;
-  control->right = control->right - titleHeightOrRightInset;
-  control->bottom = control->bottom - bottomInset;
-  UiContainer_LayoutChildren(control);
-  control->right = control->right + titleHeightOrRightInset;
-  control->bottom = control->bottom + bottomInset;
-  control->layoutWidth = control->layoutWidth + titleHeightOrRightInset;
-  control->layoutHeight = control->layoutHeight + bottomInset;
-  control->left = control->left - leftInset;
-  control->top = control->top - topInset;
-  control->layoutWidth = control->layoutWidth + leftInset;
-  control->layoutHeight = control->layoutHeight + topInset;
+  control->base.right = control->base.right - titleHeightOrRightInset;
+  control->base.bottom = control->base.bottom - bottomInset;
+  UiContainer_LayoutChildren((UiNodeBase *)control);
+  control->base.right = control->base.right + titleHeightOrRightInset;
+  control->base.bottom = control->base.bottom + bottomInset;
+  control->base.layoutWidth = control->base.layoutWidth + titleHeightOrRightInset;
+  control->base.layoutHeight = control->base.layoutHeight + bottomInset;
+  control->base.left = control->base.left - leftInset;
+  control->base.top = control->base.top - topInset;
+  control->base.layoutWidth = control->base.layoutWidth + leftInset;
+  control->base.layoutHeight = control->base.layoutHeight + topInset;
   return;
 }
 
@@ -711,12 +711,12 @@ UiContainer_HitTestChildrenOrNoneA
 void __thandor_void_preserve_eax_ecx_edx
 UiHorizontalGaugeControl_DrawFrameFillAndLabel
           (UiPixelCoordinate clipTop,UiPixelCoordinate clipLeft,UiPixelCoordinate clipBottom,
-          UiPixelCoordinate clipRight,UiNodeBase *control)
+          UiPixelCoordinate clipRight,UiHorizontalGaugeControl *control)
 
 {
   ulonglong scaledFillProduct;
   dword leftCapWidth;
-  UiNodeBase *clampedValue;
+  dword clampedValue;
   uint progressOrRange;
   int rightCapXOrFillMin;
   uint rangeProgressOrPercent;
@@ -728,27 +728,27 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
   
   beginAccessFailed = (*g_GraphicsFramebufferBeginAccess)();
   if (!beginAccessFailed) {
-    rightCapXOrFillMin = control->layoutWidth;
+    rightCapXOrFillMin = control->base.layoutWidth;
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,control->left,0x7c,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,control->base.left,0x7c,
                g_UiWindowTextureSource,g_FramebufferAccess);
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x7c,g_UiWindowTextureSource);
     leftCapWidth = textureSize.logicalWidthPixels;
     rightCapXOrFillMin = rightCapXOrFillMin - leftCapWidth;
     UiWindow_BlitTiledHorizontalEdge
-              (clipTop,clipLeft,clipBottom,clipRight,0x7d,rightCapXOrFillMin,0,leftCapWidth,control);
+              (clipTop,clipLeft,clipBottom,clipRight,0x7d,rightCapXOrFillMin,0,leftCapWidth,&control->base);
     (*g_GraphicsTextureSourceBlitSourceAlpha)
-              (clipTop,clipLeft,clipBottom,clipRight,control->top,rightCapXOrFillMin + control->left,0x7e,
+              (clipTop,clipLeft,clipBottom,clipRight,control->base.top,rightCapXOrFillMin + control->base.left,0x7e,
                g_UiWindowTextureSource,g_FramebufferAccess);
-    clampedValue = (UiNodeBase *)control[1].vtable;
-    if (control[1].parent < clampedValue) {
-      clampedValue = control[1].parent;
+    clampedValue = control->value;
+    if (control->maximumValue < clampedValue) {
+      clampedValue = control->maximumValue;
     }
-    progressOrRange = (int)clampedValue - (int)control[1].firstChild;
+    progressOrRange = clampedValue - control->minimumValue;
     rangeProgressOrPercent = 0;
-    if (progressOrRange != 0 && (int)control[1].firstChild <= (int)clampedValue) {
+    if (progressOrRange != 0 && (int)control->minimumValue <= (int)clampedValue) {
       scaledFillProduct = (ulonglong)progressOrRange * (ulonglong)(rightCapXOrFillMin - leftCapWidth);
-      rangeProgressOrPercent = (int)control[1].parent - (int)control[1].firstChild;
+      rangeProgressOrPercent = control->maximumValue - control->minimumValue;
       if (rangeProgressOrPercent == 0) {
         rangeProgressOrPercent = 1;
       }
@@ -760,17 +760,17 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       rangeProgressOrPercent = progressOrRange;
       if (rightCapXOrFillMin <= fillEndX) {
         UiWindow_BlitTiledHorizontalEdge
-                  (clipTop,clipLeft,clipBottom,clipRight,0x80,fillEndX,0,rightCapXOrFillMin,control);
+                  (clipTop,clipLeft,clipBottom,clipRight,0x80,fillEndX,0,rightCapXOrFillMin,&control->base);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,leftCapWidth + control->left,0x7f,
+                  (clipTop,clipLeft,clipBottom,clipRight,control->base.top,leftCapWidth + control->base.left,0x7f,
                    g_UiWindowTextureSource,g_FramebufferAccess);
         (*g_GraphicsTextureSourceBlitSourceAlpha)
-                  (clipTop,clipLeft,clipBottom,clipRight,control->top,fillEndX + control->left,0x81
+                  (clipTop,clipLeft,clipBottom,clipRight,control->base.top,fillEndX + control->base.left,0x81
                    ,g_UiWindowTextureSource,g_FramebufferAccess);
       }
     }
-    if (((uint)control[1].nextSibling & 1) != 0) {
-      progressOrRange = (int)control[1].parent - (int)control[1].firstChild;
+    if ((control->gaugeFlags & 1) != 0) {
+      progressOrRange = control->maximumValue - control->minimumValue;
       if (progressOrRange == 0) {
         progressOrRange = 1;
       }
@@ -795,8 +795,8 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
       }
       RichTextCommandStream_DrawSingleLine
                 (clipTop,clipLeft,clipBottom,clipRight,g_UiHorizontalGaugeLabelTextStyle,
-                 commandStream,g_UiHorizontalGaugeLabelTopInset + control->top,
-                 ((uint)control->layoutWidth >> 1) + control->left);
+                 commandStream,g_UiHorizontalGaugeLabelTopInset + control->base.top,
+                 ((uint)control->base.layoutWidth >> 1) + control->base.left);
     }
     (*g_GraphicsFramebufferEndAccess)();
   }
@@ -811,31 +811,31 @@ UiHorizontalGaugeControl_DrawFrameFillAndLabel
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_RelocateChildren
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+          (UiSerializedRelocationDelta relocationDelta,UiPageStackControl *control)
 
 {
-  UiNodeBase *remainingCount;
+  UiPageCount remainingCount;
   UiNodeBase **childSlot;
   UiNodeBase **childPointerCursor;
   
-  childSlot = &control[1].firstChild;
-  remainingCount = control[1].nextSibling;
+  childSlot = &control->pages;
+  remainingCount = control->pageCount;
   do {
     if (*childSlot != (UiNodeBase *)0xffffffff) {
       *childSlot = (UiNodeBase *)((int)&(*childSlot)->nextSibling + relocationDelta);
     }
     childSlot = childSlot + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  childPointerCursor = &control[1].firstChild;
-  remainingCount = control[1].nextSibling;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  childPointerCursor = &control->pages;
+  remainingCount = control->pageCount;
   do {
-    control->firstChild = *childPointerCursor;
-    UiContainer_RelocateChildren(relocationDelta,control);
+    control->base.firstChild = *childPointerCursor;
+    UiContainer_RelocateChildren(relocationDelta,&control->base);
     childPointerCursor = childPointerCursor + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  control->firstChild = control[1].firstChild;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  control->base.firstChild = control->pages;
   return;
 }
 
@@ -846,23 +846,23 @@ UiLayoutContainerControl_RelocateChildren
    Local calls: UiContainer_LayoutChildren.
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_LayoutChildren(UiNodeBase *control)
+UiLayoutContainerControl_LayoutChildren(UiPageStackControl *control)
 
 {
-  UiNodeBase *remainingCount;
+  UiPageCount remainingCount;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
-  childPointerCursor = &control[1].firstChild;
-  savedFirstChild = control->firstChild;
-  remainingCount = control[1].nextSibling;
+  childPointerCursor = &control->pages;
+  savedFirstChild = control->base.firstChild;
+  remainingCount = control->pageCount;
   do {
-    control->firstChild = *childPointerCursor;
-    UiContainer_LayoutChildren(control);
+    control->base.firstChild = *childPointerCursor;
+    UiContainer_LayoutChildren(&control->base);
     childPointerCursor = childPointerCursor + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  control->firstChild = savedFirstChild;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  control->base.firstChild = savedFirstChild;
   return;
 }
 
@@ -894,23 +894,23 @@ UiContainer_HitTestChildrenOrNoneB
    Local calls: UiContainer_SuppressActionId.
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
+UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
-  UiNodeBase *remainingCount;
+  UiPageCount remainingCount;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
-  childPointerCursor = &control[1].firstChild;
-  savedFirstChild = control->firstChild;
-  remainingCount = control[1].nextSibling;
+  childPointerCursor = &control->pages;
+  savedFirstChild = control->base.firstChild;
+  remainingCount = control->pageCount;
   do {
-    control->firstChild = *childPointerCursor;
-    UiContainer_SuppressActionId(actionId,control);
+    control->base.firstChild = *childPointerCursor;
+    UiContainer_SuppressActionId(actionId,&control->base);
     childPointerCursor = childPointerCursor + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  control->firstChild = savedFirstChild;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  control->base.firstChild = savedFirstChild;
   return;
 }
 
@@ -921,23 +921,23 @@ UiLayoutContainerControl_SuppressActionIdRecursive(UiActionId actionId,UiNodeBas
    Local calls: UiContainer_UnsuppressActionId.
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiNodeBase *control)
+UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiPageStackControl *control)
 
 {
-  UiNodeBase *remainingCount;
+  UiPageCount remainingCount;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
-  childPointerCursor = &control[1].firstChild;
-  savedFirstChild = control->firstChild;
-  remainingCount = control[1].nextSibling;
+  childPointerCursor = &control->pages;
+  savedFirstChild = control->base.firstChild;
+  remainingCount = control->pageCount;
   do {
-    control->firstChild = *childPointerCursor;
-    UiContainer_UnsuppressActionId(actionId,control);
+    control->base.firstChild = *childPointerCursor;
+    UiContainer_UnsuppressActionId(actionId,&control->base);
     childPointerCursor = childPointerCursor + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  control->firstChild = savedFirstChild;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  control->base.firstChild = savedFirstChild;
   return;
 }
 
@@ -949,16 +949,16 @@ UiLayoutContainerControl_UnsuppressActionIdRecursive(UiActionId actionId,UiNodeB
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_RelocateAndRefreshInteractionState
-          (UiSerializedRelocationDelta relocationDelta,UiNodeBase *control)
+          (UiSerializedRelocationDelta relocationDelta,UiResizableWindowControl *control)
 
 {
-  UiContainer_RelocateChildren(relocationDelta,control);
-  if (((uint)control[1].nextSibling & 0x18) == 0) {
-    control->nodeFlags =
-         control->nodeFlags & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
+  UiContainer_RelocateChildren(relocationDelta,(UiNodeBase *)control);
+  if ((control->root.rootFlags & 0x18) == 0) {
+    control->root.base.nodeFlags =
+         control->root.base.nodeFlags & ~(UI_NODE_FALLBACK_FOCUS_TARGET|UI_NODE_PREFERRED_FOCUS_TARGET);
   }
   else {
-    control->nodeFlags = control->nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
+    control->root.base.nodeFlags = control->root.base.nodeFlags | UI_NODE_FALLBACK_FOCUS_TARGET;
   }
   return;
 }
@@ -973,10 +973,10 @@ UiResizableWindowControl_RelocateAndRefreshInteractionState
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_UpdateMoveOrResize
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiResizableWindowControl *control)
 
 {
-  UiNodeBase *interactionFlags;
+  uint interactionFlags;
   sdword newRight;
   sdword newBottom;
   int offsetXOrEdge;
@@ -986,125 +986,125 @@ UiResizableWindowControl_UpdateMoveOrResize
   bool overButton;
   GraphicsTextureSizeEaxEdxCf9 buttonSize;
   
-  offsetXOrEdge = pointerX - control->left;
-  offsetYOrEdge = pointerY - control->top;
-  if (((uint)control[1].nextSibling & 0x2000) == 0) {
-    if (((uint)control[1].nextSibling & 0x800) == 0) {
-      if (((uint)control[1].nextSibling & 0x1000) == 0) {
-        if (((uint)control[1].nextSibling & 0x4000) != 0) {
-          interactionFlags = control[1].nextSibling;
-          offsetXOrEdge = offsetXOrEdge + control->left;
-          offsetYOrEdge = offsetYOrEdge + control->top;
+  offsetXOrEdge = pointerX - control->root.base.left;
+  offsetYOrEdge = pointerY - control->root.base.top;
+  if ((control->root.rootFlags & 0x2000) == 0) {
+    if ((control->root.rootFlags & 0x800) == 0) {
+      if ((control->root.rootFlags & 0x1000) == 0) {
+        if ((control->root.rootFlags & 0x4000) != 0) {
+          interactionFlags = control->root.rootFlags;
+          offsetXOrEdge = offsetXOrEdge + control->root.base.left;
+          offsetYOrEdge = offsetYOrEdge + control->root.base.top;
           newTopOrOldRight = offsetYOrEdge;
-          if (((uint)interactionFlags & 0x83000000) == 0) {
-            newTopOrOldRight = control->top;
+          if ((interactionFlags & 0x83000000) == 0) {
+            newTopOrOldRight = control->root.base.top;
           }
-          if (((uint)interactionFlags & 0x38000000) == 0) {
-            offsetYOrEdge = control->bottom;
+          if ((interactionFlags & 0x38000000) == 0) {
+            offsetYOrEdge = control->root.base.bottom;
           }
           newLeftOrOldBottom = offsetXOrEdge;
-          if (((uint)interactionFlags & 0xe0000000) == 0) {
-            newLeftOrOldBottom = control->left;
+          if ((interactionFlags & 0xe0000000) == 0) {
+            newLeftOrOldBottom = control->root.base.left;
           }
-          if (((uint)interactionFlags & 0xe000000) == 0) {
-            offsetXOrEdge = control->right;
+          if ((interactionFlags & 0xe000000) == 0) {
+            offsetXOrEdge = control->root.base.right;
           }
-          control[1].topOffset = offsetXOrEdge;
-          control[1].rightOffset = offsetYOrEdge;
+          control->dragAnchorXOrPendingRight = offsetXOrEdge;
+          control->dragAnchorYOrPendingBottom = offsetYOrEdge;
           offsetXOrEdge = (offsetXOrEdge - newLeftOrOldBottom) + -0x40;
           if (offsetXOrEdge < 0) {
-            if (((uint)interactionFlags & 0xe000000) != 0) {
-              control[1].topOffset = control[1].topOffset - offsetXOrEdge;
+            if ((interactionFlags & 0xe000000) != 0) {
+              control->dragAnchorXOrPendingRight = control->dragAnchorXOrPendingRight - offsetXOrEdge;
             }
-            if (((uint)interactionFlags & 0xe0000000) != 0) {
+            if ((interactionFlags & 0xe0000000) != 0) {
               newLeftOrOldBottom = newLeftOrOldBottom + offsetXOrEdge;
             }
           }
           offsetXOrEdge = (offsetYOrEdge - newTopOrOldRight) + -0x40;
           if (offsetXOrEdge < 0) {
-            if (((uint)interactionFlags & 0x38000000) != 0) {
-              control[1].rightOffset = control[1].rightOffset - offsetXOrEdge;
+            if ((interactionFlags & 0x38000000) != 0) {
+              control->dragAnchorYOrPendingBottom = control->dragAnchorYOrPendingBottom - offsetXOrEdge;
             }
-            if (((uint)interactionFlags & 0x83000000) != 0) {
+            if ((interactionFlags & 0x83000000) != 0) {
               newTopOrOldRight = newTopOrOldRight + offsetXOrEdge;
             }
           }
-          newRight = control[1].topOffset;
-          newBottom = control[1].rightOffset;
+          newRight = control->dragAnchorXOrPendingRight;
+          newBottom = control->dragAnchorYOrPendingBottom;
           LOCK();
-          offsetXOrEdge = control->left;
-          control->left = newLeftOrOldBottom;
+          offsetXOrEdge = control->root.base.left;
+          control->root.base.left = newLeftOrOldBottom;
           UNLOCK();
           LOCK();
-          offsetYOrEdge = control->top;
-          control->top = newTopOrOldRight;
+          offsetYOrEdge = control->root.base.top;
+          control->root.base.top = newTopOrOldRight;
           UNLOCK();
           LOCK();
-          newTopOrOldRight = control->right;
-          control->right = newRight;
+          newTopOrOldRight = control->root.base.right;
+          control->root.base.right = newRight;
           UNLOCK();
           LOCK();
-          newLeftOrOldBottom = control->bottom;
-          control->bottom = newBottom;
+          newLeftOrOldBottom = control->root.base.bottom;
+          control->root.base.bottom = newBottom;
           UNLOCK();
-          if ((((offsetXOrEdge != control->left) || (offsetYOrEdge != control->top)) || (newTopOrOldRight != control->right))
-             || (newLeftOrOldBottom != control->bottom)) {
+          if ((((offsetXOrEdge != control->root.base.left) || (offsetYOrEdge != control->root.base.top)) || (newTopOrOldRight != control->root.base.right))
+             || (newLeftOrOldBottom != control->root.base.bottom)) {
             UiRootStack_InvalidateAll();
-            (*control->vtable->layout)(control);
-            UiNode_InvalidateRoot(control);
+            (*control->root.base.vtable->layout)((UiNodeBase *)control);
+            UiNode_InvalidateRoot((UiNodeBase *)control);
           }
         }
       }
       else {
-        newTopOrOldRight = control->layoutWidth;
+        newTopOrOldRight = control->root.base.layoutWidth;
         buttonSize = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
         overButton = (*g_GraphicsTextureSourceTestOpaquePixel)
                           (offsetYOrEdge,offsetXOrEdge,0,newTopOrOldRight - buttonSize.logicalWidthPixels,4,g_UiWindowTextureSource)
         ;
         if (overButton) {
-          if (((uint)control[1].nextSibling & 0x100000) != 0) {
+          if ((control->root.rootFlags & 0x100000) != 0) {
             return;
           }
-          control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x100000);
+          control->root.rootFlags = control->root.rootFlags | 0x100000;
         }
         else {
-          if (((uint)control[1].nextSibling & 0x100000) == 0) {
+          if ((control->root.rootFlags & 0x100000) == 0) {
             return;
           }
-          control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffefffff);
+          control->root.rootFlags = control->root.rootFlags & 0xffefffff;
         }
-        UiNode_InvalidateRoot(control);
+        UiNode_InvalidateRoot((UiNodeBase *)control);
       }
     }
     else {
       overButton = (*g_GraphicsTextureSourceTestOpaquePixel)(offsetYOrEdge,offsetXOrEdge,0,0,1,g_UiWindowTextureSource);
       if (overButton) {
-        if (((uint)control[1].nextSibling & 0x80000) != 0) {
+        if ((control->root.rootFlags & 0x80000) != 0) {
           return;
         }
-        control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x80000);
+        control->root.rootFlags = control->root.rootFlags | 0x80000;
       }
       else {
-        if (((uint)control[1].nextSibling & 0x80000) == 0) {
+        if ((control->root.rootFlags & 0x80000) == 0) {
           return;
         }
-        control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xfff7ffff);
+        control->root.rootFlags = control->root.rootFlags & 0xfff7ffff;
       }
       (*g_GraphicsTextureSourceGetLogicalSize)(1,g_UiWindowTextureSource);
-      UiNode_InvalidateRoot(control);
+      UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
   else {
-    offsetXOrEdge = offsetXOrEdge - control[1].topOffset;
-    offsetYOrEdge = offsetYOrEdge - control[1].rightOffset;
+    offsetXOrEdge = offsetXOrEdge - control->dragAnchorXOrPendingRight;
+    offsetYOrEdge = offsetYOrEdge - control->dragAnchorYOrPendingBottom;
     if ((offsetYOrEdge != 0) || (offsetXOrEdge != 0)) {
       UiRootStack_InvalidateAll();
-      control->left = control->left + offsetXOrEdge;
-      control->top = control->top + offsetYOrEdge;
-      control->right = control->right + offsetXOrEdge;
-      control->bottom = control->bottom + offsetYOrEdge;
-      (*control->vtable->layout)(control);
-      UiNode_InvalidateRoot(control);
+      control->root.base.left = control->root.base.left + offsetXOrEdge;
+      control->root.base.top = control->root.base.top + offsetYOrEdge;
+      control->root.base.right = control->root.base.right + offsetXOrEdge;
+      control->root.base.bottom = control->root.base.bottom + offsetYOrEdge;
+      (*control->root.base.vtable->layout)((UiNodeBase *)control);
+      UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
   return;
@@ -1216,18 +1216,18 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRootStack_BringToFront(UiRootNode *root
 {
   UiRootNode *belowRoot;
   UiRootNode *oldFrontRoot;
-  UiNodeBase *nextRootLink;
+  UiRootNode *nextRootLink;
   UiRootNode *detachedPreviousRoot;
   UiNodeBase *nextFrontRootLink;
-  
+
   oldFrontRoot = g_UiRootNode;
-  nextRootLink = (root->base).nextSibling;
+  nextRootLink = (UiRootNode *)(root->base).nextSibling;
   belowRoot = root->previousRoot;
-  if (nextRootLink != (UiNodeBase *)0xffffffff) {
-    nextRootLink[1].parent = &belowRoot->base;
+  if (nextRootLink != (UiRootNode *)0xffffffff) {
+    nextRootLink->previousRoot = belowRoot;
   }
   if (belowRoot != (UiRootNode *)0xffffffff) {
-    (belowRoot->base).nextSibling = nextRootLink;
+    (belowRoot->base).nextSibling = &nextRootLink->base;
   }
   nextFrontRootLink = (g_UiRootNode->base).nextSibling;
   root->previousRoot = g_UiRootNode;
@@ -1330,23 +1330,23 @@ UiContainer_PointerMoveReturnCode6
 */
 void __thandor_void_preserve_eax_ecx_edx
 UiLayoutContainerControl_ApplyFlagsRecursive
-          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiNodeBase *control)
+          (UiNodeFlagMask setMask,UiNodeFlagMask retainMask,UiPageStackControl *control)
 
 {
-  UiNodeBase *remainingCount;
+  UiPageCount remainingCount;
   UiNodeBase **childPointerCursor;
   UiNodeBase *savedFirstChild;
   
-  childPointerCursor = &control[1].firstChild;
-  savedFirstChild = control->firstChild;
-  remainingCount = control[1].nextSibling;
+  childPointerCursor = &control->pages;
+  savedFirstChild = control->base.firstChild;
+  remainingCount = control->pageCount;
   do {
-    control->firstChild = *childPointerCursor;
-    UiNode_ApplyFlagsRecursive(setMask,retainMask,control);
+    control->base.firstChild = *childPointerCursor;
+    UiNode_ApplyFlagsRecursive(setMask,retainMask,&control->base);
     childPointerCursor = childPointerCursor + 1;
-    remainingCount = (UiNodeBase *)((int)&remainingCount[-1].nodeFlags + 3);
-  } while (remainingCount != (UiNodeBase *)0x0);
-  control->firstChild = savedFirstChild;
+    remainingCount = remainingCount - 1;
+  } while (remainingCount != 0);
+  control->base.firstChild = savedFirstChild;
   return;
 }
 
@@ -1358,7 +1358,7 @@ UiLayoutContainerControl_ApplyFlagsRecursive
 void __thandor_void_preserve_eax_ecx_edx
 UiResizableWindowControl_BeginMoveResizeOrWindowAction
           (UiPointerWheelDelta wheelDelta,UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,
-          UiNodeBase *control)
+          UiResizableWindowControl *control)
 
 {
   int localX;
@@ -1368,31 +1368,31 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
   bool hitOpaque;
   GraphicsTextureSizeEaxEdxCf9 textureSize;
   
-  localX = pointerX - control->left;
-  localY = pointerY - control->top;
-  if ((((uint)control[1].nextSibling & 8) != 0) &&
+  localX = pointerX - control->root.base.left;
+  localY = pointerY - control->root.base.top;
+  if (((control->root.rootFlags & 8) != 0) &&
      (hitOpaque = (*g_GraphicsTextureSourceTestOpaquePixel)(localY,localX,0,0,1,g_UiWindowTextureSource),
      hitOpaque)) {
-    control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x800);
+    control->root.rootFlags = control->root.rootFlags | 0x800;
     return;
   }
-  if (((uint)control[1].nextSibling & 0x10) != 0) {
-    extentLimit = control->layoutWidth;
+  if ((control->root.rootFlags & 0x10) != 0) {
+    extentLimit = control->root.base.layoutWidth;
     textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(4,g_UiWindowTextureSource);
     hitOpaque = (*g_GraphicsTextureSourceTestOpaquePixel)
                       (localY,localX,0,extentLimit - textureSize.logicalWidthPixels,4,g_UiWindowTextureSource);
     if (hitOpaque) {
-      control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x1000);
+      control->root.rootFlags = control->root.rootFlags | 0x1000;
       return;
     }
   }
-  if (((uint)control[1].nextSibling & 0x80) == 0) {
-    if (((uint)control[1].nextSibling & 0x40) != 0) {
+  if ((control->root.rootFlags & 0x80) == 0) {
+    if ((control->root.rootFlags & 0x40) != 0) {
       textureSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
       if ((((localX < (int)textureSize.logicalWidthPixels) || ((int)localY < (int)textureSize.logicalHeightPixels))
-          || ((int)(control->layoutWidth - textureSize.logicalWidthPixels) <= localX)) ||
-         ((int)(control->layoutHeight - textureSize.logicalHeightPixels) <= (int)localY)) {
-        extentLimit = control->layoutHeight - g_UiWindowResizeBorderThickness;
+          || ((int)(control->root.base.layoutWidth - textureSize.logicalWidthPixels) <= localX)) ||
+         ((int)(control->root.base.layoutHeight - textureSize.logicalHeightPixels) <= (int)localY)) {
+        extentLimit = control->root.base.layoutHeight - g_UiWindowResizeBorderThickness;
         if (localX < g_UiWindowResizeBorderThickness) {
           resizeFlags = 0x80004000;
           if ((g_UiWindowResizeBorderThickness <= (int)localY) &&
@@ -1400,7 +1400,7 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
             resizeFlags = 0x40004000;
           }
         }
-        else if (localX < control->layoutWidth - g_UiWindowResizeBorderThickness) {
+        else if (localX < control->root.base.layoutWidth - g_UiWindowResizeBorderThickness) {
           resizeFlags = 0x1004000;
           if (g_UiWindowResizeBorderThickness <= (int)localY) {
             resizeFlags = 0x10004000;
@@ -1413,15 +1413,15 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
             resizeFlags = 0x4004000;
           }
         }
-        control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling & 0xffffff);
-        control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | resizeFlags);
+        control->root.rootFlags = control->root.rootFlags & 0xffffff;
+        control->root.rootFlags = control->root.rootFlags | resizeFlags;
         return;
       }
     }
-    if ((((uint)control[1].nextSibling & 0x20) != 0) && (localY < g_UiWindowMoveHandleWidth)) {
-      control[1].nextSibling = (UiNodeBase *)((uint)control[1].nextSibling | 0x2000);
-      control[1].topOffset = localX;
-      control[1].rightOffset = localY;
+    if (((control->root.rootFlags & 0x20) != 0) && (localY < g_UiWindowMoveHandleWidth)) {
+      control->root.rootFlags = control->root.rootFlags | 0x2000;
+      control->dragAnchorXOrPendingRight = localX;
+      control->dragAnchorYOrPendingBottom = localY;
       (*g_GraphicsCursorSetFrame)(1);
     }
   }
@@ -1435,7 +1435,7 @@ UiResizableWindowControl_BeginMoveResizeOrWindowAction
 */
 GraphicsCursorFrameIndex __thandor_eax_preserve_ecx_edx
 UiResizableWindowControl_QueryResizeCursorCode
-          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiNodeBase *control)
+          (UiPixelCoordinate pointerY,UiPixelCoordinate pointerX,UiResizableWindowControl *control)
 
 {
   GraphicsCursorFrameIndex cursorFrame;
@@ -1445,17 +1445,17 @@ UiResizableWindowControl_QueryResizeCursorCode
   GraphicsTextureSizeEaxEdxCf9 cornerSize;
   
   cursorFrame = 0;
-  if ((((uint)control[1].nextSibling & 0x40) != 0) && (((uint)control[1].nextSibling & 0x80) == 0))
+  if (((control->root.rootFlags & 0x40) != 0) && ((control->root.rootFlags & 0x80) == 0))
   {
-    localX = pointerX - control->left;
-    if ((control->left <= pointerX) &&
-       (((localY = pointerY - control->top, control->top <= pointerY &&
-         (localX < control->layoutWidth)) && (localY < control->layoutHeight)))) {
+    localX = pointerX - control->root.base.left;
+    if ((control->root.base.left <= pointerX) &&
+       (((localY = pointerY - control->root.base.top, control->root.base.top <= pointerY &&
+         (localX < control->root.base.layoutWidth)) && (localY < control->root.base.layoutHeight)))) {
       cornerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0x10,g_UiWindowTextureSource);
       if ((((localX < (int)cornerSize.logicalWidthPixels) || (localY < (int)cornerSize.logicalHeightPixels)) ||
-          ((int)(control->layoutWidth - cornerSize.logicalWidthPixels) <= localX)) ||
-         (cursorFrame = 0, (int)(control->layoutHeight - cornerSize.logicalHeightPixels) <= localY)) {
-        bottomBorderY = control->layoutHeight - g_UiWindowResizeBorderThickness;
+          ((int)(control->root.base.layoutWidth - cornerSize.logicalWidthPixels) <= localX)) ||
+         (cursorFrame = 0, (int)(control->root.base.layoutHeight - cornerSize.logicalHeightPixels) <= localY)) {
+        bottomBorderY = control->root.base.layoutHeight - g_UiWindowResizeBorderThickness;
         if (localX < g_UiWindowResizeBorderThickness) {
           cursorFrame = 2;
           if ((g_UiWindowResizeBorderThickness <= localY) && (cursorFrame = 3, localY < bottomBorderY)) {
@@ -1463,7 +1463,7 @@ UiResizableWindowControl_QueryResizeCursorCode
           }
         }
         else {
-          if (localX < control->layoutWidth - g_UiWindowResizeBorderThickness) {
+          if (localX < control->root.base.layoutWidth - g_UiWindowResizeBorderThickness) {
             return 4;
           }
           cursorFrame = 3;
@@ -1639,27 +1639,27 @@ void __thandor_void_preserve_eax_ecx_edx UiNodeSubtree_ReleaseKeyboardFocus(UiNo
 
 /* Address: 0x004B50D0.
    Ownership: ui/controls/layout.
-   Purpose: Lays out the container's children. When node flag 0x04 is set, it temporarily offsets top by the
+   Purpose: Lays out the resizable window's children. When window flag 0x04 (title bar) is set, it temporarily offsets top by the
    logical height of window subresource 0x0C, restores top, and adds that height to layoutHeight.
    Local calls: UiContainer_LayoutChildren.
 */
 void __thandor_void_preserve_eax_ecx_edx
-UiContainer_LayoutWithOptionalWindowHeaderOffset(UiNodeBase *control)
+UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *control)
 
 {
   dword headerHeight;
   GraphicsTextureSizeEaxEdxCf9 headerSize;
   
-  if (((uint)control[1].nextSibling & 4) == 0) {
-    UiContainer_LayoutChildren(control);
+  if ((control->root.rootFlags & 4) == 0) {
+    UiContainer_LayoutChildren((UiNodeBase *)control);
   }
   else {
     headerSize = (*g_GraphicsTextureSourceGetLogicalSize)(0xc,g_UiWindowTextureSource);
     headerHeight = headerSize.logicalHeightPixels;
-    control->top = control->top + headerHeight;
-    UiContainer_LayoutChildren(control);
-    control->top = control->top - headerHeight;
-    control->layoutHeight = control->layoutHeight + headerHeight;
+    control->root.base.top = control->root.base.top + headerHeight;
+    UiContainer_LayoutChildren((UiNodeBase *)control);
+    control->root.base.top = control->root.base.top - headerHeight;
+    control->root.base.layoutHeight = control->root.base.layoutHeight + headerHeight;
   }
   return;
 }
