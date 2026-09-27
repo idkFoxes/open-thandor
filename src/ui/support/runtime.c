@@ -210,7 +210,7 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourceP
   void *memory;
   int dwordsRemaining;
   dword *pcxDwordReadCursor;
-  undefined4 *pixelDwordCursor;
+  dword *pixelDwordCursor;
   word *sanitizedPathCursor;
   PcxDecodeEaxCf5 pcxDecodeResult;
   ResourceLoadEaxEcxCf9 resourceLoadResult;
@@ -251,9 +251,9 @@ PcxPreview_Load64x64PaletteAndPixelsCf(PcxPreview64 *outputPreview,word *sourceP
           outputPreview = (PcxPreview64 *)(outputPreview->paletteRgbTriplets256 + 1);
           dwordsRemaining = dwordsRemaining + -1;
         } while (dwordsRemaining != 0);
-        pixelDwordCursor = (undefined4 *)((int)memory + headerOrPixelDataOffset);
+        pixelDwordCursor = (dword *)((int)memory + headerOrPixelDataOffset);
         for (dwordsRemaining = 0x400; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-          *(undefined4 *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
+          *(dword *)outputPreview->paletteRgbTriplets256 = *pixelDwordCursor;
           pixelDwordCursor = pixelDwordCursor + 1;
           outputPreview = (PcxPreview64 *)&outputPreview->paletteRgbTriplets256[1].green;
         }
