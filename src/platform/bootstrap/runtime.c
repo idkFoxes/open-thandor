@@ -1302,6 +1302,91 @@ static void DebugMovie_PlayOne(const char *name, int index, int count, int stret
   Movie_Close();
 }
 
+/* Debug tool: OPEN_THANDOR_MOVIEEXPORT=<name>[,<name>...] decodes flm\<name>.flm frame by frame (as fast
+   as the stream allows) and writes moviedump\<name>.rgb (32-bit BGRA frames, top-down), moviedump\<name>.wav
+   (the chosen audio track as the DirectSound buffer holds it) and moviedump\<name>.txt (width height
+   frames rate). The process exits afterwards. */
+static void DebugMovie_ExportOne(const char *name)
+{
+  uint16_t path[0x40];
+  char fileName[0x80];
+  int n = 0;
+  int i;
+  uint32_t frames = 0;
+  uint32_t width;
+  uint32_t height;
+  MovieOpenResult opened;
+  MovieFrameResult frame;
+  FILE *video;
+  FILE *info;
+  path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm'; path[n++] = '\\';
+  for (i = 0; name[i] != 0 && n < 0x38; i++) path[n++] = (uint16_t)name[i];
+  path[n++] = '.'; path[n++] = 'f'; path[n++] = 'l'; path[n++] = 'm';
+  path[n] = 0;
+  CreateDirectoryA("moviedump", NULL);
+  opened = Movie_Open(1,path);
+  if (opened.failed) {
+    Thandor_Log("movie export %s: Movie_Open failed (eax=%08x)", name, opened.frameCountOrError);
+    return;
+  }
+  width = g_ActiveMovie->fileHeader->widthPixels;
+  height = g_ActiveMovie->fileHeader->heightPixels;
+  if (g_ActiveMovie->audioVoiceSet != NULL && g_ActiveMovie->audioVoiceSet->voices[0] != NULL) {
+    IDirectSoundBuffer *buffer = g_ActiveMovie->audioVoiceSet->voices[0];
+    WAVEFORMATEX format;
+    uint32_t formatBytes = 0;
+    void *part1 = NULL;
+    void *part2 = NULL;
+    uint32_t bytes1 = 0;
+    uint32_t bytes2 = 0;
+    memset(&format, 0, sizeof format);
+    buffer->lpVtbl->GetFormat(buffer, &format, sizeof format, &formatBytes);
+    if (buffer->lpVtbl->Lock(buffer, 0, 0, &part1, &bytes1, &part2, &bytes2, 2 /* DSBLOCK_ENTIREBUFFER */) == 0) {
+      FILE *wav;
+      sprintf(fileName, "moviedump\\%s.wav", name);
+      wav = fopen(fileName, "wb");
+      if (wav != NULL) {
+        uint32_t dataBytes = bytes1 + bytes2;
+        uint32_t riffBytes = 36 + dataBytes;
+        uint32_t fmtBytes = 16;
+        fwrite("RIFF", 1, 4, wav); fwrite(&riffBytes, 4, 1, wav);
+        fwrite("WAVEfmt ", 1, 8, wav); fwrite(&fmtBytes, 4, 1, wav);
+        fwrite(&format, 1, 16, wav);
+        fwrite("data", 1, 4, wav); fwrite(&dataBytes, 4, 1, wav);
+        fwrite(part1, 1, bytes1, wav);
+        if (part2 != NULL) fwrite(part2, 1, bytes2, wav);
+        fclose(wav);
+      }
+      buffer->lpVtbl->Unlock(buffer, part1, bytes1, part2, bytes2);
+      Thandor_Log("movie export %s: audio %u Hz, %u ch, %u bit, %u bytes", name, format.nSamplesPerSec,
+                  format.nChannels, format.wBitsPerSample, bytes1 + bytes2);
+    }
+  }
+  sprintf(fileName, "moviedump\\%s.rgb", name);
+  video = fopen(fileName, "wb");
+  for (;;) {
+    int attempts = 0;
+    do {
+      frame = Movie_AdvanceFrame();
+      if (!frame.ended) break;
+      Thandor_SleepMs(5); /* the refill worker may not have loaded the next frame yet */
+    } while (++attempts < 200 && g_ActiveMovie != NULL &&
+             g_ActiveMovie->currentFrameIndex < g_ActiveMovie->fileHeader->frameCount);
+    if (frame.ended) break;
+    if (video != NULL) fwrite(g_ActiveMovie->argbPixels, 4, width * height, video);
+    frames++;
+  }
+  if (video != NULL) fclose(video);
+  sprintf(fileName, "moviedump\\%s.txt", name);
+  info = fopen(fileName, "w");
+  if (info != NULL) {
+    fprintf(info, "%u %u %u %u\n", width, height, frames, opened.playbackRateHz);
+    fclose(info);
+  }
+  Thandor_Log("movie export %s: %ux%u, %u frames at %u Hz", name, width, height, frames, opened.playbackRateHz);
+  Movie_Close();
+}
+
 static void DebugMovie_Run(const char *which)
 {
   const char *stretchValue = getenv("OPEN_THANDOR_MOVIE_STRETCH");
@@ -1362,7 +1447,18 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
   CursorEventResult cursorEvent;
   
     {
+    const char *exportMovies = getenv("OPEN_THANDOR_MOVIEEXPORT");
     const char *debugMovie = getenv("OPEN_THANDOR_MOVIE");
+    if ((exportMovies != NULL) && (exportMovies[0] != 0)) {
+      char names[0x100];
+      char *name;
+      strncpy(names, exportMovies, sizeof names - 1);
+      names[sizeof names - 1] = 0;
+      for (name = strtok(names, ","); name != NULL; name = strtok(NULL, ",")) {
+        DebugMovie_ExportOne(name);
+      }
+      ExitProcess(0);
+    }
     if ((debugMovie != NULL) && (debugMovie[0] != 0)) {
       DebugMovie_Run(debugMovie);
     }
