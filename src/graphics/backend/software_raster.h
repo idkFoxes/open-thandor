@@ -559,4 +559,16 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
     return color;
 }
 
+/* ---- WP5: auxiliary untextured modes ------------------------------------------------------ */
+
+/* Depth write rule of the untextured "alpha-tested" modes 4/6/12/14 of the 32-bit families. The
+   original tests MM2 >= 0x800 before writing depth but never loads MM2 in these modes, so it sees
+   whatever the previous triangle left there (rastercmp accepts either outcome). The C code uses
+   the pixel's own alpha instead: write depth when the source alpha lane (Q4, taken as an unsigned
+   word) is >= 0x800, i.e. alpha >= 128; a negative lane also passes. */
+static __inline int RasterWp5_AlphaAllowsDepthWrite(RasterColor sourceQ4)
+{
+    return (word)sourceQ4.lane[RASTER_LANE_ALPHA] >= 0x800;
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
