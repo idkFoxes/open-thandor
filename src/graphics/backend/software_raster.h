@@ -810,4 +810,21 @@ static __inline int Blit_SetupSubresource(const GraphicsTextureSourceAsset *sour
     return 1;
 }
 
+/* ---- B1: clipped blend variants (HalfSourceRgb, PaletteBank, Modulated) ------------------- */
+
+/* The BlitModulatedSourceAlpha channel product, as the original's four IMULs: every channel of argb is
+   multiplied by the matching channel of modulation. Blue keeps (b * mb) >> 8; green, red and alpha keep
+   the high byte of their product ((c * mc) & 0xFF00) shifted into place. All four agree with
+   (c * mc) >> 8, so even modulation 0xFFFFFFFF darkens by one step (0xFF * 0xFF >> 8 = 0xFE). In
+   particular the modulated alpha is at most 0xFE: the opaque shortcut of the Modulated blits is dead
+   code, and every visible texel goes through the blend. */
+static __inline dword Blit_Modulate(dword argb, dword modulation)
+{
+    dword blue = ((argb & 0xff) * (modulation & 0xff)) >> 8;
+    dword green = (((argb >> 8) & 0xff) * ((modulation >> 8) & 0xff)) & 0xff00u;
+    dword red = (((argb >> 16) & 0xff) * ((modulation >> 16) & 0xff)) & 0xff00u;
+    dword alpha = ((argb >> 24) * (modulation >> 24)) & 0xff00u;
+    return blue | green | (red << 8) | (alpha << 16);
+}
+
 #endif /* THANDOR_GRAPHICS_BACKEND_SOFTWARE_RASTER_H */
