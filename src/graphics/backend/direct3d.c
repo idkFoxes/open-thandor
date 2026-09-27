@@ -10,6 +10,37 @@
 
 /* Implementation ownership: graphics/backend/direct3d. */
 
+/* MOVD mm,color; PUNPCKLBW mm,mm; PSRLW mm,4: each color byte b (B,G,R,A from low to high)
+   becomes the 16-bit lane (b << 8 | b) >> 4. */
+static __inline ulonglong Direct3D_MmxUnpackColorWords(PackedArgb32 color)
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)((((color >> (lane * 8)) & 0xff) * 0x101) >> 4);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm; MOVD color,mm: each signed 16-bit lane saturated to 0..0xff and packed back into
+   the B,G,R,A bytes of a D3D color. */
+static __inline PackedArgb32 Direct3D_MmxPackColorWords(ulonglong words)
+{
+  ThandorMmx lanes;
+  PackedArgb32 color;
+  int lane;
+  short value;
+
+  lanes.q = words;
+  color = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    value = lanes.sw[lane];
+    color = color | ((PackedArgb32)(value < 0 ? 0 : (value > 0xff ? 0xff : value)) << (lane * 8));
+  }
+  return color;
+}
+
 /* Address: 0x00578270.
    Ownership: graphics/backend/direct3d.
    Purpose: IDirect3D2::EnumDevices callback. Context points at the adapter record being expanded.
@@ -110,6 +141,7 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   uint bitCountOrMaskDelta;
   int highBitOrCopyCount;
   uint candidateColorMask;
+  int replaceOpaqueFormat;
   DDPIXELFORMAT *pixelFormatCursor;
   TH_LEGACY_DWORD *formatDwordCursor;
   
@@ -127,24 +159,32 @@ GraphicsDirect3D_SelectPreferredTextureFormatEnumCallback
   if ((pixelFormatFlags & 0x40) == 0) {
     return 1;
   }
+  /* Take the candidate as the opaque format when none is chosen yet, when it has fewer bits per pixel, or
+     when it has the same depth and color bits the current format lacks. */
+  replaceOpaqueFormat = 1;
   if (g_Direct3DOpaqueTextureFormatBitsPerPixel != 0) {
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < bitCountOrMaskDelta) goto LAB_005788c0;
-    if (g_Direct3DOpaqueTextureFormatBitsPerPixel == bitCountOrMaskDelta) {
+    if (g_Direct3DOpaqueTextureFormatBitsPerPixel < bitCountOrMaskDelta) {
+      replaceOpaqueFormat = 0;
+    }
+    else if (g_Direct3DOpaqueTextureFormatBitsPerPixel == bitCountOrMaskDelta) {
       candidateColorMask = (surfaceDesc->ddpfPixelFormat).dwRBitMask | (surfaceDesc->ddpfPixelFormat).dwGBitMask
               | (surfaceDesc->ddpfPixelFormat).dwBBitMask;
       bitCountOrMaskDelta = (_g_Direct3DOpaqueTextureFormatRedBitMask | _g_Direct3DOpaqueTextureFormatGreenBitMask
               | _g_Direct3DOpaqueTextureFormatBlueBitMask) ^ candidateColorMask;
-      if ((bitCountOrMaskDelta == 0) || ((bitCountOrMaskDelta & candidateColorMask) == 0)) goto LAB_005788c0;
+      if ((bitCountOrMaskDelta == 0) || ((bitCountOrMaskDelta & candidateColorMask) == 0)) {
+        replaceOpaqueFormat = 0;
+      }
     }
   }
-  pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
-  formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
-  for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
-    *formatDwordCursor = pixelFormatCursor->dwSize;
-    pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
-    formatDwordCursor = formatDwordCursor + 1;
+  if (replaceOpaqueFormat) {
+    pixelFormatCursor = &surfaceDesc->ddpfPixelFormat;
+    formatDwordCursor = (TH_LEGACY_DWORD *)THANDOR_ADDR(g_Direct3DOpaqueTextureFormat,0);
+    for (highBitOrCopyCount = 8; highBitOrCopyCount != 0; highBitOrCopyCount = highBitOrCopyCount + -1) {
+      *formatDwordCursor = pixelFormatCursor->dwSize;
+      pixelFormatCursor = (DDPIXELFORMAT *)&pixelFormatCursor->dwFlags;
+      formatDwordCursor = formatDwordCursor + 1;
+    }
   }
-LAB_005788c0:
   if (((pixelFormatFlags & 1) != 0) && (8 < (surfaceDesc->ddpfPixelFormat).dwRGBBitCount)) {
     highBitOrCopyCount = 0x1f;
     if (_g_Direct3DAlphaTextureFormatAlphaBitMask != 0) {
@@ -286,32 +326,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  short channel0Product;
-  short channel1Product;
-  short channel2Product;
-  short channel3Product;
-  undefined4 vertex0AlphaDword;
-  undefined4 vertex1AlphaDword;
-  undefined4 vertex2AlphaDword;
-  undefined4 modulationAlphaDword;
+  ulonglong modulationWords;
   sdword bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
   sdword unusedResult;
-  undefined8 mm0PackedValue0;
-  undefined8 mm1PackedValue0;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[0].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -346,100 +367,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset0(GraphicsPrimitivePacket *packet)
   vertex0Diffuse = packet->vertices[0].diffuseColor;
   vertex1Diffuse = packet->vertices[1].diffuseColor;
   vertex2Diffuse = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
-  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
-                   mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
-                    mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
-                    mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
-                    mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
-  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
-  THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
-  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
-  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
-  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
-  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
-  mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                       mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                       mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                       mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
-              mm3PackedValue0);
-  channel0Product = (short)mm0PackedValue0;
-  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  /* MM3 = modulation color, MM0..MM2 = vertex colors; PMULHW each vertex by MM3, PACKUSWB, MOVD. */
+  modulationWords = Direct3D_MmxUnpackColorWords(packetModulationColor);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm1PackedValue0;
-  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex0Diffuse),modulationWords));
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm2PackedValue0;
-  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex1Diffuse),modulationWords));
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < channel0Product))));
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex2Diffuse),modulationWords));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -536,32 +471,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  short channel0Product;
-  short channel1Product;
-  short channel2Product;
-  short channel3Product;
-  undefined4 vertex0AlphaDword;
-  undefined4 vertex1AlphaDword;
-  undefined4 vertex2AlphaDword;
-  undefined4 modulationAlphaDword;
+  ulonglong modulationWords;
   sdword bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
   sdword unusedResult;
-  undefined8 mm0PackedValue0;
-  undefined8 mm1PackedValue0;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[2].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -610,100 +526,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset2(GraphicsPrimitivePacket *packet)
   vertex0Diffuse = packet->vertices[0].diffuseColor;
   vertex1Diffuse = packet->vertices[1].diffuseColor;
   vertex2Diffuse = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
-  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
-                   mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
-                    mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
-                    mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
-                    mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
-  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
-  THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
-  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
-  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
-  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
-  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
-  mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                       mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                       mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                       mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
-              mm3PackedValue0);
-  channel0Product = (short)mm0PackedValue0;
-  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  /* MM3 = modulation color, MM0..MM2 = vertex colors; PMULHW each vertex by MM3, PACKUSWB, MOVD. */
+  modulationWords = Direct3D_MmxUnpackColorWords(packetModulationColor);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm1PackedValue0;
-  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex0Diffuse),modulationWords));
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm2PackedValue0;
-  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex1Diffuse),modulationWords));
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < channel0Product))));
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex2Diffuse),modulationWords));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -801,32 +631,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  short channel0Product;
-  short channel1Product;
-  short channel2Product;
-  short channel3Product;
-  undefined4 vertex0AlphaDword;
-  undefined4 vertex1AlphaDword;
-  undefined4 vertex2AlphaDword;
-  undefined4 modulationAlphaDword;
+  ulonglong modulationWords;
   sdword bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
   sdword unusedResult;
-  undefined8 mm0PackedValue0;
-  undefined8 mm1PackedValue0;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[3].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -875,100 +686,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset3(GraphicsPrimitivePacket *packet)
   vertex0Diffuse = packet->vertices[0].diffuseColor;
   vertex1Diffuse = packet->vertices[1].diffuseColor;
   vertex2Diffuse = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
-  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
-                   mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
-                    mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
-                    mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
-                    mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
-  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
-  THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
-  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
-  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
-  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
-  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
-  mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                       mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                       mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                       mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
-              mm3PackedValue0);
-  channel0Product = (short)mm0PackedValue0;
-  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  /* MM3 = modulation color, MM0..MM2 = vertex colors; PMULHW each vertex by MM3, PACKUSWB, MOVD. */
+  modulationWords = Direct3D_MmxUnpackColorWords(packetModulationColor);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm1PackedValue0;
-  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex0Diffuse),modulationWords));
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm2PackedValue0;
-  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex1Diffuse),modulationWords));
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < channel0Product))));
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex2Diffuse),modulationWords));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;
@@ -1065,32 +790,13 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   PackedArgb32 vertex0Diffuse;
   PackedArgb32 vertex1Diffuse;
   PackedArgb32 vertex2Diffuse;
-  short channel0Product;
-  short channel1Product;
-  short channel2Product;
-  short channel3Product;
-  undefined4 vertex0AlphaDword;
-  undefined4 vertex1AlphaDword;
-  undefined4 vertex2AlphaDword;
-  undefined4 modulationAlphaDword;
+  ulonglong modulationWords;
   sdword bindResult;
   int remainingDwords;
   D3DDEVICEDESC_DX6 *deviceDesc;
   D3DTLVERTEX_DX6 *sourceVertexCursor;
   D3DTLVERTEX_DX6 *destVertexCursor;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
   sdword unusedResult;
-  undefined8 mm0PackedValue0;
-  undefined8 mm1PackedValue0;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
   IDirect3DDevice2 *newBoundTextureHandle;
   
   if (g_PrimitiveRenderStatePresets[4].zWriteEnable != g_PrimitiveRenderStateCache.zWriteEnable) {
@@ -1139,100 +845,14 @@ Direct3D_PrimitiveHandler_UntexturedPreset4(GraphicsPrimitivePacket *packet)
   vertex0Diffuse = packet->vertices[0].diffuseColor;
   vertex1Diffuse = packet->vertices[1].diffuseColor;
   vertex2Diffuse = packet->vertices[2].diffuseColor;
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 0x18);
-  vertex0AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm0PackedValue0ByteLane1),
-                   mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(vertex0Diffuse >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(vertex0Diffuse >> 8);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 0x18);
-  vertex1AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm1PackedValue0ByteLane1),
-                    mm1PackedValue0ByteLane1);
-  mm1PackedValue0ByteLane2 = (undefined1)(vertex1Diffuse >> 0x10);
-  mm1PackedValue0ByteLane1 = (undefined1)(vertex1Diffuse >> 8);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 0x18);
-  vertex2AlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm2PackedValue0ByteLane1),
-                    mm2PackedValue0ByteLane1);
-  mm2PackedValue0ByteLane2 = (undefined1)(vertex2Diffuse >> 0x10);
-  mm2PackedValue0ByteLane1 = (undefined1)(vertex2Diffuse >> 8);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 0x18);
-  modulationAlphaDword = CONCAT31(CONCAT21((short)THANDOR_MMX_ST_EXPONENT,mm3PackedValue0ByteLane1),
-                    mm3PackedValue0ByteLane1);
-  mm3PackedValue0ByteLane2 = (undefined1)(packetModulationColor >> 0x10);
-  mm3PackedValue0ByteLane1 = (undefined1)(packetModulationColor >> 8);
-  THANDOR_PART(word, mm3PackedValue0, 0) = CONCAT11((char)packetModulationColor,(char)packetModulationColor) >> 4;
-  THANDOR_PART(word, mm3PackedValue0, 2) = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1) >> 4;
-  THANDOR_PART(dword, mm3PackedValue0, 0) = CONCAT22(THANDOR_PART(word, mm3PackedValue0, 2),(ushort)mm3PackedValue0);
-  THANDOR_PART(word, mm3PackedValue0, 4) =
-       (ushort)(CONCAT55(CONCAT41(modulationAlphaDword,mm3PackedValue0ByteLane2),
-                         CONCAT14(mm3PackedValue0ByteLane2,packetModulationColor)) >> 0x20);
-  THANDOR_PART(word, mm3PackedValue0, 4) = THANDOR_PART(word, mm3PackedValue0, 4) >> 4;
-  THANDOR_WRITE_PART(mm3PackedValue0, 0, 6, CONCAT24(THANDOR_PART(word, mm3PackedValue0, 4),(undefined4)mm3PackedValue0));
-  THANDOR_PART(word, mm3PackedValue0, 6) = (ushort)modulationAlphaDword;
-  THANDOR_PART(word, mm3PackedValue0, 6) = THANDOR_PART(word, mm3PackedValue0, 6) >> 4;
-  mm3PackedValue0 = CONCAT26(THANDOR_PART(word, mm3PackedValue0, 6),(undefined6)mm3PackedValue0);
-  mm0PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex0AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex0AlphaDword,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,vertex0Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                       mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex0Diffuse,(char)vertex0Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm1PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex1AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex1AlphaDword,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,vertex1Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                       mm1PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex1Diffuse,(char)vertex1Diffuse) >> 4))),
-              mm3PackedValue0);
-  mm2PackedValue0 =
-       pmulhw(CONCAT26((ushort)vertex2AlphaDword >> 4,
-                       CONCAT24((ushort)(CONCAT55(CONCAT41(vertex2AlphaDword,mm2PackedValue0ByteLane2),
-                                                  CONCAT14(mm2PackedValue0ByteLane2,vertex2Diffuse)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                       mm2PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)vertex2Diffuse,(char)vertex2Diffuse) >> 4))),
-              mm3PackedValue0);
-  channel0Product = (short)mm0PackedValue0;
-  channel1Product = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm0PackedValue0 >> 0x30);
+  /* MM3 = modulation color, MM0..MM2 = vertex colors; PMULHW each vertex by MM3, PACKUSWB, MOVD. */
+  modulationWords = Direct3D_MmxUnpackColorWords(packetModulationColor);
   g_ImmediateTLVertices[0].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm1PackedValue0;
-  channel1Product = (short)((ulonglong)mm1PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm1PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm1PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex0Diffuse),modulationWords));
   g_ImmediateTLVertices[1].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm1PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm1PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm1PackedValue0 -
-                                  (0xff < channel0Product))));
-  channel0Product = (short)mm2PackedValue0;
-  channel1Product = (short)((ulonglong)mm2PackedValue0 >> 0x10);
-  channel2Product = (short)((ulonglong)mm2PackedValue0 >> 0x20);
-  channel3Product = (short)((ulonglong)mm2PackedValue0 >> 0x30);
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex1Diffuse),modulationWords));
   g_ImmediateTLVertices[2].color =
-       CONCAT13((0 < channel3Product) * (channel3Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x30) -
-                (0xff < channel3Product),
-                CONCAT12((0 < channel2Product) * (channel2Product < 0x100) * (char)((ulonglong)mm2PackedValue0 >> 0x20)
-                         - (0xff < channel2Product),
-                         CONCAT11((0 < channel1Product) * (channel1Product < 0x100) *
-                                  (char)((ulonglong)mm2PackedValue0 >> 0x10) - (0xff < channel1Product),
-                                  (0 < channel0Product) * (channel0Product < 0x100) * (char)mm2PackedValue0 -
-                                  (0xff < channel0Product))));
+       Direct3D_MmxPackColorWords(pmulhw(Direct3D_MmxUnpackColorWords(vertex2Diffuse),modulationWords));
   g_ImmediateTLVertices[0].specular = 0;
   g_ImmediateTLVertices[1].specular = 0;
   g_ImmediateTLVertices[2].specular = 0;

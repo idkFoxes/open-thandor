@@ -449,7 +449,7 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers(void)
   if (playersRemaining != 0 && 0 < (int)g_FrontendPlayerRuntimeBlockCount) {
     do {
       if (sourcePlayer->heartbeatExpiryTicks == 0) {
-FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndPrepareCompaction:
+FrontendClientSession_RemoveExpiredPlayer:
         g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
         removedIdOrCommandCursor = (FrontendCommandPacketRecord *)sourcePlayer->playerRuntimeId;
         removedCount = removedCount + 1;
@@ -463,9 +463,7 @@ FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndP
           timeoutText = TextResource_Resolve(0xff00);
           RichTextCommandStream_PatchPayloadBySelector(0,&sourcePlayer->playerName,timeoutText.eax);
           InGameRecentTextHistory_InsertAndRebuild8(timeoutText.eax);
-          goto 
-          FrontendClientSession_DecrementTimeoutsAndCompactPlayers_RemoveExpiredPlayerAndPrepareCompaction
-          ;
+          goto FrontendClientSession_RemoveExpiredPlayer;
         }
         nextSourcePlayer = sourcePlayer + 1;
         nextDestinationPlayer = destinationPlayer + 1;

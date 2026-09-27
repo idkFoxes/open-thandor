@@ -54,6 +54,40 @@ static PackedArgb32 ModelLighting_PackUnsigned(const short lanes[4])
   return packed;
 }
 
+/* The same lane operations on 64-bit MMX register images (ThandorMmx, core/ghidra.h). */
+
+/* movd + punpcklbw mm,mm + psrlw mm,shift: byte k of packed becomes word lane k = (b * 0x101) >> shift. */
+static __inline ulonglong ModelLighting_UnpackBytesMmx(uint packed, int shift)
+{
+  ThandorMmx lanes;
+  int i;
+  for (i = 0; i < 4; i++) {
+    lanes.uw[i] = (ushort)((((packed >> (8 * i)) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* paddw (wrapping word add) */
+static __inline ulonglong ModelLighting_AddWordsMmx(ulonglong a, ulonglong b)
+{
+  ThandorMmx x, y, r;
+  int i;
+  x.q = a;
+  y.q = b;
+  for (i = 0; i < 4; i++) {
+    r.uw[i] = (ushort)(x.uw[i] + y.uw[i]);
+  }
+  return r.q;
+}
+
+/* packuswb mm,mm + movd */
+static __inline PackedArgb32 ModelLighting_PackUnsignedMmx(ulonglong lanes)
+{
+  ThandorMmx x;
+  x.q = lanes;
+  return ModelLighting_PackUnsigned(x.sw);
+}
+
 
 /* Address: 0x004BDC90.
    Ownership: graphics/render/model.
@@ -484,7 +518,6 @@ ModelRender_PrepareProjectedVertexAlternatePath
               ((GraphicsFixedVec3 *)&vertex[2].z,vertex,
                (GraphicsFixedMatrix3x4 *)&g_ModelViewCompositeTransform);
     if (vertex[3].y < (int)g_ProjectionScaleFixed) {
-LAB_004bd788:
       vertex[4].x = 0x7fffffff;
       return true;
     }
@@ -493,7 +526,10 @@ LAB_004bd788:
     vertex[4].y = projectedPoint.projectedY;
   }
   else {
-    if (vertex[4].x == 0x7fffffff) goto LAB_004bd788;
+    if (vertex[4].x == 0x7fffffff) {
+      /* Already marked as behind the near plane (the original re-stores the same marker). */
+      return true;
+    }
     if (((triangleRenderFlags & 0x8e00) == vertex[4].z) && ((triangleRenderFlags & 0x8000) == 0)) {
       return false;
     }
@@ -680,13 +716,6 @@ ModelRender_ComputeVertexIntensityDefaultPath
 {
   PackedRgb24 lightPackedColor;
   longlong axisDistanceSquared;
-  short resultLane0;
-  short resultLane1;
-  short resultLane2;
-  short resultLane3;
-  ushort colorLane3Word;
-  ushort materialLane3Word;
-  byte mm0PackedValue0ByteLane3;
   sdword lightFacingDotQ12;
   int remainderHigh;
   uint squareOrRemainderLow;
@@ -695,54 +724,17 @@ ModelRender_ComputeVertexIntensityDefaultPath
   GraphicsShadingRecordCount remainingRecords;
   uint remainderLowOrDivisor;
   GraphicsShadingRuntimeRecord *shadingRecord1;
-  undefined1 colorByte3Or1;
-  undefined1 colorByte2;
-  undefined8 mm0PackedValue0;
-  undefined8 accumulatedLanes;
-  undefined1 sceneByte3Or1;
-  undefined1 sceneByte2;
-  undefined1 materialByte3Or1;
-  undefined1 materialByte2;
-  undefined8 mm4PackedValue0;
+  ulonglong mm0PackedValue0;
+  ulonglong accumulatedLanes;
+  ulonglong mm4PackedValue0;
   
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
-  mm0PackedValue0ByteLane3 = (byte)(scenePackedColor1 >> 0x18);
-  colorByte2 = (undefined1)(scenePackedColor1 >> 0x10);
-  colorByte3Or1 = (undefined1)(scenePackedColor1 >> 8);
-  sceneByte3Or1 = (undefined1)(scenePackedColor0 >> 0x18);
-  colorLane3Word = CONCAT11(sceneByte3Or1,sceneByte3Or1);
-  sceneByte2 = (undefined1)(scenePackedColor0 >> 0x10);
-  sceneByte3Or1 = (undefined1)(scenePackedColor0 >> 8);
-  materialByte3Or1 = (undefined1)(materialPackedColor >> 0x18);
-  materialLane3Word = CONCAT11(materialByte3Or1,materialByte3Or1);
-  materialByte2 = (undefined1)(materialPackedColor >> 0x10);
-  materialByte3Or1 = (undefined1)(materialPackedColor >> 8);
   mm0PackedValue0 =
-       pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 2,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
-                                                                    mm0PackedValue0ByteLane3),colorByte2
-                                                          ),CONCAT14(colorByte2,scenePackedColor1)) >>
-                                        0x20) >> 2,
-                                CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                         CONCAT11((char)scenePackedColor1,(char)scenePackedColor1)
-                                         >> 2))),
-              *(undefined8 *)(distanceAttenuationTable + (lightFacingDotQ12 >> 0x15) * 8));
+       pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
+              *(ulonglong *)(distanceAttenuationTable + (lightFacingDotQ12 >> 0x15) * 8));
   shadingRecord1 = g_GraphicsShadingNearbyRecords;
-  accumulatedLanes = pmulhw(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) + (colorLane3Word >> 4),
-                           CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                    ((ushort)(CONCAT35(CONCAT21(colorLane3Word,sceneByte2),
-                                                       CONCAT14(sceneByte2,scenePackedColor0)) >> 0x20)
-                                    >> 4),CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                                   (CONCAT11(sceneByte3Or1,sceneByte3Or1) >> 4),
-                                                   (short)mm0PackedValue0 +
-                                                   (CONCAT11((char)scenePackedColor0,
-                                                             (char)scenePackedColor0) >> 4)))),
-                  CONCAT26(materialLane3Word >> 2,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(materialLane3Word,materialByte2),
-                                                      CONCAT14(materialByte2,materialPackedColor)) >> 0x20)
-                                    >> 2,CONCAT22(CONCAT11(materialByte3Or1,materialByte3Or1) >> 2,
-                                                  CONCAT11((char)materialPackedColor,
-                                                           (char)materialPackedColor) >> 2))));
+  accumulatedLanes = pmulhw(ModelLighting_AddWordsMmx(mm0PackedValue0,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
+                            ModelLighting_UnpackBytesMmx(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords = remainingRecords - 1) {
     if (shadingRecord1->targetRadiusQ12 != 0) {
       radiusOrSquareLow = (uint)shadingRecord1->squaredRadiusQ24;
@@ -768,17 +760,10 @@ ModelRender_ComputeVertexIntensityDefaultPath
             remainderLowOrDivisor = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) << 0x14 |
                      (uint)shadingRecord1->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
-              colorByte3Or1 = (undefined1)(lightPackedColor >> 0x18);
-              colorLane3Word = CONCAT11(colorByte3Or1,colorByte3Or1);
-              colorByte2 = (undefined1)(lightPackedColor >> 0x10);
-              colorByte3Or1 = (undefined1)(lightPackedColor >> 8);
               mm4PackedValue0 =
-                   pmulhw(CONCAT26(colorLane3Word >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(colorLane3Word,colorByte2),
-                                                              CONCAT14(colorByte2,lightPackedColor)) >> 0x20) >> 2,
-                                            CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                                     CONCAT11((char)lightPackedColor,(char)lightPackedColor) >> 2))),
+                   pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
                           g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
+              /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               accumulatedLanes = paddusb(accumulatedLanes,mm4PackedValue0);
             }
           }
@@ -787,28 +772,8 @@ ModelRender_ComputeVertexIntensityDefaultPath
     }
     shadingRecord1 = shadingRecord1 + 1;
   }
-  colorByte3Or1 = (undefined1)(vertexPackedColor >> 0x18);
-  colorLane3Word = CONCAT11(colorByte3Or1,colorByte3Or1);
-  colorByte2 = (undefined1)(vertexPackedColor >> 0x10);
-  colorByte3Or1 = (undefined1)(vertexPackedColor >> 8);
-  accumulatedLanes = pmulhw(accumulatedLanes,CONCAT26(colorLane3Word >> 2,
-                                  CONCAT24((ushort)(CONCAT35(CONCAT21(colorLane3Word,colorByte2),
-                                                             CONCAT14(colorByte2,vertexPackedColor)) >>
-                                                   0x20) >> 2,
-                                           CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                                    CONCAT11((char)vertexPackedColor,
-                                                             (char)vertexPackedColor) >> 2))));
-  resultLane0 = (short)accumulatedLanes;
-  resultLane1 = (short)((ulonglong)accumulatedLanes >> 0x10);
-  resultLane2 = (short)((ulonglong)accumulatedLanes >> 0x20);
-  resultLane3 = (short)((ulonglong)accumulatedLanes >> 0x30);
-  return CONCAT13((0 < resultLane3) * (resultLane3 < 0x100) * (char)((ulonglong)accumulatedLanes >> 0x30) - (0xff < resultLane3)
-                  ,CONCAT12((0 < resultLane2) * (resultLane2 < 0x100) * (char)((ulonglong)accumulatedLanes >> 0x20) -
-                            (0xff < resultLane2),
-                            CONCAT11((0 < resultLane1) * (resultLane1 < 0x100) *
-                                     (char)((ulonglong)accumulatedLanes >> 0x10) - (0xff < resultLane1),
-                                     (0 < resultLane0) * (resultLane0 < 0x100) * (char)accumulatedLanes - (0xff < resultLane0)))
-                 );
+  accumulatedLanes = pmulhw(accumulatedLanes,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
+  return ModelLighting_PackUnsignedMmx(accumulatedLanes);
 }
 
 /* Address: 0x004CC820.
@@ -829,13 +794,6 @@ ModelRender_ComputeVertexIntensityScaledPath
 {
   PackedRgb24 lightPackedColor;
   longlong axisDistanceSquared;
-  short resultLane0;
-  short resultLane1;
-  short resultLane2;
-  short resultLane3;
-  ushort colorLane3Word;
-  ushort materialLane3Word;
-  byte mm0PackedValue0ByteLane3;
   sdword lightFacingDotQ12;
   int remainderHigh;
   uint squareOrRemainderLow;
@@ -844,57 +802,20 @@ ModelRender_ComputeVertexIntensityScaledPath
   GraphicsShadingRecordCount remainingRecords;
   uint remainderLowOrDivisor;
   GraphicsShadingRuntimeRecord *shadingRecord1;
-  undefined1 colorByte3Or1;
-  undefined1 colorByte2;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 resultLanes;
-  undefined1 sceneByte3Or1;
-  undefined1 sceneByte2;
-  undefined1 materialByte3Or1;
-  undefined1 materialByte2;
-  undefined8 mm4PackedValue0;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong resultLanes;
+  ulonglong mm4PackedValue0;
   
   lightFacingDotQ12 = FixedVec3_DotQ12(lightDirectionQ12,surfaceNormalQ12);
-  mm0PackedValue0ByteLane3 = (byte)(scenePackedColor1 >> 0x18);
-  colorByte2 = (undefined1)(scenePackedColor1 >> 0x10);
-  colorByte3Or1 = (undefined1)(scenePackedColor1 >> 8);
-  sceneByte3Or1 = (undefined1)(scenePackedColor0 >> 0x18);
-  colorLane3Word = CONCAT11(sceneByte3Or1,sceneByte3Or1);
-  sceneByte2 = (undefined1)(scenePackedColor0 >> 0x10);
-  sceneByte3Or1 = (undefined1)(scenePackedColor0 >> 8);
-  materialByte3Or1 = (undefined1)(materialPackedColor >> 0x18);
-  materialLane3Word = CONCAT11(materialByte3Or1,materialByte3Or1);
-  materialByte2 = (undefined1)(materialPackedColor >> 0x10);
-  materialByte3Or1 = (undefined1)(materialPackedColor >> 8);
   mm0PackedValue0 =
-       pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 2,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
-                                                                    mm0PackedValue0ByteLane3),colorByte2
-                                                          ),CONCAT14(colorByte2,scenePackedColor1)) >>
-                                        0x20) >> 2,
-                                CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                         CONCAT11((char)scenePackedColor1,(char)scenePackedColor1)
-                                         >> 2))),
-              *(undefined8 *)
+       pmulhw(ModelLighting_UnpackBytesMmx(scenePackedColor1,2),
+              *(ulonglong *)
                (&g_ModelLightingScaleMmxMultiplierTable + (lightFacingDotQ12 / lightingScaleQ12 >> 9) * 8));
   shadingRecord1 = g_GraphicsShadingNearbyRecords;
   mm0PackedValue1 =
-       pmulhw(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) + (colorLane3Word >> 4),
-                       CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                ((ushort)(CONCAT35(CONCAT21(colorLane3Word,sceneByte2),
-                                                   CONCAT14(sceneByte2,scenePackedColor0)) >> 0x20) >> 4
-                                ),CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                           (CONCAT11(sceneByte3Or1,sceneByte3Or1) >> 4),
-                                           (short)mm0PackedValue0 +
-                                           (CONCAT11((char)scenePackedColor0,(char)scenePackedColor0
-                                                    ) >> 4)))),
-              CONCAT26(materialLane3Word >> 2,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(materialLane3Word,materialByte2),
-                                                  CONCAT14(materialByte2,materialPackedColor)) >> 0x20) >>
-                                2,CONCAT22(CONCAT11(materialByte3Or1,materialByte3Or1) >> 2,
-                                           CONCAT11((char)materialPackedColor,
-                                                    (char)materialPackedColor) >> 2))));
+       pmulhw(ModelLighting_AddWordsMmx(mm0PackedValue0,ModelLighting_UnpackBytesMmx(scenePackedColor0,4)),
+              ModelLighting_UnpackBytesMmx(materialPackedColor,2));
   for (remainingRecords = g_GraphicsShadingNearbyRecordCount; remainingRecords != 0; remainingRecords = remainingRecords - 1) {
     if (shadingRecord1->targetRadiusQ12 != 0) {
       radiusOrSquareLow = (uint)shadingRecord1->squaredRadiusQ24;
@@ -920,17 +841,10 @@ ModelRender_ComputeVertexIntensityScaledPath
             remainderLowOrDivisor = *(int *)((int)&shadingRecord1->squaredRadiusQ24 + 4) << 0x14 |
                      (uint)shadingRecord1->squaredRadiusQ24 >> 0xc;
             if (remainderLowOrDivisor != 0) {
-              colorByte3Or1 = (undefined1)(lightPackedColor >> 0x18);
-              colorLane3Word = CONCAT11(colorByte3Or1,colorByte3Or1);
-              colorByte2 = (undefined1)(lightPackedColor >> 0x10);
-              colorByte3Or1 = (undefined1)(lightPackedColor >> 8);
               mm4PackedValue0 =
-                   pmulhw(CONCAT26(colorLane3Word >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(colorLane3Word,colorByte2),
-                                                              CONCAT14(colorByte2,lightPackedColor)) >> 0x20) >> 2,
-                                            CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                                     CONCAT11((char)lightPackedColor,(char)lightPackedColor) >> 2))),
+                   pmulhw(ModelLighting_UnpackBytesMmx(lightPackedColor,2),
                           g_PackedLightingLookupTable[(remainderHigh * 0x8000000 | squareOrRemainderLow - radiusOrSquareLow >> 5) / remainderLowOrDivisor]);
+              /* PADDUSB (byte lanes) as in the original, although the lanes hold words. */
               mm0PackedValue1 = paddusb(mm0PackedValue1,mm4PackedValue0);
             }
           }
@@ -939,28 +853,8 @@ ModelRender_ComputeVertexIntensityScaledPath
     }
     shadingRecord1 = shadingRecord1 + 1;
   }
-  colorByte3Or1 = (undefined1)(vertexPackedColor >> 0x18);
-  colorLane3Word = CONCAT11(colorByte3Or1,colorByte3Or1);
-  colorByte2 = (undefined1)(vertexPackedColor >> 0x10);
-  colorByte3Or1 = (undefined1)(vertexPackedColor >> 8);
-  resultLanes = pmulhw(mm0PackedValue1,
-                  CONCAT26(colorLane3Word >> 2,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(colorLane3Word,colorByte2),
-                                                      CONCAT14(colorByte2,vertexPackedColor)) >> 0x20)
-                                    >> 2,CONCAT22(CONCAT11(colorByte3Or1,colorByte3Or1) >> 2,
-                                                  CONCAT11((char)vertexPackedColor,
-                                                           (char)vertexPackedColor) >> 2))));
-  resultLane0 = (short)resultLanes;
-  resultLane1 = (short)((ulonglong)resultLanes >> 0x10);
-  resultLane2 = (short)((ulonglong)resultLanes >> 0x20);
-  resultLane3 = (short)((ulonglong)resultLanes >> 0x30);
-  return CONCAT13((0 < resultLane3) * (resultLane3 < 0x100) * (char)((ulonglong)resultLanes >> 0x30) - (0xff < resultLane3)
-                  ,CONCAT12((0 < resultLane2) * (resultLane2 < 0x100) * (char)((ulonglong)resultLanes >> 0x20) -
-                            (0xff < resultLane2),
-                            CONCAT11((0 < resultLane1) * (resultLane1 < 0x100) *
-                                     (char)((ulonglong)resultLanes >> 0x10) - (0xff < resultLane1),
-                                     (0 < resultLane0) * (resultLane0 < 0x100) * (char)resultLanes - (0xff < resultLane0)))
-                 );
+  resultLanes = pmulhw(mm0PackedValue1,ModelLighting_UnpackBytesMmx(vertexPackedColor,2));
+  return ModelLighting_PackUnsignedMmx(resultLanes);
 }
 
 /* Address: 0x004CC940.

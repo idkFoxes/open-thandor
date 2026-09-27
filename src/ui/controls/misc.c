@@ -196,7 +196,8 @@ UiImageControl_NonRightDrag
     if (hitControl == (UiImageControl *)control->activeChild) {
       (*((hitControl->selectable).base.vtable)->nonRightDrag)
                 (wheelDelta,pointerY,pointerX,(UiNodeBase *)hitControl);
-      goto UiImageControl_InvalidateAfterNonRightDrag;
+      UiRootStack_InvalidateAll();
+      return;
     }
     hitVtable = (hitControl->selectable).base.vtable;
     /* The handlers preserve EAX/EDX: the original keeps passing the hit child and its vtable, and
@@ -213,7 +214,6 @@ UiImageControl_NonRightDrag
     (*previousActiveChild->vtable->nonRightDrag)(0,0x70000000,0x70000000,previousActiveChild);
     (*previousActiveChild->vtable->nonRightRelease)(0,0x70000000,0x70000000,previousActiveChild);
   }
-UiImageControl_InvalidateAfterNonRightDrag:
   UiRootStack_InvalidateAll();
   return;
 }
@@ -646,6 +646,7 @@ UiImageControl_NonRightPress
               (g_UiSoundGainQ15,g_UiSoundGainQ15,
                (DirectSoundVoiceSet *)control->pointerActivationSoundId);
   }
+  opaqueHit = false;
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     if (((control->selectable).stateFlags & 0x40) == 0) {
       opaqueHit = (*g_GraphicsTextureSourceTestOpaquePixel)
@@ -659,19 +660,18 @@ UiImageControl_NonRightPress
                          (control->selectable).base.left,control->alternateSubresource,
                          control->textureSource);
     }
-    if (opaqueHit) {
-      control->activeChild = (UiNodeBase *)0x0;
-      g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-      stateFlagsField = &(control->selectable).stateFlags;
-      *stateFlagsField = *stateFlagsField & 0xfffff5fc;
-      goto UiImageControl_InvalidateAfterNonRightPress;
-    }
   }
   control->activeChild = (UiNodeBase *)0x0;
   g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-  pressStateFlagsField = &(control->selectable).stateFlags;
-  *pressStateFlagsField = *pressStateFlagsField | 0xa03;
-UiImageControl_InvalidateAfterNonRightPress:
+  if (opaqueHit) {
+    /* Pressing an already selected image on an opaque pixel clears its selected/armed state. */
+    stateFlagsField = &(control->selectable).stateFlags;
+    *stateFlagsField = *stateFlagsField & 0xfffff5fc;
+  }
+  else {
+    pressStateFlagsField = &(control->selectable).stateFlags;
+    *pressStateFlagsField = *pressStateFlagsField | 0xa03;
+  }
   UiNode_InvalidateRoot((UiNodeBase *)control);
   return;
 }
@@ -693,38 +693,39 @@ UiImageControl_NonRightRelease
   UiNodeBase *previousActiveChild;
   UiSelectableStateFlags *stateFlagsField;
   UiNodeVtable *activeChildVtable;
-  
+  bool preserveHover;
+
   previousActiveChild = control->activeChild;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0)
-  goto UiImageControl_InvalidateAfterNonRightRelease;
-  if (((control->selectable).stateFlags & 0x200) == 0) {
-    if (previousActiveChild != (UiNodeBase *)0x0) {
-      activeChildVtable = previousActiveChild->vtable;
-      control->activeChild = (UiNodeBase *)0x0;
-      (*activeChildVtable->nonRightRelease)(wheelDelta,pointerY,pointerX,previousActiveChild);
-      if ((((control->selectable).stateFlags & 0x400) == 0) ||
-         (((control->selectable).stateFlags & 0x800) != 0))
-      goto UiImageControl_PreserveHoverAfterNonRightRelease;
+  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+    preserveHover = ((control->selectable).stateFlags & 0x200) != 0;
+    if (!preserveHover) {
+      if (previousActiveChild != (UiNodeBase *)0x0) {
+        activeChildVtable = previousActiveChild->vtable;
+        control->activeChild = (UiNodeBase *)0x0;
+        (*activeChildVtable->nonRightRelease)(wheelDelta,pointerY,pointerX,previousActiveChild);
+        preserveHover = (((control->selectable).stateFlags & 0x400) == 0) ||
+                        (((control->selectable).stateFlags & 0x800) != 0);
+      }
+      if (!preserveHover) {
+        g_UiImageControlHoverTarget = (UiImageControl *)0x0;
+        stateFlagsField = &(control->selectable).stateFlags;
+        *stateFlagsField = *stateFlagsField & 0xfffff9fc;
+        if ((((control->selectable).stateFlags & 0x20) != 0) &&
+           (control->pointerActivationSoundId != 0)) {
+          (*g_SoundPlayOneShot)
+                    (g_UiSoundGainQ15,g_UiSoundGainQ15,
+                     (DirectSoundVoiceSet *)control->pointerActivationSoundId);
+        }
+      }
     }
-    g_UiImageControlHoverTarget = (UiImageControl *)0x0;
-    stateFlagsField = &(control->selectable).stateFlags;
-    *stateFlagsField = *stateFlagsField & 0xfffff9fc;
-    if ((((control->selectable).stateFlags & 0x20) != 0) && (control->pointerActivationSoundId != 0)
-       ) {
-      (*g_SoundPlayOneShot)
-                (g_UiSoundGainQ15,g_UiSoundGainQ15,
-                 (DirectSoundVoiceSet *)control->pointerActivationSoundId);
+    if (preserveHover) {
+      hoverStateFlagsField = &(control->selectable).stateFlags;
+      *hoverStateFlagsField = *hoverStateFlagsField | 0x400;
+      g_UiImageControlHoverTarget = control;
+      hoverStateFlagsField = &(control->selectable).stateFlags;
+      *hoverStateFlagsField = *hoverStateFlagsField & 0xfffffdff;
     }
   }
-  else {
-UiImageControl_PreserveHoverAfterNonRightRelease:
-    hoverStateFlagsField = &(control->selectable).stateFlags;
-    *hoverStateFlagsField = *hoverStateFlagsField | 0x400;
-    g_UiImageControlHoverTarget = control;
-    hoverStateFlagsField = &(control->selectable).stateFlags;
-    *hoverStateFlagsField = *hoverStateFlagsField & 0xfffffdff;
-  }
-UiImageControl_InvalidateAfterNonRightRelease:
   UiNode_InvalidateRoot((UiNodeBase *)control);
   return;
 }
@@ -832,9 +833,9 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
   int copyCountOrRgBits;
   UiNodeFlags colorDepthBits;
   GraphicsDisplayModeCount remainingModes;
-  undefined4 *copyCursor;
+  dword *copyCursor;
   dword lowWordValue;
-  undefined4 *templateCursor;
+  dword *templateCursor;
   GraphicsDisplayMode *displayMode;
   ArenaAllocEaxCf5 allocResult;
   
@@ -844,8 +845,8 @@ void __thandor_void_preserve_eax_ecx_edx UiDisplaySettings_OpenAndPopulateModeSe
     if (allocResult.carry) {
       return;
     }
-    templateCursor = (undefined4 *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
-    copyCursor = (undefined4 *)root;
+    templateCursor = (dword *)THANDOR_ADDR(g_UiDisplaySettingsRootTemplate,0);
+    copyCursor = (dword *)root;
     for (copyCountOrRgBits = 0x2f5; activeAdapterIndex = g_ActiveGraphicsAdapterIndex, framebufferHeight = g_FramebufferHeight,
         framebufferWidth = g_FramebufferWidth, copyCountOrRgBits != 0; copyCountOrRgBits = copyCountOrRgBits + -1) {
       *copyCursor = *templateCursor;

@@ -35,46 +35,40 @@ AiUnitBehavior_UpdateWorkspace01Entities
   g_AiCollectedEntityCount = 0;
   workspaceEntriesRemaining = g_AiWorkspace01Count;
   workspaceEntryCursor = g_AiWorkspaceBuffer01_Size0200;
-  do {
-    if (workspaceEntriesRemaining == 0) {
-      return;
-    }
+  for (; workspaceEntriesRemaining != 0;
+      workspaceEntriesRemaining = workspaceEntriesRemaining + -1, workspaceEntryCursor = workspaceEntryCursor + 1) {
     armySlot = workspaceEntryCursor->armyRuntime;
-    if (armySlot != (ArmyRuntimeSlot *)0x0) {
-      slotEntityRuntime = armySlot->linkedEntityRuntime;
-      if (((slotEntityRuntime->common).commandFlags & 0x13) != 0) {
-        if (((slotEntityRuntime->common).commandFlags & 2) != 0)
-        goto AiUnitBehavior_UpdateWorkspace01Entities_AdvanceAfterBehaviorDispatchOrSkip;
-        behaviorCooldownCounter = (int *)((slotEntityRuntime->common).reserved80_9F + 0xc);
-        *behaviorCooldownCounter = *behaviorCooldownCounter + -1;
-        if (*behaviorCooldownCounter != 0) {
-          if (-1 < *behaviorCooldownCounter)
-          goto AiUnitBehavior_UpdateWorkspace01Entities_AdvanceAfterBehaviorDispatchOrSkip;
-          cooldownCounterBytes = (slotEntityRuntime->common).reserved80_9F + 0xc;
-          *(int *)cooldownCounterBytes = *(int *)cooldownCounterBytes + 1;
-        }
-      }
-      modelDefinition =
-           (MdlDefinitionSemanticPrefix80 *)(armySlot->modelRuntimeOrSavedOffset).modelRuntime;
-      if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
-        AiUnitBehavior_UpdateSpecialClass12Entity
-                  (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
-                   worldRuntime);
-      }
-      else if ((((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_01_GROUND) ||
-                (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_02_TRACKED)) ||
-               (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER)) ||
-              ((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_19_WATER_SURFACE ||
-               (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER)))) {
-        AiUnitBehavior_SelectBestAnchorAction
-                  (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
-                   worldRuntime);
+    if (armySlot == (ArmyRuntimeSlot *)0x0) continue;
+    slotEntityRuntime = armySlot->linkedEntityRuntime;
+    if (((slotEntityRuntime->common).commandFlags & 0x13) != 0) {
+      if (((slotEntityRuntime->common).commandFlags & 2) != 0) continue;
+      /* Busy entities only get a behavior update when their cooldown runs out (or was already negative). */
+      behaviorCooldownCounter = (int *)((slotEntityRuntime->common).reserved80_9F + 0xc);
+      *behaviorCooldownCounter = *behaviorCooldownCounter + -1;
+      if (*behaviorCooldownCounter != 0) {
+        if (-1 < *behaviorCooldownCounter) continue;
+        cooldownCounterBytes = (slotEntityRuntime->common).reserved80_9F + 0xc;
+        *(int *)cooldownCounterBytes = *(int *)cooldownCounterBytes + 1;
       }
     }
-AiUnitBehavior_UpdateWorkspace01Entities_AdvanceAfterBehaviorDispatchOrSkip:
-    workspaceEntryCursor = workspaceEntryCursor + 1;
-    workspaceEntriesRemaining = workspaceEntriesRemaining + -1;
-  } while( true );
+    modelDefinition =
+         (MdlDefinitionSemanticPrefix80 *)(armySlot->modelRuntimeOrSavedOffset).modelRuntime;
+    if (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_18) {
+      AiUnitBehavior_UpdateSpecialClass12Entity
+                (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
+                 worldRuntime);
+    }
+    else if ((((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_01_GROUND) ||
+              (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_02_TRACKED)) ||
+             (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_03_ARTICULATED_WALKER)) ||
+            ((modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_19_WATER_SURFACE ||
+             (modelDefinition->runtimeClassId == MODEL_RUNTIME_CLASS_17_DEPLOYING_GLIDER)))) {
+      AiUnitBehavior_SelectBestAnchorAction
+                (modelDefinition,(ArmyRuntimeSlot *)armySlot->linkedEntityRuntime,factionIndex,
+                 worldRuntime);
+    }
+  }
+  return;
 }
 
 
@@ -291,10 +285,8 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
   if (g_AiWorkspace07Count == 0) {
     recordsRemaining = g_AiWorkspace03Count;
     workspaceRecordCursor = (AiTargetWorkspaceEntry *)g_AiWorkspaceBuffer03_Size1000;
-    if (g_AiWorkspace03Count == 0)
-    goto AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore_ReturnBestDistanceWeightedScore;
   }
-  do {
+  for (; recordsRemaining != 0; recordsRemaining = recordsRemaining + -1) {
     deltaXOrScore = (armyRuntimeSlot->modelNodeRuntime->worldTransform).translation.x -
             (int)workspaceRecordCursor->worldXQ12;
     if (-1 < deltaXOrScore) {
@@ -320,9 +312,7 @@ AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore
       currentBestScore = deltaXOrScore;
     }
     workspaceRecordCursor = workspaceRecordCursor + 1;
-    recordsRemaining = recordsRemaining + -1;
-  } while (recordsRemaining != 0);
-AiUnitBehavior_ComputeSecondaryWorkspaceDistanceScore_ReturnBestDistanceWeightedScore:
+  }
   selection.selectedEntry = bestEntry;
   selection.score = currentBestScore;
   return selection;

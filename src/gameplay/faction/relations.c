@@ -161,15 +161,12 @@ GameFactionRelations_BuildEligibleFactionMask(FactionRuntimeIndex sourceFactionI
   do {
     if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[factionIndex] ==
         FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
-      if (factionIndex != sourceFactionIndex) {
-        relationStateNibble =
-             GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex);
-        if (relationStateNibble < 4)
-        goto GameFactionRelations_BuildEligibleFactionMask_AdvanceAfterEligibilityDecision;
+      if ((factionIndex == sourceFactionIndex) ||
+          (relationStateNibble = GameFactionRuntime_GetPackedStateNibble(sourceFactionIndex,factionIndex),
+           3 < relationStateNibble)) {
+        eligibleFactionMask = eligibleFactionMask | currentFactionBit;
       }
-      eligibleFactionMask = eligibleFactionMask | currentFactionBit;
     }
-GameFactionRelations_BuildEligibleFactionMask_AdvanceAfterEligibilityDecision:
     currentFactionBit = currentFactionBit >> 1;
     factionIndex = factionIndex + -1;
     if (factionIndex == 0) {

@@ -22,7 +22,9 @@ void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  undefined1 clampedColorByte;
+  byte *clampTable;
+  byte clampedColorByte;
+  byte clampedAlphaByte;
   uint flagsOrPreviousTint;
   int colorIntensity;
   PackedArgb32 tintArgb;
@@ -47,17 +49,13 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
     alphaIntensity = 0;
   }
   flagsOrPreviousTint = modelNodeRuntime->tintArgb;
-  clampedColorByte = *(undefined1 *)
-           CONCAT22((short)((uint)(colorIntensity + g_GraphicsIntensityClampTableBase) >> 0x10),
-                    CONCAT11((char)(flagsOrPreviousTint >> 0x10),(char)(colorIntensity + g_GraphicsIntensityClampTableBase)
-                            ));
-  tintArgb = CONCAT31(CONCAT21(CONCAT11(*(undefined1 *)
-                                         CONCAT22((short)((uint)(alphaIntensity + 
-                                                  g_GraphicsIntensityClampTableBase) >> 0x10),
-                                                  CONCAT11((char)(flagsOrPreviousTint >> 0x18),
-                                                           (char)(alphaIntensity + 
-                                                  g_GraphicsIntensityClampTableBase))),clampedColorByte),clampedColorByte)
-                      ,clampedColorByte);
+  /* The clamp table is 64-KiB aligned: the original puts the target intensity in AL/BL and the previous
+     tint byte in AH/BH, i.e. indexes it with (previous << 8) | target. */
+  clampTable = (byte *)g_GraphicsIntensityClampTableBase;
+  clampedColorByte = clampTable[((flagsOrPreviousTint >> 0x10) & 0xff) << 8 | (uint)colorIntensity];
+  clampedAlphaByte = clampTable[(flagsOrPreviousTint >> 0x18) << 8 | (uint)alphaIntensity];
+  tintArgb = (uint)clampedAlphaByte << 0x18 | (uint)clampedColorByte << 0x10 | (uint)clampedColorByte << 8 |
+             (uint)clampedColorByte;
   if (tintArgb != flagsOrPreviousTint >> 0x10) {
     ModelNodeRuntime_ApplyTintRecursive(tintArgb,modelNodeRuntime);
   }
@@ -355,7 +353,8 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
   uint negatedAngle2;
   FixedMathVectorAnglesRegs8 directionAngles;
   FixedVectorEaxEcxEdx12 rotatedDirection;
-  
+  ModelRelativeDirectionAnglesEaxEdx8 relativeAngles;
+
   negatedAngle2 = -(modelNodeRuntime->modelPayload).worldRotationAngle2;
   rotatedDirection = FixedTransform_RotateDirectionScaledRegs
                     (0x1000,elevationAngle,azimuthAngle,negatedAngle2 & 0xffff,
@@ -363,8 +362,10 @@ ModelNodeRuntime_ComputeRelativeDirectionAngle
                      (modelNodeRuntime->modelPayload).worldRotationAngle0 + 0x8000 + negatedAngle2 & 0xffff)
   ;
   directionAngles = FixedMath_VectorToAngles3Regs(rotatedDirection.zQ12,rotatedDirection.yQ12,rotatedDirection.xQ12);
-  return THANDOR_BITCAST(unsigned __int64, ModelRelativeDirectionAnglesEaxEdx8, (CONCAT44(directionAngles.edx,directionAngles.ecx + (modelNodeRuntime->modelPayload).localRotationAngle2) &
-         0xffffffff0000ffff));
+  relativeAngles.relativeYawAngle =
+       directionAngles.ecx + (modelNodeRuntime->modelPayload).localRotationAngle2 & 0xffff;
+  relativeAngles.relativePitchAngle = directionAngles.edx;
+  return relativeAngles;
 }
 
 
@@ -947,10 +948,7 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
   childCountRemaining = definitionNode->childCount;
   definitionAssetBase = (definitionNode->spriteAssetReference).savedId;
   childIndex = 0;
-  do {
-    if (childCountRemaining == 0) {
-      return modelRuntimeContinuityEdi;
-    }
+  for (; childCountRemaining != 0; childCountRemaining = childCountRemaining - 1) {
     attachmentTransformCursor =
          (ModelAttachmentTransformRecord *)
          (definitionAssetBase + *(int *)(definitionAssetBase + 0xe4));
@@ -968,15 +966,17 @@ ModelRuntimeHierarchy_CollectAttachmentDescriptorsRecursive
           modelRuntime->attachmentCount0C = modelRuntime->attachmentCount0C + 1;
           modelRuntime->attachments140[attachmentSlot].sourceTransform04 = attachmentTransformCursor;
         }
-        goto ModelRuntimeHierarchy_CollectAttachmentDescriptors_AdvanceAfterChildResolution;
+        break;
       }
       attachmentTransformCursor = attachmentTransformCursor + 1;
     }
-    childIndex = childIndex - 1;
-ModelRuntimeHierarchy_CollectAttachmentDescriptors_AdvanceAfterChildResolution:
-    childIndex = childIndex + 1;
-    childCountRemaining = childCountRemaining - 1;
-  } while( true );
+    /* The original advances the child index only when an attachment transform matched
+       (DEC EDX before the shared INC EDX when none did). */
+    if (transformRecordsRemaining != 0) {
+      childIndex = childIndex + 1;
+    }
+  }
+  return modelRuntimeContinuityEdi;
 }
 
 
@@ -1024,7 +1024,6 @@ ModelNodeRuntime_CreateHierarchyRecursiveCf
   newNode = (ModelRuntimeNode *)allocationResult.recordOrError;
   childOrFailedNode = newNode;
   if (allocationResult.carry) {
-ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
     failureResult.carry = true;
     failureResult.modelNode = childOrFailedNode;
     return failureResult;
@@ -1074,10 +1073,8 @@ ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
   childIndex = 0;
   newNode->childCount = definitionOrChildrenRemaining;
   newNode->parentNode = (ModelRuntimeNode *)0x0;
-  do {
-    if (definitionOrChildrenRemaining == 0) {
-      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, allocationResult) & 0xFFFFFFFFFFull) & 0xffffffff));
-    }
+  for (; definitionOrChildrenRemaining != 0;
+      definitionOrChildrenRemaining = definitionOrChildrenRemaining - 1) {
     attachmentTransform = (ModelAttachmentTransformRecord *)
               (resourceView->reserved00_AF + resourceView->packedLookupTableRelativeOffset);
     for (transformRecordsRemaining = resourceView->packedLookupTableEntryCount; transformRecordsRemaining != 0; transformRecordsRemaining = transformRecordsRemaining - 1) {
@@ -1088,7 +1085,11 @@ ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
                             (MdlSerializedNodeHeader38 *)
                             definitionNode->childSerializedOffsets[childIndex],worldRuntime);
         childOrFailedNode = childResult.modelNode;
-        if (childResult.carry) goto ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure;
+        if (childResult.carry) {
+          failureResult.carry = true;
+          failureResult.modelNode = childOrFailedNode;
+          return failureResult;
+        }
         newNode->childNodes[childIndex] = childOrFailedNode;
         if (childOrFailedNode == (ModelRuntimeNode *)0x0) {
           attachmentKindOrSlot = modelRuntime->attachmentCount0C;
@@ -1116,15 +1117,19 @@ ModelNodeRuntime_CreateHierarchyRecursive_ReturnAllocationFailure:
           (childOrFailedNode->modelPayload).localTranslationYQ12 = radiusOrTranslationY;
           (childOrFailedNode->modelPayload).localTranslationZQ12 = translationZ;
         }
-        goto ModelNodeRuntime_CreateHierarchyRecursive_AdvanceAfterChildResolution;
+        break;
       }
       attachmentTransform = attachmentTransform + 1;
     }
-    newNode->childNodes[childIndex] = (ModelRuntimeNode *)0x0;
-ModelNodeRuntime_CreateHierarchyRecursive_AdvanceAfterChildResolution:
+    if (transformRecordsRemaining == 0) {
+      /* no attachment transform for this child */
+      newNode->childNodes[childIndex] = (ModelRuntimeNode *)0x0;
+    }
     childIndex = childIndex + 1;
-    definitionOrChildrenRemaining = definitionOrChildrenRemaining - 1;
-  } while( true );
+  }
+  childResult.carry = false;
+  childResult.modelNode = newNode;
+  return childResult;
 }
 
 
@@ -1259,12 +1264,13 @@ ModelRuntimeHierarchy_ComputeScaleRatioQ12Regs(ModelRuntimeSlot *modelRuntime)
     attachmentDescriptorCursor =
          (ModelRuntimeSlot *)(attachmentDescriptorCursor->reserved10_37 + 0x10);
   }
-  return CONCAT44(0x1000,(int)(((longlong)(int)modelRuntime->definitionValue60_3C *
-                               (longlong)accumulatedHierarchyScaleQ12) /
-                              (longlong)
-                              (scaleSampleCount *
-                              *(int *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x60)))
-                 );
+  /* EAX = the scale ratio, EDX = 0x1000 */
+  return (qword)0x1000 << 0x20 |
+         (qword)(dword)(int)(((longlong)(int)modelRuntime->definitionValue60_3C *
+                             (longlong)accumulatedHierarchyScaleQ12) /
+                            (longlong)
+                            (scaleSampleCount *
+                            *(int *)((modelRuntime->definitionOrSavedId).savedIdOrOffset + 0x60)));
 }
 
 
@@ -1305,7 +1311,7 @@ ModelRuntimeHierarchy_ComputeActiveAndTotalMetricsRegs(ModelRuntimeSlot *modelRu
       modelRuntime = (ModelRuntimeSlot *)(modelRuntime->reserved10_37 + 0x10);
     }
   }
-  return CONCAT44(totalMetric,activeMetricTotal);
+  return (qword)totalMetric << 0x20 | (qword)activeMetricTotal; /* EDX = total, EAX = active */
 }
 
 /* Address: 0x0052AAC0.
@@ -1327,6 +1333,7 @@ ModelNodeRuntime_SmoothYawTowardTarget
   uint yawStep;
   int acceleratedVelocity;
   uint yawDelta;
+  bool snapToTarget;
   ModelSmoothEaxCf5 smoothResult;
   ModelSmoothEaxCf5 settledResult;
   
@@ -1334,23 +1341,16 @@ ModelNodeRuntime_SmoothYawTowardTarget
   aimDefinition = smoothingState->modelDefinition;
   yawDelta = targetYawAngle16 - yawAngle & 0xffff;
   yawStep = smoothingState->yawTurnVelocityAngle16 * g_InGameSimulationStepTicks;
+  snapToTarget = false;
   if (yawDelta < 0x8001) {
+    /* target ahead in the positive direction */
     if ((int)yawStep < 0) {
-LAB_0052abb0:
-      smoothingState->yawTurnVelocityAngle16 = 0;
+      smoothingState->yawTurnVelocityAngle16 = 0; /* turning away: stop */
+    }
+    else if (yawDelta <= yawStep) {
+      snapToTarget = true;
     }
     else {
-      if (yawDelta <= yawStep) {
-ModelNodeRuntime_SmoothYawTowardTarget_SnapToTargetAndClearTurnVelocity:
-        currentYawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
-        smoothingState->yawTurnVelocityAngle16 = 0;
-        smoothResult.eax = targetYawAngle16;
-        if (targetYawAngle16 != currentYawAngle) {
-          modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-          (modelNodeRuntime->modelPayload).localRotationAngle2 = targetYawAngle16;
-        }
-        goto LAB_0052abf0;
-      }
       yawAngle = yawAngle + yawStep;
       turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick10;
       acceleratedVelocity = smoothingState->yawTurnVelocityAngle16 +
@@ -1361,10 +1361,13 @@ ModelNodeRuntime_SmoothYawTowardTarget_SnapToTargetAndClearTurnVelocity:
       }
     }
   }
+  else if (0 < (int)yawStep) {
+    smoothingState->yawTurnVelocityAngle16 = 0; /* turning away: stop */
+  }
+  else if (yawStep + 0x10000 <= yawDelta) {
+    snapToTarget = true;
+  }
   else {
-    if (0 < (int)yawStep) goto LAB_0052abb0;
-    if (yawStep + 0x10000 <= yawDelta)
-    goto ModelNodeRuntime_SmoothYawTowardTarget_SnapToTargetAndClearTurnVelocity;
     yawAngle = yawAngle + yawStep;
     turnRateLimit = aimDefinition->yawTurnRateLimitAnglePerTick10;
     acceleratedVelocity = smoothingState->yawTurnVelocityAngle16 -
@@ -1374,14 +1377,25 @@ ModelNodeRuntime_SmoothYawTowardTarget_SnapToTargetAndClearTurnVelocity:
       smoothingState->yawTurnVelocityAngle16 = acceleratedVelocity;
     }
   }
-  modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-  (modelNodeRuntime->modelPayload).localRotationAngle2 = yawAngle & 0xffff;
-  smoothResult.eax = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
-  if ((0x3ff < smoothResult.eax) && (smoothResult.eax < 0xfc01)) {
-    smoothResult.carry = true;
-    return smoothResult;
+  if (snapToTarget) {
+    /* the target is reached within this step */
+    currentYawAngle = (modelNodeRuntime->modelPayload).localRotationAngle2;
+    smoothingState->yawTurnVelocityAngle16 = 0;
+    smoothResult.eax = targetYawAngle16;
+    if (targetYawAngle16 != currentYawAngle) {
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      (modelNodeRuntime->modelPayload).localRotationAngle2 = targetYawAngle16;
+    }
   }
-LAB_0052abf0:
+  else {
+    modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+    (modelNodeRuntime->modelPayload).localRotationAngle2 = yawAngle & 0xffff;
+    smoothResult.eax = (yawAngle & 0xffff) - targetYawAngle16 & 0xffff;
+    if ((0x3ff < smoothResult.eax) && (smoothResult.eax < 0xfc01)) {
+      smoothResult.carry = true; /* still outside the aim tolerance */
+      return smoothResult;
+    }
+  }
   settledResult.carry = false;
   settledResult.eax = smoothResult.eax;
   return settledResult;
@@ -1404,6 +1418,7 @@ ModelNodeRuntime_SmoothPitchTowardTarget
   uint pitchAngle;
   int pitchStepOrRateLimit;
   int acceleratedVelocity;
+  bool snapToTarget;
   ModelSmoothEaxCf5 clampedTargetResult;
   ModelSmoothEaxCf5 settledResult;
   
@@ -1417,15 +1432,15 @@ ModelNodeRuntime_SmoothPitchTowardTarget
     clampedTargetResult.eax = aimDefinition->minimumPitchAngle24;
   }
   pitchStepOrRateLimit = smoothingState->pitchTurnVelocityAngle16 * g_InGameSimulationStepTicks;
+  snapToTarget = true; /* already there, or reached within this step */
   if (clampedTargetResult.eax != pitchAngle) {
     if ((int)pitchAngle <= (int)clampedTargetResult.eax) {
+      /* target above */
       if (pitchStepOrRateLimit < 0) {
-LAB_0052ad00:
-        smoothingState->pitchTurnVelocityAngle16 = 0;
+        smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
+        snapToTarget = false;
       }
-      else {
-        if ((int)(clampedTargetResult.eax - pitchAngle) <= pitchStepOrRateLimit)
-        goto ModelNodeRuntime_SmoothPitchTowardTarget_SnapToTargetAndClearPitchVelocity;
+      else if (pitchStepOrRateLimit < (int)(clampedTargetResult.eax - pitchAngle)) {
         pitchAngle = pitchAngle + pitchStepOrRateLimit;
         pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
         acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 +
@@ -1434,19 +1449,14 @@ LAB_0052ad00:
         if (acceleratedVelocity < pitchStepOrRateLimit) {
           smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
         }
+        snapToTarget = false;
       }
-ModelNodeRuntime_SmoothPitchTowardTarget_CommitStepAndReturnToleranceCarryStatus:
-      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-      (modelNodeRuntime->modelPayload).localRotationAngle1 = pitchAngle;
-      clampedTargetResult.eax = pitchAngle - clampedTargetResult.eax & 0xffff;
-      if ((0x3ff < clampedTargetResult.eax) && (clampedTargetResult.eax < 0xfc01)) {
-        clampedTargetResult.carry = true;
-        return clampedTargetResult;
-      }
-      goto LAB_0052ad40;
     }
-    if (0 < pitchStepOrRateLimit) goto LAB_0052ad00;
-    if ((int)(clampedTargetResult.eax - pitchAngle) < pitchStepOrRateLimit) {
+    else if (0 < pitchStepOrRateLimit) {
+      smoothingState->pitchTurnVelocityAngle16 = 0; /* moving away: stop */
+      snapToTarget = false;
+    }
+    else if ((int)(clampedTargetResult.eax - pitchAngle) < pitchStepOrRateLimit) {
       pitchAngle = pitchAngle + pitchStepOrRateLimit;
       pitchStepOrRateLimit = aimDefinition->pitchTurnRateLimitAnglePerTick14;
       acceleratedVelocity = smoothingState->pitchTurnVelocityAngle16 -
@@ -1455,17 +1465,26 @@ ModelNodeRuntime_SmoothPitchTowardTarget_CommitStepAndReturnToleranceCarryStatus
       if (-pitchStepOrRateLimit < acceleratedVelocity) {
         smoothingState->pitchTurnVelocityAngle16 = acceleratedVelocity;
       }
-      goto ModelNodeRuntime_SmoothPitchTowardTarget_CommitStepAndReturnToleranceCarryStatus;
+      snapToTarget = false;
     }
   }
-ModelNodeRuntime_SmoothPitchTowardTarget_SnapToTargetAndClearPitchVelocity:
-  pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
-  smoothingState->pitchTurnVelocityAngle16 = 0;
-  if (clampedTargetResult.eax != pitchAngle) {
+  if (!snapToTarget) {
     modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
-    (modelNodeRuntime->modelPayload).localRotationAngle1 = clampedTargetResult.eax;
+    (modelNodeRuntime->modelPayload).localRotationAngle1 = pitchAngle;
+    clampedTargetResult.eax = pitchAngle - clampedTargetResult.eax & 0xffff;
+    if ((0x3ff < clampedTargetResult.eax) && (clampedTargetResult.eax < 0xfc01)) {
+      clampedTargetResult.carry = true; /* still outside the aim tolerance */
+      return clampedTargetResult;
+    }
   }
-LAB_0052ad40:
+  else {
+    pitchAngle = (modelNodeRuntime->modelPayload).localRotationAngle1;
+    smoothingState->pitchTurnVelocityAngle16 = 0;
+    if (clampedTargetResult.eax != pitchAngle) {
+      modelNodeRuntime->runtimeFlags = modelNodeRuntime->runtimeFlags | 1;
+      (modelNodeRuntime->modelPayload).localRotationAngle1 = clampedTargetResult.eax;
+    }
+  }
   settledResult.carry = false;
   settledResult.eax = clampedTargetResult.eax;
   return settledResult;
@@ -1583,34 +1602,32 @@ ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
   
   variantCursorOrRemaining = *modelRuntime;
   variantsRemaining = 6;
-  while ((modelDefinitionId = *(PckModelDefinitionIdCatalog *)(variantCursorOrRemaining + 0x238),
-         modelDefinitionId == 0 ||
-         (isUnlocked = ModelDefinition_IsFactionTechnologyUnlockedCf
-                            (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
-                             modelDefinitionId), isUnlocked))) {
+  do {
+    modelDefinitionId = *(PckModelDefinitionIdCatalog *)(variantCursorOrRemaining + 0x238);
+    if ((modelDefinitionId != 0) &&
+       (isUnlocked = ModelDefinition_IsFactionTechnologyUnlockedCf
+                          (g_GameFactionRuntimeImage.records[factionIndex].technologyMasks256Bits,
+                           modelDefinitionId), !isUnlocked)) {
+      /* swap to this variant, keeping the scaled metric */
+      lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
+      variantCursorOrRemaining = *modelRuntime;
+      *modelRuntime = (int)lookupResult.modelDefinition;
+      modelRuntime[0xf] =
+           (int)(((longlong)modelRuntime[0xf] * (longlong)(int)lookupResult.modelDefinition[8].byteSize) /
+                (longlong)*(int *)(variantCursorOrRemaining + 0x60));
+      ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)modelRuntime[2]);
+      break;
+    }
     variantCursorOrRemaining = variantCursorOrRemaining + 4;
     variantsRemaining = variantsRemaining + -1;
-    if (variantsRemaining == 0) {
-ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive_RecurseChildrenAfterVariantResolution:
-      for (variantCursorOrRemaining = modelRuntime[3]; variantCursorOrRemaining != 0; variantCursorOrRemaining = variantCursorOrRemaining + -1) {
-        if ((int *)modelRuntime[0x50] != (int *)0x0) {
-          ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
-                    (factionIndex,(int *)modelRuntime[0x50]);
-        }
-        modelRuntime = modelRuntime + 8;
-      }
-      return;
+  } while (variantsRemaining != 0);
+  for (variantCursorOrRemaining = modelRuntime[3]; variantCursorOrRemaining != 0; variantCursorOrRemaining = variantCursorOrRemaining + -1) {
+    if ((int *)modelRuntime[0x50] != (int *)0x0) {
+      ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive
+                (factionIndex,(int *)modelRuntime[0x50]);
     }
+    modelRuntime = modelRuntime + 8;
   }
-  lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(modelDefinitionId);
-  variantCursorOrRemaining = *modelRuntime;
-  *modelRuntime = (int)lookupResult.modelDefinition;
-  modelRuntime[0xf] =
-       (int)(((longlong)modelRuntime[0xf] * (longlong)(int)lookupResult.modelDefinition[8].byteSize) /
-            (longlong)*(int *)(variantCursorOrRemaining + 0x60));
-  ArmyRuntime_RebuildDerivedSelectionMetrics((ArmyRuntimeSlot *)modelRuntime[2]);
-  goto 
-  ModelRuntimeHierarchy_ApplyFactionTechnologyVariantsRecursive_RecurseChildrenAfterVariantResolution
-  ;
+  return;
 }
 

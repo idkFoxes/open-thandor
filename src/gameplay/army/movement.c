@@ -791,18 +791,16 @@ ArmyRuntimeClass_UpdateGroundMovementCollisionAndTrackAnimation
   modelNode2 = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | 4;
-  if (linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) {
-    if (((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC != 0) &&
-       (modelRuntime->modelDefinition->placementRadiusOrClearanceDC != 0)) {
-      withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
-                          (modelNode2->worldTransform).translation.y,
-                          (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy);
-      if (withinLinkRadius) goto ArmyGroundMovementCollision_ContinueAfterLinkedRuntimeValidation;
-    }
+  /* Drop the linked runtime unless both have a clearance radius and this unit is still within it. */
+  if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
+      ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
+        (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                           (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
+                            (modelNode2->worldTransform).translation.y,
+                            (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
     (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0;
   }
-ArmyGroundMovementCollision_ContinueAfterLinkedRuntimeValidation:
   previousRotationAngle = (modelNode2->modelPayload).worldRotationAngle2;
   worldX = (modelNode2->worldTransform).translation.x;
   worldY = (modelNode2->worldTransform).translation.y;
@@ -1079,16 +1077,15 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
   modelNode2 = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | 4;
-  if (armyOrWaypointY != (ArmyRuntimeSlot *)0x0) {
-    movementDefinition = modelRuntime->modelDefinition;
-    if (((((armyOrWaypointY->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC != 0) &&
-       (movementDefinition->placementRadiusOrClearanceDC != 0)) {
-      testResult = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                         (movementDefinition->placementRadiusOrClearanceDC,
-                          (modelNode2->worldTransform).translation.y,
-                          (modelNode2->worldTransform).translation.x,armyOrWaypointY);
-      if (testResult) goto ArmyMovementBanking_ContinueAfterLinkedRuntimeValidation;
-    }
+  /* Drop the linked runtime unless both have a clearance radius and this unit is still within it. */
+  if ((armyOrWaypointY != (ArmyRuntimeSlot *)0x0) &&
+      (movementDefinition = modelRuntime->modelDefinition,
+      (((((armyOrWaypointY->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
+        (movementDefinition->placementRadiusOrClearanceDC == 0)) ||
+       (testResult = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                     (movementDefinition->placementRadiusOrClearanceDC,
+                      (modelNode2->worldTransform).translation.y,
+                      (modelNode2->worldTransform).translation.x,armyOrWaypointY), !testResult))) {
     turnVelocityOrIndex = modelNode2->childCount;
     (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0;
     if ((2 < turnVelocityOrIndex) && (((modelRuntime->classState).classStateB8 & 4) != 0)) {
@@ -1112,7 +1109,6 @@ ArmyRuntimeClass_UpdateMovementBankingAndChildAnimation
       }
     }
   }
-ArmyMovementBanking_ContinueAfterLinkedRuntimeValidation:
   modelNode2 = modelRuntime->rootModelNode;
   previousRotationAngle = (modelNode2->modelPayload).worldRotationAngle2;
   previousWorldX = (modelNode2->worldTransform).translation.x;
@@ -1718,18 +1714,16 @@ ArmyRuntimeClass_UpdateGroundMovementVariantA
   modelNode2 = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | 4;
-  if (linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) {
-    if (((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC != 0) &&
-       (modelRuntime->modelDefinition->placementRadiusOrClearanceDC != 0)) {
-      withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
-                          (modelNode2->worldTransform).translation.y,
-                          (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy);
-      if (withinLinkRadius) goto ArmyGroundMovementVariantA_ContinueAfterLinkedRuntimeValidation;
-    }
+  /* Drop the linked runtime unless both have a clearance radius and this unit is still within it. */
+  if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
+      ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
+        (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                           (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
+                            (modelNode2->worldTransform).translation.y,
+                            (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
     (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0;
   }
-ArmyGroundMovementVariantA_ContinueAfterLinkedRuntimeValidation:
   previousRotationAngle = (modelNode2->modelPayload).worldRotationAngle2;
   worldX = (modelNode2->worldTransform).translation.x;
   worldY = (modelNode2->worldTransform).translation.y;
@@ -1985,7 +1979,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
     if (!blockingCollision.carry) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & 0xffffff7f;
-      goto LAB_00522285;
+      goto ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact;
     }
     ArmyRuntime_HandleCollisionPartner
               ((ArmyRuntimeSlot *)armyRuntime,
@@ -2019,7 +2013,7 @@ ArmyArticulatedRuntime_UpdateLeftTerrainContact
   }
   contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
   *contactStateFlags = *contactStateFlags | 0x80;
-LAB_00522285:
+ArmyArticulatedRuntime_UpdateLeftTerrainContact_ComputeStepFromContact:
   definitionAsset = armyRuntime->definitionOrAsset;
   contactCoordOrLength = FixedMath_Length3(contactXOrHeight - armyRuntime->definitionClassValue88,
                             contactCoordOrLength - armyRuntime->definitionClassValue80,
@@ -2115,7 +2109,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
     if (!blockingCollision.carry) {
       contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
       *contactStateFlags = *contactStateFlags & 0xffffff7f;
-      goto LAB_005224e5;
+      goto ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact;
     }
     ArmyRuntime_HandleCollisionPartner
               ((ArmyRuntimeSlot *)armyRuntime,
@@ -2149,7 +2143,7 @@ ArmyArticulatedRuntime_UpdateRightTerrainContact
   }
   contactStateFlags = &(armyRuntime->articulatedContact).fallbackPosition0Q12;
   *contactStateFlags = *contactStateFlags | 0x80;
-LAB_005224e5:
+ArmyArticulatedRuntime_UpdateRightTerrainContact_ComputeStepFromContact:
   definitionAsset = armyRuntime->definitionOrAsset;
   contactCoordOrLength = FixedMath_Length3(contactCoordOrLength - armyRuntime->runtimeState8C,
                             contactCoordOrDistance - armyRuntime->definitionClassValue84,
@@ -2213,18 +2207,16 @@ ArmyRuntimeClass_UpdateGroundMovementVariantB
   modelNode2 = modelRuntime->rootModelNode;
   ownerMovementFlags = &modelRuntime->ownerArmyRuntime->movementStateFlags;
   *ownerMovementFlags = *ownerMovementFlags | 4;
-  if (linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) {
-    if (((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC != 0) &&
-       (modelRuntime->modelDefinition->placementRadiusOrClearanceDC != 0)) {
-      withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
-                         (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
-                          (modelNode2->worldTransform).translation.y,
-                          (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy);
-      if (withinLinkRadius) goto ArmyGroundMovementVariantB_ContinueAfterLinkedRuntimeValidation;
-    }
+  /* Drop the linked runtime unless both have a clearance radius and this unit is still within it. */
+  if ((linkedOrOwnerArmy != (ArmyRuntimeSlot *)0x0) &&
+      ((((((linkedOrOwnerArmy->modelRuntimeOrSavedOffset).modelRuntime)->classState).classStateDC == 0) ||
+        (modelRuntime->modelDefinition->placementRadiusOrClearanceDC == 0)) ||
+       (withinLinkRadius = ArmyCollision_TestPointWithinExpandedRuntimeRadiusCf
+                           (modelRuntime->modelDefinition->placementRadiusOrClearanceDC,
+                            (modelNode2->worldTransform).translation.y,
+                            (modelNode2->worldTransform).translation.x,linkedOrOwnerArmy), !withinLinkRadius))) {
     (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = (ArmyRuntimeSlot *)0x0;
   }
-ArmyGroundMovementVariantB_ContinueAfterLinkedRuntimeValidation:
   previousRotationAngle = (modelNode2->modelPayload).worldRotationAngle2;
   previousWorldX = (modelNode2->worldTransform).translation.x;
   previousWorldY = (modelNode2->worldTransform).translation.y;
@@ -3386,10 +3378,10 @@ ArmyRuntime_UpdateMovementAndWaypoints
 {
   ArmyWaypointCount *waypointCount;
   uint exceededDistance;
-  undefined4 movementWorldX;
-  undefined4 movementWorldY;
-  undefined4 currentWorldX;
-  undefined4 currentWorldY;
+  Q12 movementWorldX;
+  Q12 movementWorldY;
+  Q12 currentWorldX;
+  Q12 currentWorldY;
   int offsetXOrCount;
   uint distanceX;
   int offsetY;
@@ -3409,7 +3401,6 @@ ArmyRuntime_UpdateMovementAndWaypoints
   modelNode1 = movementRuntime->modelNodeRuntime;
   if ((movementRuntime->movementStateFlags & 0x10) == 0) {
     if ((movementRuntime->movementStateFlags & 1) != 0) {
-ArmyRuntime_UpdateMovementAndWaypoints_ReturnStoredMovementPositionWithCarryClear:
       movementWorldX = movementRuntime->movementWorldXQ12;
       movementWorldY = movementRuntime->movementWorldYQ12;
       storedPosition.worldYQ12 = movementWorldY;
@@ -3454,8 +3445,13 @@ ArmyRuntime_UpdateMovementAndWaypoints_ReturnStoredMovementPositionWithCarryClea
       offsetY = (modelNode1->worldTransform).translation.y;
       if (((movementRuntime->retryCountdown != 0) &&
           (offsetXOrCount == movementRuntime->lastCheckedWorldXQ12)) &&
-         (offsetY == movementRuntime->lastCheckedWorldYQ12))
-      goto ArmyRuntime_UpdateMovementAndWaypoints_ReturnStoredMovementPositionWithCarryClear;
+         (offsetY == movementRuntime->lastCheckedWorldYQ12)) {
+        /* Still waiting at the same spot: keep the stored movement position. */
+        storedPosition.worldYQ12 = movementRuntime->movementWorldYQ12;
+        storedPosition.worldXQ12 = movementRuntime->movementWorldXQ12;
+        storedPosition.carry = false;
+        return storedPosition;
+      }
       movementRuntime->retryCountdown = 0x40;
       movementRuntime->lastCheckedWorldXQ12 = offsetXOrCount;
       movementRuntime->lastCheckedWorldYQ12 = offsetY;

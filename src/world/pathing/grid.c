@@ -1421,7 +1421,7 @@ GridPathCost_BacktrackBestHexRoute
   scratchWidth = g_GridScratchWidth;
   terminalResult.selectedRow = g_GridScratchWidth * 8;
   bestNeighborCell = startCell;
-  do {
+  for (;;) {
     currentCell = bestNeighborCell;
     rowAboveCell = currentCell + -scratchWidth;
     if ((currentCell->stateMask & g_GridPathHighCostMask) != 0) {
@@ -1452,15 +1452,18 @@ GridPathCost_BacktrackBestHexRoute
     if (rowAboveCell[scratchWidth * 2].pathCost < bestNeighborCost) {
       bestNeighborCell = rowAboveCell + scratchWidth * 2;
     }
-    if (bestNeighborCell == (GridScratchCell *)0x0)
-    goto GridPathCost_BacktrackBestHexRoute_ReturnTerminalCellOrColumn;
+    if (bestNeighborCell == (GridScratchCell *)0x0) {
+      break; /* local minimum: return the current cell */
+    }
     segmentClear = GridPathLine_TestHexSegmentClearCf
                       (callerBlockingMask,targetRow,targetColumn,startCell,bestNeighborCell);
-  } while (!segmentClear);
-  if (currentCell == startCell) {
-    currentCell = bestNeighborCell;
+    if (segmentClear) {
+      if (currentCell == startCell) {
+        currentCell = bestNeighborCell;
+      }
+      break;
+    }
   }
-GridPathCost_BacktrackBestHexRoute_ReturnTerminalCellOrColumn:
   if (currentCell->pathCost != 0) {
     selectedCellIndex = (uint)((int)currentCell - (int)g_GridScratchPrimary) >> 3;
     selectedCell.selectedRow = selectedCellIndex / g_GridScratchWidth;
@@ -1705,8 +1708,8 @@ GridPathCost_PropagateWeightedHexNeighbors
   g_GridPathCostQueuePassBoundary = queueReadCursor;
   neighborCell->pathCost = 0;
   g_GridPathCostQueuePassBoundary = g_GridPathCostQueuePassBoundary + 0x10000;
-GridPathCost_ProcessNextQueuedCell:
-  do {
+  for (;;) {
+    /* next queued cell that is not already visited; ends at an empty queue or after the passes */
     do {
       while( true ) {
         if (queueReadCursor == queueWriteCursor) {
@@ -1745,12 +1748,14 @@ GridPathCost_ProcessNextQueuedCell:
     } while ((neighborCell->stateMask & GRID_SCRATCH_TRAVERSAL_VISITED) != 0);
     currentCost = neighborCell->pathCost;
     neighborCell = neighborCell + -scratchWidth;
+    /* Each of the six neighbours: skipped when closed (bit 31) or when it is one of the entity's class
+       cells and blocked; step cost 4, 3 on the entity's class cells, 12 on high-cost class cells. */
     neighborState = neighborCell->stateMask;
     neighborCost = currentCost + 4;
-    if (-1 < (int)neighborState) {
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
       if ((g_GridPathEntityClassMask & neighborState) != 0) {
         neighborCost = currentCost + 3;
-        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedNorthNeighbor;
         if ((g_GridPathHighCostMask & neighborState) != 0) {
           neighborCost = currentCost + 0xc;
         }
@@ -1761,14 +1766,13 @@ GridPathCost_ProcessNextQueuedCell:
         queueWriteCursor = queueWriteCursor + 1;
       }
     }
-GridPathCost_SkipBlockedNorthNeighbor:
     secondaryNeighborCell = neighborCell + 1;
     neighborState = secondaryNeighborCell->stateMask;
     neighborCost = currentCost + 4;
-    if (-1 < (int)neighborState) {
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
       if ((g_GridPathEntityClassMask & neighborState) != 0) {
         neighborCost = currentCost + 3;
-        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedEastNeighbor;
         if ((g_GridPathHighCostMask & neighborState) != 0) {
           neighborCost = currentCost + 0xc;
         }
@@ -1779,14 +1783,13 @@ GridPathCost_SkipBlockedNorthNeighbor:
         queueWriteCursor = queueWriteCursor + 1;
       }
     }
-GridPathCost_SkipBlockedEastNeighbor:
     secondaryNeighborCell = secondaryNeighborCell + scratchWidth;
     neighborState = secondaryNeighborCell->stateMask;
     neighborCost = currentCost + 4;
-    if (-1 < (int)neighborState) {
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
       if ((g_GridPathEntityClassMask & neighborState) != 0) {
         neighborCost = currentCost + 3;
-        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedSouthEastNeighbor;
         if ((g_GridPathHighCostMask & neighborState) != 0) {
           neighborCost = currentCost + 0xc;
         }
@@ -1797,14 +1800,13 @@ GridPathCost_SkipBlockedEastNeighbor:
         queueWriteCursor = queueWriteCursor + 1;
       }
     }
-GridPathCost_SkipBlockedSouthEastNeighbor:
     neighborCell = secondaryNeighborCell + -2;
     neighborState = neighborCell->stateMask;
     neighborCost = currentCost + 4;
-    if (-1 < (int)neighborState) {
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
       if ((g_GridPathEntityClassMask & neighborState) != 0) {
         neighborCost = currentCost + 3;
-        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedSouthWestNeighbor;
         if ((g_GridPathHighCostMask & neighborState) != 0) {
           neighborCost = currentCost + 0xc;
         }
@@ -1815,14 +1817,13 @@ GridPathCost_SkipBlockedSouthEastNeighbor:
         queueWriteCursor = queueWriteCursor + 1;
       }
     }
-GridPathCost_SkipBlockedSouthWestNeighbor:
     neighborCell = neighborCell + scratchWidth;
     neighborState = neighborCell->stateMask;
     neighborCost = currentCost + 4;
-    if (-1 < (int)neighborState) {
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
       if ((g_GridPathEntityClassMask & neighborState) != 0) {
         neighborCost = currentCost + 3;
-        if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_SkipBlockedWestNeighbor;
         if ((g_GridPathHighCostMask & neighborState) != 0) {
           neighborCost = currentCost + 0xc;
         }
@@ -1833,23 +1834,23 @@ GridPathCost_SkipBlockedSouthWestNeighbor:
         queueWriteCursor = queueWriteCursor + 1;
       }
     }
-GridPathCost_SkipBlockedWestNeighbor:
     neighborState = neighborCell[1].stateMask;
     neighborCost = currentCost + 4;
-  } while ((int)neighborState < 0);
-  if ((g_GridPathEntityClassMask & neighborState) != 0) {
-    neighborCost = currentCost + 3;
-    if ((g_GridPathBlockingMask & neighborState) != 0) goto GridPathCost_ProcessNextQueuedCell;
-    if ((g_GridPathHighCostMask & neighborState) != 0) {
-      neighborCost = currentCost + 0xc;
+    if ((-1 < (int)neighborState) &&
+       (((g_GridPathEntityClassMask & neighborState) == 0) || ((g_GridPathBlockingMask & neighborState) == 0))) {
+      if ((g_GridPathEntityClassMask & neighborState) != 0) {
+        neighborCost = currentCost + 3;
+        if ((g_GridPathHighCostMask & neighborState) != 0) {
+          neighborCost = currentCost + 0xc;
+        }
+      }
+      if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell[1].pathCost)) {
+        *queueWriteCursor = neighborCell + 1;
+        neighborCell[1].pathCost = neighborCost;
+        queueWriteCursor = queueWriteCursor + 1;
+      }
     }
   }
-  if ((queueWriteCursor < g_GridPathCostQueueEnd) && (neighborCost < neighborCell[1].pathCost)) {
-    *queueWriteCursor = neighborCell + 1;
-    neighborCell[1].pathCost = neighborCost;
-    queueWriteCursor = queueWriteCursor + 1;
-  }
-  goto GridPathCost_ProcessNextQueuedCell;
 }
 
 
@@ -1936,26 +1937,31 @@ GridPathRegion_MarkUnreachableRecursive
   currentCell->stateMask = currentCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
   probeOrRowCursor = currentCell + 1;
   probeOrRightEndCell = currentCell + -1;
-  do {
+  /* scan left to the span boundary: a finite-cost or closed cell, or a blocked class cell (marked, then unmarked) */
+  for (;;) {
     leftEndCell = probeOrRightEndCell;
     cellState = leftEndCell->stateMask;
-    if ((leftEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0))
-    goto GridPathRegion_MarkUnreachableRecursive_ScanRightBoundary;
+    if ((leftEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0)) break;
     leftEndCell->stateMask = leftEndCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     probeOrRightEndCell = leftEndCell + -1;
-  } while (((g_GridPathEntityClassMask & cellState) == 0) || ((g_GridPathBlockingMask & cellState) == 0));
-  leftEndCell->stateMask = leftEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-GridPathRegion_MarkUnreachableRecursive_ScanRightBoundary:
-  do {
+    if (((g_GridPathEntityClassMask & cellState) != 0) && ((g_GridPathBlockingMask & cellState) != 0)) {
+      leftEndCell->stateMask = leftEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+      break;
+    }
+  }
+  /* scan right to the span boundary, the same way */
+  for (;;) {
     probeOrRightEndCell = probeOrRowCursor;
     cellState = probeOrRightEndCell->stateMask;
-    if ((probeOrRightEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0))
-    goto GridPathRegion_MarkUnreachableRecursive_RecurseAcrossAdjacentRows;
+    if ((probeOrRightEndCell->pathCost < 0x7fffffff) || ((int)cellState < 0)) break;
     probeOrRightEndCell->stateMask = probeOrRightEndCell->stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     probeOrRowCursor = probeOrRightEndCell + 1;
-  } while (((g_GridPathEntityClassMask & cellState) == 0) || ((g_GridPathBlockingMask & cellState) == 0));
-  probeOrRightEndCell->stateMask = probeOrRightEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-GridPathRegion_MarkUnreachableRecursive_RecurseAcrossAdjacentRows:
+    if (((g_GridPathEntityClassMask & cellState) != 0) && ((g_GridPathBlockingMask & cellState) != 0)) {
+      probeOrRightEndCell->stateMask = probeOrRightEndCell->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
+      break;
+    }
+  }
+  /* recurse into the adjacent rows along the span */
   spanByteOffset = (int)leftEndCell + (8 - (int)g_GridScratchPrimary);
   spanLength = ((uint)((int)probeOrRightEndCell - (int)leftEndCell) >> 3) - 2;
   spanColumn = (spanByteOffset >> 3) % g_GridScratchWidth;
@@ -2215,7 +2221,6 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
   GridScratchStateMask blockedMask;
   dword maxRow;
   int bestHexDistance;
-  undefined4 unaff_EBX = 0; /* open cell: the original leaves EBX unchanged; callers read EAX/EBX only when CF is set */
   int searchRow;
   int rowDelta;
   GridScratchCell *scanCell;
@@ -2237,7 +2242,9 @@ GridPathCost_FindNearestUnblockedCell(FieldGridCellCoordinate gridY,FieldGridCel
        ((scanCell[g_GridScratchWidth + 1].stateMask & blockedMask) == 0)) ||
       (((scanCell[g_GridScratchWidth * 2 + -1].stateMask & blockedMask) == 0 ||
        ((scanCell[g_GridScratchWidth * 2].stateMask & blockedMask) == 0)))))) {
-    openCellResult.selectedRow = unaff_EBX;
+    /* open cell: the original leaves EBX unchanged; both callers (EntityPathing_ResolveDestinationAndRebuildRoutes,
+       EntityPathing_UpdateRouteSegment) read EAX/EBX only when CF is set */
+    openCellResult.selectedRow = 0;
     openCellResult.carry = false;
     return openCellResult;
   }
@@ -2361,8 +2368,7 @@ GridPathLine_TestHexSegmentClearCf
   if (rowDelta < 0) {
     slopeError = 0;
     thresholdOrColumnsLeft = -rowDelta - columnDelta;
-GridPathLine_TestHexSegmentClear_ScanNegativeSlopeCell:
-    do {
+    for (;;) {
       cellState = lineCursor->stateMask;
       if ((lineCursor != startCell) &&
          (((((int)cellState < 0 || ((g_GridPathEntityClassMask & cellState) == 0)) ||
@@ -2372,31 +2378,33 @@ GridPathLine_TestHexSegmentClear_ScanNegativeSlopeCell:
       if (lineCursor == endCell) {
         return false;
       }
-      if (slopeError == thresholdOrColumnsLeft || slopeError < thresholdOrColumnsLeft) {
-        if (slopeError != thresholdOrColumnsLeft) {
-          slopeError = slopeError + columnDelta * 2;
-          lineCursor = lineCursor + -g_GridScratchWidth;
-          goto GridPathLine_TestHexSegmentClear_ScanNegativeSlopeCell;
-        }
+      if (slopeError < thresholdOrColumnsLeft) {
+        /* step up one row only */
+        slopeError = slopeError + columnDelta * 2;
+        lineCursor = lineCursor + -g_GridScratchWidth;
+        continue;
+      }
+      if (slopeError == thresholdOrColumnsLeft) {
+        /* diagonal: step up one row, then right */
         slopeError = slopeError + columnDelta * 2;
         lineCursor = lineCursor + -g_GridScratchWidth;
       }
       slopeError = slopeError + rowDelta * 2;
       lineCursor = lineCursor + 1;
-    } while( true );
+    }
   }
   rowError = 0;
   slopeError = 0;
   thresholdOrColumnsLeft = columnDelta;
   columnEndCell = lineCursor;
-GridPathLine_TestHexSegmentClear_AdvancePositiveSlopeColumns:
-  if (rowError < rowDelta) goto code_r0x00534514;
-  goto GridPathLine_TestHexSegmentClear_ScanPositiveSlopeColumn;
-code_r0x00534514:
-  lineCursor = lineCursor + g_GridScratchWidth;
-  rowError = rowError + columnDelta;
-  if (lineCursor == endCell) {
-GridPathLine_TestHexSegmentClear_ScanPositiveSlopeColumn:
+  for (;;) {
+    /* advance down the rows while the row error allows it, stopping at the end cell */
+    while (rowError < rowDelta) {
+      lineCursor = lineCursor + g_GridScratchWidth;
+      rowError = rowError + columnDelta;
+      if (lineCursor == endCell) break;
+    }
+    /* scan the column from lineCursor up to columnEndCell, then move one column right */
     do {
       rowError = rowError - rowDelta;
       columnScanCell = lineCursor;
@@ -2431,6 +2439,5 @@ GridPathLine_TestHexSegmentClear_ScanPositiveSlopeColumn:
       slopeError = slopeError - rowDelta;
     } while (thresholdOrColumnsLeft == 0);
   }
-  goto GridPathLine_TestHexSegmentClear_AdvancePositiveSlopeColumns;
 }
 

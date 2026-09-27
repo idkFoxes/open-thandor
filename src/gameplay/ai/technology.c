@@ -313,19 +313,19 @@ AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_Body
   
   technologyAsset = g_TechnologyAsset;
   technologyCategory = g_TechnologyAsset->records[technologyId].category;
+  /* Categories C and D need their bit in the category mask; every other category is always compatible. */
   if (technologyCategory == TECHNOLOGY_CATEGORY_C) {
     categoryMaskBit = categoryMaskEdx & 2;
+    if (categoryMaskBit == 0) {
+      return 0;
+    }
   }
-  else {
-    if (technologyCategory != TECHNOLOGY_CATEGORY_D)
-    goto 
-    AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_ComputeWeightedArmyCompatibilityScore;
+  else if (technologyCategory == TECHNOLOGY_CATEGORY_D) {
     categoryMaskBit = categoryMaskEdx & 4;
+    if (categoryMaskBit == 0) {
+      return 0;
+    }
   }
-  if (categoryMaskBit == 0) {
-    return 0;
-  }
-AiTechnologyScore_ComputeCategoryCompatibleCandidateValue_ComputeWeightedArmyCompatibilityScore:
   averageAssetScore = AiArmyCandidate_ComputeAverageCompatibleAssetScore
                     (&g_AiArmyCandidateScoreWeightsVariantC15,factionIndex,technologyId);
   return (uint)(averageAssetScore * technologyAsset->records[technologyId].baseCandidateScore) >> 8;

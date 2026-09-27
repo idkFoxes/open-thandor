@@ -57,7 +57,6 @@ void __thandor_void_preserve_eax_ecx_edx Keyboard_FlushEvents(void)
 KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventRegs(void)
 
 {
-  undefined4 in_EAX = 0; /* empty queue: the original leaves EAX unchanged; callers use it only after a read */
   uint nextReadIndex;
   KeyboardEventEaxEdxCf9 readEvent;
   KeyboardEventEaxEdxCf9 emptyResult;
@@ -77,7 +76,7 @@ KeyboardEventEaxEdxCf9 __thandor_eax_edx_cf_preserve_ecx Keyboard_ReadNextEventR
     return readEvent;
   }
   emptyResult.eventData = nextReadIndex;
-  emptyResult.eventCode = in_EAX;
+  emptyResult.eventCode = 0; /* EAX unchanged in the original; all callers read it only with CF clear */
   emptyResult.carry = true;
   return emptyResult;
 }
@@ -113,7 +112,6 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   GraphicsSubresourceIndex frameTimestampValue;
   ushort keyState;
   TH_LEGACY_HRESULT directInputResult;
-  undefined2 extraout_var = 0; /* upper half of GetKeyState's AX result: only bit 0 is tested */
   GraphicsTextureSourceAsset *cursorDataOrError;
   uint remainingFrames;
   dword subresourceIndex;
@@ -202,16 +200,19 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
                 if ((keyState & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x20000;
                 }
-                THANDOR_PART(word, successResult.valueOrError, 0) = GetKeyState(0x14);
-                THANDOR_PART(word, successResult.valueOrError, 2) = extraout_var;
-                if (((ushort)successResult.valueOrError & 1) != 0) {
+                /* EAX on success is the Caps Lock GetKeyState result */
+                successResult.valueOrError = (dword)(int)GetKeyState(0x14);
+                if ((successResult.valueOrError & 1) != 0) {
                   g_KeyboardStateMask = g_KeyboardStateMask | 0x40000;
                 }
                 successResult.carry = false;
                 return successResult;
               }
             }
-            goto LAB_00576f08;
+            /* cursor asset load failed: its error code */
+            failureResult.carry = true;
+            failureResult.valueOrError = (dword)cursorDataOrError;
+            return failureResult;
           }
         }
       }
@@ -219,7 +220,6 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   }
   (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,initStage,g_PackageLastErrorPath);
   cursorDataOrError = (GraphicsTextureSourceAsset *)0x25;
-LAB_00576f08:
   failureResult.carry = true;
   failureResult.valueOrError = (dword)cursorDataOrError;
   return failureResult;
@@ -344,8 +344,8 @@ void __thandor_void_preserve_eax_ecx_edx DirectInputMouse_PollBufferedEvents(voi
   UNLOCK();
   errorAttempts = 0;
   if (wasBusyOrEventIndex == 0) {
-DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry:
-    do {
+    /* read buffered events until the buffer is empty or 16 errors occurred */
+    for (;;) {
       g_MouseDeviceDataCount = 1;
       directInputResult = (*g_MouseDevice->lpVtbl->GetDeviceData)
                         (g_MouseDevice,0x10,&g_MouseDeviceEvent,&g_MouseDeviceDataCount,0);
@@ -387,8 +387,7 @@ DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry:
           }
         }
         else {
-          if (g_MouseDeviceEvent.dwOfs != 0xd)
-          goto DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry;
+          if (g_MouseDeviceEvent.dwOfs != 0xd) continue; /* other axes/buttons: ignored */
           eventType = RIGHT_PRESS;
           if ((g_MouseDeviceEvent.dwData & 0x80) == 0) {
             eventType = RIGHT_RELEASE;
@@ -440,15 +439,16 @@ DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry:
         g_CursorInputEvents[wasBusyOrEventIndex].wheelDelta10 = wheelDelta;
         g_CursorInputEvents[wasBusyOrEventIndex].clockValue14 = clockValue;
         g_CursorInputEvents[wasBusyOrEventIndex].buttonState04 = buttonState;
-        goto DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry;
+        continue;
       }
       if (directInputResult == -0x7ff8ffe2) {
+        /* DIERR_INPUTLOST: reacquire and read again */
         directInputResult = (*g_MouseDevice->lpVtbl->Acquire)(g_MouseDevice);
-        if (directInputResult == 0)
-        goto DirectInputMouse_PollBufferedEvents_ReadNextEventAfterProcessOrAcquireRetry;
+        if (directInputResult == 0) continue;
       }
       errorAttempts = errorAttempts + 1;
-    } while (errorAttempts < 0x10);
+      if (0xf < errorAttempts) break;
+    }
     g_MouseEventsProcessed = g_MouseEventsProcessed + processedCount;
     g_MousePollBusy = 0;
   }

@@ -501,17 +501,19 @@ AiPlacement_QueryReachableSiteBucketCount
       failureResult.carry = dispatchResult.carry;
       return failureResult;
     }
+    normalAnglesOrBucketCount = 0;
   }
   else if ((placementCount != 0) &&
           (dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                              (0,0,normalAnglesOrBucketCount,workspaceRecord->worldY,workspaceRecord->worldX,armyAssetId,
                               factionIndex,(UiRootNode *)worldRuntime), dispatchResult.carry)) {
+    /* Round the placement count up to whole separation quanta. */
     normalAnglesOrBucketCount = (knowledgeData->parameters).specialSiteSeparationQuantumQ12;
     normalAnglesOrBucketCount = ((placementCount - 1) + normalAnglesOrBucketCount) / normalAnglesOrBucketCount;
-    goto AiPlacement_QueryReachableSiteBucketCount_ReturnComputedOrZeroCountWithCarryClear;
   }
-  normalAnglesOrBucketCount = 0;
-AiPlacement_QueryReachableSiteBucketCount_ReturnComputedOrZeroCountWithCarryClear:
+  else {
+    normalAnglesOrBucketCount = 0;
+  }
   countResult.carry = false;
   countResult.valueOrError = normalAnglesOrBucketCount;
   return countResult;
@@ -576,34 +578,33 @@ AiCandidatePlanning_ComputeSpecialSiteWeight
 {
   FieldGridCell *workspaceRecord;
   dword baseWeight;
-  dword in_EAX = 0; /* no site (CF set): EAX is stale; callers read the score only with CF clear */
   int countOrTritium;
   uint weight;
   AiTerrainFeatureWorkspaceEntry *featureEntry;
   bool clusterRejected;
   AiCandidateScoreEaxCf5 weightResult;
-  AiCandidateScoreEaxCf5 noSiteResult;
   AiKnowledgeDataImage *knowledgeData;
-  
+
   knowledgeData = g_AiKnowledgeData;
   countOrTritium = g_AiWorkspace08Count;
   featureEntry = g_AiWorkspaceBuffer08_Size0200;
   while( true ) {
     if (countOrTritium == 0) {
-      noSiteResult.carry = true;
-      noSiteResult.score = in_EAX;
-      return noSiteResult;
+      /* No site (CF set): EAX holds whatever the last check left there; callers read the score only with CF
+         clear. */
+      weightResult.carry = true;
+      weightResult.score = 0;
+      return weightResult;
     }
     workspaceRecord = featureEntry->cell;
     clusterRejected = AiPlacement_ReserveMode3SiteCluster
                       (featureEntry->armyAssetId,workspaceRecord,factionIndex,worldRuntime);
-    if (((!clusterRejected) &&
-        (in_EAX = AiWorkspace03_GetMinimumManhattanDistanceToPoint
-                            (workspaceRecord->worldY,workspaceRecord->worldX),
-        (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= (int)in_EAX)) &&
-       (in_EAX = AiWorkspace02_GetMinimumManhattanDistanceToPoint
-                           (workspaceRecord->worldY,workspaceRecord->worldX),
-       (int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <= (int)in_EAX))
+    if ((!clusterRejected) &&
+        ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
+         (int)AiWorkspace03_GetMinimumManhattanDistanceToPoint(workspaceRecord->worldY,workspaceRecord->worldX))
+        && ((int)(knowledgeData->parameters).specialSiteMinimumWorkspaceDistanceQ12 <=
+            (int)AiWorkspace02_GetMinimumManhattanDistanceToPoint
+                   (workspaceRecord->worldY,workspaceRecord->worldX)))
     break;
     featureEntry = featureEntry + 1;
     countOrTritium = countOrTritium + -1;
@@ -645,20 +646,20 @@ AiPlacement_FindNearestValidWorkspace09Anchor
           FactionRuntimeIndex factionIndex,WorldRuntimeContext *worldRuntime)
 
 {
-  undefined4 anchorWorldX;
-  undefined4 anchorWorldY;
   int deltaX;
   int remainingCount;
-  uint in_EDX;
+  uint candidateDistance;
   int deltaY;
   uint bestDistance;
   FieldGridCell **gridCellCursor;
   ArmyPlacementDispatchEaxCf5 dispatchResult;
   AiWorkspace09AnchorEcxEdxCf9 anchorResult;
-  AiWorkspace09AnchorEcxEdxCf9 missingResult;
   FieldGridCell *bestCell;
   FieldGridCell *candidateCell;
-  
+
+  /* Not found (CF set): ECX is the exhausted loop counter (0) and EDX the last candidate distance (or the
+     caller's EDX for an empty workspace); no caller reads them when CF is set. */
+  candidateDistance = 0;
   if (g_AiWorkspace09Count != 0) {
     bestDistance = 0x7fffffff;
     remainingCount = g_AiWorkspace09Count;
@@ -673,13 +674,13 @@ AiPlacement_FindNearestValidWorkspace09Anchor
       if (deltaY < 0) {
         deltaY = -deltaY;
       }
-      in_EDX = deltaY + deltaX;
-      if ((int)in_EDX < (int)bestDistance) {
+      candidateDistance = deltaY + deltaX;
+      if ((int)candidateDistance < (int)bestDistance) {
         dispatchResult = ArmyPlacement_DispatchAssetAtFieldPoint
                           (1,0,(uint)(ushort)candidateCell->triangle0NormalAngles,candidateCell->worldY,
                            candidateCell->worldX,armyAssetId,factionIndex,(UiRootNode *)worldRuntime);
         if (!dispatchResult.carry) {
-          bestDistance = in_EDX;
+          bestDistance = candidateDistance;
           bestCell = candidateCell;
         }
       }
@@ -687,18 +688,16 @@ AiPlacement_FindNearestValidWorkspace09Anchor
       remainingCount = remainingCount + -1;
     } while (remainingCount != 0);
     if ((int)bestDistance < 0x7fffffff) {
-      anchorWorldX = bestCell->worldX;
-      anchorWorldY = bestCell->worldY;
-      anchorResult.worldYQ12 = anchorWorldY;
-      anchorResult.worldXQ12 = anchorWorldX;
+      anchorResult.worldXQ12 = bestCell->worldX;
+      anchorResult.worldYQ12 = bestCell->worldY;
       anchorResult.carry = false;
       return anchorResult;
     }
   }
-  missingResult.carry = true;
-  missingResult.worldXQ12 = (int)((ulonglong)in_EDX << 0x20);
-  missingResult.worldYQ12 = (int)(((ulonglong)in_EDX << 0x20) >> 0x20);
-  return missingResult;
+  anchorResult.carry = true;
+  anchorResult.worldXQ12 = 0;
+  anchorResult.worldYQ12 = (Q12)candidateDistance;
+  return anchorResult;
 }
 
 

@@ -237,39 +237,40 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
 void __thandor_void_preserve_eax_ecx_edx FrontendRomRegistry_ClearAndReleaseNestedResources(void)
 
 {
-  int nodeChildCount;
   int slotsRemaining;
-  int releaseDepth;
   RomRegistrySlot *slotCursor;
-  dword nodeAddress;
-  
+  byte *node;
+
   slotsRemaining = 0x100;
   slotCursor = g_RomRegistrySlots;
-  while( true ) {
+  do {
     if ((slotCursor->record != (RomAssetRecordPrefix *)0x0) &&
-       (nodeAddress = slotCursor->record->rootNodeOffsetOrPointer, nodeAddress != 0)) break;
-FrontendRomRegistry_ClearAndReleaseNestedResources_ClearCurrentSlotAndAdvance:
+       (node = (byte *)slotCursor->record->rootNodeOffsetOrPointer, node != (byte *)0x0)) {
+      /* Rewritten from the assembly (0x00547432-0x00547474): depth-first walk over the relocated sprite-node
+         tree, releasing every node's sprite asset (+0x2C). The original keeps {remaining, nextChild, node}
+         frames on the machine stack (EBX = depth); child pointers are at +0x14, the child count at +0x10.
+         The same tree is walked by RomAssetRecord_RegisterAndRelocate. */
+      struct { byte *node; dword nextChild; dword remaining; } frames[64];
+      int depth = 0;
+      for (;;) {
+        frames[depth].remaining = *(dword *)(node + 0x10);
+        frames[depth].nextChild = 0;
+        Resource_Release(*(void **)(node + 0x2c));
+        frames[depth].node = node;
+        depth++;
+        while ((frames[depth - 1].remaining == 0) && (--depth != 0)) {
+        }
+        if (depth == 0) break;
+        node = *((byte **)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild);
+        frames[depth - 1].nextChild++;
+        frames[depth - 1].remaining--;
+      }
+    }
     slotCursor->record = (RomAssetRecordPrefix *)0x0;
     slotCursor->runtimeRootNode = (WorldRuntimeNode *)0x0;
     slotCursor = slotCursor + 1;
     slotsRemaining = slotsRemaining + -1;
-    if (slotsRemaining == 0) {
-      return;
-    }
-  }
-  releaseDepth = 0;
-  do {
-    nodeChildCount = *(int *)(nodeAddress + 0x10);
-    Resource_Release(*(void **)(nodeAddress + 0x2c));
-    releaseDepth = releaseDepth + 1;
-    while( true ) {
-      if (nodeChildCount != 0) break;
-      releaseDepth = releaseDepth + -1;
-      if (releaseDepth == 0)
-      goto FrontendRomRegistry_ClearAndReleaseNestedResources_ClearCurrentSlotAndAdvance;
-    }
-    nodeAddress = *(dword *)(nodeAddress + 0x14);
-  } while( true );
+  } while (slotsRemaining != 0);
 }
 
 
@@ -585,7 +586,6 @@ RomAssetRecord_RegisterAndRelocate(RomAssetRecordPrefix *record,RomAssetHeader *
       rootNodeOffset = record->rootNodeOffsetOrPointer;
       slotCursor->record = record;
       if (rootNodeOffset == 0) {
-RomAssetRecord_ReturnWithoutRootNode:
         successResult.carry = false;
         successResult.valueOrError = (dword)assetBase;
         return successResult;
@@ -597,7 +597,7 @@ RomAssetRecord_ReturnWithoutRootNode:
                (rootNodeOffset - 0x28);
       /* Rewritten from the assembly (0x005463A1-0x00546436): depth-first walk over the serialized
          sprite-node tree. The original keeps {node, nextChild, remaining} frames on the machine stack
-         (EBX = depth), which Ghidra could only show as unaff_ESI/unaff_EBP. Child offsets are
+         (EBX = depth), which Ghidra could only show as unaffected ESI/EBP registers. Child offsets are
          relative to assetBase and are relocated in place while walking. */
       {
         struct { byte *node; dword nextChild; dword remaining; } frames[64];
@@ -633,7 +633,11 @@ RomAssetRecord_ReturnWithoutRootNode:
           depth++;
           while (frames[depth - 1].remaining == 0) {
             depth--;
-            if (depth == 0) goto RomAssetRecord_ReturnWithoutRootNode;
+            if (depth == 0) {
+              successResult.carry = false;
+              successResult.valueOrError = (dword)assetBase;
+              return successResult;
+            }
           }
           {
             dword *child = (dword *)(frames[depth - 1].node + 0x14) + frames[depth - 1].nextChild;
@@ -649,8 +653,7 @@ RomAssetRecord_ReturnWithoutRootNode:
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
   Package_SetLastErrorPath((word *)u_engine_zentrale_rom_00545aa4);
-  asset = (RomAssetHeader *)&k_LowAddressLiteral0000003B;
-RomAssetRecord_ReturnRegistrationResult:
+  asset = (RomAssetHeader *)0x3b;
   failureResult.carry = true;
   failureResult.valueOrError = (dword)asset;
   return failureResult;
@@ -692,11 +695,9 @@ RomRuntime_BuildNodeTreeRecursive
   
   allocResult = WorldObjectArray_AllocateFreeRecordCf(worldObjectArray);
   newNode = (ModelRuntimeNode *)allocResult.recordOrError;
-  resultOrChildNode = newNode;
   if (allocResult.carry) {
-RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCarrySet:
     createResult.carry = true;
-    createResult.modelNode = resultOrChildNode;
+    createResult.modelNode = newNode;
     return createResult;
   }
   (newNode->modelPayload).localTranslationXQ12 = 0;
@@ -736,36 +737,36 @@ RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCar
   childIndex = 0;
   newNode->childCount = childSlotsRemaining;
   newNode->parentNode = (ModelRuntimeNode *)0x0;
-  do {
-    if (childSlotsRemaining == 0) {
-      return THANDOR_BITCAST(qword, ModelNodeCreateEaxCf5, ((THANDOR_BITCAST(WorldObjectRecordEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
-    }
+  for (; childSlotsRemaining != 0; childSlotsRemaining = childSlotsRemaining - 1) {
     lookupEntry = spriteModelResource->reserved00_AF + spriteModelResource->packedLookupTableRelativeOffset;
     for (lookupEntriesRemaining = spriteModelResource->packedLookupTableEntryCount; lookupEntriesRemaining != 0; lookupEntriesRemaining = lookupEntriesRemaining - 1) {
-      if (((*(uint *)lookupEntry & 0xf) == 0) && (childIndex == *(uint *)lookupEntry >> 4)) {
-        createResult = RomRuntime_BuildNodeTreeRecursive
-                           (stateTintArgb,romNodeRecord->childReferences[childIndex].node,
-                            worldObjectArray);
-        resultOrChildNode = createResult.modelNode;
-        if (createResult.carry)
-        goto RomRuntime_BuildNodeTreeRecursive_ReturnAllocationOrRecursiveChildFailureWithCarrySet;
-        newNode->childNodes[childIndex] = resultOrChildNode;
-        resultOrChildNode->parentNode = newNode;
-        translationY = *(uint *)(lookupEntry + 8);
-        translationZ = *(uint *)(lookupEntry + 0xc);
-        (resultOrChildNode->modelPayload).localTranslationXQ12 = *(uint *)(lookupEntry + 4);
-        (resultOrChildNode->modelPayload).localTranslationYQ12 = translationY;
-        (resultOrChildNode->modelPayload).localTranslationZQ12 = translationZ;
-        goto RomRuntime_BuildNodeTreeRecursive_AdvanceChildSlotAfterResolvedOrMissingDescriptor;
-      }
+      if (((*(uint *)lookupEntry & 0xf) == 0) && (childIndex == *(uint *)lookupEntry >> 4)) break;
       lookupEntry = lookupEntry + 0x10;
     }
-    newNode->childCount = newNode->childCount - 1;
-    childIndex = childIndex - 1;
-RomRuntime_BuildNodeTreeRecursive_AdvanceChildSlotAfterResolvedOrMissingDescriptor:
+    if (lookupEntriesRemaining == 0) {
+      /* No descriptor for this child: drop it and keep the index for the next child slot. */
+      newNode->childCount = newNode->childCount - 1;
+      continue;
+    }
+    createResult = RomRuntime_BuildNodeTreeRecursive
+                       (stateTintArgb,romNodeRecord->childReferences[childIndex].node,
+                        worldObjectArray);
+    if (createResult.carry) {
+      return createResult;
+    }
+    resultOrChildNode = createResult.modelNode;
+    newNode->childNodes[childIndex] = resultOrChildNode;
+    resultOrChildNode->parentNode = newNode;
+    translationY = *(uint *)(lookupEntry + 8);
+    translationZ = *(uint *)(lookupEntry + 0xc);
+    (resultOrChildNode->modelPayload).localTranslationXQ12 = *(uint *)(lookupEntry + 4);
+    (resultOrChildNode->modelPayload).localTranslationYQ12 = translationY;
+    (resultOrChildNode->modelPayload).localTranslationZQ12 = translationZ;
     childIndex = childIndex + 1;
-    childSlotsRemaining = childSlotsRemaining - 1;
-  } while( true );
+  }
+  createResult.carry = false;
+  createResult.modelNode = newNode;
+  return createResult;
 }
 
 

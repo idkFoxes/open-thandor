@@ -35,7 +35,9 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
   int *bankSlotCursor;
   uint *bankCursor;
   int bankIndex;
-  
+  bool emptyBankFound;
+  bool banksMerged;
+
   remainingCount = *(int *)(textureSourceBase + 0xb4) << 8;
   if (remainingCount != 0) {
     entryCursor = (uint *)(textureSourceBase + 0x200);
@@ -87,16 +89,25 @@ GraphicsPaletteTextureSource_OptimizePaletteBanksAndRemapIndices(int textureSour
         bankSlotCursor = bankSlotCursor + 1;
         indexOrColor = indexOrColor - 1;
       } while (indexOrColor != 0);
-LAB_004ae640:
-      bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
-      remainingCount = *(int *)(textureSourceBase + 0xb4);
-      cursorOrBankIndex = 0;
-      do {
-        if (*bankSlotCursor == 0) goto code_r0x004ae655;
-        bankSlotCursor = bankSlotCursor + 1;
-        cursorOrBankIndex = cursorOrBankIndex + 1;
-        remainingCount = remainingCount + -1;
-      } while (remainingCount != 0);
+      /* Remove every bank without a used color, rescanning from the first bank after each removal. */
+      for (;;) {
+        bankSlotCursor = (int *)THANDOR_ADDR(g_GraphicsPaletteBankSlots,0);
+        remainingCount = *(int *)(textureSourceBase + 0xb4);
+        cursorOrBankIndex = 0;
+        emptyBankFound = false;
+        do {
+          if (*bankSlotCursor == 0) {
+            emptyBankFound = true;
+            break;
+          }
+          bankSlotCursor = bankSlotCursor + 1;
+          cursorOrBankIndex = cursorOrBankIndex + 1;
+          remainingCount = remainingCount + -1;
+        } while (remainingCount != 0);
+        if (!emptyBankFound) break;
+        GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
+                  (cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
+      }
       cursorOrBankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
       entryCursor = (uint *)(textureSourceBase + 0x200);
@@ -126,23 +137,29 @@ LAB_004ae640:
         entryCursor = bankCursor + 0x200;
         remainingCount = remainingCount + -1;
       } while (remainingCount != 0);
+      /* Merge bank pairs whose combined used colors fit into 256 entries; after a merge, retry the same first
+         bank against the remaining ones. */
       indexOrColor = 0;
-LAB_004ae6f0:
-      do {
+      for (;;) {
         secondIndex = indexOrColor + 1;
         if (*(uint *)(textureSourceBase + 0xb4) <= secondIndex) break;
+        banksMerged = false;
         do {
           colorOrCombinedCount = GraphicsPaletteTextureSource_CountCombinedUsedColors
                             (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
           if (colorOrCombinedCount < 0x101) {
             GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
                       (secondIndex,indexOrColor,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
-            goto LAB_004ae6f0;
+            banksMerged = true;
+            break;
           }
           secondIndex = secondIndex + 1;
         } while (secondIndex < *(uint *)(textureSourceBase + 0xb4));
-        indexOrColor = indexOrColor + 1;
-      } while (indexOrColor < *(uint *)(textureSourceBase + 0xb4));
+        if (!banksMerged) {
+          indexOrColor = indexOrColor + 1;
+          if (*(uint *)(textureSourceBase + 0xb4) <= indexOrColor) break;
+        }
+      }
       bankIndex = 0;
       remainingCount = *(int *)(textureSourceBase + 0xb4);
       entryCursor = (uint *)(textureSourceBase + 0x200);
@@ -177,10 +194,6 @@ LAB_004ae6f0:
     }
   }
   return true;
-code_r0x004ae655:
-  GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-            (cursorOrBankIndex,(GraphicsTextureSourceHeaderViewBC *)textureSourceBase);
-  goto LAB_004ae640;
 }
 
 
@@ -477,57 +490,58 @@ GraphicsPaletteTextureSource_MergePaletteBankAndRemapSubresources
   
   sourceEntry = (uint *)((int)textureSource + sourcePaletteBank * 0x800 + 0x200);
   destinationBankEntries = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
-  sourceColorIndex = 0;
-  while (packedColor = *sourceEntry, (packedColor & 0x70707) != 0) {
-LAB_004ae480:
-    sourceColorIndex = sourceColorIndex + 1;
-    sourceEntry = sourceEntry + 2;
-    if (0xff < sourceColorIndex) {
-      remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
-      subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                       ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
-      do {
-        if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
-          *(GraphicsPaletteIndex *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
-               destinationPaletteBank;
-          pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
-                    *(int *)(subresourceEntry + 6) + -0x28;
-          remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
-          do {
-            *pixelCursor = *(byte *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
-            pixelCursor = pixelCursor + 1;
-            remainingPixels = remainingPixels + -1;
-          } while (remainingPixels != 0);
+  /* Build g_GraphicsPaletteRemapBytes: every used source color (marker bits 0x70707 clear) maps to an identical
+     destination color, or else is copied into the first free destination entry (marker bits set). When the
+     destination bank is full, that remap byte is left unchanged. */
+  for (sourceColorIndex = 0; sourceColorIndex < 0x100; sourceColorIndex = sourceColorIndex + 1) {
+    packedColor = *sourceEntry;
+    if ((packedColor & 0x70707) == 0) {
+      destinationEntry = destinationBankEntries;
+      for (destinationColorIndex = 0; destinationColorIndex < 0x100;
+          destinationColorIndex = destinationColorIndex + 1) {
+        if (packedColor == *destinationEntry) break;
+        destinationEntry = destinationEntry + 2;
+      }
+      if (destinationColorIndex < 0x100) {
+        *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
+      }
+      else {
+        destinationEntry = destinationBankEntries;
+        for (destinationColorIndex = 0; destinationColorIndex < 0x100;
+            destinationColorIndex = destinationColorIndex + 1) {
+          if ((*destinationEntry & 0x70707) != 0) break;
+          destinationEntry = destinationEntry + 2;
         }
-        subresourceEntry = subresourceEntry + 0x10;
-        remainingSubresources = remainingSubresources - 1;
-      } while (remainingSubresources != 0);
-      GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources
-                (sourcePaletteBank,textureSource);
-      return;
+        if (destinationColorIndex < 0x100) {
+          *destinationEntry = packedColor;
+          destinationEntry[1] = sourceEntry[1];
+          *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
+        }
+      }
     }
+    sourceEntry = sourceEntry + 2;
   }
-  destinationColorIndex = 0;
-  destinationEntry = destinationBankEntries;
+  remainingSubresources = (textureSource->tableDescriptor).subresourceCount;
+  subresourceEntry = (word *)((textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+                   ((textureSource->tableDescriptor).subresourceTableOffset - 0x28));
   do {
-    if (packedColor == *destinationEntry) goto LAB_004ae478;
-    destinationColorIndex = destinationColorIndex + 1;
-    destinationEntry = destinationEntry + 2;
-  } while (destinationColorIndex < 0x100);
-  destinationColorIndex = 0;
-  destinationEntry = destinationBankEntries;
-LAB_004ae450:
-  if ((*destinationEntry & 0x70707) == 0) goto code_r0x004ae458;
-  *destinationEntry = packedColor;
-  destinationEntry[1] = sourceEntry[1];
-LAB_004ae478:
-  *(char *)(sourceColorIndex + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0)) = (char)destinationColorIndex;
-  goto LAB_004ae480;
-code_r0x004ae458:
-  destinationColorIndex = destinationColorIndex + 1;
-  destinationEntry = destinationEntry + 2;
-  if (0xff < destinationColorIndex) goto LAB_004ae480;
-  goto LAB_004ae450;
+    if (sourcePaletteBank == *(int *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName) {
+      *(GraphicsPaletteIndex *)((AssetProducerSourceNames *)(subresourceEntry + 4))->producerName =
+           destinationPaletteBank;
+      pixelCursor = (textureSource->common).buildMetadata.assetRelativeAddressAnchor28 +
+                *(int *)(subresourceEntry + 6) + -0x28;
+      remainingPixels = *(int *)(subresourceEntry + 0xc) * *(int *)(subresourceEntry + 0xe);
+      do {
+        *pixelCursor = *(byte *)(*pixelCursor + THANDOR_ADDR(g_GraphicsPaletteRemapBytes,0));
+        pixelCursor = pixelCursor + 1;
+        remainingPixels = remainingPixels + -1;
+      } while (remainingPixels != 0);
+    }
+    subresourceEntry = subresourceEntry + 0x10;
+    remainingSubresources = remainingSubresources - 1;
+  } while (remainingSubresources != 0);
+  GraphicsPaletteTextureSource_RemovePaletteBankAndRebaseSubresources(sourcePaletteBank,textureSource);
+  return;
 }
 
 
@@ -590,34 +604,35 @@ GraphicsPaletteTextureSource_CountCombinedUsedColors
   
   destinationEntry = (uint *)((int)textureSource + destinationPaletteBank * 0x800 + 0x200);
   candidateBankCursor = (uint *)((int)textureSource + candidatePaletteBank * 0x800 + 0x200);
-  remainingEntries = 0x100;
   usedColorCount = 0;
+  /* Used destination colors that the candidate bank does not contain as well... */
+  remainingEntries = 0x100;
   do {
     if ((*destinationEntry & 0x70707) == 0) {
       remainingCandidateEntries = 0x100;
       candidateEntry = candidateBankCursor;
       do {
-        if (*destinationEntry == *candidateEntry) goto LAB_004ae3c0;
+        if (*destinationEntry == *candidateEntry) break;
         candidateEntry = candidateEntry + 2;
         remainingCandidateEntries = remainingCandidateEntries + -1;
       } while (remainingCandidateEntries != 0);
-      usedColorCount = usedColorCount + 1;
+      if (remainingCandidateEntries == 0) {
+        usedColorCount = usedColorCount + 1;
+      }
     }
-LAB_004ae3c0:
     destinationEntry = destinationEntry + 2;
     remainingEntries = remainingEntries + -1;
-    if (remainingEntries == 0) {
-      remainingEntries = 0x100;
-      do {
-        if ((*candidateBankCursor & 0x70707) == 0) {
-          usedColorCount = usedColorCount + 1;
-        }
-        candidateBankCursor = candidateBankCursor + 2;
-        remainingEntries = remainingEntries + -1;
-      } while (remainingEntries != 0);
-      return usedColorCount;
+  } while (remainingEntries != 0);
+  /* ...plus every used candidate color. */
+  remainingEntries = 0x100;
+  do {
+    if ((*candidateBankCursor & 0x70707) == 0) {
+      usedColorCount = usedColorCount + 1;
     }
-  } while( true );
+    candidateBankCursor = candidateBankCursor + 2;
+    remainingEntries = remainingEntries + -1;
+  } while (remainingEntries != 0);
+  return usedColorCount;
 }
 
 

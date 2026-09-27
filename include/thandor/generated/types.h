@@ -5769,6 +5769,11 @@ typedef dword PckHeaderDwordCount;
 
 typedef int InGameCommandHandlerAddress32;
 
+/* A queued player command handler: the command code is the handler's code offset from the queue
+   function (see THANDOR_CODE_AT); called with the player runtime id and the three payload dwords. */
+typedef void CommandQueueHandlerProc(dword playerRuntimeId,dword payloadDword0C,dword payloadDword08,
+                                     dword payloadDword04);
+
 typedef dword FrontendPackedTextCommandState;
 
 typedef dword MovieStreamFileOffset;
@@ -9548,7 +9553,7 @@ struct GameDataAuxState {
 };
 
 struct KeyboardAsciiCaseTransformCallbackTable3 {
-    void (*compareCaseInsensitiveFlags)(dword, dword); 
+    bool (*compareCaseInsensitiveFlags)(dword, dword); /* CF: upper(right) < upper(left) (Keyboard_CompareAsciiCaseInsensitiveFlags) */
     dword (*toUpper)(dword); 
     dword (*toLower)(dword); 
 };
@@ -10024,6 +10029,17 @@ struct IDirectDraw2_Vtbl {
 
 struct IDirectDraw2 {
     struct IDirectDraw2_Vtbl *lpVtbl;
+};
+
+/* IDirectDrawPalette: only the IUnknown slots are used (the 8-bit texture uploads create one and release it). */
+typedef struct IDirectDrawPalette IDirectDrawPalette;
+typedef struct IDirectDrawPalette_Vtbl {
+    TH_LEGACY_HRESULT (__stdcall *QueryInterface)(struct IDirectDrawPalette *, struct TH_LEGACY_GUID *, TH_LEGACY_LPVOID *);
+    TH_LEGACY_ULONG (__stdcall *AddRef)(struct IDirectDrawPalette *);
+    TH_LEGACY_ULONG (__stdcall *Release)(struct IDirectDrawPalette *);
+} IDirectDrawPalette_Vtbl;
+struct IDirectDrawPalette {
+    struct IDirectDrawPalette_Vtbl *lpVtbl;
 };
 
 typedef void *TH_LEGACY_HINSTANCE;
@@ -11526,7 +11542,7 @@ struct FrontendModelPointerContextRuntimeState17C {
     dword (*resolvedActionCallback10C)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     dword (*resolvedActionCallback110)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
     dword (*resolvedActionCallback114)(dword, dword, dword, int, struct ModelRuntimeNode *, struct FrontendModelPointerContextRuntimeState118 *); // Six-argument callback with ModelRuntimeNode selected-target type.
-    dword rightReleaseCallback118; // Code pointer invoked on right release when rightButtonState11C < 7; exact callback typedef unresolved.
+    void (*rightReleaseCallback118)(struct FrontendModelPointerContextRuntimeState17C *); // Invoked on right release when rightButtonState11C < 7 (unsigned); receives the context (PUSH EBX; CALL EDX at 0050c75c). Callee may clobber ECX (caller preserves only EAX/EDX).
     dword rightButtonState11C; // Small right-button state code; cleared on press and compared unsigned/signed against 7 on release.
     GraphicsSceneExtentFixed sceneBound0; // Exact bound0 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.
     GraphicsSceneExtentFixed sceneBound1; // Exact bound1 input copied by Graphics_SetSceneBounds; axis interpretation remains unresolved.

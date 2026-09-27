@@ -11,6 +11,36 @@
 
 /* Implementation ownership: world/terrain/projection. */
 
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+static __inline qword TerrainProjection_UnpackBytesShiftRight(dword value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+static __inline dword TerrainProjection_PackWordsUnsignedSaturate(qword words)
+
+{
+  ThandorMmx lanes;
+  dword packed;
+  int lane;
+
+  lanes.q = words;
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    packed = packed |
+             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+  }
+  return packed;
+}
+
 /* Address: 0x00506CD0.
    Ownership: world/terrain/projection.
    Purpose: Converts one world point to the hexagonal field grid, derives the bounded scan radius and row stride,
@@ -1527,21 +1557,11 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
   GraphicsFixedVec3 *offsetVector;
   int offsetX;
   int offsetY;
-  short shadedBlue;
-  short shadedGreen;
-  short shadedRed;
-  short shadedAlpha;
-  ushort vertexAlphaPair;
-  ushort baseAlphaPair;
   int offsetZ;
   uint resultFlags;
   uint pointAFlags;
-  undefined1 vertexAlphaOrGreen;
-  undefined1 vertexRed;
   MmxPackedValue64 lightingFactors;
-  undefined8 shadedProduct;
-  undefined1 baseAlphaOrGreen;
-  undefined1 baseRed;
+  qword shadedProduct;
   GraphicsProjectedPointPair projectedPoint;
   
   resultFlags = vertex->projectionFlags & 0xe801ffff;
@@ -1568,42 +1588,15 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
     }
     vertexColor = vertex->packedColorA;
     baseColor = vertex->basePackedColor;
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 0x18);
-    vertexAlphaPair = CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen);
-    vertexRed = (undefined1)(vertexColor >> 0x10);
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 8);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 0x18);
-    baseAlphaPair = CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen);
-    baseRed = (undefined1)(baseColor >> 0x10);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 8);
-    lightingFactors = CONCAT26(vertexAlphaPair >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(vertexAlphaPair,vertexRed),CONCAT14(vertexRed,vertexColor)) >>
-                                       0x20) >> 6,
-                               CONCAT22(CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen) >> 6,
-                                        CONCAT11((char)vertexColor,(char)vertexColor) >> 6)));
+    /* vertex color PUNPCKLBW/PSRLW 6 (optionally lit), base color PUNPCKLBW/PSRLW 2, PMULHW, PACKUSWB */
+    lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == 0xff) {
       lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
                          (&vertex->viewPointA,lightingFactors);
     }
-    shadedProduct = pmulhw(lightingFactors,CONCAT26(baseAlphaPair >> 2,
-                                    CONCAT24((ushort)(CONCAT35(CONCAT21(baseAlphaPair,baseRed),
-                                                               CONCAT14(baseRed,baseColor)) >> 0x20) >> 2
-                                             ,CONCAT22(CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen) >> 2,
-                                                       CONCAT11((char)baseColor,(char)baseColor) >> 2))));
-    shadedBlue = (short)shadedProduct;
-    shadedGreen = (short)((ulonglong)shadedProduct >> 0x10);
-    shadedRed = (short)((ulonglong)shadedProduct >> 0x20);
-    shadedAlpha = (short)((ulonglong)shadedProduct >> 0x30);
+    shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
     offsetVector = vertex->secondaryOffset;
-    vertex->shadedColorA =
-         CONCAT13((0 < shadedAlpha) * (shadedAlpha < 0x100) * (char)((ulonglong)shadedProduct >> 0x30) -
-                  (0xff < shadedAlpha),
-                  CONCAT12((0 < shadedRed) * (shadedRed < 0x100) * (char)((ulonglong)shadedProduct >> 0x20) -
-                           (0xff < shadedRed),
-                           CONCAT11((0 < shadedGreen) * (shadedGreen < 0x100) *
-                                    (char)((ulonglong)shadedProduct >> 0x10) - (0xff < shadedGreen),
-                                    (0 < shadedBlue) * (shadedBlue < 0x100) * (char)shadedProduct - (0xff < shadedBlue))))
-    ;
+    vertex->shadedColorA = TerrainProjection_PackWordsUnsignedSaturate(shadedProduct);
     resultFlags = pointAFlags | 0x4000000;
     offsetX = offsetVector->x;
     offsetY = offsetVector->y;
@@ -1640,42 +1633,14 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantA(TerrainProjectedVertexWo
     }
     vertexColor = vertex->packedColorB;
     baseColor = vertex->basePackedColor;
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 0x18);
-    vertexAlphaPair = CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen);
-    vertexRed = (undefined1)(vertexColor >> 0x10);
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 8);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 0x18);
-    baseAlphaPair = CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen);
-    baseRed = (undefined1)(baseColor >> 0x10);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 8);
-    lightingFactors = CONCAT26(vertexAlphaPair >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(vertexAlphaPair,vertexRed),CONCAT14(vertexRed,vertexColor)) >>
-                                       0x20) >> 6,
-                               CONCAT22(CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen) >> 6,
-                                        CONCAT11((char)vertexColor,(char)vertexColor) >> 6)));
+    lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == 0xff) {
       lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
                          (&vertex->viewPointB,lightingFactors);
     }
-    shadedProduct = pmulhw(lightingFactors,CONCAT26(baseAlphaPair >> 2,
-                                    CONCAT24((ushort)(CONCAT35(CONCAT21(baseAlphaPair,baseRed),
-                                                               CONCAT14(baseRed,baseColor)) >> 0x20) >> 2
-                                             ,CONCAT22(CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen) >> 2,
-                                                       CONCAT11((char)baseColor,(char)baseColor) >> 2))));
-    shadedBlue = (short)shadedProduct;
-    shadedGreen = (short)((ulonglong)shadedProduct >> 0x10);
-    shadedRed = (short)((ulonglong)shadedProduct >> 0x20);
-    shadedAlpha = (short)((ulonglong)shadedProduct >> 0x30);
+    shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
     vertex->projectionFlags = resultFlags;
-    vertex->shadedColorB =
-         CONCAT13((0 < shadedAlpha) * (shadedAlpha < 0x100) * (char)((ulonglong)shadedProduct >> 0x30) -
-                  (0xff < shadedAlpha),
-                  CONCAT12((0 < shadedRed) * (shadedRed < 0x100) * (char)((ulonglong)shadedProduct >> 0x20) -
-                           (0xff < shadedRed),
-                           CONCAT11((0 < shadedGreen) * (shadedGreen < 0x100) *
-                                    (char)((ulonglong)shadedProduct >> 0x10) - (0xff < shadedGreen),
-                                    (0 < shadedBlue) * (shadedBlue < 0x100) * (char)shadedProduct - (0xff < shadedBlue))))
-    ;
+    vertex->shadedColorB = TerrainProjection_PackWordsUnsignedSaturate(shadedProduct);
   }
   return;
 }
@@ -1698,21 +1663,11 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWo
   int offsetY;
   PackedArgb32 vertexColor;
   PackedArgb32 baseColor;
-  short shadedBlue;
-  short shadedGreen;
-  short shadedRed;
-  short shadedAlpha;
-  ushort vertexAlphaPair;
-  ushort baseAlphaPair;
   int offsetZ;
   uint maskedFlags;
   uint resultFlags;
-  undefined1 vertexAlphaOrGreen;
-  undefined1 vertexRed;
   MmxPackedValue64 lightingFactors;
-  undefined8 shadedProduct;
-  undefined1 baseAlphaOrGreen;
-  undefined1 baseRed;
+  qword shadedProduct;
   GraphicsProjectedPointPair projectedPoint;
   
   resultFlags = vertex->projectionFlags;
@@ -1755,78 +1710,23 @@ TerrainProjectedVertex_TransformProjectAndShadeVariantB(TerrainProjectedVertexWo
     }
     vertexColor = vertex->packedColorB;
     baseColor = vertex->basePackedColor;
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 0x18);
-    vertexAlphaPair = CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen);
-    vertexRed = (undefined1)(vertexColor >> 0x10);
-    vertexAlphaOrGreen = (undefined1)(vertexColor >> 8);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 0x18);
-    baseAlphaPair = CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen);
-    baseRed = (undefined1)(baseColor >> 0x10);
-    baseAlphaOrGreen = (undefined1)(baseColor >> 8);
-    lightingFactors = CONCAT26(vertexAlphaPair >> 6,
-                      CONCAT24((ushort)(CONCAT35(CONCAT21(vertexAlphaPair,vertexRed),CONCAT14(vertexRed,vertexColor)) >>
-                                       0x20) >> 6,
-                               CONCAT22(CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen) >> 6,
-                                        CONCAT11((char)vertexColor,(char)vertexColor) >> 6)));
+    lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
     if (vertex->lightingLookupIndexOrSentinel == 0xff) {
       lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
                          (&vertex->viewPointB,lightingFactors);
     }
-    shadedProduct = pmulhw(lightingFactors,CONCAT26(baseAlphaPair >> 2,
-                                    CONCAT24((ushort)(CONCAT35(CONCAT21(baseAlphaPair,baseRed),
-                                                               CONCAT14(baseRed,baseColor)) >> 0x20) >> 2
-                                             ,CONCAT22(CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen) >> 2,
-                                                       CONCAT11((char)baseColor,(char)baseColor) >> 2))));
-    shadedBlue = (short)shadedProduct;
-    shadedGreen = (short)((ulonglong)shadedProduct >> 0x10);
-    shadedRed = (short)((ulonglong)shadedProduct >> 0x20);
-    shadedAlpha = (short)((ulonglong)shadedProduct >> 0x30);
-    vertex->shadedColorB =
-         CONCAT13((0 < shadedAlpha) * (shadedAlpha < 0x100) * (char)((ulonglong)shadedProduct >> 0x30) -
-                  (0xff < shadedAlpha),
-                  CONCAT12((0 < shadedRed) * (shadedRed < 0x100) * (char)((ulonglong)shadedProduct >> 0x20) -
-                           (0xff < shadedRed),
-                           CONCAT11((0 < shadedGreen) * (shadedGreen < 0x100) *
-                                    (char)((ulonglong)shadedProduct >> 0x10) - (0xff < shadedGreen),
-                                    (0 < shadedBlue) * (shadedBlue < 0x100) * (char)shadedProduct - (0xff < shadedBlue))))
-    ;
+    shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
+    vertex->shadedColorB = TerrainProjection_PackWordsUnsignedSaturate(shadedProduct);
   }
   vertexColor = vertex->packedColorA;
   baseColor = vertex->basePackedColor;
-  vertexAlphaOrGreen = (undefined1)(vertexColor >> 0x18);
-  vertexAlphaPair = CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen);
-  vertexRed = (undefined1)(vertexColor >> 0x10);
-  vertexAlphaOrGreen = (undefined1)(vertexColor >> 8);
-  baseAlphaOrGreen = (undefined1)(baseColor >> 0x18);
-  baseAlphaPair = CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen);
-  baseRed = (undefined1)(baseColor >> 0x10);
-  baseAlphaOrGreen = (undefined1)(baseColor >> 8);
-  lightingFactors = CONCAT26(vertexAlphaPair >> 6,
-                    CONCAT24((ushort)(CONCAT35(CONCAT21(vertexAlphaPair,vertexRed),CONCAT14(vertexRed,vertexColor)) >>
-                                     0x20) >> 6,
-                             CONCAT22(CONCAT11(vertexAlphaOrGreen,vertexAlphaOrGreen) >> 6,
-                                      CONCAT11((char)vertexColor,(char)vertexColor) >> 6)));
+  lightingFactors = TerrainProjection_UnpackBytesShiftRight(vertexColor,6);
   if (vertex->lightingLookupIndexOrSentinel == 0xff) {
     lightingFactors = GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
                        (&vertex->viewPointA,lightingFactors);
   }
-  shadedProduct = pmulhw(lightingFactors,CONCAT26(baseAlphaPair >> 2,
-                                  CONCAT24((ushort)(CONCAT35(CONCAT21(baseAlphaPair,baseRed),
-                                                             CONCAT14(baseRed,baseColor)) >> 0x20) >> 2,
-                                           CONCAT22(CONCAT11(baseAlphaOrGreen,baseAlphaOrGreen) >> 2,
-                                                    CONCAT11((char)baseColor,(char)baseColor) >> 2))));
-  shadedBlue = (short)shadedProduct;
-  shadedGreen = (short)((ulonglong)shadedProduct >> 0x10);
-  shadedRed = (short)((ulonglong)shadedProduct >> 0x20);
-  shadedAlpha = (short)((ulonglong)shadedProduct >> 0x30);
-  vertex->shadedColorA =
-       CONCAT13((0 < shadedAlpha) * (shadedAlpha < 0x100) * (char)((ulonglong)shadedProduct >> 0x30) -
-                (0xff < shadedAlpha),
-                CONCAT12((0 < shadedRed) * (shadedRed < 0x100) * (char)((ulonglong)shadedProduct >> 0x20) -
-                         (0xff < shadedRed),
-                         CONCAT11((0 < shadedGreen) * (shadedGreen < 0x100) * (char)((ulonglong)shadedProduct >> 0x10)
-                                  - (0xff < shadedGreen),
-                                  (0 < shadedBlue) * (shadedBlue < 0x100) * (char)shadedProduct - (0xff < shadedBlue))));
+  shadedProduct = pmulhw(lightingFactors,TerrainProjection_UnpackBytesShiftRight(baseColor,2));
+  vertex->shadedColorA = TerrainProjection_PackWordsUnsignedSaturate(shadedProduct);
   vertex->projectionFlags = resultFlags;
   return;
 }
@@ -1848,21 +1748,6 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
 {
   GraphicsPrimitiveDispatchFlags *packetRenderFlags;
   dword vertex0ViewDepth;
-  short channelWord0;
-  short channelWord1;
-  short channelWord2;
-  short channelWord3;
-  short channelWord4;
-  short channelWord5;
-  short channelWord6;
-  short channelWord7;
-  short channelWord8;
-  short channelWord9;
-  short channelWord10;
-  short channelWord11;
-  ushort color0AlphaPair;
-  ushort color1AlphaPair;
-  ushort color2AlphaPair;
   void *soilPacketTable;
   uint flagsOrClampedDepth0;
   int yOrTableIndexC;
@@ -1874,17 +1759,11 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
   int materialOffset0;
   bool outsideTriangle;
   PackedArgb32 vertex0Color;
-  undefined1 color0AlphaOrGreen;
-  undefined1 color0Red;
-  undefined8 litProduct0;
+  qword litProduct0;
   PackedArgb32 vertex1Color;
-  undefined1 color1AlphaOrGreen;
-  undefined1 color1Red;
-  undefined8 litProduct1;
+  qword litProduct1;
   PackedArgb32 vertex2Color;
-  undefined1 color2AlphaOrGreen;
-  undefined1 color2Red;
-  undefined8 litProduct2;
+  qword litProduct2;
   TriangleBarycentricWeightsQ12 barycentricWeights;
   GraphicsPrimitivePacketEaxCf5 queuedPacket;
   TerrainProjectedVertexWorkRecord *vertex2Projected;
@@ -1932,18 +1811,6 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex0Color = vertex0->shadedColorA;
       vertex1Color = vertex1->shadedColorA;
       vertex2Color = vertex2->shadedColorA;
-      color0AlphaOrGreen = (undefined1)(vertex0Color >> 0x18);
-      color0AlphaPair = CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen);
-      color0Red = (undefined1)(vertex0Color >> 0x10);
-      color0AlphaOrGreen = (undefined1)(vertex0Color >> 8);
-      color1AlphaOrGreen = (undefined1)(vertex1Color >> 0x18);
-      color1AlphaPair = CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen);
-      color1Red = (undefined1)(vertex1Color >> 0x10);
-      color1AlphaOrGreen = (undefined1)(vertex1Color >> 8);
-      color2AlphaOrGreen = (undefined1)(vertex2Color >> 0x18);
-      color2AlphaPair = CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen);
-      color2Red = (undefined1)(vertex2Color >> 0x10);
-      color2AlphaOrGreen = (undefined1)(vertex2Color >> 8);
       flagsOrClampedDepth0 = vertex0->secondaryProjectionDepthQ12;
       clampedDepth1 = vertex1->secondaryProjectionDepthQ12;
       clampedDepth2 = vertex2->secondaryProjectionDepthQ12;
@@ -1968,60 +1835,16 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       if (yOrTableIndexC < 0) {
         yOrTableIndexC = 0;
       }
-      litProduct0 = pmulhw(CONCAT26(color0AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color0AlphaPair,color0Red),
-                                                          CONCAT14(color0Red,vertex0Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex0Color,(char)vertex0Color) >> 4))),
-                      g_PackedLightingLookupTable[yOrTableIndexA]);
-      litProduct1 = pmulhw(CONCAT26(color1AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color1AlphaPair,color1Red),
-                                                          CONCAT14(color1Red,vertex1Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex1Color,(char)vertex1Color) >> 4))),
-                      g_PackedLightingLookupTable[yOrTableIndexB]);
-      litProduct2 = pmulhw(CONCAT26(color2AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color2AlphaPair,color2Red),
-                                                          CONCAT14(color2Red,vertex2Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex2Color,(char)vertex2Color) >> 4))),
-                      g_PackedLightingLookupTable[yOrTableIndexC]);
-      channelWord0 = (short)litProduct0;
-      channelWord1 = (short)((ulonglong)litProduct0 >> 0x10);
-      channelWord2 = (short)((ulonglong)litProduct0 >> 0x20);
-      channelWord3 = (short)((ulonglong)litProduct0 >> 0x30);
-      vertex0Color = CONCAT13((0 < channelWord3) * (channelWord3 < 0x100) * (char)((ulonglong)litProduct0 >> 0x30) -
-                        (0xff < channelWord3),
-                        CONCAT12((0 < channelWord2) * (channelWord2 < 0x100) * (char)((ulonglong)litProduct0 >> 0x20) -
-                                 (0xff < channelWord2),
-                                 CONCAT11((0 < channelWord1) * (channelWord1 < 0x100) *
-                                          (char)((ulonglong)litProduct0 >> 0x10) - (0xff < channelWord1),
-                                          (0 < channelWord0) * (channelWord0 < 0x100) * (char)litProduct0 -
-                                          (0xff < channelWord0))));
-      channelWord0 = (short)litProduct1;
-      channelWord1 = (short)((ulonglong)litProduct1 >> 0x10);
-      channelWord2 = (short)((ulonglong)litProduct1 >> 0x20);
-      channelWord3 = (short)((ulonglong)litProduct1 >> 0x30);
-      vertex1Color = CONCAT13((0 < channelWord3) * (channelWord3 < 0x100) * (char)((ulonglong)litProduct1 >> 0x30) -
-                        (0xff < channelWord3),
-                        CONCAT12((0 < channelWord2) * (channelWord2 < 0x100) * (char)((ulonglong)litProduct1 >> 0x20) -
-                                 (0xff < channelWord2),
-                                 CONCAT11((0 < channelWord1) * (channelWord1 < 0x100) *
-                                          (char)((ulonglong)litProduct1 >> 0x10) - (0xff < channelWord1),
-                                          (0 < channelWord0) * (channelWord0 < 0x100) * (char)litProduct1 -
-                                          (0xff < channelWord0))));
-      channelWord0 = (short)litProduct2;
-      channelWord1 = (short)((ulonglong)litProduct2 >> 0x10);
-      channelWord2 = (short)((ulonglong)litProduct2 >> 0x20);
-      channelWord3 = (short)((ulonglong)litProduct2 >> 0x30);
-      vertex2Color = CONCAT13((0 < channelWord3) * (channelWord3 < 0x100) * (char)((ulonglong)litProduct2 >> 0x30) -
-                        (0xff < channelWord3),
-                        CONCAT12((0 < channelWord2) * (channelWord2 < 0x100) * (char)((ulonglong)litProduct2 >> 0x20) -
-                                 (0xff < channelWord2),
-                                 CONCAT11((0 < channelWord1) * (channelWord1 < 0x100) *
-                                          (char)((ulonglong)litProduct2 >> 0x10) - (0xff < channelWord1),
-                                          (0 < channelWord0) * (channelWord0 < 0x100) * (char)litProduct2 -
-                                          (0xff < channelWord0))));
+      /* PUNPCKLBW/PSRLW 4 of each color, PMULHW by its lighting level, PACKUSWB */
+      litProduct0 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex0Color,4),
+                           g_PackedLightingLookupTable[yOrTableIndexA]);
+      litProduct1 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex1Color,4),
+                           g_PackedLightingLookupTable[yOrTableIndexB]);
+      litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
+                           g_PackedLightingLookupTable[yOrTableIndexC]);
+      vertex0Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct0);
+      vertex1Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct1);
+      vertex2Color = TerrainProjection_PackWordsUnsignedSaturate(litProduct2);
       materialOffset0 = (vertex0->projectionFlags & 0xff) * 0x800;
       materialOffset1 = (vertex1->projectionFlags & 0xff) * 0x800;
       yOrTableIndexC = (vertex2->projectionFlags & 0xff) * 0x800;
@@ -2139,74 +1962,17 @@ TerrainProjectedTriangle_ClipInterpolateAndQueueTextured
       vertex0Color = vertex0->shadedColorB;
       vertex1Color = vertex1->shadedColorB;
       vertex2Color = vertex2->shadedColorB;
-      color0AlphaOrGreen = (undefined1)(vertex0Color >> 0x18);
-      color0AlphaPair = CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen);
-      color0Red = (undefined1)(vertex0Color >> 0x10);
-      color0AlphaOrGreen = (undefined1)(vertex0Color >> 8);
-      color1AlphaOrGreen = (undefined1)(vertex1Color >> 0x18);
-      color1AlphaPair = CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen);
-      color1Red = (undefined1)(vertex1Color >> 0x10);
-      color1AlphaOrGreen = (undefined1)(vertex1Color >> 8);
-      color2AlphaOrGreen = (undefined1)(vertex2Color >> 0x18);
-      color2AlphaPair = CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen);
-      color2Red = (undefined1)(vertex2Color >> 0x10);
-      color2AlphaOrGreen = (undefined1)(vertex2Color >> 8);
-      litProduct0 = pmulhw(CONCAT26(color0AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color0AlphaPair,color0Red),
-                                                          CONCAT14(color0Red,vertex0Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color0AlphaOrGreen,color0AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex0Color,(char)vertex0Color) >> 4))),
-                      g_PackedLightingLookupTable[vertex0->lightingLookupIndexOrSentinel]);
-      litProduct1 = pmulhw(CONCAT26(color1AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color1AlphaPair,color1Red),
-                                                          CONCAT14(color1Red,vertex1Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color1AlphaOrGreen,color1AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex1Color,(char)vertex1Color) >> 4))),
-                      g_PackedLightingLookupTable[vertex1->lightingLookupIndexOrSentinel]);
-      litProduct2 = pmulhw(CONCAT26(color2AlphaPair >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(color2AlphaPair,color2Red),
-                                                          CONCAT14(color2Red,vertex2Color)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(color2AlphaOrGreen,color2AlphaOrGreen) >> 4,
-                                                 CONCAT11((char)vertex2Color,(char)vertex2Color) >> 4))),
-                      g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
-      channelWord0 = (short)litProduct0;
-      channelWord3 = (short)((ulonglong)litProduct0 >> 0x10);
-      channelWord6 = (short)((ulonglong)litProduct0 >> 0x20);
-      channelWord9 = (short)((ulonglong)litProduct0 >> 0x30);
-      channelWord1 = (short)litProduct1;
-      channelWord4 = (short)((ulonglong)litProduct1 >> 0x10);
-      channelWord7 = (short)((ulonglong)litProduct1 >> 0x20);
-      channelWord10 = (short)((ulonglong)litProduct1 >> 0x30);
-      channelWord2 = (short)litProduct2;
-      channelWord5 = (short)((ulonglong)litProduct2 >> 0x10);
-      channelWord8 = (short)((ulonglong)litProduct2 >> 0x20);
-      channelWord11 = (short)((ulonglong)litProduct2 >> 0x30);
+      litProduct0 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex0Color,4),
+                           g_PackedLightingLookupTable[vertex0->lightingLookupIndexOrSentinel]);
+      litProduct1 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex1Color,4),
+                           g_PackedLightingLookupTable[vertex1->lightingLookupIndexOrSentinel]);
+      litProduct2 = pmulhw(TerrainProjection_UnpackBytesShiftRight(vertex2Color,4),
+                           g_PackedLightingLookupTable[vertex2->lightingLookupIndexOrSentinel]);
       GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
                 ((dword *)(surfacePacketIndex * 0x20 + (int)g_TerrainSurfacePacketTablePayload),
-                 CONCAT13((0 < channelWord11) * (channelWord11 < 0x100) * (char)((ulonglong)litProduct2 >> 0x30) -
-                          (0xff < channelWord11),
-                          CONCAT12((0 < channelWord8) * (channelWord8 < 0x100) *
-                                   (char)((ulonglong)litProduct2 >> 0x20) - (0xff < channelWord8),
-                                   CONCAT11((0 < channelWord5) * (channelWord5 < 0x100) *
-                                            (char)((ulonglong)litProduct2 >> 0x10) - (0xff < channelWord5),
-                                            (0 < channelWord2) * (channelWord2 < 0x100) * (char)litProduct2 -
-                                            (0xff < channelWord2)))),
-                 CONCAT13((0 < channelWord10) * (channelWord10 < 0x100) * (char)((ulonglong)litProduct1 >> 0x30) -
-                          (0xff < channelWord10),
-                          CONCAT12((0 < channelWord7) * (channelWord7 < 0x100) *
-                                   (char)((ulonglong)litProduct1 >> 0x20) - (0xff < channelWord7),
-                                   CONCAT11((0 < channelWord4) * (channelWord4 < 0x100) *
-                                            (char)((ulonglong)litProduct1 >> 0x10) - (0xff < channelWord4),
-                                            (0 < channelWord1) * (channelWord1 < 0x100) * (char)litProduct1 -
-                                            (0xff < channelWord1)))),
-                 CONCAT13((0 < channelWord9) * (channelWord9 < 0x100) * (char)((ulonglong)litProduct0 >> 0x30) -
-                          (0xff < channelWord9),
-                          CONCAT12((0 < channelWord6) * (channelWord6 < 0x100) * (char)((ulonglong)litProduct0 >> 0x20)
-                                   - (0xff < channelWord6),
-                                   CONCAT11((0 < channelWord3) * (channelWord3 < 0x100) *
-                                            (char)((ulonglong)litProduct0 >> 0x10) - (0xff < channelWord3),
-                                            (0 < channelWord0) * (channelWord0 < 0x100) * (char)litProduct0 -
-                                            (0xff < channelWord0)))),
+                 TerrainProjection_PackWordsUnsignedSaturate(litProduct2),
+                 TerrainProjection_PackWordsUnsignedSaturate(litProduct1),
+                 TerrainProjection_PackWordsUnsignedSaturate(litProduct0),
                  (GraphicsProjectedVertexSource *)vertex2,(GraphicsProjectedVertexSource *)vertex1,
                  (GraphicsProjectedVertexSource *)vertex0,renderContext);
     }

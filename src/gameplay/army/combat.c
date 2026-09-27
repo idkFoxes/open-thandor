@@ -553,10 +553,10 @@ ArmyWeaponRuntime_TestTargetLineOfFireCf
   modelHit = ModelRuntime_RaycastCandidateListNearestCf
                      (elevationAngle,azimuthAngle,maxAngleOrRange,originZQ12,originYQ12,originXQ12,
                       requiredOwnerId,excludedNode,worldRuntime);
-  if (!modelHit.carry) {
-    if (0x7ffffffe < minAngleOwnerOrDistance)
-    goto ArmyWeaponRuntime_TestTargetLineOfFire_EvaluateTargetClearanceAgainstWeaponRange;
-LAB_0052bca0:
+  if ((!modelHit.carry) ? (minAngleOwnerOrDistance <= 0x7ffffffe) :
+      (minAngleOwnerOrDistance < modelHit.nearestDistanceQ12)) {
+    /* The terrain is hit first: only a ground shot without an entity target landing within 0x400 of the
+       aim distance is clear. */
     distanceDifference = minAngleOwnerOrDistance - angleOrDistance;
     if ((int)distanceDifference < 0) {
       distanceDifference = -distanceDifference;
@@ -567,21 +567,21 @@ LAB_0052bca0:
     }
     return true;
   }
-  if (minAngleOwnerOrDistance < modelHit.nearestDistanceQ12) goto LAB_0052bca0;
-  ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
-  hitEntity =
-       (((modelHit.edxCarrier.nearestModelNode)->runtimePayload).armyRuntime)->linkedEntityRuntime;
-  minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
-  if ((ownOrTargetEntity->common).commandState < 1) {
-    if (minAngleOwnerOrDistance == (hitEntity->common).ownership.ownerIndex)
-    goto ArmyWeaponRuntime_TestTargetLineOfFire_EvaluateTargetClearanceAgainstWeaponRange;
+  if (modelHit.carry) {
+    /* A model is hit first: blocked (CF set) when its owner fails the commandState owner test and it is not
+       the command target; otherwise fall through to the range check. */
+    ownOrTargetEntity = armyRuntime->linkedEntityRuntime;
+    hitEntity =
+         (((modelHit.edxCarrier.nearestModelNode)->runtimePayload).armyRuntime)->linkedEntityRuntime;
+    minAngleOwnerOrDistance = (ownOrTargetEntity->common).ownership.ownerIndex;
+    if (((ownOrTargetEntity->common).commandState < 1) ?
+        (minAngleOwnerOrDistance != (hitEntity->common).ownership.ownerIndex) :
+        (minAngleOwnerOrDistance == (hitEntity->common).ownership.ownerIndex)) {
+      if (hitEntity != (ownOrTargetEntity->common).commandTarget.targetEntity) {
+        return true;
+      }
+    }
   }
-  else if (minAngleOwnerOrDistance != (hitEntity->common).ownership.ownerIndex)
-  goto ArmyWeaponRuntime_TestTargetLineOfFire_EvaluateTargetClearanceAgainstWeaponRange;
-  if (hitEntity != (ownOrTargetEntity->common).commandTarget.targetEntity) {
-    return true;
-  }
-ArmyWeaponRuntime_TestTargetLineOfFire_EvaluateTargetClearanceAgainstWeaponRange:
   ownOrTargetEntity = (armyRuntime->linkedEntityRuntime->common).commandTarget.targetEntity;
   if (ownOrTargetEntity != (GameEntityRuntime *)0x0) {
     angleOrDistance = (int)(angleOrDistance * 2 -
@@ -695,23 +695,25 @@ ArmyRuntime_EmitDamageThresholdEffect
   ;
   localPointRecord = lookupResult.entry;
   if (lookupResult.carry) {
+    /* Wrap around to the first emitter point. */
     armyRuntime->selectionMetric4 = -1;
     lookupResult = ModelLookupTable_ContainsPackedKeyCf(0,3,(modelNodeRuntime->modelPayload).modelResource)
     ;
     localPointRecord = lookupResult.entry;
-    if (lookupResult.carry) {
-      randomOrPointX = (modelNodeRuntime->worldTransform).translation.x;
-      worldXQ12 = (modelNodeRuntime->worldTransform).translation.y;
-      worldZQ12 = (modelNodeRuntime->worldTransform).translation.z;
-      goto LAB_005282dd;
-    }
   }
-  transformedPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
-  worldZQ12 = transformedPoint.edx;
-  worldXQ12 = transformedPoint.ecx;
-  randomOrPointX = transformedPoint.eax;
-  armyRuntime->selectionMetric4 = armyRuntime->selectionMetric4 + 1;
-LAB_005282dd:
+  if (lookupResult.carry) {
+    /* No emitter point at all: use the model origin. */
+    randomOrPointX = (modelNodeRuntime->worldTransform).translation.x;
+    worldXQ12 = (modelNodeRuntime->worldTransform).translation.y;
+    worldZQ12 = (modelNodeRuntime->worldTransform).translation.z;
+  }
+  else {
+    transformedPoint = ModelNodeRuntime_TransformLocalPointRegs(localPointRecord,modelNodeRuntime);
+    worldZQ12 = transformedPoint.edx;
+    worldXQ12 = transformedPoint.ecx;
+    randomOrPointX = transformedPoint.eax;
+    armyRuntime->selectionMetric4 = armyRuntime->selectionMetric4 + 1;
+  }
   effectDefinition = *(EffectDefinition **)(definitionOrRandom + 0x254);
   definitionOrRandom = (*g_RandomGeneratorState.next)();
   randomOffset = definitionOrRandom & 0xffff;

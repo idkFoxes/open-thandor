@@ -429,7 +429,8 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
       control->root.base.right = rightOrBottom;
       UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
       UiRootStack_InvalidateAll();
-      goto UiResizableWindowControl_ClearInteractionStateAndReturn;
+      control->root.rootFlags = control->root.rootFlags & 0xe787ff;
+      return;
     }
     control->restoredLeft = control->root.base.left;
     topOrRight = control->root.base.right;
@@ -445,7 +446,6 @@ UiResizableWindowControl_EndMoveResizeAndHandleWindowActions
     UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
   }
   UiNode_InvalidateRoot((UiNodeBase *)control);
-UiResizableWindowControl_ClearInteractionStateAndReturn:
   control->root.rootFlags = control->root.rootFlags & 0xe787ff;
   return;
 }
@@ -470,9 +470,11 @@ UiResizableWindowControl_HandleWindowHotkeysCf
   bool delegateResult;
   
   if ((keyboardStateMask & 0x30) != 0) {
-    if (((control->root.rootFlags & 8) == 0) || (keyCode != 99)) {
-      if (((control->root.rootFlags & 0x10) == 0) || (keyCode != 0x7a))
-      goto UiResizableWindowControl_DelegateUnhandledWindowHotkey;
+    if (((control->root.rootFlags & 8) != 0) && (keyCode == 99)) {
+      UiActionQueue_Enqueue(0,control);
+      return false;
+    }
+    if (((control->root.rootFlags & 0x10) != 0) && (keyCode == 0x7a)) {
       control->root.rootFlags = control->root.rootFlags ^ 0x80;
       if ((control->root.rootFlags & 0x80) == 0) {
         topOrRight = control->restoredTop;
@@ -500,13 +502,9 @@ UiResizableWindowControl_HandleWindowHotkeysCf
         UiContainer_LayoutWithOptionalWindowHeaderOffset(control);
         UiNode_InvalidateRoot((UiNodeBase *)control);
       }
+      return false;
     }
-    else {
-      UiActionQueue_Enqueue(0,control);
-    }
-    return false;
   }
-UiResizableWindowControl_DelegateUnhandledWindowHotkey:
   delegateResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,(UiNodeBase *)control);
   return delegateResult;
 }
@@ -1508,7 +1506,8 @@ UiGrid_ComputeDimensionsPacked(UiControlCount maxRows,UiControlCount itemCount)
       rowCount = itemCount + 3 >> 2;
     }
   }
-  return CONCAT44(rowCount,columnCount);
+  /* EDX:EAX = rows:columns */
+  return ((UiGridDimensionsEdxEax8)rowCount << 32) | (UiGridDimensionsEdxEax8)columnCount;
 }
 
 
@@ -1522,7 +1521,7 @@ UiGridDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 UiGrid_OneColumnDimensionsPacked(UiControlCount itemCount)
 
 {
-  return CONCAT44(itemCount,1);
+  return ((UiGridDimensionsEdxEax8)itemCount << 32) | 1;
 }
 
 
@@ -1679,22 +1678,19 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
 {
   dword ticksToRun;
   UiRootNode *frontRoot;
-  dword nextPendingTicks;
-  dword pendingFrameTicks;
-  bool hadPendingFrameTicks;
-  UiRootNode *rootNode;
   UiRootCallbacks *rootCallbacks;
-  
+
   (*g_SpinLockAcquire)(g_UiRuntimeFrameLock);
+  /* The original zeroes EAX before the loop and Win32_PumpMessages preserves EAX, so the value
+     compared here is always 0: pump until a frame tick is pending, or once when stopMessageCode
+     is 0 (every caller passes 0). The pending tick count is then consumed (reset to 0). */
   do {
-    pendingFrameTicks = (*(code *)g_Win32PumpMessages)();
-    nextPendingTicks = pendingFrameTicks;
-    ticksToRun = g_UiPendingFrameTicks;
+    (*g_Win32PumpMessages)();
+  } while ((stopMessageCode != 0) && (g_UiPendingFrameTicks == 0));
+  ticksToRun = g_UiPendingFrameTicks;
+  g_UiPendingFrameTicks = 0;
+  for (; ticksToRun != 0; ticksToRun = ticksToRun - 1) {
     frontRoot = g_UiRootNode;
-    if (pendingFrameTicks == stopMessageCode) break;
-    nextPendingTicks = pendingFrameTicks;
-  } while (pendingFrameTicks == g_UiPendingFrameTicks);
-  for (; g_UiPendingFrameTicks = nextPendingTicks, g_UiRootNode = frontRoot, ticksToRun != 0; ticksToRun = ticksToRun - 1) {
     if (frontRoot != (UiRootNode *)0xffffffff) {
       UiTree_AdvanceSpriteButtonAnimations(&frontRoot->base);
       rootCallbacks = frontRoot->callbacks;
@@ -1710,8 +1706,6 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
       (*g_UiKeyboardFocusNode->vtable->tick)(g_UiKeyboardFocusNode);
     }
     UiTooltip_TickCountdown();
-    nextPendingTicks = g_UiPendingFrameTicks;
-    frontRoot = g_UiRootNode;
   }
   g_DirectInputMouseRefreshCountdown = g_DirectInputMouseRefreshCountdown - 1;
   if (g_DirectInputMouseRefreshCountdown == 0) {

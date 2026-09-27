@@ -28,14 +28,13 @@ void __cdecl ProcessEntry(void)
   ATOM windowClassAtom;
   HANDLE processOrThreadHandle;
   HWND windowHandle;
-  undefined2 extraout_var;
   int nHeight;
   int nWidth;
   dword initResultOrBitDepth;
   StatusValueEaxCf5 soundResult;
   dword adapterIndex;
   bool carryOrSoundFailed;
-  undefined1 carryIn;
+  bool carryIn;
   StatusValueEaxCf5 statusResult;
   FatalErrorEaxCf5 fatalResult;
   DisplayModeEaxCf5 displayModeResult;
@@ -58,7 +57,7 @@ void __cdecl ProcessEntry(void)
     g_MainWindowClass.icon = LoadIconA(g_hInstance,(LPCSTR)1);
     g_MainWindowClass.cursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00); /* IDC_ARROW */
     windowClassAtom = RegisterClassA((WNDCLASSA *)&g_MainWindowClass);
-    if (windowClassAtom != 0) { /* Ghidra: CONCAT22(extraout_var,AVar1); only the 16-bit ATOM in AX is set */
+    if (windowClassAtom != 0) { /* the original tests the 16-bit ATOM in AX */
       lpParam = (LPVOID)0x0;
       hMenu = (HMENU)0x0;
       windowHandle = (HWND)0x0;
@@ -90,11 +89,11 @@ void __cdecl ProcessEntry(void)
         soundResult = DirectSound_Init();
         carryOrSoundFailed = soundResult.carry;
         Thandor_Log("DirectSound_Init: %s", carryOrSoundFailed ? "failed (continuing without sound)" : "ok");
-        carryIn = 0;
+        carryIn = false;
         if (carryOrSoundFailed) {
           soundOption = CommandLine_FindOption(6,s_SOUND_00582f28);
           carryIn = soundOption.carry;
-          if (!(bool)carryIn) {
+          if (!carryIn) {
             fatalResult = (*g_FatalErrorPrimaryDispatchCf)(soundResult.valueOrError,true);
             carryIn = fatalResult.carry;
           }
@@ -144,7 +143,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
   uint factionBit;
   GameFactionRuntimeImage *factionRecordCursor;
   dword *dwordCursor;
-  undefined4 *statTableCursor;
+  dword *statTableCursor;
   ArenaAllocEaxCf5 allocResult;
   StatusValueEaxCf5 status;
   
@@ -192,9 +191,9 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GameData_ResetDefaults(void)
   if (!allocResult.carry) {
     LOCK();
     UNLOCK();
-    g_GameStatTableImage = (undefined4 *)allocResult.eax;
+    g_GameStatTableImage = (void *)allocResult.eax;
     (*g_MemoryApi.free)(memory);
-    statTableCursor = (undefined4 *)allocResult.eax;
+    statTableCursor = (dword *)allocResult.eax;
     for (remainingCount = 0xe000; remainingCount != 0; remainingCount = remainingCount + -1) {
       *statTableCursor = 0;
       statTableCursor = statTableCursor + 1;
@@ -311,20 +310,17 @@ DynAPI_Resolve(void **destination,HINSTANCE module,char *procedureName)
   moduleEntryCursor = g_DynamicModules;
   g_FatalErrorDetail1Utf16[0] = 0;
   modulesRemaining = g_DynamicModuleCount;
-  do {
-    if (modulesRemaining == 0) {
-LAB_00573c3e:
-      failureResult.carry = true;
-      failureResult.procedureOrError = (void *)0x10;
-      return failureResult;
-    }
+  for (; modulesRemaining != 0; modulesRemaining = modulesRemaining - 1) {
     if (module == moduleEntryCursor->module) {
+      /* name the module in the error detail */
       Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)moduleEntryCursor->name);
-      goto LAB_00573c3e;
+      break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
-    modulesRemaining = modulesRemaining - 1;
-  } while( true );
+  }
+  failureResult.carry = true;
+  failureResult.procedureOrError = (void *)0x10;
+  return failureResult;
 }
 
 
@@ -375,22 +371,19 @@ dword DynDLL_Unload(char *moduleName)
   
   moduleEntryCursor = g_DynamicModules;
   modulesRemainingOrResult = g_DynamicModuleCount;
-  do {
-    if (modulesRemainingOrResult == 0) {
-DynDLL_ReportModuleNotLoaded:
-      Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
-      return 0xf;
-    }
+  for (; modulesRemainingOrResult != 0; modulesRemainingOrResult = modulesRemainingOrResult - 1) {
     if (moduleName == moduleEntryCursor->name) {
       modulesRemainingOrResult = ((BootstrapFreeLibraryProc)g_BootstrapApiBindings[1].destination)(moduleEntryCursor->module);
       if (modulesRemainingOrResult != 0) {
         return modulesRemainingOrResult;
       }
-      goto DynDLL_ReportModuleNotLoaded;
+      break;
     }
     moduleEntryCursor = moduleEntryCursor + 1;
-    modulesRemainingOrResult = modulesRemainingOrResult - 1;
-  } while( true );
+  }
+  /* module not loaded, or FreeLibrary failed */
+  Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)moduleName);
+  return 0xf;
 }
 
 /* Address: 0x00573D40.
@@ -410,27 +403,27 @@ BootstrapApi_ResolveBindingByDestination(void **destination)
   
   bindingCursor = g_BootstrapApiBindings;
   remainingCount = g_DynamicModuleCount;
-  do {
-    if (remainingCount == 0) {
-LAB_00573d6a:
-      failureResult.carry = true;
-      failureResult.valueOrError = 0xf;
-      return failureResult;
-    }
+  for (; remainingCount != 0; remainingCount = remainingCount - 1) {
     if (destination == bindingCursor->destination) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)destination);
-      resolvedProcedure = (void *)(*(code *)g_BootstrapApiBindings[0].destination)(destination,bindingCursor); /* TODO: 2 args to slot 0 (LoadLibraryA); Ghidra register confusion, function is unreferenced */
+      /* The original pushes ESI (the binding cursor) only to preserve it across the call: binding slot 0
+         (LoadLibraryA) gets the destination argument as its single argument, and the result is stored
+         into the matching binding (MOV [ESI],EDX after POP ESI). The function is unreferenced. */
+      resolvedProcedure =
+           (void *)((BootstrapLoadLibraryAProc)g_BootstrapApiBindings[0].destination)((char *)destination);
       if (resolvedProcedure != (void *)0x0) {
-        *destination = resolvedProcedure;
+        bindingCursor->destination = (void **)resolvedProcedure;
         successResult.valueOrError = 0xf;
         successResult.carry = false;
         return successResult;
       }
-      goto LAB_00573d6a;
+      break;
     }
     bindingCursor = bindingCursor + 1;
-    remainingCount = remainingCount - 1;
-  } while( true );
+  }
+  failureResult.carry = true;
+  failureResult.valueOrError = 0xf;
+  return failureResult;
 }
 
 
@@ -1469,7 +1462,8 @@ GameIntroMovies_StopCurrentPlayback:
 StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
 
 {
-  void **in_EAX;
+  /* EAX at the table end: the last resolved procedure (the table is never empty; incoming EAX otherwise) */
+  void **resolvedProcedure = (void **)0x0;
   HINSTANCE hModule;
   DynamicApiBinding *bindingCursor;
   StatusValueEaxCf5 successResult;
@@ -1484,7 +1478,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
   do {
     if (bindingCursor->destination == (void **)0x0) {
       successResult.carry = false;
-      successResult.valueOrError = (dword)in_EAX;
+      successResult.valueOrError = (dword)resolvedProcedure;
       return successResult;
     }
     lpProcName = bindingCursor->destination;
@@ -1511,15 +1505,15 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx DynAPI_Bootstrap(void)
       g_DynamicModules[moduleSlotIndex].name = moduleName;
       lpProcName = bindingCursor->destination;
     }
-    in_EAX = (void **)GetProcAddress(hModule,(LPCSTR)lpProcName);
-    if (in_EAX == (void **)0x0) {
+    resolvedProcedure = (void **)GetProcAddress(hModule,(LPCSTR)lpProcName);
+    if (resolvedProcedure == (void **)0x0) {
       Text_CopyNarrowToUtf16Cf(0x100,g_PackageLastErrorPath,(byte *)bindingCursor->destination);
       Text_CopyNarrowToUtf16Cf(0x100,g_FatalErrorDetail1Utf16,(byte *)bindingCursor->moduleName);
       procedureMissingResult.carry = true;
       procedureMissingResult.valueOrError = 0x10;
       return procedureMissingResult;
     }
-    bindingCursor->destination = in_EAX;
+    bindingCursor->destination = resolvedProcedure;
     bindingCursor = bindingCursor + 1;
   } while( true );
 }
@@ -1538,7 +1532,6 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
 {
   dword compareBytesRemaining;
   int optionBufferCapacityRemaining;
-  byte *in_EBX = (byte *)0; /* not found (CF set): EBX not written; callers read it only with CF clear */
   char *compareOrScanCursor;
   char *optionBufferCursor;
   char *storedOptionCompareCursor;
@@ -1551,7 +1544,7 @@ CommandLine_FindOption(CommandLineOptionLengthBytes length,char *option)
   do {
     if (*optionBufferCursor == '\0') {
       notFoundResult.carry = true;
-      notFoundResult.ebx = in_EBX;
+      notFoundResult.ebx = (byte *)0; /* EBX not written; all callers read it only with CF clear */
       return notFoundResult;
     }
     comparedBytesEqual = false;
@@ -1635,79 +1628,74 @@ void __thandor_void_preserve_eax_ecx_edx CommandLine_Parse(void)
     pathWriteCursor->executablePath[0] = '\0';
     optionWriteNext = g_CommandLine.optionBuffer;
   }
-CommandLine_Parse_ContinueScanningNextOptionOrArgument:
-  do {
-    do {
-      while( true ) {
-        currentChar = *commandLineCursor;
-        commandLineCursor = commandLineCursor + 1;
-        if ((currentChar != 0x2f) && (currentChar != 0x2d)) break;
-        do {
-          while( true ) {
-            textWriteCursor = optionWriteNext;
-            currentChar = *commandLineCursor;
-            if ((0x60 < currentChar) && (currentChar < 0x7b)) {
-              currentChar = currentChar - 0x20;
-            }
-            *textWriteCursor = currentChar;
-            commandLineCursor = commandLineCursor + 1;
-            optionWriteNext = textWriteCursor + 1;
-            if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-            if (currentChar != 0x22) break;
-            do {
-              currentChar = *commandLineCursor;
-              *optionWriteNext = currentChar;
-              commandLineCursor = commandLineCursor + 1;
-              optionWriteNext = optionWriteNext + 1;
-              if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-            } while (currentChar != 0x22);
-          }
-        } while (currentChar != 0x20);
-        *textWriteCursor = 0;
-      }
-      if (currentChar == 0) {
-CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
-        Text_CopyNarrowToUtf16Cf
-                  (0x200,g_CommandLineWideArguments.argument1,(byte *)g_CommandLine.argument1);
-        Text_CopyNarrowToUtf16Cf
-                  (0x200,g_CommandLineWideArguments.argument2,(byte *)g_CommandLine.argument2);
-        Text_CopyNarrowToUtf16Cf
-                  (0x200,g_CommandLineWideArguments.argument3,(byte *)g_CommandLine.argument3);
-        return;
-      }
-    } while (currentChar == 0x20);
-    if (currentChar == 0x22) {
-      commandLineNext = commandLineCursor;
-      if (g_CommandLine.argument1[0] == '\0') {
-        textWriteCursor = g_CommandLine.argument1;
-CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot:
-        do {
-          argumentWriteCursor = textWriteCursor;
-          commandLineCursor = commandLineNext;
+  /* options and positional arguments, until the terminating NUL */
+  for (;;) {
+    currentChar = *commandLineCursor;
+    commandLineCursor = commandLineCursor + 1;
+    if ((currentChar == 0x2f) || (currentChar == 0x2d)) {
+      /* '/' or '-' option: copied uppercased up to the next space; quoted parts verbatim */
+      do {
+        while( true ) {
+          textWriteCursor = optionWriteNext;
           currentChar = *commandLineCursor;
           if ((0x60 < currentChar) && (currentChar < 0x7b)) {
             currentChar = currentChar - 0x20;
           }
-          *argumentWriteCursor = currentChar;
+          *textWriteCursor = currentChar;
+          commandLineCursor = commandLineCursor + 1;
+          optionWriteNext = textWriteCursor + 1;
           if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
-          commandLineNext = commandLineCursor + 1;
-          textWriteCursor = argumentWriteCursor + 1;
-        } while (currentChar != 0x22);
-        *argumentWriteCursor = 0;
+          if (currentChar != 0x22) break;
+          do {
+            currentChar = *commandLineCursor;
+            *optionWriteNext = currentChar;
+            commandLineCursor = commandLineCursor + 1;
+            optionWriteNext = optionWriteNext + 1;
+            if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+          } while (currentChar != 0x22);
+        }
+      } while (currentChar != 0x20);
+      *textWriteCursor = 0;
+      continue;
+    }
+    if (currentChar == 0) break;
+    if (currentChar == 0x20) continue;
+    if (currentChar == 0x22) {
+      /* quoted positional argument: into the first free slot, or skipped when all three are used */
+      commandLineNext = commandLineCursor;
+      if (g_CommandLine.argument1[0] == '\0') {
+        textWriteCursor = g_CommandLine.argument1;
+      }
+      else if (g_CommandLine.argument2[0] == '\0') {
+        textWriteCursor = g_CommandLine.argument2;
+      }
+      else if (g_CommandLine.argument3[0] == '\0') {
+        textWriteCursor = g_CommandLine.argument3;
       }
       else {
-        textWriteCursor = g_CommandLine.argument2;
-        if ((g_CommandLine.argument2[0] == '\0') ||
-           (textWriteCursor = g_CommandLine.argument3, g_CommandLine.argument3[0] == '\0'))
-        goto CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot;
         do {
           currentChar = *commandLineCursor;
           commandLineCursor = commandLineCursor + 1;
           if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
         } while (currentChar != 0x22);
+        continue;
       }
-      goto CommandLine_Parse_ContinueScanningNextOptionOrArgument;
+      do {
+        argumentWriteCursor = textWriteCursor;
+        commandLineCursor = commandLineNext;
+        currentChar = *commandLineCursor;
+        if ((0x60 < currentChar) && (currentChar < 0x7b)) {
+          currentChar = currentChar - 0x20;
+        }
+        *argumentWriteCursor = currentChar;
+        if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
+        commandLineNext = commandLineCursor + 1;
+        textWriteCursor = argumentWriteCursor + 1;
+      } while (currentChar != 0x22);
+      *argumentWriteCursor = 0;
+      continue;
     }
+    /* unquoted positional argument */
     if ((0x60 < currentChar) && (currentChar < 0x7b)) {
       currentChar = currentChar - 0x20;
     }
@@ -1727,7 +1715,7 @@ CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot:
           commandLineCursor = commandLineCursor + 1;
           if (currentChar == 0) goto CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn;
         } while (currentChar != 0x20);
-        goto CommandLine_Parse_ContinueScanningNextOptionOrArgument;
+        continue;
       }
       textWriteCursor = g_CommandLine.argument3 + 1;
       g_CommandLine.argument3[0] = currentChar;
@@ -1745,6 +1733,14 @@ CommandLine_Parse_CopyQuotedArgumentToNextAvailableSlot:
       textWriteCursor = argumentWriteCursor + 1;
     } while (currentChar != 0x20);
     *argumentWriteCursor = 0;
-  } while( true );
+  }
+CommandLine_Parse_FinalizeUtf16ArgumentsAndReturn:
+  Text_CopyNarrowToUtf16Cf
+            (0x200,g_CommandLineWideArguments.argument1,(byte *)g_CommandLine.argument1);
+  Text_CopyNarrowToUtf16Cf
+            (0x200,g_CommandLineWideArguments.argument2,(byte *)g_CommandLine.argument2);
+  Text_CopyNarrowToUtf16Cf
+            (0x200,g_CommandLineWideArguments.argument3,(byte *)g_CommandLine.argument3);
+  return;
 }
 

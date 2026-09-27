@@ -86,7 +86,9 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
   PckEntryHeader *entry;
   byte *bytes;
   byte *sizeOrFailureCode;
-  byte *in_ECX = (byte *)0; /* ECX is only meaningful on success (byte count); callers test CF */
+  /* ECX on failure: the file size once it is known, else the caller's ECX (zero stands in for it). It is only
+     meaningful on success (byte count); callers test CF. */
+  dword failureByteCount = 0;
   ArenaAllocEaxCf5 allocResult;
   PackageDecodeEaxCf5 decodeResult;
   FileSystemOpenEaxCf5 openResult;
@@ -116,7 +118,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
     if (!sizeResult.carry) {
       allocResult = (*g_MemoryApi.alloc)((dword)bytes);
       fileLoadResult.eax = (void *)allocResult.eax;
-      in_ECX = bytes;
+      failureByteCount = (dword)bytes;
       if (allocResult.carry) {
         (*g_WideNumberFormatUtf16)
                   (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(sdword)bytes,g_FatalErrorDetail1Utf16);
@@ -156,7 +158,7 @@ ResourceLoadEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx Resource_Load(word *path
     }
   }
 Resource_Load_ReturnOpenAllocationOrDecodeResult:
-  failureResult.ecx = (dword)in_ECX;
+  failureResult.ecx = failureByteCount;
   failureResult.eax = (dword)fileOrPackageResult.eax;
   failureResult.carry = true;
   return failureResult;
@@ -217,7 +219,7 @@ ResourceRegistration_SelectDomainPair
         }
         recordsRemainingOrCount = runtimeImage->recordCountAC;
         recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
-        return CONCAT44(recordCursor,recordsRemainingOrCount * 0x100);
+        return ((qword)(dword)(uintptr_t)recordCursor << 32) | (dword)(recordsRemainingOrCount * 0x100);
       }
     }
     rebasedOffset = recordCursor->primarySavedIdOrOffset;
@@ -283,7 +285,7 @@ ResourceRegistration_SelectDomainPair
   }
   recordsRemainingOrCount = runtimeImage->recordCountAC;
   recordCursor[recordsRemainingOrCount - 1].nestedSavedOffsets13[0xc] = (dword)tailRecord;
-  return CONCAT44(recordCursor,recordsRemainingOrCount * 0x100);
+  return ((qword)(dword)(uintptr_t)recordCursor << 32) | (dword)(recordsRemainingOrCount * 0x100);
 }
 
 /* Address: 0x00513020.
@@ -379,7 +381,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
       runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
       if (runtimeSlotsRemaining == 0) {
         g_EffectRuntimeSlots->effectAgeTicks = ~g_EffectRuntimeSlots->effectAgeTicks;
-        return CONCAT44(effectRuntimeSlotsBase,0x40000);
+        return ((qword)(dword)(uintptr_t)effectRuntimeSlotsBase << 32) | 0x40000;
       }
     }
     if (ownerModelNode != (ModelRuntimeNode *)0x0) {
@@ -403,7 +405,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain1Pair(void
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
-  return CONCAT44(g_EffectRuntimeSlots,0x40000);
+  return ((qword)(dword)(uintptr_t)g_EffectRuntimeSlots << 32) | 0x40000;
 }
 
 /* Address: 0x0052B6D0.
@@ -445,7 +447,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
         terminalToggleField =
              &(g_ShotRuntimeSlots->ownerAndTrajectory).secondaryEffectCountdownTicks;
         *terminalToggleField = ~*terminalToggleField;
-        return CONCAT44(shotRuntimeSlotsBase,0x40000);
+        return ((qword)(dword)(uintptr_t)shotRuntimeSlotsBase << 32) | 0x40000;
       }
     }
     if (runtimeStateRef != (void *)0x0) {
@@ -466,7 +468,7 @@ ResourceRegistrationImagePair __cdecl ResourceRegistration_QueryDomain2Pair(void
     runtimeSlotCursor = runtimeSlotCursor + 1;
     runtimeSlotsRemaining = runtimeSlotsRemaining + -1;
   } while (runtimeSlotsRemaining != 0);
-  return CONCAT44(g_ShotRuntimeSlots,0x40000);
+  return ((qword)(dword)(uintptr_t)g_ShotRuntimeSlots << 32) | 0x40000;
 }
 
 /* Address: 0x00532B00.

@@ -103,16 +103,14 @@ WideNumber_FormatUtf16
           *destinationCursor = (short)((previousValue * 10) / (ulonglong)denominator) + 0x30;
           destinationCursor = destinationCursor + 1;
           fractionalDigits = fractionalDigits - 1;
-          if (fractionalDigits == 0)
-          goto WideNumber_FormatUtf16_FinalizeDecimalOutputWithOptionalTerminator;
-        } while (fractionRemainder != 0);
-        if ((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0) {
+        } while ((fractionalDigits != 0) && (fractionRemainder != 0));
+        /* exact fraction before the digit limit: zero-pad to the fixed width */
+        if ((fractionalDigits != 0) && ((flags & WIDE_FORMAT_FIXED_FRACTION_WIDTH) != 0)) {
           WideText_CopyCodeUnits(fractionalDigits,g_WideNumberFormatState.zeroPadding,destinationCursor);
           destinationCursor = destinationCursor + fractionalDigits;
         }
       }
     }
-WideNumber_FormatUtf16_FinalizeDecimalOutputWithOptionalTerminator:
     if ((flags & WIDE_FORMAT_WRITE_TERMINATOR) != 0) {
       *destinationCursor = 0;
     }

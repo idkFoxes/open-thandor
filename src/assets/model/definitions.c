@@ -47,7 +47,8 @@ ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
     linkedSlotsRemaining = linkedSlotsRemaining + -1;
   } while (linkedSlotsRemaining != 0);
   lookupResult = ModelDefinitionRegistry_FindByIdWithErrorCf(definitionId);
-  return THANDOR_BITCAST(qword, ModelDefinitionLookupEaxCf5, ((THANDOR_BITCAST(ModelDefinitionLookupEaxCf5, qword, lookupResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+  lookupResult.carry = false; /* the original ends with CLC after the lookup */
+  return lookupResult;
 }
 
 
@@ -202,7 +203,9 @@ ModelLookupTable_FindPackedKeyEntryRegsCf
     entriesRemaining = entriesRemaining - 1;
   }
   payloadResult.carry = false;
-  THANDOR_WRITE_PART(payloadResult, 0, 12, *(undefined1 (*) [12])(packedKeyEntryCursor + 1));
+  payloadResult.payloadEax = packedKeyEntryCursor[1];
+  payloadResult.payloadEcx = packedKeyEntryCursor[2];
+  payloadResult.payloadEdx = packedKeyEntryCursor[3];
   return payloadResult;
 }
 
@@ -280,7 +283,8 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
   int halfOffsetOrEdge1Y;
   TerrainDistanceEaxCf5 missResult;
   TerrainDistanceEaxCf5 hitResult;
-  
+  bool hitFound;
+
   normalX = triangle->planeNormalX << 0x10;
   normalY = triangle->planeNormalY << 0x10;
   normalZ = triangle->planeNormalZ << 0x10;
@@ -307,13 +311,13 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
     if ((longlong)planeOffsetDot < 0) {
       if (((int)offsetHighOrCrossZ < scaledHighOrEdge1X) ||
          ((halfOffsetOrEdge1Y <= (int)-directionDotOrCrossY && (distanceOrCrossX = (uint)planeOffsetDot, halfOffsetOrEdge1Y <= (int)directionDotOrCrossY))))
-      goto LAB_0050afa0;
+      goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
     }
     else if ((scaledHighOrEdge1X < (int)offsetHighOrCrossZ) ||
             (((int)-directionDotOrCrossY <= halfOffsetOrEdge1Y && (distanceOrCrossX = (uint)planeOffsetDot, (int)directionDotOrCrossY <= halfOffsetOrEdge1Y))))
-    goto LAB_0050afa0;
+    goto ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss;
     hitResult.distanceQ12 =
-         (int)((longlong)((ulonglong)offsetHighOrCrossZ << 0x20 | planeOffsetDot & 0xffffffff) / (longlong)(int)directionDotOrCrossY);
+         (int)((longlong)planeOffsetDot / (longlong)(int)directionDotOrCrossY); /* IDIV of EDX:EAX */
     vertexA = triangle->vertex0;
     negVertex0XOrEdge2X = -vertexA->x;
     hitRelativeX = ((int)((ulonglong)
@@ -362,22 +366,25 @@ ModelMesh_IntersectTriangleRayDistanceCf(ModelRaycastTriangleDescriptor *triangl
              (longlong)negVertex0ZOrEdge2Z *
              (longlong)(int)((int)((ulonglong)hitCrossZ >> 0x20) << 4 | (uint)hitCrossZ >> 0x1c);
     distanceOrCrossX = (uint)hitCrossXOrEdge2HitDot;
+    /* Inside test: both barycentric dots and their sum's difference to edge2Dot carry edge2Dot's sign. */
     if (edge2Dot < 0) {
-      if (((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
+      hitFound = ((hitCrossXOrEdge2HitDot < 0) && (productScratch < 0)) &&
          (distanceOrCrossX = (uint)(hitCrossXOrEdge2HitDot + productScratch),
          (int)((scaledHighOrEdge1X - (int)((ulonglong)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) - (uint)((uint)edge2Dot < distanceOrCrossX)
-              ) < 0)) goto LAB_0050b1b8;
+              ) < 0);
     }
-    else if (((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
+    else {
+      hitFound = ((-1 < hitCrossXOrEdge2HitDot) && (-1 < productScratch)) &&
             (distanceOrCrossX = (uint)(hitCrossXOrEdge2HitDot + productScratch),
             -1 < (int)((scaledHighOrEdge1X - (int)((ulonglong)(hitCrossXOrEdge2HitDot + productScratch) >> 0x20)) -
-                      (uint)((uint)edge2Dot < distanceOrCrossX)))) {
-LAB_0050b1b8:
+                      (uint)((uint)edge2Dot < distanceOrCrossX)));
+    }
+    if (hitFound) {
       hitResult.carry = true;
       return hitResult;
     }
   }
-LAB_0050afa0:
+ModelMesh_IntersectTriangleRayDistanceCf_ReturnMiss:
   missResult.carry = false;
   missResult.distanceQ12 = distanceOrCrossX;
   return missResult;
@@ -580,42 +587,39 @@ ModelDefinition_RegisterAndResolveReferencesCf
   registrySlotCursor = g_ModelDefinitionRegistry;
   slotsRemainingOrClassIndex = 0x300;
   existingLookup = ModelDefinitionRegistry_FindByIdWithErrorCf(definition->definitionId);
-  if (existingLookup.carry) {
-    do {
-      if (*registrySlotCursor == (ModelDefinitionRecordPrefix *)0x0) {
-        nodeOffsetOrGridClass = definition->serializedNodeOffsetOrPointer64;
-        *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
-        if (nodeOffsetOrGridClass == 0) goto ModelDefinition_ResolveShotAndEffectReferences;
-        definition->serializedNodeOffsetOrPointer64 =
-             (dword)((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                    (definition->serializedNodeOffsetOrPointer64 - 0x28));
-        serializedNodeCursor =
-             (MdlSerializedNodeHeader38 *)
-             ((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-             (nodeOffsetOrGridClass - 0x28));
-        /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
-           {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
-        if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(byte *)asset,&resolverStatusOrSentinel)) {
-          goto ModelDefinition_ReturnReferenceResolutionResult;
-        }
-        goto ModelDefinition_ResolveShotAndEffectReferences;
-      }
-      registrySlotCursor = registrySlotCursor + 1;
-      slotsRemainingOrClassIndex = slotsRemainingOrClassIndex + -1;
-    } while (slotsRemainingOrClassIndex != 0);
-    (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
-    resolverStatusOrSentinel = 0x3f;
-  }
-  else {
+  if (!existingLookup.carry) {
+    /* Duplicate identifier. */
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     resolverStatusOrSentinel = MODEL_DEFINITION_REFERENCE_FAILURE_SENTINEL_0x4B;
+    goto ModelDefinition_ReturnReferenceResolutionResult;
   }
-ModelDefinition_ReturnReferenceResolutionResult:
-  failureResult.carry = true;
-  failureResult.valueOrError = resolverStatusOrSentinel;
-  return failureResult;
-ModelDefinition_ResolveShotAndEffectReferences:
+  while (*registrySlotCursor != (ModelDefinitionRecordPrefix *)0x0) {
+    registrySlotCursor = registrySlotCursor + 1;
+    slotsRemainingOrClassIndex = slotsRemainingOrClassIndex + -1;
+    if (slotsRemainingOrClassIndex == 0) {
+      /* Registry full. */
+      (*g_WideNumberFormatUtf16)(WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x300,g_PackageLastErrorPath);
+      resolverStatusOrSentinel = 0x3f;
+      goto ModelDefinition_ReturnReferenceResolutionResult;
+    }
+  }
+  nodeOffsetOrGridClass = definition->serializedNodeOffsetOrPointer64;
+  *registrySlotCursor = (ModelDefinitionRecordPrefix *)definition;
+  if (nodeOffsetOrGridClass != 0) {
+    definition->serializedNodeOffsetOrPointer64 =
+         (dword)((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                (definition->serializedNodeOffsetOrPointer64 - 0x28));
+    serializedNodeCursor =
+         (MdlSerializedNodeHeader38 *)
+         ((asset->recordCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+         (nodeOffsetOrGridClass - 0x28));
+    /* Rewritten from the assembly (0x0052869F-0x00528744): the node tree walk kept its
+       {node, nextChild, remaining} frames on the machine stack; Ghidra only followed child 0. */
+    if (ModelDefinition_ResolveNodeSpritesCf(serializedNodeCursor,(byte *)asset,&resolverStatusOrSentinel)) {
+      goto ModelDefinition_ReturnReferenceResolutionResult;
+    }
+  }
   shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
                      ((PckShotDefinitionIdCatalog)definition->shotDefinitionReference2C);
   resolvedShotDefinition2C = shotLookup.definitionOrError;
@@ -765,7 +769,10 @@ ModelDefinition_ResolveShotAndEffectReferences:
       }
     }
   }
-  goto ModelDefinition_ReturnReferenceResolutionResult;
+ModelDefinition_ReturnReferenceResolutionResult:
+  failureResult.carry = true;
+  failureResult.valueOrError = resolverStatusOrSentinel;
+  return failureResult;
 }
 
 

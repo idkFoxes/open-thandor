@@ -33,9 +33,10 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
   FrontendPlayerRuntimeRecord *playerCursor;
   FrontendPlayerRuntimeRecord *nextPlayer;
   FrontendNetworkListsRuntimeView5650 *frontendRoot;
-  undefined4 networkState;
-  int hoveredNodeOrLevelRecord;
-  dword cursorFrame;
+  dword networkState;
+  UiNodeBase *hoveredNode;
+  int levelRecordAddress;
+  GraphicsCursorFrameIndex cursorFrame;
   uint levelMaskBit;
   ScenarioCatalogRecordCount levelsRemaining;
   uint maskWordIndex;
@@ -87,13 +88,13 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
             (g_CursorOverrideY,g_CursorOverrideX,
              (FrontendModelPointerContextRuntimeState118 *)
              (frontendRoot->opaqueGap0000_4B67 + 0x368));
-  hoveredNodeOrLevelRecord = (**(code **)(*(int *)(frontendRoot->opaqueGap0000_4B67 + 0xc) + 0x2c))
-                    (g_CursorOverrideY,g_CursorOverrideX,frontendRoot);
-  if (hoveredNodeOrLevelRecord == -1) {
+  hoveredNode = (*((UiNodeBase *)frontendRoot)->vtable->hitTest)
+                    (g_CursorOverrideY,g_CursorOverrideX,(UiNodeBase *)frontendRoot);
+  if (hoveredNode == (UiNodeBase *)0xffffffff) {
     (*g_GraphicsCursorSetFrame)(0);
   }
   else {
-    cursorFrame = (**(code **)(*(int *)(hoveredNodeOrLevelRecord + 0xc) + 0x28))(g_CursorOverrideY,g_CursorOverrideX,hoveredNodeOrLevelRecord);
+    cursorFrame = (*hoveredNode->vtable->pointerMove)(g_CursorOverrideY,g_CursorOverrideX,hoveredNode);
     (*g_GraphicsCursorSetFrame)(cursorFrame);
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
@@ -109,7 +110,7 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
     if (((!selectedGroup.carryNoneSelected) && (selectedGroup.selectedIndexOrCount == 1)) &&
        (g_ScenarioCatalog != (ScenarioCatalogHeader *)0x0)) {
       levelsRemaining = g_ScenarioCatalog->levelRecordCount;
-      hoveredNodeOrLevelRecord = (int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset;
+      levelRecordAddress = (int)&g_ScenarioCatalog->levelRecordsOffset + g_ScenarioCatalog->levelRecordsOffset;
       if (levelsRemaining != 0) {
         levelMaskBit = 1;
         maskWordIndex = 0;
@@ -126,9 +127,9 @@ FrontendRoot_TickNetworkPagesMovieCursorAndScenarioState(UiRootNode *rootCallbac
             nextPlayer = playerCursor + 1;
             playerCursor = playerCursor + 1;
           } while ((*(uint *)(nextPlayer->reserved78_7F + maskWordIndex * 4 + 0xc) & levelMaskBit) != 0);
-          markerText = TextResource_Resolve(*(int *)(hoveredNodeOrLevelRecord + 0x70) + 0x2230);
+          markerText = TextResource_Resolve(*(int *)(levelRecordAddress + 0x70) + 0x2230);
           *markerText.eax = availabilityMarker;
-          hoveredNodeOrLevelRecord = hoveredNodeOrLevelRecord + 0x100;
+          levelRecordAddress = levelRecordAddress + 0x100;
           levelMaskBit = levelMaskBit * 2;
           if (levelMaskBit == 0) {
             maskWordIndex = maskWordIndex + 1;

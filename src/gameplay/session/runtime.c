@@ -438,7 +438,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
            (bestTrackOrSecondsLeft = scheduledCondition->conditions[0].payload.operands[1], bestTrackOrSecondsLeft != 0)) {
           cursorFrameOrScratch = (*g_WideNumberFormatUtf16)
                              (WIDE_FORMAT_PAD_WITH_SPACE,0,2,1,bestTrackOrSecondsLeft / 0x3c,(word *)THANDOR_ADDR(g_InGameCountdownTextUtf16,0));
-          *(undefined2 *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
+          *(word *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0)) = 0x3a;
           (*g_WideNumberFormatUtf16)
                     (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_PAD_WITH_ZERO,0,2,1,bestTrackOrSecondsLeft % 0x3c,
                      (word *)(cursorFrameOrScratch + THANDOR_ADDR(g_InGameCountdownTextUtf16,0x2)));
@@ -479,7 +479,7 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
   void *tailNestedPointer;
   FrontendPlayerRuntimeRecord *playerRuntimeBlocks;
   byte *primaryPointer;
-  undefined *auxiliaryPointer;
+  byte *auxiliaryPointer;
   GraphicsTextureSet *selectedTextureSet;
   SpriteAssetHeader *resolvedSprite;
   byte *secondaryPointer;
@@ -511,11 +511,11 @@ ResourceRegistrationRuntime_RebaseLoadedRecords(ResourceRegistrationRuntimeImage
       (registrationRecord->secondaryPointerOrSavedOffset).runtimePointer = secondaryPointer;
       (registrationRecord->nestedBasePointerOrSavedOffset).runtimePointer = nestedBasePointer;
       (registrationRecord->ownerRuntimeOrSavedOffset).runtimePointer = runtimeImage;
-      auxiliaryPointer = (undefined *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
+      auxiliaryPointer = (byte *)(registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset;
       nestedRemaining = registrationRecord->nestedCountC8;
-      if (auxiliaryPointer != (undefined *)0x0) {
+      if (auxiliaryPointer != (byte *)0x0) {
         /* 1-based offset from the shading records; 0 is null */
-        auxiliaryPointer = (undefined *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
+        auxiliaryPointer = (byte *)(THANDOR_ADDR(g_GraphicsShadingRuntimeRecords,-1) + (int)auxiliaryPointer);
       }
       (registrationRecord->auxiliaryPointerOrSavedOffset).savedIdOrOffset = (dword)auxiliaryPointer;
       nestedCursor = registrationRecord;
@@ -944,12 +944,12 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
   InGameNotificationMovieId unusedNotificationMovieId;
   SelectionPlayerRuntimeBlock *selectionBlock;
   FrontendPlayerNameUtf16_28 *playerNameSource;
-  undefined4 *templateCursor;
+  dword *templateCursor;
   FrontendPlayerRemovalPacket10007 *packetCursor;
   SelectionPlayerRuntimeBlock *selectionBlockCursor;
   FrontendPlayerRuntimeRecord *frontendPlayer;
   byte *playerNameDestination;
-  undefined2 *sessionNameClearCursor;
+  word *sessionNameClearCursor;
   word *sessionNameCursor;
   InGameRuntimeRootImageC3E4 *rootCursorOrError;
   InGameNotificationQueueRecord20 *queueRecord;
@@ -1003,7 +1003,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
     playerNameSource = &frontendPlayer->playerName;
     playerNameDestination = selectionBlock->reserved80B0_8117 + 0x40;
     for (countOrPlayerId = 0x14; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
-      *(undefined4 *)playerNameDestination = *(undefined4 *)playerNameSource->textUtf16;
+      *(dword *)playerNameDestination = *(dword *)playerNameSource->textUtf16;
       playerNameSource = (FrontendPlayerNameUtf16_28 *)(playerNameSource->textUtf16 + 2);
       playerNameDestination = playerNameDestination + 4;
     }
@@ -1058,7 +1058,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,w
       inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.eax;
       rootCursorOrError = inGameRoot;
       if (!allocation.carry) {
-        templateCursor = (undefined4 *)&g_InGameRuntimeDefaultImageTemplate;
+        templateCursor = (dword *)&g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
         for (countOrPlayerId = 0x30f9; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
           (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
@@ -1313,8 +1313,8 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
   InGameRuntimeRootImageC3E4 *rootCursorOrError;
   int remainingCount;
   byte *saveNameSource;
-  undefined4 *templateCursor;
-  undefined2 *sessionNameClearCursor;
+  dword *templateCursor;
+  word *sessionNameClearCursor;
   byte *scanCursor;
   byte *scanEnd;
   uint copyCount;
@@ -1434,7 +1434,7 @@ InGameRuntime_InitializeLoadedSession(word *savePackagePath)
           inGameRoot = (InGameRuntimeRootImageC3E4 *)allocation.eax;
           rootCursorOrError = inGameRoot;
           if (!allocation.carry) {
-            templateCursor = (undefined4 *)&g_InGameRuntimeDefaultImageTemplate;
+            templateCursor = (dword *)&g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
             for (remainingCount = 0x30f9; remainingCount != 0; remainingCount = remainingCount + -1) {
               (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
@@ -1718,17 +1718,17 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
 
 {
   int remainingFactions;
-  undefined4 *scratchBufferSetBCursor;
-  undefined4 *scratchBufferSetACursor;
-  
+  void **scratchBufferSetBCursor;
+  void **scratchBufferSetACursor;
+
   remainingFactions = 8;
   scratchBufferSetACursor = g_InGameFactionScratchBufferSetA8;
   scratchBufferSetBCursor = g_InGameFactionScratchBufferSetB8;
   do {
-    (*g_MemoryApi.free)((void *)*scratchBufferSetACursor);
-    (*g_MemoryApi.free)((void *)*scratchBufferSetBCursor);
-    *scratchBufferSetACursor = 0;
-    *scratchBufferSetBCursor = 0;
+    (*g_MemoryApi.free)(*scratchBufferSetACursor);
+    (*g_MemoryApi.free)(*scratchBufferSetBCursor);
+    *scratchBufferSetACursor = (void *)0x0;
+    *scratchBufferSetBCursor = (void *)0x0;
     scratchBufferSetACursor = scratchBufferSetACursor + 1;
     scratchBufferSetBCursor = scratchBufferSetBCursor + 1;
     remainingFactions = remainingFactions + -1;
@@ -2094,6 +2094,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   uint factionOrDemand;
   uint *sortBaseOrFlags;
   InGameNotificationMovieId notificationMovieId;
+  bool queueCapacityNotification;
   FieldGridAsset *factionFieldGrid;
   WorldOwnerListNode100 *worldNode;
   
@@ -2210,8 +2211,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
     if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (runtimeOrStatCursor = worldNode->runtimePayload, (runtimeOrStatCursor[0x3b] & 0x10U) == 0)) {
       if (runtimeOrStatCursor[0x3d] != 0) {
-        if (0xff < entryCountOrValue)
-        goto InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan;
+        if (0xff < entryCountOrValue) continue;
         valueOrFactionIndex = *(uint *)(runtimeOrStatCursor[2] + 0xc);
         counterOrValue = *(int *)(*runtimeOrStatCursor + 0x4c);
         *entryCursor = (uint)runtimeOrStatCursor;
@@ -2241,7 +2241,6 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         }
       }
     }
-InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectionScan:;
   }
   if (entryCountOrValue != 0) {
     if (1 < entryCountOrValue) {
@@ -2344,27 +2343,31 @@ InGameRuntime_UpdateFactionTerrainAndCapacityState_AdvanceTerrainRegionCollectio
         reverseFactionRecord->anchorCooldown1 = 0;
       }
       else if ((g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex == valueOrFactionIndex) {
+        queueCapacityNotification = false;
         if (reverseFactionRecord->energyGenerationCapacityQ4 <
             factionOrDemand + reverseFactionRecord->unpoweredEnergyDemandQ4) {
           if (reverseFactionRecord->anchorCooldown1 == 0) {
             notificationMovieId = 400;
             reverseFactionRecord->anchorCooldown1 = 0x96;
-InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotification:
-            if (((*(int *)(levelConditionStorage->levelImage).header.opaque100_16F == 0x300074) &&
-                (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 4) == 0x5f0030)) &&
-               (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 8) == 0x750074)) {
-              notificationMovieId = 0x192;
-              reverseFactionRecord->anchorCooldown1 = 0x7fffffff;
-              reverseFactionRecord->anchorCooldown2 = 0x7fffffff;
-            }
-            InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,3,notificationMovieId);
+            queueCapacityNotification = true;
           }
         }
         else if (reverseFactionRecord->anchorCooldown2 == 0) {
           notificationMovieId = 0x191;
           reverseFactionRecord->anchorCooldown2 = 0x96;
-          goto 
-          InGameRuntime_UpdateFactionTerrainAndCapacityState_QueueLocalCapacityStatusNotification;
+          queueCapacityNotification = true;
+        }
+        if (queueCapacityNotification) {
+          /* Level header text starting with UTF-16 "t00_tu": a fixed notification, and both cooldowns never
+             expire. */
+          if (((*(int *)(levelConditionStorage->levelImage).header.opaque100_16F == 0x300074) &&
+              (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 4) == 0x5f0030)) &&
+             (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 8) == 0x750074)) {
+            notificationMovieId = 0x192;
+            reverseFactionRecord->anchorCooldown1 = 0x7fffffff;
+            reverseFactionRecord->anchorCooldown2 = 0x7fffffff;
+          }
+          InGameNotificationQueue_InsertPriorityRecord(NOTIFICATION_PAYLOAD_NONE,0,0,0,0,0,3,notificationMovieId);
         }
       }
       reverseFactionRecord->tritiumCurrentQ4 =

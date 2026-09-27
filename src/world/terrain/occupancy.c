@@ -79,6 +79,24 @@ TerrainOccupancyBit2_MarkAroundWorldPoint
 }
 
 
+/* PCMPEQB: 0xFF in every byte lane where a and b are equal, 0 elsewhere. */
+static __inline qword TerrainOccupancy_Pcmpeqb(qword a,qword b)
+
+{
+  ThandorMmx x;
+  ThandorMmx y;
+  ThandorMmx r;
+  int lane;
+
+  x.q = a;
+  y.q = b;
+  for (lane = 0; lane < 8; lane = lane + 1) {
+    r.ub[lane] = (x.ub[lane] == y.ub[lane]) ? 0xff : 0;
+  }
+  return r.q;
+}
+
+
 /* Address: 0x00507610.
    Ownership: world/terrain/occupancy.
    Purpose: Collects occupancy masks from the six bounded directional runs around a world point, filters the
@@ -102,17 +120,10 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
   FieldGridCell *centerCell;
   int runRemainingA;
   int runRemainingB;
-  char maskByte1;
-  char maskByte2;
-  char maskByte3;
-  char maskByte4;
-  char maskByte5;
-  char maskByte6;
   ulonglong combinedMask;
-  char maskByte7;
-  undefined8 mm1PackedValue0;
+  qword mm1PackedValue0;
   ulonglong signBiasMatchBytes;
-  undefined8 mm2PackedValue0;
+  qword mm2PackedValue0;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   
   if (fieldGrid != (FieldGridAsset *)0x0) {
@@ -185,45 +196,12 @@ TerrainOccupancyMask_ClassifyNeighborhoodAtWorldPoint
           } while (runStepCount != 0);
         }
         combinedMask = combinedMask & g_TerrainOccupancyMmxClearBits1And2Mask;
-        maskByte1 = (char)(combinedMask >> 8);
-        maskByte2 = (char)(combinedMask >> 0x10);
-        maskByte3 = (char)(combinedMask >> 0x18);
-        maskByte4 = (char)(combinedMask >> 0x20);
-        maskByte5 = (char)(combinedMask >> 0x28);
-        maskByte6 = (char)(combinedMask >> 0x30);
-        maskByte7 = (char)(combinedMask >> 0x38);
-        signBiasMatchBytes = CONCAT17(-((char)((ulonglong)g_TerrainOccupancyMmxSignBiasBytes >> 0x38) == maskByte7)
-                          ,CONCAT16(-((char)((ulonglong)g_TerrainOccupancyMmxSignBiasBytes >> 0x30)
-                                     == maskByte6),
-                                    CONCAT15(-((char)((ulonglong)g_TerrainOccupancyMmxSignBiasBytes
-                                                     >> 0x28) == maskByte5),
-                                             CONCAT14(-((char)((ulonglong)
-                                                               g_TerrainOccupancyMmxSignBiasBytes >>
-                                                              0x20) == maskByte4),
-                                                      CONCAT13(-((char)((ulonglong)
-                                                                                                                                                
-                                                  g_TerrainOccupancyMmxSignBiasBytes >> 0x18) ==
-                                                  maskByte3),CONCAT12(-((char)((ulonglong)
-                                                                                                                                                        
-                                                  g_TerrainOccupancyMmxSignBiasBytes >> 0x10) ==
-                                                  maskByte2),CONCAT11(-((char)((ulonglong)
-                                                                                                                                                        
-                                                  g_TerrainOccupancyMmxSignBiasBytes >> 8) == maskByte1
-                                                  ),-((char)g_TerrainOccupancyMmxSignBiasBytes ==
-                                                     (char)combinedMask))))))));
+        signBiasMatchBytes = TerrainOccupancy_Pcmpeqb((qword)g_TerrainOccupancyMmxSignBiasBytes,combinedMask);
         mm2PackedValue0 =
              pmaddwd(signBiasMatchBytes & g_TerrainOccupancyMmxPackedScale0280,
                      g_TerrainOccupancyMmxPackedWeights02_20);
         mm1PackedValue0 =
-             pmaddwd((CONCAT17(-(maskByte7 == '\0'),
-                               CONCAT16(-(maskByte6 == '\0'),
-                                        CONCAT15(-(maskByte5 == '\0'),
-                                                 CONCAT14(-(maskByte4 == '\0'),
-                                                          CONCAT13(-(maskByte3 == '\0'),
-                                                                   CONCAT12(-(maskByte2 == '\0'),
-                                                                            CONCAT11(-(maskByte1 ==
-                                                                                      '\0'),-((char)
-                                                  combinedMask == '\0')))))))) ^
+             pmaddwd((TerrainOccupancy_Pcmpeqb(0,combinedMask) ^
                       g_TerrainOccupancyMmxAllBitsMask ^ signBiasMatchBytes) &
                      g_TerrainOccupancyMmxPackedScale0280,g_TerrainOccupancyMmxPackedWeights04_40);
         return (int)((ulonglong)mm1PackedValue0 >> 0x20) + (int)((ulonglong)mm2PackedValue0 >> 0x20)

@@ -77,7 +77,7 @@ ModelRuntimeSlotClassInit_InitializeSentinelBoundsAndTiming
   (modelRuntimeSlot->classState).classStateB4 = grandchildLocalYQ12;
   definitionField10 = modelDefinition[0x10].byteSize;
   initialTimingValue = (int)(((longlong)
-                 (int)((longlong)CONCAT44(((int)definitionField1 >> 0x1f) << 0xc | definitionField1 >> 0x14,definitionField1 << 0xc) /
+                 (int)(((longlong)(int)definitionField1 << 0xc) /
                       (longlong)(int)definitionField10) * (longlong)(int)(modelDefinition[0x10].flags + definitionField10))
                / (longlong)(int)definitionField10) -
           (int)(((longlong)(int)definitionField10 * (longlong)(int)modelDefinition[2].byteSize) /

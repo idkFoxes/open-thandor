@@ -87,7 +87,7 @@ GraphicsOffscreen_RenderModelListToTextureSourceCf
     textureSourceOrDepthBuffer[9] = packedTimeOrDate;
     (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(textureSourceOrDepthBuffer + 0xc));
     (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(textureSourceOrDepthBuffer + 0x1c));
-    *(undefined1 *)(textureSourceOrDepthBuffer + 0x40) = 0;
+    *(byte *)(textureSourceOrDepthBuffer + 0x40) = 0;
     textureSourceOrDepthBuffer[0x2c] = 1;
     textureSourceOrDepthBuffer[0x2d] = 0;
     textureSourceOrDepthBuffer[0x2e] = 0x200;

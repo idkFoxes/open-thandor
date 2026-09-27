@@ -10,6 +10,36 @@
 
 /* Implementation ownership: graphics/backend/glide. */
 
+/* MMX lane helpers for the converters and blitters below. Each one is exactly the Ghidra CONCAT form it
+   replaces (same masking, same unsigned result). */
+
+/* PUNPCKLBW of a byte with itself: 0xbb -> 0xbbbb (one unsigned 16-bit lane). */
+#define GLIDE_DUP_BYTE(value) ((uint)(((uint)(byte)(value) << 8) | (uint)(byte)(value)))
+
+/* PACKUSWB of one word lane as Ghidra modelled it: values above 0xff saturate to 0xff. */
+#define GLIDE_SATURATE_WORD_TO_BYTE(value) ((byte)((value) > 0xff ? 0xff : (value)))
+
+/* Average of one ARGB8888 channel (selected by bitShift) over four samples, done as in the MMX original:
+   byte-duplicated word lanes, PSRLW 4, PADDW, PSRLW 6. */
+#define GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(sample0,sample1,sample2,sample3,bitShift) \
+  ((ushort)((GLIDE_DUP_BYTE((sample0) >> (bitShift)) >> 4) + (GLIDE_DUP_BYTE((sample1) >> (bitShift)) >> 4) + \
+            (GLIDE_DUP_BYTE((sample2) >> (bitShift)) >> 4) + (GLIDE_DUP_BYTE((sample3) >> (bitShift)) >> 4)) >> 6)
+
+/* Four 16-bit lanes into one qword, lane0 lowest (Ghidra: the CONCAT26/CONCAT24/CONCAT22 nest). */
+static __inline ulonglong Glide_PackWordLanes(uint lane3,uint lane2,uint lane1,uint lane0)
+{
+  return ((ulonglong)(word)lane3 << 48) | ((ulonglong)(word)lane2 << 32) | ((ulonglong)(word)lane1 << 16) |
+         (ulonglong)(word)lane0;
+}
+
+/* PUNPCKLBW mm,mm + PSRLW shift of an ARGB8888 pixel: one byte-duplicated, shifted word lane per channel
+   (lane3 = alpha, lane0 = blue). */
+static __inline ulonglong Glide_UnpackArgbToWordLanes(uint argb,int shift)
+{
+  return Glide_PackWordLanes(GLIDE_DUP_BYTE(argb >> 0x18) >> shift,GLIDE_DUP_BYTE(argb >> 0x10) >> shift,
+                             GLIDE_DUP_BYTE(argb >> 8) >> shift,GLIDE_DUP_BYTE(argb) >> shift);
+}
+
 /* Address: 0x005801B0.
    Ownership: graphics/backend/glide.
    Purpose: Populates a preallocated GraphicsTextureSet with Glide runtime texture resources. Nonstandard internal
@@ -165,7 +195,11 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
       binding = g_GlideImportBindings;
       do {
         resolveResult = DynAPI_Resolve(&binding->procedure,glideDll.moduleOrError,binding->importName);
-        if (resolveResult.carry) goto Glide3_ReleaseRuntimeAfterInitializationFailure;
+        if (resolveResult.carry) {
+          DynDLL_Unload(dynapi_5);
+          g_GlideRuntimeActiveCount = 0;
+          return true;
+        }
         binding = binding + 1;
       } while (binding->importName != (char *)0x0);
       (*g_GrGlideInit)();
@@ -298,7 +332,6 @@ GraphicsGlide3_ApplyDisplayModeAndInitializeResourcesCf
         }
       }
       (*g_GrGlideShutdown)(); /* grGlideShutdown(void); Ghidra passed a stale register */
-Glide3_ReleaseRuntimeAfterInitializationFailure:
       DynDLL_Unload(dynapi_5);
       g_GlideRuntimeActiveCount = 0;
     }
@@ -487,14 +520,17 @@ Glide3_DrawPrimitiveQueue
       }
       widthLog2OrFlags = currentPacket->renderFlags;
       if (((widthLog2OrFlags & 0x10000) == 0) || (currentPacket->textureEntry == (GraphicsTextureSetEntry *)0x0)) {
-        if (g_GlideTexturingDisabledState != 0)
-        goto Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine;
+        if (g_GlideTexturingDisabledState != 0) {
+          /* Untextured color and alpha combine. */
+          (*g_GrColorCombine)(1,0,0,2,0);
+          (*g_GrAlphaCombine)(1,0,0,2,0);
+        }
       }
       else {
         texture = currentPacket->textureEntry->texture;
         if (((int)texture->residentTmuIndex < 0) &&
            (Glide3_TextureResource_EnsureResident(texture), (int)texture->residentTmuIndex < 0)) {
-Glide3_DrawPrimitiveQueue_ConfigureUntexturedColorAndAlphaCombine:
+          /* Texture could not be made resident: untextured color and alpha combine. */
           (*g_GrColorCombine)(1,0,0,2,0);
           (*g_GrAlphaCombine)(1,0,0,2,0);
         }
@@ -727,7 +763,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
       Text_CopyNarrowToUtf16Cf(0x28,adapter->driverDescriptionUtf16,driverDescription);
       Text_CopyNarrowToUtf16Cf(0x28,adapter->deviceNameUtf16,source);
       (adapter->adapterGuid).Data1 = 1;
-      (adapter->adapterGuid).Data2 = (undefined2)sstIndex;
+      (adapter->adapterGuid).Data2 = (word)sstIndex;
       (adapter->adapterGuid).Data3 = THANDOR_PART(word, sstIndex, 2);
       (adapter->deviceGuid).Data1 = 1;
       querySizeOrAdapterIndex = (*g_GrQueryResolutions)(&g_GlideEnumerationResolutionQuery,(void *)0x0);
@@ -741,10 +777,38 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Glide3_InitAndEnumerate(void
           resolutionCursor = output;
           do {
             if (0xff < g_GraphicsDisplayModeCount) break;
-            modeWidth = 0x280;
-            modeHeight = 0x1e0;
-            if (*resolutionCursor == 7) {
-Glide3_AppendEnumeratedDisplayMode:
+            switch (*resolutionCursor) {
+            case 7:
+              modeWidth = 0x280;
+              modeHeight = 0x1e0;
+              break;
+            case 8:
+              modeWidth = 800;
+              modeHeight = 600;
+              break;
+            case 9:
+              modeWidth = 0x3c0;
+              modeHeight = 0x2d0;
+              break;
+            case 0xc:
+              modeWidth = 0x400;
+              modeHeight = 0x300;
+              break;
+            case 0xd:
+              modeWidth = 0x500;
+              modeHeight = 0x400;
+              break;
+            case 0xe:
+              modeWidth = 0x640;
+              modeHeight = 0x4b0;
+              break;
+            default:
+              /* Resolution not offered: skip it. */
+              modeWidth = 0;
+              modeHeight = 0;
+              break;
+            }
+            if (modeWidth != 0) {
               displayMode->width = modeWidth;
               displayMode->height = modeHeight;
               querySizeOrAdapterIndex = g_GraphicsAdapterCount;
@@ -752,23 +816,6 @@ Glide3_AppendEnumeratedDisplayMode:
               displayMode->adapterIndex = querySizeOrAdapterIndex;
               g_GraphicsDisplayModeCount = g_GraphicsDisplayModeCount + 1;
               displayMode = displayMode + 1;
-            }
-            else {
-              modeWidth = 800;
-              modeHeight = 600;
-              if (*resolutionCursor == 8) goto Glide3_AppendEnumeratedDisplayMode;
-              modeWidth = 0x3c0;
-              modeHeight = 0x2d0;
-              if (*resolutionCursor == 9) goto Glide3_AppendEnumeratedDisplayMode;
-              modeWidth = 0x400;
-              modeHeight = 0x300;
-              if (*resolutionCursor == 0xc) goto Glide3_AppendEnumeratedDisplayMode;
-              modeWidth = 0x500;
-              modeHeight = 0x400;
-              if (*resolutionCursor == 0xd) goto Glide3_AppendEnumeratedDisplayMode;
-              modeWidth = 0x640;
-              modeHeight = 0x4b0;
-              if (*resolutionCursor == 0xe) goto Glide3_AppendEnumeratedDisplayMode;
             }
             resolutionCursor = resolutionCursor + 4;
             remainingResolutions = remainingResolutions - 1;
@@ -1096,35 +1143,24 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
 {
   GraphicsTextureSourceAsset *asset;
   int entryPaletteIndex;
-  undefined4 upperLeftSample;
-  undefined4 upperRightSample;
-  undefined4 lowerLeftSample;
-  undefined4 lowerRightSample;
+  uint upperLeftSample;
+  uint upperRightSample;
+  uint lowerLeftSample;
+  uint lowerRightSample;
   byte clampedRedOrAlpha;
-  ushort lowerRightAlpha;
   uint destinationWidth;
   int subresourceRecordOffset;
   AssetProducerSourceNames *sourceCursor;
   ushort *destinationCursor;
-  undefined1 upperLeftGreenOrAlpha;
-  ushort blueOrAlphaAverage;
   ushort blueAverage;
-  undefined1 upperLeftRed;
-  uint3 averagedRgb;
-  ushort greenAverageOrUpperRightAlpha;
   ushort greenAverage;
-  uint averagedArgb;
-  ushort redAverageOrLowerLeftAlpha;
   ushort redAverage;
-  undefined1 upperRightGreenOrAlpha;
-  undefined1 upperRightRed;
-  undefined1 lowerLeftGreenOrAlpha;
-  undefined1 lowerLeftRed;
-  undefined1 lowerRightGreenOrAlpha;
-  undefined1 lowerRightRed;
+  ushort alphaAverage;
+  uint averagedRgb;
+  uint averagedArgb;
   uint remainingColumns;
   uint remainingRows;
-  
+
   asset = texture->sourceAsset;
   destinationCursor = (texture->glideInfo).data;
   subresourceRecordOffset = texture->subresourceIndex * 0x20 + (asset->tableDescriptor).subresourceTableOffset;
@@ -1142,33 +1178,19 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
     if ((texture->glideInfo).format == 10) {
       do {
         do {
-          upperLeftSample = *(undefined4 *)sourceCursor->producerName;
-          upperRightSample = *(undefined4 *)((int)sourceCursor->producerName + 4);
-          lowerLeftSample = *(undefined4 *)((int)sourceCursor->producerName + destinationWidth * 8);
-          lowerRightSample = *(undefined4 *)((int)sourceCursor->producerName + destinationWidth * 8 + 4);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueOrAlphaAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverageOrUpperRightAlpha = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverageOrLowerLeftAlpha = (ushort)((ushort)(CONCAT15(upperLeftRed,CONCAT14(upperLeftRed,upperLeftSample)) >> 0x24) +
-                            (ushort)(CONCAT15(upperRightRed,CONCAT14(upperRightRed,upperRightSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerLeftRed,CONCAT14(lowerLeftRed,lowerLeftSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerRightRed,CONCAT14(lowerRightRed,lowerRightSample)) >> 0x24)) >> 6;
-          clampedRedOrAlpha = (redAverageOrLowerLeftAlpha != 0) * (redAverageOrLowerLeftAlpha < 0x100) * (char)redAverageOrLowerLeftAlpha - (0xff < redAverageOrLowerLeftAlpha);
-          averagedRgb = CONCAT12(clampedRedOrAlpha,CONCAT11((greenAverageOrUpperRightAlpha != 0) * (greenAverageOrUpperRightAlpha < 0x100) * (char)greenAverageOrUpperRightAlpha -
-                                           (0xff < greenAverageOrUpperRightAlpha),
-                                           (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage -
-                                           (0xff < blueOrAlphaAverage)));
+          upperLeftSample = *(uint *)sourceCursor->producerName;
+          upperRightSample = *(uint *)((int)sourceCursor->producerName + 4);
+          lowerLeftSample = *(uint *)((int)sourceCursor->producerName + destinationWidth * 8);
+          lowerRightSample = *(uint *)((int)sourceCursor->producerName + destinationWidth * 8 + 4);
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
+          averagedRgb = (uint)clampedRedOrAlpha << 0x10 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
                              (ushort)(((uint)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (ushort)(((uint)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
@@ -1184,48 +1206,23 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
     else {
       do {
         do {
-          upperLeftSample = *(undefined4 *)sourceCursor->producerName;
-          upperRightSample = *(undefined4 *)(sourceCursor->producerName + 2);
-          lowerLeftSample = *(undefined4 *)(sourceCursor->producerName + destinationWidth * 4);
-          lowerRightSample = *(undefined4 *)(sourceCursor->producerName + destinationWidth * 4 + 2);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 0x18);
-          blueOrAlphaAverage = CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 0x18);
-          greenAverageOrUpperRightAlpha = CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 0x18);
-          redAverageOrLowerLeftAlpha = CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 0x18);
-          lowerRightAlpha = CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverage = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverage = (ushort)(((ushort)(CONCAT35(CONCAT21(blueOrAlphaAverage,upperLeftRed),CONCAT14(upperLeftRed,upperLeftSample)) >>
-                                     0x20) >> 4) +
-                            ((ushort)(CONCAT35(CONCAT21(greenAverageOrUpperRightAlpha,upperRightRed),CONCAT14(upperRightRed,upperRightSample)) >>
-                                     0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(redAverageOrLowerLeftAlpha,lowerLeftRed),CONCAT14(lowerLeftRed,lowerLeftSample)) >>
-                                    0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(lowerRightAlpha,lowerRightRed),CONCAT14(lowerRightRed,lowerRightSample)) >> 0x20
-                                    ) >> 4)) >> 6;
-          blueOrAlphaAverage = (ushort)((blueOrAlphaAverage >> 4) + (greenAverageOrUpperRightAlpha >> 4) + (redAverageOrLowerLeftAlpha >> 4) + (lowerRightAlpha >> 4)) >> 6;
-          averagedRgb = CONCAT12((redAverage != 0) * (redAverage < 0x100) * (char)redAverage - (0xff < redAverage),
-                            CONCAT11((greenAverage != 0) * (greenAverage < 0x100) * (char)greenAverage -
-                                     (0xff < greenAverage),
-                                     (blueAverage != 0) * (blueAverage < 0x100) * (char)blueAverage -
-                                     (0xff < blueAverage)));
-          clampedRedOrAlpha = (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage - (0xff < blueOrAlphaAverage);
-          averagedArgb = CONCAT13(clampedRedOrAlpha,averagedRgb);
+          upperLeftSample = *(uint *)sourceCursor->producerName;
+          upperRightSample = *(uint *)(sourceCursor->producerName + 2);
+          lowerLeftSample = *(uint *)(sourceCursor->producerName + destinationWidth * 4);
+          lowerRightSample = *(uint *)(sourceCursor->producerName + destinationWidth * 4 + 2);
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,0x18);
+          averagedRgb = (uint)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
+          averagedArgb = (uint)clampedRedOrAlpha << 0x18 | averagedRgb;
           *destinationCursor = (ushort)((ushort)((ushort)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
                                       (ushort)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (ushort)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
@@ -1245,41 +1242,27 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
     if ((texture->glideInfo).format == 10) {
       do {
         do {
-          upperLeftSample = *(undefined4 *)
+          upperLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor->producerName[0] * 8 + -0x28);
-          upperRightSample = *(undefined4 *)
+          upperRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)*(byte *)((int)sourceCursor->producerName + 1) * 8 + -0x28);
-          lowerLeftSample = *(undefined4 *)
+          lowerLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor->producerName[destinationWidth] * 8 + -0x28);
-          lowerRightSample = *(undefined4 *)
+          lowerRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)*(byte *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 + -0x28);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueOrAlphaAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverageOrUpperRightAlpha = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverageOrLowerLeftAlpha = (ushort)((ushort)(CONCAT15(upperLeftRed,CONCAT14(upperLeftRed,upperLeftSample)) >> 0x24) +
-                            (ushort)(CONCAT15(upperRightRed,CONCAT14(upperRightRed,upperRightSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerLeftRed,CONCAT14(lowerLeftRed,lowerLeftSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerRightRed,CONCAT14(lowerRightRed,lowerRightSample)) >> 0x24)) >> 6;
-          clampedRedOrAlpha = (redAverageOrLowerLeftAlpha != 0) * (redAverageOrLowerLeftAlpha < 0x100) * (char)redAverageOrLowerLeftAlpha - (0xff < redAverageOrLowerLeftAlpha);
-          averagedRgb = CONCAT12(clampedRedOrAlpha,CONCAT11((greenAverageOrUpperRightAlpha != 0) * (greenAverageOrUpperRightAlpha < 0x100) * (char)greenAverageOrUpperRightAlpha -
-                                           (0xff < greenAverageOrUpperRightAlpha),
-                                           (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage -
-                                           (0xff < blueOrAlphaAverage)));
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
+          averagedRgb = (uint)clampedRedOrAlpha << 0x10 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)(((uint)(averagedRgb >> 3) << 0x1b) >> 0x16) |
                              (ushort)(((uint)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (ushort)(((uint)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
@@ -1295,56 +1278,30 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_2x(GraphicsTexture
     else {
       do {
         do {
-          upperLeftSample = *(undefined4 *)
+          upperLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor->producerName[0] * 8 + -0x28);
-          upperRightSample = *(undefined4 *)
+          upperRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)*(byte *)((int)sourceCursor->producerName + 1) * 8 + -0x28);
-          lowerLeftSample = *(undefined4 *)
+          lowerLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor->producerName[destinationWidth] * 8 + -0x28);
-          lowerRightSample = *(undefined4 *)
+          lowerRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)*(byte *)((int)sourceCursor->producerName + destinationWidth * 2 + 1) * 8 + -0x28);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 0x18);
-          blueOrAlphaAverage = CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 0x18);
-          greenAverageOrUpperRightAlpha = CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 0x18);
-          redAverageOrLowerLeftAlpha = CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 0x18);
-          lowerRightAlpha = CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverage = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverage = (ushort)(((ushort)(CONCAT35(CONCAT21(blueOrAlphaAverage,upperLeftRed),CONCAT14(upperLeftRed,upperLeftSample)) >>
-                                     0x20) >> 4) +
-                            ((ushort)(CONCAT35(CONCAT21(greenAverageOrUpperRightAlpha,upperRightRed),CONCAT14(upperRightRed,upperRightSample)) >>
-                                     0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(redAverageOrLowerLeftAlpha,lowerLeftRed),CONCAT14(lowerLeftRed,lowerLeftSample)) >>
-                                    0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(lowerRightAlpha,lowerRightRed),CONCAT14(lowerRightRed,lowerRightSample)) >> 0x20
-                                    ) >> 4)) >> 6;
-          blueOrAlphaAverage = (ushort)((blueOrAlphaAverage >> 4) + (greenAverageOrUpperRightAlpha >> 4) + (redAverageOrLowerLeftAlpha >> 4) + (lowerRightAlpha >> 4)) >> 6;
-          clampedRedOrAlpha = (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage - (0xff < blueOrAlphaAverage);
-          averagedArgb = CONCAT13(clampedRedOrAlpha,CONCAT12((redAverage != 0) * (redAverage < 0x100) * (char)redAverage -
-                                           (0xff < redAverage),
-                                           CONCAT11((greenAverage != 0) * (greenAverage < 0x100) * (char)greenAverage
-                                                    - (0xff < greenAverage),
-                                                    (blueAverage != 0) * (blueAverage < 0x100) * (char)blueAverage
-                                                    - (0xff < blueAverage))));
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,0x18);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
+          averagedArgb = (uint)clampedRedOrAlpha << 0x18 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                         (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                         (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)((ushort)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
                                       (ushort)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (ushort)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
@@ -1375,32 +1332,21 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
 {
   GraphicsTextureSourceAsset *asset;
   int entryPaletteIndex;
-  undefined4 upperLeftSample;
-  undefined4 upperRightSample;
-  undefined4 lowerLeftSample;
-  undefined4 lowerRightSample;
+  uint upperLeftSample;
+  uint upperRightSample;
+  uint lowerLeftSample;
+  uint lowerRightSample;
   byte clampedRedOrAlpha;
-  ushort lowerRightAlpha;
   uint destinationWidth;
   int subresourceRecordOffset;
   word *sourceCursor;
   ushort *destinationCursor;
-  undefined1 upperLeftGreenOrAlpha;
-  ushort blueOrAlphaAverage;
   ushort blueAverage;
-  undefined1 upperLeftRed;
-  uint3 averagedRgb;
-  ushort greenAverageOrUpperRightAlpha;
   ushort greenAverage;
-  uint averagedArgb;
-  ushort redAverageOrLowerLeftAlpha;
   ushort redAverage;
-  undefined1 upperRightGreenOrAlpha;
-  undefined1 upperRightRed;
-  undefined1 lowerLeftGreenOrAlpha;
-  undefined1 lowerLeftRed;
-  undefined1 lowerRightGreenOrAlpha;
-  undefined1 lowerRightRed;
+  ushort alphaAverage;
+  uint averagedRgb;
+  uint averagedArgb;
   uint remainingColumns;
   uint remainingRows;
   
@@ -1420,33 +1366,19 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
     if ((texture->glideInfo).format == 10) {
       do {
         do {
-          upperLeftSample = *(undefined4 *)sourceCursor;
-          upperRightSample = *(undefined4 *)((AssetProducerSourceNames *)(sourceCursor + 4))->producerName;
-          lowerLeftSample = *(undefined4 *)(sourceCursor + destinationWidth * 0x10);
-          lowerRightSample = *(undefined4 *)(sourceCursor + destinationWidth * 0x10 + 4);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueOrAlphaAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverageOrUpperRightAlpha = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverageOrLowerLeftAlpha = (ushort)((ushort)(CONCAT15(upperLeftRed,CONCAT14(upperLeftRed,upperLeftSample)) >> 0x24) +
-                            (ushort)(CONCAT15(upperRightRed,CONCAT14(upperRightRed,upperRightSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerLeftRed,CONCAT14(lowerLeftRed,lowerLeftSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerRightRed,CONCAT14(lowerRightRed,lowerRightSample)) >> 0x24)) >> 6;
-          clampedRedOrAlpha = (redAverageOrLowerLeftAlpha != 0) * (redAverageOrLowerLeftAlpha < 0x100) * (char)redAverageOrLowerLeftAlpha - (0xff < redAverageOrLowerLeftAlpha);
-          averagedRgb = CONCAT12(clampedRedOrAlpha,CONCAT11((greenAverageOrUpperRightAlpha != 0) * (greenAverageOrUpperRightAlpha < 0x100) * (char)greenAverageOrUpperRightAlpha -
-                                           (0xff < greenAverageOrUpperRightAlpha),
-                                           (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage -
-                                           (0xff < blueOrAlphaAverage)));
+          upperLeftSample = *(uint *)sourceCursor;
+          upperRightSample = *(uint *)(sourceCursor + 4);
+          lowerLeftSample = *(uint *)(sourceCursor + destinationWidth * 0x10);
+          lowerRightSample = *(uint *)(sourceCursor + destinationWidth * 0x10 + 4);
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
+          averagedRgb = (uint)clampedRedOrAlpha << 0x10 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)(((averagedRgb >> 3 & 0x1f) << 0x15) >> 0x10) |
                              (ushort)(((uint)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (ushort)(((uint)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
@@ -1462,48 +1394,23 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
     else {
       do {
         do {
-          upperLeftSample = *(undefined4 *)sourceCursor;
-          upperRightSample = *(undefined4 *)(sourceCursor + 4);
-          lowerLeftSample = *(undefined4 *)(sourceCursor + destinationWidth * 0x10);
-          lowerRightSample = *(undefined4 *)(sourceCursor + destinationWidth * 0x10 + 4);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 0x18);
-          blueOrAlphaAverage = CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 0x18);
-          greenAverageOrUpperRightAlpha = CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 0x18);
-          redAverageOrLowerLeftAlpha = CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 0x18);
-          lowerRightAlpha = CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverage = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverage = (ushort)(((ushort)(CONCAT35(CONCAT21(blueOrAlphaAverage,upperLeftRed),CONCAT14(upperLeftRed,upperLeftSample)) >>
-                                     0x20) >> 4) +
-                            ((ushort)(CONCAT35(CONCAT21(greenAverageOrUpperRightAlpha,upperRightRed),CONCAT14(upperRightRed,upperRightSample)) >>
-                                     0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(redAverageOrLowerLeftAlpha,lowerLeftRed),CONCAT14(lowerLeftRed,lowerLeftSample)) >>
-                                    0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(lowerRightAlpha,lowerRightRed),CONCAT14(lowerRightRed,lowerRightSample)) >> 0x20
-                                    ) >> 4)) >> 6;
-          blueOrAlphaAverage = (ushort)((blueOrAlphaAverage >> 4) + (greenAverageOrUpperRightAlpha >> 4) + (redAverageOrLowerLeftAlpha >> 4) + (lowerRightAlpha >> 4)) >> 6;
-          averagedRgb = CONCAT12((redAverage != 0) * (redAverage < 0x100) * (char)redAverage - (0xff < redAverage),
-                            CONCAT11((greenAverage != 0) * (greenAverage < 0x100) * (char)greenAverage -
-                                     (0xff < greenAverage),
-                                     (blueAverage != 0) * (blueAverage < 0x100) * (char)blueAverage -
-                                     (0xff < blueAverage)));
-          clampedRedOrAlpha = (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage - (0xff < blueOrAlphaAverage);
-          averagedArgb = CONCAT13(clampedRedOrAlpha,averagedRgb);
+          upperLeftSample = *(uint *)sourceCursor;
+          upperRightSample = *(uint *)(sourceCursor + 4);
+          lowerLeftSample = *(uint *)(sourceCursor + destinationWidth * 0x10);
+          lowerRightSample = *(uint *)(sourceCursor + destinationWidth * 0x10 + 4);
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,0x18);
+          averagedRgb = (uint)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
+          averagedArgb = (uint)clampedRedOrAlpha << 0x18 | averagedRgb;
           *destinationCursor = (ushort)((ushort)((ushort)((((averagedRgb & 0xf0) >> 4) << 0x18) >> 0x10) |
                                       (ushort)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (ushort)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
@@ -1523,41 +1430,27 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
     if ((texture->glideInfo).format == 10) {
       do {
         do {
-          upperLeftSample = *(undefined4 *)
+          upperLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)*sourceCursor * 8 + -0x28);
-          upperRightSample = *(undefined4 *)
+          upperRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[1] * 8 + -0x28);
-          lowerLeftSample = *(undefined4 *)
+          lowerLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[destinationWidth * 4] * 8 + -0x28);
-          lowerRightSample = *(undefined4 *)
+          lowerRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[destinationWidth * 4 + 1] * 8 + -0x28);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueOrAlphaAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverageOrUpperRightAlpha = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverageOrLowerLeftAlpha = (ushort)((ushort)(CONCAT15(upperLeftRed,CONCAT14(upperLeftRed,upperLeftSample)) >> 0x24) +
-                            (ushort)(CONCAT15(upperRightRed,CONCAT14(upperRightRed,upperRightSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerLeftRed,CONCAT14(lowerLeftRed,lowerLeftSample)) >> 0x24) +
-                           (ushort)(CONCAT15(lowerRightRed,CONCAT14(lowerRightRed,lowerRightSample)) >> 0x24)) >> 6;
-          clampedRedOrAlpha = (redAverageOrLowerLeftAlpha != 0) * (redAverageOrLowerLeftAlpha < 0x100) * (char)redAverageOrLowerLeftAlpha - (0xff < redAverageOrLowerLeftAlpha);
-          averagedRgb = CONCAT12(clampedRedOrAlpha,CONCAT11((greenAverageOrUpperRightAlpha != 0) * (greenAverageOrUpperRightAlpha < 0x100) * (char)greenAverageOrUpperRightAlpha -
-                                           (0xff < greenAverageOrUpperRightAlpha),
-                                           (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage -
-                                           (0xff < blueOrAlphaAverage)));
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(redAverage);
+          averagedRgb = (uint)clampedRedOrAlpha << 0x10 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                        (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)(((uint)(averagedRgb >> 3) << 0x1b) >> 0x16) |
                              (ushort)(((uint)(averagedRgb >> 10) << 0x1a) >> 0x10)) >> 5 |
                      (ushort)(((uint)(clampedRedOrAlpha >> 3) << 0x1b) >> 0x10);
@@ -1573,56 +1466,30 @@ void __thandor_void_preserve_eax_ecx_edx Glide3_TextureUpload_4x(GraphicsTexture
     else {
       do {
         do {
-          upperLeftSample = *(undefined4 *)
+          upperLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)*sourceCursor * 8 + -0x28);
-          upperRightSample = *(undefined4 *)
+          upperRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[1] * 8 + -0x28);
-          lowerLeftSample = *(undefined4 *)
+          lowerLeftSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[destinationWidth * 4] * 8 + -0x28);
-          lowerRightSample = *(undefined4 *)
+          lowerRightSample = *(uint *)
                    (asset[entryPaletteIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                    (uint)(byte)sourceCursor[destinationWidth * 4 + 1] * 8 + -0x28);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 0x18);
-          blueOrAlphaAverage = CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha);
-          upperLeftRed = (undefined1)((uint)upperLeftSample >> 0x10);
-          upperLeftGreenOrAlpha = (undefined1)((uint)upperLeftSample >> 8);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 0x18);
-          greenAverageOrUpperRightAlpha = CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha);
-          upperRightRed = (undefined1)((uint)upperRightSample >> 0x10);
-          upperRightGreenOrAlpha = (undefined1)((uint)upperRightSample >> 8);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 0x18);
-          redAverageOrLowerLeftAlpha = CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha);
-          lowerLeftRed = (undefined1)((uint)lowerLeftSample >> 0x10);
-          lowerLeftGreenOrAlpha = (undefined1)((uint)lowerLeftSample >> 8);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 0x18);
-          lowerRightAlpha = CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha);
-          lowerRightRed = (undefined1)((uint)lowerRightSample >> 0x10);
-          lowerRightGreenOrAlpha = (undefined1)((uint)lowerRightSample >> 8);
-          blueAverage = (ushort)((CONCAT11((char)upperLeftSample,(char)upperLeftSample) >> 4) +
-                            (CONCAT11((char)upperRightSample,(char)upperRightSample) >> 4) +
-                           (CONCAT11((char)lowerLeftSample,(char)lowerLeftSample) >> 4) +
-                           (CONCAT11((char)lowerRightSample,(char)lowerRightSample) >> 4)) >> 6;
-          greenAverage = (ushort)((CONCAT11(upperLeftGreenOrAlpha,upperLeftGreenOrAlpha) >> 4) + (CONCAT11(upperRightGreenOrAlpha,upperRightGreenOrAlpha) >> 4) +
-                           (CONCAT11(lowerLeftGreenOrAlpha,lowerLeftGreenOrAlpha) >> 4) + (CONCAT11(lowerRightGreenOrAlpha,lowerRightGreenOrAlpha) >> 4)) >> 6;
-          redAverage = (ushort)(((ushort)(CONCAT35(CONCAT21(blueOrAlphaAverage,upperLeftRed),CONCAT14(upperLeftRed,upperLeftSample)) >>
-                                     0x20) >> 4) +
-                            ((ushort)(CONCAT35(CONCAT21(greenAverageOrUpperRightAlpha,upperRightRed),CONCAT14(upperRightRed,upperRightSample)) >>
-                                     0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(redAverageOrLowerLeftAlpha,lowerLeftRed),CONCAT14(lowerLeftRed,lowerLeftSample)) >>
-                                    0x20) >> 4) +
-                           ((ushort)(CONCAT35(CONCAT21(lowerRightAlpha,lowerRightRed),CONCAT14(lowerRightRed,lowerRightSample)) >> 0x20
-                                    ) >> 4)) >> 6;
-          blueOrAlphaAverage = (ushort)((blueOrAlphaAverage >> 4) + (greenAverageOrUpperRightAlpha >> 4) + (redAverageOrLowerLeftAlpha >> 4) + (lowerRightAlpha >> 4)) >> 6;
-          clampedRedOrAlpha = (blueOrAlphaAverage != 0) * (blueOrAlphaAverage < 0x100) * (char)blueOrAlphaAverage - (0xff < blueOrAlphaAverage);
-          averagedArgb = CONCAT13(clampedRedOrAlpha,CONCAT12((redAverage != 0) * (redAverage < 0x100) * (char)redAverage -
-                                           (0xff < redAverage),
-                                           CONCAT11((greenAverage != 0) * (greenAverage < 0x100) * (char)greenAverage
-                                                    - (0xff < greenAverage),
-                                                    (blueAverage != 0) * (blueAverage < 0x100) * (char)blueAverage
-                                                    - (0xff < blueAverage))));
+          blueAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                           lowerRightSample,0);
+          greenAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,8);
+          redAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                          lowerRightSample,0x10);
+          alphaAverage = GLIDE_AVERAGE_FOUR_SAMPLES_CHANNEL(upperLeftSample,upperRightSample,lowerLeftSample,
+                                                            lowerRightSample,0x18);
+          clampedRedOrAlpha = GLIDE_SATURATE_WORD_TO_BYTE(alphaAverage);
+          averagedArgb = (uint)clampedRedOrAlpha << 0x18 | (uint)GLIDE_SATURATE_WORD_TO_BYTE(redAverage) << 0x10 |
+                         (uint)GLIDE_SATURATE_WORD_TO_BYTE(greenAverage) << 8 |
+                         (uint)GLIDE_SATURATE_WORD_TO_BYTE(blueAverage);
           *destinationCursor = (ushort)((ushort)((ushort)(((averagedArgb >> 4) << 0x1c) >> 0x14) |
                                       (ushort)(((averagedArgb >> 0xc) << 0x1c) >> 0x10)) >> 4 |
                              (ushort)(((averagedArgb >> 0x14) << 0x1c) >> 0x10)) >> 4 |
@@ -1713,9 +1580,10 @@ GraphicsGlide3_DownsampleAlpha8ToWhiteArgb4444(GraphicsTextureResource *texture)
     do {
       firstAlphaQuarter = (byte)*sourcePairCursor >> 2;
       *glideDataCursor =
-           CONCAT11((byte)(*sourcePairCursor >> 10) + firstAlphaQuarter +
-                    (byte)(sourcePairCursor[downsampledWidth] >> 10) +
-                    ((byte)sourcePairCursor[downsampledWidth] >> 2),firstAlphaQuarter) | 0xfff;
+           (ushort)((uint)(byte)((byte)(*sourcePairCursor >> 10) + firstAlphaQuarter +
+                                 (byte)(sourcePairCursor[downsampledWidth] >> 10) +
+                                 ((byte)sourcePairCursor[downsampledWidth] >> 2)) << 8 |
+                    (uint)firstAlphaQuarter | 0xfff);
       sourcePairCursor = sourcePairCursor + 1;
       glideDataCursor = glideDataCursor + 1;
       remainingColumns = remainingColumns - 1;
@@ -1761,10 +1629,10 @@ GraphicsGlide3_DownsampleAlternateAlphaSamplesToWhiteArgb4444(GraphicsTextureRes
   do {
     do {
       *glideDataCursor =
-           CONCAT11((*sourceByteCursor >> 2) + (sourceByteCursor[2] >> 2) +
-                    (sourceByteCursor[downsampledWidth * 8] >> 2) +
-                    (sourceByteCursor[downsampledWidth * 8 + 2] >> 2),sourceByteCursor[2] >> 2) |
-           0xfff;
+           (ushort)((uint)(byte)((*sourceByteCursor >> 2) + (sourceByteCursor[2] >> 2) +
+                                 (sourceByteCursor[downsampledWidth * 8] >> 2) +
+                                 (sourceByteCursor[downsampledWidth * 8 + 2] >> 2)) << 8 |
+                    (uint)(byte)(sourceByteCursor[2] >> 2) | 0xfff);
       sourceByteCursor = sourceByteCursor + 4;
       glideDataCursor = glideDataCursor + 1;
       remainingColumns = remainingColumns - 1;
@@ -1794,7 +1662,7 @@ Glide3_TextureSource_BlitSourceAlpha
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int widthOrPaletteIndex;
   int indexedSourceWidth;
   uint sourceArgb;
@@ -1807,19 +1675,13 @@ Glide3_TextureSource_BlitSourceAlpha
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue1ByteLane2;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue1ByteLane3;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
-  
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+  ulonglong mm1PackedValue0;
+  ulonglong mm1PackedValue1;
+
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
@@ -1881,59 +1743,41 @@ Glide3_TextureSource_BlitSourceAlpha
               sourceArgb = *sourceArgbCursor;
               if (0xffffff < sourceArgb) {
                 if (sourceArgb < 0xff000000) {
-                  framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                  mm1PackedValue1ByteLane3 = (byte)(sourceArgb >> 0x18);
-                  mm1PackedValue1ByteLane2 = (byte)(sourceArgb >> 0x10);
-                  mm1PackedValue1ByteLane1 = (byte)(sourceArgb >> 8);
+                  framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                  destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                  destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                         framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,sourceArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceArgb,
-                                                                              (char)sourceArgb) >> 2))),
+                       pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue2 =
-                       pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destinationLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
+                       pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x20) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x10) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                  (ushort)((short)destinationLanes *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue3 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue2 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue1 >> 0x10
-                                                                 ),(short)mm0PackedValue2 +
-                                                                   (short)mm1PackedValue1))) &
+                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
+                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
+                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
+                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)((ulonglong)mm0PackedValue3 >> 8) +
-                       (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                       (short)(mm0PackedValue3 >> 8) +
+                       (short)(mm0PackedValue3 >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
-                       (short)*(undefined4 *)
+                       (short)*(uint *)
                                ((int)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
-                       (short)*(undefined4 *)
+                       (short)*(uint *)
                                ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
@@ -2007,52 +1851,34 @@ Glide3_TextureSource_BlitSourceAlpha
                 if (sourceArgb < 0xff000000) {
                   sourceArgb = *(uint *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
                                     assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
-                  framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                  mm1PackedValue0ByteLane3 = (byte)(sourceArgb >> 0x18);
-                  mm1PackedValue0ByteLane2 = (byte)(sourceArgb >> 0x10);
-                  mm1PackedValue0ByteLane1 = (byte)(sourceArgb >> 8);
+                  framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                  destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                  destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                         framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue0 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,sourceArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceArgb,
-                                                                              (char)sourceArgb) >> 2))),
+                       pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue0 =
-                       pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destinationLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
+                       pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x20) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x10) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                  (ushort)((short)destinationLanes *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue1 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue0 >> 0x10
-                                                                 ),(short)mm0PackedValue0 +
-                                                                   (short)mm1PackedValue0))) &
+                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
+                                                   (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
+                                                   (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
+                                                   (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)((ulonglong)mm0PackedValue1 >> 8) +
-                       (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                       (short)(mm0PackedValue1 >> 8) +
+                       (short)(mm0PackedValue1 >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor = (short)sourceArgb;
@@ -2098,7 +1924,7 @@ Glide3_TextureSource_BlitHalfSourceRgb
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int widthOrPaletteIndex;
   int indexedSourceWidth;
   uint sourceArgb;
@@ -2111,18 +1937,12 @@ Glide3_TextureSource_BlitHalfSourceRgb
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue1ByteLane2;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue1ByteLane3;
-  byte mm1PackedValue0ByteLane1;
-  undefined8 mm1PackedValue0;
-  undefined8 mm1PackedValue1;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+  ulonglong mm1PackedValue0;
+  ulonglong mm1PackedValue1;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -2184,51 +2004,34 @@ Glide3_TextureSource_BlitHalfSourceRgb
             do {
               sourceArgb = *sourceArgbCursor;
               if (0xffffff < sourceArgb) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                mm1PackedValue1ByteLane3 = (byte)(sourceArgb >> 0x18);
-                mm1PackedValue1ByteLane2 = (byte)(sourceArgb >> 0x10);
-                mm1PackedValue1ByteLane1 = (byte)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue1 =
-                     pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3) >>
-                                     3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,sourceArgb)) >> 0x20)
-                                                >> 3,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                       mm1PackedValue1ByteLane1) >>
-                                                              3,CONCAT11((char)sourceArgb,(char)sourceArgb) >>
-                                                                3))),
+                     pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                 mm0PackedValue2 =
-                     pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                             g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                     CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.red)
-                                              >> 2,CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.green) >> 2,
-                                                            (ushort)((short)destinationLanes *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.blue) >> 2))),
+                     pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                (ushort)((short)(destinationLanes >> 0x20) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                (ushort)((short)(destinationLanes >> 0x10) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                (ushort)((short)destinationLanes *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                 mm0PackedValue3 =
-                     pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                      (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                      CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                               (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                               CONCAT22((short)((ulonglong)mm0PackedValue2 >> 0x10)
-                                                        + (short)((ulonglong)mm1PackedValue1 >> 0x10
-                                                                 ),
-                                                        (short)mm0PackedValue2 +
-                                                        (short)mm1PackedValue1))) &
+                     pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
+                                                 (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
+                                                 (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
+                                                 (short)mm0PackedValue2 + (short)mm1PackedValue1) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((ulonglong)mm0PackedValue3 >> 8) +
-                     (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                     (short)(mm0PackedValue3 >> 8) +
+                     (short)(mm0PackedValue3 >> 0x28);
               }
               sourceArgbCursor = sourceArgbCursor + 1;
               destinationCursor = destinationCursor + 2;
@@ -2297,46 +2100,29 @@ Glide3_TextureSource_BlitHalfSourceRgb
               sourceArgb = *(uint *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
                                 assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
               if (0xffffff < sourceArgb) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                mm1PackedValue0ByteLane3 = (byte)(sourceArgb >> 0x18);
-                mm1PackedValue0ByteLane2 = (byte)(sourceArgb >> 0x10);
-                mm1PackedValue0ByteLane1 = (byte)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm1PackedValue0 =
-                     pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3) >>
-                                     3,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,sourceArgb)) >> 0x20)
-                                                >> 3,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                       mm1PackedValue0ByteLane1) >>
-                                                              3,CONCAT11((char)sourceArgb,(char)sourceArgb) >>
-                                                                3))),
+                     pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,3),
                             g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                 mm0PackedValue0 =
-                     pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                             g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                     CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                      g_SoftwarePixelMmxConstants.unpackScales.red)
-                                              >> 2,CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.green) >> 2,
-                                                            (ushort)((short)destinationLanes *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.blue) >> 2))),
+                     pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                (ushort)((short)(destinationLanes >> 0x20) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                (ushort)((short)(destinationLanes >> 0x10) *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                (ushort)((short)destinationLanes *
+                                                        g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                             g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                 mm0PackedValue1 =
-                     pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                      (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                      CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                               (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                               CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10)
-                                                        + (short)((ulonglong)mm1PackedValue0 >> 0x10
-                                                                 ),
-                                                        (short)mm0PackedValue0 +
-                                                        (short)mm1PackedValue0))) &
+                     pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
+                                                 (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
+                                                 (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
+                                                 (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
@@ -2384,16 +2170,16 @@ Glide3_TextureSource_StretchDirectColorBilinear
 {
   int lowerRowOffset;
   int recordOffsetOrSourceStride;
-  undefined4 firstUpperLeft;
-  undefined4 firstUpperRight;
-  undefined4 firstLowerLeft;
-  undefined4 firstLowerRight;
-  undefined4 secondUpperLeft;
-  undefined4 secondUpperRight;
-  undefined4 secondLowerLeft;
-  undefined4 secondLowerRight;
-  char firstClampedLane0;
-  char secondClampedLane0;
+  uint firstUpperLeft;
+  uint firstUpperRight;
+  uint firstLowerLeft;
+  uint firstLowerRight;
+  uint secondUpperLeft;
+  uint secondUpperRight;
+  uint secondLowerLeft;
+  uint secondLowerRight;
+  byte firstClampedLane0;
+  byte secondClampedLane0;
   GraphicsPixelDimension framebufferWidth;
   uint widthMinusOneOrRemainingPairs;
   int sourceStepX;
@@ -2406,53 +2192,37 @@ Glide3_TextureSource_StretchDirectColorBilinear
   byte *sourcePixels;
   byte *sourceRowCursor;
   byte *destinationCursor;
-  ushort firstLane0OrAlpha;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
-  ushort firstLane1OrAlpha;
-  ushort firstLane2OrAlpha;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  ushort firstLane3OrAlpha;
+  ushort firstLane0;
+  ushort firstLane1;
+  ushort firstLane2;
+  ushort firstLane3;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
   ulonglong firstShiftedLanes;
-  undefined8 mm0PackedValue2;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  undefined1 mm2PackedValue0ByteLane1;
-  undefined1 mm2PackedValue0ByteLane2;
-  undefined8 mm2PackedValue0;
-  undefined8 mm2PackedValue1;
-  undefined1 mm3PackedValue0ByteLane1;
-  undefined1 mm3PackedValue0ByteLane2;
-  undefined8 mm3PackedValue0;
-  ushort secondLane0OrAlpha;
-  undefined1 mm4PackedValue0ByteLane1;
-  undefined1 mm4PackedValue0ByteLane2;
-  ushort secondLane1OrAlpha;
-  ushort secondLane2OrAlpha;
-  undefined8 mm4PackedValue0;
-  undefined8 mm4PackedValue1;
-  ushort secondLane3OrAlpha;
+  ulonglong mm0PackedValue2;
+  ulonglong mm1PackedValue0;
+  ulonglong mm2PackedValue0;
+  ulonglong mm2PackedValue1;
+  ulonglong mm3PackedValue0;
+  ushort secondLane0;
+  ushort secondLane1;
+  ushort secondLane2;
+  ushort secondLane3;
+  ulonglong mm4PackedValue0;
+  ulonglong mm4PackedValue1;
   ulonglong secondShiftedLanes;
-  undefined8 mm4PackedValue2;
-  undefined1 mm5PackedValue0ByteLane1;
-  undefined1 mm5PackedValue0ByteLane2;
-  undefined8 mm5PackedValue0;
-  undefined1 mm6PackedValue0ByteLane1;
-  undefined1 mm6PackedValue0ByteLane2;
-  undefined8 mm6PackedValue0;
-  undefined8 mm6PackedValue1;
-  undefined1 mm7PackedValue0ByteLane1;
-  undefined1 mm7PackedValue0ByteLane2;
-  undefined8 mm7PackedValue0;
+  ulonglong mm4PackedValue2;
+  ulonglong mm5PackedValue0;
+  ulonglong mm6PackedValue0;
+  ulonglong mm6PackedValue1;
+  ulonglong mm7PackedValue0;
   byte *destinationRowStart;
-  char firstClampedLane1;
-  char firstClampedLane2;
-  char firstClampedLane3;
-  char secondClampedLane1;
-  char secondClampedLane2;
-  char secondClampedLane3;
+  byte firstClampedLane1;
+  byte firstClampedLane2;
+  byte firstClampedLane3;
+  byte secondClampedLane1;
+  byte secondClampedLane2;
+  byte secondClampedLane3;
   
   framebufferWidth = g_DisplayFramebufferAccess.width;
   if (framebuffer == &g_DisplayFramebufferAccess) {
@@ -2466,8 +2236,8 @@ Glide3_TextureSource_StretchDirectColorBilinear
                 (destinationY * g_DisplayFramebufferAccess.width + destinationX) * 2;
       widthMinusOneOrRemainingPairs = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                        recordOffsetOrSourceStride + -0x10) - 1;
-      sourceStepX = (int)(((ulonglong)(widthMinusOneOrRemainingPairs >> 0x18) << 0x20 | (ulonglong)widthMinusOneOrRemainingPairs * 0x100 & 0xffffffff)
-                    / (ulonglong)(destinationWidth - 1));
+      /* MUL (unsigned 64-bit product) then DIV. */
+      sourceStepX = (int)((ulonglong)widthMinusOneOrRemainingPairs * 0x100 / (ulonglong)(destinationWidth - 1));
       sourceHeightMinusOne = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                        recordOffsetOrSourceStride + -0xc) - 1;
       destinationHeightMinusOne = destinationHeight - 1;
@@ -2485,204 +2255,107 @@ Glide3_TextureSource_StretchDirectColorBilinear
         do {
           columnOrFractionX = sourceXFixed >> 8;
           lowerRowOffset = recordOffsetOrSourceStride + columnOrFractionX * 4;
-          firstUpperLeft = *(undefined4 *)(sourceRowCursor + columnOrFractionX * 4);
-          firstUpperRight = *(undefined4 *)(sourceRowCursor + columnOrFractionX * 4 + 4);
-          firstLowerLeft = *(undefined4 *)(sourceRowCursor + lowerRowOffset);
-          firstLowerRight = *(undefined4 *)(sourceRowCursor + lowerRowOffset + 4);
+          firstUpperLeft = *(uint *)(sourceRowCursor + columnOrFractionX * 4);
+          firstUpperRight = *(uint *)(sourceRowCursor + columnOrFractionX * 4 + 4);
+          firstLowerLeft = *(uint *)(sourceRowCursor + lowerRowOffset);
+          firstLowerRight = *(uint *)(sourceRowCursor + lowerRowOffset + 4);
           columnOrFractionX = sourceXFixed + sourceStepX >> 8;
           lowerRowOffset = recordOffsetOrSourceStride + columnOrFractionX * 4;
-          secondUpperLeft = *(undefined4 *)(sourceRowCursor + columnOrFractionX * 4);
-          secondUpperRight = *(undefined4 *)(sourceRowCursor + columnOrFractionX * 4 + 4);
-          secondLowerLeft = *(undefined4 *)(sourceRowCursor + lowerRowOffset);
-          secondLowerRight = *(undefined4 *)(sourceRowCursor + lowerRowOffset + 4);
-          mm0PackedValue0ByteLane1 = (undefined1)((uint)firstUpperLeft >> 0x18);
-          firstLane0OrAlpha = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
-          mm0PackedValue0ByteLane2 = (undefined1)((uint)firstUpperLeft >> 0x10);
-          mm0PackedValue0ByteLane1 = (undefined1)((uint)firstUpperLeft >> 8);
-          mm1PackedValue0ByteLane1 = (undefined1)((uint)firstUpperRight >> 0x18);
-          firstLane1OrAlpha = CONCAT11(mm1PackedValue0ByteLane1,mm1PackedValue0ByteLane1);
-          mm1PackedValue0ByteLane2 = (undefined1)((uint)firstUpperRight >> 0x10);
-          mm1PackedValue0ByteLane1 = (undefined1)((uint)firstUpperRight >> 8);
-          mm2PackedValue0ByteLane1 = (undefined1)((uint)firstLowerLeft >> 0x18);
-          firstLane2OrAlpha = CONCAT11(mm2PackedValue0ByteLane1,mm2PackedValue0ByteLane1);
-          mm2PackedValue0ByteLane2 = (undefined1)((uint)firstLowerLeft >> 0x10);
-          mm2PackedValue0ByteLane1 = (undefined1)((uint)firstLowerLeft >> 8);
-          mm3PackedValue0ByteLane1 = (undefined1)((uint)firstLowerRight >> 0x18);
-          firstLane3OrAlpha = CONCAT11(mm3PackedValue0ByteLane1,mm3PackedValue0ByteLane1);
-          mm3PackedValue0ByteLane2 = (undefined1)((uint)firstLowerRight >> 0x10);
-          mm3PackedValue0ByteLane1 = (undefined1)((uint)firstLowerRight >> 8);
-          mm4PackedValue0ByteLane1 = (undefined1)((uint)secondUpperLeft >> 0x18);
-          secondLane0OrAlpha = CONCAT11(mm4PackedValue0ByteLane1,mm4PackedValue0ByteLane1);
-          mm4PackedValue0ByteLane2 = (undefined1)((uint)secondUpperLeft >> 0x10);
-          mm4PackedValue0ByteLane1 = (undefined1)((uint)secondUpperLeft >> 8);
-          mm5PackedValue0ByteLane1 = (undefined1)((uint)secondUpperRight >> 0x18);
-          secondLane1OrAlpha = CONCAT11(mm5PackedValue0ByteLane1,mm5PackedValue0ByteLane1);
-          mm5PackedValue0ByteLane2 = (undefined1)((uint)secondUpperRight >> 0x10);
-          mm5PackedValue0ByteLane1 = (undefined1)((uint)secondUpperRight >> 8);
-          mm6PackedValue0ByteLane1 = (undefined1)((uint)secondLowerLeft >> 0x18);
-          secondLane2OrAlpha = CONCAT11(mm6PackedValue0ByteLane1,mm6PackedValue0ByteLane1);
-          mm6PackedValue0ByteLane2 = (undefined1)((uint)secondLowerLeft >> 0x10);
-          mm6PackedValue0ByteLane1 = (undefined1)((uint)secondLowerLeft >> 8);
-          mm7PackedValue0ByteLane1 = (undefined1)((uint)secondLowerRight >> 0x18);
-          secondLane3OrAlpha = CONCAT11(mm7PackedValue0ByteLane1,mm7PackedValue0ByteLane1);
-          mm7PackedValue0ByteLane2 = (undefined1)((uint)secondLowerRight >> 0x10);
-          mm7PackedValue0ByteLane1 = (undefined1)((uint)secondLowerRight >> 8);
+          secondUpperLeft = *(uint *)(sourceRowCursor + columnOrFractionX * 4);
+          secondUpperRight = *(uint *)(sourceRowCursor + columnOrFractionX * 4 + 4);
+          secondLowerLeft = *(uint *)(sourceRowCursor + lowerRowOffset);
+          secondLowerRight = *(uint *)(sourceRowCursor + lowerRowOffset + 4);
           columnOrFractionX = sourceXFixed & 0xff;
           fractionY = sourceYFixed & 0xff;
           mm0PackedValue0 =
-               pmulhw(CONCAT26(firstLane0OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(firstLane0OrAlpha,mm0PackedValue0ByteLane2),
-                                                          CONCAT14(mm0PackedValue0ByteLane2,firstUpperLeft))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                          mm0PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)firstUpperLeft,(char)firstUpperLeft) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(firstUpperLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
           mm1PackedValue0 =
-               pmulhw(CONCAT26(firstLane1OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(firstLane1OrAlpha,mm1PackedValue0ByteLane2),
-                                                          CONCAT14(mm1PackedValue0ByteLane2,firstUpperRight))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                          mm1PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)firstUpperRight,(char)firstUpperRight) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(firstUpperRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           mm2PackedValue0 =
-               pmulhw(CONCAT26(firstLane2OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(firstLane2OrAlpha,mm2PackedValue0ByteLane2),
-                                                          CONCAT14(mm2PackedValue0ByteLane2,firstLowerLeft))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm2PackedValue0ByteLane1,
-                                                          mm2PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)firstLowerLeft,(char)firstLowerLeft) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(firstLowerLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
           mm3PackedValue0 =
-               pmulhw(CONCAT26(firstLane3OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(firstLane3OrAlpha,mm3PackedValue0ByteLane2),
-                                                          CONCAT14(mm3PackedValue0ByteLane2,firstLowerRight))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm3PackedValue0ByteLane1,
-                                                          mm3PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)firstLowerRight,(char)firstLowerRight) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(firstLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           mm0PackedValue1 =
-               pmulhw(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                               (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                               CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                        (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                        CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                                 (short)((ulonglong)mm1PackedValue0 >> 0x10),
-                                                 (short)mm0PackedValue0 + (short)mm1PackedValue0))),
+               pmulhw(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
+                                          (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
+                                          (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
+                                          (short)mm0PackedValue0 + (short)mm1PackedValue0),
                       g_SoftwareBilinearInverseFactors[fractionY]);
           mm2PackedValue1 =
-               pmulhw(CONCAT26((short)((ulonglong)mm2PackedValue0 >> 0x30) +
-                               (short)((ulonglong)mm3PackedValue0 >> 0x30),
-                               CONCAT24((short)((ulonglong)mm2PackedValue0 >> 0x20) +
-                                        (short)((ulonglong)mm3PackedValue0 >> 0x20),
-                                        CONCAT22((short)((ulonglong)mm2PackedValue0 >> 0x10) +
-                                                 (short)((ulonglong)mm3PackedValue0 >> 0x10),
-                                                 (short)mm2PackedValue0 + (short)mm3PackedValue0))),
+               pmulhw(Glide_PackWordLanes((short)(mm2PackedValue0 >> 0x30) + (short)(mm3PackedValue0 >> 0x30),
+                                          (short)(mm2PackedValue0 >> 0x20) + (short)(mm3PackedValue0 >> 0x20),
+                                          (short)(mm2PackedValue0 >> 0x10) + (short)(mm3PackedValue0 >> 0x10),
+                                          (short)mm2PackedValue0 + (short)mm3PackedValue0),
                       g_SoftwareBilinearForwardFactors[fractionY]);
           columnOrFractionX = sourceXFixed + sourceStepX & 0xff;
           mm4PackedValue0 =
-               pmulhw(CONCAT26(secondLane0OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(secondLane0OrAlpha,mm4PackedValue0ByteLane2),
-                                                          CONCAT14(mm4PackedValue0ByteLane2,secondUpperLeft))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm4PackedValue0ByteLane1,
-                                                          mm4PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)secondUpperLeft,(char)secondUpperLeft) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(secondUpperLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
           mm5PackedValue0 =
-               pmulhw(CONCAT26(secondLane1OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(secondLane1OrAlpha,mm5PackedValue0ByteLane2),
-                                                          CONCAT14(mm5PackedValue0ByteLane2,secondUpperRight))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm5PackedValue0ByteLane1,
-                                                          mm5PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)secondUpperRight,(char)secondUpperRight) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(secondUpperRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           mm6PackedValue0 =
-               pmulhw(CONCAT26(secondLane2OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(secondLane2OrAlpha,mm6PackedValue0ByteLane2),
-                                                          CONCAT14(mm6PackedValue0ByteLane2,secondLowerLeft))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm6PackedValue0ByteLane1,
-                                                          mm6PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)secondLowerLeft,(char)secondLowerLeft) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(secondLowerLeft,2),
                       g_SoftwareBilinearInverseFactors[columnOrFractionX]);
           mm7PackedValue0 =
-               pmulhw(CONCAT26(secondLane3OrAlpha >> 2,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(secondLane3OrAlpha,mm7PackedValue0ByteLane2),
-                                                          CONCAT14(mm7PackedValue0ByteLane2,secondLowerRight))
-                                                >> 0x20) >> 2,
-                                        CONCAT22(CONCAT11(mm7PackedValue0ByteLane1,
-                                                          mm7PackedValue0ByteLane1) >> 2,
-                                                 CONCAT11((char)secondLowerRight,(char)secondLowerRight) >> 2))),
+               pmulhw(Glide_UnpackArgbToWordLanes(secondLowerRight,2),
                       g_SoftwareBilinearForwardFactors[columnOrFractionX]);
           mm4PackedValue1 =
-               pmulhw(CONCAT26((short)((ulonglong)mm4PackedValue0 >> 0x30) +
-                               (short)((ulonglong)mm5PackedValue0 >> 0x30),
-                               CONCAT24((short)((ulonglong)mm4PackedValue0 >> 0x20) +
-                                        (short)((ulonglong)mm5PackedValue0 >> 0x20),
-                                        CONCAT22((short)((ulonglong)mm4PackedValue0 >> 0x10) +
-                                                 (short)((ulonglong)mm5PackedValue0 >> 0x10),
-                                                 (short)mm4PackedValue0 + (short)mm5PackedValue0))),
+               pmulhw(Glide_PackWordLanes((short)(mm4PackedValue0 >> 0x30) + (short)(mm5PackedValue0 >> 0x30),
+                                          (short)(mm4PackedValue0 >> 0x20) + (short)(mm5PackedValue0 >> 0x20),
+                                          (short)(mm4PackedValue0 >> 0x10) + (short)(mm5PackedValue0 >> 0x10),
+                                          (short)mm4PackedValue0 + (short)mm5PackedValue0),
                       g_SoftwareBilinearInverseFactors[fractionY]);
           mm6PackedValue1 =
-               pmulhw(CONCAT26((short)((ulonglong)mm6PackedValue0 >> 0x30) +
-                               (short)((ulonglong)mm7PackedValue0 >> 0x30),
-                               CONCAT24((short)((ulonglong)mm6PackedValue0 >> 0x20) +
-                                        (short)((ulonglong)mm7PackedValue0 >> 0x20),
-                                        CONCAT22((short)((ulonglong)mm6PackedValue0 >> 0x10) +
-                                                 (short)((ulonglong)mm7PackedValue0 >> 0x10),
-                                                 (short)mm6PackedValue0 + (short)mm7PackedValue0))),
+               pmulhw(Glide_PackWordLanes((short)(mm6PackedValue0 >> 0x30) + (short)(mm7PackedValue0 >> 0x30),
+                                          (short)(mm6PackedValue0 >> 0x20) + (short)(mm7PackedValue0 >> 0x20),
+                                          (short)(mm6PackedValue0 >> 0x10) + (short)(mm7PackedValue0 >> 0x10),
+                                          (short)mm6PackedValue0 + (short)mm7PackedValue0),
                       g_SoftwareBilinearForwardFactors[fractionY]);
-          firstLane0OrAlpha = (ushort)((short)mm0PackedValue1 + (short)mm2PackedValue1) >> 2;
-          firstLane1OrAlpha = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                           (short)((ulonglong)mm2PackedValue1 >> 0x10)) >> 2;
-          firstLane2OrAlpha = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                           (short)((ulonglong)mm2PackedValue1 >> 0x20)) >> 2;
-          firstLane3OrAlpha = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) +
-                           (short)((ulonglong)mm2PackedValue1 >> 0x30)) >> 2;
-          secondLane0OrAlpha = (ushort)((short)mm4PackedValue1 + (short)mm6PackedValue1) >> 2;
-          secondLane1OrAlpha = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x10) +
-                           (short)((ulonglong)mm6PackedValue1 >> 0x10)) >> 2;
-          secondLane2OrAlpha = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x20) +
-                           (short)((ulonglong)mm6PackedValue1 >> 0x20)) >> 2;
-          secondLane3OrAlpha = (ushort)((short)((ulonglong)mm4PackedValue1 >> 0x30) +
-                           (short)((ulonglong)mm6PackedValue1 >> 0x30)) >> 2;
-          firstClampedLane0 = (firstLane0OrAlpha != 0) * (firstLane0OrAlpha < 0x100) * (char)firstLane0OrAlpha - (0xff < firstLane0OrAlpha);
-          firstClampedLane1 = (firstLane1OrAlpha != 0) * (firstLane1OrAlpha < 0x100) * (char)firstLane1OrAlpha - (0xff < firstLane1OrAlpha);
-          firstClampedLane2 = (firstLane2OrAlpha != 0) * (firstLane2OrAlpha < 0x100) * (char)firstLane2OrAlpha - (0xff < firstLane2OrAlpha);
-          firstClampedLane3 = (firstLane3OrAlpha != 0) * (firstLane3OrAlpha < 0x100) * (char)firstLane3OrAlpha - (0xff < firstLane3OrAlpha);
-          secondClampedLane0 = (secondLane0OrAlpha != 0) * (secondLane0OrAlpha < 0x100) * (char)secondLane0OrAlpha - (0xff < secondLane0OrAlpha);
-          secondClampedLane1 = (secondLane1OrAlpha != 0) * (secondLane1OrAlpha < 0x100) * (char)secondLane1OrAlpha - (0xff < secondLane1OrAlpha);
-          secondClampedLane2 = (secondLane2OrAlpha != 0) * (secondLane2OrAlpha < 0x100) * (char)secondLane2OrAlpha - (0xff < secondLane2OrAlpha);
-          secondClampedLane3 = (secondLane3OrAlpha != 0) * (secondLane3OrAlpha < 0x100) * (char)secondLane3OrAlpha - (0xff < secondLane3OrAlpha);
-          firstShiftedLanes = psllw(CONCAT62(CONCAT51(CONCAT41(CONCAT31(CONCAT21(CONCAT11(firstClampedLane3,firstClampedLane3),firstClampedLane2
-                                                                     ),firstClampedLane2),firstClampedLane1),firstClampedLane1),
-                                  CONCAT11(firstClampedLane0,firstClampedLane0)),4);
-          secondShiftedLanes = psllw(CONCAT62(CONCAT51(CONCAT41(CONCAT31(CONCAT21(CONCAT11(secondClampedLane3,secondClampedLane3),secondClampedLane2
-                                                                     ),secondClampedLane2),secondClampedLane1),secondClampedLane1),
-                                  CONCAT11(secondClampedLane0,secondClampedLane0)),4);
+          firstLane0 = (ushort)((short)mm0PackedValue1 + (short)mm2PackedValue1) >> 2;
+          firstLane1 = (ushort)((short)(mm0PackedValue1 >> 0x10) + (short)(mm2PackedValue1 >> 0x10)) >> 2;
+          firstLane2 = (ushort)((short)(mm0PackedValue1 >> 0x20) + (short)(mm2PackedValue1 >> 0x20)) >> 2;
+          firstLane3 = (ushort)((short)(mm0PackedValue1 >> 0x30) + (short)(mm2PackedValue1 >> 0x30)) >> 2;
+          secondLane0 = (ushort)((short)mm4PackedValue1 + (short)mm6PackedValue1) >> 2;
+          secondLane1 = (ushort)((short)(mm4PackedValue1 >> 0x10) + (short)(mm6PackedValue1 >> 0x10)) >> 2;
+          secondLane2 = (ushort)((short)(mm4PackedValue1 >> 0x20) + (short)(mm6PackedValue1 >> 0x20)) >> 2;
+          secondLane3 = (ushort)((short)(mm4PackedValue1 >> 0x30) + (short)(mm6PackedValue1 >> 0x30)) >> 2;
+          firstClampedLane0 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane0);
+          firstClampedLane1 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane1);
+          firstClampedLane2 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane2);
+          firstClampedLane3 = GLIDE_SATURATE_WORD_TO_BYTE(firstLane3);
+          secondClampedLane0 = GLIDE_SATURATE_WORD_TO_BYTE(secondLane0);
+          secondClampedLane1 = GLIDE_SATURATE_WORD_TO_BYTE(secondLane1);
+          secondClampedLane2 = GLIDE_SATURATE_WORD_TO_BYTE(secondLane2);
+          secondClampedLane3 = GLIDE_SATURATE_WORD_TO_BYTE(secondLane3);
+          firstShiftedLanes = psllw(Glide_PackWordLanes(GLIDE_DUP_BYTE(firstClampedLane3),
+                                                        GLIDE_DUP_BYTE(firstClampedLane2),
+                                                        GLIDE_DUP_BYTE(firstClampedLane1),
+                                                        GLIDE_DUP_BYTE(firstClampedLane0)),4);
+          secondShiftedLanes = psllw(Glide_PackWordLanes(GLIDE_DUP_BYTE(secondClampedLane3),
+                                                         GLIDE_DUP_BYTE(secondClampedLane2),
+                                                         GLIDE_DUP_BYTE(secondClampedLane1),
+                                                         GLIDE_DUP_BYTE(secondClampedLane0)),4);
           mm0PackedValue2 =
                pmaddwd(firstShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
           mm4PackedValue2 =
                pmaddwd(secondShiftedLanes & THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                        g_SoftwarePixelMmxConstants.packWeights);
+          /* Two RGB565 pixels at once: the second one in the high word. */
           *(uint *)destinationCursor =
-               CONCAT22((short)((ulonglong)mm4PackedValue2 >> 8) +
-                        (short)((ulonglong)mm4PackedValue2 >> 0x28),
-                        (short)((ulonglong)mm0PackedValue2 >> 8) +
-                        (short)((ulonglong)mm0PackedValue2 >> 0x28));
+               (uint)(word)((short)(mm4PackedValue2 >> 8) + (short)(mm4PackedValue2 >> 0x28)) << 0x10 |
+               (uint)(word)((short)(mm0PackedValue2 >> 8) + (short)(mm0PackedValue2 >> 0x28));
           sourceXFixed = sourceXFixed + sourceStepX * 2;
           destinationCursor = destinationCursor + 4;
           widthMinusOneOrRemainingPairs = widthMinusOneOrRemainingPairs - 1;
         } while (widthMinusOneOrRemainingPairs != 0);
-        sourceYFixed = sourceYFixed + (int)(((ulonglong)(sourceHeightMinusOne >> 0x18) << 0x20 |
-                                (ulonglong)sourceHeightMinusOne * 0x100 & 0xffffffff) / (ulonglong)destinationHeightMinusOne);
+        sourceYFixed = sourceYFixed + (int)((ulonglong)sourceHeightMinusOne * 0x100 /
+                                            (ulonglong)destinationHeightMinusOne);
         destinationCursor = destinationRowStart + framebufferWidth * 2;
         sourceRowCursor = sourcePixels + (sourceYFixed >> 8) * recordOffsetOrSourceStride;
         sourceXFixed = 0;
@@ -2720,14 +2393,14 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
 
 {
   int startX;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   uint paletteIndexOrSourceArgb;
   int sourceWidth;
   int framebufferPitch;
   uint paletteArgb;
   dword packedBlue;
-  undefined4 packedGreen;
-  undefined4 packedRed;
+  dword packedGreen;
+  dword packedRed;
   int recordOffsetOrRemainingColumns;
   int destinationX;
   byte *sourceCursor;
@@ -2735,18 +2408,12 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
   byte *destinationCursor;
   byte *destinationRow;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue1ByteLane3;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue0ByteLane2;
-  byte mm1PackedValue0ByteLane3;
-  undefined8 mm1PackedValue0;
-  byte mm1PackedValue1ByteLane2;
-  undefined8 mm1PackedValue1;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+  ulonglong mm1PackedValue0;
+  ulonglong mm1PackedValue1;
   int remainingSourceRows;
   GraphicsIntegerScale remainingRowRepeats;
   GraphicsIntegerScale remainingColumnRepeats;
@@ -2800,54 +2467,37 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                 else if (paletteIndexOrSourceArgb < 0xff000000) {
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
-                      framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                      mm1PackedValue1ByteLane3 = (byte)(paletteIndexOrSourceArgb >> 0x18);
-                      mm1PackedValue1ByteLane2 = (byte)(paletteIndexOrSourceArgb >> 0x10);
-                      mm1PackedValue1ByteLane1 = (byte)(paletteIndexOrSourceArgb >> 8);
+                      framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                       destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                      destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                      destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                             framebufferPixel) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue1 =
-                           pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,
-                                                    mm1PackedValue1ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,paletteIndexOrSourceArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteIndexOrSourceArgb,
-                                                                              (char)paletteIndexOrSourceArgb) >> 2))),
+                           pmulhw(Glide_UnpackArgbToWordLanes(paletteIndexOrSourceArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
                       mm0PackedValue2 =
-                           pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                                   g_SoftwarePixelMmxConstants.unpackScales.zero) >>
-                                           2,CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.red) >> 2,
-                                                      CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.green) >> 2,
-                                                               (ushort)((short)destinationLanes *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.blue) >> 2))),
+                           pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                      (ushort)((short)(destinationLanes >> 0x20) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                      (ushort)((short)(destinationLanes >> 0x10) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                      (ushort)((short)destinationLanes *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                   g_SoftwareBlendInverseAlphaFactors[paletteIndexOrSourceArgb >> 0x18]);
                       mm0PackedValue3 =
-                           pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                            (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                            CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                     (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                     CONCAT22((short)((ulonglong)mm0PackedValue2 >>
-                                                                     0x10) +
-                                                              (short)((ulonglong)mm1PackedValue1 >>
-                                                                     0x10),
-                                                              (short)mm0PackedValue2 +
-                                                              (short)mm1PackedValue1))) &
+                           pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) +
+                                                       (short)(mm1PackedValue1 >> 0x30),
+                                                       (short)(mm0PackedValue2 >> 0x20) +
+                                                       (short)(mm1PackedValue1 >> 0x20),
+                                                       (short)(mm0PackedValue2 >> 0x10) +
+                                                       (short)(mm1PackedValue1 >> 0x10),
+                                                       (short)mm0PackedValue2 + (short)mm1PackedValue1) &
                                    THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
-                           (short)((ulonglong)mm0PackedValue3 >> 8) +
-                           (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                           (short)(mm0PackedValue3 >> 8) +
+                           (short)(mm0PackedValue3 >> 0x28);
                     }
                     destinationX = destinationX + 1;
                     destinationCursor = destinationCursor + 2;
@@ -2856,9 +2506,9 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                 }
                 else {
                   packedBlue = g_SoftwarePixelPackTables->blue[paletteIndexOrSourceArgb & 0xff];
-                  packedGreen = *(undefined4 *)
+                  packedGreen = *(dword *)
                            ((int)g_SoftwarePixelPackTables->green + ((paletteIndexOrSourceArgb & 0xff00) >> 6));
-                  packedRed = *(undefined4 *)
+                  packedRed = *(dword *)
                            ((int)g_SoftwarePixelPackTables->red + ((paletteIndexOrSourceArgb & 0xff0000) >> 0xe));
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
@@ -2913,54 +2563,37 @@ Glide3_TextureSource_BlitIntegerScaledSourceAlpha
                                     assetRelativeAddressAnchor28 + (uint)*sourceCursor * 8 + -0x28);
                   do {
                     if ((clipMinX <= destinationX) && (destinationX < clipMaxX)) {
-                      framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                      mm1PackedValue0ByteLane3 = (byte)(paletteArgb >> 0x18);
-                      mm1PackedValue0ByteLane2 = (byte)(paletteArgb >> 0x10);
-                      mm1PackedValue0ByteLane1 = (byte)(paletteArgb >> 8);
+                      framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                       destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                      destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                      destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                             framebufferPixel) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                       mm1PackedValue0 =
-                           pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,
-                                                    mm1PackedValue0ByteLane3) >> 2,
-                                           CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,paletteArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)paletteArgb,
-                                                                              (char)paletteArgb) >> 2))),
+                           pmulhw(Glide_UnpackArgbToWordLanes(paletteArgb,2),
                                   g_SoftwareBlendAlphaFactors[paletteArgb >> 0x18]);
                       mm0PackedValue0 =
-                           pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                                   g_SoftwarePixelMmxConstants.unpackScales.zero) >>
-                                           2,CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.red) >> 2,
-                                                      CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.green) >> 2,
-                                                               (ushort)((short)destinationLanes *
-                                                                       g_SoftwarePixelMmxConstants.
-                                                                       unpackScales.blue) >> 2))),
+                           pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                      (ushort)((short)(destinationLanes >> 0x20) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                      (ushort)((short)(destinationLanes >> 0x10) *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                      (ushort)((short)destinationLanes *
+                                                              g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                   g_SoftwareBlendInverseAlphaFactors[paletteArgb >> 0x18]);
                       mm0PackedValue1 =
-                           pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                            (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                            CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                     (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                     CONCAT22((short)((ulonglong)mm0PackedValue0 >>
-                                                                     0x10) +
-                                                              (short)((ulonglong)mm1PackedValue0 >>
-                                                                     0x10),
-                                                              (short)mm0PackedValue0 +
-                                                              (short)mm1PackedValue0))) &
+                           pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) +
+                                                       (short)(mm1PackedValue0 >> 0x30),
+                                                       (short)(mm0PackedValue0 >> 0x20) +
+                                                       (short)(mm1PackedValue0 >> 0x20),
+                                                       (short)(mm0PackedValue0 >> 0x10) +
+                                                       (short)(mm1PackedValue0 >> 0x10),
+                                                       (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                                    THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                    g_SoftwarePixelMmxConstants.packWeights);
                       *(short *)destinationCursor =
-                           (short)((ulonglong)mm0PackedValue1 >> 8) +
-                           (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                           (short)(mm0PackedValue1 >> 8) +
+                           (short)(mm0PackedValue1 >> 0x28);
                     }
                     destinationX = destinationX + 1;
                     destinationCursor = destinationCursor + 2;
@@ -3021,7 +2654,7 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int sourceWidth;
   uint sourceArgb;
   int leftOrRemainingColumns;
@@ -3033,18 +2666,12 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue1ByteLane3;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  byte mm1PackedValue1ByteLane2;
-  undefined8 mm1PackedValue1;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+  ulonglong mm1PackedValue0;
+  ulonglong mm1PackedValue1;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -3107,59 +2734,41 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
               sourceArgb = *sourceArgbCursor;
               if (0xffffff < sourceArgb) {
                 if (sourceArgb < 0xff000000) {
-                  framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                  mm1PackedValue1ByteLane3 = (byte)(sourceArgb >> 0x18);
-                  mm1PackedValue1ByteLane2 = (byte)(sourceArgb >> 0x10);
-                  mm1PackedValue1ByteLane1 = (byte)(sourceArgb >> 8);
+                  framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                  destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                  destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                         framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   mm1PackedValue1 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,sourceArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceArgb,
-                                                                              (char)sourceArgb) >> 2))),
+                       pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                               g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue2 =
-                       pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destinationLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
+                       pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x20) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x10) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                  (ushort)((short)destinationLanes *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                   mm0PackedValue3 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue2 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue1 >> 0x10
-                                                                 ),(short)mm0PackedValue2 +
-                                                                   (short)mm1PackedValue1))) &
+                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
+                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
+                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
+                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)((ulonglong)mm0PackedValue3 >> 8) +
-                       (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                       (short)(mm0PackedValue3 >> 8) +
+                       (short)(mm0PackedValue3 >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgb & 0xff] +
-                       (short)*(undefined4 *)
+                       (short)*(uint *)
                                ((int)g_SoftwarePixelPackTables->green + ((sourceArgb & 0xff00) >> 6)) +
-                       (short)*(undefined4 *)
+                       (short)*(uint *)
                                ((int)g_SoftwarePixelPackTables->red + ((sourceArgb & 0xff0000) >> 0xe));
                 }
               }
@@ -3232,53 +2841,37 @@ Glide3_TextureSource_BlitSourceAlphaPaletteBank
                   if (sourceArgb < 0xff000000) {
                     sourceArgb = *(uint *)(sourceAsset[paletteBankIndex * 4 + 1].common.buildMetadata.
                                       assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
-                    framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                    mm1PackedValue0ByteLane3 = (byte)(sourceArgb >> 0x18);
-                    mm1PackedValue0ByteLane2 = (byte)(sourceArgb >> 0x10);
-                    mm1PackedValue0ByteLane1 = (byte)(sourceArgb >> 8);
+                    framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                     destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                    destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                    destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                           framebufferPixel) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                     mm1PackedValue0 =
-                         pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                         >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,sourceArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11((char)sourceArgb,
-                                                                              (char)sourceArgb) >> 2))),
+                         pmulhw(Glide_UnpackArgbToWordLanes(sourceArgb,2),
                                 g_SoftwareBlendAlphaFactors[sourceArgb >> 0x18]);
                     mm0PackedValue0 =
-                         pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                                 g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2
-                                         ,CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                           g_SoftwarePixelMmxConstants.unpackScales.
-                                                           red) >> 2,
-                                                   CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.green) >> 2,
-                                                            (ushort)((short)destinationLanes *
-                                                                    g_SoftwarePixelMmxConstants.
-                                                                    unpackScales.blue) >> 2))),
+                         pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                            g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                    (ushort)((short)(destinationLanes >> 0x20) *
+                                                            g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                    (ushort)((short)(destinationLanes >> 0x10) *
+                                                            g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                    (ushort)((short)destinationLanes *
+                                                            g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                                 g_SoftwareBlendInverseAlphaFactors[sourceArgb >> 0x18]);
                     mm0PackedValue1 =
-                         pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                          (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                          CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                   (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                   CONCAT22((short)((ulonglong)mm0PackedValue0 >>
-                                                                   0x10) +
-                                                            (short)((ulonglong)mm1PackedValue0 >>
-                                                                   0x10),
-                                                            (short)mm0PackedValue0 +
-                                                            (short)mm1PackedValue0))) &
+                         pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) +
+                                                     (short)(mm1PackedValue0 >> 0x30),
+                                                     (short)(mm0PackedValue0 >> 0x20) +
+                                                     (short)(mm1PackedValue0 >> 0x20),
+                                                     (short)(mm0PackedValue0 >> 0x10) +
+                                                     (short)(mm1PackedValue0 >> 0x10),
+                                                     (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                                  THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                  g_SoftwarePixelMmxConstants.packWeights);
                     *(short *)destinationCursor =
-                         (short)((ulonglong)mm0PackedValue1 >> 8) +
-                         (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                         (short)(mm0PackedValue1 >> 8) +
+                         (short)(mm0PackedValue1 >> 0x28);
                   }
                   else {
                     *(short *)destinationCursor = (short)sourceArgb;
@@ -3326,7 +2919,7 @@ Glide3_TextureSource_BlitSaturatedAddRgb
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int widthOrPaletteIndex;
   int indexedSourceWidth;
   uint sourceArgb;
@@ -3339,14 +2932,11 @@ Glide3_TextureSource_BlitSaturatedAddRgb
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  undefined1 sourceGreen;
-  undefined1 sourceRed;
-  undefined1 sourceAlpha;
-  
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
        (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
@@ -3407,37 +2997,31 @@ Glide3_TextureSource_BlitSaturatedAddRgb
             do {
               sourceArgb = *sourceArgbCursor;
               if ((sourceArgb & 0xffffff) != 0) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                sourceAlpha = (undefined1)(sourceArgb >> 0x18);
-                sourceRed = (undefined1)(sourceArgb >> 0x10);
-                sourceGreen = (undefined1)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
-                     paddusw(CONCAT26((short)(destinationLanes >> 0x30) *
-                                      g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                      CONCAT24((short)(destinationLanes >> 0x20) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.red,
-                                               CONCAT22((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.
-                                                        green,(short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.blue))),
-                             CONCAT62(CONCAT51(CONCAT41((int)(CONCAT35(CONCAT21(CONCAT11(sourceAlpha,
-                                                  sourceAlpha),sourceRed),CONCAT14(sourceRed,sourceArgb)) >> 0x20),
-                                                  sourceGreen),sourceGreen),CONCAT11((char)sourceArgb,(char)sourceArgb))
-                            );
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.zero,
+                                                 (short)(destinationLanes >> 0x20) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.red,
+                                                 (short)(destinationLanes >> 0x10) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.green,
+                                                 (short)destinationLanes *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.blue),
+                             Glide_UnpackArgbToWordLanes(sourceArgb,0));
                 mm0PackedValue3 =
-                     pmaddwd(CONCAT26((ushort)((ulonglong)mm0PackedValue2 >> 0x34),
-                                      CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
-                                               CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
-                                                        >> 4,(ushort)mm0PackedValue2 >> 4))) &
+                     pmaddwd(Glide_PackWordLanes((ushort)(mm0PackedValue2 >> 0x34),
+                                                 (ushort)(mm0PackedValue2 >> 0x20) >> 4,
+                                                 (ushort)(mm0PackedValue2 >> 0x10) >> 4,
+                                                 (ushort)mm0PackedValue2 >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((ulonglong)mm0PackedValue3 >> 8) +
-                     (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                     (short)(mm0PackedValue3 >> 8) +
+                     (short)(mm0PackedValue3 >> 0x28);
               }
               sourceArgbCursor = sourceArgbCursor + 1;
               destinationCursor = destinationCursor + 2;
@@ -3506,37 +3090,31 @@ Glide3_TextureSource_BlitSaturatedAddRgb
               sourceArgb = *(uint *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
                                 assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
               if ((sourceArgb & 0xffffff) != 0) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                sourceAlpha = (undefined1)(sourceArgb >> 0x18);
-                sourceRed = (undefined1)(sourceArgb >> 0x10);
-                sourceGreen = (undefined1)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
-                     paddusw(CONCAT26((short)(destinationLanes >> 0x30) *
-                                      g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                      CONCAT24((short)(destinationLanes >> 0x20) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.red,
-                                               CONCAT22((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.
-                                                        green,(short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.blue))),
-                             CONCAT62(CONCAT51(CONCAT41((int)(CONCAT35(CONCAT21(CONCAT11(sourceAlpha,
-                                                  sourceAlpha),sourceRed),CONCAT14(sourceRed,sourceArgb)) >> 0x20),
-                                                  sourceGreen),sourceGreen),CONCAT11((char)sourceArgb,(char)sourceArgb))
-                            );
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.zero,
+                                                 (short)(destinationLanes >> 0x20) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.red,
+                                                 (short)(destinationLanes >> 0x10) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.green,
+                                                 (short)destinationLanes *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.blue),
+                             Glide_UnpackArgbToWordLanes(sourceArgb,0));
                 mm0PackedValue1 =
-                     pmaddwd(CONCAT26((ushort)((ulonglong)mm0PackedValue0 >> 0x34),
-                                      CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
-                                               CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
-                                                        >> 4,(ushort)mm0PackedValue0 >> 4))) &
+                     pmaddwd(Glide_PackWordLanes((ushort)(mm0PackedValue0 >> 0x34),
+                                                 (ushort)(mm0PackedValue0 >> 0x20) >> 4,
+                                                 (ushort)(mm0PackedValue0 >> 0x10) >> 4,
+                                                 (ushort)mm0PackedValue0 >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((ulonglong)mm0PackedValue1 >> 8) +
-                     (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                     (short)(mm0PackedValue1 >> 8) +
+                     (short)(mm0PackedValue1 >> 0x28);
               }
               sourceIndexCursor = sourceIndexCursor + 1;
               destinationCursor = destinationCursor + 2;
@@ -3578,11 +3156,10 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int widthOrPaletteIndex;
   int indexedSourceWidth;
   uint sourceArgb;
-  ushort sourceAlphaWord;
   int leftOrRemainingColumns;
   GraphicsPixelDimension clippedBottom;
   int clippedTop;
@@ -3592,12 +3169,10 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  undefined1 sourceGreenOrAlpha;
-  undefined1 sourceRed;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (((sourceAsset->common).magic == ASSET_MAGIC_GFX) &&
@@ -3659,40 +3234,31 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
             do {
               sourceArgb = *sourceArgbCursor;
               if ((sourceArgb & 0xffffff) != 0) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                sourceGreenOrAlpha = (undefined1)(sourceArgb >> 0x18);
-                sourceAlphaWord = CONCAT11(sourceGreenOrAlpha,sourceGreenOrAlpha);
-                sourceRed = (undefined1)(sourceArgb >> 0x10);
-                sourceGreenOrAlpha = (undefined1)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue2 =
-                     paddusw(CONCAT26((short)(destinationLanes >> 0x30) *
-                                      g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                      CONCAT24((short)(destinationLanes >> 0x20) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.red,
-                                               CONCAT22((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.
-                                                        green,(short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.blue))),
-                             CONCAT26(sourceAlphaWord >> 1,
-                                      CONCAT24((ushort)(CONCAT35(CONCAT21(sourceAlphaWord,sourceRed),
-                                                                 CONCAT14(sourceRed,sourceArgb)) >> 0x20) >>
-                                               1,CONCAT22(CONCAT11(sourceGreenOrAlpha,sourceGreenOrAlpha) >> 1,
-                                                          CONCAT11((char)sourceArgb,(char)sourceArgb) >> 1))))
-                ;
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.zero,
+                                                 (short)(destinationLanes >> 0x20) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.red,
+                                                 (short)(destinationLanes >> 0x10) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.green,
+                                                 (short)destinationLanes *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.blue),
+                             Glide_UnpackArgbToWordLanes(sourceArgb,1));
                 mm0PackedValue3 =
-                     pmaddwd(CONCAT26((ushort)((ulonglong)mm0PackedValue2 >> 0x34),
-                                      CONCAT24((ushort)((ulonglong)mm0PackedValue2 >> 0x20) >> 4,
-                                               CONCAT22((ushort)((ulonglong)mm0PackedValue2 >> 0x10)
-                                                        >> 4,(ushort)mm0PackedValue2 >> 4))) &
+                     pmaddwd(Glide_PackWordLanes((ushort)(mm0PackedValue2 >> 0x34),
+                                                 (ushort)(mm0PackedValue2 >> 0x20) >> 4,
+                                                 (ushort)(mm0PackedValue2 >> 0x10) >> 4,
+                                                 (ushort)mm0PackedValue2 >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((ulonglong)mm0PackedValue3 >> 8) +
-                     (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                     (short)(mm0PackedValue3 >> 8) +
+                     (short)(mm0PackedValue3 >> 0x28);
               }
               sourceArgbCursor = sourceArgbCursor + 1;
               destinationCursor = destinationCursor + 2;
@@ -3761,40 +3327,31 @@ Glide3_TextureSource_BlitHalfRgbSaturatedAdd
               sourceArgb = *(uint *)(sourceAsset[widthOrPaletteIndex * 4 + 1].common.buildMetadata.
                                 assetRelativeAddressAnchor28 + (uint)*sourceIndexCursor * 8 + -0x28);
               if ((sourceArgb & 0xffffff) != 0) {
-                framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                sourceGreenOrAlpha = (undefined1)(sourceArgb >> 0x18);
-                sourceAlphaWord = CONCAT11(sourceGreenOrAlpha,sourceGreenOrAlpha);
-                sourceRed = (undefined1)(sourceArgb >> 0x10);
-                sourceGreenOrAlpha = (undefined1)(sourceArgb >> 8);
+                framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                 destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                       framebufferPixel) &
                          THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                 mm0PackedValue0 =
-                     paddusw(CONCAT26((short)(destinationLanes >> 0x30) *
-                                      g_SoftwarePixelMmxConstants.unpackScales.zero,
-                                      CONCAT24((short)(destinationLanes >> 0x20) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.red,
-                                               CONCAT22((short)(destinationLanes >> 0x10) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.
-                                                        green,(short)destinationLanes *
-                                                              g_SoftwarePixelMmxConstants.
-                                                              unpackScales.blue))),
-                             CONCAT26(sourceAlphaWord >> 1,
-                                      CONCAT24((ushort)(CONCAT35(CONCAT21(sourceAlphaWord,sourceRed),
-                                                                 CONCAT14(sourceRed,sourceArgb)) >> 0x20) >>
-                                               1,CONCAT22(CONCAT11(sourceGreenOrAlpha,sourceGreenOrAlpha) >> 1,
-                                                          CONCAT11((char)sourceArgb,(char)sourceArgb) >> 1))))
-                ;
+                     paddusw(Glide_PackWordLanes((short)(destinationLanes >> 0x30) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.zero,
+                                                 (short)(destinationLanes >> 0x20) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.red,
+                                                 (short)(destinationLanes >> 0x10) *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.green,
+                                                 (short)destinationLanes *
+                                                 g_SoftwarePixelMmxConstants.unpackScales.blue),
+                             Glide_UnpackArgbToWordLanes(sourceArgb,1));
                 mm0PackedValue1 =
-                     pmaddwd(CONCAT26((ushort)((ulonglong)mm0PackedValue0 >> 0x34),
-                                      CONCAT24((ushort)((ulonglong)mm0PackedValue0 >> 0x20) >> 4,
-                                               CONCAT22((ushort)((ulonglong)mm0PackedValue0 >> 0x10)
-                                                        >> 4,(ushort)mm0PackedValue0 >> 4))) &
+                     pmaddwd(Glide_PackWordLanes((ushort)(mm0PackedValue0 >> 0x34),
+                                                 (ushort)(mm0PackedValue0 >> 0x20) >> 4,
+                                                 (ushort)(mm0PackedValue0 >> 0x10) >> 4,
+                                                 (ushort)mm0PackedValue0 >> 4) &
                              THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                              g_SoftwarePixelMmxConstants.packWeights);
                 *(short *)destinationCursor =
-                     (short)((ulonglong)mm0PackedValue1 >> 8) +
-                     (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                     (short)(mm0PackedValue1 >> 8) +
+                     (short)(mm0PackedValue1 >> 0x28);
               }
               sourceIndexCursor = sourceIndexCursor + 1;
               destinationCursor = destinationCursor + 2;
@@ -3837,7 +3394,7 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
 
 {
   int recordOffsetOrRowSkip;
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int widthOrPaletteIndex;
   int indexedSourceWidth;
   int leftOrRemainingColumns;
@@ -3858,20 +3415,12 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
   uint *sourceArgbCursor;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  byte mm1PackedValue0ByteLane0;
-  byte mm1PackedValue1ByteLane0;
-  byte mm1PackedValue0ByteLane3;
-  byte mm1PackedValue1ByteLane3;
-  byte mm1PackedValue1ByteLane1;
-  byte mm1PackedValue0ByteLane1;
-  byte mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
-  byte mm1PackedValue1ByteLane2;
-  undefined8 mm1PackedValue1;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm0PackedValue2;
+  ulonglong mm0PackedValue3;
+  ulonglong mm1PackedValue0;
+  ulonglong mm1PackedValue1;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     modulationGreen = (modulationArgb8888 & 0xff00) >> 8;
@@ -3943,60 +3492,43 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
               modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 0x10;
               if (0xffffff < modulatedArgb) {
                 if (modulatedArgb < 0xff000000) {
-                  framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                  mm1PackedValue1ByteLane3 = (byte)(alphaProductHigh >> 8);
-                  mm1PackedValue1ByteLane2 = (byte)(redProduct >> 8);
-                  mm1PackedValue1ByteLane1 = (byte)(greenProduct >> 8);
-                  mm1PackedValue1ByteLane0 = (byte)(blueProduct >> 8);
+                  framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                  destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                  destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                         framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
+                  /* Lane bytes are the modulated channels alphaProductHigh >> 8, redProduct >> 8,
+                     greenProduct >> 8 and blueProduct >> 8, i.e. bytes 3..0 of modulatedArgb. */
                   mm1PackedValue1 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue1ByteLane3,mm1PackedValue1ByteLane3)
-                                                  ,mm1PackedValue1ByteLane2),
-                                                  CONCAT14(mm1PackedValue1ByteLane2,modulatedArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue1ByteLane1,
-                                                                         mm1PackedValue1ByteLane1)
-                                                                >> 2,CONCAT11(
-                                                  mm1PackedValue1ByteLane0,mm1PackedValue1ByteLane0)
-                                                  >> 2))),g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
+                       pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
+                              g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
                   mm0PackedValue2 =
-                       pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destinationLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
+                       pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x20) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x10) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                  (ushort)((short)destinationLanes *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
                   mm0PackedValue3 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue2 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue1 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue2 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue1 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue2 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue1 >> 0x10
-                                                                 ),(short)mm0PackedValue2 +
-                                                                   (short)mm1PackedValue1))) &
+                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue2 >> 0x30) + (short)(mm1PackedValue1 >> 0x30),
+                                                   (short)(mm0PackedValue2 >> 0x20) + (short)(mm1PackedValue1 >> 0x20),
+                                                   (short)(mm0PackedValue2 >> 0x10) + (short)(mm1PackedValue1 >> 0x10),
+                                                   (short)mm0PackedValue2 + (short)mm1PackedValue1) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)((ulonglong)mm0PackedValue3 >> 8) +
-                       (short)((ulonglong)mm0PackedValue3 >> 0x28);
+                       (short)(mm0PackedValue3 >> 8) +
+                       (short)(mm0PackedValue3 >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgbOrBlue] +
-                       (short)*(undefined4 *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
-                       + (short)*(undefined4 *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
+                       (short)*(uint *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
+                       + (short)*(uint *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
                   ;
                 }
               }
@@ -4075,60 +3607,41 @@ Glide3_TextureSource_BlitModulatedSourceAlpha
               modulatedArgb = sourceArgbOrBlue | greenProduct | redProduct << 8 | alphaProductHigh << 0x10;
               if (0xffffff < modulatedArgb) {
                 if (modulatedArgb < 0xff000000) {
-                  framebufferPixel = *(undefined2 *)(destinationCursor + g_GlideSecondBufferOffset);
-                  mm1PackedValue0ByteLane3 = (byte)(alphaProductHigh >> 8);
-                  mm1PackedValue0ByteLane2 = (byte)(redProduct >> 8);
-                  mm1PackedValue0ByteLane1 = (byte)(greenProduct >> 8);
-                  mm1PackedValue0ByteLane0 = (byte)(blueProduct >> 8);
+                  framebufferPixel = *(word *)(destinationCursor + g_GlideSecondBufferOffset);
                   destinationCursor = destinationCursor + g_GlideSecondBufferOffset + -g_GlideSecondBufferOffset;
-                  destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+                  destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                         framebufferPixel) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
                   alphaProductOrAlpha = alphaProductOrAlpha >> 8;
                   mm1PackedValue0 =
-                       pmulhw(CONCAT26(CONCAT11(mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                       >> 2,CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(
-                                                  mm1PackedValue0ByteLane3,mm1PackedValue0ByteLane3)
-                                                  ,mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,modulatedArgb)) >> 0x20)
-                                                  >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                         mm1PackedValue0ByteLane1)
-                                                                >> 2,CONCAT11(
-                                                  mm1PackedValue0ByteLane0,mm1PackedValue0ByteLane0)
-                                                  >> 2))),g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
+                       pmulhw(Glide_UnpackArgbToWordLanes(modulatedArgb,2),
+                              g_SoftwareBlendAlphaFactors[alphaProductOrAlpha]);
                   mm0PackedValue0 =
-                       pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                               g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                       CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                        g_SoftwarePixelMmxConstants.unpackScales.red
-                                                        ) >> 2,
-                                                CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.green) >> 2,
-                                                         (ushort)((short)destinationLanes *
-                                                                 g_SoftwarePixelMmxConstants.
-                                                                 unpackScales.blue) >> 2))),
+                       pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x20) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                                  (ushort)((short)(destinationLanes >> 0x10) *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                                  (ushort)((short)destinationLanes *
+                                                          g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                               g_SoftwareBlendInverseAlphaFactors[alphaProductOrAlpha]);
                   mm0PackedValue1 =
-                       pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                        (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                        CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                                 (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                                 CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10
-                                                                 ) +
-                                                          (short)((ulonglong)mm1PackedValue0 >> 0x10
-                                                                 ),(short)mm0PackedValue0 +
-                                                                   (short)mm1PackedValue0))) &
+                       pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
+                                                   (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
+                                                   (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
+                                                   (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                                THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                                g_SoftwarePixelMmxConstants.packWeights);
                   *(short *)destinationCursor =
-                       (short)((ulonglong)mm0PackedValue1 >> 8) +
-                       (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                       (short)(mm0PackedValue1 >> 8) +
+                       (short)(mm0PackedValue1 >> 0x28);
                 }
                 else {
                   *(short *)destinationCursor =
                        (short)g_SoftwarePixelPackTables->blue[sourceArgbOrBlue] +
-                       (short)*(undefined4 *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
-                       + (short)*(undefined4 *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
+                       (short)*(uint *)((int)g_SoftwarePixelPackTables->green + (greenProduct >> 6))
+                       + (short)*(uint *)((int)g_SoftwarePixelPackTables->red + (redProduct >> 6))
                   ;
                 }
               }
@@ -4172,20 +3685,17 @@ Glide3_Framebuffer_FillRectArgb
           SoftwareFramebufferAccess *framebuffer)
 
 {
-  undefined2 framebufferPixel;
+  word framebufferPixel;
   int rowSkipBytes;
   int secondBufferBackOffset;
-  ushort fillAlphaWord;
   uint fillColor;
   int remainingColumns;
   int clippedWidth;
   byte *destinationCursor;
   ulonglong destinationLanes;
-  undefined8 mm0PackedValue0;
-  undefined8 mm0PackedValue1;
-  undefined1 mm1PackedValue0ByteLane1;
-  undefined1 mm1PackedValue0ByteLane2;
-  undefined8 mm1PackedValue0;
+  ulonglong mm0PackedValue0;
+  ulonglong mm0PackedValue1;
+  ulonglong mm1PackedValue0;
   
   if (framebuffer == &g_DisplayFramebufferAccess) {
     if (rectMinX < 0) {
@@ -4227,49 +3737,34 @@ Glide3_Framebuffer_FillRectArgb
           do {
             do {
               destinationCursor = destinationCursor + g_GlideSecondBufferOffset;
-              framebufferPixel = *(undefined2 *)destinationCursor;
-              mm1PackedValue0ByteLane1 = (undefined1)(fillColor >> 0x18);
-              fillAlphaWord = CONCAT11(mm1PackedValue0ByteLane1,mm1PackedValue0ByteLane1);
-              mm1PackedValue0ByteLane2 = (undefined1)(fillColor >> 0x10);
-              mm1PackedValue0ByteLane1 = (undefined1)(fillColor >> 8);
+              framebufferPixel = *(word *)destinationCursor;
               secondBufferBackOffset = -g_GlideSecondBufferOffset;
-              destinationLanes = CONCAT44(CONCAT22(framebufferPixel,framebufferPixel),CONCAT22(framebufferPixel,framebufferPixel)) &
+              destinationLanes = Glide_PackWordLanes(framebufferPixel,framebufferPixel,framebufferPixel,
+                                                     framebufferPixel) &
                       THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.packedPixelMasks);
               mm1PackedValue0 =
-                   pmulhw(CONCAT26(fillAlphaWord >> 2,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(fillAlphaWord,
-                                                  mm1PackedValue0ByteLane2),
-                                                  CONCAT14(mm1PackedValue0ByteLane2,fillColor)) >> 0x20)
-                                            >> 2,CONCAT22(CONCAT11(mm1PackedValue0ByteLane1,
-                                                                   mm1PackedValue0ByteLane1) >> 2,
-                                                          CONCAT11((char)fillColor,(char)fillColor) >> 2))),
+                   pmulhw(Glide_UnpackArgbToWordLanes(fillColor,2),
                           g_SoftwareBlendAlphaFactors[fillColor >> 0x18]);
               mm0PackedValue0 =
-                   pmulhw(CONCAT26((ushort)((short)(destinationLanes >> 0x30) *
-                                           g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
-                                   CONCAT24((ushort)((short)(destinationLanes >> 0x20) *
-                                                    g_SoftwarePixelMmxConstants.unpackScales.red) >>
-                                            2,CONCAT22((ushort)((short)(destinationLanes >> 0x10) *
-                                                               g_SoftwarePixelMmxConstants.
-                                                               unpackScales.green) >> 2,
-                                                       (ushort)((short)destinationLanes *
-                                                               g_SoftwarePixelMmxConstants.
-                                                               unpackScales.blue) >> 2))),
+                   pmulhw(Glide_PackWordLanes((ushort)((short)(destinationLanes >> 0x30) *
+                                                      g_SoftwarePixelMmxConstants.unpackScales.zero) >> 2,
+                                              (ushort)((short)(destinationLanes >> 0x20) *
+                                                      g_SoftwarePixelMmxConstants.unpackScales.red) >> 2,
+                                              (ushort)((short)(destinationLanes >> 0x10) *
+                                                      g_SoftwarePixelMmxConstants.unpackScales.green) >> 2,
+                                              (ushort)((short)destinationLanes *
+                                                      g_SoftwarePixelMmxConstants.unpackScales.blue) >> 2),
                           g_SoftwareBlendInverseAlphaFactors[fillColor >> 0x18]);
               mm0PackedValue1 =
-                   pmaddwd(CONCAT26((short)((ulonglong)mm0PackedValue0 >> 0x30) +
-                                    (short)((ulonglong)mm1PackedValue0 >> 0x30),
-                                    CONCAT24((short)((ulonglong)mm0PackedValue0 >> 0x20) +
-                                             (short)((ulonglong)mm1PackedValue0 >> 0x20),
-                                             CONCAT22((short)((ulonglong)mm0PackedValue0 >> 0x10) +
-                                                      (short)((ulonglong)mm1PackedValue0 >> 0x10),
-                                                      (short)mm0PackedValue0 +
-                                                      (short)mm1PackedValue0))) &
+                   pmaddwd(Glide_PackWordLanes((short)(mm0PackedValue0 >> 0x30) + (short)(mm1PackedValue0 >> 0x30),
+                                               (short)(mm0PackedValue0 >> 0x20) + (short)(mm1PackedValue0 >> 0x20),
+                                               (short)(mm0PackedValue0 >> 0x10) + (short)(mm1PackedValue0 >> 0x10),
+                                               (short)mm0PackedValue0 + (short)mm1PackedValue0) &
                            THANDOR_BITCAST(SoftwareRgbWordLanes, ulonglong, g_SoftwarePixelMmxConstants.quantizeMasksQ12),
                            g_SoftwarePixelMmxConstants.packWeights);
               *(short *)(destinationCursor + secondBufferBackOffset) =
-                   (short)((ulonglong)mm0PackedValue1 >> 8) +
-                   (short)((ulonglong)mm0PackedValue1 >> 0x28);
+                   (short)(mm0PackedValue1 >> 8) +
+                   (short)(mm0PackedValue1 >> 0x28);
               destinationCursor = destinationCursor + secondBufferBackOffset + 2;
               remainingColumns = remainingColumns + -1;
             } while (remainingColumns != 0);
@@ -4495,11 +3990,7 @@ Glide3_TextureResource_EnsureResident(GraphicsTextureResource *texture)
           texture->residentAddress = placementAddress - tailFreeBytes;
           texture->residentNext = (GraphicsTextureResource *)0x0;
           g_GlideResidentTextureTail = texture;
-Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
-          g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
-          (*g_GrTexDownloadMipMap)
-                    (texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
-          return;
+          goto Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap;
         }
         tmuIndex = tmuIndex + 1;
         nextResident = g_GlideResidentTextureHead;
@@ -4540,6 +4031,10 @@ Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
       residentCursor = nextResident;
     } while (residentCursor != g_GlideResidentTextureTail);
   }
+  return;
+Glide3_TextureResource_EnsureResident_CommitResidentPlacementAndDownloadMipMap:
+  g_GlideBoundTexture = (GraphicsTextureResource *)0x0;
+  (*g_GrTexDownloadMipMap)(texture->residentTmuIndex,texture->residentAddress,3,&texture->glideInfo);
   return;
 }
 

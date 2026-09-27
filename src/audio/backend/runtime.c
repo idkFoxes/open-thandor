@@ -297,18 +297,18 @@ SoundCreateSampleVoiceSetEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
 
 {
-  DirectSoundVoiceSet **registryGuard;
   TH_LEGACY_HRESULT directSoundResult;
   dword encodedBlockSize;
   uint remainingBlocks;
   int remainingCount;
-  DirectSoundVoiceSet **registryRemaining;
+  int registryRemaining;
   IDirectSoundBuffer **voiceSetOrErrorCode;
   IDirectSoundBuffer **voiceCursor;
   SoundSampleAsset *encodedBlock;
   short *outputStereoPcm;
   DirectSoundVoiceSet **registryCursor;
   ArenaAllocEaxCf5 voiceSetAlloc;
+  SoundCreateSampleVoiceSetEaxCf5 successResult;
   SoundCreateSampleVoiceSetEaxCf5 failureResult;
   sdword failedStage;
   TH_LEGACY_DWORD wrapByteCount;
@@ -363,26 +363,24 @@ DirectSound_CreateSampleVoiceSet(SoundSampleAsset *sampleAsset)
             voiceCursor = voiceSetOrErrorCode;
             do {
               *voiceCursor = (IDirectSoundBuffer *)0x0;
-              registryCursor = g_DirectSoundVoiceSetRegistry;
               voiceCursor = voiceCursor + 1;
               remainingCount = remainingCount + -1;
             } while (remainingCount != 0);
-            registryRemaining = (DirectSoundVoiceSet **)0x100;
+            registryCursor = g_DirectSoundVoiceSetRegistry;
             *voiceSetOrErrorCode = soundBuffer;
-            registryGuard = registryCursor;
-            do {
-              if (registryGuard == (DirectSoundVoiceSet **)0x0) {
-LAB_00583652:
-                return THANDOR_BITCAST(qword, SoundCreateSampleVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, voiceSetAlloc) & 0xFFFFFFFFFFull) & 0xffffffff));
+            /* Register the set in the first free registry slot; a full or missing registry is not an error. */
+            if (registryCursor != (DirectSoundVoiceSet **)0x0) {
+              for (registryRemaining = 0x100; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
+                if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+                  *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+                  break;
+                }
+                registryCursor = registryCursor + 1;
               }
-              if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
-                *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-                goto LAB_00583652;
-              }
-              registryCursor = registryCursor + 1;
-              registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
-              registryGuard = registryRemaining;
-            } while( true );
+            }
+            successResult.carry = false;
+            successResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+            return successResult;
           }
         }
       }
@@ -455,17 +453,17 @@ DirectSound_CreatePcmVoiceSet
           dword *pcmData)
 
 {
-  DirectSoundVoiceSet **registryGuard;
   sdword pendingStage;
   uint blockAlignOrDwordCount;
   TH_LEGACY_HRESULT directSoundResult;
   int remainingCount;
-  DirectSoundVoiceSet **registryRemaining;
+  int registryRemaining;
   IDirectSoundBuffer **voiceSetOrErrorCode;
   IDirectSoundBuffer **voiceCursor;
   dword *destCursor;
   DirectSoundVoiceSet **registryCursor;
   ArenaAllocEaxCf5 voiceSetAlloc;
+  SoundCreatePcmVoiceSetEaxCf5 successResult;
   SoundCreatePcmVoiceSetEaxCf5 failureResult;
   sdword failedStage;
   TH_LEGACY_DWORD wrapByteCount;
@@ -518,26 +516,24 @@ DirectSound_CreatePcmVoiceSet
           voiceCursor = voiceSetOrErrorCode;
           do {
             *voiceCursor = (IDirectSoundBuffer *)0x0;
-            registryCursor = g_DirectSoundVoiceSetRegistry;
             voiceCursor = voiceCursor + 1;
             remainingCount = remainingCount + -1;
           } while (remainingCount != 0);
-          registryRemaining = (DirectSoundVoiceSet **)0x100;
+          registryCursor = g_DirectSoundVoiceSetRegistry;
           *voiceSetOrErrorCode = soundBuffer;
-          registryGuard = registryCursor;
-          do {
-            if (registryGuard == (DirectSoundVoiceSet **)0x0) {
-LAB_00583892:
-              return THANDOR_BITCAST(qword, SoundCreatePcmVoiceSetEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, voiceSetAlloc) & 0xFFFFFFFFFFull) & 0xffffffff));
+          /* Register the set in the first free registry slot; a full or missing registry is not an error. */
+          if (registryCursor != (DirectSoundVoiceSet **)0x0) {
+            for (registryRemaining = 0x100; registryRemaining != 0; registryRemaining = registryRemaining + -1) {
+              if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
+                *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+                break;
+              }
+              registryCursor = registryCursor + 1;
             }
-            if (*registryCursor == (DirectSoundVoiceSet *)0x0) {
-              *registryCursor = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
-              goto LAB_00583892;
-            }
-            registryCursor = registryCursor + 1;
-            registryRemaining = (DirectSoundVoiceSet **)((int)registryRemaining + -1);
-            registryGuard = registryRemaining;
-          } while( true );
+          }
+          successResult.carry = false;
+          successResult.eax = (DirectSoundVoiceSet *)voiceSetOrErrorCode;
+          return successResult;
         }
       }
     }

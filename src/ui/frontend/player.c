@@ -844,9 +844,11 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
           if ((playerBlock->factionAssignment).readyOrWaitState < 2) {
             return;
           }
-          goto 
-          FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus_ClearUiCommandReadyWaitFlagsAndReturn
-          ;
+          /* Client: the host (id 0) reached consensus. */
+          if ((g_UiCommandRuntimeFlags & 0x10) != 0) {
+            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffee;
+          }
+          return;
         }
         break;
       }
@@ -872,7 +874,6 @@ FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
       return;
     }
   }
-FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus_ClearUiCommandReadyWaitFlagsAndReturn:
   if ((g_UiCommandRuntimeFlags & 0x10) != 0) {
     g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xffffffee;
   }
@@ -1073,31 +1074,30 @@ FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh
       groupOrScanCursor = destCursor;
       if (selectionEntry != (GameEntityRuntime *)0x0) {
         do {
-          if (selectionEntry == (groupOrScanCursor->selection).entries[0])
-          goto 
-          FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDuplicateOrAppendDecision
-          ;
+          if (selectionEntry == (groupOrScanCursor->selection).entries[0]) break;
           scanRemaining = scanRemaining + -1;
           groupOrScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
         } while (scanRemaining != 0);
-        foundEmpty = true;
-        scanRemaining = entriesRemaining;
-        groupOrScanCursor = destCursor;
-        do {
-          nextScanCursor = groupOrScanCursor;
-          if (scanRemaining == 0) break;
-          scanRemaining = scanRemaining + -1;
-          nextScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
-          foundEmpty = (groupOrScanCursor->selection).entries[0] == (GameEntityRuntime *)0x0;
-          groupOrScanCursor = nextScanCursor;
-        } while (!foundEmpty);
-        if (foundEmpty) {
-          *(GameEntityRuntime **)(nextScanCursor[-1].reserved80B0_8117 + 100) =
-               (sourceCursor->selection).entries[0];
+        /* Not yet in the destination group (the scan ran out; entriesRemaining is 0x20 here): store it in
+           the first empty slot. */
+        if (scanRemaining == 0) {
+          foundEmpty = true;
+          scanRemaining = entriesRemaining;
+          groupOrScanCursor = destCursor;
+          do {
+            nextScanCursor = groupOrScanCursor;
+            if (scanRemaining == 0) break;
+            scanRemaining = scanRemaining + -1;
+            nextScanCursor = (SelectionPlayerRuntimeBlock *)((groupOrScanCursor->selection).entries + 1);
+            foundEmpty = (groupOrScanCursor->selection).entries[0] == (GameEntityRuntime *)0x0;
+            groupOrScanCursor = nextScanCursor;
+          } while (!foundEmpty);
+          if (foundEmpty) {
+            *(GameEntityRuntime **)(nextScanCursor[-1].reserved80B0_8117 + 100) =
+                 (sourceCursor->selection).entries[0];
+          }
         }
       }
-FrontendPlayerSelection_TransferFactionGroupWithModeAndRefresh_AdvanceAfterDuplicateOrAppendDecision
-      :
       sourceCursor = (SelectionPlayerRuntimeBlock *)((sourceCursor->selection).entries + 1);
       memberOrEntryRemaining = memberOrEntryRemaining + -1;
     } while (memberOrEntryRemaining != 0);
@@ -1328,9 +1328,12 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
           if ((playerBlock->factionAssignment).readyOrWaitState < 2) {
             return;
           }
-          goto 
-          FrontendPlayerRuntime_RecordReadyAndUpdateWaitState_ClearWaitFlagAndResetTickIfPendingThenReturn
-          ;
+          /* Client: the host (id 0) reached consensus. */
+          if ((g_FrontendRuntimeFlags & 0x10) != 0) {
+            g_FrontendNetworkTickCounter = 0;
+            g_FrontendRuntimeFlags = g_FrontendRuntimeFlags & 0xffffffef;
+          }
+          return;
         }
         break;
       }
@@ -1356,7 +1359,6 @@ FrontendPlayerRuntime_RecordReadyAndUpdateWaitState
       return;
     }
   }
-FrontendPlayerRuntime_RecordReadyAndUpdateWaitState_ClearWaitFlagAndResetTickIfPendingThenReturn:
   if ((g_FrontendRuntimeFlags & 0x10) != 0) {
     g_FrontendNetworkTickCounter = 0;
     g_FrontendRuntimeFlags = g_FrontendRuntimeFlags & 0xffffffef;
@@ -1432,10 +1434,10 @@ FrontendPlayerMessageBuffer_ResetWriteOffsetTo4ById
 {
   FrontendPlayerRuntimeBlockCount remainingBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  undefined4 *messageBuffer;
-  
+  dword *messageBuffer;
+
   playerBlock = g_FrontendPlayerRuntimeBlocks;
-  messageBuffer = g_FrontendPlayerMessageBuffers;
+  messageBuffer = (dword *)(uintptr_t)g_FrontendPlayerMessageBuffers;
   if ((g_FrontendNetworkState == 3) ||
      (remainingBlocks = g_FrontendPlayerRuntimeBlockCount, g_FrontendNetworkState == 2)) {
     remainingBlocks = g_FrontendPlayerRuntimeCount;

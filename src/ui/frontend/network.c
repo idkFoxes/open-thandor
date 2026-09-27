@@ -145,26 +145,27 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
       if (!findOptionResult.carry) {
         optionTextCursor = commandLineOptionBytes + 6;
         remainingOrRootNode = 0x13;
+        /* NAME="...": find the closing quote within 0x13 characters (stop at control characters). */
         while( true ) {
           optionChar = *optionTextCursor;
-          if ((optionChar == 0) || (optionChar < 0x20))
-          goto FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery;
+          if ((optionChar == 0) || (optionChar < 0x20)) break;
           if (optionChar == 0x22) break;
           remainingOrRootNode = remainingOrRootNode + -1;
-          if (remainingOrRootNode == 0) goto FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery;
+          if (remainingOrRootNode == 0) break;
           optionTextCursor = optionTextCursor + 1;
         }
-        destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,playerNameEdit))->textPrefix6C;
-        *optionTextCursor = 0;
-        if (optionTextCursor[1] == 0) {
-          *commandLineOptionBytes = 0x6e;
-          Text_CopyNarrowToUtf16Cf(0x28,destination,commandLineOptionBytes + 6);
-          Text_CopyNarrowToUtf16Cf
-                    (0x28,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
-          *optionTextCursor = 0x22;
+        if (optionChar == 0x22) {
+          destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,playerNameEdit))->textPrefix6C;
+          *optionTextCursor = 0;
+          if (optionTextCursor[1] == 0) {
+            *commandLineOptionBytes = 0x6e;
+            Text_CopyNarrowToUtf16Cf(0x28,destination,commandLineOptionBytes + 6);
+            Text_CopyNarrowToUtf16Cf
+                      (0x28,g_FrontendLocalPlayerNameUtf16,commandLineOptionBytes + 6);
+            *optionTextCursor = 0x22;
+          }
         }
       }
-FrontendNetworkSetup_ActivateClientBrowserAndPublishDiscovery:
       (*g_NetworkBackendSlot7)
                 (&g_FrontendNetworkEndpointTextUtf16,
                  (WinSockAddress *)&g_FrontendNetworkEndpointScratch);
@@ -401,25 +402,26 @@ FrontendNetworkSetupPage_InitializeFromCommandLine(UiNodeBase *hostButton)
   if (!findOptionResult.carry) {
     optionTextCursor = optionText + 7;
     remainingChars = 0x13;
+    /* Find the closing quote within 0x13 characters (stop at control characters). */
     while( true ) {
       optionChar = *optionTextCursor;
-      if ((optionChar == 0) || (optionChar < 0x20))
-      goto FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage;
+      if ((optionChar == 0) || (optionChar < 0x20)) break;
       if (optionChar == 0x22) break;
       remainingChars = remainingChars + -1;
-      if (remainingChars == 0) goto FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage;
+      if (remainingChars == 0) break;
       optionTextCursor = optionTextCursor + 1;
     }
-    destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textPrefix6C;
-    *optionTextCursor = 0;
-    if (optionTextCursor[1] == 0) {
-      *optionText = 0x73;
-      Text_CopyNarrowToUtf16Cf(0x28,destination,optionText + 7);
-      *optionTextCursor = 0x22;
-      appliedOptionMask = appliedOptionMask + 2;
+    if (optionChar == 0x22) {
+      destination = ((UiRequiredTextEditControl *)FRONTEND_UI(g_FrontendRootNode,gameNameEdit))->textPrefix6C;
+      *optionTextCursor = 0;
+      if (optionTextCursor[1] == 0) {
+        *optionText = 0x73;
+        Text_CopyNarrowToUtf16Cf(0x28,destination,optionText + 7);
+        *optionTextCursor = 0x22;
+        appliedOptionMask = appliedOptionMask + 2;
+      }
     }
   }
-FrontendNetworkSetup_ApplyCommandLinePlayerCountAndActivateHostPage:
   findOptionResult = (*g_CommandLineFindOption)(10,s_SPIELER__SPIEL__NETZWERK__HOST_00545e72 + 0x10);
   optionText = findOptionResult.ebx;
   if (((((!findOptionResult.carry) && (optionText[0xb] == 0x22)) &&
@@ -475,7 +477,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
   dword sequenceToken;
   FrontendPlayerRuntimeRecord *firstPlayerRecord;
   int remainingDwords;
-  undefined4 *localPlayerNameCursor;
+  dword *localPlayerNameCursor;
   dword *localEndpointDwordCursor;
   dword *localPlayerRecordDwordCursor;
   bool previewLoadFailed;
@@ -501,8 +503,7 @@ FrontendNetworkSetupPage_InitializeSingleLocalPlayer(UiNodeBase *createButton)
   localPlayerNameCursor = (void *)g_FrontendLocalPlayerNameUtf16;
   localPlayerRecordDwordCursor = (dword *)&firstPlayerRecord->playerName;
   for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
-    *(undefined4 *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 = *localPlayerNameCursor
-    ;
+    *(dword *)((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 = *localPlayerNameCursor;
     localPlayerNameCursor = localPlayerNameCursor + 1;
     localPlayerRecordDwordCursor =
          (dword *)(((FrontendPlayerNameUtf16_28 *)localPlayerRecordDwordCursor)->textUtf16 + 2);

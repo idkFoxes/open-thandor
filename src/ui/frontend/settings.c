@@ -313,10 +313,10 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
   dword previousWidth;
   dword previousHeight;
   dword previousAdapterIndex;
-  undefined4 selectedAdapterIndex;
-  undefined4 selectedWidth;
-  undefined4 selectedHeight;
-  undefined4 selectedBitsPerPixel;
+  dword selectedAdapterIndex;
+  dword selectedWidth;
+  dword selectedHeight;
+  dword selectedBitsPerPixel;
   int colorBitsCounterOrParentLink;
   GraphicsTextureSourceAsset **fontTextureSource;
   DisplayModeEaxCf5 selectedModeResult;
@@ -1471,10 +1471,10 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
   rowIndexOrCount = 7;
   do {
     controlOffset = g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[rowIndexOrCount];
-    *(undefined4 *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
+    *(dword *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x2199;
     if ((g_GameFactionRuntimeImage.tail.factionLifecycleStates[rowIndexOrCount] ==
          FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
-       (*(undefined4 *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
+       (*(dword *)((int)&taskAssignmentRoot->previousRoot + controlOffset) = 0x219a,
        (*(uint *)((int)&(taskAssignmentRoot->base).nodeFlags +
                  g_FrontendTaskAssignmentControlOffsets.assignmentControls.offsets[rowIndexOrCount]) & 8) ==
        0)) {
@@ -1500,7 +1500,7 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
   } while (rowIndexOrCount != 0);
   do {
     factionIndexOrSetMask = (playerRecord->factionAssignment).factionAssignmentIndex;
-    *(undefined4 *)
+    *(dword *)
      ((int)&taskAssignmentRoot->previousRoot +
      g_FrontendTaskAssignmentControlOffsets.playerControls.offsets[factionIndexOrSetMask]) = 0x2198;
     remainingPlayers = remainingPlayers - 1;
@@ -1553,8 +1553,24 @@ FrontendTaskAssignment_DisablePlayerControlAndAdvanceFactionLoop:
                       *(FrontendFactionAssignmentIndex *)
                        ((int)((UiTransferEndpointDescriptor *)(playerName + 1) + 1) + 8) * 0x50);
     rowIndexOrCount = 0x28;
-    if (*(int *)rosterTextCursor == 0) {
-FrontendTaskAssignment_AppendPlayerNameToFactionRosterText:
+    if (*(int *)rosterTextCursor != 0) {
+      /* The faction row already names a player: find its end and append ", " while room is left. */
+      do {
+        rosterScanCursor = rosterTextCursor;
+        if (rowIndexOrCount == 0) break;
+        rowIndexOrCount = rowIndexOrCount + -1;
+        rosterScanCursor = rosterTextCursor + 1;
+        scannedChar = *rosterTextCursor;
+        rosterTextCursor = rosterScanCursor;
+      } while (scannedChar != 0);
+      rosterTextCursor = rosterScanCursor + 1;
+      rowIndexOrCount = rowIndexOrCount + -1;
+      if (rowIndexOrCount != 0) {
+        rosterScanCursor[-1] = 0x2c;
+        rosterScanCursor[0] = 0x20;
+      }
+    }
+    if (rowIndexOrCount != 0) {
       if (0x15 < rowIndexOrCount) {
         rowIndexOrCount = 0x14;
       }
@@ -1579,23 +1595,6 @@ FrontendTaskAssignment_AppendPlayerNameToFactionRosterText:
           rosterTextCursor = rosterTextCursor + 1;
         }
         *rosterTextCursor = 0;
-      }
-    }
-    else {
-      do {
-        rosterScanCursor = rosterTextCursor;
-        if (rowIndexOrCount == 0) break;
-        rowIndexOrCount = rowIndexOrCount + -1;
-        rosterScanCursor = rosterTextCursor + 1;
-        scannedChar = *rosterTextCursor;
-        rosterTextCursor = rosterScanCursor;
-      } while (scannedChar != 0);
-      rosterTextCursor = rosterScanCursor + 1;
-      rowIndexOrCount = rowIndexOrCount + -1;
-      if (rowIndexOrCount != 0) {
-        rosterScanCursor[-0xffffffff00000001] = 0x2c;
-        rosterScanCursor[0] = 0x20;
-        goto FrontendTaskAssignment_AppendPlayerNameToFactionRosterText;
       }
     }
     remainingPlayers = remainingPlayers - 1;
@@ -1671,7 +1670,7 @@ FrontendNetworkSettings_PublishSelectedPlayerDescriptorCf
   dword *selectedEndpointDwordCursor;
   bool sendCarry;
   
-  g_FrontendSessionToken = *(undefined4 *)(**(int **)(networkSettings->raw + 0x248) + 4);
+  g_FrontendSessionToken = *(dword *)(**(int **)(networkSettings->raw + 0x248) + 4);
   selectedPlayerRecordDwordCursor = (dword *)(**(int **)(networkSettings->raw + 0x248) + 0xa0);
   selectedEndpointDwordCursor = (dword *)&g_FrontendSelectedNetworkEndpoint;
   for (remainingDwords = 4; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -1698,10 +1697,10 @@ void __thandor_void_preserve_eax_ecx_edx
 FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoot)
 
 {
-  undefined4 adapterIndex;
-  undefined4 pendingWidth;
-  undefined4 pendingHeight;
-  undefined4 bitsPerPixel;
+  dword adapterIndex;
+  dword pendingWidth;
+  dword pendingHeight;
+  dword bitsPerPixel;
   dword persistedValue;
   FrontendDisplayDimensionPixels width;
   FrontendDisplayDimensionPixels height;

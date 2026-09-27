@@ -84,7 +84,7 @@ UiRuntime_OpenFourValueDialogCf
   sdword *valueTextBuffer;
   UiRootNode *root;
   int remainingDwords;
-  undefined4 *templateCursor;
+  dword *templateCursor;
   UiRootNode *copyCursor;
   ArenaAllocEaxCf5 allocResult;
   TextResourceResolveEaxCf5 resolvedText;
@@ -199,22 +199,22 @@ UiRuntimeRecordRing_ContainsIdCf(UiTransferSequenceToken sequenceToken)
     if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
       recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
       ringIndex = g_UiRuntimeRecordReadIndex;
-      do {
-        do {
-          if (sequenceToken == (recordCursor->packetHeader).sequenceToken) {
-            (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
-            return true;
-          }
-          ringIndex = ringIndex + 1;
-          recordCursor = recordCursor + 1;
-          if (ringIndex == g_UiRuntimeRecordWriteIndex)
-          goto UiRuntimeRecordRing_ContainsIdCf_ReleaseLockAndReturnNotFoundWithCarryClear;
-        } while (ringIndex < 0x100);
-        ringIndex = 0;
-        recordCursor = g_UiRuntimeRecordRing;
-      } while (g_UiRuntimeRecordWriteIndex != 0);
+      while( true ) {
+        if (sequenceToken == (recordCursor->packetHeader).sequenceToken) {
+          (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
+          return true;
+        }
+        ringIndex = ringIndex + 1;
+        recordCursor = recordCursor + 1;
+        if (ringIndex == g_UiRuntimeRecordWriteIndex) break;
+        if (0xff < ringIndex) {
+          /* wrap around the 256-entry ring */
+          ringIndex = 0;
+          recordCursor = g_UiRuntimeRecordRing;
+          if (g_UiRuntimeRecordWriteIndex == 0) break;
+        }
+      }
     }
-UiRuntimeRecordRing_ContainsIdCf_ReleaseLockAndReturnNotFoundWithCarryClear:
     (*g_SpinLockRelease)(&g_UiRuntimeRecordRingLock);
   }
   return false;
@@ -330,7 +330,7 @@ void __cdecl UiActionQueue_DispatchPending(void)
 
 {
   void *actionSource;
-  code *actionHandler;
+  void (*actionHandler)(void *);
   UiActionQueueEntry *queueHead;
   int remainingCount;
   UiActionQueueEntry *sourceEntry;
@@ -341,8 +341,9 @@ void __cdecl UiActionQueue_DispatchPending(void)
   while (g_UiActionQueueUsedBytes != 0) {
     actionSource = queueHead->source;
     g_UiActionQueueUsedBytes = g_UiActionQueueUsedBytes - 8;
-    actionHandler = *(code **)((int)g_UiActionHandlerPages[(uint)queueHead->actionId >> 8]->handlers +
-                       (queueHead->actionId * 4 & 0x3fcU));
+    actionHandler = (void (*)(void *))
+                    g_UiActionHandlerPages[(uint)queueHead->actionId >> 8]->handlers
+                    [(uint)queueHead->actionId & 0xff];
     sourceEntry = queueHead + 1;
     destinationEntry = queueHead;
     for (remainingCount = 0x1e; queueHead = g_UiActionQueueEntries, remainingCount != 0; remainingCount = remainingCount + -1) {

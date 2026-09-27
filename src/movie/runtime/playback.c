@@ -14,6 +14,50 @@
 
 /* Implementation ownership: movie/runtime/playback. */
 
+/* MMX lane helpers for the 4x4 block encoders. Per 4-pixel row the original does MOVD mm,[pixel];
+   PUNPCKLBW mm,mm (each byte duplicated into a word); PSRLW mm,6; PADDW into MM7 -- four 16-bit channel
+   sums, one lane per pixel byte, wrapping at 16 bits. After four rows PSRLW MM7,6; PACKUSWB MM7,MM7;
+   MOVD packs the four averages back into one pixel. */
+
+/* One byte lane of one pixel after PUNPCKLBW mm,mm and PSRLW mm,6. */
+static __inline ushort Movie_DuplicatedByteLaneShr6(PackedRgb24 pixel,int lane)
+{
+  byte value = (byte)(pixel >> (lane * 8));
+  return (ushort)((((ushort)value << 8) | value) >> 6);
+}
+
+/* PADDW of one 4-pixel row into the four 16-bit channel sums. */
+static __inline ulonglong
+Movie_AddRowToChannelSums(ulonglong channelSums,PackedRgb24 pixel0,PackedRgb24 pixel1,PackedRgb24 pixel2,
+                          PackedRgb24 pixel3)
+{
+  ulonglong result = 0;
+  ushort sum;
+  int lane;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    sum = (ushort)(channelSums >> (lane * 16));
+    sum = (ushort)(sum + Movie_DuplicatedByteLaneShr6(pixel0,lane) + Movie_DuplicatedByteLaneShr6(pixel1,lane) +
+                   Movie_DuplicatedByteLaneShr6(pixel2,lane) + Movie_DuplicatedByteLaneShr6(pixel3,lane));
+    result = result | ((ulonglong)sum << (lane * 16));
+  }
+  return result;
+}
+
+/* PSRLW mm,6; PACKUSWB mm,mm; MOVD: the four channel averages as one pixel. The saturation to 0xFF can
+   never trigger (16 lanes of at most 0x3FF, shifted right by 6), so PACKUSWB's signed input view does not
+   matter either. */
+static __inline PackedRgb24 Movie_PackChannelAverages(ulonglong channelSums)
+{
+  PackedRgb24 color = 0;
+  ushort average;
+  int lane;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    average = (ushort)((ushort)(channelSums >> (lane * 16)) >> 6);
+    color = color | ((dword)(average > 0xff ? 0xff : average) << (lane * 8));
+  }
+  return color;
+}
+
 /* Address: 0x004A8040.
    Ownership: movie/runtime/playback.
    Purpose: Handles movie encode flm buffer from frame provider carry-flag result.
@@ -56,7 +100,7 @@ Movie_EncodeFlmBufferFromFrameProviderCf
   outputCursor[-0x77] = packedTimeOrDate;
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -0x74));
   (*g_LocaleCopyDefaultComputerLabelUtf16)((word *)(outputCursor + -100));
-  *(undefined1 *)(outputCursor + -0x40) = 0;
+  *(byte *)(outputCursor + -0x40) = 0;
   outputCursor[-0x54] = frameWidthPixels;
   outputCursor[-0x53] = frameHeightPixels;
   outputCursor[-0x52] = 0;
@@ -135,6 +179,71 @@ void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndT
 }
 
 
+/* Part of Movie_Open (0x004A870D-0x004A87AF): picks one of the header's audio tracks at random and turns it
+   into a sample voice set. The stream stands right after the initially loaded video bytes; the audio tracks
+   follow the whole video stream. CF clear returns the voice set in valueOrError (0 when the header has no
+   usable track); CF set returns the error of the failing seek/alloc/read/voice-set call. The loaded sample is
+   freed on both the success and the failure path, as in the original. */
+static StatusValueEaxCf5
+Movie_OpenLoadRandomAudioTrackCf(MovieFileHeader *header,MovieStreamByteCount remainingVideoBytes,void *handle)
+
+{
+  uint audioTrackCount;
+  uint selectedTrack;
+  uint track;
+  dword trackOffset;
+  dword trackBytes;
+  void *audioSample;
+  FileSystemSeekEaxCf5 seekResult;
+  ArenaAllocEaxCf5 allocResult;
+  FileSystemReadEaxCf5 readResult;
+  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
+  StatusValueEaxCf5 result;
+
+  result.carry = false;
+  result.valueOrError = 0;
+  audioTrackCount = header->audioTrackCount;
+  if ((audioTrackCount == 0) || (0xe < audioTrackCount)) {
+    return result;
+  }
+  selectedTrack = 0;
+  if (1 < audioTrackCount) {
+    selectedTrack = (Random_NextPrimary() & 0xffff) % audioTrackCount; /* DIV: unsigned */
+  }
+  trackOffset = 0;
+  for (track = 0; track < selectedTrack; track = track + 1) {
+    trackOffset = trackOffset + header->audioTrackBytes[track];
+  }
+  trackBytes = header->audioTrackBytes[selectedTrack];
+  if (trackBytes == 0) {
+    return result;
+  }
+  seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,trackOffset + remainingVideoBytes,handle);
+  result.carry = seekResult.carry;
+  result.valueOrError = seekResult.eax;
+  if (seekResult.carry) {
+    return result;
+  }
+  allocResult = (*g_MemoryApi.alloc)(trackBytes);
+  result.carry = allocResult.carry;
+  result.valueOrError = allocResult.eax;
+  if (allocResult.carry) {
+    return result;
+  }
+  audioSample = (void *)allocResult.eax;
+  readResult = (*g_FileSystemReadExactCf)(trackBytes,audioSample,handle);
+  result.carry = readResult.carry;
+  result.valueOrError = readResult.eax;
+  if (!readResult.carry) {
+    voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)audioSample);
+    result.carry = voiceSetResult.carry;
+    result.valueOrError = (dword)voiceSetResult.eax;
+  }
+  (*g_MemoryApi.free)(audioSample);
+  return result;
+}
+
+
 /* Address: 0x004A8590.
    Ownership: movie/runtime/playback.
    Purpose: Opens an FLM from a mounted package or loose path, validates magic/version, chooses one embedded audio
@@ -146,242 +255,191 @@ void __thandor_void_preserve_eax_ecx_edx MoviePlayback_AdvanceScheduledFrameAndT
 MovieOpenEaxCf5 __thandor_eax_cf_preserve_edx Movie_Open(MovieOpenFlags movieOpenFlags,word *path)
 
 {
-  MovieFileHeader *streamByteCount;
-  uint audioTrackCount;
+  MovieFileHeader *header;
+  MovieRuntime *movie;
+  void *handle;
+  dword *copySource;
+  dword *copyDestination;
+  int copyCount;
   MovieSubresourceCount frameWidth;
   MoviePaletteBankCount frameHeight;
   MovieAudioGainQ15 defaultAudioGain;
-  MovieRuntime *flmBufferOrError;
-  MovieRuntime *runtimeOrScratch;
   HANDLE semaphoreOrThread;
   dword sizeOrValue;
-  int copyCountOrTrackOffset;
-  MovieFileHeader *byteCount;
-  uint tracksToSkip;
-  MovieRuntime *voiceSetOrError;
-  MovieRuntime *handle;
-  AssetMagic *headerSource;
-  bool readFailed;
+  dword initialVideoBytes;
+  dword status;
+  bool looseFileOpened;
   FileSystemOpenEaxCf5 openResult;
   FileSystemSeekEaxCf5 seekResult;
   FileSystemReadEaxCf5 readResult;
   ArenaAllocEaxCf5 allocResult;
-  SoundCreateSampleVoiceSetEaxCf5 voiceSetResult;
+  StatusValueEaxCf5 audioResult;
   MovieOpenEaxCf5 successResult;
   MovieOpenEaxCf5 failureResult;
   PackageFindEntryEaxEbxCf9 packageEntry;
-  LPSECURITY_ATTRIBUTES lpThreadAttributes;
-  SIZE_T dwStackSize;
-  LPTHREAD_START_ROUTINE lpStartAddress;
-  LPVOID lpParameter;
-  DWORD dwCreationFlags;
-  MovieStreamByteCount *lpThreadId;
   MovieStreamByteCount remainingByteCount;
   byte *loadedEnd;
-  MovieRuntime *streamPosition;
-  MovieRuntime *savedStreamHandle;
+  MovieStreamFileOffset streamPosition;
   MovieSharedStreamHandleFlag isSharedPackageHandle;
-  MovieRuntime *headerAllocation;
-  
+
   isSharedPackageHandle = 0;
+  looseFileOpened = false;
   if (((movieOpenFlags & 0x80000000) == 0) && (g_LooseMoviePathPrefix.firstTwoCodeUnits != 0)) {
     WidePath_CombineDirectoryAndLeaf
               ((word *)&g_FileSystemCombinedPathScratchUtf16,path,g_LooseMoviePathPrefix.codeUnits);
     openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    handle = (MovieRuntime *)openResult.eax;
-    if (openResult.carry) goto Movie_OpenResolvePackageOrFallbackStream;
+    handle = (void *)openResult.eax;
+    looseFileOpened = !openResult.carry;
   }
-  else {
-Movie_OpenResolvePackageOrFallbackStream:
+  if (!looseFileOpened) {
     movieOpenFlags = movieOpenFlags & 0x7fffffff;
     packageEntry = Package_FindEntryAcrossMounts(path);
-    if ((packageEntry.carry) ||
+    if ((!packageEntry.carry) &&
        (seekResult = (*g_FileSystemSeekCf)
                            (FILESYSTEM_SEEK_BEGIN,*(int *)(packageEntry.eax + 0x1ec) + 0x200,
-                            (MovieRuntime *)packageEntry.ebx), seekResult.carry)){
+                            (void *)packageEntry.ebx), !seekResult.carry)) {
+      isSharedPackageHandle = isSharedPackageHandle + 1;
+      handle = (void *)packageEntry.ebx;
+    }
+    else {
       WidePath_CombineDirectoryAndLeaf
                 ((word *)&g_FileSystemCombinedPathScratchUtf16,path,
                  (word *)&g_ExecutableDirectoryUtf16);
       openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-      handle = (MovieRuntime *)openResult.eax;
       if (openResult.carry) {
         openResult = (*g_FileSystemOpenCf)(0,path);
-        flmBufferOrError = (MovieRuntime *)openResult.eax;
-        handle = flmBufferOrError;
-        if (openResult.carry) goto LAB_004a8a0b;
+        if (openResult.carry) {
+          /* Nothing is open yet: no close. */
+          failureResult.carry = true;
+          failureResult.eax = openResult.eax;
+          return failureResult;
+        }
       }
-    }
-    else {
-      isSharedPackageHandle = isSharedPackageHandle + 1;
-      handle = (MovieRuntime *)packageEntry.ebx;
+      handle = (void *)openResult.eax;
     }
   }
-  headerSource = (AssetMagic *)g_PackageScratchBuffer;
   readResult = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,handle);
-  flmBufferOrError = (MovieRuntime *)readResult.eax;
+  status = readResult.eax;
   if (!readResult.carry) {
-    flmBufferOrError = (MovieRuntime *)0x30;
-    if ((*headerSource == 0x6d6c66) &&
-       (sizeOrValue = *(int *)((int)headerSource + 0xc0) + 0x200, *(int *)((int)headerSource + 0xc) == 0x20001)) {
+    header = (MovieFileHeader *)g_PackageScratchBuffer;
+    status = 0x30;
+    if ((header->common.magic == ASSET_MAGIC_FLM) && ((dword)header->common.converterVersion == 0x20001)) {
+      sizeOrValue = header->videoStreamBytes + 0x200;
       if ((0x3c0000 < sizeOrValue) && (movieOpenFlags != 0)) {
         sizeOrValue = 0x3c0000;
       }
       allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
-      flmBufferOrError = (MovieRuntime *)allocResult.eax;
+      status = allocResult.eax;
       if (!allocResult.carry) {
-        runtimeOrScratch = flmBufferOrError;
-        for (copyCountOrTrackOffset = 0x80; copyCountOrTrackOffset != 0; copyCountOrTrackOffset = copyCountOrTrackOffset + -1) {
-          (runtimeOrScratch->textureCommon).magic = *headerSource;
-          headerSource = headerSource + 1;
-          runtimeOrScratch = (MovieRuntime *)&(runtimeOrScratch->textureCommon).allocationSizeBytes;
+        copySource = (dword *)g_PackageScratchBuffer;
+        copyDestination = (dword *)allocResult.eax;
+        for (copyCount = 0x80; copyCount != 0; copyCount = copyCount + -1) {
+          *copyDestination = *copySource;
+          copySource = copySource + 1;
+          copyDestination = copyDestination + 1;
         }
-        streamByteCount = flmBufferOrError->fileHeader;
-        byteCount = streamByteCount;
-        if (((MovieFileHeader *)0x3a2000 < streamByteCount) && (movieOpenFlags != 0)) {
-          byteCount = (MovieFileHeader *)0x3a2000;
+        header = (MovieFileHeader *)allocResult.eax;
+        initialVideoBytes = header->videoStreamBytes;
+        if ((0x3a2000 < initialVideoBytes) && (movieOpenFlags != 0)) {
+          initialVideoBytes = 0x3a2000;
         }
-        remainingByteCount = (int)streamByteCount - (int)byteCount;
-        loadedEnd = byteCount[-1].reserved100_1FF +
-                   (int)(&(runtimeOrScratch->textureCommon).buildMetadata + 1) + 0x50;
-        savedStreamHandle = handle;
-        headerAllocation = flmBufferOrError;
-        readResult = (*g_FileSystemReadExactCf)((FileIoByteCount)byteCount,runtimeOrScratch,handle);
-        readFailed = readResult.carry;
-        runtimeOrScratch = (MovieRuntime *)readResult.eax;
-        if ((readFailed) || (runtimeOrScratch = (MovieRuntime *)(*g_FileSystemGetPositionCf)(handle), readFailed))
-        goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-        audioTrackCount = flmBufferOrError->reservedBC;
-        tracksToSkip = 0;
-        streamPosition = runtimeOrScratch;
-        if ((audioTrackCount == 0) || (0xe < audioTrackCount)) {
-LAB_004a87c0:
-          voiceSetOrError = (MovieRuntime *)0x0;
-Movie_OpenAllocateAndInitializeRuntime:
-          sizeOrValue = flmBufferOrError->subresourceCount * flmBufferOrError->paletteBankCount * 4 + 0x220;
-          allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
-          runtimeOrScratch = (MovieRuntime *)allocResult.eax;
-          if (!allocResult.carry) {
-            g_ActiveMovie = runtimeOrScratch;
-            if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
-              (*g_FileSystemClose)(handle);
-            }
-            (runtimeOrScratch->textureCommon).magic = ASSET_MAGIC_GFX;
-            (runtimeOrScratch->textureCommon).allocationSizeBytes = sizeOrValue;
-            (runtimeOrScratch->textureCommon).formatVersion = 1;
-            (runtimeOrScratch->textureCommon).converterVersion = 0;
-            runtimeOrScratch->audioVoiceSet = (DirectSoundVoiceSet *)voiceSetOrError;
-            runtimeOrScratch->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
-            frameWidth = flmBufferOrError->subresourceCount;
-            frameHeight = flmBufferOrError->paletteBankCount;
-            sizeOrValue = (*g_LocaleGetPackedCurrentTime)();
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue0 = sizeOrValue;
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue1 = sizeOrValue;
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.dateValue2 = sizeOrValue;
-            sizeOrValue = (*g_LocaleGetPackedCurrentDate)();
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue0 = sizeOrValue;
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue1 = sizeOrValue;
-            (runtimeOrScratch->textureCommon).buildMetadata.timestamps.timeValue2 = sizeOrValue;
-            (*g_LocaleCopyDefaultComputerLabelUtf16)
-                      ((runtimeOrScratch->textureCommon).buildMetadata.names.producerName);
-            (*g_LocaleCopyDefaultComputerLabelUtf16)
-                      ((runtimeOrScratch->textureCommon).buildMetadata.names.sourceName);
-            runtimeOrScratch->reserved100_1FF[0] = 0;
-            runtimeOrScratch->subresourceTableOffset = 0x200;
-            runtimeOrScratch->paletteBankCount = 0;
-            runtimeOrScratch->subresourceCount = 1;
-            runtimeOrScratch->fileHeader = (MovieFileHeader *)flmBufferOrError;
-            runtimeOrScratch->currentFrameIndex = 0;
-            runtimeOrScratch->videoStreamOffset = 0x200;
-            (runtimeOrScratch->sourceEntry).dataOffset = 0x220;
-            (runtimeOrScratch->sourceEntry).pixelWidth = frameWidth;
-            (runtimeOrScratch->sourceEntry).pixelHeight = frameHeight;
-            (runtimeOrScratch->sourceEntry).logicalWidth = frameWidth;
-            (runtimeOrScratch->sourceEntry).logicalHeight = frameHeight;
-            (runtimeOrScratch->sourceEntry).paletteIndex = -1;
-            (runtimeOrScratch->sourceEntry).originX = 0;
-            (runtimeOrScratch->sourceEntry).originY = 0;
-            runtimeOrScratch->remainingVideoBytes = remainingByteCount;
-            runtimeOrScratch->streamHandle = savedStreamHandle;
-            runtimeOrScratch->loadedVideoEnd = loadedEnd;
-            defaultAudioGain = g_MovieDefaultAudioGainQ15;
-            runtimeOrScratch->streamHandleIsSharedPackage = isSharedPackageHandle;
-            runtimeOrScratch->openFlags = movieOpenFlags;
-            runtimeOrScratch->streamFileOffset = (MovieStreamFileOffset)streamPosition;
-            runtimeOrScratch->audioGainQ15 = defaultAudioGain;
-            lpThreadId = &remainingByteCount;
-            runtimeOrScratch->workerActive = 0;
-            runtimeOrScratch->streamState = MOVIE_STREAM_IDLE;
-            runtimeOrScratch->refillSemaphore = (void *)0x0;
-            if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
-              runtimeOrScratch->workerActive = runtimeOrScratch->workerActive + 1;
-              dwCreationFlags = 0;
-              lpParameter = (LPVOID)0x0;
-              lpStartAddress = (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread;
-              dwStackSize = 0;
-              lpThreadAttributes = (LPSECURITY_ATTRIBUTES)0x0;
-              semaphoreOrThread = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
-              runtimeOrScratch->refillSemaphore = semaphoreOrThread;
-              semaphoreOrThread = CreateThread(lpThreadAttributes,dwStackSize,lpStartAddress,lpParameter,
-                                    dwCreationFlags,lpThreadId);
-              if (semaphoreOrThread == (HANDLE)0x0) {
-                runtimeOrScratch->workerActive = runtimeOrScratch->workerActive - 1;
-              }
-              else {
-                CloseHandle(semaphoreOrThread);
-              }
-            }
-            successResult.carry = false;
-            successResult.eax = flmBufferOrError->subresourceTableOffset;
-            successResult.playbackRateHzEcx = *(dword *)((byte *)flmBufferOrError + 0xfc); /* MOV ECX,[ESI+0xFC] */
-            return successResult;
-          }
-        }
-        else {
-          if (1 < audioTrackCount) {
-            sizeOrValue = Random_NextPrimary();
-            tracksToSkip = (sizeOrValue & 0xffff) % audioTrackCount;
-          }
-          copyCountOrTrackOffset = 0;
-          runtimeOrScratch = flmBufferOrError;
-          for (; tracksToSkip != 0; tracksToSkip = tracksToSkip - 1) {
-            copyCountOrTrackOffset = copyCountOrTrackOffset + runtimeOrScratch->currentFrameIndex;
-            runtimeOrScratch = (MovieRuntime *)&(runtimeOrScratch->textureCommon).allocationSizeBytes;
-          }
-          sizeOrValue = runtimeOrScratch->currentFrameIndex;
-          if (sizeOrValue == 0) goto LAB_004a87c0;
-          seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_CURRENT,copyCountOrTrackOffset + remainingByteCount,handle);
-          runtimeOrScratch = (MovieRuntime *)seekResult.eax;
-          if (!seekResult.carry) {
+        remainingByteCount = header->videoStreamBytes - initialVideoBytes;
+        loadedEnd = (byte *)(header + 1) + initialVideoBytes;
+        readResult = (*g_FileSystemReadExactCf)(initialVideoBytes,header + 1,handle);
+        status = readResult.eax;
+        if (!readResult.carry) {
+          /* The original also fails on CF of g_FileSystemGetPositionCf (JC 0x004a89f1), but
+             FileSystemGetPositionCfProc has no CF result (it returns 0 on failure). */
+          streamPosition = (*g_FileSystemGetPositionCf)(handle);
+          audioResult = Movie_OpenLoadRandomAudioTrackCf(header,remainingByteCount,handle);
+          status = audioResult.valueOrError;
+          if (!audioResult.carry) {
+            sizeOrValue = header->widthPixels * header->heightPixels * 4 + 0x220;
             allocResult = (*g_MemoryApi.alloc)(sizeOrValue);
-            runtimeOrScratch = (MovieRuntime *)allocResult.eax;
-            if (allocResult.carry) goto Movie_OpenReleaseHeaderAllocationAfterFailure;
-            readResult = (*g_FileSystemReadExactCf)(sizeOrValue,runtimeOrScratch,handle);
-            voiceSetOrError = (MovieRuntime *)readResult.eax;
-            if (readResult.carry) {
-LAB_004a89e8:
-              (*g_MemoryApi.free)(runtimeOrScratch);
-              runtimeOrScratch = voiceSetOrError;
-              goto Movie_OpenReleaseHeaderAllocationAfterFailure;
+            status = allocResult.eax;
+            if (!allocResult.carry) {
+              movie = (MovieRuntime *)allocResult.eax;
+              g_ActiveMovie = movie;
+              if ((isSharedPackageHandle == 0) && (remainingByteCount == 0)) {
+                (*g_FileSystemClose)(handle);
+              }
+              (movie->textureCommon).magic = ASSET_MAGIC_GFX;
+              (movie->textureCommon).allocationSizeBytes = sizeOrValue;
+              (movie->textureCommon).formatVersion = 1;
+              (movie->textureCommon).converterVersion = 0;
+              movie->audioVoiceSet = (DirectSoundVoiceSet *)audioResult.valueOrError;
+              movie->activeAudioBuffer = (IDirectSoundBuffer *)0x0;
+              frameWidth = header->widthPixels;
+              frameHeight = header->heightPixels;
+              sizeOrValue = (*g_LocaleGetPackedCurrentTime)();
+              (movie->textureCommon).buildMetadata.timestamps.dateValue0 = sizeOrValue;
+              (movie->textureCommon).buildMetadata.timestamps.dateValue1 = sizeOrValue;
+              (movie->textureCommon).buildMetadata.timestamps.dateValue2 = sizeOrValue;
+              sizeOrValue = (*g_LocaleGetPackedCurrentDate)();
+              (movie->textureCommon).buildMetadata.timestamps.timeValue0 = sizeOrValue;
+              (movie->textureCommon).buildMetadata.timestamps.timeValue1 = sizeOrValue;
+              (movie->textureCommon).buildMetadata.timestamps.timeValue2 = sizeOrValue;
+              (*g_LocaleCopyDefaultComputerLabelUtf16)
+                        ((movie->textureCommon).buildMetadata.names.producerName);
+              (*g_LocaleCopyDefaultComputerLabelUtf16)
+                        ((movie->textureCommon).buildMetadata.names.sourceName);
+              movie->reserved100_1FF[0] = 0;
+              movie->subresourceTableOffset = 0x200;
+              movie->paletteBankCount = 0;
+              movie->subresourceCount = 1;
+              movie->fileHeader = header;
+              movie->currentFrameIndex = 0;
+              movie->videoStreamOffset = 0x200;
+              (movie->sourceEntry).dataOffset = 0x220;
+              (movie->sourceEntry).pixelWidth = frameWidth;
+              (movie->sourceEntry).pixelHeight = frameHeight;
+              (movie->sourceEntry).logicalWidth = frameWidth;
+              (movie->sourceEntry).logicalHeight = frameHeight;
+              (movie->sourceEntry).paletteIndex = -1;
+              (movie->sourceEntry).originX = 0;
+              (movie->sourceEntry).originY = 0;
+              movie->remainingVideoBytes = remainingByteCount;
+              movie->streamHandle = handle;
+              movie->loadedVideoEnd = loadedEnd;
+              defaultAudioGain = g_MovieDefaultAudioGainQ15;
+              movie->streamHandleIsSharedPackage = isSharedPackageHandle;
+              movie->openFlags = movieOpenFlags;
+              movie->streamFileOffset = streamPosition;
+              movie->audioGainQ15 = defaultAudioGain;
+              movie->workerActive = 0;
+              movie->streamState = MOVIE_STREAM_IDLE;
+              movie->refillSemaphore = (void *)0x0;
+              if ((remainingByteCount != 0) && (g_MemoryApi.alloc == ArenaHeap_Alloc)) {
+                movie->workerActive = movie->workerActive + 1;
+                semaphoreOrThread = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,1,(LPCSTR)0x0);
+                movie->refillSemaphore = semaphoreOrThread;
+                /* The original passes the address of its remainingByteCount local as lpThreadId. */
+                semaphoreOrThread = CreateThread((LPSECURITY_ATTRIBUTES)0x0,0,
+                                      (LPTHREAD_START_ROUTINE)Movie_StreamWorkerThread,(LPVOID)0x0,0,
+                                      &remainingByteCount);
+                if (semaphoreOrThread == (HANDLE)0x0) {
+                  movie->workerActive = movie->workerActive - 1;
+                }
+                else {
+                  CloseHandle(semaphoreOrThread);
+                }
+              }
+              successResult.carry = false;
+              successResult.eax = header->frameCount;
+              successResult.playbackRateHzEcx = header->frameIntervalMilliseconds; /* MOV ECX,[ESI+0xFC] */
+              return successResult;
             }
-            voiceSetResult = (*g_SoundCreateSampleVoiceSet)((SoundSampleAsset *)runtimeOrScratch);
-            voiceSetOrError = (MovieRuntime *)voiceSetResult.eax;
-            if (voiceSetResult.carry) goto LAB_004a89e8;
-            (*g_MemoryApi.free)(runtimeOrScratch);
-            goto Movie_OpenAllocateAndInitializeRuntime;
           }
         }
-Movie_OpenReleaseHeaderAllocationAfterFailure:
-        flmBufferOrError = runtimeOrScratch;
-        (*g_MemoryApi.free)(headerAllocation);
+        (*g_MemoryApi.free)(header);
       }
     }
   }
   if (isSharedPackageHandle == 0) {
     (*g_FileSystemClose)(handle);
   }
-LAB_004a8a0b:
   failureResult.carry = true;
-  failureResult.eax = (dword)flmBufferOrError;
+  failureResult.eax = status;
   return failureResult;
 }
 
@@ -403,7 +461,7 @@ MovieFrameDimensionsEdxEax8 __thandor_eax_edx_cf_preserve_ecx Movie_GetFrameDime
     frameWidth = (g_ActiveMovie->sourceEntry).pixelWidth;
     frameHeight = (g_ActiveMovie->sourceEntry).pixelHeight;
   }
-  return CONCAT44(frameHeight,frameWidth);
+  return ((MovieFrameDimensionsEdxEax8)frameHeight << 32) | frameWidth; /* EDX:EAX */
 }
 
 
@@ -435,35 +493,29 @@ dword __stdcall Movie_StreamWorkerThread(void *unusedThreadContext)
   uint byteCount;
   FileSystemReadEaxCf5 readResult;
   
-  do {
-    do {
-      if (g_ActiveMovie == (MovieRuntime *)0x0) {
-Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
-        if (g_ActiveMovie != (MovieRuntime *)0x0) {
-          g_ActiveMovie->workerActive = 0;
-        }
-        return 0;
-      }
-      MsgWaitForMultipleObjects(1,&g_ActiveMovie->refillSemaphore,0,0x100,0);
-      movie = g_ActiveMovie;
-      if ((((g_ActiveMovie == (MovieRuntime *)0x0) ||
-           (g_ActiveMovie->streamState == MOVIE_STREAM_SHUTDOWN)) ||
-          (g_ActiveMovie->workerActive == 0)) || (g_ActiveMovie->remainingVideoBytes == 0))
-      goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
-    } while (g_ActiveMovie->streamState == MOVIE_STREAM_IDLE);
-    byteCount = g_ActiveMovie->remainingVideoBytes;
-    if ((uint)((int)g_ActiveMovie->loadedVideoEnd - (int)g_ActiveMovie->fileHeader) < 0x3a2200) {
-      handle = g_ActiveMovie->streamHandle;
+  /* The original keeps the movie in ESI: it re-reads g_ActiveMovie only at the loop top, after the wait
+     and at the exit. */
+  for (;;) {
+    movie = g_ActiveMovie;
+    if (movie == (MovieRuntime *)0x0) break;
+    MsgWaitForMultipleObjects(1,&movie->refillSemaphore,0,0x100,0);
+    movie = g_ActiveMovie;
+    if ((movie == (MovieRuntime *)0x0) || (movie->streamState == MOVIE_STREAM_SHUTDOWN) ||
+        (movie->workerActive == 0) || (movie->remainingVideoBytes == 0)) break;
+    if (movie->streamState == MOVIE_STREAM_IDLE) continue;
+    byteCount = movie->remainingVideoBytes;
+    if ((uint)(movie->loadedVideoEnd - (byte *)movie->fileHeader) < 0x3a2200) {
+      handle = movie->streamHandle;
       if (0x1e000 < byteCount) {
         byteCount = 0x1e000;
       }
-      (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,g_ActiveMovie->streamFileOffset,handle);
+      (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,movie->streamFileOffset,handle);
       readResult = (*g_FileSystemReadExactCf)(byteCount,movie->loadedVideoEnd,handle);
       if (readResult.carry) {
         if (movie->streamState != MOVIE_STREAM_SHUTDOWN) {
           movie->streamState = MOVIE_STREAM_READ_FAILED;
         }
-        goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
+        break;
       }
       movie->remainingVideoBytes = movie->remainingVideoBytes - byteCount;
       movie->streamFileOffset = movie->streamFileOffset + byteCount;
@@ -472,10 +524,13 @@ Movie_StreamWorkerThread_ClearWorkerActiveAndReturn:
         (*g_FileSystemClose)(handle);
       }
     }
-    if ((movie->streamState == MOVIE_STREAM_SHUTDOWN) || (movie->remainingVideoBytes == 0))
-    goto Movie_StreamWorkerThread_ClearWorkerActiveAndReturn;
+    if ((movie->streamState == MOVIE_STREAM_SHUTDOWN) || (movie->remainingVideoBytes == 0)) break;
     movie->streamState = MOVIE_STREAM_IDLE;
-  } while( true );
+  }
+  if (g_ActiveMovie != (MovieRuntime *)0x0) {
+    g_ActiveMovie->workerActive = 0;
+  }
+  return 0;
 }
 
 
@@ -684,9 +739,6 @@ Movie_EncodeFrame4x4Keyframe
           uint *encodedOutput,uint *sourcePixels)
 
 {
-  PackedRgb24 pixel1;
-  PackedRgb24 pixel2;
-  PackedRgb24 pixel3;
   uint maxLumaOrLevel;
   uint minLumaOrBaseLuma;
   uint sampleLumaOrLevel;
@@ -708,65 +760,17 @@ Movie_EncodeFrame4x4Keyframe
   uint wideLevel5;
   PackedRgb24 *blockRowPixels;
   uint *outputCursor;
-  undefined1 pixel0Byte3Or1;
-  undefined1 pixel0Byte2;
-  undefined1 pixel1Byte3Or1;
-  undefined1 pixel1Byte2;
-  undefined1 pixel2Byte3Or1;
-  undefined1 pixel2Byte2;
-  undefined1 pixel3Byte3Or1;
-  undefined1 pixel3Byte2;
-  ushort pair0OrAverage0;
-  ushort pair1OrAverage1;
-  PackedRgb24 pixel0OrAverageColor;
-  ushort pair2OrAverage2;
-  undefined8 channelSums;
-  ushort pair3OrAverage3;
+  PackedRgb24 averageColor;
+  ulonglong channelSums;
   uint blocksLeftInRow;
   uint blockRowsLeft;
-  
+
   blockRowsLeft = frameHeightPixels >> 2;
   outputCursor = encodedOutput;
   blocksLeftInRow = frameWidthPixels >> 2;
   do {
     do {
-      pixel0OrAverageColor = *sourcePixels;
-      pixel1 = sourcePixels[1];
-      pixel2 = sourcePixels[2];
-      pixel3 = sourcePixels[3];
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-      channelSums = CONCAT26((pair3OrAverage3 >> 6) + (pair2OrAverage2 >> 6) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6),
-                        CONCAT24(((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6),
-                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6) +
-                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6))));
+      channelSums = Movie_AddRowToChannelSums(0,sourcePixels[0],sourcePixels[1],sourcePixels[2],sourcePixels[3]);
       maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*sourcePixels);
       minLumaOrBaseLuma = MovieColor_ComputeLuma5FromRgb888(sourcePixels[1]);
       minLumaChromaOrLevel = minLumaOrBaseLuma;
@@ -784,47 +788,8 @@ Movie_EncodeFrame4x4Keyframe
         maxLumaOrLevel = sampleLumaOrLevel;
       }
       blockRowPixels = sourcePixels + frameWidthPixels;
-      pixel0OrAverageColor = *blockRowPixels;
-      pixel1 = blockRowPixels[1];
-      pixel2 = blockRowPixels[2];
-      pixel3 = blockRowPixels[3];
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
-                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                          (short)channelSums +
-                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                              blockRowPixels[3]);
       sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
       minLumaOrBaseLuma = sampleLumaOrLevel;
       if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
@@ -846,47 +811,8 @@ Movie_EncodeFrame4x4Keyframe
         maxLumaOrLevel = sampleLumaOrLevel;
       }
       blockRowPixels = blockRowPixels + frameWidthPixels;
-      pixel0OrAverageColor = *blockRowPixels;
-      pixel1 = blockRowPixels[1];
-      pixel2 = blockRowPixels[2];
-      pixel3 = blockRowPixels[3];
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
-                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                          (short)channelSums +
-                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                              blockRowPixels[3]);
       sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
       minLumaOrBaseLuma = sampleLumaOrLevel;
       if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
@@ -908,47 +834,8 @@ Movie_EncodeFrame4x4Keyframe
         maxLumaOrLevel = sampleLumaOrLevel;
       }
       blockRowPixels = blockRowPixels + frameWidthPixels;
-      pixel0OrAverageColor = *blockRowPixels;
-      pixel1 = blockRowPixels[1];
-      pixel2 = blockRowPixels[2];
-      pixel3 = blockRowPixels[3];
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-      pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-      pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-      pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-      pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-      pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-      pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-      pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-      pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-      pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-      pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-      pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-      pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-      channelSums = CONCAT26((short)((ulonglong)channelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                        (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                        CONCAT24((short)((ulonglong)channelSums >> 0x20) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0OrAverageColor))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2))
-                                          >> 0x20) >> 6) +
-                                 ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3))
-                                          >> 0x20) >> 6),
-                                 CONCAT22((short)((ulonglong)channelSums >> 0x10) +
-                                          (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                          (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                          (short)channelSums +
-                                          (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                          (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                          (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                          (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+      channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                              blockRowPixels[3]);
       sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
       minLumaOrBaseLuma = sampleLumaOrLevel;
       if (((int)minLumaChromaOrLevel <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaChromaOrLevel, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
@@ -969,16 +856,7 @@ Movie_EncodeFrame4x4Keyframe
       if (((int)minLumaOrBaseLuma <= (int)sampleLumaOrLevel) && (minLumaChromaOrLevel = minLumaOrBaseLuma, (int)maxLumaOrLevel < (int)sampleLumaOrLevel)) {
         maxLumaOrLevel = sampleLumaOrLevel;
       }
-      pair0OrAverage0 = (ushort)channelSums >> 6;
-      pair1OrAverage1 = (ushort)((ulonglong)channelSums >> 0x10) >> 6;
-      pair2OrAverage2 = (ushort)((ulonglong)channelSums >> 0x20) >> 6;
-      pair3OrAverage3 = (ushort)((ulonglong)channelSums >> 0x36);
-      pixel0OrAverageColor = CONCAT13((pair3OrAverage3 != 0) * (pair3OrAverage3 < 0x100) * (char)pair3OrAverage3 - (0xff < pair3OrAverage3),
-                        CONCAT12((pair2OrAverage2 != 0) * (pair2OrAverage2 < 0x100) * (char)pair2OrAverage2 - (0xff < pair2OrAverage2),
-                                 CONCAT11((pair1OrAverage1 != 0) * (pair1OrAverage1 < 0x100) * (char)pair1OrAverage1 -
-                                          (0xff < pair1OrAverage1),
-                                          (pair0OrAverage0 != 0) * (pair0OrAverage0 < 0x100) * (char)pair0OrAverage0 -
-                                          (0xff < pair0OrAverage0))));
+      averageColor = Movie_PackChannelAverages(channelSums);
       minLumaOrBaseLuma = (int)((minLumaChromaOrLevel - 8) + maxLumaOrLevel) >> 1;
       if ((int)minLumaOrBaseLuma < 0) {
         minLumaOrBaseLuma = 0;
@@ -988,7 +866,7 @@ Movie_EncodeFrame4x4Keyframe
       }
       if (maxLumaOrLevel - minLumaChromaOrLevel < 0xc) {
         *outputCursor = minLumaOrBaseLuma;
-        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
         maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         level0 = maxLumaOrLevel - minLumaOrBaseLuma;
         if (level0 < 0) {
@@ -1135,7 +1013,7 @@ Movie_EncodeFrame4x4Keyframe
           minLumaOrBaseLuma = 0x10;
         }
         *outputCursor = minLumaOrBaseLuma;
-        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+        minLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
         maxLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
         maxLumaOrLevel = maxLumaOrLevel - minLumaOrBaseLuma;
         if ((int)maxLumaOrLevel < 0) {
@@ -1299,14 +1177,8 @@ Movie_EncodeFrame4x4Delta
 
 {
   int rowStrideBytes;
-  undefined8 copiedQword;
-  undefined4 pixel0Raw;
-  undefined4 pixel1Raw;
-  undefined4 pixel2Raw;
-  undefined4 pixel3Raw;
-  PackedRgb24 pixel1;
-  PackedRgb24 pixel2;
-  PackedRgb24 pixel3;
+  ulonglong copiedQwordA;
+  ulonglong copiedQwordB;
   ulonglong *previousBlock;
   uint maxLumaChromaOrLevel;
   uint minLumaOrBaseLuma;
@@ -1331,21 +1203,9 @@ Movie_EncodeFrame4x4Delta
   PackedRgb24 *blockRowPixels;
   ulonglong *currentBlockCursor;
   uint *outputCursor;
-  undefined1 pixel0Byte3Or1;
-  undefined1 pixel0Byte2;
   ulonglong changedBitsOrQword;
-  undefined1 pixel1Byte3Or1;
-  undefined1 pixel1Byte2;
-  undefined1 pixel2Byte3Or1;
-  undefined1 pixel2Byte2;
-  undefined1 pixel3Byte3Or1;
-  undefined1 pixel3Byte2;
-  ushort pair0OrAverage0;
-  ushort pair1OrAverage1;
-  PackedRgb24 pixel0OrAverageColor;
-  ushort pair2OrAverage2;
-  undefined8 copiedQwordOrChannelSums;
-  ushort pair3OrAverage3;
+  PackedRgb24 averageColor;
+  ulonglong channelSums;
   uint blocksLeftInRow;
   uint blockRowsLeft;
   uint pendingSkipCount;
@@ -1396,56 +1256,22 @@ Movie_EncodeFrame4x4Delta
         previousBlock = (ulonglong *)(((int)previousFramePixels + (int)currentBlockCursor) - (int)currentFramePixels)
         ;
         changedBitsOrQword = currentBlockCursor[1];
-        copiedQwordOrChannelSums = *(undefined8 *)((int)currentBlockCursor + frameWidthPixels * 4);
-        copiedQword = *(undefined8 *)((int)currentBlockCursor + (frameWidthPixels + 2) * 4);
+        copiedQwordA = *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 4);
+        copiedQwordB = *(ulonglong *)((int)currentBlockCursor + (frameWidthPixels + 2) * 4);
         *previousBlock = *currentBlockCursor;
         previousBlock[1] = changedBitsOrQword;
-        *(undefined8 *)((int)previousBlock + rowStrideBytes) = copiedQwordOrChannelSums;
-        *(undefined8 *)((int)previousBlock + rowStrideBytes + 8) = copiedQword;
+        *(ulonglong *)((int)previousBlock + rowStrideBytes) = copiedQwordA;
+        *(ulonglong *)((int)previousBlock + rowStrideBytes + 8) = copiedQwordB;
         changedBitsOrQword = currentBlockCursor[frameWidthPixels + 1];
-        copiedQwordOrChannelSums = *(undefined8 *)((int)currentBlockCursor + frameWidthPixels * 0xc);
-        copiedQword = *(undefined8 *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
+        copiedQwordA = *(ulonglong *)((int)currentBlockCursor + frameWidthPixels * 0xc);
+        copiedQwordB = *(ulonglong *)((int)currentBlockCursor + (frameWidthPixels * 3 + 2) * 4);
         previousBlock[frameWidthPixels] = currentBlockCursor[frameWidthPixels];
         previousBlock[frameWidthPixels + 1] = changedBitsOrQword;
-        *(undefined8 *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordOrChannelSums;
-        *(undefined8 *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQword;
-        pixel0Raw = (undefined4)*currentBlockCursor;
-        pixel1Raw = *(undefined4 *)((int)currentBlockCursor + 4);
-        pixel2Raw = (undefined4)currentBlockCursor[1];
-        pixel3Raw = *(undefined4 *)((int)currentBlockCursor + 0xc);
-        pixel0Byte3Or1 = (undefined1)((uint)pixel0Raw >> 0x18);
-        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-        pixel0Byte2 = (undefined1)((uint)pixel0Raw >> 0x10);
-        pixel0Byte3Or1 = (undefined1)((uint)pixel0Raw >> 8);
-        pixel1Byte3Or1 = (undefined1)((uint)pixel1Raw >> 0x18);
-        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-        pixel1Byte2 = (undefined1)((uint)pixel1Raw >> 0x10);
-        pixel1Byte3Or1 = (undefined1)((uint)pixel1Raw >> 8);
-        pixel2Byte3Or1 = (undefined1)((uint)pixel2Raw >> 0x18);
-        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-        pixel2Byte2 = (undefined1)((uint)pixel2Raw >> 0x10);
-        pixel2Byte3Or1 = (undefined1)((uint)pixel2Raw >> 8);
-        pixel3Byte3Or1 = (undefined1)((uint)pixel3Raw >> 0x18);
-        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-        pixel3Byte2 = (undefined1)((uint)pixel3Raw >> 0x10);
-        pixel3Byte3Or1 = (undefined1)((uint)pixel3Raw >> 8);
-        copiedQwordOrChannelSums = CONCAT26((pair3OrAverage3 >> 6) + (pair2OrAverage2 >> 6) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6),
-                          CONCAT24(((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3Raw)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2Raw)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),CONCAT14(pixel0Byte2,pixel0Raw)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1Raw)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6),
-                                            (CONCAT11((char)pixel3Raw,(char)pixel3Raw) >> 6) +
-                                            (CONCAT11((char)pixel2Raw,(char)pixel2Raw) >> 6) +
-                                            (CONCAT11((char)pixel0Raw,(char)pixel0Raw) >> 6) +
-                                            (CONCAT11((char)pixel1Raw,(char)pixel1Raw) >> 6))));
+        *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc) = copiedQwordA;
+        *(ulonglong *)((int)previousBlock + frameWidthPixels * 0xc + 8) = copiedQwordB;
+        blockRowPixels = (PackedRgb24 *)currentBlockCursor;
+        channelSums = Movie_AddRowToChannelSums(0,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                                blockRowPixels[3]);
         maxLumaChromaOrLevel = MovieColor_ComputeLuma5FromRgb888((PackedRgb24)*currentBlockCursor);
         minLumaOrBaseLuma = MovieColor_ComputeLuma5FromRgb888(*(PackedRgb24 *)((int)currentBlockCursor + 4));
         minLumaOrSkipCount = minLumaOrBaseLuma;
@@ -1463,47 +1289,8 @@ Movie_EncodeFrame4x4Delta
           maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
         blockRowPixels = (PackedRgb24 *)((int)currentBlockCursor + frameWidthPixels * 4);
-        pixel0OrAverageColor = *blockRowPixels;
-        pixel1 = blockRowPixels[1];
-        pixel2 = blockRowPixels[2];
-        pixel3 = blockRowPixels[3];
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
-                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
-                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                            (short)copiedQwordOrChannelSums +
-                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                                blockRowPixels[3]);
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         minLumaOrBaseLuma = sampleLumaOrLevel;
         if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
@@ -1525,47 +1312,8 @@ Movie_EncodeFrame4x4Delta
           maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
         blockRowPixels = blockRowPixels + frameWidthPixels;
-        pixel0OrAverageColor = *blockRowPixels;
-        pixel1 = blockRowPixels[1];
-        pixel2 = blockRowPixels[2];
-        pixel3 = blockRowPixels[3];
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
-                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
-                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                            (short)copiedQwordOrChannelSums +
-                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                                blockRowPixels[3]);
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         minLumaOrBaseLuma = sampleLumaOrLevel;
         if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
@@ -1587,47 +1335,8 @@ Movie_EncodeFrame4x4Delta
           maxLumaChromaOrLevel = sampleLumaOrLevel;
         }
         blockRowPixels = blockRowPixels + frameWidthPixels;
-        pixel0OrAverageColor = *blockRowPixels;
-        pixel1 = blockRowPixels[1];
-        pixel2 = blockRowPixels[2];
-        pixel3 = blockRowPixels[3];
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 0x18);
-        pair0OrAverage0 = CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1);
-        pixel0Byte2 = (undefined1)(pixel0OrAverageColor >> 0x10);
-        pixel0Byte3Or1 = (undefined1)(pixel0OrAverageColor >> 8);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 0x18);
-        pair1OrAverage1 = CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1);
-        pixel1Byte2 = (undefined1)(pixel1 >> 0x10);
-        pixel1Byte3Or1 = (undefined1)(pixel1 >> 8);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 0x18);
-        pair2OrAverage2 = CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1);
-        pixel2Byte2 = (undefined1)(pixel2 >> 0x10);
-        pixel2Byte3Or1 = (undefined1)(pixel2 >> 8);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 0x18);
-        pair3OrAverage3 = CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1);
-        pixel3Byte2 = (undefined1)(pixel3 >> 0x10);
-        pixel3Byte3Or1 = (undefined1)(pixel3 >> 8);
-        copiedQwordOrChannelSums = CONCAT26((short)((ulonglong)copiedQwordOrChannelSums >> 0x30) + (pair0OrAverage0 >> 6) + (pair1OrAverage1 >> 6) +
-                          (pair2OrAverage2 >> 6) + (pair3OrAverage3 >> 6),
-                          CONCAT24((short)((ulonglong)copiedQwordOrChannelSums >> 0x20) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair0OrAverage0,pixel0Byte2),
-                                                      CONCAT14(pixel0Byte2,pixel0OrAverageColor)) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair1OrAverage1,pixel1Byte2),CONCAT14(pixel1Byte2,pixel1)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair2OrAverage2,pixel2Byte2),CONCAT14(pixel2Byte2,pixel2)
-                                                     ) >> 0x20) >> 6) +
-                                   ((ushort)(CONCAT35(CONCAT21(pair3OrAverage3,pixel3Byte2),CONCAT14(pixel3Byte2,pixel3)
-                                                     ) >> 0x20) >> 6),
-                                   CONCAT22((short)((ulonglong)copiedQwordOrChannelSums >> 0x10) +
-                                            (CONCAT11(pixel0Byte3Or1,pixel0Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel1Byte3Or1,pixel1Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel2Byte3Or1,pixel2Byte3Or1) >> 6) +
-                                            (CONCAT11(pixel3Byte3Or1,pixel3Byte3Or1) >> 6),
-                                            (short)copiedQwordOrChannelSums +
-                                            (CONCAT11((char)pixel0OrAverageColor,(char)pixel0OrAverageColor) >> 6) +
-                                            (CONCAT11((char)pixel1,(char)pixel1) >> 6) +
-                                            (CONCAT11((char)pixel2,(char)pixel2) >> 6) +
-                                            (CONCAT11((char)pixel3,(char)pixel3) >> 6))));
+        channelSums = Movie_AddRowToChannelSums(channelSums,blockRowPixels[0],blockRowPixels[1],blockRowPixels[2],
+                                                blockRowPixels[3]);
         sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(*blockRowPixels);
         minLumaOrBaseLuma = sampleLumaOrLevel;
         if (((int)minLumaOrSkipCount <= (int)sampleLumaOrLevel) && (minLumaOrBaseLuma = minLumaOrSkipCount, (int)maxLumaChromaOrLevel < (int)sampleLumaOrLevel)) {
@@ -1648,16 +1357,7 @@ Movie_EncodeFrame4x4Delta
         if (((int)minLumaOrBaseLuma <= (int)minLumaOrSkipCount) && (sampleLumaOrLevel = minLumaOrBaseLuma, (int)maxLumaChromaOrLevel < (int)minLumaOrSkipCount)) {
           maxLumaChromaOrLevel = minLumaOrSkipCount;
         }
-        pair0OrAverage0 = (ushort)copiedQwordOrChannelSums >> 6;
-        pair1OrAverage1 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x10) >> 6;
-        pair2OrAverage2 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x20) >> 6;
-        pair3OrAverage3 = (ushort)((ulonglong)copiedQwordOrChannelSums >> 0x36);
-        pixel0OrAverageColor = CONCAT13((pair3OrAverage3 != 0) * (pair3OrAverage3 < 0x100) * (char)pair3OrAverage3 - (0xff < pair3OrAverage3),
-                          CONCAT12((pair2OrAverage2 != 0) * (pair2OrAverage2 < 0x100) * (char)pair2OrAverage2 - (0xff < pair2OrAverage2)
-                                   ,CONCAT11((pair1OrAverage1 != 0) * (pair1OrAverage1 < 0x100) * (char)pair1OrAverage1 -
-                                             (0xff < pair1OrAverage1),
-                                             (pair0OrAverage0 != 0) * (pair0OrAverage0 < 0x100) * (char)pair0OrAverage0 -
-                                             (0xff < pair0OrAverage0))));
+        averageColor = Movie_PackChannelAverages(channelSums);
         minLumaOrBaseLuma = (int)((sampleLumaOrLevel - 8) + maxLumaChromaOrLevel) >> 1;
         if ((int)minLumaOrBaseLuma < 0) {
           minLumaOrBaseLuma = 0;
@@ -1668,7 +1368,7 @@ Movie_EncodeFrame4x4Delta
         minLumaOrSkipCount = pendingSkipCount;
         if (maxLumaChromaOrLevel - sampleLumaOrLevel < 0xc) {
           *outputCursor = minLumaOrBaseLuma;
-          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
           sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           level0 = sampleLumaOrLevel - minLumaOrBaseLuma;
           if (level0 < 0) {
@@ -1816,7 +1516,7 @@ Movie_EncodeFrame4x4Delta
             minLumaOrBaseLuma = 0x10;
           }
           *outputCursor = minLumaOrBaseLuma;
-          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(pixel0OrAverageColor);
+          maxLumaChromaOrLevel = MovieColor_ComputeChromaCodeFromRgb888(averageColor);
           sampleLumaOrLevel = MovieColor_ComputeLuma5FromRgb888(blockRowPixels[3]);
           sampleLumaOrLevel = sampleLumaOrLevel - minLumaOrBaseLuma;
           if ((int)sampleLumaOrLevel < 0) {
@@ -2053,8 +1753,8 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
   uint byteCountOrStatus;
   dword consumedBytes;
   uint nextFrameOrLoadedSize;
-  void *unaff_EBX = (void *)0; /* the original closes a stale caller EBX here */
-  undefined4 *copySource;
+  dword *copySource;
+  dword *copyDestination;
   byte *streamCursor;
   SoundPlayVoiceEaxCf5 playResult;
   MovieAdvanceFrameEaxCf5 successResult;
@@ -2065,7 +1765,14 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
   byteCountOrStatus = 0x30;
   if (g_ActiveMovie != (MovieRuntime *)0x0) {
     if (g_ActiveMovie->streamState == MOVIE_STREAM_READ_FAILED) {
-      (*g_FileSystemClose)(unaff_EBX);
+      /* 0x004A8BDD PUSH EBX; CALL g_FileSystemClose. On this path the function never loads EBX, so the
+         original closes whatever EBX its caller left there -- never the movie stream handle: a UI/runtime
+         object pointer in the frontend/in-game/briefing callers, g_FramebufferHeight in the
+         Game_PlayIntroMovies frame loop (0x00573B2C MOV EBX,ECX), the outer caller's EBX via
+         MoviePlayback_AdvanceToFrameAndPresent. Closing NULL keeps the effect (the stream handle stays
+         open; remainingVideoBytes = 0 also keeps Movie_Close from closing it) without the stray
+         CloseHandle on an unrelated value. */
+      (*g_FileSystemClose)((void *)0x0);
       movie->remainingVideoBytes = 0;
     }
     else {
@@ -2079,8 +1786,7 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
       }
       flmHeader = movie->fileHeader;
       previousFrameIndex = movie->currentFrameIndex;
-      streamCursor = (flmHeader->common).buildMetadata.assetRelativeAddressAnchor28 +
-               (movie->videoStreamOffset - 0x28);
+      streamCursor = (byte *)flmHeader + movie->videoStreamOffset;
       if ((previousFrameIndex == 0) && (movie->audioVoiceSet != (DirectSoundVoiceSet *)0x0)) {
         playResult = (*g_SoundPlayOneShot)
                           (movie->audioGainQ15,movie->audioGainQ15,movie->audioVoiceSet);
@@ -2090,8 +1796,12 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
       byteCountOrStatus = (int)movie->loadedVideoEnd - (int)streamCursor;
       if (nextFrameOrLoadedSize <= flmHeader->frameCount) {
         if ((movie->remainingVideoBytes != 0) && (byteCountOrStatus < 0x1e000)) {
+          /* Not enough bytes buffered yet: CF clear without decoding. The original returns ESI - 0x220
+             here (0x004A8BD0 LEA EAX,[ESI-0x220]) because ESI is only advanced to the pixels at
+             0x004A8B48. Callers keep EAX as the movie only after the first-frame call, which cannot
+             get here (with remainingVideoBytes != 0 the first 0x3A2000 bytes are loaded). */
           bufferingResult.carry = false;
-          bufferingResult.eax = (dword)&movie[-1].textureCommon.allocationSizeBytes;
+          bufferingResult.eax = (dword)((byte *)movie - 0x220);
           return bufferingResult;
         }
         consumedBytes = Movie_DecodeFrame4x4Delta
@@ -2104,14 +1814,13 @@ MovieAdvanceFrameEaxCf5 __thandor_eax_cf_preserve_ecx_edx Movie_AdvanceFrame(voi
           nextFrameOrLoadedSize = (int)movie->loadedVideoEnd - (int)movie->fileHeader;
           if ((0x1e01ff < byteCountOrStatus) && (byteCountOrStatus < nextFrameOrLoadedSize)) {
             movie->videoStreamOffset = movie->videoStreamOffset - 0x1e0000;
-            streamCursor = movie->fileHeader[-0xf00].common.buildMetadata.assetRelativeAddressAnchor28 +
-                     (byteCountOrStatus - 0x28);
+            copyDestination = (dword *)((byte *)movie->fileHeader + byteCountOrStatus - 0x1e0000);
             movie->loadedVideoEnd = movie->loadedVideoEnd + -0x1e0000;
-            copySource = (undefined4 *)(streamCursor + 0x1e0000);
-            for (byteCountOrStatus = nextFrameOrLoadedSize - byteCountOrStatus >> 2; byteCountOrStatus != 0; byteCountOrStatus = byteCountOrStatus - 1) {
-              *(undefined4 *)streamCursor = *copySource;
+            copySource = (dword *)((byte *)copyDestination + 0x1e0000);
+            for (byteCountOrStatus = (nextFrameOrLoadedSize - byteCountOrStatus) >> 2; byteCountOrStatus != 0; byteCountOrStatus = byteCountOrStatus - 1) {
+              *copyDestination = *copySource;
               copySource = copySource + 1;
-              streamCursor = streamCursor + 4;
+              copyDestination = copyDestination + 1;
             }
           }
         }

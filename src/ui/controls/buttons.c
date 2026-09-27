@@ -186,7 +186,8 @@ UiSpriteButtonControl_NonRightPress
   UiSelectableStateFlags *pressStateFlagsField;
   UiSelectableStateFlags *selectionStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
-  
+  bool queueAction;
+
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     if (((control->selectable).stateFlags & UI_SELECTABLE_PERSISTENT_ACTIVATION_MODE) == 0) {
       stateFlagsField = &(control->selectable).stateFlags;
@@ -197,7 +198,6 @@ UiSpriteButtonControl_NonRightPress
            control->animationFrameOffset + control->selectedSubresourceStart)))) {
         control->animationFrameOffset = 0;
       }
-UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndReturn:
       UiNode_InvalidateRoot((UiNodeBase *)control);
       return;
     }
@@ -209,6 +209,7 @@ UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndRetu
       }
       selectionStateFlagsField = &(control->selectable).stateFlags;
       *selectionStateFlagsField = *selectionStateFlagsField ^ UI_SELECTABLE_SELECTED_OR_CHECKED;
+      queueAction = true;
       if (((control->selectable).stateFlags & 0x80) != 0) {
         if ((((control->selectable).stateFlags & 0x800) != 0) ||
            (control->selectedSubresourceEndExclusive <=
@@ -217,10 +218,12 @@ UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndRetu
         }
         pressStateFlagsField = &(control->selectable).stateFlags;
         *pressStateFlagsField = *pressStateFlagsField | 0x1000;
-        if (((control->selectable).stateFlags & 0x800) != 0)
-        goto UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndReturn;
+        /* Animated buttons with state flag 0x800 do not queue the action here. */
+        queueAction = ((control->selectable).stateFlags & 0x800) == 0;
       }
-      UiActionQueue_Enqueue((control->selectable).actionId,control);
+      if (queueAction) {
+        UiActionQueue_Enqueue((control->selectable).actionId,control);
+      }
       UiNode_InvalidateRoot((UiNodeBase *)control);
       return;
     }
@@ -232,6 +235,7 @@ UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndRetu
       }
       pressStateFlagsField = &(control->selectable).stateFlags;
       *pressStateFlagsField = *pressStateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
+      queueAction = true;
       if (((control->selectable).stateFlags & 0x80) != 0) {
         if ((((control->selectable).stateFlags & 0x800) != 0) ||
            (control->selectedSubresourceEndExclusive <=
@@ -240,10 +244,11 @@ UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndRetu
         }
         pressStateFlagsField = &(control->selectable).stateFlags;
         *pressStateFlagsField = *pressStateFlagsField | 0x1000;
-        if (((control->selectable).stateFlags & 0x800) != 0)
-        goto UiSpriteButtonControl_NonRightPress_InvalidateAfterStateOrAnimationUpdateAndReturn;
+        queueAction = ((control->selectable).stateFlags & 0x800) == 0;
       }
-      UiActionQueue_Enqueue((control->selectable).actionId,control);
+      if (queueAction) {
+        UiActionQueue_Enqueue((control->selectable).actionId,control);
+      }
       UiNode_InvalidateRoot((UiNodeBase *)control);
     }
   }
@@ -302,7 +307,7 @@ UiSpriteButtonControl_NonRightDrag
 
 {
   bool opaquePixelHit;
-  bool spritePixelHit;
+  bool pointerInside;
   UiSelectableStateFlags *selectedStateFlagsField;
   UiSelectableStateFlags *stateFlagsField;
   
@@ -316,38 +321,40 @@ UiSpriteButtonControl_NonRightDrag
     return;
   }
   if (((control->selectable).stateFlags & 0x20) == 0) {
+    pointerInside = false;
     if (control->primaryTextureSource != (GraphicsTextureSourceAsset *)0x0) {
       if (((control->selectable).stateFlags & 0x400) == 0) {
-        spritePixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+        pointerInside = (*g_GraphicsTextureSourceTestOpaquePixel)
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,
                            control->normalSubresourceStartOrDescriptor,control->primaryTextureSource
                           );
-        if (spritePixelHit) {
-UiSpriteButtonControl_NonRightDrag_SetPointerInsideStateAndInvalidate:
-          if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
-            return;
-          }
-          stateFlagsField = &(control->selectable).stateFlags;
-          *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
-          UiNode_InvalidateRoot((UiNodeBase *)control);
-          return;
-        }
       }
       else {
-        spritePixelHit = (*g_GraphicsTextureSourceTestOpaquePixel)
+        pointerInside = (*g_GraphicsTextureSourceTestOpaquePixel)
                           (pointerY,pointerX,(control->selectable).base.top,
                            (control->selectable).base.left,control->selectedSubresourceStart,
                            control->primaryTextureSource);
-        if (spritePixelHit) goto UiSpriteButtonControl_NonRightDrag_SetPointerInsideStateAndInvalidate;
       }
     }
   }
-  else if (((((control->selectable).base.left <= pointerX) &&
-            ((control->selectable).base.top <= pointerY)) &&
-           (pointerX < (control->selectable).base.right)) &&
-          (pointerY < (control->selectable).base.bottom))
-  goto UiSpriteButtonControl_NonRightDrag_SetPointerInsideStateAndInvalidate;
+  else {
+    pointerInside =
+         (((control->selectable).base.left <= pointerX) &&
+          ((control->selectable).base.top <= pointerY)) &&
+         (pointerX < (control->selectable).base.right) &&
+         (pointerY < (control->selectable).base.bottom);
+  }
+  if (pointerInside) {
+    /* Pointer inside: show the pressed state. */
+    if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
+      return;
+    }
+    stateFlagsField = &(control->selectable).stateFlags;
+    *stateFlagsField = *stateFlagsField | UI_SELECTABLE_SELECTED_OR_CHECKED;
+    UiNode_InvalidateRoot((UiNodeBase *)control);
+    return;
+  }
   if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
     selectedStateFlagsField = &(control->selectable).stateFlags;
     *selectedStateFlagsField = *selectedStateFlagsField & ~UI_SELECTABLE_SELECTED_OR_CHECKED;

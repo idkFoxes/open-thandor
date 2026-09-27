@@ -137,94 +137,91 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   int groupFieldCursorOrOffsetY;
   /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
      all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
-  int unaff_ESI = 0;
+  int staleCallerEsi = 0;
   dword *sourceOrRecordCursor;
   dword *secondaryTableCursor;
-  
+  bool scenarioFound;
+
+  scenarioFound = false;
   if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
      (sourceOrRecordCursor = (dword *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
-                         unaff_ESI *
+                         staleCallerEsi *
                          (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex),
      g_FrontendLoadedCampaignAsset != 0)) {
     remainingOrWorldY = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
     scenarioRecord = g_FrontendLoadedCampaignAsset;
     do {
       if (*(int *)(g_FrontendLoadedCampaignAsset + 0xc4) == *(int *)(scenarioRecord + 0x300)) {
-        groupFieldCursorOrOffsetY = scenarioRecord + 0x200;
-        carryOverMaskBits = *(uint *)(scenarioRecord + 0x304) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
-        skipMaskBits = *(uint *)(scenarioRecord + 0x308) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
-        remainingOrWorldY = 8;
-        secondaryTableCursor = g_OldUnitSecondaryTable;
-        goto 
-        OldUnitRuntime_RebuildScenarioReplayTables_ProcessNextReplayGroupMaskAndCopyOrClearBlock;
+        scenarioFound = true;
+        break;
       }
       scenarioRecord = scenarioRecord + 0x180;
       remainingOrWorldY = remainingOrWorldY + -1;
     } while (remainingOrWorldY != 0);
   }
-  OldUnitRuntime_ResetPendingTables();
-  return;
-OldUnitRuntime_RebuildScenarioReplayTables_ProcessNextReplayGroupMaskAndCopyOrClearBlock:
-  if ((skipMaskBits & 1) == 0) {
-    copyCountOrAnchorY = 8;
-    if (((carryOverMaskBits & 1) == 0) ||
-       ((((*(int *)(groupFieldCursorOrOffsetY + 0x60) == 0 && (*(int *)(groupFieldCursorOrOffsetY + 0x80) == 0)) &&
-         (*(int *)(groupFieldCursorOrOffsetY + 0xc0) == 0)) &&
-        ((*(int *)(groupFieldCursorOrOffsetY + 0xe0) == 0 && (*(int *)(groupFieldCursorOrOffsetY + 0xa0) == 0)))))) {
+  if (!scenarioFound) {
+    OldUnitRuntime_ResetPendingTables();
+    return;
+  }
+  groupFieldCursorOrOffsetY = scenarioRecord + 0x200;
+  carryOverMaskBits = *(uint *)(scenarioRecord + 0x304) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
+  skipMaskBits = *(uint *)(scenarioRecord + 0x308) >> ((byte)g_EndMovieSelectionIndex & 0x1f);
+  secondaryTableCursor = g_OldUnitSecondaryTable;
+  /* Eight groups, one per faction record. The masks are not shifted per group (as in the original). */
+  for (remainingOrWorldY = 8; remainingOrWorldY != 0; remainingOrWorldY = remainingOrWorldY + -1) {
+    if (((skipMaskBits & 1) == 0) && ((carryOverMaskBits & 1) != 0) &&
+        (((*(int *)(groupFieldCursorOrOffsetY + 0x60) != 0 || (*(int *)(groupFieldCursorOrOffsetY + 0x80) != 0)) ||
+          (*(int *)(groupFieldCursorOrOffsetY + 0xc0) != 0)) ||
+         ((*(int *)(groupFieldCursorOrOffsetY + 0xe0) != 0 || (*(int *)(groupFieldCursorOrOffsetY + 0xa0) != 0))))) {
       for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY = copyCountOrAnchorY + -1) {
-        *secondaryTableCursor = 0;
+        *secondaryTableCursor = *sourceOrRecordCursor;
+        sourceOrRecordCursor = sourceOrRecordCursor + 1;
         secondaryTableCursor = secondaryTableCursor + 1;
       }
-      goto OldUnitRuntime_RebuildScenarioReplayTables_AdvanceSourceBlockAfterSkippedOrClearedGroup;
     }
-    do {
-      *secondaryTableCursor = *sourceOrRecordCursor;
-      sourceOrRecordCursor = sourceOrRecordCursor + 1;
-      secondaryTableCursor = secondaryTableCursor + 1;
-      copyCountOrAnchorY = copyCountOrAnchorY + -1;
-    } while (copyCountOrAnchorY != 0);
+    else {
+      if ((skipMaskBits & 1) == 0) {
+        for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY = copyCountOrAnchorY + -1) {
+          *secondaryTableCursor = 0;
+          secondaryTableCursor = secondaryTableCursor + 1;
+        }
+      }
+      sourceOrRecordCursor = sourceOrRecordCursor + 8;
+    }
+    sourceOrRecordCursor = sourceOrRecordCursor + 0x1c8;
+    groupFieldCursorOrOffsetY = groupFieldCursorOrOffsetY + 4;
   }
-  else {
-OldUnitRuntime_RebuildScenarioReplayTables_AdvanceSourceBlockAfterSkippedOrClearedGroup:
-    sourceOrRecordCursor = sourceOrRecordCursor + 8;
-  }
-  sourceOrRecordCursor = sourceOrRecordCursor + 0x1c8;
-  groupFieldCursorOrOffsetY = groupFieldCursorOrOffsetY + 4;
-  remainingOrWorldY = remainingOrWorldY + -1;
-  if (remainingOrWorldY == 0) {
-    if (((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
-        (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (skipMaskBits & 1) == 0)) &&
-       (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
-      for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
-        if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-            (unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
-            0 < *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) &&
-           (distanceToAnchor = FixedMath_Length2(*(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4) - ownerNode->worldYQ12,
-                                      *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4) - ownerNode->worldXQ12),
-           (int)distanceToAnchor <= *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) {
-          remainingOrWorldY = ownerNode->worldYQ12;
-          groupFieldCursorOrOffsetY = *(int *)(scenarioRecord + 0x2e0 + unitFactionOrAssetId * 4);
-          copyCountOrAnchorY = *(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4);
-          sourceOrRecordCursor[2] = (ownerNode->worldXQ12 + *(int *)(scenarioRecord + 0x2c0 + unitFactionOrAssetId * 4)) -
-                       *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4);
-          sourceOrRecordCursor[3] = (remainingOrWorldY + groupFieldCursorOrOffsetY) - copyCountOrAnchorY;
-          sourceOrRecordCursor[1] = unitFactionOrAssetId;
-          if (*(int *)((int)ownerNode->runtimePayload + 0xf0) == 0) {
-            unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
-            sourceOrRecordCursor[4] = ownerNode->modelLocalRotationAngle2;
-            *sourceOrRecordCursor = unitFactionOrAssetId;
-            g_OldUnitRecordCount = g_OldUnitRecordCount + 1;
-            sourceOrRecordCursor = sourceOrRecordCursor + 8;
-            if (0x1ff < g_OldUnitRecordCount) {
-              return;
-            }
+  if (((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
+      (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (skipMaskBits & 1) == 0)) &&
+     (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
+    for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+      if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
+          (unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
+          0 < *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) &&
+         (distanceToAnchor = FixedMath_Length2(*(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4) - ownerNode->worldYQ12,
+                                    *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4) - ownerNode->worldXQ12),
+         (int)distanceToAnchor <= *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) {
+        remainingOrWorldY = ownerNode->worldYQ12;
+        groupFieldCursorOrOffsetY = *(int *)(scenarioRecord + 0x2e0 + unitFactionOrAssetId * 4);
+        copyCountOrAnchorY = *(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4);
+        sourceOrRecordCursor[2] = (ownerNode->worldXQ12 + *(int *)(scenarioRecord + 0x2c0 + unitFactionOrAssetId * 4)) -
+                     *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4);
+        sourceOrRecordCursor[3] = (remainingOrWorldY + groupFieldCursorOrOffsetY) - copyCountOrAnchorY;
+        sourceOrRecordCursor[1] = unitFactionOrAssetId;
+        if (*(int *)((int)ownerNode->runtimePayload + 0xf0) == 0) {
+          unitFactionOrAssetId = *(dword *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
+          sourceOrRecordCursor[4] = ownerNode->modelLocalRotationAngle2;
+          *sourceOrRecordCursor = unitFactionOrAssetId;
+          g_OldUnitRecordCount = g_OldUnitRecordCount + 1;
+          sourceOrRecordCursor = sourceOrRecordCursor + 8;
+          if (0x1ff < g_OldUnitRecordCount) {
+            return;
           }
         }
       }
     }
-    return;
   }
-  goto OldUnitRuntime_RebuildScenarioReplayTables_ProcessNextReplayGroupMaskAndCopyOrClearBlock;
+  return;
 }
 
 
@@ -383,65 +380,54 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
   TechnologyId sourceTechnologyIndex;
   int sourceRecordBase;
   
-  sourceFactionIndex = 1;
   sourceRecordBase = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_BeginNextSourceFactionScan:
-  otherFactionIndex = sourceFactionIndex + 1;
-  otherRecordBase = sourceRecordBase;
-GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_EvaluateNextFactionPair:
-  switch(*(uint *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
-  case 8:
-  case 9:
-  case 10:
-    bitMask = 1;
-    maskWordIndex = 0;
-    sourceTechnologyIndex = 0;
-    do {
-      if (((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) != 0) &&
-         ((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) == 0)) {
-        maskWordIndex = 0;
+  for (sourceFactionIndex = 1; sourceFactionIndex < 7; sourceFactionIndex = sourceFactionIndex + 1) {
+    /* otherRecordBase trails the other faction's record by one record (0x740 bytes). */
+    otherRecordBase = sourceRecordBase;
+    for (otherFactionIndex = sourceFactionIndex + 1; otherFactionIndex < 8;
+        otherFactionIndex = otherFactionIndex + 1) {
+      switch(*(uint *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
+      case 8:
+      case 9:
+      case 10:
+        /* First technology the source faction has and the other one lacks (bitMask rotates left, the carry
+           advances maskWordIndex). */
         bitMask = 1;
-        otherTechnologyIndex = 0;
-        goto 
-        GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_ScanReciprocalTechnologyBitsAndUnlockMatch
-        ;
+        maskWordIndex = 0;
+        sourceTechnologyIndex = 0;
+        do {
+          if (((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) != 0) &&
+             ((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) == 0)) break;
+          carryBit = (int)bitMask >> 0x1f;
+          bitMask = bitMask << 1 | -carryBit;
+          maskWordIndex = maskWordIndex + (-carryBit != 0);
+          sourceTechnologyIndex = sourceTechnologyIndex + 1;
+        } while (maskWordIndex < 8);
+        if (maskWordIndex < 8) {
+          /* First technology the other faction has and the source one lacks; swap the pair. */
+          maskWordIndex = 0;
+          bitMask = 1;
+          otherTechnologyIndex = 0;
+          do {
+            if (((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) != 0) &&
+               ((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) == 0)) {
+              Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
+              Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
+              break;
+            }
+            carryBit = (int)bitMask >> 0x1f;
+            bitMask = bitMask << 1 | -carryBit;
+            maskWordIndex = maskWordIndex + (-carryBit != 0);
+            otherTechnologyIndex = otherTechnologyIndex + 1;
+          } while (maskWordIndex < 8);
+        }
       }
-      carryBit = (int)bitMask >> 0x1f;
-      bitMask = bitMask << 1 | -carryBit;
-      maskWordIndex = maskWordIndex + (-carryBit != 0);
-      sourceTechnologyIndex = sourceTechnologyIndex + 1;
-    } while (maskWordIndex < 8);
-  }
-  goto switchD_00513d9f_caseD_0;
-  while( true ) {
-    carryBit = (int)bitMask >> 0x1f;
-    bitMask = bitMask << 1 | -carryBit;
-    maskWordIndex = maskWordIndex + (-carryBit != 0);
-    otherTechnologyIndex = otherTechnologyIndex + 1;
-    if (7 < maskWordIndex) break;
-
-    GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_ScanReciprocalTechnologyBitsAndUnlockMatch
-    :
-    if (((*(uint *)(otherRecordBase + 0xe20 + maskWordIndex * 4) & bitMask) != 0) &&
-       ((*(uint *)(sourceRecordBase + 0x6e0 + maskWordIndex * 4) & bitMask) == 0)) {
-      Technology_UnlockForFaction(0,0,otherTechnologyIndex,sourceFactionIndex);
-      Technology_UnlockForFaction(0,0,sourceTechnologyIndex,otherFactionIndex);
-      break;
+      otherRecordBase = otherRecordBase + 0x740;
     }
+    sourceRecordBase = sourceRecordBase + 0x740;
   }
-switchD_00513d9f_caseD_0:
-  otherFactionIndex = otherFactionIndex + 1;
-  otherRecordBase = otherRecordBase + 0x740;
-  if (7 < otherFactionIndex) goto code_r0x00513eb0;
-  goto GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_EvaluateNextFactionPair;
-code_r0x00513eb0:
-  sourceFactionIndex = sourceFactionIndex + 1;
-  sourceRecordBase = sourceRecordBase + 0x740;
-  if (6 < sourceFactionIndex) {
-    InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
-    return;
-  }
-  goto GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10_BeginNextSourceFactionScan;
+  InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)g_InGameRuntimeRoot);
+  return;
 }
 
 
@@ -706,29 +692,20 @@ FactionRuntime_HasArmyAssetOrActiveStructureCf
       return false;
     }
   }
-  ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-  do {
-    if (ownerNode == (WorldOwnerListNode100 *)0x0) {
-      return true;
-    }
+  /* Structures of class 0xB or 0xD in state 1 that are currently producing armyAssetRecord. */
+  for (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
+      ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
     if ((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
-       (modelPayload = ownerNode->runtimePayload, factionIndex == *(int *)(modelPayload[2] + 0xc))) {
-      if (*(int *)(*modelPayload + 0x4c) == 0xb) {
-        if (modelPayload[0x2e] == 1) {
-          activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
-          goto joined_r0x0051b8c2;
-        }
-      }
-      else if ((*(int *)(*modelPayload + 0x4c) == 0xd) && (modelPayload[0x2e] == 1)) {
-        activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
-joined_r0x0051b8c2:
-        if (armyAssetRecord == activeAssetRecord) {
-          return false;
-        }
+       (modelPayload = ownerNode->runtimePayload, factionIndex == *(int *)(modelPayload[2] + 0xc)) &&
+       ((*(int *)(*modelPayload + 0x4c) == 0xb) || (*(int *)(*modelPayload + 0x4c) == 0xd)) &&
+       (modelPayload[0x2e] == 1)) {
+      activeAssetRecord = (ArmyAssetRecordPrefix *)modelPayload[0x18];
+      if (armyAssetRecord == activeAssetRecord) {
+        return false;
       }
     }
-    ownerNode = ownerNode->nextNode;
-  } while( true );
+  }
+  return true;
 }
 
 
@@ -770,56 +747,48 @@ GameEntityRuntime_ResolveCommandTargetPositionCf(GameEntityRuntime *targetState)
 
 {
   GameEntityRuntime *commandTargetEntity;
-  uint in_EAX;
-  Q12 resolvedX;
-  int in_ECX;
-  Q12 resolvedY;
-  int *in_EDX;
-  int resolvedZ;
+  uint visibilityMask;
+  int *targetDefinitionRecord;
   ModelRuntimeNode *targetModelNode;
-  WorldPositionEaxEcxEdxCf13 resolvedPosition;
-  WorldPositionEaxEcxEdxCf13 failedPosition;
-  GameEntityRuntime *targetEntityRuntime;
-  
+  WorldPositionEaxEcxEdxCf13 position;
+
+  /* On failure (CF set) the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
+     partial visibility mask / owner shift / definition pointer). Both callers ignore the coordinates when CF is
+     set, so the failure result carries zeros. */
+  position.worldXQ12 = 0;
+  position.worldYQ12 = 0;
+  position.worldZQ12 = 0;
+  position.carry = true;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
-      resolvedX = (targetState->common).commandTarget.targetWorldXQ12;
-      resolvedY = (targetState->common).commandTarget.targetWorldYQ12;
-      resolvedZ = (targetState->common).commandTarget.targetWorldZQ12;
-LAB_0051c6a4:
-      resolvedPosition.worldYQ12 = resolvedY;
-      resolvedPosition.worldXQ12 = resolvedX;
-      resolvedPosition.worldZQ12 = resolvedZ;
-      resolvedPosition.carry = false;
-      return resolvedPosition;
+      position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
+      position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
+      position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
+      position.carry = false;
     }
   }
   else {
     commandTargetEntity = (targetState->common).commandTarget.targetEntity;
-    in_EAX = 2;
-    in_ECX = (targetState->common).ownership.ownerIndex * 2;
     if (commandTargetEntity != (GameEntityRuntime *)0x0) {
-      in_EAX = 2 << ((byte)in_ECX & 0x1f);
-      in_EDX = (commandTargetEntity->common).ownership.definitionOrClassRecord;
-      if ((*(uint *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & in_EAX) != 0) {
+      visibilityMask = 2u << ((byte)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
+      targetDefinitionRecord = (commandTargetEntity->common).ownership.definitionOrClassRecord;
+      if ((*(uint *)((commandTargetEntity->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
         targetModelNode = (commandTargetEntity->common).ownership.modelNode;
-        if (*(int *)(*in_EDX + 0x4c) == 0x15) {
+        if (*(int *)(*targetDefinitionRecord + 0x4c) == 0x15) {
           targetModelNode = targetModelNode->childNodes[0];
         }
-        resolvedX = (targetModelNode->worldTransform).translation.x;
-        resolvedY = (targetModelNode->worldTransform).translation.y;
-        resolvedZ = (targetModelNode->worldTransform).translation.z + *(int *)(*in_EDX + 0x50);
-        goto LAB_0051c6a4;
+        position.worldXQ12 = (targetModelNode->worldTransform).translation.x;
+        position.worldYQ12 = (targetModelNode->worldTransform).translation.y;
+        position.worldZQ12 =
+             (targetModelNode->worldTransform).translation.z + *(int *)(*targetDefinitionRecord + 0x50);
+        position.carry = false;
+        return position;
       }
       (targetState->common).commandTarget.targetEntity = (GameEntityRuntime *)0x0;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
-  failedPosition.worldYQ12 = in_ECX;
-  failedPosition.worldXQ12 = in_EAX;
-  failedPosition.carry = true;
-  failedPosition.worldZQ12 = (Q12)in_EDX;
-  return failedPosition;
+  return position;
 }
 
 
@@ -1013,7 +982,7 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund
         goto 
         GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCancellation;
       }
-      *(undefined4 *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(undefined4 *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
+      *(dword *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + writeIndex * 4) = *(dword *)(recordOffset + THANDOR_ADDR(g_GameFactionRuntimeImage,0xe0) + readIndexOrClassId * 4);
       readIndexOrClassId = readIndexOrClassId + 1;
       writeIndex = writeIndex + 1;
     }
@@ -1043,7 +1012,10 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                   modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-                  goto joined_r0x005603c3;
+                  requestedCount = requestedCount - 1;
+                  if (requestedCount == 0) {
+                    return;
+                  }
                 }
               }
               else if (readIndexOrClassId == 0xb) {
@@ -1056,7 +1028,10 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                   modelPayload[0x18] = 0;
                   g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                        g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-                  goto joined_r0x005603c3;
+                  requestedCount = requestedCount - 1;
+                  if (requestedCount == 0) {
+                    return;
+                  }
                 }
               }
               else if (armyDefinition->registryId == modelPayload[0x18]) {
@@ -1068,7 +1043,6 @@ GameFactionRuntime_CancelQueuedArmyAssetsAndRefund_ContinueWithActiveRuntimeCanc
                 modelPayload[0x18] = 0;
                 g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 =
                      g_GameFactionRuntimeImage.records[factionIndex].xeniteCurrentQ4 + refundAmount;
-joined_r0x005603c3:
                 requestedCount = requestedCount - 1;
                 if (requestedCount == 0) {
                   return;
@@ -1121,9 +1095,9 @@ GameFactionRuntime_RemoveArmyAssetAndStagePlayerTransfer
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
-          *(undefined4 *)
+          *(dword *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
-               *(undefined4 *)
+               *(dword *)
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
@@ -1227,9 +1201,9 @@ GameFactionRuntime_SellArmyAssetAndRefundSevenEighths
           *(ArmyAssetRecordPrefix **)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction)) {
         do {
-          *(undefined4 *)
+          *(dword *)
            ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction) =
-               *(undefined4 *)
+               *(dword *)
                 ((int)g_GameFactionRuntimeImage.records[0].primaryArmyAssetPointersOrIds + byteOffsetOrActiveFaction + 4
                 );
           runtimeRoot = g_InGameRuntimeRoot;
@@ -1493,6 +1467,7 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
   FactionRuntimeIndex originalFirstFactionIndex;
   uint bitOrPlayerCountOrSlot;
   dword randomValue;
+  bool swapMergeDirection;
   byte secondShift;
   byte firstShift;
   FactionArmyAssetCount assetsRemaining;
@@ -1564,20 +1539,19 @@ GameFactionRuntime_ApplyPairwiseRelationTransition
     playerBlockCursor = playerBlockCursor + 1;
     playerBlocksRemaining = playerBlocksRemaining - 1;
   } while (playerBlocksRemaining != 0);
-  if ((bitOrPlayerCountOrSlot & playerCountOrMaskWord) == 0) {
-    if (bitOrPlayerCountOrSlot != 0)
-    goto GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDirection;
-    if (playerCountOrMaskWord == 0)
-    goto GameFactionRuntime_ApplyPairwiseRelationTransition_ResolveState11FactionMergeDirection;
+  /* State 11 merges the two factions. The second faction survives when it has players and the (bitwise) counts
+     do not overlap; with no players on either side, or overlapping counts, a random bit decides. */
+  if (((bitOrPlayerCountOrSlot & playerCountOrMaskWord) == 0) &&
+      ((bitOrPlayerCountOrSlot != 0) || (playerCountOrMaskWord != 0))) {
+    swapMergeDirection = bitOrPlayerCountOrSlot != 0;
   }
   else {
-GameFactionRuntime_ApplyPairwiseRelationTransition_ResolveState11FactionMergeDirection:
     randomValue = (*g_RandomGeneratorState.next)();
-    if ((randomValue & 0x2000) == 0) {
-GameFactionRuntime_ApplyPairwiseRelationTransition_CommitSelectedFactionMergeDirection:
-      firstFactionIndex = secondFactionIndex;
-      secondFactionIndex = originalFirstFactionIndex;
-    }
+    swapMergeDirection = (randomValue & 0x2000) == 0;
+  }
+  if (swapMergeDirection) {
+    firstFactionIndex = secondFactionIndex;
+    secondFactionIndex = originalFirstFactionIndex;
   }
   runtimeRoot = g_InGameRuntimeRoot;
   if (secondFactionIndex == (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex) {

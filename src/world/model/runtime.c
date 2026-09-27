@@ -35,7 +35,6 @@ ModelRuntimePool_RepairDeferredChild
   AngleTurn32 rotationAngle2;
   Q12 translationX;
   Q12 translationY;
-  ModelRuntimeSlot *in_EAX;
   ModelNodeCreateEaxCf5 createResult;
   ModelNodeCreateEaxCf5 repairResult;
   ModelRuntimeNode *parentModelNode;
@@ -70,10 +69,14 @@ ModelRuntimePool_RepairDeferredChild
          sourceTransform->localTranslationZQ12;
     (((WorldRuntimeNodePayload *)&childRootNode->modelPayload)->model).localTranslationYQ12 = translationY;
     (((WorldRuntimeNodePayload *)&childRootNode->modelPayload)->model).localTranslationXQ12 = translationX;
-    in_EAX = createResult.modelNode;
+    repairResult.carry = false;
+    repairResult.modelNode = createResult.modelNode;
+    return repairResult;
   }
+  /* Index past the attachment count: the original leaves EAX untouched, and in its only caller
+     (ModelNodeRuntime_InstantiateLinkedChildrenRecursiveCf) EAX holds childDefinitionId at the call. */
   repairResult.carry = false;
-  repairResult.modelNode = (ModelRuntimeNode *)in_EAX;
+  repairResult.modelNode = (ModelRuntimeNode *)(uintptr_t)childDefinitionId;
   return repairResult;
 }
 
@@ -140,7 +143,7 @@ ModelRuntime_CullAndRenderHierarchyRecursive(ModelRuntimeNode *modelNodeRuntime)
                 projectedRadiusScale = 0x10000000;
               }
               else {
-                projectedRadiusScale = (Q12)(CONCAT44(radiusOrMeshGroupCount >> 4,radiusOrMeshGroupCount << 0x1c) / (ulonglong)distanceOrChildrenRemaining);
+                projectedRadiusScale = (Q12)(((ulonglong)radiusOrMeshGroupCount << 0x1c) / (ulonglong)distanceOrChildrenRemaining); /* unsigned DIV */
               }
               FixedTransform_ApplyPoint
                         ((GraphicsFixedVec3 *)&g_ModelCullViewRelativeX,
@@ -584,7 +587,7 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
       (modelRuntime->classState).linkedArmyRuntimeOrSavedOffset.armyRuntime = rebasedLinkedArmy;
       registryEntry = g_ModelDefinitionRegistry;
       registryRemaining = 0x300;
-      do {
+      for (;;) {
         registeredDefinition = *registryEntry;
         if ((registeredDefinition != (ModelDefinitionRecordPrefix *)0x0) &&
            ((modelRuntime->definitionOrSavedId).definition ==
@@ -621,14 +624,17 @@ void __thandor_void_preserve_eax_ecx_edx ModelRuntimePool_RebaseAfterLoad(void)
                        *(MdlSerializedNodeHeader38 **)
                         ((modelRuntime->definitionOrSavedId).savedIdOrOffset + 100));
           }
-          goto ModelRuntimePool_RebaseAfterLoad_AdvanceAfterDefinitionResolution;
+          break;
         }
         registryEntry = registryEntry + 1;
         registryRemaining = registryRemaining + -1;
-      } while (registryRemaining != 0);
-      (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+        if (registryRemaining == 0) {
+          /* definition no longer registered: drop the instance */
+          (modelRuntime->rootModelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+          break;
+        }
+      }
     }
-ModelRuntimePool_RebaseAfterLoad_AdvanceAfterDefinitionResolution:
     modelRuntime = modelRuntime + 1;
     slotsRemaining = slotsRemaining + -1;
     if (slotsRemaining == 0) {
@@ -793,35 +799,31 @@ ModelRuntimePool_CreateInstanceByDefinitionIdCf
   dword copiedValueB;
   dword copiedValueC;
   ModelRuntimeNode *modelNodeRuntime;
-  ModelRuntimeSlot *slotsRemaining;
+  int slotsRemaining;
   int registryRemaining;
   ModelDefinitionRecordPrefix **registryEntry;
   ModelRuntimeSlot *modelRuntime;
   ModelNodeCreateEaxCf5 failureResult;
   ModelNodeCreateEaxCf5 createResult;
   ModelDefinitionRuntimeSemanticView280 *definitionView;
-  ModelRuntimeSlot *slotScanGuard;
-  
-  modelNodeRuntime = (ModelRuntimeNode *)0x14;
-  slotsRemaining = (ModelRuntimeSlot *)0x2000;
+
+  /* first free slot (no root node); error 0x14 when the pool is missing or full */
+  failureResult.carry = true;
+  failureResult.modelNode = (ModelRuntimeNode *)0x14;
   modelRuntime = g_ModelRuntimeSlots;
-  slotScanGuard = g_ModelRuntimeSlots;
-  while (slotScanGuard != (ModelRuntimeSlot *)0x0) {
-    if ((modelRuntime->rootModelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
-      registryEntry = g_ModelDefinitionRegistry;
-      registryRemaining = 0x300;
-      goto ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry;
-    }
-    modelRuntime = modelRuntime + 1;
-    slotsRemaining = (ModelRuntimeSlot *)((int)&slotsRemaining[-1].attachments140[5].reserved1C + 3);
-    slotScanGuard = slotsRemaining;
+  if (modelRuntime == (ModelRuntimeSlot *)0x0) {
+    return failureResult;
   }
-  goto ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure;
-  while( true ) {
-    registryEntry = registryEntry + 1;
-    registryRemaining = registryRemaining + -1;
-    if (registryRemaining == 0) break;
-ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry:
+  slotsRemaining = 0x2000;
+  while ((modelRuntime->rootModelNodeOrSavedOffset).modelNode != (ModelRuntimeNode *)0x0) {
+    modelRuntime = modelRuntime + 1;
+    slotsRemaining = slotsRemaining + -1;
+    if (slotsRemaining == 0) {
+      return failureResult;
+    }
+  }
+  for (registryEntry = g_ModelDefinitionRegistry, registryRemaining = 0x300; registryRemaining != 0;
+      registryEntry = registryEntry + 1, registryRemaining = registryRemaining + -1) {
     definitionView = (ModelDefinitionRuntimeSemanticView280 *)*registryEntry;
     if ((definitionView != (ModelDefinitionRuntimeSemanticView280 *)0x0) &&
        (definitionView->definitionId == modelDefinitionId)) {
@@ -904,7 +906,10 @@ ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry:
                            (MdlSerializedNodeHeader38 *)definitionView->serializedNodeOffsetOrPointer64,
                            worldRuntime);
         modelNodeRuntime = createResult.modelNode;
-        if (createResult.carry) goto ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure;
+        if (createResult.carry) {
+          failureResult.modelNode = modelNodeRuntime; /* the hierarchy's error code */
+          return failureResult;
+        }
         (modelRuntime->rootModelNodeOrSavedOffset).modelNode = modelNodeRuntime;
         ModelNodeRuntime_RecomputeSubtreeBoundingRadius(modelNodeRuntime);
         ModelNodeRuntime_RebuildTransformsFromRoot(modelNodeRuntime);
@@ -922,10 +927,7 @@ ModelRuntimePool_CreateInstanceByDefinitionId_ScanDefinitionRegistry:
   }
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,modelDefinitionId,g_PackageLastErrorPath);
-  modelNodeRuntime = (ModelRuntimeNode *)0x3e;
-ModelRuntimePool_CreateInstanceByDefinitionId_ReturnCreationFailure:
-  failureResult.carry = true;
-  failureResult.modelNode = modelNodeRuntime;
+  failureResult.modelNode = (ModelRuntimeNode *)0x3e; /* definition not registered */
   return failureResult;
 }
 

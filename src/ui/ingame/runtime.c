@@ -37,7 +37,6 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   UiCommandModeIndex materialIndex;
   int remainingSteps;
   dword *dispatchRecord;
-  dword *nextDispatchRecord;
   StatusValueEaxCf5 pageNotInListResult;
   ArmyRegistryIdEaxCf5_571b00 previousModeGArmy;
   ArmyRegistryIdEaxCf5_571d40 previousMode4Army;
@@ -51,21 +50,19 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
   FatalErrorEaxCf5 hoverRecordResult;
   GraphicsFramebufferCaptureEaxCf5 capturedFramebuffer;
   
-  nextDispatchRecord = (dword *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0);
-  do {
-    while( true ) {
-      do {
-        dispatchRecord = nextDispatchRecord;
-        if (*dispatchRecord == 0) {
-          return;
-        }
-        nextDispatchRecord = dispatchRecord + 3;
-      } while (*dispatchRecord != keyboardEventCode);
-      if (dispatchRecord[1] == 0) break;
-      if ((keyboardStateMask & dispatchRecord[1]) != 0) goto override_jmp_0056e406_switch;
+  /* Records are {key code, required modifier mask, handler}; a zero mask matches only while no modifier in
+     0x3C is held. The table ends with a zero key code. */
+  for (dispatchRecord = (dword *)THANDOR_ADDR(g_InGameKeyboardDispatchRecords,0); ;
+      dispatchRecord = dispatchRecord + 3) {
+    if (*dispatchRecord == 0) {
+      return;
     }
-  } while ((keyboardStateMask & 0x3c) != 0);
-override_jmp_0056e406_switch:
+    if (*dispatchRecord != keyboardEventCode) continue;
+    if (dispatchRecord[1] == 0) {
+      if ((keyboardStateMask & 0x3c) == 0) break;
+    }
+    else if ((keyboardStateMask & dispatchRecord[1]) != 0) break;
+  }
                     // WARNING: Switch is manually overridden
   switch(dispatchRecord[2]) {
   case 0x56e5e0:
@@ -831,6 +828,8 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
   }
   Package_UpsertEntry(PCK_COMPRESSION_HUFFMAN_RLE,0x38000,g_GameStatTableImage,
                       (word *)u_stat_hex_0050e082,(EngineFileHandle)handle);
+  /* The oldunit entry is written when there are old-unit records or any secondary-table dword is set. */
+  allZero = false;
   if (g_OldUnitRecordCount == 0) {
     remainingCount = 0x40;
     allZero = true;
@@ -841,11 +840,11 @@ InGameUiAction1210_ResourceRegistrationHelper(void *runtimeBase,void *resourcePa
       allZero = *sourceCursor == 0;
       sourceCursor = sourceCursor + 1;
     } while (allZero);
-    if (!allZero) goto InGameResourceRegistration_SerializeOldUnitTables;
+  }
+  if (allZero) {
     Package_DeleteEntry((word *)u_oldunit_hex_0050e094,(EngineFileHandle)handle);
   }
   else {
-InGameResourceRegistration_SerializeOldUnitTables:
     oldUnitAllocation = (*g_MemoryApi.alloc)(0x4104);
     sourceCursor = g_OldUnitPrimaryTable;
     oldUnitImage = (dword *)oldUnitAllocation.eax;
@@ -2813,14 +2812,9 @@ void __thandor_void_preserve_eax_ecx_edx InGameHud_UpdateStatusCountersAndSessio
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR|WIDE_FORMAT_SIGNED_VALUE,0,10,1,
                  *(int *)(factionRecordAddress + 0x90) + *(int *)(factionRecordAddress + 0x94),(word *)THANDOR_ADDR(g_InGameHudNumberTextUtf16,0));
-      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
+      rosterCount = 0;
+      if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
           SESSION_NETWORK_ROLE_LOCAL) {
-InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWithoutPlayerRoster:
-        resolvedText = TextResource_Resolve(0x21d4);
-        rosterCursor = resolvedText.eax;
-      }
-      else {
-        rosterCount = 0;
         remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
         playerBlock = g_FrontendPlayerRuntimeBlocks;
         rosterCursor = g_InGamePlayerListTextScratchUtf16;
@@ -2866,10 +2860,13 @@ InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWith
           remainingPlayers = remainingPlayers - 1;
         } while (remainingPlayers != 0);
         *rosterCursor = 0;
-        if (rosterCount == 0)
-        goto 
-        InGameHud_UpdateStatusCountersAndSessionPrompts_ResolveFactionStatusTemplateWithoutPlayerRoster
-        ;
+      }
+      if (rosterCount == 0) {
+        /* Local session or no player on this faction: status template without a roster. */
+        resolvedText = TextResource_Resolve(0x21d4);
+        rosterCursor = resolvedText.eax;
+      }
+      else {
         resolvedText = TextResource_Resolve(0x21d3);
         rosterCursor = resolvedText.eax;
         RichTextCommandStream_PatchPayloadBySelector(0,g_InGamePlayerListTextScratchUtf16,rosterCursor);
@@ -4027,11 +4024,14 @@ dword InGameUiCommand_ResolveCursorCodeByMode
     }
     return 0x22;
   case 3:
-    cursorCodeOrSubMode = g_UiCommandModeA;
-    goto joined_r0x0056fa27;
   case 4:
-    cursorCodeOrSubMode = g_UiCommandModeB;
-joined_r0x0056fa27:
+    /* Mode 3 uses sub-mode A, mode 4 sub-mode B; the rest is shared. */
+    if (g_UiCommandModeG == 3) {
+      cursorCodeOrSubMode = g_UiCommandModeA;
+    }
+    else {
+      cursorCodeOrSubMode = g_UiCommandModeB;
+    }
     if (cursorCodeOrSubMode == 0) {
       if (pointerRegionCode == 0x7fffffff) {
         return 0x18;
@@ -4316,15 +4316,18 @@ InGameUiCommand_BeginInteractionByMode
     g_UiCommandTerrainMaskToggleValue = 0x40000000;
     return;
   case 3:
-    commandPayload = g_UiCommandModeGOwnerFactionIndex;
-    lookupToken = g_UiCommandModeGArmyAssetId;
-    placementSubMode = g_UiCommandModeA;
-    goto joined_r0x005701bf;
   case 4:
-    commandPayload = 0;
-    lookupToken = g_UiCommandMode4ArmyAssetId;
-    placementSubMode = g_UiCommandModeB;
-joined_r0x005701bf:
+    /* Mode 3 places the mode-G army for its owner faction (sub-mode A), mode 4 the mode-4 army (sub-mode B). */
+    if (g_UiCommandModeG == 3) {
+      commandPayload = g_UiCommandModeGOwnerFactionIndex;
+      lookupToken = g_UiCommandModeGArmyAssetId;
+      placementSubMode = g_UiCommandModeA;
+    }
+    else {
+      commandPayload = 0;
+      lookupToken = g_UiCommandMode4ArmyAssetId;
+      placementSubMode = g_UiCommandModeB;
+    }
     if (placementSubMode == 0) {
       if (pointerRegionCode != 0x7fffffff) {
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -4490,7 +4493,7 @@ InGameUiCommand_UpdateInteractionByMode
   uint columnValue;
   int lowerWorldY;
   InGameCommandPayloadTripletValue32 payloadValue;
-  undefined4 *tripletClearCursor;
+  dword *tripletClearCursor;
   WorldOwnerListNode100 *runtimeNode;
   CommandPayloadDword04 *tripletEntry;
   bool conditionResult;
@@ -4498,7 +4501,7 @@ InGameUiCommand_UpdateInteractionByMode
   GameEntityRuntime *entry;
   
   if ((mapControl->runtimeFlags & 0x80) != 0) {
-    tripletClearCursor = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
+    tripletClearCursor = (dword *)&g_InGameSelectionInsertTripletDwords;
     for (workValue = 0x1a; workValue != 0; workValue = workValue + -1) {
       *tripletClearCursor = 0;
       tripletClearCursor = tripletClearCursor + 1;
@@ -4739,12 +4742,14 @@ InGameUiCommand_UpdateInteractionByMode
               (g_LocalPlayerRuntimeId,g_UiCommandTerrainMaskToggleValue,columnValue,encodedValue);
     return;
   case 3:
-    placementSubMode = g_UiCommandModeA;
-    goto joined_r0x00570b27;
   case 4:
-    placementSubMode = g_UiCommandModeB;
-joined_r0x00570b27:
-    if ((placementSubMode != 0) && (placementSubMode == 1)) {
+    if (g_UiCommandModeG == 3) {
+      placementSubMode = g_UiCommandModeA;
+    }
+    else {
+      placementSubMode = g_UiCommandModeB;
+    }
+    if (placementSubMode == 1) {
       return;
     }
     if (pointerRegionCode == 0x7fffffff) {
@@ -4766,7 +4771,10 @@ joined_r0x00570b27:
                 (g_LocalPlayerRuntimeId,0,rowOrDeltaValue,payloadDword04);
       return;
     }
-    workValue = (*(code *)g_PointerSetPosition)(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
+    /* EAX is the horizontal drag distance computed before the call (MOV EAX,[EBX+0x168]; SUB EAX,
+       [DragStartScreenX] at 00570ac0); g_PointerSetPosition preserves EAX, it does not return a value. */
+    workValue = mapControl->extendedCoordinate168 - g_UiCommandDragStartScreenX;
+    (*g_PointerSetPosition)(g_UiCommandDragStartScreenY,g_UiCommandDragStartScreenX);
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
         SESSION_NETWORK_ROLE_LOCAL) {
       InGameCommandQueue_AppendLocalPlayerCommand(0x30f0,0,0,workValue << 6);
@@ -4879,7 +4887,8 @@ InGameUiCommand_EndInteractionByMode
 
 {
   dword activeMode;
-  
+  dword placementSubMode;
+
   activeMode = g_UiCommandModeG;
   worldRuntime->runtimeFlags = worldRuntime->runtimeFlags & 0xffffff7f;
                     // WARNING: Switch is manually overridden
@@ -4913,12 +4922,14 @@ InGameUiCommand_EndInteractionByMode
     }
     break;
   case 3:
-    activeMode = g_UiCommandModeA;
-    goto joined_r0x00570ef7;
   case 4:
-    activeMode = g_UiCommandModeB;
-joined_r0x00570ef7:
-    if ((activeMode == 0) || (activeMode != 1)) {
+    if (activeMode == 3) {
+      placementSubMode = g_UiCommandModeA;
+    }
+    else {
+      placementSubMode = g_UiCommandModeB;
+    }
+    if (placementSubMode != 1) {
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         PlayerRuntime_ClearState8094(g_LocalPlayerRuntimeId,0,0,0);
@@ -5052,8 +5063,10 @@ InGameUiCommandRuntime_ApplyInteractionSubsystemActiveState
            InGameUiCommand_ResetInteractionByMode;
       g_UiRootCallbacks_0054FBC0.keyboardFallbackCf =
            InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf;
-      (*(code *)g_UiCommandModeGHandlers[modeOrValue])
-                (root->opaque0058_017B + g_UiCommandModeGControlOffsets[modeOrValue] + -0x58);
+      /* InGameCommandModeG_Select0..5, applied to the mode's tab control. */
+      (*(void (*)(UiSelectableControl *))g_UiCommandModeGHandlers[modeOrValue])
+                ((UiSelectableControl *)
+                 (root->opaque0058_017B + g_UiCommandModeGControlOffsets[modeOrValue] + -0x58));
       queueSlotCursor = root->notificationQueue9E60;
       for (remainingCount = 0x20; remainingCount != 0; remainingCount = remainingCount + -1) {
         queueSlotCursor->notificationMovieId00 = 0;
@@ -5481,19 +5494,23 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
                             (g_InGameRuntimeRoot->worldRuntime0A30).selection.activePlayerRuntimeId)
         ;
         if (!conditionResult) {
+          /* Action 0x1010 stays available when any of the 0x1C technology slots is available. */
           UiNodeList_UnsuppressActionId(0x1010,(UiNodeBase *)rootCursor);
           selectedCountOrCounter = 0x1c;
           do {
             conditionResult = Technology_IsAvailableForFactionCf
                                (*(PckTechnologyIdCatalog *)(workValue + 0x1c4 + selectedCountOrCounter * 4),
                                 (lastSelectedEntity->common).ownership.ownerIndex);
-            if (conditionResult)
-            goto InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails;
+            if (conditionResult) break;
             selectedCountOrCounter = selectedCountOrCounter + -1;
           } while (selectedCountOrCounter != 0);
+          if (!conditionResult) {
+            UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)rootCursor);
+          }
         }
-        UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)rootCursor);
-InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
+        else {
+          UiNodeList_SuppressActionId(0x1010,(UiNodeBase *)rootCursor);
+        }
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
         ;
         armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((dword)foundArmyAsset.eax,foundArmyAsset.carry);
@@ -5664,14 +5681,7 @@ InGameSelectionDetailPanel_Rebuild_ContinueWithSingleOwnedSelectionDetails:
         clearedControlBytes[3] = 0;
         recordCursor = recordCursor + 1;
       }
-      g_InGameSelectionDetailTextSlot05Utf16[0] = (word)THANDOR_PART(dword, g_InGameSelectionDetailTextSlot05Utf16, 0)
-      ;
-      g_InGameSelectionDetailTextSlot05Utf16[1] =
-           SUB42(THANDOR_PART(dword, g_InGameSelectionDetailTextSlot05Utf16, 0),2);
-      g_InGameSelectionDetailTextSlot09Utf16[0] = (word)THANDOR_PART(dword, g_InGameSelectionDetailTextSlot09Utf16, 0)
-      ;
-      g_InGameSelectionDetailTextSlot09Utf16[1] =
-           SUB42(THANDOR_PART(dword, g_InGameSelectionDetailTextSlot09Utf16, 0),2);
+      /* (The decompile rewrote text slots 05/09 with their own contents here; the asm does not touch them.) */
       return;
     }
     UiPageStack_SetActiveIndex(0,stack);

@@ -11,6 +11,50 @@
 
 /* Implementation ownership: world/terrain/visuals. */
 
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+static __inline qword TerrainColor_UnpackBytesShiftRight(dword value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+static __inline dword TerrainColor_PackWordsUnsignedSaturate(qword words)
+
+{
+  ThandorMmx lanes;
+  dword packed;
+  int lane;
+
+  lanes.q = words;
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    packed = packed |
+             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+  }
+  return packed;
+}
+
+/* PUNPCKLBW/PSRLW 8 of pixel (its bytes as words), PADDW to words, then PSRLW 1. */
+static __inline qword TerrainColor_AverageWordsWithPixelBytes(qword words,dword pixel)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  lanes.q = words;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(lanes.uw[lane] + (pixel >> (lane * 8) & 0xff)) >> 1;
+  }
+  return lanes.q;
+}
+
 /* Address: 0x0053D370.
    Ownership: world/terrain/visuals.
    Purpose: Allocates a gfx-compatible runtime image sized as 0x260 plus width*height*12, publishes it globally and
@@ -316,8 +360,11 @@ TerrainVisualResources_LoadPrimary
         MoviePlayback_AdvanceScheduledFrameAndTick();
         textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
-        if (textureSetLoad.carry)
-        goto TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus;
+        if (textureSetLoad.carry) {
+          failureStatus.carry = true;
+          failureStatus.valueOrError = (dword)loadedResourceOrError;
+          return failureStatus;
+        }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
@@ -402,7 +449,6 @@ TerrainVisualResources_LoadPrimary
       }
     }
   }
-TerrainVisualResources_LoadPrimary_ReturnFieldOrResourceLoadFailureStatus:
   failureStatus.carry = true;
   failureStatus.valueOrError = (dword)loadedResourceOrError;
   return failureStatus;
@@ -490,9 +536,11 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
         MoviePlayback_AdvanceScheduledFrameAndTick();
         textureSetLoad = (*g_GraphicsTextureSetLoadPackageCf)(secondaryResourcePath);
         loadedResourceOrError = (GraphicsPaletteAsset *)textureSetLoad.textureSet;
-        if (textureSetLoad.carry)
-        goto 
-        TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus;
+        if (textureSetLoad.carry) {
+          failureStatus.carry = true;
+          failureStatus.valueOrError = (dword)loadedResourceOrError;
+          return failureStatus;
+        }
         MoviePlayback_AdvanceScheduledFrameAndTick();
         *materialTextureSetSlot = (GraphicsTextureSet *)loadedResourceOrError;
       }
@@ -586,7 +634,6 @@ TerrainVisualResources_LoadAndClearCellOverlayFlags
       }
     }
   }
-TerrainVisualResources_LoadAndClearCellOverlayFlags_ReturnFieldOrResourceLoadFailureStatus:
   failureStatus.carry = true;
   failureStatus.valueOrError = (dword)loadedResourceOrError;
   return failureStatus;
@@ -759,25 +806,15 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
 {
   AssetDimension textureWidth;
   int panelSubresourceIndex;
-  undefined4 materialColorArgb;
+  dword materialColorArgb;
   PackedArgb32 waterColorArgb;
-  short shadedLane0;
-  short shadedLane1;
-  short shadedLane2;
-  short shadedLane3;
   GraphicsTextureSourceAsset *panelTextureSource;
-  byte mm0PackedValue1ByteLane2;
-  byte mm0PackedValue0ByteLane2;
-  byte mm0PackedValue0ByteLane3;
-  byte mm0PackedValue0ByteLane1;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
   byte *planePixelCursor;
   FieldGridCell *fieldCell;
-  undefined8 mm0PackedValue0;
-  byte mm0PackedValue1ByteLane1;
-  byte mm0PackedValue1ByteLane3;
-  undefined8 mm0PackedValue1;
+  qword mm0PackedValue0;
+  qword mm0PackedValue1;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -794,7 +831,7 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
     do {
       if (fieldCell->waterSurfaceDelta < 1) {
         lightingLevelIndex = fieldCell->terrainHeight >> 7;
-        materialColorArgb = *(undefined4 *)
+        materialColorArgb = *(dword *)
                  (panelTextureSource[panelSubresourceIndex * 4 + 1].common.buildMetadata.assetRelativeAddressAnchor28 +
                  (fieldCell->flagsAndMaterial & FIELD_CELL_MATERIAL_ID_MASK) * 8 + -0x28);
         if (lightingLevelIndex < 0) {
@@ -806,33 +843,11 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
         else {
           lightingLevelIndex = 0xcf;
         }
-        mm0PackedValue0ByteLane3 = (byte)((uint)materialColorArgb >> 0x18);
-        mm0PackedValue0ByteLane2 = (byte)((uint)materialColorArgb >> 0x10);
-        mm0PackedValue0ByteLane1 = (byte)((uint)materialColorArgb >> 8);
+        /* PUNPCKLBW/PSRLW 3, PMULHW by the lighting level, PACKUSWB */
         mm0PackedValue0 =
-             pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 3,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
-                                                                          mm0PackedValue0ByteLane3),
-                                                                 mm0PackedValue0ByteLane2),
-                                                        CONCAT14(mm0PackedValue0ByteLane2,materialColorArgb)) >>
-                                              0x20) >> 3,
-                                      CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                        mm0PackedValue0ByteLane1) >> 3,
-                                               CONCAT11((char)materialColorArgb,(char)materialColorArgb) >> 3))),
+             pmulhw(TerrainColor_UnpackBytesShiftRight(materialColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        shadedLane0 = (short)mm0PackedValue0;
-        shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-        shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-        shadedLane3 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-        *(uint *)planePixelCursor =
-             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                      (0xff < shadedLane3),
-                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < shadedLane2),
-                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < shadedLane1),
-                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue0 -
-                                        (0xff < shadedLane0))));
+        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       else {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
@@ -848,33 +863,10 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane1(void
         else {
           lightingLevelIndex = 0xbf;
         }
-        mm0PackedValue1ByteLane3 = (byte)(waterColorArgb >> 0x18);
-        mm0PackedValue1ByteLane2 = (byte)(waterColorArgb >> 0x10);
-        mm0PackedValue1ByteLane1 = (byte)(waterColorArgb >> 8);
         mm0PackedValue1 =
-             pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3) >> 3,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue1ByteLane3,
-                                                                          mm0PackedValue1ByteLane3),
-                                                                 mm0PackedValue1ByteLane2),
-                                                        CONCAT14(mm0PackedValue1ByteLane2,waterColorArgb)) >>
-                                              0x20) >> 3,
-                                      CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
-                                                        mm0PackedValue1ByteLane1) >> 3,
-                                               CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
+             pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        shadedLane0 = (short)mm0PackedValue1;
-        shadedLane1 = (short)((ulonglong)mm0PackedValue1 >> 0x10);
-        shadedLane2 = (short)((ulonglong)mm0PackedValue1 >> 0x20);
-        shadedLane3 = (short)((ulonglong)mm0PackedValue1 >> 0x30);
-        *(uint *)planePixelCursor =
-             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue1 >> 0x30) -
-                      (0xff < shadedLane3),
-                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue1 >> 0x20) - (0xff < shadedLane2),
-                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue1 >> 0x10) - (0xff < shadedLane1),
-                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue1 -
-                                        (0xff < shadedLane0))));
+        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue1);
       }
       fieldCell = fieldCell + 1;
       planePixelCursor = planePixelCursor + 4;
@@ -901,36 +893,16 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
   AssetPackedDate tritiumColorArgb;
   AssetMagic soilColorArgb;
   PackedArgb32 waterColorArgb;
-  undefined4 existingPixelArgb;
-  short shadedLane0;
-  short shadedLane1;
-  short shadedLane2;
-  short shadedLane3;
+  dword existingPixelArgb;
   GraphicsTextureSourceAsset *panelTextureSource;
-  byte mm0PackedValue2ByteLane2;
-  byte mm0PackedValue3ByteLane2;
-  byte mm0PackedValue1ByteLane2;
-  byte mm0PackedValue1ByteLane1;
-  ushort blendedLane0;
-  byte mm0PackedValue0ByteLane2;
-  byte mm0PackedValue0ByteLane3;
-  byte mm0PackedValue1ByteLane3;
-  byte mm0PackedValue0ByteLane1;
   int lightingLevelIndex;
   AssetDimension columnsRemaining;
   byte *planePixelCursor;
   FieldGridCell *fieldCell;
-  ushort blendedLane1;
-  ushort blendedLane2;
-  undefined8 mm0PackedValue0;
-  byte mm0PackedValue2ByteLane1;
-  byte mm0PackedValue2ByteLane3;
-  byte mm0PackedValue3ByteLane1;
-  byte mm0PackedValue3ByteLane3;
-  undefined8 mm0PackedValue2;
-  undefined8 mm0PackedValue3;
-  undefined8 mm0PackedValue1;
-  ushort alphaOrBlendedLane3;
+  qword mm0PackedValue0;
+  qword mm0PackedValue2;
+  qword mm0PackedValue3;
+  qword mm0PackedValue1;
   AssetDimension rowsRemaining;
   
   panelTextureSource = g_InGamePanelTextureSource;
@@ -958,34 +930,10 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
           else {
             lightingLevelIndex = 0xcf;
           }
-          mm0PackedValue3ByteLane3 = (byte)(soilColorArgb >> 0x18);
-          mm0PackedValue3ByteLane2 = (byte)(soilColorArgb >> 0x10);
-          mm0PackedValue3ByteLane1 = (byte)(soilColorArgb >> 8);
           mm0PackedValue3 =
-               pmulhw(CONCAT26(CONCAT11(mm0PackedValue3ByteLane3,mm0PackedValue3ByteLane3) >> 3,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue3ByteLane3
-                                                                            ,
-                                                  mm0PackedValue3ByteLane3),mm0PackedValue3ByteLane2
-                                                  ),CONCAT14(mm0PackedValue3ByteLane2,soilColorArgb)) >>
-                                                0x20) >> 3,
-                                        CONCAT22(CONCAT11(mm0PackedValue3ByteLane1,
-                                                          mm0PackedValue3ByteLane1) >> 3,
-                                                 CONCAT11((char)soilColorArgb,(char)soilColorArgb) >> 3))),
+               pmulhw(TerrainColor_UnpackBytesShiftRight(soilColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          shadedLane0 = (short)mm0PackedValue3;
-          shadedLane1 = (short)((ulonglong)mm0PackedValue3 >> 0x10);
-          shadedLane2 = (short)((ulonglong)mm0PackedValue3 >> 0x20);
-          shadedLane3 = (short)((ulonglong)mm0PackedValue3 >> 0x30);
-          *(uint *)planePixelCursor =
-               CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue3 >> 0x30)
-                        - (0xff < shadedLane3),
-                        CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
-                                 (char)((ulonglong)mm0PackedValue3 >> 0x20) - (0xff < shadedLane2),
-                                 CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
-                                          (char)((ulonglong)mm0PackedValue3 >> 0x10) -
-                                          (0xff < shadedLane1),
-                                          (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue3 -
-                                          (0xff < shadedLane0))));
+          *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue3);
         }
         else {
           lightingLevelIndex = fieldCell->terrainHeight >> 7;
@@ -999,34 +947,10 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
           else {
             lightingLevelIndex = 0xcf;
           }
-          mm0PackedValue2ByteLane3 = (byte)(tritiumColorArgb >> 0x18);
-          mm0PackedValue2ByteLane2 = (byte)(tritiumColorArgb >> 0x10);
-          mm0PackedValue2ByteLane1 = (byte)(tritiumColorArgb >> 8);
           mm0PackedValue2 =
-               pmulhw(CONCAT26(CONCAT11(mm0PackedValue2ByteLane3,mm0PackedValue2ByteLane3) >> 3,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue2ByteLane3
-                                                                            ,
-                                                  mm0PackedValue2ByteLane3),mm0PackedValue2ByteLane2
-                                                  ),CONCAT14(mm0PackedValue2ByteLane2,tritiumColorArgb)) >>
-                                                0x20) >> 3,
-                                        CONCAT22(CONCAT11(mm0PackedValue2ByteLane1,
-                                                          mm0PackedValue2ByteLane1) >> 3,
-                                                 CONCAT11((char)tritiumColorArgb,(char)tritiumColorArgb) >> 3))),
+               pmulhw(TerrainColor_UnpackBytesShiftRight(tritiumColorArgb,3),
                       g_PackedLightingLookupTable[lightingLevelIndex]);
-          shadedLane0 = (short)mm0PackedValue2;
-          shadedLane1 = (short)((ulonglong)mm0PackedValue2 >> 0x10);
-          shadedLane2 = (short)((ulonglong)mm0PackedValue2 >> 0x20);
-          shadedLane3 = (short)((ulonglong)mm0PackedValue2 >> 0x30);
-          *(uint *)planePixelCursor =
-               CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue2 >> 0x30)
-                        - (0xff < shadedLane3),
-                        CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
-                                 (char)((ulonglong)mm0PackedValue2 >> 0x20) - (0xff < shadedLane2),
-                                 CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
-                                          (char)((ulonglong)mm0PackedValue2 >> 0x10) -
-                                          (0xff < shadedLane1),
-                                          (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue2 -
-                                          (0xff < shadedLane0))));
+          *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue2);
         }
       }
       else {
@@ -1041,33 +965,10 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         else {
           lightingLevelIndex = 0xcf;
         }
-        mm0PackedValue0ByteLane3 = (byte)(xeniteColorArgb >> 0x18);
-        mm0PackedValue0ByteLane2 = (byte)(xeniteColorArgb >> 0x10);
-        mm0PackedValue0ByteLane1 = (byte)(xeniteColorArgb >> 8);
         mm0PackedValue0 =
-             pmulhw(CONCAT26(CONCAT11(mm0PackedValue0ByteLane3,mm0PackedValue0ByteLane3) >> 3,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue0ByteLane3,
-                                                                          mm0PackedValue0ByteLane3),
-                                                                 mm0PackedValue0ByteLane2),
-                                                        CONCAT14(mm0PackedValue0ByteLane2,xeniteColorArgb)) >>
-                                              0x20) >> 3,
-                                      CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                        mm0PackedValue0ByteLane1) >> 3,
-                                               CONCAT11((char)xeniteColorArgb,(char)xeniteColorArgb) >> 3))),
+             pmulhw(TerrainColor_UnpackBytesShiftRight(xeniteColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        shadedLane0 = (short)mm0PackedValue0;
-        shadedLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-        shadedLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-        shadedLane3 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-        *(uint *)planePixelCursor =
-             CONCAT13((0 < shadedLane3) * (shadedLane3 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                      (0xff < shadedLane3),
-                      CONCAT12((0 < shadedLane2) * (shadedLane2 < 0x100) *
-                               (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < shadedLane2),
-                               CONCAT11((0 < shadedLane1) * (shadedLane1 < 0x100) *
-                                        (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < shadedLane1),
-                                        (0 < shadedLane0) * (shadedLane0 < 0x100) * (char)mm0PackedValue0 -
-                                        (0xff < shadedLane0))));
+        *(uint *)planePixelCursor = TerrainColor_PackWordsUnsignedSaturate(mm0PackedValue0);
       }
       if (0 < fieldCell->waterSurfaceDelta) {
         lightingLevelIndex = -fieldCell->waterSurfaceDelta >> 5;
@@ -1083,37 +984,14 @@ void __thandor_void_preserve_eax_ecx_edx TerrainCompositeTexture_FillPlane2(void
         else {
           lightingLevelIndex = 0xbf;
         }
-        existingPixelArgb = *(undefined4 *)planePixelCursor;
-        mm0PackedValue1ByteLane3 = (byte)(waterColorArgb >> 0x18);
-        mm0PackedValue1ByteLane2 = (byte)(waterColorArgb >> 0x10);
-        mm0PackedValue1ByteLane1 = (byte)(waterColorArgb >> 8);
-        alphaOrBlendedLane3 = (ushort)(((ulonglong)(byte)((uint)existingPixelArgb >> 0x18) << 0x38) >> 0x30);
+        existingPixelArgb = *(dword *)planePixelCursor;
         mm0PackedValue1 =
-             pmulhw(CONCAT26(CONCAT11(mm0PackedValue1ByteLane3,mm0PackedValue1ByteLane3) >> 3,
-                             CONCAT24((ushort)(CONCAT35(CONCAT21(CONCAT11(mm0PackedValue1ByteLane3,
-                                                                          mm0PackedValue1ByteLane3),
-                                                                 mm0PackedValue1ByteLane2),
-                                                        CONCAT14(mm0PackedValue1ByteLane2,waterColorArgb)) >>
-                                              0x20) >> 3,
-                                      CONCAT22(CONCAT11(mm0PackedValue1ByteLane1,
-                                                        mm0PackedValue1ByteLane1) >> 3,
-                                               CONCAT11((char)waterColorArgb,(char)waterColorArgb) >> 3))),
+             pmulhw(TerrainColor_UnpackBytesShiftRight(waterColorArgb,3),
                     g_PackedLightingLookupTable[lightingLevelIndex]);
-        blendedLane0 = (ushort)((short)mm0PackedValue1 + (ushort)(byte)existingPixelArgb) >> 1;
-        blendedLane1 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x10) +
-                         ((ushort)(((ulonglong)(byte)((uint)existingPixelArgb >> 8) << 0x18) >> 0x10) >> 8)) >>
-                 1;
-        blendedLane2 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x20) +
-                         ((ushort)(((ulonglong)CONCAT21(alphaOrBlendedLane3,(char)((uint)existingPixelArgb >> 0x10)) << 0x28)
-                                  >> 0x20) >> 8)) >> 1;
-        alphaOrBlendedLane3 = (ushort)((short)((ulonglong)mm0PackedValue1 >> 0x30) + (alphaOrBlendedLane3 >> 8)) >> 1;
+        /* PADDW with the existing pixel's bytes (PUNPCKLBW/PSRLW 8), PSRLW 1, PACKUSWB */
         *(uint *)planePixelCursor =
-             CONCAT13((alphaOrBlendedLane3 != 0) * (alphaOrBlendedLane3 < 0x100) * (char)alphaOrBlendedLane3 - (0xff < alphaOrBlendedLane3),
-                      CONCAT12((blendedLane2 != 0) * (blendedLane2 < 0x100) * (char)blendedLane2 - (0xff < blendedLane2),
-                               CONCAT11((blendedLane1 != 0) * (blendedLane1 < 0x100) * (char)blendedLane1 -
-                                        (0xff < blendedLane1),
-                                        (blendedLane0 != 0) * (blendedLane0 < 0x100) * (char)blendedLane0 -
-                                        (0xff < blendedLane0))));
+             TerrainColor_PackWordsUnsignedSaturate
+                       (TerrainColor_AverageWordsWithPixelBytes(mm0PackedValue1,existingPixelArgb));
       }
       fieldCell = fieldCell + 1;
       planePixelCursor = planePixelCursor + 4;

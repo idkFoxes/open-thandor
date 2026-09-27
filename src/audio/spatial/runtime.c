@@ -105,7 +105,7 @@ SpatialSound_PlayPositionedOneShot
     if ((distanceOrPannedGain < maximumDistanceQ12) &&
        (scaledProduct = (longlong)
                 g_FixedCosQ28
-                [(int)(CONCAT44(distanceOrPannedGain >> 0x12,distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
+                [(int)(((ulonglong)distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
                 (longlong)(int)volumeOrRightGainQ15,
        volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
       if (azimuthOrLeftGainQ15 < 0x8000) {
@@ -171,7 +171,7 @@ SpatialSound_UpdateDesiredPositionedGains
     if ((distanceOrPannedGain < maximumDistanceQ12) &&
        (scaledProduct = (longlong)
                 g_FixedCosQ28
-                [(int)(CONCAT44(distanceOrPannedGain >> 0x12,distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
+                [(int)(((ulonglong)distanceOrPannedGain << 0xe) / (ulonglong)maximumDistanceQ12)] *
                 (longlong)(int)volumeOrRightGainQ15,
        volumeOrRightGainQ15 = (int)((ulonglong)scaledProduct >> 0x20) << 4 | (uint)scaledProduct >> 0x1c, 0x100 < (int)volumeOrRightGainQ15)) {
       if (azimuthOrLeftGainQ15 < 0x8000) {

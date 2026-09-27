@@ -10,6 +10,12 @@
 
 /* Implementation ownership: gameplay/input/world. */
 
+/* Entries of g_InGamePointerModeHandlers (InGameSelection_ApplyType16MarkerCoordinatesVariant1/2,
+   SelectionMarkerCoordinates_ApplyType3..7): four stack arguments, RET 0x10. */
+typedef void InGamePointerModeHandler
+          (SelectionMarkerIndex selectionIndex,SelectionMarkerCoordinateValue32 valueC,
+          SelectionMarkerCoordinateValue32 valueB,SelectionMarkerCoordinateValue32 valueA);
+
 /* Address: 0x0056D2D0.
    Ownership: gameplay/input/world.
    Purpose: Handles targeting-context state 7 or 0x1B. State 0x1B delegates to the cancellation handler. State 7
@@ -131,8 +137,10 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
   uint modifierModeMask;
   GameEntityRuntime *entry;
   bool testResult;
+  bool classifySelectedState;
   ModelRuntimeScaleRatioRegisterPairQ12 scaleRatio;
-  
+
+  classifySelectedState = false;
   g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = 0x7fffffff;
   (inGameRuntime->selection).selectedEntity = (GameEntityRuntime *)0x0;
   if (((inGameRuntime->interaction).interactionFlags48 & 8) != 0) {
@@ -196,8 +204,8 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
     g_InGameCommandPreviewWorldYQ12 = pointerValue2;
     g_InGameCommandPreviewWorldXQ12 = pointerValue1;
     g_InGameCommandPreviewSurfaceHeightQ12OrSentinel = pointerValue0;
-    g_InGameCommandPreviewArmyAssetId = *(undefined4 *)((modifierModeMask & cursorOrVariantMask) * 4 + THANDOR_ADDR(g_InGamePointerModePreviewArmyIds,0));
-    return *(dword *)((modifierModeMask & cursorOrVariantMask) * 4 + THANDOR_ADDR(g_InGamePointerModeCommandIds,0));
+    g_InGameCommandPreviewArmyAssetId = g_InGamePointerModePreviewArmyIds[modifierModeMask & cursorOrVariantMask];
+    return g_InGamePointerModeCommandIds[modifierModeMask & cursorOrVariantMask];
   }
   if ((inGameRuntime->runtimeFlags & 0x80) != 0) {
     return 0;
@@ -213,22 +221,14 @@ dword InGameWorldInput_ResolveContextActionAndCursorCf
   if (candidateNode != (WorldOwnerListNode100 *)0x0) {
     (inGameRuntime->selection).selectedEntity = entry;
   }
+  /* Ownership cursor used by several paths: 0 without a candidate, 0x15 for an own and 0x16 for a foreign
+     candidate. */
   testResult = SelectionInfo_HasAnyEntryCf();
-  if (!testResult) {
-InGameWorldInput_ReturnCandidateOwnershipCursor:
-    cursorOrVariantMask = 0;
-    if ((candidateNode != (WorldOwnerListNode100 *)0x0) &&
-       (cursorOrVariantMask = 0x15, ownerIndex != (entry->common).ownership.ownerIndex)) {
-      cursorOrVariantMask = 0x16;
-    }
-    return cursorOrVariantMask;
-  }
-  testResult = SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex);
-  if (testResult) {
+  if ((!testResult) || (SelectionInfo_AllEntriesEmptyOrMatchOwnerCf(ownerIndex))) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
       return 0;
     }
-    goto InGameWorldInput_ReturnCandidateOwnershipCursor;
+    return (ownerIndex != (entry->common).ownership.ownerIndex) ? 0x16 : 0x15;
   }
   if ((g_KeyboardStateMask & 0xc) == 0) {
     if (candidateNode == (WorldOwnerListNode100 *)0x0) {
@@ -247,46 +247,45 @@ InGameWorldInput_ReturnCandidateOwnershipCursor:
       return 0x17;
     }
     if ((g_KeyboardStateMask & 0x33) != 0) {
-InGameWorldInput_ReturnModifiedCandidateCursor:
-      if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-        return 0;
-      }
-      if (ownerIndex == (entry->common).ownership.ownerIndex) {
-        return 0x15;
-      }
-      return 0x16;
+      return (ownerIndex == (entry->common).ownership.ownerIndex) ? 0x15 : 0x16;
     }
     testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
     if (testResult) {
       testResult = GameFactionRuntime_TestCapabilityBitClearCf
                         ((entry->common).ownership.ownerIndex,ownerIndex);
-      if (testResult) goto InGameWorldInput_ClassifySelectedStateCommand;
-      goto InGameWorldInput_ReturnCandidateOwnerCursor;
+      if (!testResult) {
+        return (ownerIndex != (entry->common).ownership.ownerIndex) ? 0x16 : 0x15;
+      }
+      classifySelectedState = true;
     }
   }
   else {
-    if ((g_KeyboardStateMask & 0x33) != 0) goto InGameWorldInput_ReturnModifiedCandidateCursor;
-    testResult = SelectionInfo_TestAnyStateField100NonnegativeCf();
-    if (testResult) {
-InGameWorldInput_ClassifySelectedStateCommand:
-      testResult = SelectionInfo_TestAllStateField100NonpositiveCf();
-      if (testResult) {
+    if ((g_KeyboardStateMask & 0x33) != 0) {
+      if (candidateNode == (WorldOwnerListNode100 *)0x0) {
         return 0;
       }
-      if (candidateNode == (WorldOwnerListNode100 *)0x0) {
-        return 0x19;
-      }
-      testResult = GameFactionRuntime_TestCapabilityBitClearCf
-                        ((entry->common).ownership.ownerIndex,ownerIndex);
-      if (testResult) {
-        return 0x19;
-      }
-      testResult = SelectionInfo_FindEntryCf(entry);
-      if (testResult) {
-        return 0x1a;
-      }
+      return (ownerIndex == (entry->common).ownership.ownerIndex) ? 0x15 : 0x16;
+    }
+    classifySelectedState = SelectionInfo_TestAnyStateField100NonnegativeCf();
+  }
+  if (classifySelectedState) {
+    testResult = SelectionInfo_TestAllStateField100NonpositiveCf();
+    if (testResult) {
       return 0;
     }
+    if (candidateNode == (WorldOwnerListNode100 *)0x0) {
+      return 0x19;
+    }
+    testResult = GameFactionRuntime_TestCapabilityBitClearCf
+                      ((entry->common).ownership.ownerIndex,ownerIndex);
+    if (testResult) {
+      return 0x19;
+    }
+    testResult = SelectionInfo_FindEntryCf(entry);
+    if (testResult) {
+      return 0x1a;
+    }
+    return 0;
   }
   if (candidateNode == (WorldOwnerListNode100 *)0x0) {
     return 0;
@@ -304,11 +303,7 @@ InGameWorldInput_ClassifySelectedStateCommand:
     }
     return 0;
   }
-InGameWorldInput_ReturnCandidateOwnerCursor:
-  if (ownerIndex != (entry->common).ownership.ownerIndex) {
-    return 0x16;
-  }
-  return 0x15;
+  return (ownerIndex != (entry->common).ownership.ownerIndex) ? 0x16 : 0x15;
 }
 
 
@@ -367,17 +362,17 @@ InGameWorldInput_BeginPointerCaptureCf
             return;
           }
           g_InGameCommandPointerCaptureX =
-               *(undefined4 *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 4);
           g_InGameCommandPointerCaptureY =
-               *(undefined4 *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+               *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 8);
           g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x80;
         }
       }
       else {
         g_InGamePlacementPointerCaptureX =
-             *(undefined4 *)(inGameRuntime[1].interaction.reserved00_47 + 4);
+             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 4);
         g_InGamePlacementPointerCaptureY =
-             *(undefined4 *)(inGameRuntime[1].interaction.reserved00_47 + 8);
+             *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 8);
       }
     }
     else {
@@ -413,7 +408,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
   int countOrOwnerOrDelta;
   uint deltaY;
   InGameCommandPayloadTripletValue32 payloadValue;
-  undefined4 *clearCursor;
+  dword *clearCursor;
   WorldOwnerListNode100 *runtimeNode;
   CommandPayloadDword04 *tripletCursor;
   bool testResult;
@@ -449,7 +444,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
           }
         }
         else {
-          clearCursor = (undefined4 *)&g_InGameSelectionInsertTripletDwords;
+          clearCursor = (dword *)&g_InGameSelectionInsertTripletDwords;
           for (countOrOwnerOrDelta = 0x1a; countOrOwnerOrDelta != 0; countOrOwnerOrDelta = countOrOwnerOrDelta + -1) {
             *clearCursor = 0;
             clearCursor = clearCursor + 1;
@@ -540,7 +535,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
           /* The original adds the horizontal mouse delta since capture (computed before snapping the
              pointer back) - not the pointer function's return value. */
           countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGameCommandPointerCaptureX;
-          (*(code *)g_PointerSetPosition)(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
+          g_PointerSetPosition(g_InGameCommandPointerCaptureY,g_InGameCommandPointerCaptureX);
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 + countOrOwnerOrDelta * 0x40;
           g_InGameCommandPreviewHeading16 = g_InGameCommandPreviewHeading16 & 0xffff;
         }
@@ -557,7 +552,7 @@ InGameWorldInput_UpdateDragSelectionAndCameraCf
         /* The original adds the horizontal mouse delta since capture (computed before snapping the
            pointer back) - not the pointer function's return value. */
         countOrOwnerOrDelta = *(sdword *)(inGameRuntime[1].interaction.reserved00_47 + 0xc) - g_InGamePlacementPointerCaptureX;
-        (*(code *)g_PointerSetPosition)(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
+        g_PointerSetPosition(g_InGamePlacementPointerCaptureY,g_InGamePlacementPointerCaptureX);
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 + countOrOwnerOrDelta * 0x40;
         g_InGamePlacementHeading16 = g_InGamePlacementHeading16 & 0xffff;
       }
@@ -594,7 +589,7 @@ InGameWorldInput_CommitPointerActionCf
           WorldOwnerListNode100 *candidateNode,WorldRuntimeContext *inGameRuntime)
 
 {
-  code *modeHandler;
+  InGamePointerModeHandler *modeHandler;
   dword variantMaskOrSurfaceHeight;
   CommandPayloadDword04 payloadDword0C;
   uint modifierModeMask;
@@ -643,10 +638,13 @@ InGameWorldInput_CommitPointerActionCf
       }
       variantMaskOrSurfaceHeight = SelectionInfo_CollectAttachmentEffectVariantMask();
       if ((modifierModeMask & variantMaskOrSurfaceHeight) != 0) {
-        modeHandler = *(code **)((modifierModeMask & variantMaskOrSurfaceHeight) * 4 + THANDOR_ADDR(g_InGamePointerModeHandlers,0)); /* TODO: absolute handler table in thandor.exe */
+        modeHandler = (InGamePointerModeHandler *)
+                      g_InGamePointerModeHandlers[modifierModeMask & variantMaskOrSurfaceHeight];
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
-          (*modeHandler)(g_LocalPlayerRuntimeId);
+          /* The original pushes the same four arguments as the networked command below, with the local player
+             id in place of the command id. */
+          modeHandler(g_LocalPlayerRuntimeId,g_InGameCommandPreviewHeading16,pointerValue1,pointerValue2);
         }
         else {
           InGameCommandQueue_AppendLocalPlayerCommand
@@ -865,24 +863,22 @@ InGameCameraCommand_DispatchByCodeAndModifierFlagsCf
   bookmark3PackedAngles = g_LevelCameraBookmark3PackedHeadingLow16PitchHigh16;
   bookmark2PackedAngles = g_LevelCameraBookmark2PackedHeadingLow16PitchHigh16;
   bookmark1PackedAngles = g_LevelCameraBookmark1PackedHeadingLow16PitchHigh16;
+  /* First record with this key whose modifier requirement matches: a record without required modifiers only
+     matches when none of the 0x3C modifiers is held. The key-code 0 record terminates the table. */
   nextRecord = &g_InGameCameraCommandDispatchRecords16;
-  do {
-    while( true ) {
-      do {
-        currentRecord = nextRecord;
-        recordKeyCode = currentRecord->records[0].keyCode;
-        requiredModifiers = currentRecord->records[0].requiredModifierMask;
-        if (recordKeyCode == 0) {
-          return;
-        }
-        nextRecord = (InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
-      } while (recordKeyCode != commandCode);
-      if (requiredModifiers == 0) break;
-      if ((modifierFlags & requiredModifiers) != 0) goto override_jmp_0056f276_switch;
+  while( true ) {
+    currentRecord = nextRecord;
+    recordKeyCode = currentRecord->records[0].keyCode;
+    requiredModifiers = currentRecord->records[0].requiredModifierMask;
+    if (recordKeyCode == 0) {
+      return;
     }
-  } while ((modifierFlags & 0x3c) != 0);
-override_jmp_0056f276_switch:
-                    // WARNING: Switch is manually overridden
+    nextRecord = (InGameCameraCommandDispatchTable *)(currentRecord->records + 1);
+    if (recordKeyCode != commandCode) continue;
+    if ((requiredModifiers == 0) ? ((modifierFlags & 0x3c) == 0) : ((modifierFlags & requiredModifiers) != 0))
+    break;
+  }
+  /* The original jumps to the record's continuation address; the cases are those addresses. */
   switch(currentRecord->records[0].continuationEntryAddress) {
   case 0x56f360:
     WorldRuntime_SetPosition60AndDistanceFromPosition80

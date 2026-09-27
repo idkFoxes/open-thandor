@@ -198,13 +198,12 @@ AiCombatTarget_SelectBestCandidate
              (((candidateEntityRuntime->common).runtimeFlags & 0x400) == 0)) &&
             (((candidateEntityRuntime->common).runtimeFlags & 8) == 0)) &&
            (classIndexOrFaction = candidateArmyRuntime->factionIndex, classIndexOrFaction != 0)) {
-          if (sourceClassCount < 1) {
-            if ((classIndexOrFaction == sourceArmyRuntime->factionIndex) &&
-               (sourceArmyRuntime != candidateArmyRuntime))
-            goto AiCombatTarget_SelectBestCandidate_EvaluateRelationEligibleCandidateAndUpdateBest;
-          }
-          else if (classIndexOrFaction != sourceArmyRuntime->factionIndex) {
-AiCombatTarget_SelectBestCandidate_EvaluateRelationEligibleCandidateAndUpdateBest:
+          /* Non-positive class counts look for other armies of the own faction, positive ones for armies
+             of other factions. */
+          if ((sourceClassCount < 1) ?
+              ((classIndexOrFaction == sourceArmyRuntime->factionIndex) &&
+               (sourceArmyRuntime != candidateArmyRuntime)) :
+              (classIndexOrFaction != sourceArmyRuntime->factionIndex)) {
             if (((candidateArmyRuntime->terrainOccupancyMask0 &
                  2 << ((char)sourceFactionIndex * '\x02' & 0x1fU)) != 0) &&
                (candidateScore =

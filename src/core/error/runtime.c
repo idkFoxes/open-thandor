@@ -85,7 +85,7 @@ FatalErrorRuntime_DispatchPendingErrorCf(dword errorOrValue,bool carryIn)
   UiRootNode *uiRootTemplate;
   word *stream;
   int remainingDwords;
-  undefined4 *templateImageCursor;
+  dword *templateImageCursor;
   UiRootNode *templateCopyCursor;
   RichTextExtentRegs wrappedExtent;
   FatalErrorEaxCf5 passThroughResult;

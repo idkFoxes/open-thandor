@@ -43,7 +43,8 @@ void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitT
   g_UiTransferMailboxTickCounter = g_UiTransferMailboxTickCounter + 1;
   lockBusy = (*g_SpinLockTryAcquire)(&g_UiRuntimeRecordRingLock);
   if (!lockBusy) {
-UiTransferMailbox_ReleaseRingLockAndReturn:
+    /* Receive loop: every handled (or rejected) record jumps back here until the backend has no more data. */
+UiTransferMailbox_ReceiveNextRecord:
     slotIndexOrByteCount = g_UiRuntimeRecordWriteIndex;
     ringRecord = g_UiRuntimeRecordRing + g_UiRuntimeRecordWriteIndex;
     nextIndexOrChunkSize = g_UiRuntimeRecordWriteIndex + 1;
@@ -79,7 +80,7 @@ UiTransferMailbox_ReleaseRingLockAndReturn:
             if (g_UiTransferMailbox.receivedAllocation != (void *)0x0) {
               if (g_UiTransferMailbox.receivedAllocation == (void *)0xffffffff) {
                 allocResult = (*g_MemoryApi.alloc)(slotIndexOrByteCount);
-                if (allocResult.carry) goto UiTransferMailbox_ReleaseRingLockAndReturn;
+                if (allocResult.carry) goto UiTransferMailbox_ReceiveNextRecord;
                 counterOrOffset = 0;
                 g_UiTransferMailbox.receivedAllocation = (void *)allocResult.eax;
                 g_UiTransferMailbox.receivedByteCount = slotIndexOrByteCount;
@@ -130,7 +131,7 @@ UiTransferMailbox_ReleaseRingLockAndReturn:
                     (playerRecord->endpoint).ipv4AddressNetworkOrder))) {
               playerRecord = playerRecord + 1;
               playersRemaining = playersRemaining - 1;
-              if (playersRemaining == 0) goto UiTransferMailbox_ReleaseRingLockAndReturn;
+              if (playersRemaining == 0) goto UiTransferMailbox_ReceiveNextRecord;
             }
             auxiliaryEndpointRecord->transferTimeoutTicks =
                  auxiliaryEndpointRecord->transferTimeoutTicks + 0x40;
@@ -163,7 +164,7 @@ UiTransferMailbox_ReleaseRingLockAndReturn:
           }
         }
         else if ((ringRecord->packetHeader).packedTypeAndUnitCount == FRONTEND_PACKET_10032) {
-          g_UiTransferMailboxReplyPacket10033EchoedTick = *(undefined4 *)ringRecord->payload10_FF;
+          g_UiTransferMailboxReplyPacket10033EchoedTick = *(dword *)ringRecord->payload10_FF;
           g_UiTransferMailboxReplyPacket10033 = 0x10033;
           g_UiTransferMailboxReplyPacket10033SequenceToken = g_UiTransferSequenceToken;
           UiTransfer_StagePacketAndSendCf
@@ -204,7 +205,7 @@ UiTransferMailbox_ReleaseRingLockAndReturn:
           }
         }
       }
-      goto UiTransferMailbox_ReleaseRingLockAndReturn;
+      goto UiTransferMailbox_ReceiveNextRecord;
     }
     if (((g_UiTransferMailbox.receiveRetryTicks != 0) &&
         (g_UiTransferMailbox.receiveRetryTicks = g_UiTransferMailbox.receiveRetryTicks - 1,
@@ -316,7 +317,7 @@ FrontendTransfer_HandleHostSessionAndCommandBatchPackets
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
         if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -362,7 +363,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
   int copyCount;
   FrontendPlayerRuntimeRecord *nextPlayerCursor;
   FrontendTransferPacketUnion *packetCursor;
-  undefined4 *previewSourceCursor;
+  dword *previewSourceCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   byte *chunkDestinationCursor;
   TextResourceResolveEaxCf5 resolvedText;
@@ -385,7 +386,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
       commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
       if (commandHandlerIndex != 0) {
         if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
                     ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
                      (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
@@ -469,7 +470,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
     g_FrontendPacket8000ABuffer.snapshotChunkOffset =
          (packet->packet10009SnapshotChunkRequest).snapshotChunkOffset;
     chunkDestinationCursor = g_FrontendPacket8000ABuffer.packet10009Buffer;
-    previewSourceCursor = (undefined4 *)
+    previewSourceCursor = (dword *)
              (g_FrontendLocalPlayerPcxPreview + g_FrontendPacket8000ABuffer.snapshotChunkOffset);
     g_FrontendPacket8000ABuffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_8000A;
     copyCount = 0x3a;
@@ -477,7 +478,7 @@ FrontendTransfer_HandleGameplayCommandAndRosterPacketsCf
       copyCount = 0x38;
     }
     for (; copyCount != 0; copyCount = copyCount + -1) {
-      *(undefined4 *)chunkDestinationCursor = *previewSourceCursor;
+      *(dword *)chunkDestinationCursor = *previewSourceCursor;
       previewSourceCursor = previewSourceCursor + 1;
       chunkDestinationCursor = chunkDestinationCursor + 4;
     }
@@ -595,7 +596,7 @@ bool __thandor_cf_preserve_ecx_edx UiTransfer_SendPlayerDescriptorPacket20002Cf(
     nameSourceCursor = nameSourceCursor + 1;
     payloadCursor = payloadCursor + 1;
   }
-  *(undefined2 *)((int)payloadCursor + -2) = 0;
+  *(word *)((int)payloadCursor + -2) = 0;
   callCarry = PcxPreview_Load64x64PaletteAndPixelsCf
                     (g_FrontendLocalPlayerPcxPreview,g_FrontendLocalPlayerNameUtf16);
   if (!callCarry) {
@@ -735,7 +736,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
           commandHandlerIndex = packedCommand >> 8;
           if (commandHandlerIndex != 0) {
             if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-              (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+              (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
                         (packedCommand & 0xff,(commandRecordCursor->command).payloadDword0C,
                          (commandRecordCursor->command).payloadDword08,(commandRecordCursor->command).payloadDword04);
             }
@@ -788,6 +789,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     endpointCursor = (UiTransferEndpointDescriptor *)&endpointCursor->ipv4AddressNetworkOrder;
     joiningPlayerRecordDwordCursor = joiningPlayerRecordDwordCursor + 1;
   }
+  /* Smallest player runtime id below 0xFF that no current player uses (0xFF when all are taken). */
   countFlagsOrId = 0;
   rootNodeOrCount = g_FrontendPlayerRuntimeCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
@@ -795,18 +797,13 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
     while (countFlagsOrId != playerRecord->playerRuntimeId) {
       rootNodeOrCount = rootNodeOrCount + -1;
       playerRecord = playerRecord + 1;
-      if (rootNodeOrCount == 0)
-      goto 
-      FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets_InitializeJoiningPlayerRecordWithNextAvailableId
-      ;
+      if (rootNodeOrCount == 0) goto FrontendTransfer_InitializeJoiningPlayerWithFreeId;
     }
     countFlagsOrId = countFlagsOrId + 1;
     rootNodeOrCount = g_FrontendPlayerRuntimeCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
   } while (countFlagsOrId < 0xff);
-
-  FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets_InitializeJoiningPlayerRecordWithNextAvailableId
-  :
+FrontendTransfer_InitializeJoiningPlayerWithFreeId:
   descriptorStatusBits = *(ushort *)((int)joiningPlayerRecordDwordCursor + -0x12);
   *joiningPlayerRecordDwordCursor = 1;
   joiningPlayerRecordDwordCursor[-0xf] = countFlagsOrId;
@@ -823,7 +820,7 @@ FrontendTransfer_HandleLobbyDiscoveryAndPlayerPackets
   if ((descriptorStatusBits & 0x100) != 0) {
     joiningPlayerRecordDwordCursor[10] = 0x440043;
   }
-  *(undefined2 *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
+  *(word *)((int)joiningPlayerRecordDwordCursor + -0x12) = 0;
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,*(sdword *)(frontendRuntime + 0x5640),
              (word *)&g_FrontendNetworkRuntimeCountTextUtf16);
@@ -888,9 +885,9 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
                       (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,
                        peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x136].addressHeader.packedFamilyAndPort << 2,
                        g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16);
-    *(undefined4 *)((int)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength) =
-         0x73006d;
-    *(undefined2 *)((int)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength + 4) = 0;
+    *(dword *)((int)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength) =
+         0x73006d; /* L"ms" */
+    *(word *)((int)g_FrontendPacket40008Buffer.selectedPlayerStatusTextUtf16 + roundRobinOrTextLength + 4) = 0;
     descriptorSourceCursor = peerEndpointCursor[selectedIndexOrPackedCommand * 0x13b + -0x13e].zeroPadding;
     descriptorDestinationCursor = g_FrontendPacket40008Buffer.playerDescriptorPayload;
     for (dwordCount = 10; dwordCount != 0; dwordCount = dwordCount + -1) {
@@ -947,7 +944,7 @@ FrontendTransfer_PublishHostSessionAndDispatchQueuedCommands
       commandHandlerIndex = selectedIndexOrPackedCommand >> 8;
       if (commandHandlerIndex != 0) {
         if (THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&g_FrontendRootNode) {
-          (*(code *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
+          (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(FrontendCommandQueue_EnqueueLocalPlayerCommand, commandHandlerIndex))
                     (selectedIndexOrPackedCommand & 0xff,(commandRecordCursor->command).payloadDword0C,(commandRecordCursor->command).payloadDword08,
                      (commandRecordCursor->command).payloadDword04);
         }
@@ -999,7 +996,6 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
   FrontendPlayerRuntimeBlockCount peersRemaining;
   int remainingOrBatchCount;
   int dwordCount;
-  FrontendPlayerRuntimeBlockCount recordsRemaining;
   FrontendCommandPacketRecord *commandRecordCursor;
   UiTransferEndpointDescriptor *peerEndpointCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
@@ -1044,39 +1040,41 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
   commandRecordCursor = g_FrontendClientPlayerCommandRecords;
   batchCursor = g_FrontendClientCommandBatchPacketBuffer;
   peersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  /* Pack every non-empty 0x20-byte command record into the batch. */
   do {
-    recordsRemaining = peersRemaining;
     if (((commandRecordCursor->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
       commandRecordCursor = commandRecordCursor + 1;
-      goto 
-      FrontendTransfer_BroadcastPendingCommandBatchAndSyncState_AdvanceAfterCommandRecordCopyOrSkip;
     }
-    while( true ) {
+    else {
       for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
         (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
         commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
         batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
       }
       remainingOrBatchCount = remainingOrBatchCount + 1;
-FrontendTransfer_BroadcastPendingCommandBatchAndSyncState_AdvanceAfterCommandRecordCopyOrSkip:
-      peersRemaining = recordsRemaining - 1;
-      if (recordsRemaining - 1 != 0) break;
-      if (remainingOrBatchCount << 0x10 != 0) {
-        g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
-             remainingOrBatchCount << 0x10 | 0x20;
-        peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
-        peersRemaining = g_FrontendPlayerRuntimeBlockCount;
-        while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
-          UiTransfer_StagePacketAndSendCf
-                    (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
-          peerEndpointCursor = peerEndpointCursor + 0x13b;
-        }
-        return false;
-      }
-      commandRecordCursor = g_FrontendClientPlayerCommandRecords;
-      remainingOrBatchCount = 0;
     }
-  } while( true );
+    peersRemaining = peersRemaining - 1;
+  } while (peersRemaining != 0);
+  if (remainingOrBatchCount << 0x10 == 0) {
+    /* Nothing pending: send the first record (the local one) as a batch of one. */
+    commandRecordCursor = g_FrontendClientPlayerCommandRecords;
+    for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+      (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
+      commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
+      batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
+    }
+    remainingOrBatchCount = 1;
+  }
+  g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
+       remainingOrBatchCount << 0x10 | 0x20;
+  peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
+  peersRemaining = g_FrontendPlayerRuntimeBlockCount;
+  while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
+    UiTransfer_StagePacketAndSendCf
+              (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
+    peerEndpointCursor = peerEndpointCursor + 0x13b;
+  }
+  return false;
 }
 
 
@@ -1125,8 +1123,6 @@ UiTransferMailboxReceivedEaxEcxCf9 __thandor_eax_ecx_cf_preserve_edx
 UiTransferMailbox_GetReceivedBufferCf(void)
 
 {
-  undefined4 in_EAX = 0; /* unavailable (CF set): EAX/ECX untouched; callers use them only with CF clear */
-  undefined4 in_ECX = 0; /* see in_EAX */
   UiTransferMailboxReceivedEaxEcxCf9 receivedResult;
   UiTransferMailboxReceivedEaxEcxCf9 unavailableResult;
   
@@ -1138,8 +1134,10 @@ UiTransferMailbox_GetReceivedBufferCf(void)
     receivedResult.carry = false;
     return receivedResult;
   }
-  unavailableResult.ecx = in_ECX;
-  unavailableResult.eax = in_EAX;
+  /* Unavailable (CF set): the asm leaves the caller's EAX/ECX untouched; every caller reads them only with
+     CF clear. */
+  unavailableResult.ecx = 0;
+  unavailableResult.eax = 0;
   unavailableResult.carry = true;
   return unavailableResult;
 }
@@ -1181,7 +1179,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
   int remainingCount;
   FrontendSessionDiscoveryRecordB0 **sessionRowCursor;
   dword *sessionDiscoveryRecordDwordCursor;
-  undefined4 *playerRowCursor;
+  dword *playerRowCursor;
   
   remainingCount = *(int *)(frontendRuntime + 0x4bbc);
   if ((packet->packet10000Handshake).header.packedTypeAndUnitCount ==
@@ -1194,18 +1192,16 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets
            header.sequenceToken) &&
          (senderEndpoint->ipv4AddressNetworkOrder ==
           (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->senderEndpoint).
-          ipv4AddressNetworkOrder))
-      goto 
-      FrontendTransfer_HandleSessionListAndJoinAckPackets_UpdateOrAppendSessionAdvertisementAndRefreshList
-      ;
+          ipv4AddressNetworkOrder)) break;
       sessionRowCursor = sessionRowCursor + 1;
       sessionDiscoveryRecordDwordCursor = (dword *)((int)sessionDiscoveryRecordDwordCursor + 0xb0);
     }
-    if (*(uint *)(frontendRuntime + 0x4bbc) < 0x20) {
-      *sessionRowCursor = (FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor;
-      *(int *)(frontendRuntime + 0x4bbc) = *(int *)(frontendRuntime + 0x4bbc) + 1;
-FrontendTransfer_HandleSessionListAndJoinAckPackets_UpdateOrAppendSessionAdvertisementAndRefreshList
-      :
+    /* Update the known session in place, or append it while the list has fewer than 0x20 rows. */
+    if ((remainingCount != 0) || (*(uint *)(frontendRuntime + 0x4bbc) < 0x20)) {
+      if (remainingCount == 0) {
+        *sessionRowCursor = (FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor;
+        *(int *)(frontendRuntime + 0x4bbc) = *(int *)(frontendRuntime + 0x4bbc) + 1;
+      }
       (packet->packet10000Handshake).protocolMagic2931 = 0x20;
       for (remainingCount = 0x28; remainingCount != 0; remainingCount = remainingCount + -1) {
         (((FrontendSessionDiscoveryRecordB0 *)sessionDiscoveryRecordDwordCursor)->advertisement).
@@ -1237,7 +1233,7 @@ FrontendTransfer_HandleSessionListAndJoinAckPackets_UpdateOrAppendSessionAdverti
     g_FrontendNetworkState = 3;
     g_SessionTransferTimeoutTicks = 0x40;
     g_SessionNetworkRoleFlags = g_SessionNetworkRoleFlags | SESSION_NETWORK_ROLE_CLIENT;
-    playerRowCursor = (undefined4 *)g_FrontendPlayerListRows;
+    playerRowCursor = (dword *)g_FrontendPlayerListRows;
     for (remainingCount = 0x100; remainingCount != 0; remainingCount = remainingCount + -1) {
       *playerRowCursor = 0;
       playerRowCursor = playerRowCursor + 1;
@@ -1371,7 +1367,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
     if (commandHandlerIndex != 0) {
       if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd)
       {
-        (*(code *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex))
+        (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex))
                   (packedCommand & 0xff,(commandRecord->command).payloadDword0C,(commandRecord->command).payloadDword08,
                    (commandRecord->command).payloadDword04);
       }

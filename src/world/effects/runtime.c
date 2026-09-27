@@ -178,17 +178,19 @@ void __thandor_void_preserve_eax_ecx_edx EffectRuntime_RebaseSlotsAfterLoad(void
       (effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.owner.modelNode = ownerModelNode;
       registryCursor = g_EffectDefinitionRegistry;
       registrySlotsRemaining = 0x100;
-      do {
+      for (;;) {
         registryDefinition = *registryCursor;
         if ((registryDefinition != (EffectDefinition *)0x0) &&
            ((effectSlot->definitionOrSavedId).definition ==
-            (EffectDefinition *)registryDefinition->definitionId))
-        goto EffectRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance;
+            (EffectDefinition *)registryDefinition->definitionId)) break;
         registryCursor = registryCursor + 1;
         registrySlotsRemaining = registrySlotsRemaining + -1;
-      } while (registrySlotsRemaining != 0);
-      (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
-EffectRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance:
+        if (registrySlotsRemaining == 0) {
+          /* saved definition no longer registered: drop the effect (definition = last registry entry) */
+          (effectSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+          break;
+        }
+      }
       (effectSlot->definitionOrSavedId).definition = registryDefinition;
     }
     effectSlot = effectSlot + 1;
@@ -233,11 +235,10 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   EffectShadingCountdownTicks shadingStartTicks;
   EffectShadingCountdownTicks shadingStopTicks;
   DirectSoundVoiceSet **voiceSetRef;
-  EffectRuntimeSlot *poolOrSlotsRemaining;
   EffectModelRuntimeNodeClassView100 *effectModelNode;
   dword randomOrRuntimeValue;
   GraphicsTextureSet *chosenTextureSet;
-  EffectRuntimeSlot *slotsRemaining;
+  int slotsRemaining;
   GraphicsPaletteAsset *chosenPalette;
   EffectRuntimeSlot *effectRuntimeCursor;
   bool projectedCellMasked;
@@ -251,23 +252,21 @@ EffectRuntimePool_CreateInstanceFromDefinitionCf
   char runtimeClassIndex;
   uint soundTableIndex;
   
-  effectModelNode = (EffectModelRuntimeNodeClassView100 *)0x14;
-  slotsRemaining = (EffectRuntimeSlot *)0x1000;
+  effectModelNode = (EffectModelRuntimeNodeClassView100 *)0x14; /* error code: no free slot */
   effectRuntimeCursor = g_EffectRuntimeSlots;
-  poolOrSlotsRemaining = g_EffectRuntimeSlots;
   if (effectDefinition == (EffectDefinition *)0x0) {
-EffectRuntimePool_CreateInstance_ReturnEffectSlotResult:
+    /* the original returns CF clear with EAX = the pool base */
     successResult.carry = false;
     successResult.effectRuntime = effectRuntimeCursor;
     return successResult;
   }
+  failureResult.carry = true;
+  if (effectRuntimeCursor == (EffectRuntimeSlot *)0x0) {
+    failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
+    return failureResult;
+  }
+  slotsRemaining = 0x1000;
   do {
-    if (poolOrSlotsRemaining == (EffectRuntimeSlot *)0x0) {
-EffectRuntimePool_CreateInstance_ReturnAllocationFailure:
-      failureResult.carry = true;
-      failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
-      return failureResult;
-    }
     if ((effectRuntimeCursor->modelNodeOrSavedOffset).modelNode == (ModelRuntimeNode *)0x0) {
       recordAlloc = WorldObjectArray_AllocateFreeRecordCf(worldRuntime);
       effectModelNode = (EffectModelRuntimeNodeClassView100 *)recordAlloc.recordOrError;
@@ -328,17 +327,20 @@ EffectRuntimePool_CreateInstance_ReturnAllocationFailure:
         effectRuntimeCursor->effectAgeTicks = 0;
         if (shadingStartTicks == 0) {
           lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,4,effectDefinition->ownedNestedResource);
-          if (lookupEntry.carry) goto LAB_0051e672;
-          localPoint = ModelNodeRuntime_TransformLocalPointRegs
-                             (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
-          shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
-                             (effectDefinition->shadingTransitionDurationTicks,
-                              (effectDefinition->shadingColorArgb >> 0x18) << 8,
-                              effectDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
-          effectModelNode->shadingRecord = shadingAlloc.record;
+          if (!lookupEntry.carry) {
+            localPoint = ModelNodeRuntime_TransformLocalPointRegs
+                               (lookupEntry.entry,(ModelRuntimeNode *)effectModelNode);
+            shadingAlloc = GraphicsShadingRuntime_AllocateRecordRegs
+                               (effectDefinition->shadingTransitionDurationTicks,
+                                (effectDefinition->shadingColorArgb >> 0x18) << 8,
+                                effectDefinition->shadingColorArgb,localPoint.edx,localPoint.ecx,localPoint.eax);
+            effectModelNode->shadingRecord = shadingAlloc.record;
+          }
+          else {
+            effectModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
+          }
         }
         else {
-LAB_0051e672:
           effectModelNode->shadingRecord = (GraphicsShadingRuntimeRecord *)0x0;
         }
         randomOrRuntimeValue = effectDefinition->runtimeValue24;
@@ -375,13 +377,16 @@ LAB_0051e672:
           }
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)effectModelNode);
-        goto EffectRuntimePool_CreateInstance_ReturnEffectSlotResult;
+        successResult.carry = false;
+        successResult.effectRuntime = effectRuntimeCursor;
+        return successResult;
       }
-      goto EffectRuntimePool_CreateInstance_ReturnAllocationFailure;
+      break; /* record allocation failed: its error code */
     }
     effectRuntimeCursor = effectRuntimeCursor + 1;
-    slotsRemaining = (EffectRuntimeSlot *)((int)&slotsRemaining[-1].effectAgeTicks + 3);
-    poolOrSlotsRemaining = slotsRemaining;
-  } while( true );
+    slotsRemaining = slotsRemaining + -1;
+  } while (slotsRemaining != 0);
+  failureResult.effectRuntime = (EffectRuntimeSlot *)effectModelNode;
+  return failureResult;
 }
 

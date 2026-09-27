@@ -161,8 +161,9 @@ void __stdcall WinMM_TimerDispatchCallback
 
 {
   if ((((slotOffset & 3) == 0) && (slotOffset < 0x80)) &&
-     (*(int *)((int)g_TimerSystemState.callbacks + slotOffset) != 0)) {
-    (**(code **)((int)g_TimerSystemState.callbacks + slotOffset))();
+     (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + slotOffset) != (TimerCallbackProc *)0x0)) {
+    /* slotOffset is the byte offset of the callbacks[] entry */
+    (**(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + slotOffset))();
   }
   return;
 }
@@ -559,7 +560,7 @@ void __thandor_void_preserve_eax_ecx_edx Locale_CopyDefaultComputerLabelUtf16(wo
   sourceCursor = g_DefaultComputerLabelUtf16;
   for (copyDwordsRemaining = 0x10; copyDwordsRemaining != 0;
       copyDwordsRemaining = copyDwordsRemaining + -1) {
-    *(undefined4 *)destination = *(undefined4 *)sourceCursor;
+    *(dword *)destination = *(dword *)sourceCursor; /* two UTF-16 units per dword */
     sourceCursor = sourceCursor + 2;
     destination = destination + 2;
   }
@@ -582,9 +583,9 @@ void __thandor_void_preserve_eax_ecx_edx TimerSystem_UnregisterPeriodic(TimerCal
   do {
     if (*(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) ==
         callback) {
-      *(undefined4 *)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = 0;
+      *(TimerCallbackProc **)((int)g_TimerSystemState.callbacks + callbackSlotByteOffset) = (TimerCallbackProc *)0x0;
       ((BootstrapTimeKillEventProc)g_BootstrapApiBindings[3].destination)
-                (*(undefined4 *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
+                (*(dword *)((int)g_TimerSystemState.winmmTimerIds + callbackSlotByteOffset));
       return;
     }
     callbackSlotByteOffset = callbackSlotByteOffset + 4;

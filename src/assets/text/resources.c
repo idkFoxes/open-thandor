@@ -140,7 +140,7 @@ TextResourceAsset_GetLocaleBlockCount(TextResourceAssetHeader *asset)
   if ((asset->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
     return (asset->localeCountHeader).localeBlockCount;
   }
-  return 0; /* CF-set error path; Ghidra: unchanged in_EAX */
+  return 0; /* CF-set error path: the original leaves the caller's EAX (the function has no callers) */
 }
 
 
@@ -323,34 +323,36 @@ TextResourcePage_Load(TextResourcePageIndex pageIndex,word *path)
   allocation = loadResult.bufferOrError;
   localeBlockOrError = allocation;
   if (!loadResult.carry) {
-    localeBlockOrError = (TextResourceAssetHeader *)&k_LowAddressLiteral00000033;
+    localeBlockOrError = (TextResourceAssetHeader *)0x33;
     if ((allocation->localeCountHeader).common.magic == ASSET_MAGIC_STR) {
       remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
       countryCode = g_LocaleCountryCodeOverride;
       if (g_LocaleCountryCodeOverride == 0) {
         countryCode = (*g_LocaleGetDefaultTelephoneCountryCode)();
       }
+      /* Select the block for the country code, else the Great Britain block, else the first block. */
       localeBlockOrError = allocation + 1;
       do {
-        if (countryCode == (localeBlockOrError->localeCountHeader).common.formatVersion)
-        goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
+        if (countryCode == (localeBlockOrError->localeCountHeader).common.formatVersion) break;
         localeBlockOrError = (TextResourceAssetHeader *)
                  ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
                  ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
         remainingBlocks = remainingBlocks - 1;
       } while (remainingBlocks != 0);
-      remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
-      localeBlockOrError = allocation + 1;
-      do {
-        if ((localeBlockOrError->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN)
-        goto TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences;
-        localeBlockOrError = (TextResourceAssetHeader *)
-                 ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
-                 ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
-        remainingBlocks = remainingBlocks - 1;
-      } while (remainingBlocks != 0);
-      localeBlockOrError = allocation + 1;
-TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
+      if (remainingBlocks == 0) {
+        remainingBlocks = (allocation->localeCountHeader).localeBlockCount;
+        localeBlockOrError = allocation + 1;
+        do {
+          if ((localeBlockOrError->localeCountHeader).common.formatVersion == LOCALE_COUNTRY_GREAT_BRITAIN) break;
+          localeBlockOrError = (TextResourceAssetHeader *)
+                   ((localeBlockOrError->localeCountHeader).common.buildMetadata.assetRelativeAddressAnchor28 +
+                   ((localeBlockOrError->localeCountHeader).common.magic - 0x28));
+          remainingBlocks = remainingBlocks - 1;
+        } while (remainingBlocks != 0);
+        if (remainingBlocks == 0) {
+          localeBlockOrError = allocation + 1;
+        }
+      }
       g_TextResourcePageBindings[pageIndex].selectedLocaleBlock =
            (TextResourceLocaleBlockPrefix *)localeBlockOrError;
       g_TextResourcePageBindings[pageIndex].asset = allocation;
@@ -381,19 +383,20 @@ TextResourcePage_Load_BindSelectedLocaleBlockAndPatchEmbeddedReferences:
               packedHighDigits = *(uint *)textCursor;
               *(uint *)(recordStart + 3) =
                    (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
-              *(undefined **)textCursor = &g_MissingTextResourceFallbackStream;
+              *(void **)textCursor = &g_MissingTextResourceFallbackStream;
               *(uint *)(recordStart + 3) =
                    *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + 5;
               break;
             case 0x1a:
+              /* Like 0x18/0x19, but the pointer slot is cleared. The high digits are read before the
+                 clear (0x0041CC23 MOV EBX,[ESI] precedes 0x0041CC3E MOV [ESI],0). */
+              packedHighDigits = *(uint *)textCursor;
               *(uint *)(recordStart + 3) =
                    (*(uint *)(recordStart + 3) >> 0x10 & 0xf) + (*(uint *)(recordStart + 3) & 0xf) * 10;
-              textCursor[0] = 0;
-              textCursor[1] = 0;
+              *(uint *)textCursor = 0;
               *(uint *)(recordStart + 3) =
-                   *(int *)(recordStart + 3) +
-                   (*(uint *)textCursor >> 0x10 & 0xf) * 100 + (*(uint *)textCursor & 0xf) * 1000;
+                   *(int *)(recordStart + 3) + (packedHighDigits >> 0x10 & 0xf) * 100 + (packedHighDigits & 0xf) * 1000;
               textCursor = recordStart + 5;
             }
           }

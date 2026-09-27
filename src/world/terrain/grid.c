@@ -889,7 +889,7 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
   Q12 terrainHeightQ12;
-  undefined1 outOfBounds;
+  bool outOfBounds;
   FieldGridNearestPointRegsCf13 nearestPoint;
   
   gridHalfRowCoordinateQ12 =
@@ -913,7 +913,7 @@ FieldGrid_GetNearestTerrainPoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   }
   nearestPoint.ecx = worldY;
   nearestPoint.eax = worldX;
-  nearestPoint.carry = (bool)outOfBounds;
+  nearestPoint.carry = outOfBounds;
   nearestPoint.edx = terrainHeightQ12;
   return nearestPoint;
 }
@@ -931,7 +931,7 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   int columnCellOrSurfaceZ;
   uint gridHalfRowCoordinateQ12;
   int gridRowIndex;
-  undefined1 outOfBounds;
+  bool outOfBounds;
   FieldGridSurfacePointEaxEcxEdxCf13 nearestPoint;
   
   gridHalfRowCoordinateQ12 =
@@ -955,7 +955,7 @@ FieldGrid_GetNearestTopSurfacePoint(Q12 worldY,Q12 worldX,FieldGridAsset *field)
   }
   nearestPoint.worldYQ12 = worldY;
   nearestPoint.worldXQ12 = worldX;
-  nearestPoint.carry = (bool)outOfBounds;
+  nearestPoint.carry = outOfBounds;
   nearestPoint.worldZQ12 = columnCellOrSurfaceZ;
   return nearestPoint;
 }
@@ -1061,13 +1061,14 @@ FieldGrid_InterpolateTerrainHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset *f
           columnFractionOrHeightQ12 = (uint)upperTriangleAccumulator >> 0xc | (int)((ulonglong)upperTriangleAccumulator >> 0x20) << 0x14;
           sampleFailed = false;
         }
-        goto LAB_004fed32;
+        sampleResult.carry = sampleFailed;
+        sampleResult.heightQ12 = columnFractionOrHeightQ12;
+        return sampleResult;
       }
     }
   }
   columnFractionOrHeightQ12 = 0;
   sampleFailed = true;
-LAB_004fed32:
   sampleResult.carry = sampleFailed;
   sampleResult.heightQ12 = columnFractionOrHeightQ12;
   return sampleResult;
@@ -1228,13 +1229,14 @@ FieldGrid_InterpolateWaterSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAss
                   (int)((ulonglong)upperTriangleWeightedHeightAccumulator >> 0x20) << 0x14;
           sampleFailed = false;
         }
-        goto LAB_004fefd6;
+        sampleResult.carry = sampleFailed;
+        sampleResult.heightQ12 = surfaceHeightQ12;
+        return sampleResult;
       }
     }
   }
   surfaceHeightQ12 = 0;
   sampleFailed = true;
-LAB_004fefd6:
   sampleResult.carry = sampleFailed;
   sampleResult.heightQ12 = surfaceHeightQ12;
   return sampleResult;
@@ -1339,13 +1341,14 @@ FieldGrid_InterpolateTopSurfaceHeight(Q12 worldYQ12,Q12 worldXQ12,FieldGridAsset
           }
           sampleFailed = false;
         }
-        goto LAB_004ff185;
+        sampleResult.carry = sampleFailed;
+        sampleResult.heightQ12 = terrainHeightQ12;
+        return sampleResult;
       }
     }
   }
   terrainHeightQ12 = 0;
   sampleFailed = true;
-LAB_004ff185:
   sampleResult.carry = sampleFailed;
   sampleResult.heightQ12 = terrainHeightQ12;
   return sampleResult;
@@ -1460,13 +1463,15 @@ FieldGrid_InterpolateTerrainHeightAndNormal(Q12 worldY,Q12 worldX,FieldGridAsset
           rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
           sampleFailed = false;
         }
-        goto FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample;
+        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+        sampleResult.heightQ12 = interpolatedHeightQ12;
+        sampleResult.carry = sampleFailed;
+        return sampleResult;
       }
     }
   }
   interpolatedHeightQ12 = 0;
   sampleFailed = true;
-FieldGrid_InterpolateTerrainHeightAndNormal_ReturnInterpolatedOrDefaultSample:
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
   sampleResult.carry = sampleFailed;
@@ -1580,13 +1585,15 @@ FieldGrid_InterpolateTerrainHeightAndTriangle0Normal
           rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
           sampleFailed = false;
         }
-        goto FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample;
+        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+        sampleResult.heightQ12 = interpolatedHeightQ12;
+        sampleResult.carry = sampleFailed;
+        return sampleResult;
       }
     }
   }
   interpolatedHeightQ12 = 0;
   sampleFailed = true;
-FieldGrid_InterpolateTerrainHeightAndTriangle0Normal_ReturnInterpolatedOrDefaultSample:
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
   sampleResult.carry = sampleFailed;
@@ -1699,13 +1706,15 @@ FieldGrid_InterpolateTerrainHeightAndTriangle1Normal
           rowFractionOrNormalAngles = blendedNormalAngles.edx << 0x10 | blendedNormalAngles.ecx & 0xffff;
           sampleFailed = false;
         }
-        goto FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample;
+        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+        sampleResult.heightQ12 = interpolatedHeightQ12;
+        sampleResult.carry = sampleFailed;
+        return sampleResult;
       }
     }
   }
   interpolatedHeightQ12 = 0;
   sampleFailed = true;
-FieldGrid_InterpolateTerrainHeightAndTriangle1Normal_ReturnInterpolatedOrDefaultSample:
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
   sampleResult.carry = sampleFailed;
@@ -1876,13 +1885,15 @@ FieldGrid_SampleInterpolatedTerrainHeightAndNormalAnglesCfRegs
             sampleFailed = false;
           }
         }
-        goto LAB_004ffb6c;
+        sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
+        sampleResult.heightQ12 = interpolatedHeightQ12;
+        sampleResult.carry = sampleFailed;
+        return sampleResult;
       }
     }
   }
   interpolatedHeightQ12 = 0;
   sampleFailed = true;
-LAB_004ffb6c:
   sampleResult.packedNormalAngles = rowFractionOrNormalAngles;
   sampleResult.heightQ12 = interpolatedHeightQ12;
   sampleResult.carry = sampleFailed;
@@ -1956,9 +1967,9 @@ FieldGrid_InitializeRuntimeCellsAndBoundaryFlags(FieldGridAsset *fieldGrid)
   FieldGridCell *currentRowFirstCell;
   Q12 currentCellWorldXQ12;
   Q12 currentCellWorldYQ12;
-  undefined4 phaseSeedBitWidth;
-  
-  phaseSeedBitWidth = *(undefined4 *)((int)g_TerrainSurfacePacketTablePayload + -0x20);
+  dword phaseSeedBitWidth;
+
+  phaseSeedBitWidth = *(dword *)((int)g_TerrainSurfacePacketTablePayload + -0x20);
   initRowsRemaining = fieldGrid->gridHeight;
   fieldGrid->runtimeStateFlags = fieldGrid->runtimeStateFlags | 1;
   initGridWidth = fieldGrid->gridWidth;
@@ -2070,8 +2081,7 @@ FieldGrid_ApplyByteClampLookupToCells
           (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid)
 
 {
-  undefined3 lookupHighBytes;
-  byte *lookupPointerOrResult;
+  byte *clampLookup;
   FieldGridDimension columnsRemaining;
   FieldGridDimension rowsRemaining;
   FieldGridCell *currentCell;
@@ -2081,14 +2091,14 @@ FieldGrid_ApplyByteClampLookupToCells
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
-  lookupPointerOrResult = g_TerrainByteClampLookup;
+  clampLookup = g_TerrainByteClampLookup;
   columnsRemaining = gridWidth;
   do {
     do {
-      lookupHighBytes = CONCAT21((short)((uint)lookupPointerOrResult >> 0x10),
-                       currentCell->runtime60_6B[sourceChannelOffset + 0x10]);
-      mappedRuntimeByte = *(byte *)CONCAT31(lookupHighBytes,currentCell->runtime60_6B[8]);
-      lookupPointerOrResult = (byte *)CONCAT31(lookupHighBytes,mappedRuntimeByte);
+      /* The lookup is 64-KiB aligned: the original loads AH = channel byte, AL = runtime byte into the
+         pointer's low word, i.e. indexes the table with (channel << 8) | runtime byte. */
+      mappedRuntimeByte = clampLookup[(uint)currentCell->runtime60_6B[sourceChannelOffset + 0x10] << 8 |
+                                      (uint)currentCell->runtime60_6B[8]];
       currentCell->runtime60_6B[8] = mappedRuntimeByte;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
@@ -2192,17 +2202,14 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
   FieldGridDimension rowLength;
   longlong rayEndYProduct;
   longlong rayEndXProduct;
-  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
-  uint extraout_ECX;
   uint rayStartHalfCoord0Q12;
   uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
-  uint extraout_EDX;
   int stepsRemaining;
   bool traversalDone;
   TerrainDistanceEaxCf5 triangleHit;
@@ -2245,10 +2252,9 @@ FieldGrid_RaycastTerrainSurfaceDistanceCf
                           currentCell[1].terrainHeight,currentCell->terrainHeight,cellLocalCoord1Q12
                           ,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
       if (!triangleHit.carry) {
-        packedHit = CONCAT44(currentCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
         hitResult.carry = true;
-        hitResult.distanceQ12 = (int)packedHit;
-        hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+        hitResult.distanceQ12 = triangleHit.distanceQ12;
+        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
         return hitResult;
       }
       endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
@@ -2291,17 +2297,14 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
   FieldGridDimension rowLength;
   longlong rayEndYProduct;
   longlong rayEndXProduct;
-  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
-  uint extraout_ECX;
   uint rayStartHalfCoord0Q12;
   uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
-  uint extraout_EDX;
   int stepsRemaining;
   bool traversalDone;
   TerrainDistanceEaxCf5 triangleHit;
@@ -2347,10 +2350,9 @@ FieldGrid_RaycastSecondarySurfaceDistanceCf
                           currentCell->waterSurfaceDelta + currentCell->terrainHeight,
                           cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
       if (!triangleHit.carry) {
-        packedHit = CONCAT44(currentCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
         hitResult.carry = true;
-        hitResult.distanceQ12 = (int)packedHit;
-        hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+        hitResult.distanceQ12 = triangleHit.distanceQ12;
+        hitResult.materialOrCellIndex = currentCell->flagsAndMaterial & 0xff; /* low byte: material */
         return hitResult;
       }
       endHalfCoordOrCurrentCoord1Q12 = (endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12) + rayStartCoord1Q12;
@@ -2386,20 +2388,17 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
   FieldGridDimension rowLength;
   longlong rayEndYProduct;
   longlong rayEndXProduct;
-  ulonglong packedHit;
   uint rayStartCoord0Q12;
   int rayEndCoord0Q12;
   uint rayStartCoord1Q12;
   int rayEndCoord1Q12;
   int columnOrClampOffset;
-  uint extraout_ECX;
   int maxRowIndex;
   uint rayStartHalfCoord0Q12;
   uint endHalfCoordOrCurrentCoord1Q12;
   uint currentGridCoord0Q12;
   int cellLocalCoord1Q12;
   int cellRowIndex;
-  uint extraout_EDX;
   int maxColumnIndex;
   int stepsRemaining;
   FieldGridCell *currentCell;
@@ -2447,7 +2446,7 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
       sampleCell = currentCell + -columnOrClampOffset;
       columnOrClampOffset = cellRowIndex;
       if ((cellRowIndex < 0) || (columnOrClampOffset = cellRowIndex - maxRowIndex, maxRowIndex <= cellRowIndex)) {
-LAB_00505090:
+        /* both clamped: the single corner cell */
         sampleCell = (FieldGridCell *)((int)sampleCell - columnOrClampOffset * rowStrideBytes);
         cornerHeight3Q12 = sampleCell->terrainHeight;
         cornerHeight2Q12 = sampleCell->terrainHeight;
@@ -2495,22 +2494,29 @@ LAB_00505090:
     }
     else {
       sampleCell = currentCell + -(columnOrClampOffset - maxColumnIndex);
-      columnOrClampOffset = cellRowIndex - maxRowIndex;
-      if (maxRowIndex <= cellRowIndex) goto LAB_00505090;
-      cornerHeight3Q12 = sampleCell->terrainHeight;
-      cornerHeight2Q12 = sampleCell[rowLength].terrainHeight;
-      cornerHeight1Q12 = sampleCell->terrainHeight;
-      cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
+      if (maxRowIndex <= cellRowIndex) {
+        /* both clamped: the single corner cell */
+        sampleCell = (FieldGridCell *)((int)sampleCell - (cellRowIndex - maxRowIndex) * rowStrideBytes);
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell->terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell->terrainHeight;
+      }
+      else {
+        cornerHeight3Q12 = sampleCell->terrainHeight;
+        cornerHeight2Q12 = sampleCell[rowLength].terrainHeight;
+        cornerHeight1Q12 = sampleCell->terrainHeight;
+        cornerHeight0Q12 = sampleCell[rowLength].terrainHeight;
+      }
     }
     triangleHit = TerrainTriangle_IntersectRayDistanceCf
                        (rayDirection.edx,rayEndCoord0Q12 + rayStartHalfCoord0Q12 * -2,rayEndCoord1Q12 - rayStartCoord1Q12,
                         rayOriginZQ12,cornerHeight0Q12,cornerHeight1Q12,cornerHeight2Q12,
                         cornerHeight3Q12,cellLocalCoord1Q12,endHalfCoordOrCurrentCoord1Q12 - rayStartCoord1Q12);
     if (!triangleHit.carry) {
-      packedHit = CONCAT44(sampleCell->flagsAndMaterial,triangleHit.distanceQ12) & 0xffffffffff;
       hitResult.carry = true;
-      hitResult.distanceQ12 = (int)packedHit;
-      hitResult.materialOrCellIndex = (int)(packedHit >> 0x20);
+      hitResult.distanceQ12 = triangleHit.distanceQ12;
+      hitResult.materialOrCellIndex = sampleCell->flagsAndMaterial & 0xff; /* low byte: material */
       return hitResult;
     }
     traversalDone = TerrainRay_AdvanceGridTraversalCf

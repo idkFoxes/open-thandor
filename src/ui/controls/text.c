@@ -47,9 +47,11 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
           UiNumericTextControl *control)
 
 {
-  int *selectionBoundary;
+  UiTextCodeUnitIndex *selectionBoundary;
   ushort displacedCodeUnit;
-  UiNumericTextEditStateFlags requiredFormatFlag;
+  bool characterAccepted;
+  bool recomputeLayout;
+  bool normalizeSelection;
   UiTextCodeUnitIndex codeUnitIndex;
   int countOrFieldOffset;
   int shiftCountOrScanIndex;
@@ -57,29 +59,36 @@ UiNumericTextEditControl_HandleKeyboardAndCommitCf
   word *sourceCursor;
   word *destinationCursor;
   bool delegatedResult;
-  
+
   if ((((control->editStateFlags & UI_NUMERIC_TEXT_READ_ONLY) != 0) ||
-      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & 0x30) != 0))
-  goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
+      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) || ((keyboardStateMask & 0x30) != 0)) {
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedResult;
+  }
+  /* Handled keys end in the shared tail: optional layout recompute, then parse/commit, invalidate
+     and the interaction sound. */
+  recomputeLayout = true;
+  normalizeSelection = false;
   if ((keyCode & 0xffff0000) == 0) {
+    /* Character: digits always, '-' for signed values, A-F/a-f for hexadecimal ones. */
     if (keyCode == 0x2d) {
-      requiredFormatFlag = control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE;
-joined_r0x004b61ef:
-      if (requiredFormatFlag == 0) {
-UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
-        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
-                           (keyboardStateMask,keyCode,&control->base);
-        return delegatedResult;
-      }
+      characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) != 0;
+    }
+    else if (keyCode < 0x30) {
+      characterAccepted = false;
+    }
+    else if (keyCode <= 0x39) {
+      characterAccepted = true;
+    }
+    else if ((keyCode < 0x41) || ((0x46 < keyCode && ((keyCode < 0x61 || (0x66 < keyCode)))))) {
+      characterAccepted = false;
     }
     else {
-      if (keyCode < 0x30) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-      if (0x39 < keyCode) {
-        if ((keyCode < 0x41) || ((0x46 < keyCode && ((keyCode < 0x61 || (0x66 < keyCode))))))
-        goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        requiredFormatFlag = control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT;
-        goto joined_r0x004b61ef;
-      }
+      characterAccepted = (control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) != 0;
+    }
+    if (!characterAccepted) {
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      return delegatedResult;
     }
     insertIndex = control->cursorIndex;
     if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
@@ -119,38 +128,27 @@ UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
       }
     }
   }
-  else if ((keyboardStateMask & 0xc) == 0) {
-    if ((keyboardStateMask & 3) == 0) {
-      if (keyCode == 0x10003) {
-        codeUnitIndex = control->cursorIndex;
-        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
-        goto UiNumericTextEdit_DeleteSelectedRange;
-        if (control->cursorIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
-        sourceCursor = control->textBuffer + codeUnitIndex;
-        destinationCursor = control->textBuffer + (codeUnitIndex - 1);
-        for (countOrFieldOffset = 0x10 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
-          *destinationCursor = *sourceCursor;
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
-        }
-        control->cursorIndex = control->cursorIndex - 1;
+  else {
+    if ((keyboardStateMask & 0xc) != 0) {
+      /* Ctrl+Left/Right act as Home/End (with or without Shift); other Ctrl keys are not handled. */
+      if (keyCode == 0x10014) {
+        keyCode = 0x10010;
+      }
+      else if (keyCode == 0x10016) {
+        keyCode = 0x10018;
       }
       else {
-        if (keyCode == 0x10006) {
-          codeUnitIndex = control->cursorIndex;
-          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
-            if (control->textBuffer[codeUnitIndex] == 0)
-            goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
-            sourceCursor = control->textBuffer + codeUnitIndex + 1;
-            destinationCursor = control->textBuffer + codeUnitIndex;
-            for (countOrFieldOffset = 0xf - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
-              *destinationCursor = *sourceCursor;
-              sourceCursor = sourceCursor + 1;
-              destinationCursor = destinationCursor + 1;
-            }
-            goto UiNumericTextEdit_RecomputeLayoutAfterEdit;
-          }
-UiNumericTextEdit_DeleteSelectedRange:
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
+      }
+    }
+    if ((keyboardStateMask & 3) == 0) {
+      switch (keyCode) {
+      case 0x10003:
+      case 0x10006:
+        codeUnitIndex = control->cursorIndex;
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
+          /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
           codeUnitIndex = control->selectionEnd;
           countOrFieldOffset = codeUnitIndex - control->selectionStart;
           sourceCursor = control->textBuffer + codeUnitIndex;
@@ -166,50 +164,95 @@ UiNumericTextEdit_DeleteSelectedRange:
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
-          goto UiNumericTextEdit_RecomputeLayoutAfterEdit;
         }
-        if (keyCode == 0x10007) {
-          control->editStateFlags = control->editStateFlags ^ UI_NUMERIC_TEXT_OVERWRITE_MODE;
-          goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        else if (keyCode == 0x10003) {
+          /* Backspace: remove the code unit before the cursor. */
+          if (control->cursorIndex == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          sourceCursor = control->textBuffer + codeUnitIndex;
+          destinationCursor = control->textBuffer + (codeUnitIndex - 1);
+          for (countOrFieldOffset = 0x10 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+          control->cursorIndex = control->cursorIndex - 1;
+          control->selectionStart = control->cursorIndex;
+          control->selectionEnd = control->cursorIndex;
         }
-        if (keyCode == 0x10010) goto UiNumericTextEdit_MoveCursorToStartAndCollapseSelection;
-        if (keyCode == 0x10018) goto UiNumericTextEdit_MoveCursorToEndAndCollapseSelection;
-        if (keyCode == 0x10014) {
+        else {
+          /* Delete: remove the code unit at the cursor. */
+          if (control->textBuffer[codeUnitIndex] == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          sourceCursor = control->textBuffer + codeUnitIndex + 1;
+          destinationCursor = control->textBuffer + codeUnitIndex;
+          for (countOrFieldOffset = 0xf - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+        }
+        break;
+      case 0x10007:
+        control->editStateFlags = control->editStateFlags ^ UI_NUMERIC_TEXT_OVERWRITE_MODE;
+        recomputeLayout = false;
+        break;
+      case 0x10010:
+      case 0x10018:
+      case 0x10014:
+      case 0x10016:
+        /* Cursor movement (Home/End/Left/Right) collapses the selection at the cursor. */
+        if (keyCode == 0x10010) {
+          control->cursorIndex = 0;
+        }
+        else if (keyCode == 0x10018) {
+          while (control->textBuffer[control->cursorIndex] != 0) {
+            control->cursorIndex = control->cursorIndex + 1;
+          }
+        }
+        else if (keyCode == 0x10014) {
           if (control->cursorIndex != 0) {
             control->cursorIndex = control->cursorIndex - 1;
           }
         }
-        else {
-          if (keyCode != 0x10016) {
-            if (keyCode == 0x10001) {
-              if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) != 0) {
-                UiActionQueue_Enqueue(control->actionId,control);
-                if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-                   (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-                  (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
-                }
-                return false;
-              }
-            }
-            else if ((keyCode & 0x30000) == 0x30000) {
-              return false;
-            }
-            goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-          }
-          if (control->textBuffer[control->cursorIndex] != 0) {
-            control->cursorIndex = control->cursorIndex + 1;
-          }
+        else if (control->textBuffer[control->cursorIndex] != 0) {
+          control->cursorIndex = control->cursorIndex + 1;
         }
+        control->selectionStart = control->cursorIndex;
+        control->selectionEnd = control->cursorIndex;
+        break;
+      case 0x10001:
+        if ((control->editStateFlags & UI_NUMERIC_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          return delegatedResult;
+        }
+        UiActionQueue_Enqueue(control->actionId,control);
+        if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+           (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        }
+        return false;
+      default:
+        if ((keyCode & 0x30000) == 0x30000) {
+          return false;
+        }
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
       }
-UiNumericTextEdit_CollapseSelectionAtCursor:
-      control->selectionStart = control->cursorIndex;
-      control->selectionEnd = control->cursorIndex;
     }
     else {
-      if (keyCode == 0x10010) {
-UiNumericTextEdit_ExtendSelectionToStart:
+      /* Shift: extend the selection from the cursor. */
+      switch (keyCode) {
+      case 0x10010:
         codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
         control->cursorIndex = 0;
         if (codeUnitIndex == control->selectionStart) {
           control->selectionStart = 0;
@@ -217,12 +260,35 @@ UiNumericTextEdit_ExtendSelectionToStart:
         else {
           control->selectionEnd = 0;
         }
-        goto UiNumericTextEdit_NormalizeSelectionOrder;
-      }
-      if (keyCode == 0x10018) goto UiNumericTextEdit_ExtendSelectionToEnd;
-      if (keyCode == 0x10014) {
+        normalizeSelection = true;
+        break;
+      case 0x10018:
         codeUnitIndex = control->cursorIndex;
-        if (codeUnitIndex == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        if (control->textBuffer[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        /* NOTE: as in the original, the cursor restarts at 0 and ends at the number of code units
+           that followed it, not at the end of the text. */
+        control->cursorIndex = 0;
+        selectionBoundary = &control->selectionStart;
+        if (codeUnitIndex == control->selectionEnd) {
+          selectionBoundary = &control->selectionEnd;
+        }
+        do {
+          *selectionBoundary = *selectionBoundary + 1;
+          control->cursorIndex = control->cursorIndex + 1;
+          shiftCountOrScanIndex = codeUnitIndex + 1;
+          codeUnitIndex = codeUnitIndex + 1;
+        } while (control->textBuffer[shiftCountOrScanIndex] != 0);
+        normalizeSelection = true;
+        break;
+      case 0x10014:
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
         control->cursorIndex = control->cursorIndex - 1;
         if (codeUnitIndex == control->selectionStart) {
           control->selectionStart = control->selectionStart - 1;
@@ -230,11 +296,13 @@ UiNumericTextEdit_ExtendSelectionToStart:
         else {
           control->selectionEnd = control->selectionEnd - 1;
         }
-      }
-      else {
-        if (keyCode != 0x10016) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
+        break;
+      case 0x10016:
         codeUnitIndex = control->cursorIndex;
-        if (control->textBuffer[codeUnitIndex] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
+        if (control->textBuffer[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
         control->cursorIndex = control->cursorIndex + 1;
         if (codeUnitIndex == control->selectionEnd) {
           control->selectionEnd = control->selectionEnd + 1;
@@ -242,53 +310,24 @@ UiNumericTextEdit_ExtendSelectionToStart:
         else {
           control->selectionStart = control->selectionStart + 1;
         }
+        break;
+      default:
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
+      }
+      if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
+        /* Home/End may cross the anchor: keep selectionStart <= selectionEnd. */
+        LOCK();
+        codeUnitIndex = control->selectionEnd;
+        control->selectionEnd = control->selectionStart;
+        UNLOCK();
+        control->selectionStart = codeUnitIndex;
       }
     }
   }
-  else {
-    if ((keyboardStateMask & 3) == 0) {
-      if (keyCode == 0x10016) {
-UiNumericTextEdit_MoveCursorToEndAndCollapseSelection:
-        while (control->textBuffer[control->cursorIndex] != 0) {
-          control->cursorIndex = control->cursorIndex + 1;
-        }
-      }
-      else {
-        if (keyCode != 0x10014) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-UiNumericTextEdit_MoveCursorToStartAndCollapseSelection:
-        control->cursorIndex = 0;
-      }
-      goto UiNumericTextEdit_CollapseSelectionAtCursor;
-    }
-    if (keyCode == 0x10014) goto UiNumericTextEdit_ExtendSelectionToStart;
-    if (keyCode != 0x10016) goto UiNumericTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-UiNumericTextEdit_ExtendSelectionToEnd:
-    codeUnitIndex = control->cursorIndex;
-    if (control->textBuffer[codeUnitIndex] == 0) goto UiNumericTextEdit_ParseCommitInvalidateAndReturn;
-    control->cursorIndex = 0;
-    countOrFieldOffset = 0x60;
-    if (codeUnitIndex == control->selectionEnd) {
-      countOrFieldOffset = 100;
-    }
-    do {
-      selectionBoundary = (int *)((int)control->textBuffer + countOrFieldOffset + -0x6c);
-      *selectionBoundary = *selectionBoundary + 1;
-      control->cursorIndex = control->cursorIndex + 1;
-      shiftCountOrScanIndex = codeUnitIndex + 1;
-      codeUnitIndex = codeUnitIndex + 1;
-    } while (control->textBuffer[shiftCountOrScanIndex] != 0);
-UiNumericTextEdit_NormalizeSelectionOrder:
-    if (control->selectionEnd < control->selectionStart) {
-      LOCK();
-      codeUnitIndex = control->selectionEnd;
-      control->selectionEnd = control->selectionStart;
-      UNLOCK();
-      control->selectionStart = codeUnitIndex;
-    }
+  if (recomputeLayout) {
+    UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
   }
-UiNumericTextEdit_RecomputeLayoutAfterEdit:
-  UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
-UiNumericTextEdit_ParseCommitInvalidateAndReturn:
   UiNumericTextControl_ParseAndCommitValue(control);
   UiNode_InvalidateRoot(&control->base);
   if (((control->editStateFlags & UI_NUMERIC_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
@@ -312,7 +351,7 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
           UiPathTextEditControl *control)
 
 {
-  int *selectionBoundary;
+  UiTextCodeUnitIndex *selectionBoundary;
   ushort displacedCodeUnit;
   UiTextCodeUnitIndex segmentBoundaryIndex;
   UiTextCodeUnitIndex codeUnitIndex;
@@ -321,44 +360,66 @@ UiPathTextEditControl_HandleKeyboardAndValidateCf
   uint insertIndex;
   word *sourceCursor;
   word *destinationCursor;
+  bool isAltGrCharacter;
+  bool characterAccepted;
+  bool recomputeLayout;
+  bool normalizeSelection;
   bool delegatedResult;
-  
+
   if (((control->editStateFlags & UI_TEXT_EDIT_READ_ONLY) != 0) ||
-     (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0))
-  goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-  if ((((keyCode == 0x40) ||
-       ((((keyCode == 0x7c || (keyCode == 0x7e)) || (keyCode == 0xb2)) ||
-        ((keyCode == 0xb3 || (keyCode == 0x7b)))))) || (keyCode == 0x5b)) ||
-     (((keyCode == 0x5d || (keyCode == 0x7d)) ||
-      ((keyCode == 0x5c || ((keyCode == 0xb5 || (keyCode == 0x80)))))))) {
-UiPathTextEdit_ValidateCharacterAndInsert:
-    if (keyCode == 0x2a) {
-UiPathTextEdit_CheckWildcardPermission:
-      if ((control->editStateFlags & 2) == 0)
-      goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
+     (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedResult;
+  }
+  /* Characters typed with AltGr skip the modifier checks (of these, only the backslash passes the
+     path character filter below). */
+  isAltGrCharacter =
+       (((keyCode == 0x40) ||
+        ((((keyCode == 0x7c || (keyCode == 0x7e)) || (keyCode == 0xb2)) ||
+         ((keyCode == 0xb3 || (keyCode == 0x7b)))))) || (keyCode == 0x5b)) ||
+       (((keyCode == 0x5d || (keyCode == 0x7d)) ||
+        ((keyCode == 0x5c || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
+  if ((!isAltGrCharacter) &&
+     (((keyboardStateMask & 0x30) != 0) ||
+      ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & 0x3c) != 0)) &&
+       ((0x40 < keyCode) && ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))))) {
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedResult;
+  }
+  /* Handled keys end in the shared tail: optional selection normalization and layout recompute,
+     then validity update, action, invalidate and the interaction sound. */
+  recomputeLayout = true;
+  normalizeSelection = false;
+  if ((isAltGrCharacter) || ((keyCode & 0xffff0000) == 0)) {
+    /* Path characters: letters, digits, '-' and '.'; '*' and '?' need edit flag 2, ':' and '\'
+       are refused with edit flag 4. */
+    if ((keyCode == 0x2a) || (keyCode == 0x3f)) {
+      characterAccepted = (control->editStateFlags & 2) != 0;
     }
-    else if ((keyCode != 0x2d) && (keyCode != 0x2e)) {
-      if (keyCode < 0x30) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-      if (0x39 < keyCode) {
-        if (keyCode == 0x3a) {
-UiPathTextEdit_CheckColonOrBackslashRestriction:
-          if ((control->editStateFlags & 4) != 0) {
-UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
-            delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf
-                               (keyboardStateMask,keyCode,&control->base);
-            return delegatedResult;
-          }
-        }
-        else {
-          if (keyCode == 0x3f) goto UiPathTextEdit_CheckWildcardPermission;
-          if (keyCode < 0x41) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-          if (0x5a < keyCode) {
-            if (keyCode == 0x5c) goto UiPathTextEdit_CheckColonOrBackslashRestriction;
-            if ((keyCode < 0x61) || (0x7a < keyCode))
-            goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-          }
-        }
-      }
+    else if ((keyCode == 0x2d) || (keyCode == 0x2e)) {
+      characterAccepted = true;
+    }
+    else if (keyCode < 0x30) {
+      characterAccepted = false;
+    }
+    else if (keyCode <= 0x39) {
+      characterAccepted = true;
+    }
+    else if ((keyCode == 0x3a) || (keyCode == 0x5c)) {
+      characterAccepted = (control->editStateFlags & 4) == 0;
+    }
+    else if (keyCode < 0x41) {
+      characterAccepted = false;
+    }
+    else if (keyCode <= 0x5a) {
+      characterAccepted = true;
+    }
+    else {
+      characterAccepted = (0x61 <= keyCode) && (keyCode <= 0x7a);
+    }
+    if (!characterAccepted) {
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      return delegatedResult;
     }
     insertIndex = control->cursorIndex;
     if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
@@ -398,104 +459,14 @@ UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
       }
     }
   }
-  else {
-    if ((keyboardStateMask & 0x30) != 0)
-    goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-    if ((keyCode & 0xffff0000) == 0) {
-      if ((((keyboardStateMask & 0x3c) != 0) && (0x40 < keyCode)) &&
-         ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))
-      goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-      goto UiPathTextEdit_ValidateCharacterAndInsert;
-    }
-    if ((keyboardStateMask & 0xc) == 0) {
-      if ((keyboardStateMask & 3) != 0) {
-        if (keyCode == 0x10010) {
-          codeUnitIndex = control->cursorIndex;
-          if (codeUnitIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-          control->cursorIndex = 0;
-          if (codeUnitIndex == control->selectionStart) {
-            control->selectionStart = 0;
-          }
-          else {
-            control->selectionEnd = 0;
-          }
-        }
-        else {
-          if (keyCode != 0x10018) {
-            if (keyCode == 0x10014) {
-              codeUnitIndex = control->cursorIndex;
-              if (codeUnitIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-              control->cursorIndex = control->cursorIndex - 1;
-              if (codeUnitIndex == control->selectionStart) {
-                control->selectionStart = control->selectionStart - 1;
-              }
-              else {
-                control->selectionEnd = control->selectionEnd - 1;
-              }
-            }
-            else {
-              if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-              codeUnitIndex = control->cursorIndex;
-              if (control->pathBuffer[codeUnitIndex] == 0)
-              goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-              control->cursorIndex = control->cursorIndex + 1;
-              if (codeUnitIndex == control->selectionEnd) {
-                control->selectionEnd = control->selectionEnd + 1;
-              }
-              else {
-                control->selectionStart = control->selectionStart + 1;
-              }
-            }
-            goto UiPathTextEdit_RecomputeLayoutAfterEdit;
-          }
-          codeUnitIndex = control->cursorIndex;
-          if (control->pathBuffer[codeUnitIndex] == 0)
-          goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-          control->cursorIndex = 0;
-          countOrFieldOffset = 0x60;
-          if (codeUnitIndex == control->selectionEnd) {
-            countOrFieldOffset = 100;
-          }
-          do {
-            selectionBoundary = (int *)((int)control->pathBuffer + countOrFieldOffset + -0x6c);
-            *selectionBoundary = *selectionBoundary + 1;
-            control->cursorIndex = control->cursorIndex + 1;
-            shiftCountOrScanIndex = codeUnitIndex + 1;
-            codeUnitIndex = codeUnitIndex + 1;
-          } while (control->pathBuffer[shiftCountOrScanIndex] != 0);
-        }
-        goto UiPathTextEdit_NormalizeSelectionOrder;
-      }
-      if (keyCode == 0x10003) {
+  else if ((keyboardStateMask & 0xc) == 0) {
+    if ((keyboardStateMask & 3) == 0) {
+      switch (keyCode) {
+      case 0x10003:
+      case 0x10006:
         codeUnitIndex = control->cursorIndex;
-        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
-        goto UiPathTextEdit_DeleteSelectedRange;
-        if (control->cursorIndex == 0) goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-        sourceCursor = control->pathBuffer + codeUnitIndex;
-        destinationCursor = control->pathBuffer + (codeUnitIndex - 1);
-        for (countOrFieldOffset = 0x100 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
-          *destinationCursor = *sourceCursor;
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
-        }
-        control->cursorIndex = control->cursorIndex - 1;
-      }
-      else {
-        if (keyCode == 0x10006) {
-          codeUnitIndex = control->cursorIndex;
-          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
-            if (control->pathBuffer[codeUnitIndex] == 0)
-            goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-            sourceCursor = control->pathBuffer + codeUnitIndex + 1;
-            destinationCursor = control->pathBuffer + codeUnitIndex;
-            for (countOrFieldOffset = 0xff - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
-              *destinationCursor = *sourceCursor;
-              sourceCursor = sourceCursor + 1;
-              destinationCursor = destinationCursor + 1;
-            }
-            goto UiPathTextEdit_RecomputeLayoutAfterEdit;
-          }
-UiPathTextEdit_DeleteSelectedRange:
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
+          /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
           codeUnitIndex = control->selectionEnd;
           countOrFieldOffset = codeUnitIndex - control->selectionStart;
           sourceCursor = control->pathBuffer + codeUnitIndex;
@@ -511,12 +482,48 @@ UiPathTextEdit_DeleteSelectedRange:
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
-          goto UiPathTextEdit_RecomputeLayoutAfterEdit;
         }
-        if (keyCode == 0x10007) {
-          control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_OVERWRITE_MODE;
-          goto UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+        else if (keyCode == 0x10003) {
+          /* Backspace: remove the code unit before the cursor. */
+          if (control->cursorIndex == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          sourceCursor = control->pathBuffer + codeUnitIndex;
+          destinationCursor = control->pathBuffer + (codeUnitIndex - 1);
+          for (countOrFieldOffset = 0x100 - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+          control->cursorIndex = control->cursorIndex - 1;
+          control->selectionStart = control->cursorIndex;
+          control->selectionEnd = control->cursorIndex;
         }
+        else {
+          /* Delete: remove the code unit at the cursor. */
+          if (control->pathBuffer[codeUnitIndex] == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          sourceCursor = control->pathBuffer + codeUnitIndex + 1;
+          destinationCursor = control->pathBuffer + codeUnitIndex;
+          for (countOrFieldOffset = 0xff - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+        }
+        break;
+      case 0x10007:
+        control->editStateFlags = control->editStateFlags ^ UI_TEXT_EDIT_OVERWRITE_MODE;
+        recomputeLayout = false;
+        break;
+      case 0x10010:
+      case 0x10018:
+      case 0x10014:
+      case 0x10016:
+        /* Cursor movement (Home/End/Left/Right) collapses the selection at the cursor. */
         if (keyCode == 0x10010) {
           control->cursorIndex = 0;
         }
@@ -530,32 +537,111 @@ UiPathTextEdit_DeleteSelectedRange:
             control->cursorIndex = control->cursorIndex - 1;
           }
         }
-        else {
-          if (keyCode != 0x10016) {
-            if (keyCode == 0x10001) {
-              if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) != 0) {
-                UiActionQueue_Enqueue(control->actionId,control);
-                if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
-                   (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-                  (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
-                }
-                return false;
-              }
-            }
-            else if ((keyCode & 0x30000) == 0x30000) {
-              return false;
-            }
-            goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-          }
-          if (control->pathBuffer[control->cursorIndex] != 0) {
-            control->cursorIndex = control->cursorIndex + 1;
-          }
+        else if (control->pathBuffer[control->cursorIndex] != 0) {
+          control->cursorIndex = control->cursorIndex + 1;
         }
+        control->selectionStart = control->cursorIndex;
+        control->selectionEnd = control->cursorIndex;
+        break;
+      case 0x10001:
+        if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) == 0) {
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          return delegatedResult;
+        }
+        UiActionQueue_Enqueue(control->actionId,control);
+        if (((control->editStateFlags & UI_TEXT_EDIT_PLAY_INTERACTION_SOUND) != 0) &&
+           (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        }
+        return false;
+      default:
+        if ((keyCode & 0x30000) == 0x30000) {
+          return false;
+        }
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
       }
-      control->selectionStart = control->cursorIndex;
-      control->selectionEnd = control->cursorIndex;
     }
-    else if ((keyboardStateMask & 3) == 0) {
+    else {
+      /* Shift: extend the selection from the cursor. */
+      switch (keyCode) {
+      case 0x10010:
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = 0;
+        if (codeUnitIndex == control->selectionStart) {
+          control->selectionStart = 0;
+        }
+        else {
+          control->selectionEnd = 0;
+        }
+        normalizeSelection = true;
+        break;
+      case 0x10018:
+        codeUnitIndex = control->cursorIndex;
+        if (control->pathBuffer[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        /* NOTE: as in the original, the cursor restarts at 0 and ends at the number of code units
+           that followed it, not at the end of the text. */
+        control->cursorIndex = 0;
+        selectionBoundary = &control->selectionStart;
+        if (codeUnitIndex == control->selectionEnd) {
+          selectionBoundary = &control->selectionEnd;
+        }
+        do {
+          *selectionBoundary = *selectionBoundary + 1;
+          control->cursorIndex = control->cursorIndex + 1;
+          shiftCountOrScanIndex = codeUnitIndex + 1;
+          codeUnitIndex = codeUnitIndex + 1;
+        } while (control->pathBuffer[shiftCountOrScanIndex] != 0);
+        normalizeSelection = true;
+        break;
+      case 0x10014:
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = control->cursorIndex - 1;
+        if (codeUnitIndex == control->selectionStart) {
+          control->selectionStart = control->selectionStart - 1;
+        }
+        else {
+          control->selectionEnd = control->selectionEnd - 1;
+        }
+        break;
+      case 0x10016:
+        codeUnitIndex = control->cursorIndex;
+        if (control->pathBuffer[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = control->cursorIndex + 1;
+        if (codeUnitIndex == control->selectionEnd) {
+          control->selectionEnd = control->selectionEnd + 1;
+        }
+        else {
+          control->selectionStart = control->selectionStart + 1;
+        }
+        break;
+      default:
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
+      }
+    }
+  }
+  else {
+    /* Ctrl+Left/Right: jump to the previous/next path segment ('\' or '.'), Shift extends. */
+    if ((keyCode != 0x10014) && (keyCode != 0x10016)) {
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      return delegatedResult;
+    }
+    if ((keyboardStateMask & 3) == 0) {
       if (keyCode == 0x10014) {
         codeUnitIndex = control->cursorIndex;
         if (codeUnitIndex != 0) {
@@ -572,7 +658,6 @@ UiPathTextEdit_DeleteSelectedRange:
         }
       }
       else {
-        if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
         codeUnitIndex = control->cursorIndex;
         do {
           segmentBoundaryIndex = codeUnitIndex;
@@ -586,13 +671,13 @@ UiPathTextEdit_DeleteSelectedRange:
         control->selectionEnd = segmentBoundaryIndex;
       }
     }
-    else {
-      if (keyCode == 0x10014) {
-        codeUnitIndex = control->cursorIndex;
-        countOrFieldOffset = 0x60;
-        if (codeUnitIndex == 0) goto UiPathTextEdit_RecomputeLayoutAfterEdit;
+    else if (keyCode == 0x10014) {
+      codeUnitIndex = control->cursorIndex;
+      if (codeUnitIndex != 0) {
+        /* The selection end at the cursor moves. */
+        selectionBoundary = &control->selectionStart;
         if (codeUnitIndex != control->selectionStart) {
-          countOrFieldOffset = 100;
+          selectionBoundary = &control->selectionEnd;
         }
         segmentBoundaryIndex = 0;
         if (codeUnitIndex != 1) {
@@ -602,38 +687,39 @@ UiPathTextEdit_DeleteSelectedRange:
           }
         }
         control->cursorIndex = segmentBoundaryIndex;
-        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + countOrFieldOffset + -0x6c) = segmentBoundaryIndex;
-      }
-      else {
-        if (keyCode != 0x10016) goto UiPathTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        codeUnitIndex = control->cursorIndex;
-        countOrFieldOffset = 0x60;
-        if (codeUnitIndex != control->selectionStart) {
-          countOrFieldOffset = 100;
-        }
-        do {
-          segmentBoundaryIndex = codeUnitIndex;
-          if ((control->pathBuffer[codeUnitIndex] == 0) ||
-             (segmentBoundaryIndex = codeUnitIndex + 1, control->pathBuffer[codeUnitIndex] == 0x5c)) break;
-          sourceCursor = control->pathBuffer + codeUnitIndex;
-          codeUnitIndex = segmentBoundaryIndex;
-        } while (*sourceCursor != 0x2e);
-        control->cursorIndex = segmentBoundaryIndex;
-        *(UiTextCodeUnitIndex *)((int)control->pathBuffer + countOrFieldOffset + -0x6c) = segmentBoundaryIndex;
-      }
-UiPathTextEdit_NormalizeSelectionOrder:
-      if (control->selectionEnd < control->selectionStart) {
-        LOCK();
-        codeUnitIndex = control->selectionEnd;
-        control->selectionEnd = control->selectionStart;
-        UNLOCK();
-        control->selectionStart = codeUnitIndex;
+        *selectionBoundary = segmentBoundaryIndex;
+        normalizeSelection = true;
       }
     }
+    else {
+      codeUnitIndex = control->cursorIndex;
+      selectionBoundary = &control->selectionStart;
+      if (codeUnitIndex != control->selectionStart) {
+        selectionBoundary = &control->selectionEnd;
+      }
+      do {
+        segmentBoundaryIndex = codeUnitIndex;
+        if ((control->pathBuffer[codeUnitIndex] == 0) ||
+           (segmentBoundaryIndex = codeUnitIndex + 1, control->pathBuffer[codeUnitIndex] == 0x5c)) break;
+        sourceCursor = control->pathBuffer + codeUnitIndex;
+        codeUnitIndex = segmentBoundaryIndex;
+      } while (*sourceCursor != 0x2e);
+      control->cursorIndex = segmentBoundaryIndex;
+      *selectionBoundary = segmentBoundaryIndex;
+      normalizeSelection = true;
+    }
   }
-UiPathTextEdit_RecomputeLayoutAfterEdit:
-  UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
-UiPathTextEdit_UpdateValidityNotifyInvalidateAndReturn:
+  if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
+    /* Keep selectionStart <= selectionEnd when the moving end crossed the anchor. */
+    LOCK();
+    codeUnitIndex = control->selectionEnd;
+    control->selectionEnd = control->selectionStart;
+    UNLOCK();
+    control->selectionStart = codeUnitIndex;
+  }
+  if (recomputeLayout) {
+    UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
+  }
   UiPathTextControl_UpdateDos83Validity(control);
   if ((control->editStateFlags & UI_TEXT_EDIT_ACTION_ON_ENTER_ONLY) == 0) {
     UiActionQueue_Enqueue(control->actionId,control);
@@ -660,7 +746,7 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
           UiRequiredTextEditControl *control)
 
 {
-  int *selectionBoundary;
+  UiTextCodeUnitIndex *selectionBoundary;
   ushort displacedCodeUnit;
   UiTextCodeUnitIndex codeUnitIndex;
   UiTextCodeUnitIndex wordBoundaryIndex;
@@ -672,21 +758,37 @@ UiRequiredTextEditControl_HandleKeyboardAndValidateCf
   uint insertIndex;
   word *sourceCursor;
   word *destinationCursor;
+  bool isAltGrCharacter;
+  bool recomputeLayout;
+  bool normalizeSelection;
   bool delegatedResult;
-  
+
   insertIndex = control->cursorIndex;
   if (((control->editStateFlags & UI_REQUIRED_TEXT_READ_ONLY) != 0) ||
      (((control->base).nodeFlags & UI_NODE_SUPPRESSED) != 0)) {
-UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent:
     delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
     return delegatedResult;
   }
-  if ((((keyCode == 0x40) ||
-       ((((keyCode == 0x7c || (keyCode == 0x7e)) || (keyCode == 0xb2)) ||
-        ((keyCode == 0xb3 || (keyCode == 0x7b)))))) || (keyCode == 0x5b)) ||
-     (((keyCode == 0x5d || (keyCode == 0x7d)) ||
-      ((keyCode == 0x5c || ((keyCode == 0xb5 || (keyCode == 0x80)))))))) {
-UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
+  /* Characters typed with AltGr are inserted without the modifier checks. */
+  isAltGrCharacter =
+       (((keyCode == 0x40) ||
+        ((((keyCode == 0x7c || (keyCode == 0x7e)) || (keyCode == 0xb2)) ||
+         ((keyCode == 0xb3 || (keyCode == 0x7b)))))) || (keyCode == 0x5b)) ||
+       (((keyCode == 0x5d || (keyCode == 0x7d)) ||
+        ((keyCode == 0x5c || ((keyCode == 0xb5 || (keyCode == 0x80)))))));
+  if ((!isAltGrCharacter) &&
+     (((keyboardStateMask & 0x30) != 0) ||
+      ((((keyCode & 0xffff0000) == 0) && ((keyboardStateMask & 0x3c) != 0)) &&
+       ((0x40 < keyCode) && ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))))) {
+    delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedResult;
+  }
+  /* Handled keys end in the shared tail: optional selection normalization and layout recompute,
+     then validity update, action, invalidate and the interaction sound. */
+  recomputeLayout = true;
+  normalizeSelection = false;
+  if ((isAltGrCharacter) || ((keyCode & 0xffff0000) == 0)) {
+    /* Insert the character, replacing a selection. */
     insertLimit = control->bufferCapacityCodeUnits - 1;
     if ((insertIndex != control->selectionStart) || (insertIndex != control->selectionEnd)) {
       codeUnitIndex = control->selectionEnd;
@@ -725,107 +827,14 @@ UiRequiredTextEdit_InsertCharacterOrReplaceSelection:
       }
     }
   }
-  else {
-    if ((keyboardStateMask & 0x30) != 0)
-    goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-    if ((keyCode & 0xffff0000) == 0) {
-      if ((((keyboardStateMask & 0x3c) != 0) && (0x40 < keyCode)) &&
-         ((keyCode < 0x5b || ((0x60 < keyCode && (keyCode < 0x7b))))))
-      goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-      goto UiRequiredTextEdit_InsertCharacterOrReplaceSelection;
-    }
-    if ((keyboardStateMask & 0xc) == 0) {
-      if ((keyboardStateMask & 3) != 0) {
-        if (keyCode == 0x10010) {
-          codeUnitIndex = control->cursorIndex;
-          if (codeUnitIndex == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-          control->cursorIndex = 0;
-          if (codeUnitIndex == control->selectionStart) {
-            control->selectionStart = 0;
-          }
-          else {
-            control->selectionEnd = 0;
-          }
-        }
-        else {
-          if (keyCode != 0x10018) {
-            if (keyCode == 0x10014) {
-              codeUnitIndex = control->cursorIndex;
-              if (codeUnitIndex == 0) goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-              control->cursorIndex = control->cursorIndex - 1;
-              if (codeUnitIndex == control->selectionStart) {
-                control->selectionStart = control->selectionStart - 1;
-              }
-              else {
-                control->selectionEnd = control->selectionEnd - 1;
-              }
-            }
-            else {
-              if (keyCode != 0x10016)
-              goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-              codeUnitIndex = control->cursorIndex;
-              if (control->textPrefix6C[codeUnitIndex] == 0)
-              goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-              control->cursorIndex = control->cursorIndex + 1;
-              if (codeUnitIndex == control->selectionEnd) {
-                control->selectionEnd = control->selectionEnd + 1;
-              }
-              else {
-                control->selectionStart = control->selectionStart + 1;
-              }
-            }
-            goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
-          }
-          codeUnitIndex = control->cursorIndex;
-          if (control->textPrefix6C[codeUnitIndex] == 0)
-          goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-          control->cursorIndex = 0;
-          countOrFieldOffset = 0x60;
-          if (codeUnitIndex == control->selectionEnd) {
-            countOrFieldOffset = 100;
-          }
-          do {
-            selectionBoundary = (int *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c);
-            *selectionBoundary = *selectionBoundary + 1;
-            control->cursorIndex = control->cursorIndex + 1;
-            shiftCountOrScanIndex = codeUnitIndex + 1;
-            codeUnitIndex = codeUnitIndex + 1;
-          } while (control->textPrefix6C[shiftCountOrScanIndex] != 0);
-        }
-        goto UiRequiredTextEdit_NormalizeSelectionOrder;
-      }
-      if (keyCode == 0x10003) {
+  else if ((keyboardStateMask & 0xc) == 0) {
+    if ((keyboardStateMask & 3) == 0) {
+      switch (keyCode) {
+      case 0x10003:
+      case 0x10006:
         codeUnitIndex = control->cursorIndex;
-        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd))
-        goto UiRequiredTextEdit_DeleteSelectedRange;
-        if (control->cursorIndex == 0)
-        goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-        sourceCursor = control->textPrefix6C + codeUnitIndex;
-        destinationCursor = control->textPrefix6C + (codeUnitIndex - 1);
-        for (countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
-          *destinationCursor = *sourceCursor;
-          sourceCursor = sourceCursor + 1;
-          destinationCursor = destinationCursor + 1;
-        }
-        control->cursorIndex = control->cursorIndex - 1;
-      }
-      else {
-        if (keyCode == 0x10006) {
-          codeUnitIndex = control->cursorIndex;
-          if ((codeUnitIndex == control->selectionStart) && (codeUnitIndex == control->selectionEnd)) {
-            if (control->textPrefix6C[codeUnitIndex] == 0)
-            goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
-            countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex;
-            sourceCursor = control->textPrefix6C + codeUnitIndex + 1;
-            destinationCursor = control->textPrefix6C + codeUnitIndex;
-            while (countOrFieldOffset = countOrFieldOffset + -1, countOrFieldOffset != 0) {
-              *destinationCursor = *sourceCursor;
-              sourceCursor = sourceCursor + 1;
-              destinationCursor = destinationCursor + 1;
-            }
-            goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
-          }
-UiRequiredTextEdit_DeleteSelectedRange:
+        if ((codeUnitIndex != control->selectionStart) || (codeUnitIndex != control->selectionEnd)) {
+          /* Backspace/Delete with a selection: remove the selected range, zero-fill the tail. */
           codeUnitIndex = control->selectionEnd;
           countOrFieldOffset = codeUnitIndex - control->selectionStart;
           sourceCursor = control->textPrefix6C + codeUnitIndex;
@@ -841,12 +850,49 @@ UiRequiredTextEdit_DeleteSelectedRange:
           }
           control->cursorIndex = control->selectionStart;
           control->selectionEnd = control->selectionStart;
-          goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
         }
-        if (keyCode == 0x10007) {
-          control->editStateFlags = control->editStateFlags ^ UI_REQUIRED_TEXT_OVERWRITE_MODE;
-          goto UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn;
+        else if (keyCode == 0x10003) {
+          /* Backspace: remove the code unit before the cursor. */
+          if (control->cursorIndex == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          sourceCursor = control->textPrefix6C + codeUnitIndex;
+          destinationCursor = control->textPrefix6C + (codeUnitIndex - 1);
+          for (countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex; countOrFieldOffset != 0; countOrFieldOffset = countOrFieldOffset + -1) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+          control->cursorIndex = control->cursorIndex - 1;
+          control->selectionStart = control->cursorIndex;
+          control->selectionEnd = control->cursorIndex;
         }
+        else {
+          /* Delete: remove the code unit at the cursor. */
+          if (control->textPrefix6C[codeUnitIndex] == 0) {
+            recomputeLayout = false;
+            break;
+          }
+          countOrFieldOffset = control->bufferCapacityCodeUnits - codeUnitIndex;
+          sourceCursor = control->textPrefix6C + codeUnitIndex + 1;
+          destinationCursor = control->textPrefix6C + codeUnitIndex;
+          while (countOrFieldOffset = countOrFieldOffset + -1, countOrFieldOffset != 0) {
+            *destinationCursor = *sourceCursor;
+            sourceCursor = sourceCursor + 1;
+            destinationCursor = destinationCursor + 1;
+          }
+        }
+        break;
+      case 0x10007:
+        control->editStateFlags = control->editStateFlags ^ UI_REQUIRED_TEXT_OVERWRITE_MODE;
+        recomputeLayout = false;
+        break;
+      case 0x10010:
+      case 0x10018:
+      case 0x10014:
+      case 0x10016:
+        /* Cursor movement (Home/End/Left/Right) collapses the selection at the cursor. */
         if (keyCode == 0x10010) {
           control->cursorIndex = 0;
         }
@@ -860,53 +906,132 @@ UiRequiredTextEdit_DeleteSelectedRange:
             control->cursorIndex = control->cursorIndex - 1;
           }
         }
-        else {
-          if (keyCode != 0x10016) {
-            if (keyCode == 0x10001) {
-              if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) != 0) {
-                UiActionQueue_Enqueue(control->actionId,control);
-                if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-                   (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-                  (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
-                }
-                return false;
-              }
-            }
-            else if (keyCode == 0x10000) {
-              if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) != 0)
-              {
-                sourceCursor = control->textPrefix6C;
-                for (remainingCodeUnits = control->bufferCapacityCodeUnits; remainingCodeUnits != 0; remainingCodeUnits = remainingCodeUnits - 1) {
-                  *sourceCursor = 0;
-                  sourceCursor = sourceCursor + 1;
-                }
-                control->cursorIndex = 0;
-                control->selectionStart = 0;
-                control->selectionEnd = 0;
-                UiActionQueue_Enqueue(control->actionId,control);
-                if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
-                   (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
-                  (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
-                }
-                return false;
-              }
-            }
-            else if ((keyCode & 0x30000) == 0x30000) {
-              return false;
-            }
-            goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-          }
-          if (control->textPrefix6C[control->cursorIndex] != 0) {
-            control->cursorIndex = control->cursorIndex + 1;
-          }
+        else if (control->textPrefix6C[control->cursorIndex] != 0) {
+          control->cursorIndex = control->cursorIndex + 1;
         }
+        control->selectionStart = control->cursorIndex;
+        control->selectionEnd = control->cursorIndex;
+        break;
+      case 0x10001:
+        if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          return delegatedResult;
+        }
+        UiActionQueue_Enqueue(control->actionId,control);
+        if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+           (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        }
+        return false;
+      case 0x10000:
+        if ((control->editStateFlags & UI_REQUIRED_TEXT_ESCAPE_CLEARS_AND_QUEUES_ACTION) == 0) {
+          delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+          return delegatedResult;
+        }
+        sourceCursor = control->textPrefix6C;
+        for (remainingCodeUnits = control->bufferCapacityCodeUnits; remainingCodeUnits != 0; remainingCodeUnits = remainingCodeUnits - 1) {
+          *sourceCursor = 0;
+          sourceCursor = sourceCursor + 1;
+        }
+        control->cursorIndex = 0;
+        control->selectionStart = 0;
+        control->selectionEnd = 0;
+        UiActionQueue_Enqueue(control->actionId,control);
+        if (((control->editStateFlags & UI_REQUIRED_TEXT_PLAY_INTERACTION_SOUND) != 0) &&
+           (control->activationSound != (DirectSoundVoiceSet *)0x0)) {
+          (*g_SoundPlayOneShot)(g_UiSoundGainQ15,g_UiSoundGainQ15,control->activationSound);
+        }
+        return false;
+      default:
+        if ((keyCode & 0x30000) == 0x30000) {
+          return false;
+        }
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
       }
-      control->selectionStart = control->cursorIndex;
-      control->selectionEnd = control->cursorIndex;
     }
-    else if ((keyboardStateMask & 3) == 0) {
-      if (keyCode == 0x10014) {
+    else {
+      /* Shift: extend the selection from the cursor. */
+      switch (keyCode) {
+      case 0x10010:
         codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = 0;
+        if (codeUnitIndex == control->selectionStart) {
+          control->selectionStart = 0;
+        }
+        else {
+          control->selectionEnd = 0;
+        }
+        normalizeSelection = true;
+        break;
+      case 0x10018:
+        codeUnitIndex = control->cursorIndex;
+        if (control->textPrefix6C[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        /* NOTE: as in the original, the cursor restarts at 0 and ends at the number of code units
+           that followed it, not at the end of the text. */
+        control->cursorIndex = 0;
+        selectionBoundary = &control->selectionStart;
+        if (codeUnitIndex == control->selectionEnd) {
+          selectionBoundary = &control->selectionEnd;
+        }
+        do {
+          *selectionBoundary = *selectionBoundary + 1;
+          control->cursorIndex = control->cursorIndex + 1;
+          shiftCountOrScanIndex = codeUnitIndex + 1;
+          codeUnitIndex = codeUnitIndex + 1;
+        } while (control->textPrefix6C[shiftCountOrScanIndex] != 0);
+        normalizeSelection = true;
+        break;
+      case 0x10014:
+        codeUnitIndex = control->cursorIndex;
+        if (codeUnitIndex == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = control->cursorIndex - 1;
+        if (codeUnitIndex == control->selectionStart) {
+          control->selectionStart = control->selectionStart - 1;
+        }
+        else {
+          control->selectionEnd = control->selectionEnd - 1;
+        }
+        break;
+      case 0x10016:
+        codeUnitIndex = control->cursorIndex;
+        if (control->textPrefix6C[codeUnitIndex] == 0) {
+          recomputeLayout = false;
+          break;
+        }
+        control->cursorIndex = control->cursorIndex + 1;
+        if (codeUnitIndex == control->selectionEnd) {
+          control->selectionEnd = control->selectionEnd + 1;
+        }
+        else {
+          control->selectionStart = control->selectionStart + 1;
+        }
+        break;
+      default:
+        delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+        return delegatedResult;
+      }
+    }
+  }
+  else {
+    /* Ctrl+Left/Right: jump between space-separated words, Shift extends the selection. */
+    if ((keyCode != 0x10014) && (keyCode != 0x10016)) {
+      delegatedResult = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+      return delegatedResult;
+    }
+    codeUnitIndex = control->cursorIndex;
+    if ((keyboardStateMask & 3) == 0) {
+      if (keyCode == 0x10014) {
         if (codeUnitIndex != 0) {
           if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
             do {
@@ -920,52 +1045,47 @@ UiRequiredTextEdit_DeleteSelectedRange:
             do {
               scanIndex = codeUnitIndex;
               wordBoundaryIndex = scanIndex - 1;
-              if (wordBoundaryIndex == 0) goto UiRequiredTextEdit_MoveCursorToPreviousWordBoundary;
+              if (wordBoundaryIndex == 0) break;
               codeUnitIndex = wordBoundaryIndex;
             } while (control->textPrefix6C[scanIndex - 2] != 0x20);
             if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != 0x20)) {
               wordBoundaryIndex = scanIndex - 2;
             }
           }
-UiRequiredTextEdit_MoveCursorToPreviousWordBoundary:
           control->cursorIndex = wordBoundaryIndex;
           control->selectionStart = wordBoundaryIndex;
           control->selectionEnd = wordBoundaryIndex;
         }
       }
       else {
-        if (keyCode != 0x10016) goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        codeUnitIndex = control->cursorIndex;
         if (control->textPrefix6C[codeUnitIndex] == 0x20) {
           for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == 0x20));
               codeUnitIndex = codeUnitIndex + 1) {
           }
         }
         else {
-          do {
-            wordBoundaryIndex = codeUnitIndex;
-            codeUnitIndex = wordBoundaryIndex;
-            if (control->textPrefix6C[wordBoundaryIndex] == 0)
-            goto UiRequiredTextEdit_MoveCursorToNextWordBoundary;
-            codeUnitIndex = wordBoundaryIndex + 1;
-          } while (control->textPrefix6C[wordBoundaryIndex] != 0x20);
-          if (control->textPrefix6C[wordBoundaryIndex + 1] == 0x20) {
-            codeUnitIndex = wordBoundaryIndex;
+          /* Past the next space; back onto it when another space follows. */
+          while (control->textPrefix6C[codeUnitIndex] != 0) {
+            codeUnitIndex = codeUnitIndex + 1;
+            if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
+              if (control->textPrefix6C[codeUnitIndex] == 0x20) {
+                codeUnitIndex = codeUnitIndex - 1;
+              }
+              break;
+            }
           }
         }
-UiRequiredTextEdit_MoveCursorToNextWordBoundary:
         control->cursorIndex = codeUnitIndex;
         control->selectionStart = codeUnitIndex;
         control->selectionEnd = codeUnitIndex;
       }
     }
-    else {
-      if (keyCode == 0x10014) {
-        codeUnitIndex = control->cursorIndex;
-        countOrFieldOffset = 0x60;
-        if (codeUnitIndex == 0) goto UiRequiredTextEdit_RecomputeLayoutAfterEdit;
+    else if (keyCode == 0x10014) {
+      if (codeUnitIndex != 0) {
+        /* The selection end at the cursor moves. */
+        selectionBoundary = &control->selectionStart;
         if (codeUnitIndex != control->selectionStart) {
-          countOrFieldOffset = 100;
+          selectionBoundary = &control->selectionEnd;
         }
         if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
           do {
@@ -979,56 +1099,55 @@ UiRequiredTextEdit_MoveCursorToNextWordBoundary:
           do {
             scanIndex = codeUnitIndex;
             wordBoundaryIndex = scanIndex - 1;
-            if (wordBoundaryIndex == 0) goto UiRequiredTextEdit_ExtendSelectionToPreviousWordBoundary;
+            if (wordBoundaryIndex == 0) break;
             codeUnitIndex = wordBoundaryIndex;
           } while (control->textPrefix6C[scanIndex - 2] != 0x20);
           if ((1 < (int)wordBoundaryIndex) && (control->textPrefix6C[scanIndex - 3] != 0x20)) {
             wordBoundaryIndex = scanIndex - 2;
           }
         }
-UiRequiredTextEdit_ExtendSelectionToPreviousWordBoundary:
         control->cursorIndex = wordBoundaryIndex;
-        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c) = wordBoundaryIndex;
-      }
-      else {
-        if (keyCode != 0x10016) goto UiRequiredTextEdit_DelegateRejectedOrUnhandledKeyboardEvent;
-        codeUnitIndex = control->cursorIndex;
-        countOrFieldOffset = 0x60;
-        if ((codeUnitIndex == control->selectionStart) ||
-           (countOrFieldOffset = 100, control->textPrefix6C[codeUnitIndex] != 0x20)) {
-          do {
-            wordBoundaryIndex = codeUnitIndex;
-            codeUnitIndex = wordBoundaryIndex;
-            if (control->textPrefix6C[wordBoundaryIndex] == 0)
-            goto UiRequiredTextEdit_ExtendSelectionToNextWordBoundary;
-            codeUnitIndex = wordBoundaryIndex + 1;
-          } while (control->textPrefix6C[wordBoundaryIndex] != 0x20);
-          if (control->textPrefix6C[wordBoundaryIndex + 1] == 0x20) {
-            codeUnitIndex = wordBoundaryIndex;
-          }
-        }
-        else {
-          for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == 0x20));
-              codeUnitIndex = codeUnitIndex + 1) {
-          }
-        }
-UiRequiredTextEdit_ExtendSelectionToNextWordBoundary:
-        control->cursorIndex = codeUnitIndex;
-        *(UiTextCodeUnitIndex *)((int)control->textPrefix6C + countOrFieldOffset + -0x6c) = codeUnitIndex;
-      }
-UiRequiredTextEdit_NormalizeSelectionOrder:
-      if (control->selectionEnd < control->selectionStart) {
-        LOCK();
-        codeUnitIndex = control->selectionEnd;
-        control->selectionEnd = control->selectionStart;
-        UNLOCK();
-        control->selectionStart = codeUnitIndex;
+        *selectionBoundary = wordBoundaryIndex;
+        normalizeSelection = true;
       }
     }
+    else {
+      /* NOTE: as in the original, when the cursor is at selectionStart the space-skipping case is
+         not taken even if the cursor is on a space. */
+      selectionBoundary = &control->selectionStart;
+      if ((codeUnitIndex != control->selectionStart) &&
+         (selectionBoundary = &control->selectionEnd, control->textPrefix6C[codeUnitIndex] == 0x20)) {
+        for (; (control->textPrefix6C[codeUnitIndex] != 0 && (control->textPrefix6C[codeUnitIndex] == 0x20));
+            codeUnitIndex = codeUnitIndex + 1) {
+        }
+      }
+      else {
+        while (control->textPrefix6C[codeUnitIndex] != 0) {
+          codeUnitIndex = codeUnitIndex + 1;
+          if (control->textPrefix6C[codeUnitIndex - 1] == 0x20) {
+            if (control->textPrefix6C[codeUnitIndex] == 0x20) {
+              codeUnitIndex = codeUnitIndex - 1;
+            }
+            break;
+          }
+        }
+      }
+      control->cursorIndex = codeUnitIndex;
+      *selectionBoundary = codeUnitIndex;
+      normalizeSelection = true;
+    }
   }
-UiRequiredTextEdit_RecomputeLayoutAfterEdit:
-  UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
-UiRequiredTextEdit_UpdateValidityNotifyInvalidateAndReturn:
+  if ((normalizeSelection) && (control->selectionEnd < control->selectionStart)) {
+    /* Keep selectionStart <= selectionEnd when the moving end crossed the anchor. */
+    LOCK();
+    codeUnitIndex = control->selectionEnd;
+    control->selectionEnd = control->selectionStart;
+    UNLOCK();
+    control->selectionStart = codeUnitIndex;
+  }
+  if (recomputeLayout) {
+    UiTextEditControl_RecomputeLayoutAndClampScroll((UiTextEditControl *)control);
+  }
   UiTextControl_UpdateNonEmptyValidity((UiTextEditControl *)control);
   if ((control->editStateFlags & UI_REQUIRED_TEXT_ACTION_ON_ENTER_ONLY) == 0) {
     UiActionQueue_Enqueue(control->actionId,control);
@@ -1493,16 +1612,15 @@ UiPointerList_SortByExpandedTextFieldAscending
       remainingRows = control->rowCount;
       comparisonsOrRowTop = 0;
       do {
-        if (selectedRecord == *rowSlotCursor)
-        goto 
-        UiPointerList_SortByExpandedTextFieldAscending_CommitResolvedSelectedRowSlotAndClampViewport
-        ;
+        if (selectedRecord == *rowSlotCursor) break;
         comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
         rowSlotCursor = rowSlotCursor + 1;
         remainingRows = remainingRows - 1;
       } while (remainingRows != 0);
-      rowSlotCursor = control->rowSlots;
-UiPointerList_SortByExpandedTextFieldAscending_CommitResolvedSelectedRowSlotAndClampViewport:
+      if (remainingRows == 0) {
+        /* Not found: select the first row (the row top stays past the last row, as in the original). */
+        rowSlotCursor = control->rowSlots;
+      }
       control->selectedRowSlot = rowSlotCursor;
       UiScrollableControl_ClampOffsetsToViewport
                 (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
@@ -1567,16 +1685,15 @@ UiPointerList_SortByExpandedTextFieldDescending
       remainingRows = control->rowCount;
       comparisonsOrRowTop = 0;
       do {
-        if (selectedRecord == *rowSlotCursor)
-        goto 
-        UiPointerList_SortByExpandedTextFieldDescending_CommitResolvedSelectedRowSlotAndClampViewport
-        ;
+        if (selectedRecord == *rowSlotCursor) break;
         comparisonsOrRowTop = comparisonsOrRowTop + control->rowHeight;
         rowSlotCursor = rowSlotCursor + 1;
         remainingRows = remainingRows - 1;
       } while (remainingRows != 0);
-      rowSlotCursor = control->rowSlots;
-UiPointerList_SortByExpandedTextFieldDescending_CommitResolvedSelectedRowSlotAndClampViewport:
+      if (remainingRows == 0) {
+        /* Not found: select the first row (the row top stays past the last row, as in the original). */
+        rowSlotCursor = control->rowSlots;
+      }
       control->selectedRowSlot = rowSlotCursor;
       UiScrollableControl_ClampOffsetsToViewport
                 (comparisonsOrRowTop + 1 + control->rowHeight,(control->base).rightOffset,comparisonsOrRowTop,0,
@@ -1827,16 +1944,20 @@ UiFramedTextButtonControl_DrawClipped
   uint textStyle;
   int rightEdgeOrTextY;
   bool framebufferUnavailable;
+  bool drawFrame;
   RichTextExtentRegs textExtent;
   TextResourceResolveEaxCf5 resolvedText;
   GraphicsTextureSizeEaxEdxCf9 tileSizeOrEndCapSize;
   GraphicsTextureSizeEaxEdxCf9 focusTileSize;
   int baselineY;
   int drawX;
-  
+
   framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
-  if (framebufferUnavailable) goto UiFramedTextButtonControl_DrawClipped_DrawChildrenIfEnabledAndReturn;
-  if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+  if (framebufferUnavailable) {
+    drawFrame = false;
+  }
+  else if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
+    drawFrame = true;
     if (((control->selectable).stateFlags & 4) == 0) {
       frameTileOrTextWidth = 0x4a;
     }
@@ -1846,7 +1967,18 @@ UiFramedTextButtonControl_DrawClipped
     if (((control->selectable).stateFlags & UI_SELECTABLE_SELECTED_OR_CHECKED) != 0) {
       frameTileOrTextWidth = frameTileOrTextWidth + 8;
     }
-UiFramedTextButtonControl_DrawClipped_RenderSelectedFrameTextAndFocusChrome:
+  }
+  else {
+    /* Suppressed: the disabled frame, unless state flag 0x400 hides it. */
+    drawFrame = ((control->selectable).stateFlags & 0x400) == 0;
+    if (((control->selectable).stateFlags & 4) == 0) {
+      frameTileOrTextWidth = 0x8c;
+    }
+    else {
+      frameTileOrTextWidth = 0xa4;
+    }
+  }
+  if (drawFrame) {
     tileSizeOrEndCapSize = (*g_GraphicsTextureSourceGetLogicalSize)(frameTileOrTextWidth,g_UiWindowTextureSource);
     tileStart = tileSizeOrEndCapSize.logicalHeightPixels;
     tileEnd = tileSizeOrEndCapSize.logicalWidthPixels;
@@ -1959,17 +2091,9 @@ UiFramedTextButtonControl_DrawClipped_RenderSelectedFrameTextAndFocusChrome:
       } while (rightEdgeOrTextY < bottomEdgeOrTextX);
     }
   }
-  else if (((control->selectable).stateFlags & 0x400) == 0) {
-    if (((control->selectable).stateFlags & 4) == 0) {
-      frameTileOrTextWidth = 0x8c;
-    }
-    else {
-      frameTileOrTextWidth = 0xa4;
-    }
-    goto UiFramedTextButtonControl_DrawClipped_RenderSelectedFrameTextAndFocusChrome;
+  if (!framebufferUnavailable) {
+    (*g_GraphicsFramebufferEndAccess)();
   }
-  (*g_GraphicsFramebufferEndAccess)();
-UiFramedTextButtonControl_DrawClipped_DrawChildrenIfEnabledAndReturn:
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) == 0) {
     UiContainer_DrawIntersectingChildren
               (clipTop,clipLeft,clipBottom,clipRight,(UiNodeBase *)control);
@@ -2188,8 +2312,10 @@ UiWindowControl_DrawFramedTextAndChrome
     }
   }
   else {
-    if (((control->selectable).stateFlags & 0x400) != 0)
-    goto UiWindowControl_DrawFramedTextAndChrome_EndFramebufferAccess;
+    if (((control->selectable).stateFlags & 0x400) != 0) {
+      (*g_GraphicsFramebufferEndAccess)();
+      return;
+    }
     if (((control->selectable).stateFlags & 4) == 0) {
       frameTileOrTextWidth = 0x8c;
     }
@@ -2326,7 +2452,6 @@ UiWindowControl_DrawFramedTextAndChrome
   (*g_GraphicsTextureSourceBlitSourceAlpha)
             (clipTop,clipLeft,clipBottom,clipRight,styleOffsetOrIconY,focusCoordOrIconX,control->iconSubresource,
              control->iconTextureSource,g_FramebufferAccess);
-UiWindowControl_DrawFramedTextAndChrome_EndFramebufferAccess:
   (*g_GraphicsFramebufferEndAccess)();
   return;
 }
@@ -2559,6 +2684,7 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
 
 {
   bool childrenAlreadyRetried;
+  bool skipTextureTest;
   UiNodeBase *hitNode;
   int slackWidth;
   int drawX;
@@ -2572,10 +2698,11 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
   if ((control->panelFlags & 0x20) != 0) {
     return (UiNodeBase *)0xffffffff;
   }
-  if (((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0)
-  goto UiImagePanelHitTest_CheckChildren;
+  /* The first pass skips the opaque-texture test when children may be hit outside the bounds;
+     a retry (the children hit test returned the panel itself) always runs it. */
+  skipTextureTest = ((control->base).nodeFlags & UI_NODE_ALLOW_CHILD_HIT_TEST_OUTSIDE_BOUNDS) != 0;
   do {
-    if ((control->panelFlags & 0x40) == 0) {
+    if ((!skipTextureTest) && ((control->panelFlags & 0x40) == 0)) {
       drawX = (control->base).left;
       drawY = (control->base).top;
       if (control->textureSource == (GraphicsTextureSourceAsset *)0x0) {
@@ -2604,7 +2731,7 @@ UiImagePanelControl_HitTestAlignedTextureAndChildren(int pointerY,int pointerX,U
         return (UiNodeBase *)0xffffffff;
       }
     }
-UiImagePanelHitTest_CheckChildren:
+    skipTextureTest = false;
     hitNode = UiContainer_HitTestChildren(pointerY,pointerX,&control->base);
     if (childrenAlreadyRetried) {
       return hitNode;
@@ -2661,8 +2788,8 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren
     tileWidth = tileSize.logicalWidthPixels;
     framebufferUnavailable = (*g_GraphicsFramebufferBeginAccess)();
     if (!framebufferUnavailable) {
-UiFillPanelControl_DrawColorOrTiledTextureAndChildren_BlitNextTextureTile:
-      do {
+      /* Tile rows left to right (fill flag 1), then top to bottom (fill flag 2). */
+      while( true ) {
         if ((control->fillFlags & 0x10) != 0) {
           (*g_GraphicsTextureSourceBlitModulatedSourceAlpha)
                     (clipTop,clipLeft,clipBottom,clipRight,
@@ -2675,22 +2802,16 @@ UiFillPanelControl_DrawColorOrTiledTextureAndChildren_BlitNextTextureTile:
                    control->textureSource,g_FramebufferAccess);
         if ((control->fillFlags & 1) != 0) {
           tileLeft = tileLeft + tileWidth;
-          if (tileLeft < clipLeft)
-          goto UiFillPanelControl_DrawColorOrTiledTextureAndChildren_BlitNextTextureTile;
+          if (tileLeft < clipLeft) continue;
           tileLeft = (control->base).left;
         }
-        if (((control->fillFlags & 2) == 0) || (tileTop = tileTop + tileHeight, clipTop <= tileTop))
-        goto 
-        UiFillPanelControl_DrawColorOrTiledTextureAndChildren_EndFramebufferAccessBeforeChildDraw;
-      } while( true );
+        if (((control->fillFlags & 2) == 0) || (tileTop = tileTop + tileHeight, clipTop <= tileTop)) break;
+      }
+      (*g_GraphicsFramebufferEndAccess)();
     }
   }
-UiFillPanelControl_DrawColorOrTiledTextureAndChildren_DrawIntersectingChildrenAndReturn:
   UiContainer_DrawIntersectingChildren(clipTop,clipLeft,clipBottom,clipRight,&control->base);
   return;
-UiFillPanelControl_DrawColorOrTiledTextureAndChildren_EndFramebufferAccessBeforeChildDraw:
-  (*g_GraphicsFramebufferEndAccess)();
-  goto UiFillPanelControl_DrawColorOrTiledTextureAndChildren_DrawIntersectingChildrenAndReturn;
 }
 
 
@@ -3108,7 +3229,6 @@ UiTextListControl_HandleKeyboardNavigationAndSearchCf
   if ((keyCode & 0xffff0000) == 0) {
     if (((keyboardStateMask & 0x3c) != 0) ||
        ((control->listStateFlags & UI_TEXT_LIST_TYPE_SEARCH_ENABLED) == 0)) {
-UiTextListControl_DelegateUnhandledKeyboardEvent:
       delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
       return delegatedOrMismatch;
     }
@@ -3117,7 +3237,7 @@ UiTextListControl_DelegateUnhandledKeyboardEvent:
     if (remainingRows != 0) {
       do {
         candidateSlot = slotCursorOrSelection;
-        delegatedOrMismatch = (byte)(*(code *)g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
+        delegatedOrMismatch = (*g_KeyboardAsciiCaseTransformCallbacks3.compareCaseInsensitiveFlags)
                           (keyCode,*(dword *)*candidateSlot);
         if (!delegatedOrMismatch) break;
         remainingRows = remainingRows - 1;
@@ -3159,12 +3279,15 @@ UiTextListControl_DelegateUnhandledKeyboardEvent:
       control->selectedRowSlot = control->selectedRowSlot + -1;
     }
   }
-  else {
-    if (keyCode != 0x10019) goto UiTextListControl_DelegateUnhandledKeyboardEvent;
+  else if (keyCode == 0x10019) {
     if (((uint)((int)control->selectedRowSlot - (int)control->rowTextSlots) >> 2) + 1 <
         control->rowCount) {
       control->selectedRowSlot = control->selectedRowSlot + 1;
     }
+  }
+  else {
+    delegatedOrMismatch = UiNode_DefaultKeyboardEventMoveFocusNextCf(keyboardStateMask,keyCode,&control->base);
+    return delegatedOrMismatch;
   }
   slotCursorOrSelection = control->selectedRowSlot;
   if (slotCursorOrSelection != previousSelectedSlot) {
@@ -3546,15 +3669,17 @@ UiFormattedContainer_DrawClipped
     primaryValue = control->currentValue;
     scaleRange = control->initialScaleRange;
     barEndOrSpanOrMarkerX = barEndOrSpanOrMarkerX - barStartX;
+    /* Grow the scale by factors of 4 until it covers the value, the limit and the marker. */
     while( true ) {
       for (; (scaleRange < primaryValue || (scaleRange < control->limitValue)); scaleRange = scaleRange << 2) {
       }
-      if ((control->gaugeFlags & 2) == 0) goto UiFormattedContainer_UseResolvedScaleRange;
-      if (((UiFormattedContainerWithMarker *)control)->markerValue <= scaleRange) break;
+      if (((control->gaugeFlags & 2) == 0) ||
+         (((UiFormattedContainerWithMarker *)control)->markerValue <= scaleRange)) break;
       scaleRange = scaleRange << 2;
     }
-    tertiaryMarkerOffset = (int)(((longlong)((UiFormattedContainerWithMarker *)control)->markerValue * (longlong)barEndOrSpanOrMarkerX) / (longlong)scaleRange);
-UiFormattedContainer_UseResolvedScaleRange:
+    if ((control->gaugeFlags & 2) != 0) {
+      tertiaryMarkerOffset = (int)(((longlong)((UiFormattedContainerWithMarker *)control)->markerValue * (longlong)barEndOrSpanOrMarkerX) / (longlong)scaleRange);
+    }
     secondaryValue = control->limitValue;
     scaleLimit = control->limitValue;
     if (((control->gaugeFlags & 2) != 0) && (((UiFormattedContainerWithMarker *)control)->markerValue < scaleLimit)) {
@@ -3565,7 +3690,6 @@ UiFormattedContainer_UseResolvedScaleRange:
       variantOrFillEnd = 3;
       if ((((0x4f < fillPercent) && (variantOrFillEnd = 6, 0x53 < fillPercent)) && (variantOrFillEnd = 9, 0x57 < fillPercent)) &&
          ((variantOrFillEnd = 0xc, 0x5b < fillPercent && (variantOrFillEnd = 0xf, 0x5f < fillPercent)))) {
-UiFormattedContainer_SelectMaximumTextureVariant:
         variantOrFillEnd = 0x12;
       }
     }
@@ -3574,8 +3698,9 @@ UiFormattedContainer_SelectMaximumTextureVariant:
       if (((((7 < fillPercent) && (variantOrFillEnd = 0xf, 0xf < fillPercent)) && (variantOrFillEnd = 0xc, 0x17 < fillPercent)) &&
           ((((variantOrFillEnd = 9, 0x1f < fillPercent && (variantOrFillEnd = 6, 0x27 < fillPercent)) &&
             ((variantOrFillEnd = 3, 0x55 < fillPercent && ((variantOrFillEnd = 6, 0x57 < fillPercent && (variantOrFillEnd = 9, 0x59 < fillPercent))))))
-           && (variantOrFillEnd = 0xc, 0x5b < fillPercent)))) && (variantOrFillEnd = 0xf, 0x5d < fillPercent))
-      goto UiFormattedContainer_SelectMaximumTextureVariant;
+           && (variantOrFillEnd = 0xc, 0x5b < fillPercent)))) && (variantOrFillEnd = 0xf, 0x5d < fillPercent)) {
+        variantOrFillEnd = 0x12;
+      }
     }
     textureFrame = variantOrFillEnd + control->firstFrameSubresource;
     if (control->currentValue != 0) {
@@ -3883,21 +4008,18 @@ UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
       }
     }
     if (remainingValue != 0) {
+      /* NOTE: faithful to the original (BSR; AND 0x1c; ROR; SHR 2): the leading nonzero hex digit
+         is dropped, and a value below 0x10 gives a digit count of 0, which the DEC/JNZ loop wraps
+         (runaway write). */
       rotateShift = (sbyte)(highBitOrDigitsLeft & 0x1c);
       highBitOrDigitsLeft = (highBitOrDigitsLeft & 0x1c) >> 2;
       remainingValue = remainingValue >> rotateShift | remainingValue << 0x20 - rotateShift;
       do {
-        while( true ) {
-          digitCodeUnit = (remainingValue >> 0x1c) + 0x30;
-          if (0x39 < digitCodeUnit) break;
-          *outputCursor = (word)digitCodeUnit;
-          highBitOrDigitsLeft = highBitOrDigitsLeft - 1;
-          remainingValue = remainingValue << 4;
-          outputCursor = outputCursor + 1;
-          if (highBitOrDigitsLeft == 0)
-          goto UiNumericTextControl_RebuildTextFromValue_UpdateRangeValidityAfterFormatting;
+        digitCodeUnit = (remainingValue >> 0x1c) + 0x30;
+        if (0x39 < digitCodeUnit) {
+          digitCodeUnit = digitCodeUnit + 7;
         }
-        *outputCursor = (ushort)(remainingValue >> 0x1c) + 0x37;
+        *outputCursor = (word)digitCodeUnit;
         highBitOrDigitsLeft = highBitOrDigitsLeft - 1;
         remainingValue = remainingValue << 4;
         outputCursor = outputCursor + 1;
@@ -3907,7 +4029,6 @@ UiNumericTextControl_RebuildTextFromValue(UiNumericTextControl *control)
       *outputCursor = 0x30;
     }
   }
-UiNumericTextControl_RebuildTextFromValue_UpdateRangeValidityAfterFormatting:
   UiNumericTextControl_UpdateRangeValidity(control);
   return;
 }
@@ -3940,8 +4061,10 @@ UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
     if ((control->editStateFlags & UI_NUMERIC_TEXT_HEXADECIMAL_FORMAT) == 0) {
       parsedValue = 0;
       for (; codeUnit = (uint)*textCursor, codeUnit != 0; textCursor = textCursor + 1) {
-        if ((codeUnit < 0x30) || (9 < codeUnit - 0x30))
-        goto UiNumericTextControl_ParseAndCommitValue_ClearValidityAndReturnAfterParseReject;
+        if ((codeUnit < 0x30) || (9 < codeUnit - 0x30)) {
+          control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+          return;
+        }
         parsedValue = parsedValue * 10 + (codeUnit - 0x30);
       }
     }
@@ -3952,8 +4075,10 @@ UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
         if ((codeUnit < 0x30) ||
            ((9 < digitValue &&
             ((digitValue = codeUnit - 0x37, digitValue < 10 ||
-             ((0xf < digitValue && ((digitValue = codeUnit - 0x57, digitValue < 10 || (0xf < digitValue))))))))))
-        goto UiNumericTextControl_ParseAndCommitValue_ClearValidityAndReturnAfterParseReject;
+             ((0xf < digitValue && ((digitValue = codeUnit - 0x57, digitValue < 10 || (0xf < digitValue)))))))))) {
+          control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+          return;
+        }
         parsedValue = parsedValue << 4 | digitValue & 0xf;
       }
     }
@@ -3967,7 +4092,7 @@ UiNumericTextControl_ParseAndCommitValue(UiNumericTextControl *control)
       return;
     }
   }
-UiNumericTextControl_ParseAndCommitValue_ClearValidityAndReturnAfterParseReject:
+  /* Empty text, or a negative value for an unsigned control: invalid. */
   control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
   return;
 }
@@ -4010,19 +4135,21 @@ void __thandor_preserve_eax UiNumericTextControl_UpdateRangeValidity(UiNumericTe
 
 {
   uint currentNumericValue;
-  
+  bool outOfRange;
+
   currentNumericValue = control->currentValue;
   if ((control->editStateFlags & UI_NUMERIC_TEXT_SIGNED_VALUE) == 0) {
-    if ((currentNumericValue < (uint)control->minimumValue) ||
-       ((uint)control->maximumValue < currentNumericValue)) {
-UiNumericTextControl_UpdateRangeValidity_ClearValidityForOutOfRangeValue:
-      control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
-      return;
-    }
+    outOfRange = (currentNumericValue < (uint)control->minimumValue) ||
+                 ((uint)control->maximumValue < currentNumericValue);
   }
-  else if (((int)currentNumericValue < control->minimumValue) ||
-          (control->maximumValue < (int)currentNumericValue))
-  goto UiNumericTextControl_UpdateRangeValidity_ClearValidityForOutOfRangeValue;
+  else {
+    outOfRange = ((int)currentNumericValue < control->minimumValue) ||
+                 (control->maximumValue < (int)currentNumericValue);
+  }
+  if (outOfRange) {
+    control->editStateFlags = control->editStateFlags & ~UI_NUMERIC_TEXT_VALUE_VALID;
+    return;
+  }
   control->editStateFlags = control->editStateFlags | UI_NUMERIC_TEXT_VALUE_VALID;
   return;
 }
@@ -4258,8 +4385,10 @@ UiTextButtonControl_DrawClipped
     skinFrame = 0x44;
   }
   if (((control->selectable).base.nodeFlags & UI_NODE_SUPPRESSED) != 0) {
-    if (((control->selectable).stateFlags & 0x400) != 0)
-    goto UiTextButtonControl_DrawClipped_EndFramebufferAccessAndReturn;
+    if (((control->selectable).stateFlags & 0x400) != 0) {
+      (*g_GraphicsFramebufferEndAccess)();
+      return;
+    }
     skinFrame = skinFrame + 1;
   }
   (*g_GraphicsTextureSourceBlitSourceAlpha)
@@ -4344,7 +4473,6 @@ UiTextButtonControl_DrawClipped
       textYOrTileX = textYOrTileX + focusTileSize.logicalWidthPixels;
     } while (textYOrTileX < textXOrFocusEnd);
   }
-UiTextButtonControl_DrawClipped_EndFramebufferAccessAndReturn:
   (*g_GraphicsFramebufferEndAccess)();
   return;
 }

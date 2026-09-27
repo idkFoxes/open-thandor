@@ -329,18 +329,19 @@ InterpolationStateTable_Advance256ByTicks(GraphicsElapsedTickCount elapsedTicks)
       stateRecord->squaredRadiusQ24 = (longlong)currentRadius * (longlong)currentRadius;
       if (durationTicks < 0) {
         if ((uint)stateRecord->radiusTransitionElapsedTicks < 0x80000000) {
-          *(undefined4 *)((int)&stateRecord->squaredRadiusQ24 + 4) = 0;
-          *(undefined4 *)&stateRecord->squaredRadiusQ24 = 0;
+          /* deactivation transition finished: clear the light */
+          stateRecord->squaredRadiusQ24 = 0;
           stateRecord->targetRadiusQ12 = 0;
           stateRecord->packedColorRgbActive = 0;
-InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOrDeactivation:
           stateRecord->radiusTransitionElapsedTicks = 0;
           stateRecord->radiusTransitionDurationTicks = 0;
         }
       }
-      else if (durationTicks < stateRecord->radiusTransitionElapsedTicks)
-      goto 
-      InterpolationStateTable_Advance256ByTicks_ClearTransitionTimingAfterCompletionOrDeactivation;
+      else if (durationTicks < stateRecord->radiusTransitionElapsedTicks) {
+        /* transition complete */
+        stateRecord->radiusTransitionElapsedTicks = 0;
+        stateRecord->radiusTransitionDurationTicks = 0;
+      }
     }
     stateRecord = stateRecord + 1;
     remainingCount = remainingCount + -1;

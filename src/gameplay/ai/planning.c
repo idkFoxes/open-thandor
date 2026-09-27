@@ -47,16 +47,17 @@ void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
     factionRecordPlanning->terrainContributionScaleQ8 = 0x100;
     currentGameSpeedQ8 = g_GameFactionRuntimeImage.tail.gameSpeedQ8;
     if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
+      /* Only factions without a player block are AI-controlled. */
       do {
-        if (factionIndexOrScratch == (playerBlock->factionAssignment).factionAssignmentIndex)
-        goto AiFactionRuntime_RebuildPlanningCapacityState_AdvanceAfterPlayerOrAiPlanningDispatch;
+        if (factionIndexOrScratch == (playerBlock->factionAssignment).factionAssignmentIndex) break;
         playerBlock = playerBlock + 1;
         remainingPlayerBlocks = remainingPlayerBlocks - 1;
       } while (remainingPlayerBlocks != 0);
-      AiRuntime_DispatchFactionPlanningPhase(factionIndexOrScratch,(WorldRuntimeContext *)g_InGameRuntimeRoot);
-      factionRecordPlanning->terrainContributionScaleQ8 = currentGameSpeedQ8;
+      if (remainingPlayerBlocks == 0) {
+        AiRuntime_DispatchFactionPlanningPhase(factionIndexOrScratch,(WorldRuntimeContext *)g_InGameRuntimeRoot);
+        factionRecordPlanning->terrainContributionScaleQ8 = currentGameSpeedQ8;
+      }
     }
-AiFactionRuntime_RebuildPlanningCapacityState_AdvanceAfterPlayerOrAiPlanningDispatch:
     factionIndexOrScratch = factionIndexOrScratch + 1;
     remainingOrPressureValue = remainingOrPressureValue + -1;
     if (remainingOrPressureValue == 0) {
@@ -165,7 +166,9 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
     registryEntriesRemaining = 0x300;
     compatibleAssetScoreSum = 0;
     compatibleAssetCount = 0;
-    do {
+    for (; registryEntriesRemaining != 0;
+        armyAssetRegistryCursor = armyAssetRegistryCursor + 1,
+        registryEntriesRemaining = registryEntriesRemaining + -1) {
       armyAssetRecord = (ArmyAssetRuntimeSemanticView80 *)*armyAssetRegistryCursor;
       if ((armyAssetRecord != (ArmyAssetRuntimeSemanticView80 *)0x0) &&
          ((armyAssetRecord->flags14 & 1) != 0)) {
@@ -205,7 +208,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
                          secondNestedLinkedDefinitions->definitionIds[6] &&
                         (candidateModelDefinitionId !=
                          secondNestedLinkedDefinitions->definitionIds[7]))))))))))))
-          goto AiArmyCandidate_ComputeAverageCompatibleAssetScore_AdvanceRegistryScan;
+          continue;
         }
         candidateScore = AiArmyCandidate_ComputeFactionWeightedScore
                           (scoreWeights,factionIndex,armyAssetRecord);
@@ -214,10 +217,7 @@ AiArmyCandidate_ComputeAverageCompatibleAssetScore
           compatibleAssetCount = compatibleAssetCount + 1;
         }
       }
-AiArmyCandidate_ComputeAverageCompatibleAssetScore_AdvanceRegistryScan:
-      armyAssetRegistryCursor = armyAssetRegistryCursor + 1;
-      registryEntriesRemaining = registryEntriesRemaining + -1;
-    } while (registryEntriesRemaining != 0);
+    }
     candidateScore = 0;
     if (compatibleAssetCount != 0) {
       candidateScore = (AiCandidateScore32)
@@ -430,7 +430,6 @@ AiConstructionPlanner_ProcessPendingAssetRequests
     if (armyAssetId == ARM_0300_BUILDING_MDL0301) {
       hasUnassignedEntry = AiPrimaryWorkspace_HasUnassignedEntryByIdCf(ARM_0330_BUILDING_MDL0303);
       if (!hasUnassignedEntry) {
-AiConstructionPlanner_ProcessPendingAssetRequests_DispatchReachableCandidatePlacement:
         AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
@@ -439,29 +438,28 @@ AiConstructionPlanner_ProcessPendingAssetRequests_DispatchReachableCandidatePlac
             (armyAssetId == ARM_0332_BUILDING_MDL0302)) {
       AiConstructionPlanner_PlaceSpecialAssetFromWorkspace(armyAssetId,factionIndex,worldRuntime);
     }
-    else {
-      if (armyAssetId == ARM_0331_BUILDING_MDL0308)
-      goto AiConstructionPlanner_ProcessPendingAssetRequests_DispatchReachableCandidatePlacement;
-      if (armyAssetId == ARM_0333_BUILDING_MDL0307) {
-        AiConstructionPlanner_PlaceDerivedAsset14D
-                  (ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime);
-      }
-      else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
-        armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
-        if (!armyAssetLookup.carry) {
-          linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
-                            (factionIndex,(armyAssetLookup.eax)->rootNodeOffsetOrPointer);
-          if (linkedDefinitionLookup.modelDefinition[0x34].definitionId != 1)
-          goto AiConstructionPlanner_ProcessPendingAssetRequests_DispatchReachableCandidatePlacement
-          ;
-          AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
-                    (armyAssetId,factionIndex,worldRuntime);
-        }
-      }
-      else {
-        AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
+    else if (armyAssetId == ARM_0331_BUILDING_MDL0308) {
+      AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
+                (armyAssetId,factionIndex,worldRuntime);
+    }
+    else if (armyAssetId == ARM_0333_BUILDING_MDL0307) {
+      AiConstructionPlanner_PlaceDerivedAsset14D
+                (ARM_0333_BUILDING_MDL0307,factionIndex,worldRuntime);
+    }
+    else if (armyAssetId < ARM_0340_BUILDING_MDL0314) {
+      armyAssetLookup = ArmyAssetRegistry_FindByIdCf(armyAssetId);
+      if (!armyAssetLookup.carry) {
+        /* The original then compares the selected definition's +0x278 word with 1 (ignoring the selector's
+           CF), but both outcomes call the same placement handler. */
+        linkedDefinitionLookup = ModelDefinition_SelectFactionUnlockedLinkedDefinitionCf
+                          (factionIndex,(armyAssetLookup.eax)->rootNodeOffsetOrPointer);
+        AiConstructionPlanner_PlaceArmyAssetAtReachableCandidate
                   (armyAssetId,factionIndex,worldRuntime);
       }
+    }
+    else {
+      AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
+                (armyAssetId,factionIndex,worldRuntime);
     }
     if (g_AiConstructionPendingAssetConsumedCount != 0) {
       return true;
@@ -846,7 +844,8 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
   FieldGridCell *bestCell;
   int bestScore;
   FieldGridCell *candidateCell;
-  
+  bool siteDistanceInRange;
+
   if ((g_GameFactionRuntimeImage.records[factionIndex].primaryAnchorCooldown != 0) &&
      (g_AiWorkspace09Count != 0)) {
     bestScore = 0x7fffffff;
@@ -865,29 +864,33 @@ AiConstructionPlanner_PlaceExtendedAssetNearFactionAnchor
       if ((anchorDistanceX + anchorDistanceY < bestScore) &&
          (workspaceDistanceOrScore = AiPrimaryWorkspace_GetMinimumActiveManhattanDistanceToPoint
                             (candidateCell->worldY,candidateCell->worldX), 0x1fff < workspaceDistanceOrScore)) {
+        /* Distance to the nearest workspace-02 site (x4, at most 0x5000), or without any such site to the
+           nearest workspace-03 site (x2, at most 0x8000). */
         workspaceDistanceOrScore = AiWorkspace02_GetMinimumManhattanDistanceToPoint
                           (candidateCell->worldY,candidateCell->worldX);
         if (workspaceDistanceOrScore < 0x7fffffff) {
-          if (workspaceDistanceOrScore < 0x5001) {
+          siteDistanceInRange = workspaceDistanceOrScore < 0x5001;
+          if (siteDistanceInRange) {
             workspaceDistanceOrScore = workspaceDistanceOrScore * 4;
-joined_r0x00539894:
-            workspaceDistanceOrScore = anchorDistanceX + anchorDistanceY + workspaceDistanceOrScore;
-            if ((workspaceDistanceOrScore < bestScore) &&
-               (placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
-                                  (1,0,(uint)(ushort)candidateCell->triangle0NormalAngles,
-                                   candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
-                                   (UiRootNode *)worldRuntime), !placementResult.carry)) {
-              bestCell = candidateCell;
-              bestScore = workspaceDistanceOrScore;
-            }
           }
         }
         else {
           workspaceDistanceOrScore = AiWorkspace03_GetMinimumManhattanDistanceToPoint
                             (candidateCell->worldY,candidateCell->worldX);
-          if (workspaceDistanceOrScore < 0x8001) {
+          siteDistanceInRange = workspaceDistanceOrScore < 0x8001;
+          if (siteDistanceInRange) {
             workspaceDistanceOrScore = workspaceDistanceOrScore * 2;
-            goto joined_r0x00539894;
+          }
+        }
+        if (siteDistanceInRange) {
+          workspaceDistanceOrScore = anchorDistanceX + anchorDistanceY + workspaceDistanceOrScore;
+          if ((workspaceDistanceOrScore < bestScore) &&
+             (placementResult = ArmyPlacement_DispatchAssetAtFieldPoint
+                                (1,0,(uint)(ushort)candidateCell->triangle0NormalAngles,
+                                 candidateCell->worldY,candidateCell->worldX,armyAssetId,factionIndex,
+                                 (UiRootNode *)worldRuntime), !placementResult.carry)) {
+            bestCell = candidateCell;
+            bestScore = workspaceDistanceOrScore;
           }
         }
       }
@@ -1204,8 +1207,11 @@ AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionInde
   for (remainingEntries = g_AiWorkspace00Count; remainingEntries != 0; remainingEntries = remainingEntries + -1) {
     if ((primaryEntry->runtimeSlotAddressOrZero != 0) &&
        ((primaryEntry->armyAssetId < ARM_0340_BUILDING_MDL0314 ||
-        ((primaryEntry->armyAssetId < ARM_0380_BUILDING_MDL0329 && (thresholdOrRemaining = thresholdOrRemaining + -1, thresholdOrRemaining == 0))))))
-    goto AiFactionPlanning_UpdateActiveEntityPressureFlag_SetPressureFlag;
+        ((primaryEntry->armyAssetId < ARM_0380_BUILDING_MDL0329 && (thresholdOrRemaining = thresholdOrRemaining + -1, thresholdOrRemaining == 0)))))) {
+      factionRuntimeFlags = &g_GameFactionRuntimeImage.records[factionIndex].runtimeFlags;
+      *factionRuntimeFlags = *factionRuntimeFlags | 1;
+      return;
+    }
     primaryEntry = primaryEntry + 1;
   }
   thresholdOrRemaining = thresholdOrRemaining + 1;
@@ -1243,7 +1249,6 @@ AiFactionPlanning_UpdateActiveEntityPressureFlag(FactionRuntimeIndex factionInde
     runtimeWorkspaceEntry = runtimeWorkspaceEntry + 1;
     remainingEntries = remainingEntries + -1;
   }
-AiFactionPlanning_UpdateActiveEntityPressureFlag_SetPressureFlag:
   factionRuntimeFlags = &g_GameFactionRuntimeImage.records[factionIndex].runtimeFlags;
   *factionRuntimeFlags = *factionRuntimeFlags | 1;
   return;
@@ -1933,21 +1938,21 @@ AiArmyCandidate_ComputeFactionWeightedScore
                    (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
         weightedDefinitionScore =
              weightedDefinitionScore +
-             (int)((longlong)CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage0 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum0) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage1 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum1) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage2 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum2) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage3 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum3) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage4 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum4) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage5 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum5) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage6 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum6) +
-             (int)((longlong)CONCAT44(pressureWeightedDamage7 >> 0x16,pressureWeightedDamage7 << 10) /
+             (int)((longlong)((ulonglong)pressureWeightedDamage7 << 10) /
                   (longlong)(int)g_TechnologyCategoryMaximum7);
       }
     }
@@ -2021,20 +2026,20 @@ AiArmyCandidate_ComputeFactionWeightedScore
                      / (longlong)g_GameFactionRuntimeImage.records[factionIndex].maximumAiPressure);
           weightedDefinitionScore =
                weightedDefinitionScore +
-               (int)((longlong)CONCAT44(childCountOrWeightedDamage >> 0x16,childCountOrWeightedDamage << 10) / (longlong)(int)g_TechnologyCategoryMaximum0) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage0 >> 0x16,pressureWeightedDamage0 << 10) /
+               (int)((longlong)((ulonglong)childCountOrWeightedDamage << 10) / (longlong)(int)g_TechnologyCategoryMaximum0) +
+               (int)((longlong)((ulonglong)pressureWeightedDamage0 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum1) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage1 >> 0x16,pressureWeightedDamage1 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage1 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum2) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage2 >> 0x16,pressureWeightedDamage2 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage2 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum3) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage3 >> 0x16,pressureWeightedDamage3 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage3 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum4) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage4 >> 0x16,pressureWeightedDamage4 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage4 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum5) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage5 >> 0x16,pressureWeightedDamage5 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage5 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum6) +
-               (int)((longlong)CONCAT44(pressureWeightedDamage6 >> 0x16,pressureWeightedDamage6 << 10) /
+               (int)((longlong)((ulonglong)pressureWeightedDamage6 << 10) /
                     (longlong)(int)g_TechnologyCategoryMaximum7);
         }
       }

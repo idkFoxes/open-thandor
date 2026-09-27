@@ -64,7 +64,6 @@ FixedMath_VectorToAnglesAndLength3Regs
           (FixedMathVectorComponent32 x,FixedMathVectorComponent32 y,FixedMathVectorComponent32 z)
 
 {
-  ulonglong lengthAzimuthPair;
   dword elevationAngle16;
   dword elevationAngleResult;
   dword azimuthAngle16;
@@ -85,10 +84,9 @@ FixedMath_VectorToAnglesAndLength3Regs
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  lengthAzimuthPair = CONCAT44(azimuthAngle16,vectorLengthQ12) & 0xffffffffffff;
   lengthAnglesResult.elevationAngle = elevationAngleResult;
-  lengthAnglesResult.lengthQ12 = (int)lengthAzimuthPair;
-  lengthAnglesResult.azimuthAngle = (int)(lengthAzimuthPair >> 0x20);
+  lengthAnglesResult.lengthQ12 = vectorLengthQ12;
+  lengthAnglesResult.azimuthAngle = azimuthAngle16 & 0xffff;
   return lengthAnglesResult;
 }
 
@@ -102,7 +100,6 @@ FixedMath_VectorToAnglesAndLength3Regs
 FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsFixedVec3 *vector)
 
 {
-  ulonglong lengthAzimuthPair;
   dword elevationAngle16;
   dword elevationAngleResult;
   dword azimuthAngle16;
@@ -129,10 +126,9 @@ FixedLengthAnglesEaxEcxEdx12 FixedMath_VectorToAnglesAndLengthVec3Regs(GraphicsF
        FixedMath_UInt64Sqrt
                  ((UInt64Half32)((ulonglong)totalSquaredLengthQ24 >> 0x20),
                   (UInt64Half32)totalSquaredLengthQ24);
-  lengthAzimuthPair = CONCAT44(azimuthAngle16,vectorLengthQ12) & 0xffffffffffff;
   lengthAnglesResult.elevationAngle = elevationAngleResult;
-  lengthAnglesResult.lengthQ12 = (int)lengthAzimuthPair;
-  lengthAnglesResult.azimuthAngle = (int)(lengthAzimuthPair >> 0x20);
+  lengthAnglesResult.lengthQ12 = vectorLengthQ12;
+  lengthAnglesResult.azimuthAngle = azimuthAngle16 & 0xffff;
   return lengthAnglesResult;
 }
 
@@ -152,10 +148,13 @@ FixedMath_Vector2AngleAndLengthRegs
 {
   dword vectorAngle16;
   dword vectorLengthQ12;
-  
+  FixedLengthAngleEaxEdx8 lengthAngle;
+
   vectorAngle16 = FixedMath_Atan2Angle16(component0,component1);
   vectorLengthQ12 = FixedMath_Length2(component0,component1);
-  return THANDOR_BITCAST(__int64, FixedLengthAngleEaxEdx8, (CONCAT44(vectorAngle16,vectorLengthQ12) & 0xffffffffffff));
+  lengthAngle.length = vectorLengthQ12;
+  lengthAngle.angle = vectorAngle16 & 0xffff;
+  return lengthAngle;
 }
 
 
@@ -237,14 +236,11 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
   longlong side2Squared;
   longlong side1Squared;
   longlong side0Squared;
-  uint negatedSquaredLow;
   int projectionOrSquaredLow;
-  uint side1SquaredLow;
   dword triangleHeight;
   dword firstAngle16;
   AngleTurn32 fallbackAngle0;
   AngleTurn32 fallbackAngle1;
-  uint partialDifferenceLow;
   FixedTriangleJointAnglesEaxEdx8 solvedAngles;
   FixedTriangleJointAnglesEaxEdx8 fallbackAngles;
   longlong cosineNumerator0;
@@ -252,19 +248,13 @@ FixedGeometry_SolveTriangleJointAnglesRegs(Q12 sideLength0Q12,Q12 sideLength1Q12
   projectionOrSquaredLow = (int)(((longlong)sideLength0Q12 * (longlong)sideLength0Q12 -
                 (longlong)sideLength1Q12 * (longlong)sideLength1Q12) / (longlong)sideLength2Q12);
   projectionOrHeightSquared = (longlong)projectionOrSquaredLow * (longlong)projectionOrSquaredLow;
-  projectionOrSquaredLow = (int)projectionOrHeightSquared;
-  negatedSquaredLow = -projectionOrSquaredLow;
   side2Squared = (longlong)sideLength2Q12 * (longlong)sideLength2Q12;
-  partialDifferenceLow = negatedSquaredLow - (uint)side2Squared;
   side1Squared = (longlong)sideLength1Q12 * (longlong)sideLength1Q12;
-  side1SquaredLow = (uint)side1Squared;
   side0Squared = (longlong)sideLength0Q12 * (longlong)sideLength0Q12;
   cosineNumerator0 = (side2Squared - side1Squared) + side0Squared;
-  projectionOrHeightSquared = side0Squared * 2 +
-          CONCAT44((((-(uint)(projectionOrSquaredLow != 0) - (int)((ulonglong)projectionOrHeightSquared >> 0x20)) -
-                    (int)((ulonglong)side2Squared >> 0x20)) - (uint)(negatedSquaredLow < (uint)side2Squared)) +
-                   (int)((ulonglong)side1Squared >> 0x20) * 2 + (uint)CARRY4(side1SquaredLow,side1SquaredLow) +
-                   (uint)CARRY4(partialDifferenceLow,side1SquaredLow * 2),partialDifferenceLow + side1SquaredLow * 2);
+  /* 64-bit (EBX:ECX) -p^2 - s2^2 + 2*s1^2 + 2*s0^2, in the original's order */
+  projectionOrHeightSquared =
+       (((0 - projectionOrHeightSquared) - side2Squared) + side1Squared * 2) + side0Squared * 2;
   if ((-1 < projectionOrHeightSquared) && (0x10 < sideLength2Q12)) {
     triangleHeight = FixedMath_UInt64Sqrt((UInt64Half32)((ulonglong)projectionOrHeightSquared >> 0x20),(UInt64Half32)projectionOrHeightSquared);
     firstAngle16 = FixedMath_Atan2Angle16((int)triangleHeight >> 1,(int)(cosineNumerator0 / (longlong)sideLength2Q12) >> 1);
@@ -509,12 +499,13 @@ FixedSinCosEdxEax8 __thandor_eax_edx_cf_preserve_ecx
 FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 
 {
-  return CONCAT44((int)((ulonglong)((longlong)g_FixedSinQ28[angle & 0xffff] * (longlong)scale) >>
-                       0x20) << 4 |
-                  (uint)((longlong)g_FixedSinQ28[angle & 0xffff] * (longlong)scale) >> 0x1c,
-                  (int)((ulonglong)((longlong)g_FixedCosQ28[angle & 0xffff] * (longlong)scale) >>
-                       0x20) << 4 |
-                  (uint)((longlong)g_FixedCosQ28[angle & 0xffff] * (longlong)scale) >> 0x1c);
+  dword sinScaled;
+  dword cosScaled;
+
+  /* SHRD by 28 of the 64-bit products: bits 28..59 */
+  sinScaled = (dword)((longlong)g_FixedSinQ28[angle & 0xffff] * (longlong)scale >> 0x1c);
+  cosScaled = (dword)((longlong)g_FixedCosQ28[angle & 0xffff] * (longlong)scale >> 0x1c);
+  return (qword)sinScaled << 0x20 | (qword)cosScaled; /* EDX = sin, EAX = cos */
 }
 
 
@@ -527,7 +518,7 @@ FixedMath_SinCosScaled(AngleTurn32 angle,FixedMathScale32 scale)
 FixedSinCosEdxEax8 FixedMath_SinCosQ28(AngleTurn32 angle)
 
 {
-  return CONCAT44(g_FixedSinQ28[angle & 0xffff],g_FixedCosQ28[angle & 0xffff]);
+  return (qword)(dword)g_FixedSinQ28[angle & 0xffff] << 0x20 | (qword)(dword)g_FixedCosQ28[angle & 0xffff];
 }
 
 /* Address: 0x00484F10.
@@ -782,14 +773,13 @@ FixedPlanarPointEdxEax8
 FixedTrig_ProjectPlanarPointRegs(Q12 distance,AngleTurn32 angle16,Q12 baseY,Q12 baseX)
 
 {
-  return CONCAT44(((int)((ulonglong)((longlong)g_FixedSinQ28[angle16 & 0xffff] * (longlong)distance)
-                        >> 0x20) << 4 |
-                  (uint)((longlong)g_FixedSinQ28[angle16 & 0xffff] * (longlong)distance) >> 0x1c) +
-                  baseY,baseX + ((int)((ulonglong)
-                                       ((longlong)g_FixedCosQ28[angle16 & 0xffff] *
-                                       (longlong)distance) >> 0x20) << 4 |
-                                (uint)((longlong)g_FixedCosQ28[angle16 & 0xffff] *
-                                      (longlong)distance) >> 0x1c));
+  dword pointX;
+  dword pointY;
+
+  /* SHLD EDX,EAX,4 of the 64-bit products: bits 28..59 */
+  pointX = baseX + (dword)((longlong)g_FixedCosQ28[angle16 & 0xffff] * (longlong)distance >> 0x1c);
+  pointY = (dword)((longlong)g_FixedSinQ28[angle16 & 0xffff] * (longlong)distance >> 0x1c) + baseY;
+  return (qword)pointY << 0x20 | (qword)pointX; /* EDX = y, EAX = x */
 }
 
 /* Address: 0x004BEC50.
@@ -841,6 +831,7 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
   int y;
   int x;
   longlong horizontalSquaredLengthAccumulatorQ24;
+  FixedMathVectorAnglesRegs8 vectorAngles;
   
   x = vector->x;
   y = vector->y;
@@ -850,7 +841,13 @@ FixedMath_VectorToAnglesVec3Regs(GraphicsFixedVec3 *vector)
                      (UInt64Half32)horizontalSquaredLengthAccumulatorQ24);
   magnitudeOrElevationAngle = FixedMath_Atan2Angle16(vector->z,magnitudeOrElevationAngle);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,x);
-  return THANDOR_BITCAST(__int64, FixedMathVectorAnglesRegs8, (CONCAT44(azimuthAngle16,magnitudeOrElevationAngle) & 0xffffffffffff));
+  /* The original returns EDX = elevation and ECX = azimuth & 0xffff (as FixedMath_VectorToAngles3Regs).
+     This port stores the pair swapped here (.ecx = elevation, .edx = azimuth), and the consumers
+     (FixedVector_StepBackwardAlongOwnDirection, ArmyArticulatedRuntime_UpdateSuspensionHierarchy; the
+     pass-through GraphicsObject_ConvertWorldDirectionAnglesToLocalAnglesRegs is unreferenced) read it that way. */
+  vectorAngles.ecx = magnitudeOrElevationAngle;
+  vectorAngles.edx = azimuthAngle16 & 0xffff;
+  return vectorAngles;
 }
 
 
@@ -872,7 +869,7 @@ FixedEulerAnglesEaxEcxEdx12 FixedTransform_ExtractEulerAnglesRegs(GraphicsFixedM
                     (transform->basisRow2[2],transform->basisRow1[2],transform->basisRow0[2]);
   eulerAngles.edxAngle = forwardAngles.edx;
   eulerAngles.ecxAngle = forwardAngles.ecx;
-  if (THANDOR_BITCAST(FixedMathVectorAnglesRegs8, longlong, forwardAngles) < 0) {
+  if ((int)forwardAngles.edx < 0) { /* TEST EDX,EDX: elevation sign */
     gimbalAngle16 = FixedMath_Atan2Angle16
                       (transform->basisRow1[0] + transform->basisRow0[1],
                        transform->basisRow1[1] - transform->basisRow0[0]);
@@ -1141,6 +1138,7 @@ FixedMath_VectorToAngles3Regs
   dword elevationAngle16;
   dword azimuthAngle16;
   longlong horizontalMagnitudeSquaredQ24;
+  FixedMathVectorAnglesRegs8 vectorAngles;
   
   horizontalMagnitudeSquaredQ24 = (longlong)y * (longlong)y + (longlong)z * (longlong)z;
   horizontalMagnitudeQ12 =
@@ -1149,7 +1147,9 @@ FixedMath_VectorToAngles3Regs
                   (UInt64Half32)horizontalMagnitudeSquaredQ24);
   elevationAngle16 = FixedMath_Atan2Angle16(x,horizontalMagnitudeQ12);
   azimuthAngle16 = FixedMath_Atan2Angle16(y,z);
-  return THANDOR_BITCAST(unsigned __int64, FixedMathVectorAnglesRegs8, (CONCAT44(elevationAngle16,azimuthAngle16) & 0xffffffff0000ffff));
+  vectorAngles.ecx = azimuthAngle16 & 0xffff;
+  vectorAngles.edx = elevationAngle16;
+  return vectorAngles;
 }
 
 
@@ -1409,10 +1409,12 @@ dword __thandor_eax_preserve_ecx_edx FixedMath_UInt64Sqrt(UInt64Half32 high,UInt
     initialRootShift = (byte)(highestSetBitIndex + 0x21U >> 1);
   }
   rootEstimate = 1 << (initialRootShift & 0x1f);
-  refinedRootEstimate = rootEstimate + (int)(CONCAT44(high,low) / (ulonglong)rootEstimate) >> 1;
+  /* unsigned DIV of EDX:EAX = high:low */
+  refinedRootEstimate =
+       rootEstimate + (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)rootEstimate) >> 1;
   secondRootEstimate =
-       refinedRootEstimate + (int)(CONCAT44(high,low) / (ulonglong)refinedRootEstimate) >> 1;
-  return (int)(CONCAT44(high,low) / (ulonglong)secondRootEstimate) + secondRootEstimate >> 1;
+       refinedRootEstimate + (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)refinedRootEstimate) >> 1;
+  return (int)(((ulonglong)high << 0x20 | (ulonglong)low) / (ulonglong)secondRootEstimate) + secondRootEstimate >> 1;
 }
 
 

@@ -167,12 +167,12 @@ GraphicsFramebuffer_CaptureRegion16Bit
   GraphicsCapturedTextureSourceAsset *capturedAsset;
   uint remainingDwords;
   GraphicsPixelDimension remainingColumns;
-  undefined2 *sourcePixel;
+  word *sourcePixel;
   GraphicsCapturedTextureSourceAsset *clearCursor;
   dword *destinationPixel;
   ArenaAllocEaxCf5 allocResult;
   GraphicsFramebufferCaptureEaxCf5 captureResult;
-  undefined2 *sourceRowStart;
+  word *sourceRowStart;
   
   if (g_GraphicsAdapters[g_ActiveGraphicsAdapterIndex].deviceGuid.Data1 == 1) {
     captureResult = Glide3_Framebuffer_CaptureRegion(captureHeight,captureWidth,sourceY,sourceX);
@@ -228,13 +228,15 @@ GraphicsFramebuffer_CaptureRegion16Bit
       if (surfaceResult == 0) {
         destinationPixel = capturedAsset->argb8888Pixels;
         restoreResultOrPixelOffset = sourceY * g_FramebufferWidth + sourceX;
-        sourcePixel = (undefined2 *)((int)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset * 2);
+        sourcePixel = (word *)((int)g_SurfaceDesc.lpSurface + restoreResultOrPixelOffset * 2);
         remainingColumns = captureWidth;
         sourceRowStart = sourcePixel;
         do {
           do {
-            allocationSizeOrPixel = CONCAT22((short)((uint)restoreResultOrPixelOffset >> 0x10),*sourcePixel);
-            *(undefined1 *)((int)destinationPixel + 3) = 0xff;
+            /* The original loads the pixel into AX; the stale high word of EAX is masked away by the 16-bit
+               channel masks. */
+            allocationSizeOrPixel = ((uint)restoreResultOrPixelOffset & 0xffff0000) | (uint)*sourcePixel;
+            *(byte *)((int)destinationPixel + 3) = 0xff;
             *(char *)((int)destinationPixel + 2) =
                  (char)(((allocationSizeOrPixel & g_SoftwarePixelFormatConfig.redMask) >>
                         ((byte)g_SoftwarePixelFormatConfig.redShift & 0x1f)) <<
@@ -251,7 +253,7 @@ GraphicsFramebuffer_CaptureRegion16Bit
             destinationPixel = destinationPixel + 1;
             remainingColumns = remainingColumns - 1;
           } while (remainingColumns != 0);
-          sourcePixel = (undefined2 *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
+          sourcePixel = (word *)((int)sourceRowStart + g_SurfaceDesc.lPitch);
           captureHeight = captureHeight - 1;
           remainingColumns = captureWidth;
           sourceRowStart = sourcePixel;

@@ -10,6 +10,15 @@
 
 /* Implementation ownership: graphics/resources/texture. */
 
+/* Box filter of the 2x/4x downsampling uploads, written out per channel (the original unpacks the ARGB8888 texels
+   to word lanes, adds them with PADDW, shifts right and repacks with PACKUSWB). */
+#define TEXTURE_TEXEL_BLUE(texel) ((ushort)(byte)(texel))
+#define TEXTURE_TEXEL_GREEN(texel) ((ushort)(byte)((uint)(texel) >> 8))
+#define TEXTURE_TEXEL_RED(texel) ((ushort)(byte)((uint)(texel) >> 16))
+#define TEXTURE_TEXEL_ALPHA(texel) ((ushort)(byte)((uint)(texel) >> 24))
+/* PACKUSWB of one averaged word lane: values above 0xff saturate to 0xff. */
+#define TEXTURE_SATURATE_TO_BYTE(lane) ((uint)((0xff < (lane)) ? 0xff : (byte)(lane)))
+
 /* Address: 0x0057E970.
    Ownership: graphics/resources/texture.
    Purpose: Allocates texture-set metadata, then creates one runtime texture resource per source entry. DirectDraw
@@ -263,8 +272,6 @@ GraphicsTextureSource_GetLogicalSizeRegs
           (GraphicsSubresourceIndex subresourceIndex,GraphicsTextureSourceAsset *sourceAsset)
 
 {
-  undefined4 in_EAX = 0; /* failure (CF set): EAX/EDX untouched; callers check CF */
-  undefined4 in_EDX = 0; /* see in_EAX */
   GraphicsTextureSizeEaxEdxCf9 successResult;
   GraphicsTextureSizeEaxEdxCf9 failureResult;
   AssetRelativeOffset subresourceTableOffset;
@@ -273,18 +280,19 @@ GraphicsTextureSource_GetLogicalSizeRegs
      (subresourceIndex < (sourceAsset->tableDescriptor).subresourceCount)) {
     subresourceTableOffset = (sourceAsset->tableDescriptor).subresourceTableOffset;
     successResult.logicalHeightPixels =
-         *(undefined4 *)
+         *(dword *)
           ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
           subresourceIndex * 0x20 + subresourceTableOffset + -0x24);
     successResult.logicalWidthPixels =
-         *(undefined4 *)
+         *(dword *)
           ((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
           subresourceIndex * 0x20 + subresourceTableOffset + -0x28);
     successResult.carry = false;
     return successResult;
   }
-  failureResult.logicalHeightPixels = in_EDX;
-  failureResult.logicalWidthPixels = in_EAX;
+  /* Failure (CF set): the original leaves EAX/EDX untouched; callers check CF before using the width. */
+  failureResult.logicalHeightPixels = 0;
+  failureResult.logicalWidthPixels = 0;
   failureResult.carry = true;
   return failureResult;
 }
@@ -703,9 +711,12 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   int rowsRemaining;
   uint *fillRowCursor;
   
-  decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)0x2c;
   if (((sourceAsset->common).magic != ASSET_MAGIC_GFX) ||
-     ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) goto LAB_004ad0f7;
+     ((sourceAsset->tableDescriptor).subresourceCount <= entryIndex)) {
+    failureResult.carry = true;
+    failureResult.assetOrError = (GraphicsTextureSourceAsset *)0x2c;
+    return failureResult;
+  }
   offsetOrColumnCount = entryIndex * 0x20 + (sourceAsset->tableDescriptor).subresourceTableOffset;
   sourceWidthOrTableBytes = *(int *)((sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
                    offsetOrColumnCount + -0x10);
@@ -714,7 +725,11 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
   largestBlock = (*g_MemoryApi.allocLargestFreeBlock)();
   largestBlockSize = largestBlock.blockSizeOrSentinel;
   decomposedAsset.assetOrError = (GraphicsTextureSourceAsset *)largestBlock.allocationOrError;
-  if (largestBlock.carry) goto LAB_004ad0f7;
+  if (largestBlock.carry) {
+    failureResult.carry = true;
+    failureResult.assetOrError = decomposedAsset.assetOrError;
+    return failureResult;
+  }
   copySourceOrError = sourceAsset;
   copyDestination = decomposedAsset.assetOrError;
   for (remainingBytesOrCount = 0x80; remainingBytesOrCount != 0; remainingBytesOrCount = remainingBytesOrCount + -1) {
@@ -772,19 +787,20 @@ GraphicsTextureSource_DecomposeSubresourceRegionsCf
           packedPixelBytes = 0;
           offsetOrColumnCount = sourceWidthOrTableBytes;
           packedPixelCursor = scanCursor;
-code_r0x004ace04:
-          do {
+          /* Scan the working copy row by row for the next non-background pixel; each hit starts a region that is
+             trimmed, packed below the work area and cleared to the background color. */
+          for (;;) {
             if (offsetOrColumnCount != 0) {
               offsetOrColumnCount = offsetOrColumnCount + -1;
               rowCursor = scanCursor + 1;
               matchedOrEdgeTransparent = backgroundColorOrCount == *scanCursor;
               scanCursor = rowCursor;
-              if (matchedOrEdgeTransparent) goto code_r0x004ace04;
+              if (matchedOrEdgeTransparent) continue;
             }
             if (!matchedOrEdgeTransparent) {
               copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
               remainingBytesOrCount = freeBytesAfterPacked + -0x20;
-              if (remainingBytesOrCount == 0 || freeBytesAfterPacked < 0x20) goto LAB_004ad0ec;
+              if (remainingBytesOrCount == 0 || freeBytesAfterPacked < 0x20) goto DecomposeFreeWorkBufferAndFail;
               entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
               scanCursor = scanCursor + -1;
               offsetOrColumnCount = offsetOrColumnCount + 1;
@@ -840,7 +856,7 @@ code_r0x004ace04:
                   matchedOrEdgeTransparent = scanCountOrEdgeColor == *probeCursor;
                   probeCursor = probeCursor + 1;
                 } while (matchedOrEdgeTransparent);
-                if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto LAB_004acf82;
+                if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimBottomRows;
                 rowCursor = rowCursor + sourceWidthOrTableBytes;
                 *(uint *)(entryOrByteCursor + 0x14) = *(uint *)(entryOrByteCursor + 0x14) + 1;
                 entryCounterField = (word *)(entryOrByteCursor + 0x1c);
@@ -850,7 +866,7 @@ code_r0x004ace04:
               rowCursor = rowCursor + -sourceWidthOrTableBytes;
               *(uint *)(entryOrByteCursor + 0x14) = *(uint *)(entryOrByteCursor + 0x14) - 1;
               *(uint *)(entryOrByteCursor + 0x1c) = *(uint *)(entryOrByteCursor + 0x1c) + 1;
-LAB_004acf82:
+TrueColorTrimBottomRows:
               probeCursor = (uint *)((int)rowCursor + sourceWidthOrTableBytes * 4 * *(uint *)(entryOrByteCursor + 0x1c));
               do {
                 probeCursor = probeCursor + -sourceWidthOrTableBytes;
@@ -863,12 +879,12 @@ LAB_004acf82:
                   matchedOrEdgeTransparent = scanCountOrEdgeColor == *trimProbe;
                   trimProbe = trimProbe + 1;
                 } while (matchedOrEdgeTransparent);
-                if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto LAB_004acfc4;
+                if ((!matchedOrEdgeTransparent) || (0xffffff < scanCountOrEdgeColor)) goto TrueColorTrimLeftColumns;
                 entryCounterField = (word *)(entryOrByteCursor + 0x1c);
                 *(uint *)entryCounterField = *(uint *)entryCounterField - 1;
               } while (*(uint *)entryCounterField != 0);
               *(uint *)(entryOrByteCursor + 0x1c) = *(uint *)(entryOrByteCursor + 0x1c) + 1;
-LAB_004acfc4:
+TrueColorTrimLeftColumns:
               pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
               regionStart = rowCursor;
               probeCursor = rowCursor;
@@ -876,7 +892,7 @@ LAB_004acfc4:
                 do {
                   do {
                     regionStart = probeCursor;
-                    if (scanCountOrEdgeColor != *rowCursor) goto LAB_004ad012;
+                    if (scanCountOrEdgeColor != *rowCursor) goto TrueColorTrimRightColumns;
                     rowCursor = rowCursor + sourceWidthOrTableBytes;
                     pixelCountOrCounter = pixelCountOrCounter - 1;
                     probeCursor = regionStart;
@@ -891,7 +907,7 @@ LAB_004acfc4:
                 *(uint *)(entryOrByteCursor + 0x10) = *(uint *)(entryOrByteCursor + 0x10) - 1;
                 *(uint *)(entryOrByteCursor + 0x18) = *(uint *)(entryOrByteCursor + 0x18) + 1;
               }
-LAB_004ad012:
+TrueColorTrimRightColumns:
               rowCursor = regionStart;
               pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
               probeCursor = (uint *)((int)regionStart +
@@ -902,7 +918,7 @@ LAB_004ad012:
               if ((scanCountOrEdgeColor & 0xff000000) == 0) {
                 do {
                   do {
-                    if (scanCountOrEdgeColor != *probeCursor) goto LAB_004ad066;
+                    if (scanCountOrEdgeColor != *probeCursor) goto TrueColorPackRegion;
                     probeCursor = probeCursor + sourceWidthOrTableBytes;
                     pixelCountOrCounter = pixelCountOrCounter - 1;
                   } while (pixelCountOrCounter != 0);
@@ -914,11 +930,14 @@ LAB_004ad012:
                 } while (*(uint *)entryCounterField != 0);
                 *(uint *)(entryOrByteCursor + 0x18) = *(uint *)(entryOrByteCursor + 0x18) + 1;
               }
-LAB_004ad066:
+TrueColorPackRegion:
               pixelCountOrCounter = *(uint *)(entryOrByteCursor + 0x1c);
               paletteIndexOrCount = *(uint *)(entryOrByteCursor + 0x18) * pixelCountOrCounter;
               freeBytesAfterPacked = remainingBytesOrCount + paletteIndexOrCount * -4;
-              if (freeBytesAfterPacked == 0 || remainingBytesOrCount < paletteIndexOrCount * 4) goto LAB_004ad0e9;
+              if (freeBytesAfterPacked == 0 || remainingBytesOrCount < paletteIndexOrCount * 4) {
+                copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
+                goto DecomposeFreeWorkBufferAndFail;
+              }
               packedPixelCursor = packedPixelCursor + -paletteIndexOrCount;
               packedPixelBytes = packedPixelBytes + paletteIndexOrCount * 4;
               regionWidth = *(uint *)entryOrByteCursor;
@@ -952,12 +971,13 @@ LAB_004ad066:
                 fillRowCursor = fillRowCursor + sourceWidthOrTableBytes;
               } while (fillRows != 0);
               matchedOrEdgeTransparent = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
-              goto code_r0x004ace04;
+              continue;
             }
             rowsRemaining = rowsRemaining + -1;
             matchedOrEdgeTransparent = rowsRemaining == 0;
             offsetOrColumnCount = sourceWidthOrTableBytes;
-          } while (!matchedOrEdgeTransparent);
+            if (matchedOrEdgeTransparent) break;
+          }
           sourceWidthOrTableBytes = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount * 0x20;
           backgroundColorOrCount = packedPixelBytes >> 2;
           ((decomposedAsset.assetOrError)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes + 0x200;
@@ -1044,19 +1064,19 @@ LAB_004ad066:
             bytesMatched = freeBytesAfterPacked == 0;
             offsetOrColumnCount = sourceWidthOrTableBytes;
             if (!bytesMatched && 2 < remainingBytesOrCount) {
-code_r0x004acaa4:
-              do {
+              /* Same region scan as the direct-color path, on 8-bit palette indices. */
+              for (;;) {
                 if (offsetOrColumnCount != 0) {
                   offsetOrColumnCount = offsetOrColumnCount + -1;
                   entryOrByteCursor = scanByteCursor + 1;
                   bytesMatched = backgroundIndex == *scanByteCursor;
                   scanByteCursor = entryOrByteCursor;
-                  if (bytesMatched) goto code_r0x004acaa4;
+                  if (bytesMatched) continue;
                 }
                 if (!bytesMatched) {
                   copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
                   remainingBytesOrCount = freeBytesAfterPacked + -0x20;
-                  if (remainingBytesOrCount == 0 || freeBytesAfterPacked < 0x20) goto LAB_004ad0ec;
+                  if (remainingBytesOrCount == 0 || freeBytesAfterPacked < 0x20) goto DecomposeFreeWorkBufferAndFail;
                   entryCount = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount;
                   scanByteCursor = scanByteCursor + -1;
                   ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount =
@@ -1111,7 +1131,7 @@ code_r0x004acaa4:
                       bytesMatched = edgeIndex == *trimByteCursor;
                       trimByteCursor = trimByteCursor + 1;
                     } while (bytesMatched);
-                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto LAB_004acc23;
+                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimBottomRows;
                     probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                     *(int *)(entryOrByteCursor + 0x14) = *(int *)(entryOrByteCursor + 0x14) + 1;
                     entryCounterField = (word *)(entryOrByteCursor + 0x1c);
@@ -1121,7 +1141,7 @@ code_r0x004acaa4:
                   probeByteCursor = probeByteCursor + -sourceWidthOrTableBytes;
                   *(int *)(entryOrByteCursor + 0x14) = *(int *)(entryOrByteCursor + 0x14) + -1;
                   *(int *)(entryOrByteCursor + 0x1c) = *(int *)(entryOrByteCursor + 0x1c) + 1;
-LAB_004acc23:
+PalettedTrimBottomRows:
                   trimByteCursor = probeByteCursor + sourceWidthOrTableBytes * *(int *)(entryOrByteCursor + 0x1c);
                   do {
                     trimByteCursor = trimByteCursor + -sourceWidthOrTableBytes;
@@ -1134,12 +1154,12 @@ LAB_004acc23:
                       bytesMatched = edgeIndex == *trimByteProbe;
                       trimByteProbe = trimByteProbe + 1;
                     } while (bytesMatched);
-                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto LAB_004acc64;
+                    if ((!bytesMatched) || (!matchedOrEdgeTransparent)) goto PalettedTrimLeftColumns;
                     entryCounterField = (word *)(entryOrByteCursor + 0x1c);
                     *(int *)entryCounterField = *(int *)entryCounterField + -1;
                   } while (*(int *)entryCounterField != 0);
                   *(int *)(entryOrByteCursor + 0x1c) = *(int *)(entryOrByteCursor + 0x1c) + 1;
-LAB_004acc64:
+PalettedTrimLeftColumns:
                   paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
                   regionStart = (uint *)probeByteCursor;
                   scanCursor = (uint *)probeByteCursor;
@@ -1147,7 +1167,7 @@ LAB_004acc64:
                     do {
                       do {
                         regionStart = scanCursor;
-                        if (edgeIndex != *probeByteCursor) goto LAB_004accb0;
+                        if (edgeIndex != *probeByteCursor) goto PalettedTrimRightColumns;
                         probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                         paletteIndexOrCount = paletteIndexOrCount + -1;
                         scanCursor = regionStart;
@@ -1162,7 +1182,7 @@ LAB_004acc64:
                     *(int *)(entryOrByteCursor + 0x10) = *(int *)(entryOrByteCursor + 0x10) + -1;
                     *(int *)(entryOrByteCursor + 0x18) = *(int *)(entryOrByteCursor + 0x18) + 1;
                   }
-LAB_004accb0:
+PalettedTrimRightColumns:
                   scanCursor = regionStart;
                   paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
                   probeByteCursor = (byte *)((int)regionStart + *(int *)(entryOrByteCursor + 0x18) + -1);
@@ -1170,7 +1190,7 @@ LAB_004accb0:
                   if (matchedOrEdgeTransparent) {
                     do {
                       do {
-                        if (edgeIndex != *probeByteCursor) goto LAB_004accf1;
+                        if (edgeIndex != *probeByteCursor) goto PalettedPackRegion;
                         probeByteCursor = probeByteCursor + sourceWidthOrTableBytes;
                         paletteIndexOrCount = paletteIndexOrCount + -1;
                       } while (paletteIndexOrCount != 0);
@@ -1182,11 +1202,14 @@ LAB_004accb0:
                     } while (*(int *)entryCounterField != 0);
                     *(int *)(entryOrByteCursor + 0x18) = *(int *)(entryOrByteCursor + 0x18) + 1;
                   }
-LAB_004accf1:
+PalettedPackRegion:
                   paletteIndexOrCount = *(int *)(entryOrByteCursor + 0x1c);
                   backgroundColorOrCount = *(int *)(entryOrByteCursor + 0x18) * paletteIndexOrCount + 3U & 0xfffffffc;
                   freeBytesAfterPacked = remainingBytesOrCount - backgroundColorOrCount;
-                  if (freeBytesAfterPacked == 0 || remainingBytesOrCount < (int)backgroundColorOrCount) goto LAB_004ad0e9;
+                  if (freeBytesAfterPacked == 0 || remainingBytesOrCount < (int)backgroundColorOrCount) {
+                    copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
+                    goto DecomposeFreeWorkBufferAndFail;
+                  }
                   packedPixelCursor = (uint *)((int)packedPixelCursor + -backgroundColorOrCount);
                   packedPixelBytes = packedPixelBytes + backgroundColorOrCount;
                   remainingBytesOrCount = *(int *)entryOrByteCursor;
@@ -1221,12 +1244,13 @@ LAB_004accf1:
                   } while (entryOffsetOrRows != 0);
                   bytesMatched = 0; /* Ghidra: ZF after an ESP adjustment (&stack0x00000000 == 0x40), never set on a real stack */
                   offsetOrColumnCount = offsetOrColumnCount + 1;
-                  goto code_r0x004acaa4;
+                  continue;
                 }
                 rowsRemaining = rowsRemaining + -1;
                 bytesMatched = rowsRemaining == 0;
                 offsetOrColumnCount = sourceWidthOrTableBytes;
-              } while (!bytesMatched);
+                if (bytesMatched) break;
+              }
               sourceWidthOrTableBytes = ((decomposedAsset.assetOrError)->tableDescriptor).subresourceCount * 0x20;
               backgroundColorOrCount = packedPixelBytes >> 2;
               ((decomposedAsset.assetOrError)->common).allocationSizeBytes = packedPixelBytes + sourceWidthOrTableBytes + 0xa00;
@@ -1263,16 +1287,12 @@ LAB_004accf1:
       }
     }
   }
-LAB_004ad0ec:
+DecomposeFreeWorkBufferAndFail:
   (*g_MemoryApi.free)(decomposedAsset.assetOrError);
   decomposedAsset.assetOrError = copySourceOrError;
-LAB_004ad0f7:
   failureResult.carry = true;
   failureResult.assetOrError = decomposedAsset.assetOrError;
   return failureResult;
-LAB_004ad0e9:
-  copySourceOrError = (GraphicsTextureSourceAsset *)0x14;
-  goto LAB_004ad0ec;
 }
 
 /* Address: 0x004AD630.
@@ -1447,28 +1467,24 @@ GraphicsTextureSource_GetFirstLogicalSizeRegs(GraphicsTextureSourceAsset *source
 
 {
   uint entryCount;
-  undefined4 in_EAX;
   byte *firstSubresourceRecord;
-  bool invalid;
   GraphicsTextureSizeEaxEdxCf9 logicalSize;
-  uint subresourceCount;
-  
-  invalid = true;
+
+  /* Failure (CF set): the original leaves EAX untouched and EDX = sourceAsset; no caller reads them then. */
+  logicalSize.logicalWidthPixels = 0;
+  logicalSize.logicalHeightPixels = (dword)sourceAsset;
+  logicalSize.carry = true;
   if ((sourceAsset->common).magic == ASSET_MAGIC_GFX) {
     entryCount = (sourceAsset->tableDescriptor).subresourceCount;
-    invalid = true;
-    if ((entryCount != 0) && (invalid = 0xfff < entryCount, !invalid)) {
+    if ((entryCount != 0) && (entryCount <= 0xfff)) {
       firstSubresourceRecord =
            (sourceAsset->common).buildMetadata.assetRelativeAddressAnchor28 +
            ((sourceAsset->tableDescriptor).subresourceTableOffset - 0x28);
-      in_EAX = *(undefined4 *)firstSubresourceRecord;
-      sourceAsset = *(GraphicsTextureSourceAsset **)(firstSubresourceRecord + 4);
-      invalid = false;
+      logicalSize.logicalWidthPixels = *(dword *)firstSubresourceRecord;
+      logicalSize.logicalHeightPixels = *(dword *)(firstSubresourceRecord + 4);
+      logicalSize.carry = false;
     }
   }
-  logicalSize.logicalHeightPixels = (dword)sourceAsset;
-  logicalSize.logicalWidthPixels = in_EAX;
-  logicalSize.carry = invalid;
   return logicalSize;
 }
 
@@ -1492,9 +1508,9 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
   uint greenMask;
   uint blueMask;
   int blueTopBit;
-  undefined1 paletteGreen;
-  undefined1 paletteBlue;
-  undefined1 paletteFlags;
+  byte paletteGreen;
+  byte paletteBlue;
+  byte paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
@@ -1510,7 +1526,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
   ushort *destinationWordRow;
   byte *destinationByteRow;
   uint *destinationDwordRow;
-  int *createdPalette;
+  IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
   int sourceWidth;
@@ -1598,7 +1614,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
             }
@@ -1745,10 +1761,10 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(undefined1 *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -1760,7 +1776,7 @@ GraphicsTexture_UploadColor_1x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor1x_DecrementActiveCountAndReturn;
             }
@@ -1908,15 +1924,15 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
   uint redOrAlphaMask;
   uint greenMask;
   uint blueMask;
-  undefined4 topLeftTexel;
-  undefined4 topRightTexel;
-  undefined4 bottomLeftTexel;
-  undefined4 bottomRightTexel;
+  dword topLeftTexel;
+  dword topRightTexel;
+  dword bottomLeftTexel;
+  dword bottomRightTexel;
   bool hasMore;
   int blueTopBit;
-  undefined1 paletteGreen;
-  undefined1 paletteBlue;
-  undefined1 paletteFlags;
+  byte paletteGreen;
+  byte paletteBlue;
+  byte paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
@@ -1934,16 +1950,13 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
   uint3 averageRgb;
   ushort averageGreen;
   ushort averageRed;
-  ushort topLeftAlphaOrAverage;
-  ushort topRightAlpha;
-  ushort bottomLeftAlpha;
-  ushort bottomRightAlpha;
+  ushort averageAlpha;
   byte *sourceByteRow;
   AssetProducerSourceNames *sourceTexelRow;
   byte *destinationByteRow;
   ushort *destinationWordRow;
   uint *destinationDwordRow;
-  int *createdPalette;
+  IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
   int sourceWidth;
@@ -2036,7 +2049,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn;
             }
@@ -2103,46 +2116,21 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    topLeftTexel = *(undefined4 *)sourceTexel->producerName;
-                    topRightTexel = *(undefined4 *)(sourceTexel->producerName + 2);
-                    bottomLeftTexel = *(undefined4 *)(sourceTexel->producerName + sourceWidth * 2);
-                    bottomRightTexel = *(undefined4 *)(sourceTexel->producerName + sourceWidth * 2 + 2);
-                    topLeftAlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    topRightAlpha = (ushort)(((ulonglong)(byte)((uint)topRightTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomLeftAlpha = (ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomRightAlpha = (ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)topLeftTexel + (ushort)(byte)topRightTexel +
-                                     (ushort)(byte)bottomLeftTexel + (ushort)(byte)bottomRightTexel) >> 2;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)topRightTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8)) >> 2;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(topLeftAlphaOrAverage,(char)((uint)topLeftTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(topRightAlpha,(char)((uint)topRightTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomLeftAlpha,(char)((uint)bottomLeftTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomRightAlpha,(char)((uint)bottomRightTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8)) >> 2;
-                    topLeftAlphaOrAverage = (ushort)((topLeftAlphaOrAverage >> 8) + (topRightAlpha >> 8) + (bottomLeftAlpha >> 8) + (bottomRightAlpha >> 8))
-                             >> 2;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationWord = (ushort)((((uint)(byte)((topLeftAlphaOrAverage != 0) * (topLeftAlphaOrAverage < 0x100) *
-                                                       (char)topLeftAlphaOrAverage - (0xff < topLeftAlphaOrAverage)) << 0x18) >>
+                    topLeftTexel = *(dword *)sourceTexel->producerName;
+                    topRightTexel = *(dword *)(sourceTexel->producerName + 2);
+                    bottomLeftTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2);
+                    bottomRightTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2 + 2);
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                                          TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                                           TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                                         TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                                           TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
                                         ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
                                (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                        ((byte)blueShiftLeft & 0x1f)) |
@@ -2169,46 +2157,21 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    topLeftTexel = *(undefined4 *)sourceTexel->producerName;
-                    topRightTexel = *(undefined4 *)(sourceTexel->producerName + 2);
-                    bottomLeftTexel = *(undefined4 *)(sourceTexel->producerName + sourceWidth * 2);
-                    bottomRightTexel = *(undefined4 *)(sourceTexel->producerName + sourceWidth * 2 + 2);
-                    topLeftAlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    topRightAlpha = (ushort)(((ulonglong)(byte)((uint)topRightTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomLeftAlpha = (ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomRightAlpha = (ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)topLeftTexel + (ushort)(byte)topRightTexel +
-                                     (ushort)(byte)bottomLeftTexel + (ushort)(byte)bottomRightTexel) >> 2;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)topRightTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8)) >> 2;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(topLeftAlphaOrAverage,(char)((uint)topLeftTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(topRightAlpha,(char)((uint)topRightTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomLeftAlpha,(char)((uint)bottomLeftTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomRightAlpha,(char)((uint)bottomRightTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8)) >> 2;
-                    topLeftAlphaOrAverage = (ushort)((topLeftAlphaOrAverage >> 8) + (topRightAlpha >> 8) + (bottomLeftAlpha >> 8) + (bottomRightAlpha >> 8))
-                             >> 2;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationDword = (((uint)(byte)((topLeftAlphaOrAverage != 0) * (topLeftAlphaOrAverage < 0x100) * (char)topLeftAlphaOrAverage -
-                                             (0xff < topLeftAlphaOrAverage)) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
+                    topLeftTexel = *(dword *)sourceTexel->producerName;
+                    topRightTexel = *(dword *)(sourceTexel->producerName + 2);
+                    bottomLeftTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2);
+                    bottomRightTexel = *(dword *)(sourceTexel->producerName + sourceWidth * 2 + 2);
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                                          TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                                           TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                                         TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                                           TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
                                << ((byte)alphaShiftLeft & 0x1f) |
                                ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                ((byte)blueShiftLeft & 0x1f) |
@@ -2268,10 +2231,10 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(undefined1 *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -2283,7 +2246,7 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor2x_DecrementActiveCountAndReturn;
             }
@@ -2351,54 +2314,29 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    topLeftTexel = *(undefined4 *)
+                    topLeftTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)*byteCursor * 8 + -0x28);
-                    topRightTexel = *(undefined4 *)
+                    topRightTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[1] * 8 + -0x28);
-                    bottomLeftTexel = *(undefined4 *)
+                    bottomLeftTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    bottomRightTexel = *(undefined4 *)
+                    bottomRightTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    topLeftAlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    topRightAlpha = (ushort)(((ulonglong)(byte)((uint)topRightTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomLeftAlpha = (ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomRightAlpha = (ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)topLeftTexel + (ushort)(byte)topRightTexel +
-                                     (ushort)(byte)bottomLeftTexel + (ushort)(byte)bottomRightTexel) >> 2;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)topRightTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8)) >> 2;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(topLeftAlphaOrAverage,(char)((uint)topLeftTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(topRightAlpha,(char)((uint)topRightTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomLeftAlpha,(char)((uint)bottomLeftTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomRightAlpha,(char)((uint)bottomRightTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8)) >> 2;
-                    topLeftAlphaOrAverage = (ushort)((topLeftAlphaOrAverage >> 8) + (topRightAlpha >> 8) + (bottomLeftAlpha >> 8) + (bottomRightAlpha >> 8))
-                             >> 2;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationWord = (ushort)((((uint)(byte)((topLeftAlphaOrAverage != 0) * (topLeftAlphaOrAverage < 0x100) *
-                                                       (char)topLeftAlphaOrAverage - (0xff < topLeftAlphaOrAverage)) << 0x18) >>
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                                          TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                                           TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                                         TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                                           TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
                                         ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
                                (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                        ((byte)blueShiftLeft & 0x1f)) |
@@ -2426,54 +2364,29 @@ GraphicsTexture_UploadColor_2x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    topLeftTexel = *(undefined4 *)
+                    topLeftTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)*byteCursor * 8 + -0x28);
-                    topRightTexel = *(undefined4 *)
+                    topRightTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[1] * 8 + -0x28);
-                    bottomLeftTexel = *(undefined4 *)
+                    bottomLeftTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    bottomRightTexel = *(undefined4 *)
+                    bottomRightTexel = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    topLeftAlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    topRightAlpha = (ushort)(((ulonglong)(byte)((uint)topRightTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomLeftAlpha = (ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 0x18) << 0x38) >> 0x30);
-                    bottomRightAlpha = (ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)topLeftTexel + (ushort)(byte)topRightTexel +
-                                     (ushort)(byte)bottomLeftTexel + (ushort)(byte)bottomRightTexel) >> 2;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)topLeftTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)topRightTexel >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomLeftTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)bottomRightTexel >> 8) << 0x18) >> 0x10
-                                              ) >> 8)) >> 2;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(topLeftAlphaOrAverage,(char)((uint)topLeftTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(topRightAlpha,(char)((uint)topRightTexel >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomLeftAlpha,(char)((uint)bottomLeftTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(bottomRightAlpha,(char)((uint)bottomRightTexel >> 0x10)) << 0x28
-                                               ) >> 0x20) >> 8)) >> 2;
-                    topLeftAlphaOrAverage = (ushort)((topLeftAlphaOrAverage >> 8) + (topRightAlpha >> 8) + (bottomLeftAlpha >> 8) + (bottomRightAlpha >> 8))
-                             >> 2;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationDword = (((uint)(byte)((topLeftAlphaOrAverage != 0) * (topLeftAlphaOrAverage < 0x100) * (char)topLeftAlphaOrAverage -
-                                             (0xff < topLeftAlphaOrAverage)) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(topLeftTexel) + TEXTURE_TEXEL_BLUE(topRightTexel) +
+                                          TEXTURE_TEXEL_BLUE(bottomLeftTexel) + TEXTURE_TEXEL_BLUE(bottomRightTexel)) >> 2;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(topLeftTexel) + TEXTURE_TEXEL_GREEN(topRightTexel) +
+                                           TEXTURE_TEXEL_GREEN(bottomLeftTexel) + TEXTURE_TEXEL_GREEN(bottomRightTexel)) >> 2;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(topLeftTexel) + TEXTURE_TEXEL_RED(topRightTexel) +
+                                         TEXTURE_TEXEL_RED(bottomLeftTexel) + TEXTURE_TEXEL_RED(bottomRightTexel)) >> 2;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(topLeftTexel) + TEXTURE_TEXEL_ALPHA(topRightTexel) +
+                                           TEXTURE_TEXEL_ALPHA(bottomLeftTexel) + TEXTURE_TEXEL_ALPHA(bottomRightTexel)) >> 2;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
                                << ((byte)alphaShiftLeft & 0x1f) |
                                ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                ((byte)blueShiftLeft & 0x1f) |
@@ -2528,27 +2441,27 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
   int offsetOrGreenTopBit;
   DDPIXELFORMAT *destinationFormat;
   uint blueMask;
-  undefined4 texel00;
-  undefined4 texel01;
-  undefined4 texel02;
-  undefined4 texel03;
-  undefined4 texel04;
-  undefined4 texel05;
-  undefined4 texel06;
-  undefined4 texel07;
-  undefined4 texel08;
-  undefined4 texel09;
-  undefined4 texel10;
-  undefined4 texel11;
-  undefined4 texel12;
-  undefined4 texel13;
-  undefined4 texel14;
-  undefined4 texel15;
+  dword texel00;
+  dword texel01;
+  dword texel02;
+  dword texel03;
+  dword texel04;
+  dword texel05;
+  dword texel06;
+  dword texel07;
+  dword texel08;
+  dword texel09;
+  dword texel10;
+  dword texel11;
+  dword texel12;
+  dword texel13;
+  dword texel14;
+  dword texel15;
   bool hasMore;
   int blueTopBit;
-  undefined1 paletteGreen;
-  undefined1 paletteBlue;
-  undefined1 paletteFlags;
+  byte paletteGreen;
+  byte paletteBlue;
+  byte paletteFlags;
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   TH_LEGACY_HRESULT hresult;
@@ -2567,28 +2480,13 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
   uint3 averageRgb;
   ushort averageGreen;
   ushort averageRed;
-  ushort texel00AlphaOrAverage;
-  ushort texel01Alpha;
-  ushort texel02Alpha;
-  ushort texel03Alpha;
-  ushort texel04Alpha;
-  ushort texel08Alpha;
-  ushort texel12Alpha;
-  ushort texel05Alpha;
-  ushort texel09Alpha;
-  ushort texel13Alpha;
-  ushort texel06Alpha;
-  ushort texel10Alpha;
-  ushort texel14Alpha;
-  ushort texel07Alpha;
-  ushort texel11Alpha;
-  ushort texel15Alpha;
+  ushort averageAlpha;
   byte *sourceByteRow;
   word *sourceTexelRow;
   byte *destinationByteRow;
   ushort *destinationWordRow;
   uint *destinationDwordRow;
-  int *createdPalette;
+  IDirectDrawPalette *createdPalette;
   GraphicsTextureSourceAsset *paletteBank;
   int rowsRemaining;
   uint sourceWidth;
@@ -2680,7 +2578,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn;
             }
@@ -2747,141 +2645,58 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    texel00 = *(undefined4 *)sourceTexel;
-                    texel01 = *(undefined4 *)(sourceTexel + 2);
-                    texel02 = *(undefined4 *)(sourceTexel + sourceWidth * 2);
-                    texel03 = *(undefined4 *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel04 = *(undefined4 *)(sourceTexel + 4);
-                    texel05 = *(undefined4 *)(sourceTexel + 6);
-                    texel06 = *(undefined4 *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel07 = *(undefined4 *)(sourceTexel + (sourceWidth + 3) * 2);
-                    texel00AlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)texel00 >> 0x18) << 0x38) >> 0x30);
-                    texel01Alpha = (ushort)(((ulonglong)(byte)((uint)texel01 >> 0x18) << 0x38) >> 0x30);
-                    texel02Alpha = (ushort)(((ulonglong)(byte)((uint)texel02 >> 0x18) << 0x38) >> 0x30);
-                    texel03Alpha = (ushort)(((ulonglong)(byte)((uint)texel03 >> 0x18) << 0x38) >> 0x30);
-                    texel04Alpha = (ushort)(((ulonglong)(byte)((uint)texel04 >> 0x18) << 0x38) >> 0x30);
-                    texel05Alpha = (ushort)(((ulonglong)(byte)((uint)texel05 >> 0x18) << 0x38) >> 0x30);
-                    texel06Alpha = (ushort)(((ulonglong)(byte)((uint)texel06 >> 0x18) << 0x38) >> 0x30);
-                    texel07Alpha = (ushort)(((ulonglong)(byte)((uint)texel07 >> 0x18) << 0x38) >> 0x30);
+                    texel00 = *(dword *)sourceTexel;
+                    texel01 = *(dword *)(sourceTexel + 2);
+                    texel02 = *(dword *)(sourceTexel + sourceWidth * 2);
+                    texel03 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel04 = *(dword *)(sourceTexel + 4);
+                    texel05 = *(dword *)(sourceTexel + 6);
+                    texel06 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel07 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
                     sourceTexel = sourceTexel + sourceWidth * 4;
-                    texel08 = *(undefined4 *)sourceTexel;
-                    texel09 = *(undefined4 *)(sourceTexel + 2);
-                    texel10 = *(undefined4 *)(sourceTexel + sourceWidth * 2);
-                    texel11 = *(undefined4 *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel08Alpha = (ushort)(((ulonglong)(byte)((uint)texel08 >> 0x18) << 0x38) >> 0x30);
-                    texel09Alpha = (ushort)(((ulonglong)(byte)((uint)texel09 >> 0x18) << 0x38) >> 0x30);
-                    texel10Alpha = (ushort)(((ulonglong)(byte)((uint)texel10 >> 0x18) << 0x38) >> 0x30);
-                    texel11Alpha = (ushort)(((ulonglong)(byte)((uint)texel11 >> 0x18) << 0x38) >> 0x30);
-                    texel12 = *(undefined4 *)(sourceTexel + 4);
-                    texel13 = *(undefined4 *)(sourceTexel + 6);
-                    texel14 = *(undefined4 *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel15 = *(undefined4 *)(sourceTexel + (sourceWidth + 3) * 2);
-                    texel12Alpha = (ushort)(((ulonglong)(byte)((uint)texel12 >> 0x18) << 0x38) >> 0x30);
-                    texel13Alpha = (ushort)(((ulonglong)(byte)((uint)texel13 >> 0x18) << 0x38) >> 0x30);
-                    texel14Alpha = (ushort)(((ulonglong)(byte)((uint)texel14 >> 0x18) << 0x38) >> 0x30);
-                    texel15Alpha = (ushort)(((ulonglong)(byte)((uint)texel15 >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)texel00 + (ushort)(byte)texel01 +
-                                      (ushort)(byte)texel02 + (ushort)(byte)texel03 +
-                                      (ushort)(byte)texel04 + (ushort)(byte)texel05 +
-                                      (ushort)(byte)texel06 + (ushort)(byte)texel07 +
-                                      (ushort)(byte)texel08 + (ushort)(byte)texel09 +
-                                      (ushort)(byte)texel10 + (ushort)(byte)texel11 +
-                                     (ushort)(byte)texel12 + (ushort)(byte)texel13 +
-                                     (ushort)(byte)texel14 + (ushort)(byte)texel15) >> 4;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)texel00 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel01 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel02 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel03 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel04 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel05 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel06 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel07 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel08 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel09 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel10 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel11 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel12 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel13 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel14 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel15 >> 8) << 0x18) >>
-                                              0x10) >> 8)) >> 4;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(texel00AlphaOrAverage,(char)((uint)texel00 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel01Alpha,(char)((uint)texel01 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel02Alpha,(char)((uint)texel02 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel03Alpha,(char)((uint)texel03 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel04Alpha,(char)((uint)texel04 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel05Alpha,(char)((uint)texel05 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel06Alpha,(char)((uint)texel06 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel07Alpha,(char)((uint)texel07 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel08Alpha,(char)((uint)texel08 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel09Alpha,(char)((uint)texel09 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel10Alpha,(char)((uint)texel10 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel11Alpha,(char)((uint)texel11 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel12Alpha,(char)((uint)texel12 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel13Alpha,(char)((uint)texel13 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel14Alpha,(char)((uint)texel14 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel15Alpha,(char)((uint)texel15 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8)) >> 4;
-                    texel00AlphaOrAverage = (ushort)((texel00AlphaOrAverage >> 8) + (texel01Alpha >> 8) + (texel02Alpha >> 8) + (texel03Alpha >> 8)
-                                      + (texel04Alpha >> 8) + (texel05Alpha >> 8) +
-                                        (texel06Alpha >> 8) + (texel07Alpha >> 8) +
-                                      (texel08Alpha >> 8) + (texel09Alpha >> 8) + (texel10Alpha >> 8) + (texel11Alpha >> 8)
-                                     + (texel12Alpha >> 8) + (texel13Alpha >> 8) + (texel14Alpha >> 8) + (texel15Alpha >> 8)
-                                     ) >> 4;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationWord = (ushort)((((uint)(byte)((texel00AlphaOrAverage != 0) * (texel00AlphaOrAverage < 0x100) *
-                                                       (char)texel00AlphaOrAverage - (0xff < texel00AlphaOrAverage)) << 0x18) >>
+                    texel08 = *(dword *)sourceTexel;
+                    texel09 = *(dword *)(sourceTexel + 2);
+                    texel10 = *(dword *)(sourceTexel + sourceWidth * 2);
+                    texel11 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel12 = *(dword *)(sourceTexel + 4);
+                    texel13 = *(dword *)(sourceTexel + 6);
+                    texel14 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel15 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                                          TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
+                                          TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
+                                          TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
+                                          TEXTURE_TEXEL_BLUE(texel08) + TEXTURE_TEXEL_BLUE(texel09) +
+                                          TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
+                                          TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
+                                          TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                                           TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
+                                           TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
+                                           TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
+                                           TEXTURE_TEXEL_GREEN(texel08) + TEXTURE_TEXEL_GREEN(texel09) +
+                                           TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
+                                           TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
+                                           TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                                         TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
+                                         TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
+                                         TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
+                                         TEXTURE_TEXEL_RED(texel08) + TEXTURE_TEXEL_RED(texel09) +
+                                         TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
+                                         TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
+                                         TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                                           TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
+                                           TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
+                                           TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
+                                           TEXTURE_TEXEL_ALPHA(texel08) + TEXTURE_TEXEL_ALPHA(texel09) +
+                                           TEXTURE_TEXEL_ALPHA(texel10) + TEXTURE_TEXEL_ALPHA(texel11) +
+                                           TEXTURE_TEXEL_ALPHA(texel12) + TEXTURE_TEXEL_ALPHA(texel13) +
+                                           TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
                                         ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
                                (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                        ((byte)blueShiftLeft & 0x1f)) |
@@ -2908,141 +2723,58 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    texel00 = *(undefined4 *)sourceTexel;
-                    texel01 = *(undefined4 *)(sourceTexel + 2);
-                    texel02 = *(undefined4 *)(sourceTexel + sourceWidth * 2);
-                    texel03 = *(undefined4 *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel04 = *(undefined4 *)(sourceTexel + 4);
-                    texel05 = *(undefined4 *)(sourceTexel + 6);
-                    texel06 = *(undefined4 *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel07 = *(undefined4 *)(sourceTexel + (sourceWidth + 3) * 2);
-                    texel00AlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)texel00 >> 0x18) << 0x38) >> 0x30);
-                    texel01Alpha = (ushort)(((ulonglong)(byte)((uint)texel01 >> 0x18) << 0x38) >> 0x30);
-                    texel02Alpha = (ushort)(((ulonglong)(byte)((uint)texel02 >> 0x18) << 0x38) >> 0x30);
-                    texel03Alpha = (ushort)(((ulonglong)(byte)((uint)texel03 >> 0x18) << 0x38) >> 0x30);
-                    texel04Alpha = (ushort)(((ulonglong)(byte)((uint)texel04 >> 0x18) << 0x38) >> 0x30);
-                    texel05Alpha = (ushort)(((ulonglong)(byte)((uint)texel05 >> 0x18) << 0x38) >> 0x30);
-                    texel06Alpha = (ushort)(((ulonglong)(byte)((uint)texel06 >> 0x18) << 0x38) >> 0x30);
-                    texel07Alpha = (ushort)(((ulonglong)(byte)((uint)texel07 >> 0x18) << 0x38) >> 0x30);
+                    texel00 = *(dword *)sourceTexel;
+                    texel01 = *(dword *)(sourceTexel + 2);
+                    texel02 = *(dword *)(sourceTexel + sourceWidth * 2);
+                    texel03 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel04 = *(dword *)(sourceTexel + 4);
+                    texel05 = *(dword *)(sourceTexel + 6);
+                    texel06 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel07 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
                     sourceTexel = sourceTexel + sourceWidth * 4;
-                    texel08 = *(undefined4 *)sourceTexel;
-                    texel09 = *(undefined4 *)(sourceTexel + 2);
-                    texel10 = *(undefined4 *)(sourceTexel + sourceWidth * 2);
-                    texel11 = *(undefined4 *)(sourceTexel + (sourceWidth + 1) * 2);
-                    texel08Alpha = (ushort)(((ulonglong)(byte)((uint)texel08 >> 0x18) << 0x38) >> 0x30);
-                    texel09Alpha = (ushort)(((ulonglong)(byte)((uint)texel09 >> 0x18) << 0x38) >> 0x30);
-                    texel10Alpha = (ushort)(((ulonglong)(byte)((uint)texel10 >> 0x18) << 0x38) >> 0x30);
-                    texel11Alpha = (ushort)(((ulonglong)(byte)((uint)texel11 >> 0x18) << 0x38) >> 0x30);
-                    texel12 = *(undefined4 *)(sourceTexel + 4);
-                    texel13 = *(undefined4 *)(sourceTexel + 6);
-                    texel14 = *(undefined4 *)(sourceTexel + (sourceWidth + 2) * 2);
-                    texel15 = *(undefined4 *)(sourceTexel + (sourceWidth + 3) * 2);
-                    texel12Alpha = (ushort)(((ulonglong)(byte)((uint)texel12 >> 0x18) << 0x38) >> 0x30);
-                    texel13Alpha = (ushort)(((ulonglong)(byte)((uint)texel13 >> 0x18) << 0x38) >> 0x30);
-                    texel14Alpha = (ushort)(((ulonglong)(byte)((uint)texel14 >> 0x18) << 0x38) >> 0x30);
-                    texel15Alpha = (ushort)(((ulonglong)(byte)((uint)texel15 >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)texel00 + (ushort)(byte)texel01 +
-                                      (ushort)(byte)texel02 + (ushort)(byte)texel03 +
-                                      (ushort)(byte)texel04 + (ushort)(byte)texel05 +
-                                      (ushort)(byte)texel06 + (ushort)(byte)texel07 +
-                                      (ushort)(byte)texel08 + (ushort)(byte)texel09 +
-                                      (ushort)(byte)texel10 + (ushort)(byte)texel11 +
-                                     (ushort)(byte)texel12 + (ushort)(byte)texel13 +
-                                     (ushort)(byte)texel14 + (ushort)(byte)texel15) >> 4;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)texel00 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel01 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel02 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel03 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel04 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel05 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel06 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel07 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel08 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel09 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel10 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel11 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel12 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel13 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel14 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel15 >> 8) << 0x18) >>
-                                              0x10) >> 8)) >> 4;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(texel00AlphaOrAverage,(char)((uint)texel00 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel01Alpha,(char)((uint)texel01 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel02Alpha,(char)((uint)texel02 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel03Alpha,(char)((uint)texel03 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel04Alpha,(char)((uint)texel04 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel05Alpha,(char)((uint)texel05 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel06Alpha,(char)((uint)texel06 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel07Alpha,(char)((uint)texel07 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel08Alpha,(char)((uint)texel08 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel09Alpha,(char)((uint)texel09 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel10Alpha,(char)((uint)texel10 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel11Alpha,(char)((uint)texel11 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel12Alpha,(char)((uint)texel12 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel13Alpha,(char)((uint)texel13 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel14Alpha,(char)((uint)texel14 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel15Alpha,(char)((uint)texel15 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8)) >> 4;
-                    texel00AlphaOrAverage = (ushort)((texel00AlphaOrAverage >> 8) + (texel01Alpha >> 8) + (texel02Alpha >> 8) + (texel03Alpha >> 8)
-                                      + (texel04Alpha >> 8) + (texel05Alpha >> 8) +
-                                        (texel06Alpha >> 8) + (texel07Alpha >> 8) +
-                                      (texel08Alpha >> 8) + (texel09Alpha >> 8) + (texel10Alpha >> 8) + (texel11Alpha >> 8)
-                                     + (texel12Alpha >> 8) + (texel13Alpha >> 8) + (texel14Alpha >> 8) + (texel15Alpha >> 8)
-                                     ) >> 4;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationDword = (((uint)(byte)((texel00AlphaOrAverage != 0) * (texel00AlphaOrAverage < 0x100) * (char)texel00AlphaOrAverage -
-                                             (0xff < texel00AlphaOrAverage)) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
+                    texel08 = *(dword *)sourceTexel;
+                    texel09 = *(dword *)(sourceTexel + 2);
+                    texel10 = *(dword *)(sourceTexel + sourceWidth * 2);
+                    texel11 = *(dword *)(sourceTexel + (sourceWidth + 1) * 2);
+                    texel12 = *(dword *)(sourceTexel + 4);
+                    texel13 = *(dword *)(sourceTexel + 6);
+                    texel14 = *(dword *)(sourceTexel + (sourceWidth + 2) * 2);
+                    texel15 = *(dword *)(sourceTexel + (sourceWidth + 3) * 2);
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                                          TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
+                                          TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
+                                          TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
+                                          TEXTURE_TEXEL_BLUE(texel08) + TEXTURE_TEXEL_BLUE(texel09) +
+                                          TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
+                                          TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
+                                          TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                                           TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
+                                           TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
+                                           TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
+                                           TEXTURE_TEXEL_GREEN(texel08) + TEXTURE_TEXEL_GREEN(texel09) +
+                                           TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
+                                           TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
+                                           TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                                         TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
+                                         TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
+                                         TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
+                                         TEXTURE_TEXEL_RED(texel08) + TEXTURE_TEXEL_RED(texel09) +
+                                         TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
+                                         TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
+                                         TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                                           TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
+                                           TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
+                                           TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
+                                           TEXTURE_TEXEL_ALPHA(texel08) + TEXTURE_TEXEL_ALPHA(texel09) +
+                                           TEXTURE_TEXEL_ALPHA(texel10) + TEXTURE_TEXEL_ALPHA(texel11) +
+                                           TEXTURE_TEXEL_ALPHA(texel12) + TEXTURE_TEXEL_ALPHA(texel13) +
+                                           TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
                                << ((byte)alphaShiftLeft & 0x1f) |
                                ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                ((byte)blueShiftLeft & 0x1f) |
@@ -3102,10 +2834,10 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               paletteSourceCursor = paletteBank;
               paletteEntryCursor = g_TexturePaletteEntries;
               do {
-                paletteGreen = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 1);
-                paletteBlue = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 2);
-                paletteFlags = *(undefined1 *)((int)&(paletteSourceCursor->common).magic + 3);
-                paletteEntryCursor->red = *(undefined1 *)&(paletteSourceCursor->common).magic;
+                paletteGreen = *(byte *)((int)&(paletteSourceCursor->common).magic + 1);
+                paletteBlue = *(byte *)((int)&(paletteSourceCursor->common).magic + 2);
+                paletteFlags = *(byte *)((int)&(paletteSourceCursor->common).magic + 3);
+                paletteEntryCursor->red = *(byte *)&(paletteSourceCursor->common).magic;
                 paletteEntryCursor->green = paletteGreen;
                 paletteEntryCursor->blue = paletteBlue;
                 paletteEntryCursor->flags = paletteFlags;
@@ -3117,7 +2849,7 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
                                  (g_DirectDraw2,0x44,g_TexturePaletteEntries,&createdPalette,
                                   (TH_LEGACY_LPVOID)0x0);
               if (hresult == 0) {
-                (**(code **)(*createdPalette + 8))(createdPalette);
+                (*createdPalette->lpVtbl->Release)(createdPalette);
               }
               goto GraphicsTextureUploadColor4x_DecrementActiveCountAndReturn;
             }
@@ -3185,173 +2917,90 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               if (destinationFormat->dwRGBBitCount < 0x11) {
                 do {
                   do {
-                    texel00 = *(undefined4 *)
+                    texel00 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)*byteCursor * 8 + -0x28);
-                    texel01 = *(undefined4 *)
+                    texel01 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[1] * 8 + -0x28);
-                    texel02 = *(undefined4 *)
+                    texel02 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel03 = *(undefined4 *)
+                    texel03 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel04 = *(undefined4 *)
+                    texel04 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[2] * 8 + -0x28);
-                    texel05 = *(undefined4 *)
+                    texel05 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[3] * 8 + -0x28);
-                    texel06 = *(undefined4 *)
+                    texel06 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel07 = *(undefined4 *)
+                    texel07 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    texel00AlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)texel00 >> 0x18) << 0x38) >> 0x30);
-                    texel01Alpha = (ushort)(((ulonglong)(byte)((uint)texel01 >> 0x18) << 0x38) >> 0x30);
-                    texel02Alpha = (ushort)(((ulonglong)(byte)((uint)texel02 >> 0x18) << 0x38) >> 0x30);
-                    texel03Alpha = (ushort)(((ulonglong)(byte)((uint)texel03 >> 0x18) << 0x38) >> 0x30);
-                    texel04Alpha = (ushort)(((ulonglong)(byte)((uint)texel04 >> 0x18) << 0x38) >> 0x30);
-                    texel05Alpha = (ushort)(((ulonglong)(byte)((uint)texel05 >> 0x18) << 0x38) >> 0x30);
-                    texel06Alpha = (ushort)(((ulonglong)(byte)((uint)texel06 >> 0x18) << 0x38) >> 0x30);
-                    texel07Alpha = (ushort)(((ulonglong)(byte)((uint)texel07 >> 0x18) << 0x38) >> 0x30);
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(undefined4 *)
+                    texel08 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)*byteCursor * 8 + -0x28);
-                    texel09 = *(undefined4 *)
+                    texel09 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[1] * 8 + -0x28);
-                    texel10 = *(undefined4 *)
+                    texel10 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel11 = *(undefined4 *)
+                    texel11 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel08Alpha = (ushort)(((ulonglong)(byte)((uint)texel08 >> 0x18) << 0x38) >> 0x30);
-                    texel09Alpha = (ushort)(((ulonglong)(byte)((uint)texel09 >> 0x18) << 0x38) >> 0x30);
-                    texel10Alpha = (ushort)(((ulonglong)(byte)((uint)texel10 >> 0x18) << 0x38) >> 0x30);
-                    texel11Alpha = (ushort)(((ulonglong)(byte)((uint)texel11 >> 0x18) << 0x38) >> 0x30);
-                    texel12 = *(undefined4 *)
+                    texel12 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[2] * 8 + -0x28);
-                    texel13 = *(undefined4 *)
+                    texel13 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[3] * 8 + -0x28);
-                    texel14 = *(undefined4 *)
+                    texel14 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel15 = *(undefined4 *)
+                    texel15 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    texel12Alpha = (ushort)(((ulonglong)(byte)((uint)texel12 >> 0x18) << 0x38) >> 0x30);
-                    texel13Alpha = (ushort)(((ulonglong)(byte)((uint)texel13 >> 0x18) << 0x38) >> 0x30);
-                    texel14Alpha = (ushort)(((ulonglong)(byte)((uint)texel14 >> 0x18) << 0x38) >> 0x30);
-                    texel15Alpha = (ushort)(((ulonglong)(byte)((uint)texel15 >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)texel00 + (ushort)(byte)texel01 +
-                                      (ushort)(byte)texel02 + (ushort)(byte)texel03 +
-                                      (ushort)(byte)texel04 + (ushort)(byte)texel05 +
-                                      (ushort)(byte)texel06 + (ushort)(byte)texel07 +
-                                      (ushort)(byte)texel08 + (ushort)(byte)texel09 +
-                                      (ushort)(byte)texel10 + (ushort)(byte)texel11 +
-                                     (ushort)(byte)texel12 + (ushort)(byte)texel13 +
-                                     (ushort)(byte)texel14 + (ushort)(byte)texel15) >> 4;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)texel00 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel01 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel02 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel03 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel04 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel05 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel06 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel07 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel08 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel09 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel10 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel11 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel12 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel13 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel14 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel15 >> 8) << 0x18) >>
-                                              0x10) >> 8)) >> 4;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(texel00AlphaOrAverage,(char)((uint)texel00 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel01Alpha,(char)((uint)texel01 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel02Alpha,(char)((uint)texel02 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel03Alpha,(char)((uint)texel03 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel04Alpha,(char)((uint)texel04 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel05Alpha,(char)((uint)texel05 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel06Alpha,(char)((uint)texel06 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel07Alpha,(char)((uint)texel07 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel08Alpha,(char)((uint)texel08 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel09Alpha,(char)((uint)texel09 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel10Alpha,(char)((uint)texel10 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel11Alpha,(char)((uint)texel11 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel12Alpha,(char)((uint)texel12 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel13Alpha,(char)((uint)texel13 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel14Alpha,(char)((uint)texel14 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel15Alpha,(char)((uint)texel15 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8)) >> 4;
-                    texel00AlphaOrAverage = (ushort)((texel00AlphaOrAverage >> 8) + (texel01Alpha >> 8) + (texel02Alpha >> 8) + (texel03Alpha >> 8)
-                                      + (texel04Alpha >> 8) + (texel05Alpha >> 8) +
-                                        (texel06Alpha >> 8) + (texel07Alpha >> 8) +
-                                      (texel08Alpha >> 8) + (texel09Alpha >> 8) + (texel10Alpha >> 8) + (texel11Alpha >> 8)
-                                     + (texel12Alpha >> 8) + (texel13Alpha >> 8) + (texel14Alpha >> 8) + (texel15Alpha >> 8)
-                                     ) >> 4;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationWord = (ushort)((((uint)(byte)((texel00AlphaOrAverage != 0) * (texel00AlphaOrAverage < 0x100) *
-                                                       (char)texel00AlphaOrAverage - (0xff < texel00AlphaOrAverage)) << 0x18) >>
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                                          TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
+                                          TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
+                                          TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
+                                          TEXTURE_TEXEL_BLUE(texel08) + TEXTURE_TEXEL_BLUE(texel09) +
+                                          TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
+                                          TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
+                                          TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                                           TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
+                                           TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
+                                           TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
+                                           TEXTURE_TEXEL_GREEN(texel08) + TEXTURE_TEXEL_GREEN(texel09) +
+                                           TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
+                                           TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
+                                           TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                                         TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
+                                         TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
+                                         TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
+                                         TEXTURE_TEXEL_RED(texel08) + TEXTURE_TEXEL_RED(texel09) +
+                                         TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
+                                         TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
+                                         TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                                           TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
+                                           TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
+                                           TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
+                                           TEXTURE_TEXEL_ALPHA(texel08) + TEXTURE_TEXEL_ALPHA(texel09) +
+                                           TEXTURE_TEXEL_ALPHA(texel10) + TEXTURE_TEXEL_ALPHA(texel11) +
+                                           TEXTURE_TEXEL_ALPHA(texel12) + TEXTURE_TEXEL_ALPHA(texel13) +
+                                           TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationWord = (ushort)(((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >>
                                         ((byte)alphaShiftRight & 0x1f)) << ((byte)alphaShiftLeft & 0x1f)) |
                                (ushort)(((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                        ((byte)blueShiftLeft & 0x1f)) |
@@ -3379,173 +3028,90 @@ GraphicsTexture_UploadColor_4x(GraphicsTextureResource *texture)
               else {
                 do {
                   do {
-                    texel00 = *(undefined4 *)
+                    texel00 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)*byteCursor * 8 + -0x28);
-                    texel01 = *(undefined4 *)
+                    texel01 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[1] * 8 + -0x28);
-                    texel02 = *(undefined4 *)
+                    texel02 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel03 = *(undefined4 *)
+                    texel03 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel04 = *(undefined4 *)
+                    texel04 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[2] * 8 + -0x28);
-                    texel05 = *(undefined4 *)
+                    texel05 = *(dword *)
                              ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                              (uint)byteCursor[3] * 8 + -0x28);
-                    texel06 = *(undefined4 *)
+                    texel06 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel07 = *(undefined4 *)
+                    texel07 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    texel00AlphaOrAverage = (ushort)(((ulonglong)(byte)((uint)texel00 >> 0x18) << 0x38) >> 0x30);
-                    texel01Alpha = (ushort)(((ulonglong)(byte)((uint)texel01 >> 0x18) << 0x38) >> 0x30);
-                    texel02Alpha = (ushort)(((ulonglong)(byte)((uint)texel02 >> 0x18) << 0x38) >> 0x30);
-                    texel03Alpha = (ushort)(((ulonglong)(byte)((uint)texel03 >> 0x18) << 0x38) >> 0x30);
-                    texel04Alpha = (ushort)(((ulonglong)(byte)((uint)texel04 >> 0x18) << 0x38) >> 0x30);
-                    texel05Alpha = (ushort)(((ulonglong)(byte)((uint)texel05 >> 0x18) << 0x38) >> 0x30);
-                    texel06Alpha = (ushort)(((ulonglong)(byte)((uint)texel06 >> 0x18) << 0x38) >> 0x30);
-                    texel07Alpha = (ushort)(((ulonglong)(byte)((uint)texel07 >> 0x18) << 0x38) >> 0x30);
                     byteCursor = byteCursor + sourceWidth * 2;
-                    texel08 = *(undefined4 *)
+                    texel08 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)*byteCursor * 8 + -0x28);
-                    texel09 = *(undefined4 *)
+                    texel09 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[1] * 8 + -0x28);
-                    texel10 = *(undefined4 *)
+                    texel10 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth] * 8 + -0x28);
-                    texel11 = *(undefined4 *)
+                    texel11 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 1] * 8 + -0x28);
-                    texel08Alpha = (ushort)(((ulonglong)(byte)((uint)texel08 >> 0x18) << 0x38) >> 0x30);
-                    texel09Alpha = (ushort)(((ulonglong)(byte)((uint)texel09 >> 0x18) << 0x38) >> 0x30);
-                    texel10Alpha = (ushort)(((ulonglong)(byte)((uint)texel10 >> 0x18) << 0x38) >> 0x30);
-                    texel11Alpha = (ushort)(((ulonglong)(byte)((uint)texel11 >> 0x18) << 0x38) >> 0x30);
-                    texel12 = *(undefined4 *)
+                    texel12 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[2] * 8 + -0x28);
-                    texel13 = *(undefined4 *)
+                    texel13 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[3] * 8 + -0x28);
-                    texel14 = *(undefined4 *)
+                    texel14 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 2] * 8 + -0x28);
-                    texel15 = *(undefined4 *)
+                    texel15 = *(dword *)
                               ((paletteBank->common).buildMetadata.assetRelativeAddressAnchor28 +
                               (uint)byteCursor[sourceWidth + 3] * 8 + -0x28);
-                    texel12Alpha = (ushort)(((ulonglong)(byte)((uint)texel12 >> 0x18) << 0x38) >> 0x30);
-                    texel13Alpha = (ushort)(((ulonglong)(byte)((uint)texel13 >> 0x18) << 0x38) >> 0x30);
-                    texel14Alpha = (ushort)(((ulonglong)(byte)((uint)texel14 >> 0x18) << 0x38) >> 0x30);
-                    texel15Alpha = (ushort)(((ulonglong)(byte)((uint)texel15 >> 0x18) << 0x38) >> 0x30);
-                    averageBlue = (ushort)((ushort)(byte)texel00 + (ushort)(byte)texel01 +
-                                      (ushort)(byte)texel02 + (ushort)(byte)texel03 +
-                                      (ushort)(byte)texel04 + (ushort)(byte)texel05 +
-                                      (ushort)(byte)texel06 + (ushort)(byte)texel07 +
-                                      (ushort)(byte)texel08 + (ushort)(byte)texel09 +
-                                      (ushort)(byte)texel10 + (ushort)(byte)texel11 +
-                                     (ushort)(byte)texel12 + (ushort)(byte)texel13 +
-                                     (ushort)(byte)texel14 + (ushort)(byte)texel15) >> 4;
-                    averageGreen = (ushort)(((ushort)(((ulonglong)(byte)((uint)texel00 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel01 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel02 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel03 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel04 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel05 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel06 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel07 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel08 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel09 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel10 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                      ((ushort)(((ulonglong)(byte)((uint)texel11 >> 8) << 0x18) >>
-                                               0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel12 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel13 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel14 >> 8) << 0x18) >>
-                                              0x10) >> 8) +
-                                     ((ushort)(((ulonglong)(byte)((uint)texel15 >> 8) << 0x18) >>
-                                              0x10) >> 8)) >> 4;
-                    averageRed = (ushort)(((ushort)(((ulonglong)
-                                                 CONCAT21(texel00AlphaOrAverage,(char)((uint)texel00 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel01Alpha,(char)((uint)texel01 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel02Alpha,(char)((uint)texel02 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel03Alpha,(char)((uint)texel03 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel04Alpha,(char)((uint)texel04 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel05Alpha,(char)((uint)texel05 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel06Alpha,(char)((uint)texel06 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel07Alpha,(char)((uint)texel07 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel08Alpha,(char)((uint)texel08 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel09Alpha,(char)((uint)texel09 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel10Alpha,(char)((uint)texel10 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                      ((ushort)(((ulonglong)
-                                                 CONCAT21(texel11Alpha,(char)((uint)texel11 >> 0x10)) <<
-                                                0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel12Alpha,(char)((uint)texel12 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel13Alpha,(char)((uint)texel13 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel14Alpha,(char)((uint)texel14 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8) +
-                                     ((ushort)(((ulonglong)
-                                                CONCAT21(texel15Alpha,(char)((uint)texel15 >> 0x10)) <<
-                                               0x28) >> 0x20) >> 8)) >> 4;
-                    texel00AlphaOrAverage = (ushort)((texel00AlphaOrAverage >> 8) + (texel01Alpha >> 8) + (texel02Alpha >> 8) + (texel03Alpha >> 8)
-                                      + (texel04Alpha >> 8) + (texel05Alpha >> 8) +
-                                        (texel06Alpha >> 8) + (texel07Alpha >> 8) +
-                                      (texel08Alpha >> 8) + (texel09Alpha >> 8) + (texel10Alpha >> 8) + (texel11Alpha >> 8)
-                                     + (texel12Alpha >> 8) + (texel13Alpha >> 8) + (texel14Alpha >> 8) + (texel15Alpha >> 8)
-                                     ) >> 4;
-                    averageRgb = CONCAT12((averageRed != 0) * (averageRed < 0x100) * (char)averageRed -
-                                      (0xff < averageRed),
-                                      CONCAT11((averageGreen != 0) * (averageGreen < 0x100) * (char)averageGreen -
-                                               (0xff < averageGreen),
-                                               (averageBlue != 0) * (averageBlue < 0x100) * (char)averageBlue -
-                                               (0xff < averageBlue)));
-                    *destinationDword = (((uint)(byte)((texel00AlphaOrAverage != 0) * (texel00AlphaOrAverage < 0x100) * (char)texel00AlphaOrAverage -
-                                             (0xff < texel00AlphaOrAverage)) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
+                    averageBlue = (ushort)(TEXTURE_TEXEL_BLUE(texel00) + TEXTURE_TEXEL_BLUE(texel01) +
+                                          TEXTURE_TEXEL_BLUE(texel02) + TEXTURE_TEXEL_BLUE(texel03) +
+                                          TEXTURE_TEXEL_BLUE(texel04) + TEXTURE_TEXEL_BLUE(texel05) +
+                                          TEXTURE_TEXEL_BLUE(texel06) + TEXTURE_TEXEL_BLUE(texel07) +
+                                          TEXTURE_TEXEL_BLUE(texel08) + TEXTURE_TEXEL_BLUE(texel09) +
+                                          TEXTURE_TEXEL_BLUE(texel10) + TEXTURE_TEXEL_BLUE(texel11) +
+                                          TEXTURE_TEXEL_BLUE(texel12) + TEXTURE_TEXEL_BLUE(texel13) +
+                                          TEXTURE_TEXEL_BLUE(texel14) + TEXTURE_TEXEL_BLUE(texel15)) >> 4;
+                    averageGreen = (ushort)(TEXTURE_TEXEL_GREEN(texel00) + TEXTURE_TEXEL_GREEN(texel01) +
+                                           TEXTURE_TEXEL_GREEN(texel02) + TEXTURE_TEXEL_GREEN(texel03) +
+                                           TEXTURE_TEXEL_GREEN(texel04) + TEXTURE_TEXEL_GREEN(texel05) +
+                                           TEXTURE_TEXEL_GREEN(texel06) + TEXTURE_TEXEL_GREEN(texel07) +
+                                           TEXTURE_TEXEL_GREEN(texel08) + TEXTURE_TEXEL_GREEN(texel09) +
+                                           TEXTURE_TEXEL_GREEN(texel10) + TEXTURE_TEXEL_GREEN(texel11) +
+                                           TEXTURE_TEXEL_GREEN(texel12) + TEXTURE_TEXEL_GREEN(texel13) +
+                                           TEXTURE_TEXEL_GREEN(texel14) + TEXTURE_TEXEL_GREEN(texel15)) >> 4;
+                    averageRed = (ushort)(TEXTURE_TEXEL_RED(texel00) + TEXTURE_TEXEL_RED(texel01) +
+                                         TEXTURE_TEXEL_RED(texel02) + TEXTURE_TEXEL_RED(texel03) +
+                                         TEXTURE_TEXEL_RED(texel04) + TEXTURE_TEXEL_RED(texel05) +
+                                         TEXTURE_TEXEL_RED(texel06) + TEXTURE_TEXEL_RED(texel07) +
+                                         TEXTURE_TEXEL_RED(texel08) + TEXTURE_TEXEL_RED(texel09) +
+                                         TEXTURE_TEXEL_RED(texel10) + TEXTURE_TEXEL_RED(texel11) +
+                                         TEXTURE_TEXEL_RED(texel12) + TEXTURE_TEXEL_RED(texel13) +
+                                         TEXTURE_TEXEL_RED(texel14) + TEXTURE_TEXEL_RED(texel15)) >> 4;
+                    averageAlpha = (ushort)(TEXTURE_TEXEL_ALPHA(texel00) + TEXTURE_TEXEL_ALPHA(texel01) +
+                                           TEXTURE_TEXEL_ALPHA(texel02) + TEXTURE_TEXEL_ALPHA(texel03) +
+                                           TEXTURE_TEXEL_ALPHA(texel04) + TEXTURE_TEXEL_ALPHA(texel05) +
+                                           TEXTURE_TEXEL_ALPHA(texel06) + TEXTURE_TEXEL_ALPHA(texel07) +
+                                           TEXTURE_TEXEL_ALPHA(texel08) + TEXTURE_TEXEL_ALPHA(texel09) +
+                                           TEXTURE_TEXEL_ALPHA(texel10) + TEXTURE_TEXEL_ALPHA(texel11) +
+                                           TEXTURE_TEXEL_ALPHA(texel12) + TEXTURE_TEXEL_ALPHA(texel13) +
+                                           TEXTURE_TEXEL_ALPHA(texel14) + TEXTURE_TEXEL_ALPHA(texel15)) >> 4;
+                    averageRgb = TEXTURE_SATURATE_TO_BYTE(averageRed) << 16 | TEXTURE_SATURATE_TO_BYTE(averageGreen) << 8 |
+                                 TEXTURE_SATURATE_TO_BYTE(averageBlue);
+                    *destinationDword = ((TEXTURE_SATURATE_TO_BYTE(averageAlpha) << 0x18) >> ((byte)alphaShiftRight & 0x1f))
                                << ((byte)alphaShiftLeft & 0x1f) |
                                ((averageRgb & 0xff) >> ((byte)blueShiftRight & 0x1f)) <<
                                ((byte)blueShiftLeft & 0x1f) |
@@ -3673,28 +3239,28 @@ GraphicsTexture_UploadAlpha_1x(GraphicsTextureResource *texture)
               offsetOrCounter = restoreResultOrWidth;
               destinationWordRow = destinationWord;
             } while (rowsRemaining != 0);
-            (*This->lpVtbl->Unlock)(This,surfaceBits);
-            goto GraphicsTextureUploadAlpha1x_DecrementActiveCountAndReturn;
           }
-          do {
+          else {
             do {
-              rotateShift = alphaShift & 0x1f;
-              *destinationDword = (uint)*maskCursor << rotateShift | (uint)(*maskCursor >> 0x20 - rotateShift) | rgbMaskBits;
-              maskCursor = maskCursor + 1;
-              offsetOrCounter = offsetOrCounter + -1;
-              destinationDword = (uint *)((int)destinationDword + 2);
-            } while (offsetOrCounter != 0);
-            destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
-            rowsRemaining = rowsRemaining + -1;
-            offsetOrCounter = restoreResultOrWidth;
-            destinationDwordRow = destinationDword;
-          } while (rowsRemaining != 0);
+              do {
+                rotateShift = alphaShift & 0x1f;
+                *destinationDword = (uint)*maskCursor << rotateShift | (uint)(*maskCursor >> 0x20 - rotateShift) | rgbMaskBits;
+                maskCursor = maskCursor + 1;
+                offsetOrCounter = offsetOrCounter + -1;
+                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
+                destinationDword = (uint *)((int)destinationDword + 2);
+              } while (offsetOrCounter != 0);
+              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              rowsRemaining = rowsRemaining + -1;
+              offsetOrCounter = restoreResultOrWidth;
+              destinationDwordRow = destinationDword;
+            } while (rowsRemaining != 0);
+          }
         }
         (*This->lpVtbl->Unlock)(This,surfaceBits);
       }
     }
   }
-GraphicsTextureUploadAlpha1x_DecrementActiveCountAndReturn:
   g_ActiveTextureUploads = g_ActiveTextureUploads - 1;
   return;
 }
@@ -3722,7 +3288,6 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   byte partialSumOrShift;
-  byte partialSum;
   ushort maskSum;
   TH_LEGACY_HRESULT hresult;
   int restoreResultOrWidth;
@@ -3782,10 +3347,9 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
           if (destinationFormat->dwRGBBitCount < 0x11) {
             do {
               do {
-                partialSumOrShift = *maskCursor + maskCursor[1];
-                partialSum = partialSumOrShift + maskCursor[restoreResultOrWidth];
-                maskSum = CONCAT11(CARRY1(*maskCursor,maskCursor[1]) + CARRY1(partialSumOrShift,maskCursor[restoreResultOrWidth]) +
-                                 CARRY1(partialSum,maskCursor[restoreResultOrWidth + 1]),partialSum + maskCursor[restoreResultOrWidth + 1]);
+                /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
+                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[1] + (ushort)maskCursor[restoreResultOrWidth] +
+                                   (ushort)maskCursor[restoreResultOrWidth + 1]);
                 partialSumOrShift = alphaShift & 0x1f;
                 *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (ushort)rgbMaskBits;
                 maskCursor = maskCursor + 2;
@@ -3802,37 +3366,36 @@ GraphicsTexture_UploadAlpha_2x(GraphicsTextureResource *texture)
               destinationWordRow = destinationWord;
               rowsRemaining = nextRemaining;
             } while (nextRemaining != 0 && hasMore);
-            (*This->lpVtbl->Unlock)(This,surfaceBits);
-            goto GraphicsTextureUploadAlpha2x_DecrementActiveCountAndReturn;
           }
-          do {
+          else {
             do {
-              partialSumOrShift = *maskCursor + maskCursor[1];
-              partialSum = partialSumOrShift + maskCursor[restoreResultOrWidth];
-              maskSum = CONCAT11(CARRY1(*maskCursor,maskCursor[1]) + CARRY1(partialSumOrShift,maskCursor[restoreResultOrWidth]) +
-                               CARRY1(partialSum,maskCursor[restoreResultOrWidth + 1]),partialSum + maskCursor[restoreResultOrWidth + 1]);
-              partialSumOrShift = alphaShift & 0x1f;
-              *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
-              maskCursor = maskCursor + 2;
-              nextRemaining = offsetOrCounter + -2;
-              hasMore = 1 < offsetOrCounter;
-              destinationDword = (uint *)((int)destinationDword + 2);
-              offsetOrCounter = nextRemaining;
+              do {
+                /* ADD AL / ADC AH: 16-bit sum of the 2x2 mask bytes. */
+                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[1] + (ushort)maskCursor[restoreResultOrWidth] +
+                                   (ushort)maskCursor[restoreResultOrWidth + 1]);
+                partialSumOrShift = alphaShift & 0x1f;
+                *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
+                maskCursor = maskCursor + 2;
+                nextRemaining = offsetOrCounter + -2;
+                hasMore = 1 < offsetOrCounter;
+                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
+                destinationDword = (uint *)((int)destinationDword + 2);
+                offsetOrCounter = nextRemaining;
+              } while (nextRemaining != 0 && hasMore);
+              maskCursor = maskCursor + restoreResultOrWidth;
+              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              nextRemaining = rowsRemaining + -2;
+              hasMore = 1 < rowsRemaining;
+              offsetOrCounter = restoreResultOrWidth;
+              destinationDwordRow = destinationDword;
+              rowsRemaining = nextRemaining;
             } while (nextRemaining != 0 && hasMore);
-            maskCursor = maskCursor + restoreResultOrWidth;
-            destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
-            nextRemaining = rowsRemaining + -2;
-            hasMore = 1 < rowsRemaining;
-            offsetOrCounter = restoreResultOrWidth;
-            destinationDwordRow = destinationDword;
-            rowsRemaining = nextRemaining;
-          } while (nextRemaining != 0 && hasMore);
+          }
         }
         (*This->lpVtbl->Unlock)(This,surfaceBits);
       }
     }
   }
-GraphicsTextureUploadAlpha2x_DecrementActiveCountAndReturn:
   g_ActiveTextureUploads = g_ActiveTextureUploads - 1;
   return;
 }
@@ -3860,7 +3423,6 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
   TH_LEGACY_LONG destinationPitch;
   TH_LEGACY_LPVOID surfaceBits;
   byte partialSumOrShift;
-  byte partialSum;
   ushort maskSum;
   TH_LEGACY_HRESULT hresult;
   int restoreResultOrWidth;
@@ -3920,11 +3482,10 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
           if (destinationFormat->dwRGBBitCount < 0x11) {
             do {
               do {
-                partialSumOrShift = *maskCursor + maskCursor[2];
-                partialSum = partialSumOrShift + maskCursor[restoreResultOrWidth * 2];
-                maskSum = CONCAT11(CARRY1(*maskCursor,maskCursor[2]) + CARRY1(partialSumOrShift,maskCursor[restoreResultOrWidth * 2]) +
-                                 CARRY1(partialSum,maskCursor[restoreResultOrWidth * 2 + 2]),
-                                 partialSum + maskCursor[restoreResultOrWidth * 2 + 2]);
+                /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
+                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[2] +
+                                   (ushort)maskCursor[restoreResultOrWidth * 2] +
+                                   (ushort)maskCursor[restoreResultOrWidth * 2 + 2]);
                 partialSumOrShift = alphaShift & 0x1f;
                 *destinationWord = maskSum << partialSumOrShift | maskSum >> 0x20 - partialSumOrShift | (ushort)rgbMaskBits;
                 maskCursor = maskCursor + 4;
@@ -3941,38 +3502,37 @@ GraphicsTexture_UploadAlpha_4x(GraphicsTextureResource *texture)
               destinationWordRow = destinationWord;
               rowsRemaining = nextRemaining;
             } while (nextRemaining != 0 && hasMore);
-            (*This->lpVtbl->Unlock)(This,surfaceBits);
-            goto GraphicsTextureUploadAlpha4x_DecrementActiveCountAndReturn;
           }
-          do {
+          else {
             do {
-              partialSumOrShift = *maskCursor + maskCursor[2];
-              partialSum = partialSumOrShift + maskCursor[restoreResultOrWidth * 2];
-              maskSum = CONCAT11(CARRY1(*maskCursor,maskCursor[2]) + CARRY1(partialSumOrShift,maskCursor[restoreResultOrWidth * 2]) +
-                               CARRY1(partialSum,maskCursor[restoreResultOrWidth * 2 + 2]),partialSum + maskCursor[restoreResultOrWidth * 2 + 2]
-                              );
-              partialSumOrShift = alphaShift & 0x1f;
-              *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
-              maskCursor = maskCursor + 4;
-              nextRemaining = offsetOrCounter + -4;
-              hasMore = 3 < offsetOrCounter;
-              destinationDword = (uint *)((int)destinationDword + 2);
-              offsetOrCounter = nextRemaining;
+              do {
+                /* ADD AL / ADC AH: 16-bit sum of the four mask taps. */
+                maskSum = (ushort)((ushort)*maskCursor + (ushort)maskCursor[2] +
+                                   (ushort)maskCursor[restoreResultOrWidth * 2] +
+                                   (ushort)maskCursor[restoreResultOrWidth * 2 + 2]);
+                partialSumOrShift = alphaShift & 0x1f;
+                *destinationDword = (uint)maskSum << partialSumOrShift | (uint)(maskSum >> 0x20 - partialSumOrShift) | rgbMaskBits;
+                maskCursor = maskCursor + 4;
+                nextRemaining = offsetOrCounter + -4;
+                hasMore = 3 < offsetOrCounter;
+                /* The original advances only 2 bytes per 32-bit store (ADD EDI,0x2). */
+                destinationDword = (uint *)((int)destinationDword + 2);
+                offsetOrCounter = nextRemaining;
+              } while (nextRemaining != 0 && hasMore);
+              maskCursor = maskCursor + restoreResultOrWidth * 3;
+              destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
+              nextRemaining = rowsRemaining + -4;
+              hasMore = 3 < rowsRemaining;
+              offsetOrCounter = restoreResultOrWidth;
+              destinationDwordRow = destinationDword;
+              rowsRemaining = nextRemaining;
             } while (nextRemaining != 0 && hasMore);
-            maskCursor = maskCursor + restoreResultOrWidth * 3;
-            destinationDword = (uint *)((int)destinationDwordRow + destinationPitch);
-            nextRemaining = rowsRemaining + -4;
-            hasMore = 3 < rowsRemaining;
-            offsetOrCounter = restoreResultOrWidth;
-            destinationDwordRow = destinationDword;
-            rowsRemaining = nextRemaining;
-          } while (nextRemaining != 0 && hasMore);
+          }
         }
         (*This->lpVtbl->Unlock)(This,surfaceBits);
       }
     }
   }
-GraphicsTextureUploadAlpha4x_DecrementActiveCountAndReturn:
   g_ActiveTextureUploads = g_ActiveTextureUploads - 1;
   return;
 }
@@ -4099,7 +3659,7 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
     sourceFormatCursor = (DDPIXELFORMAT *)&sourceFormatCursor->dwFlags;
     destinationFormatCursor = (DDPIXELFORMAT *)&destinationFormatCursor->dwFlags;
   }
-  do {
+  for (;;) {
     hresult = (*g_DirectDraw2->lpVtbl->CreateSurface)
                       (g_DirectDraw2,&g_SurfaceDesc,&deviceSurfaceBase,(TH_LEGACY_LPVOID)0x0);
     if (hresult == 0) {
@@ -4120,24 +3680,13 @@ GraphicsTexture_CreateDeviceTexture(GraphicsTextureResource *texture)
             texture->textureHandle = textureHandle;
             return;
           }
-GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
-          if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
-            (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
-          }
-          if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
-            (*deviceSurface3->lpVtbl->Release)(deviceSurface3);
-          }
-          if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
-            (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
-          }
-          texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
-          texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
-          texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
-          texture->textureHandle = 0;
-          return;
+          /* GetHandle failed: give up without retrying. */
+          break;
         }
       }
     }
+    /* A creation step or Load failed: release this attempt; on DDERR_OUTOFVIDEOMEMORY evict the oldest device
+       texture and retry while eviction succeeds. */
     if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
       (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
       deviceTexture2 = (IDirect3DTexture2 *)0x0;
@@ -4151,8 +3700,22 @@ GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure:
       deviceSurfaceBase = (IDirectDrawSurface *)0x0;
     }
     if ((hresult != -0x7789fe84) || (evictFailed = GraphicsTexture_EvictOldestDeviceTexture(texture), evictFailed)
-       ) goto GraphicsTexture_ReleasePartialDeviceResourcesAfterFailure;
-  } while( true );
+       ) break;
+  }
+  if (deviceTexture2 != (IDirect3DTexture2 *)0x0) {
+    (*deviceTexture2->lpVtbl->Release)(deviceTexture2);
+  }
+  if (deviceSurface3 != (IDirectDrawSurface3 *)0x0) {
+    (*deviceSurface3->lpVtbl->Release)(deviceSurface3);
+  }
+  if (deviceSurfaceBase != (IDirectDrawSurface *)0x0) {
+    (*deviceSurfaceBase->lpVtbl->Release)(deviceSurfaceBase);
+  }
+  texture->deviceSurfaceBase = (IDirectDrawSurface *)0x0;
+  texture->deviceSurface3 = (IDirectDrawSurface3 *)0x0;
+  texture->deviceTexture2 = (IDirect3DTexture2 *)0x0;
+  texture->textureHandle = 0;
+  return;
 }
 
 
@@ -4447,24 +4010,24 @@ GraphicsTexture_CreateStagingTexture(GraphicsTextureResource *texture)
       if (hresult == 0) {
         hresult = (*surface3->lpVtbl->QueryInterface)(surface3,&IID_IDirect3DTexture2_Local,&texture2)
         ;
-        if (hresult == 0) goto GraphicsTexture_CommitStagingResourcesAndUpload;
       }
     }
-    if (texture2 != (IDirect3DTexture2 *)0x0) {
-      (*texture2->lpVtbl->Release)(texture2);
+    if (hresult != 0) {
+      if (texture2 != (IDirect3DTexture2 *)0x0) {
+        (*texture2->lpVtbl->Release)(texture2);
+      }
+      if (surface3 != (IDirectDrawSurface3 *)0x0) {
+        (*surface3->lpVtbl->Release)(surface3);
+      }
+      if (surfaceBase != (IDirectDrawSurface *)0x0) {
+        (*surfaceBase->lpVtbl->Release)(surfaceBase);
+      }
+      texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
+      texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
+      texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
+      return texture; /* preserved EAX: callers mirror texture in EAX */
     }
-    if (surface3 != (IDirectDrawSurface3 *)0x0) {
-      (*surface3->lpVtbl->Release)(surface3);
-    }
-    if (surfaceBase != (IDirectDrawSurface *)0x0) {
-      (*surfaceBase->lpVtbl->Release)(surfaceBase);
-    }
-    texture->stagingSurfaceBase = (IDirectDrawSurface *)0x0;
-    texture->stagingSurface3 = (IDirectDrawSurface3 *)0x0;
-    texture->stagingTexture2 = (IDirect3DTexture2 *)0x0;
-    return texture; /* preserved EAX: callers mirror texture in EAX */
   }
-GraphicsTexture_CommitStagingResourcesAndUpload:
   texture->stagingSurfaceBase = surfaceBase;
   texture->stagingSurface3 = surface3;
   texture->stagingTexture2 = texture2;

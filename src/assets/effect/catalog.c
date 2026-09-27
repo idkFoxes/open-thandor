@@ -68,7 +68,8 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
 
 {
   StatusValueEaxCf5 successResult;
-  ShotDefinition *in_EAX = (ShotDefinition *)0; /* success returns the last resolved definition; callers test CF only */
+  dword lastResolvedDefinition = 0; /* EAX: success returns the last resolved definition (caller's EAX if none);
+                                       callers test CF only */
   int registrySlotsRemaining;
   EffectDefinition **registryCursor;
   EffectDefinitionLookupEaxCf5 effectLookup;
@@ -83,27 +84,27 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx EffectDefinitions_ResolveCro
       if (currentDefinition->linkedEffectPresent != 0) {
         effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
                           ((PckEffectDefinitionIdCatalog)currentDefinition->linkedEffectDefinition);
-        in_EAX = (ShotDefinition *)effectLookup.definitionOrError;
+        lastResolvedDefinition = (dword)effectLookup.definitionOrError;
         if (effectLookup.carry) {
           return THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, StatusValueEaxCf5, effectLookup);
         }
-        currentDefinition->linkedEffectDefinition = (EffectDefinition *)in_EAX;
+        currentDefinition->linkedEffectDefinition = effectLookup.definitionOrError;
       }
       if (currentDefinition->linkedShotPresent != 0) {
         shotLookup = ShotDefinitionRegistry_FindByIdWithErrorCf
                           ((PckShotDefinitionIdCatalog)currentDefinition->linkedShotDefinition);
-        in_EAX = shotLookup.definitionOrError;
+        lastResolvedDefinition = (dword)shotLookup.definitionOrError;
         if (shotLookup.carry) {
           return THANDOR_BITCAST(ShotDefinitionLookupEaxCf5, StatusValueEaxCf5, shotLookup);
         }
-        currentDefinition->linkedShotDefinition = in_EAX;
+        currentDefinition->linkedShotDefinition = shotLookup.definitionOrError;
       }
     }
     registryCursor = registryCursor + 1;
     registrySlotsRemaining = registrySlotsRemaining + -1;
   } while (registrySlotsRemaining != 0);
   successResult.carry = false;
-  successResult.valueOrError = (dword)in_EAX;
+  successResult.valueOrError = lastResolvedDefinition;
   return successResult;
 }
 

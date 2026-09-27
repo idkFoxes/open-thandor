@@ -10,6 +10,36 @@
 
 /* Implementation ownership: world/shots/maintenance. */
 
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+static __inline qword ShotTint_UnpackBytesShiftRight(dword value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+static __inline dword ShotTint_PackWordsUnsignedSaturate(qword words)
+
+{
+  ThandorMmx lanes;
+  dword packed;
+  int lane;
+
+  lanes.q = words;
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    packed = packed |
+             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+  }
+  return packed;
+}
+
 /* Address: 0x0052C080.
    Ownership: world/shots/maintenance.
    Purpose: Table membership MAINTENANCE[4]. Classifies the shot model node against nearby terrain occupancy,
@@ -27,19 +57,9 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
 {
   PackedArgb32 nodeTintArgb;
   PackedArgb32 definitionTintArgb;
-  short tintLane0;
-  short tintLane1;
-  short tintLane2;
-  short tintLane3;
-  ushort nodeAlphaPair;
-  ushort definitionAlphaPair;
   FieldGridRegionMask primaryOccupancyMask;
   dword probeOccupancyMask;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
-  undefined8 mm0PackedValue0;
-  undefined1 definitionTintByteLane1;
-  undefined1 definitionTintByteLane2;
+  qword mm0PackedValue0;
   FixedDirectionXyzRegs12 probeOffset;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   uint combinedOccupancyMask;
@@ -80,39 +100,11 @@ ShotModelRuntimeMaintenance_RefreshTerrainClassAndTint
   UiModelControl_RefreshStateTint((ModelRuntimeNode *)modelNode);
   nodeTintArgb = modelNode->tintArgb;
   definitionTintArgb = ((shotRuntime->definitionOrSavedId).definition)->stateTintArgb;
-  mm0PackedValue0ByteLane1 = (undefined1)(nodeTintArgb >> 0x18);
-  nodeAlphaPair = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
-  mm0PackedValue0ByteLane2 = (undefined1)(nodeTintArgb >> 0x10);
-  mm0PackedValue0ByteLane1 = (undefined1)(nodeTintArgb >> 8);
-  definitionTintByteLane1 = (undefined1)(definitionTintArgb >> 0x18);
-  definitionAlphaPair = CONCAT11(definitionTintByteLane1,definitionTintByteLane1);
-  definitionTintByteLane2 = (undefined1)(definitionTintArgb >> 0x10);
-  definitionTintByteLane1 = (undefined1)(definitionTintArgb >> 8);
+  /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
   mm0PackedValue0 =
-       pmulhw(CONCAT26(nodeAlphaPair >> 4,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(nodeAlphaPair,mm0PackedValue0ByteLane2),
-                                                  CONCAT14(mm0PackedValue0ByteLane2,nodeTintArgb)) >> 0x20)
-                                >> 4,CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                       mm0PackedValue0ByteLane1) >> 4,
-                                              CONCAT11((char)nodeTintArgb,(char)nodeTintArgb) >> 4))),
-              CONCAT26(definitionAlphaPair >> 4,
-                       CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionTintByteLane2),CONCAT14(definitionTintByteLane2,definitionTintArgb)) >>
-                                        0x20) >> 4,
-                                CONCAT22(CONCAT11(definitionTintByteLane1,definitionTintByteLane1) >> 4,
-                                         CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
-  tintLane0 = (short)mm0PackedValue0;
-  tintLane1 = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-  tintLane2 = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-  tintLane3 = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-  modelNode->tintArgb =
-       CONCAT13((0 < tintLane3) * (tintLane3 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                (0xff < tintLane3),
-                CONCAT12((0 < tintLane2) * (tintLane2 < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x20)
-                         - (0xff < tintLane2),
-                         CONCAT11((0 < tintLane1) * (tintLane1 < 0x100) *
-                                  (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < tintLane1),
-                                  (0 < tintLane0) * (tintLane0 < 0x100) * (char)mm0PackedValue0 -
-                                  (0xff < tintLane0))));
+       pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
+              ShotTint_UnpackBytesShiftRight(definitionTintArgb,4));
+  modelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(mm0PackedValue0);
   return;
 }
 

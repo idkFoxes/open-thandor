@@ -83,7 +83,7 @@ FileSystem_BuildEnumerationStringTableCf
                 stringCursor = stringCursor + 2;
                 capacityCheck = outputCapacityBytes < 2;
                 outputCapacityBytes = outputCapacityBytes - 2;
-                if (capacityCheck || outputCapacityBytes == 0) goto LAB_0040f509;
+                if (capacityCheck || outputCapacityBytes == 0) goto FileSystem_BuildEnumerationStringTable_FreeOnOverflow;
               } while (codeUnit != 0);
               pointerSlot = pointerSlot + 4;
               sourceRecord = sourceRecord + (int)recordStride;
@@ -98,7 +98,7 @@ FileSystem_BuildEnumerationStringTableCf
               }
             } while( true );
           }
-LAB_0040f509:
+FileSystem_BuildEnumerationStringTable_FreeOnOverflow:
           freeResult = (*g_MemoryApi.free)(memory);
           memory = (byte *)freeResult.eax;
         }
@@ -126,13 +126,11 @@ dword __cdecl FileSystem_Init(void)
 
 {
   byte configByte;
-  dword remainingBytesSnapshot;
   byte *configCursor;
   BOOL computerNameFound;
   void *handle;
   int clearCount;
   ArenaPayloadByteCount bytes;
-  byte *cursorSnapshot;
   word *labelCursor;
   ArenaAllocEaxCf5 allocResult;
   Win32FileOpenEaxCf5 openResult;
@@ -172,7 +170,7 @@ dword __cdecl FileSystem_Init(void)
   g_FileSystemEnumerateDirectoryOrVolumeEntriesCf =
        Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf;
   g_FileSystemValidateDos83Path = Win32Path_ValidateDos83Cf;
-  g_FileSystemInitComputerNameCapacityOrConfigCursor = (undefined *)0x100;
+  g_FileSystemInitComputerNameCapacityOrConfigCursor = (pointer)0x100; /* GetComputerNameA size in/out */
   computerNameFound = GetComputerNameA((LPSTR)g_Win32PathScratchA,
                            (LPDWORD)&g_FileSystemInitComputerNameCapacityOrConfigCursor);
   if (computerNameFound != 0) {
@@ -207,45 +205,38 @@ dword __cdecl FileSystem_Init(void)
     configCursor = (byte *)allocResult.eax;
     if (!allocResult.carry) {
       readResult = Win32File_ReadExactCf(bytes,configCursor,handle);
-      cursorSnapshot = configCursor;
-      remainingBytesSnapshot = bytes;
       if (readResult.carry) {
         ArenaHeap_Free(configCursor);
       }
       else {
+        g_FileSystemInitComputerNameCapacityOrConfigCursor = configCursor;
+        g_FileSystemConfigRemainingBytes = bytes;
+        /* Normalize the text in place: separators (<= 0x20) and [comments] become NUL, other
+           characters go through the normalization map. */
         do {
-          while( true ) {
-            g_FileSystemConfigRemainingBytes = remainingBytesSnapshot;
-            g_FileSystemInitComputerNameCapacityOrConfigCursor = cursorSnapshot;
-            configByte = *configCursor;
-            if (0x20 < configByte) break;
-FileSystemConfig_TerminateSeparatorOrComment:
-            *configCursor = 0;
-            configCursor = configCursor + 1;
-            bytes = bytes - 1;
-            cursorSnapshot = g_FileSystemInitComputerNameCapacityOrConfigCursor;
-            remainingBytesSnapshot = g_FileSystemConfigRemainingBytes;
-            if (bytes == 0) goto FileSystemConfig_CloseInput;
-          }
+          configByte = *configCursor;
           if (configByte == 0x5b) {
+            /* blank the comment up to its closing ']', which is then blanked as a separator */
             do {
               *configCursor = 0;
               configCursor = configCursor + 1;
               bytes = bytes - 1;
-              if (bytes == 0) goto FileSystemConfig_CloseInput;
-            } while (*configCursor != 0x5d);
-            goto FileSystemConfig_TerminateSeparatorOrComment;
+            } while ((bytes != 0) && (*configCursor != 0x5d));
+            if (bytes == 0) break;
+            configByte = 0;
           }
-          *configCursor = (&g_FileSystemConfigCharacterNormalizationMap)[configByte];
+          if (configByte <= 0x20) {
+            *configCursor = 0;
+          }
+          else {
+            *configCursor = (&g_FileSystemConfigCharacterNormalizationMap)[configByte];
+          }
           configCursor = configCursor + 1;
           bytes = bytes - 1;
-          cursorSnapshot = g_FileSystemInitComputerNameCapacityOrConfigCursor;
-          remainingBytesSnapshot = g_FileSystemConfigRemainingBytes;
         } while (bytes != 0);
       }
     }
   }
-FileSystemConfig_CloseInput:
   Win32File_Close(handle);
 FileSystemConfig_CaptureWorkingDirectoryAndMountEnginePackage:
   Win32File_GetCurrentDirectoryCf(g_InitialWorkingDirectory.codeUnits);
@@ -423,7 +414,11 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
   if (openResult.carry) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
     handle = (void *)openResult.eax;
-    if (openResult.carry) goto LAB_0040eff4;
+    if (openResult.carry) {
+      failureResult.carry = true;
+      failureResult.bufferOrError = handle; /* the open error code */
+      return failureResult;
+    }
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
   bytes = (void *)sizeResult.eax;
@@ -446,7 +441,6 @@ FileBufferEaxCf5 __thandor_eax_cf_preserve_ecx_edx FileSystem_LoadWholeFileCf(wo
   }
   (*g_FileSystemClose)(handle);
   handle = bytes;
-LAB_0040eff4:
   failureResult.carry = true;
   failureResult.bufferOrError = handle;
   return failureResult;
@@ -476,7 +470,11 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
   if (openResult.carry) {
     openResult = (*g_FileSystemOpenCf)(0,pathUtf16);
     handle = (void *)openResult.eax;
-    if (openResult.carry) goto LAB_0040f1c3;
+    if (openResult.carry) {
+      failureResult.carry = true;
+      failureResult.bufferOrError = handle; /* the open error code */
+      return failureResult;
+    }
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
   bytes = (void *)sizeResult.eax;
@@ -499,7 +497,6 @@ FileSystem_LoadWholeFileAlternatePathCf(word *pathUtf16)
   }
   (*g_FileSystemClose)(handle);
   handle = bytes;
-LAB_0040f1c3:
   failureResult.carry = true;
   failureResult.bufferOrError = handle;
   return failureResult;
@@ -721,10 +718,8 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *
   StatusValueEaxCf5 failureResult;
   word parentPath [256];
   word leafName [248];
-  undefined4 returnAddressSlot;
-  
+
   Package_SetLastErrorPath(path);
-  returnAddressSlot = 0x576502;
   RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
   createSucceeded = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
   if (createSucceeded == 0) {
@@ -734,10 +729,12 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *
       if (!parentOrSuccessResult.carry) {
         RichTextCommandStream_CopyToNarrowCf(0x100,g_Win32PathScratchA,path);
         createSucceeded = CreateDirectoryA((LPCSTR)g_Win32PathScratchA,(LPSECURITY_ATTRIBUTES)0x0);
-        if (createSucceeded != 0)
-        goto 
-        Win32File_CreateDirectoryRecursiveCf_ReturnSuccessWithCarryClearAfterDirectOrRecursiveCreate
-        ;
+        if (createSucceeded != 0) {
+          /* created after its parents */
+          parentOrSuccessResult.carry = false;
+          parentOrSuccessResult.valueOrError = createSucceeded;
+          return parentOrSuccessResult;
+        }
       }
     }
     Package_SetLastErrorPath(path);
@@ -745,7 +742,6 @@ Win32File_CreateDirectoryRecursiveCf(FileSystemCreateDirectoryFlags flags,word *
     failureResult.valueOrError = 8;
     return failureResult;
   }
-Win32File_CreateDirectoryRecursiveCf_ReturnSuccessWithCarryClearAfterDirectOrRecursiveCreate:
   parentOrSuccessResult.carry = false;
   parentOrSuccessResult.valueOrError = createSucceeded;
   return parentOrSuccessResult;
@@ -791,7 +787,7 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
   int freeBytes;
   int totalBytes;
   
-  g_Win32DriveRootPathScratchA = (undefined1)driveLetter;
+  g_Win32DriveRootPathScratchA = (byte)driveLetter; /* "X:\" root path scratch */
   querySucceeded =
        GetDiskFreeSpaceA(&g_Win32DriveRootPathScratchA,(LPDWORD)&g_Win32DiskSectorsPerClusterScratch
                          ,(LPDWORD)&g_Win32DiskBytesPerSectorScratch,
@@ -805,7 +801,7 @@ Win32DriveCapacityEdxEax8 Win32Drive_GetFreeAndTotalBytesRegs(DosDriveLetterCode
     totalBytes = g_Win32DiskTotalClustersScratch *
                  g_Win32DiskBytesPerSectorScratch * g_Win32DiskSectorsPerClusterScratch;
   }
-  return CONCAT44(totalBytes,freeBytes);
+  return (qword)(dword)totalBytes << 0x20 | (qword)(dword)freeBytes; /* EDX = total, EAX = free */
 }
 
 /* Address: 0x005766B0.
@@ -1035,7 +1031,12 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     apiSucceeded = GetVolumeInformationA
                       ((LPCSTR)&g_Win32DriveRootPathScratchA,(LPSTR)g_Win32PathScratchA,0x80,
                        (LPDWORD)0x0,(LPDWORD)0x0,(LPDWORD)0x0,(LPSTR)0x0,0);
-    if (apiSucceeded == 0) goto LAB_00576af2;
+    if (apiSucceeded == 0) {
+      enumerationResult.recordSizeBytes = 0x200;
+      enumerationResult.entryCount = 0;
+      enumerationResult.carry = false;
+      return enumerationResult;
+    }
     recordCount = 0;
     if (0xff < outputCapacityBytes) {
       Text_CopyNarrowToUtf16Cf(0x200,(word *)outputRecords,g_Win32PathScratchA);
@@ -1051,7 +1052,6 @@ Win32FileSystem_EnumerateDirectoryOrVolumeEntriesCf
     hFindFile = FindFirstFileA((LPCSTR)g_Win32PathScratchA,
                                (LPWIN32_FIND_DATAA)&g_Win32FileCreationTimeOrDosDateScratch);
     if (hFindFile == (HANDLE)0xffffffff) {
-LAB_00576af2:
       enumerationResult.recordSizeBytes = 0x200;
       enumerationResult.entryCount = 0;
       enumerationResult.carry = false;
@@ -1060,17 +1060,14 @@ LAB_00576af2:
     recordCount = 0;
     destination = (word *)outputRecords;
     do {
-      if (mode == FILESYSTEM_ENUMERATE_FILES) {
-        if ((g_Win32FileCreationTimeOrDosDateScratch & 0x18) == 0)
-        goto Win32FileSystem_AppendCurrentFindEntry;
-      }
-      else if (((mode == FILESYSTEM_ENUMERATE_DIRECTORIES) &&
-               ((g_Win32FileCreationTimeOrDosDateScratch & 0x10) != 0)) &&
-              ((g_Win32FindDataFileNameA != '.' ||
-               ((g_Win32FindDataFileNameSecondCharA != '\0' &&
-                ((g_Win32FindDataFileNameSecondCharA != '.' ||
-                 (g_Win32FindDataFileNameThirdCharA != '\0')))))))) {
-Win32FileSystem_AppendCurrentFindEntry:
+      /* files: neither directory nor volume label (attributes & 0x18); directories: not "." or ".." */
+      if ((mode == FILESYSTEM_ENUMERATE_FILES) ?
+          ((g_Win32FileCreationTimeOrDosDateScratch & 0x18) == 0) :
+          ((mode == FILESYSTEM_ENUMERATE_DIRECTORIES) &&
+           ((g_Win32FileCreationTimeOrDosDateScratch & 0x10) != 0) &&
+           ((g_Win32FindDataFileNameA != '.') ||
+            ((g_Win32FindDataFileNameSecondCharA != '\0') &&
+             ((g_Win32FindDataFileNameSecondCharA != '.') || (g_Win32FindDataFileNameThirdCharA != '\0')))))) {
         if (0x1ff < outputCapacityBytes) {
           Text_CopyNarrowToUtf16Cf(0x200,destination,(byte *)&g_Win32FindDataFileNameA);
           destination = destination + 0x100;
@@ -1245,7 +1242,7 @@ Win32Drive_GetEngineTypeCode(DosDriveLetterCode32 driveLetter)
 {
   UINT driveTypeCode;
   
-  g_Win32DriveRootPathScratchA = (undefined1)driveLetter;
+  g_Win32DriveRootPathScratchA = (byte)driveLetter; /* "X:\" root path scratch */
   driveTypeCode = GetDriveTypeA(&g_Win32DriveRootPathScratchA);
   if (driveTypeCode == 2) {
     return ENGINE_DRIVE_REMOVABLE;

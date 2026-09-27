@@ -215,7 +215,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   int remainingCount;
   int maskWordIndex;
   ArmyAssetRecordPrefix **armyAssetRegistryCursor;
-  undefined4 *categoryReciprocalCursor;
+  dword *categoryReciprocalCursor;
   TechnologyCategoryMasks *categoryMaskClearCursor;
   TechnologyRecord *technologyRecordCursor;
   ModelDefinitionLookupEaxCf5 modelLookup;
@@ -257,7 +257,7 @@ TechnologyRuntime_RebuildDerivedLimitsAndCategoryMasks(void)
   categoryReciprocalCursor = g_TechnologyCategoryMaximumReciprocalQ24Table8;
   remainingCount = 8;
   do {
-    *categoryReciprocalCursor = (int)(0x1000000 / (ulonglong)(uint)categoryReciprocalCursor[8]);
+    *categoryReciprocalCursor = 0x1000000u / categoryReciprocalCursor[8];
     categoryReciprocalCursor = categoryReciprocalCursor + 1;
     remainingCount = remainingCount + -1;
   } while (remainingCount != 0);

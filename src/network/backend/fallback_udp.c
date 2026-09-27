@@ -171,13 +171,12 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
           copiedByte = *optionCursor;
           *outputCursor = copiedByte;
           optionCursor = optionCursor + 1;
-          if (copiedByte == 0)
-          goto 
-          NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddressResolution
-          ;
+          if (copiedByte == 0) break;
           nextOutput = outputCursor + 1;
         } while (copiedByte != 0x22);
-        if (*optionCursor == 0) {
+        /* A closing quote that ends the option: resolve the quoted address (unterminated quote: no bind
+           address). */
+        if ((copiedByte == 0x22) && (*optionCursor == 0)) {
           *outputCursor = 0;
           bindAddress = (*g_WinSock_inet_addr)(g_PackageScratchBuffer);
           if (bindAddress == 0xffffffff) {
@@ -190,7 +189,6 @@ NetworkFallback_OpenAndBindUdpSocketCf(NetworkPortHostOrder localPort)
         }
       }
     }
-NetworkFallback_OpenAndBindUdpSocketCf_ConfigureEndpointAfterOptionalBindAddressResolution:
     g_NetworkFallbackBindEndpoint.addressHeader.fields.portNetworkOrder =
          (*g_WinSock_htons)((word)localPort);
     g_NetworkFallbackBindEndpoint.ipv4AddressNetworkOrder = bindAddress;
@@ -419,7 +417,6 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
 {
   word networkPort;
   dword socketOrAddressLength;
-  undefined2 extraout_var = 0; /* high half of EAX after htons; only the low word of the carrier is read */
   int winsockResultOrError;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 failureResult;
@@ -432,7 +429,9 @@ NetworkBackend_OpenAndBindActiveSocketCf(word portHostOrder)
   if (socketOrAddressLength != 0xffffffff) {
     socketHandle = socketOrAddressLength;
     networkPort = (*g_Ws2_32_htons)(portHostOrder);
-    g_NetworkBackendPortNetworkOrderCarrier = CONCAT22(extraout_var,networkPort);
+    /* The asm stores all of EAX after htons; the high word is whatever htons left there. Every reader
+       (this function and NetworkBackend_ParseEndpointTextCf) uses only the low word (CX). */
+    g_NetworkBackendPortNetworkOrderCarrier = (dword)networkPort;
     g_NetworkBackendBindAddress.ipv4.ipv4AddressNetworkOrder = 0;
     THANDOR_PART(dword, g_NetworkBackendBindAddress, 8) = 0;
     THANDOR_PART(dword, g_NetworkBackendBindAddress, 12) = 0;

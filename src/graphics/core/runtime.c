@@ -25,7 +25,9 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
   sdword previousAccessState;
   GraphicsSubresourceIndex nextIdleSubresource;
   GraphicsSubresourceIndex nextActiveSubresource;
-  
+  bool frameAdvanced;
+
+  frameAdvanced = false;
   activeFrameIndex = g_CursorFrameIndex;
   frameRecords = g_CursorFrameRecords;
   if (g_CursorVisibilityToken < 0) {
@@ -46,13 +48,13 @@ void __thandor_preserve_eax_edx GraphicsCursor_AdvanceAnimationAndRefreshPrimary
     if (nextIdleSubresource != g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex) {
       g_CursorFrameRecords[g_CursorFrameIndex].idleSubresourceIndex = nextIdleSubresource;
       frameRecords[activeFrameIndex].activeSubresourceIndex = nextActiveSubresource;
-      goto GraphicsCursor_RefreshComposedCursorIfNeeded;
+      frameAdvanced = true;
     }
   }
-  if (g_MouseEventsProcessed == 0) {
+  /* Recompose the cursor when its animation frame changed or the mouse moved. */
+  if ((!frameAdvanced) && (g_MouseEventsProcessed == 0)) {
     return;
   }
-GraphicsCursor_RefreshComposedCursorIfNeeded:
   previousAccessState = g_GraphicsBackendAccessState;
   if (g_CursorSourceAsset != (GraphicsTextureSourceAsset *)0x0) {
     LOCK();
@@ -975,8 +977,8 @@ Graphics_DrawPrimitiveQueue
   if (graphicsBackendSelector != 1) {
     packetResult = GraphicsPrimitiveQueue_Begin(queue);
     while (!packetResult.carry) {
-      (**(code **)((int)g_GraphicsDispatchTable.primitive +
-                  (((packetResult.packet)->renderFlags & 0x3f000) >> 10)))(packetResult.packet);
+      (*g_GraphicsDispatchTable.primitive[((packetResult.packet)->renderFlags & 0x3f000) >> 12])
+                (packetResult.packet);
       (*g_Direct3DDevice2->lpVtbl->DrawPrimitive)
                 (g_Direct3DDevice2,6,3,g_ImmediateTLVertices,g_ImmediateVertexCount,8);
       g_PrimitiveDrawCallCount = g_PrimitiveDrawCallCount + 1;

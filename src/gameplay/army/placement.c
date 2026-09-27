@@ -1104,7 +1104,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
         ownerNode = worldRuntime->ownerListHead;
         blocked = FieldGrid_TestWorldPointBlockedCf
                           (dispatchArg7,worldXQ12,worldYQ12,worldRuntime->fieldGrid);
-        if (blocked) goto LAB_00527ab0;
+        if (blocked) goto ArmyPlacementCollision_TestCandidateAndClearance_Reject;
         if (ownerNode != (WorldOwnerListNode100 *)0x0) {
           do {
             if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
@@ -1129,7 +1129,7 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
                   eaxContinuity = (int)deltaYSquared;
                   remainingSquared = remainingSquared - deltaYSquared;
                   if (-1 < remainingSquared) {
-                    if ((dispatchArg0 & 2) == 0) goto LAB_00527aa0;
+                    if ((dispatchArg0 & 2) == 0) goto ArmyPlacementCollision_TestCandidateAndClearance_Accept;
                     radiusSquaredOrDelta = (radiusSquaredOrDelta - remainingSquared) - nearestDistanceSquared;
                     eaxContinuity = (int)radiusSquaredOrDelta;
                     if (radiusSquaredOrDelta < 0) {
@@ -1144,7 +1144,8 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
             nearestDistanceLow = (UInt64Half32)nearestDistanceSquared;
             ownerNode = ownerNode->nextNode;
           } while (ownerNode != (WorldOwnerListNode100 *)0x0);
-          if (((dispatchArg0 & 2) == 0) || (0x7ffffffeffffffff < nearestDistanceSquared)) goto LAB_00527ab0;
+          if (((dispatchArg0 & 2) == 0) || (0x7ffffffeffffffff < nearestDistanceSquared))
+          goto ArmyPlacementCollision_TestCandidateAndClearance_Reject;
           nearestDistanceQ12 = FixedMath_UInt64Sqrt(nearestDistanceHigh,nearestDistanceLow);
           recordOrDistanceTerm = nearestDistanceQ12 - nearestClearanceQ12;
           if (recordOrDistanceTerm < 0) {
@@ -1156,13 +1157,13 @@ ArmyPlacementCollision_TestCandidateAndClearanceCf
           }
         }
       }
-LAB_00527aa0:
+ArmyPlacementCollision_TestCandidateAndClearance_Accept:
       accepted.carry = false;
       accepted.eax = eaxContinuity;
       return accepted;
     }
   }
-LAB_00527ab0:
+ArmyPlacementCollision_TestCandidateAndClearance_Reject:
   rejected.carry = true;
   rejected.eax = eaxContinuity;
   return rejected;

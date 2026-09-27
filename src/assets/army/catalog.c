@@ -123,16 +123,16 @@ ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf(ArmyAssetId recordId)
   bool broaderAbsent;
   ArmyRegistryIdEaxCf5_571b00 searchResult;
   
-  do {
+  for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithoutFlag0200Cf(recordId);
-    if (broaderAbsent)
-    goto 
-    ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap
-    ;
+    if (broaderAbsent) break;
     recordId = recordId - 1;
-  } while (-1 < (int)recordId);
-  recordId = 0x1000;
-ArmyAssetRegistry_FindPreviousFlag0100Without0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
+    if ((int)recordId < 0) {
+      recordId = 0x1000;
+      break;
+    }
+  }
+  /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
     searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlag0100Without0200Cf(recordId);
     if (!searchResult.carry) break;
@@ -258,15 +258,16 @@ ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf(ArmyAssetId recordId)
   bool broaderAbsent;
   ArmyRegistryIdEaxCf5_571d40 searchResult;
   
-  do {
+  for (;;) {
     broaderAbsent = (bool)ArmyAssetRegistry_HasIdWithFlag0200Cf(recordId);
-    if (broaderAbsent)
-    goto 
-    ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap;
+    if (broaderAbsent) break;
     recordId = recordId - 1;
-  } while (-1 < (int)recordId);
-  recordId = 0x1000;
-ArmyAssetRegistry_FindPreviousFlags0100And0200WrappedCf_ScanPreviousQualifiedCandidateWithWrap:
+    if ((int)recordId < 0) {
+      recordId = 0x1000;
+      break;
+    }
+  }
+  /* Scan backward for a qualified candidate, wrapping below zero to 0x1000. */
   while( true ) {
     searchResult.carry = (bool)ArmyAssetRegistry_HasIdWithFlags0100And0200Cf(recordId);
     if (!searchResult.carry) break;

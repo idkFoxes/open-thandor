@@ -95,7 +95,7 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
   if (!findResult.carry) {
     statusResult = Package_DeleteEntry(path,fileHandle);
     errorCode = statusResult.valueOrError;
-    if (statusResult.carry) goto LAB_0040ea0c;
+    if (statusResult.carry) goto Package_UpsertEntry_Fail;
   }
   seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
   errorCode = seekResult.eax;
@@ -123,28 +123,28 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
           writeResult = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle);
           errorCode = writeResult.eax;
-          if (writeResult.carry) goto LAB_0040ea0c;
+          if (writeResult.carry) goto Package_UpsertEntry_Fail;
           nameDestination = destination + 0x200;
           for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-            *(undefined4 *)nameDestination = *(undefined4 *)path;
+            *(dword *)nameDestination = *(dword *)path;
             path = path + 2;
             nameDestination = nameDestination + 4;
           }
           seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle);
           errorCode = seekResult.eax;
-          if (seekResult.carry) goto LAB_0040ea0c;
+          if (seekResult.carry) goto Package_UpsertEntry_Fail;
           writeResult = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination + 0x200,(void *)fileHandle);
           errorCode = writeResult.eax;
-          if (writeResult.carry) goto LAB_0040ea0c;
+          if (writeResult.carry) goto Package_UpsertEntry_Fail;
           writeResult = (*g_FileSystemWriteExactOrFlushCf)(alignedByteCount,sourceData,(void *)fileHandle);
           errorCode = writeResult.eax;
-          if (writeResult.carry) goto LAB_0040ea0c;
+          if (writeResult.carry) goto Package_UpsertEntry_Fail;
         }
         else {
           encodeResult = (*g_PckEncoderTable[compressionMethod])
                             (0x7ffc00,destination + 0x400,unpackedSize,(byte *)sourceData);
           errorCode = encodeResult.eax;
-          if (encodeResult.carry) goto LAB_0040ea0c;
+          if (encodeResult.carry) goto Package_UpsertEntry_Fail;
           *(dword *)(destination + 0x3f8) = errorCode;
           byteCount = errorCode + 0x200;
           *(PckCompressionMethod *)(destination + 0x3fc) = compressionMethod;
@@ -157,30 +157,30 @@ Package_UpsertEntry(PckCompressionMethod compressionMethod,PckDecodedByteCount u
           *(PckDecodedByteCount *)(destination + 0x3f0) = unpackedSize;
           writeResult = (*g_FileSystemWriteExactOrFlushCf)(0x200,destination,(void *)fileHandle);
           errorCode = writeResult.eax;
-          if (writeResult.carry) goto LAB_0040ea0c;
+          if (writeResult.carry) goto Package_UpsertEntry_Fail;
           nameDestination = destination + 0x200;
           for (dwordsRemaining = 0x7b; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining + -1) {
-            *(undefined4 *)nameDestination = *(undefined4 *)path;
+            *(dword *)nameDestination = *(dword *)path;
             path = path + 2;
             nameDestination = nameDestination + 4;
           }
           seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_END,0,(void *)fileHandle);
           errorCode = seekResult.eax;
-          if (seekResult.carry) goto LAB_0040ea0c;
+          if (seekResult.carry) goto Package_UpsertEntry_Fail;
           writeResult = (*g_FileSystemWriteExactOrFlushCf)
                             (byteCount,destination + 0x200,(void *)fileHandle);
           errorCode = writeResult.eax;
-          if (writeResult.carry) goto LAB_0040ea0c;
+          if (writeResult.carry) goto Package_UpsertEntry_Fail;
         }
         statusResult = Package_ReadDirectory(fileHandle);
         errorCode = statusResult.valueOrError;
         if (!statusResult.carry) {
-          return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(StatusValueEaxCf5, qword, statusResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+          return statusResult;
         }
       }
     }
   }
-LAB_0040ea0c:
+Package_UpsertEntry_Fail:
   statusResult.carry = true;
   statusResult.valueOrError = errorCode;
   return statusResult;
@@ -227,13 +227,13 @@ Package_LoadEntryIntoBuffer
         return decodeStatus;
       }
       Package_SetLastErrorPath(path);
-      goto LAB_0040ee1c;
+      goto Package_LoadEntryIntoBuffer_Fail;
     }
   }
   if ((bufferCapacityAndLoadFlags & 0x40000000) == 0) {
     openResult = (*g_FileSystemOpenCf)(0,path);
     handle = (void *)openResult.eax;
-    if (openResult.carry) goto LAB_0040ee1c;
+    if (openResult.carry) goto Package_LoadEntryIntoBuffer_Fail;
   }
   else {
     WidePath_CombineDirectoryAndLeaf
@@ -244,7 +244,7 @@ Package_LoadEntryIntoBuffer
     if (openResult.carry) {
       openResult = (*g_FileSystemOpenCf)(0,path);
       handle = (void *)openResult.eax;
-      if (openResult.carry) goto LAB_0040ee1c;
+      if (openResult.carry) goto Package_LoadEntryIntoBuffer_Fail;
     }
   }
   sizeResult = (*g_FileSystemGetSizeCf)(handle);
@@ -266,7 +266,7 @@ Package_LoadEntryIntoBuffer
   }
   (*g_FileSystemClose)(handle);
   handle = byteCount;
-LAB_0040ee1c:
+Package_LoadEntryIntoBuffer_Fail:
   failureResult.carry = true;
   failureResult.valueOrError = (dword)handle;
   return failureResult;
@@ -305,7 +305,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(wor
       if (openResult.carry) {
         openResult = (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path);
         handle = (PckEntryHeader *)openResult.eax;
-        if (openResult.carry) goto LAB_0040e480;
+        if (openResult.carry) goto Package_MountLowPriority_Fail;
       }
       allocResult = (*g_MemoryApi.alloc)(0x80000);
       allocatedEntryHeaders = (PckEntryHeader *)allocResult.eax;
@@ -320,13 +320,13 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_MountLowPriority(wor
       }
       (*g_FileSystemClose)(handle);
       handle = allocatedEntryHeaders;
-      goto LAB_0040e480;
+      goto Package_MountLowPriority_Fail;
     }
     mountSlot = mountSlot + -1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
   handle = (PckEntryHeader *)0x14;
-LAB_0040e480:
+Package_MountLowPriority_Fail:
   failureResult.carry = true;
   failureResult.valueOrError = (dword)handle;
   return failureResult;
@@ -363,7 +363,7 @@ Package_DeleteEntry(word *path,EngineFileHandle fileHandle)
   foundEntry = findResult.entry;
   statusOrError = foundEntry;
   if (findResult.carry) {
-LAB_0040e81c:
+    /* A missing entry counts as deleted. */
     successResult.carry = false;
     successResult.valueOrError = (dword)statusOrError;
     return successResult;
@@ -391,40 +391,44 @@ LAB_0040e81c:
                               (FILESYSTEM_SEEK_BEGIN,foundEntry->runtimePayloadOffset,(void *)fileHandle
                               );
             statusOrError = (PckEntryHeader *)seekResult.eax;
-            if (seekResult.carry) goto LAB_0040e828;
+            if (seekResult.carry) goto Package_DeleteEntry_Fail;
             writeResult = (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.eax;
-            if (writeResult.carry) goto LAB_0040e828;
+            if (writeResult.carry) goto Package_DeleteEntry_Fail;
           }
           else {
             seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)seekResult.eax;
             if ((seekResult.carry) || (statusOrError = (PckEntryHeader *)0x14, 0x800000 < byteCount))
-            goto LAB_0040e828;
+            goto Package_DeleteEntry_Fail;
             readResult = (*g_FileSystemReadExactCf)(byteCount,g_PackageScratchBuffer,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)readResult.eax;
-            if (readResult.carry) goto LAB_0040e828;
+            if (readResult.carry) goto Package_DeleteEntry_Fail;
             seekResult = (*g_FileSystemSeekCf)
                               (FILESYSTEM_SEEK_BEGIN,foundEntry->runtimePayloadOffset,(void *)fileHandle
                               );
             statusOrError = (PckEntryHeader *)seekResult.eax;
-            if (seekResult.carry) goto LAB_0040e828;
+            if (seekResult.carry) goto Package_DeleteEntry_Fail;
             writeResult = (*g_FileSystemWriteExactOrFlushCf)
                               (byteCount,g_PackageScratchBuffer,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.eax;
-            if (writeResult.carry) goto LAB_0040e828;
+            if (writeResult.carry) goto Package_DeleteEntry_Fail;
             writeResult = (*g_FileSystemWriteExactOrFlushCf)(0,(void *)0x0,(void *)fileHandle);
             statusOrError = (PckEntryHeader *)writeResult.eax;
-            if (writeResult.carry) goto LAB_0040e828;
+            if (writeResult.carry) goto Package_DeleteEntry_Fail;
           }
           statusResult = Package_ReadDirectory(fileHandle);
           statusOrError = (PckEntryHeader *)statusResult.valueOrError;
-          if (!statusResult.carry) goto LAB_0040e81c;
+          if (!statusResult.carry) {
+            successResult.carry = false;
+            successResult.valueOrError = (dword)statusOrError;
+            return successResult;
+          }
         }
       }
     }
   }
-LAB_0040e828:
+Package_DeleteEntry_Fail:
   statusResult.carry = true;
   statusResult.valueOrError = (dword)statusOrError;
   return statusResult;
@@ -451,8 +455,9 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
   FileSystemSizeEaxCf5 sizeResult;
   FileSystemReadEaxCf5 readResult;
   PackageLoadEntryEaxCf5 failureResult;
+  PackageLoadEntryEaxCf5 successResult;
   PackageFindEntryEaxEbxCf9 findResult;
-  
+
   findResult = Package_FindEntryAcrossMounts(path);
   entry = (PckEntryHeader *)findResult.eax;
   if (findResult.carry) {
@@ -464,7 +469,7 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
     if (openResult.carry) {
       openResult = (*g_FileSystemOpenCf)(0,path);
       destination = (byte *)openResult.eax;
-      if (openResult.carry) goto LAB_0040ef3f;
+      if (openResult.carry) goto Package_LoadEntry_Fail;
     }
     sizeResult = (*g_FileSystemGetSizeCf)(destination);
     byteCountOrError = (byte *)sizeResult.eax;
@@ -480,7 +485,9 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
         byteCountOrError = (byte *)readResult.eax;
         if (!readResult.carry) {
           (*g_FileSystemClose)(destination);
-          return THANDOR_BITCAST(qword, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+          successResult.carry = false;
+          successResult.bufferOrError = (byte *)allocResult.eax;
+          return successResult;
         }
         (*g_MemoryApi.free)((void *)allocResult.eax);
       }
@@ -496,7 +503,9 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
       if (!allocResult.carry) {
         decodeResult = Package_DecodeEntryInto(destination,entry,findResult.ebx);
         if (!decodeResult.carry) {
-          return THANDOR_BITCAST(qword, PackageLoadEntryEaxCf5, ((THANDOR_BITCAST(ArenaAllocEaxCf5, qword, allocResult) & 0xFFFFFFFFFFull) & 0xffffffff));
+          successResult.carry = false;
+          successResult.bufferOrError = destination;
+          return successResult;
         }
         byteCountOrError = (byte *)decodeResult.eax;
         (*g_MemoryApi.free)(destination);
@@ -504,7 +513,7 @@ PackageLoadEntryEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_LoadEntry(word 
       }
     }
   }
-LAB_0040ef3f:
+Package_LoadEntry_Fail:
   {
     /* open-thandor diagnostics: first failed loads with their caller stack */
     static int loggedFailures;
@@ -551,7 +560,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_Mount(word *path)
       if (openResult.carry) {
         openResult = (*g_FileSystemOpenCf)(FILESYSTEM_OPEN_WRITE_ACCESS,path);
         handle = (PckEntryHeader *)openResult.eax;
-        if (openResult.carry) goto LAB_0040e3d0;
+        if (openResult.carry) goto Package_Mount_Fail;
       }
       allocResult = (*g_MemoryApi.alloc)(0x80000);
       allocatedEntryHeaders = (PckEntryHeader *)allocResult.eax;
@@ -566,13 +575,13 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx Package_Mount(word *path)
       }
       (*g_FileSystemClose)(handle);
       handle = allocatedEntryHeaders;
-      goto LAB_0040e3d0;
+      goto Package_Mount_Fail;
     }
     mountSlot = mountSlot + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
   handle = (PckEntryHeader *)0x14;
-LAB_0040e3d0:
+Package_Mount_Fail:
   failureResult.carry = true;
   failureResult.valueOrError = (dword)handle;
   return failureResult;
@@ -594,7 +603,9 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
   EngineFileHandle handleOrRemaining;
   word *firstPathCursor;
   word *secondPathCursor;
-  undefined4 in_ECX = 0; /* handle not mounted (CF set): ECX is the caller's; callers ignore the match count then */
+  /* Handle not mounted (CF set): the original leaves the caller's ECX as the match count; every caller ignores
+     it then, so zero stands in for it. */
+  dword unmountedMatchCount = 0;
   int matchedCount;
   int remainingCount;
   int unitsRemaining;
@@ -616,7 +627,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
   handleOrRemaining = fileHandle;
   while( true ) {
     if (handleOrRemaining == 0) {
-      failureResult.matchCount = in_ECX;
+      failureResult.matchCount = unmountedMatchCount;
       failureResult.recordSizeOrError = 0x14;
       failureResult.carry = true;
       return failureResult;
@@ -636,7 +647,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
       if (!carryFlag) {
         carryFlag = outputCapacityBytes < 0x200;
         outputCapacityBytes = outputCapacityBytes - 0x200;
-        if (carryFlag) goto LAB_0040ec93;
+        if (carryFlag) goto Package_FindEntry_ReturnMatches;
         sourceCursor = entryCursor;
         copyDestination = targetCursor;
         for (remainingCount = 0xf6; remainingCount != 0; remainingCount = remainingCount + -1) {
@@ -677,7 +688,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
                 targetCursor = entryCursor;
                 LOCK();
                 swappedDword = *(dword *)sourceCursor->path;
-                *(undefined4 *)sourceCursor->path = *(undefined4 *)targetCursor->path;
+                *(dword *)sourceCursor->path = *(dword *)targetCursor->path;
                 UNLOCK();
                 *(dword *)targetCursor->path = swappedDword;
                 unitsRemaining = unitsRemaining + -1;
@@ -700,7 +711,7 @@ Package_FindEntry(PckOutputCapacityBytes outputCapacityBytes,PckEntryHeader *out
       }
     }
   }
-LAB_0040ec93:
+Package_FindEntry_ReturnMatches:
   successResult.matchCount = matchedCount;
   successResult.recordSizeOrError = 0x200;
   successResult.carry = false;
@@ -860,7 +871,7 @@ Package_FindEntryInMount(word *path,EngineFileHandle fileHandle)
   PckEntryCount entriesRemaining;
   PckMountSlot *mountSlot;
   word *pathCursor;
-  PckEntryHeader *entryCursor;
+  word *nameCursor;
   bool matched;
   PackageEntryEaxCf5 notFoundResult;
   PackageEntryEaxCf5 foundResult;
@@ -894,43 +905,37 @@ Package_FindEntryInMount(word *path,EngineFileHandle fileHandle)
       return noMountResult;
     }
   }
-  entryCursor = mountSlot->entryHeaders;
+  currentEntry = mountSlot->entryHeaders;
   entriesRemaining = mountSlot->entryCount;
-  matched = false;
-  remainingCount = -(lengthRemaining + -0xf6);
-  pathCursor = path;
-  currentEntry = entryCursor;
   if (entriesRemaining == 0) {
     emptyMountResult.entry = (PckEntryHeader *)0x0;
     emptyMountResult.carry = true;
     return emptyMountResult;
   }
-code_r0x0040e6b4:
   do {
-    if (remainingCount != 0) {
-      matched = *pathCursor == entryCursor->path[0];
+    /* REPE CMPSW over the path length including its terminator. */
+    matched = false;
+    remainingCount = -(lengthRemaining + -0xf6);
+    pathCursor = path;
+    nameCursor = currentEntry->path;
+    while (remainingCount != 0) {
+      matched = *pathCursor == *nameCursor;
       remainingCount = remainingCount + -1;
       pathCursor = pathCursor + 1;
-      entryCursor = (PckEntryHeader *)(entryCursor->path + 1);
-      if (matched) goto code_r0x0040e6b4;
+      nameCursor = nameCursor + 1;
+      if (!matched) break;
     }
     if (matched) {
       foundResult.carry = false;
       foundResult.entry = currentEntry;
       return foundResult;
     }
-    entryCursor = currentEntry + 1;
+    currentEntry = currentEntry + 1;
     entriesRemaining = entriesRemaining - 1;
-    matched = false;
-    remainingCount = -(lengthRemaining + -0xf6);
-    pathCursor = path;
-    currentEntry = entryCursor;
-    if (entriesRemaining == 0) {
-      notFoundResult.entry = (PckEntryHeader *)0x0;
-      notFoundResult.carry = true;
-      return notFoundResult;
-    }
-  } while( true );
+  } while (entriesRemaining != 0);
+  notFoundResult.entry = (PckEntryHeader *)0x0;
+  notFoundResult.carry = true;
+  return notFoundResult;
 }
 
 
@@ -947,50 +952,51 @@ Package_FindEntryAcrossMounts(word *path)
   int remainingOrLength;
   int compareRemaining;
   int slotsRemaining;
-  PckEntryCount in_EBX;
+  /* EBX on failure: the last slot's entry count (0 once a slot was scanned to the end). When the path is too
+     long the original leaves the caller's EBX; callers never read EBX with CF set, so zero stands in for it. */
+  PckEntryCount failureEntryCount = 0;
   PckEntryCount entriesRemaining;
   PckMountSlot *mountSlot;
   word *pathCursor;
-  PckEntryHeader *entryCursor;
+  word *nameCursor;
   bool matched;
   PackageFindEntryEaxEbxCf9 foundResult;
   PackageFindEntryEaxEbxCf9 notFoundResult;
   PckEntryHeader *currentEntry;
-  
-  codeUnit = 0;
+
   remainingOrLength = 0xf6;
   pathCursor = path;
   do {
     compareRemaining = remainingOrLength;
-    codeUnit = CONCAT22((short)(codeUnit >> 0x10),*pathCursor);
+    codeUnit = *pathCursor;
     if ((0x40 < codeUnit) && (codeUnit < 0x5b)) {
       codeUnit = codeUnit + 0x20;
     }
     *pathCursor = (word)codeUnit;
     remainingOrLength = compareRemaining + -1;
-    if (remainingOrLength == 0) goto LAB_0040ead6;
+    if (remainingOrLength == 0) goto Package_FindEntryAcrossMounts_NotFound;
     pathCursor = pathCursor + 1;
   } while (codeUnit != 0);
   mountSlot = g_PackageMountSlots;
   slotsRemaining = 0x400;
   remainingOrLength = -(compareRemaining + -0xf7);
   do {
-    entryCursor = mountSlot->entryHeaders;
-    in_EBX = mountSlot->entryCount;
-    if ((entryCursor != (PckEntryHeader *)0x0) && (in_EBX != 0)) {
-      matched = entryCursor == (PckEntryHeader *)0x0;
-      compareRemaining = remainingOrLength;
-      pathCursor = path;
-      currentEntry = entryCursor;
-      entriesRemaining = in_EBX;
-code_r0x0040eaa7:
+    currentEntry = mountSlot->entryHeaders;
+    entriesRemaining = mountSlot->entryCount;
+    failureEntryCount = entriesRemaining;
+    if ((currentEntry != (PckEntryHeader *)0x0) && (entriesRemaining != 0)) {
       do {
-        if (compareRemaining != 0) {
-          matched = *pathCursor == entryCursor->path[0];
+        /* REPE CMPSW over the lowercased path length including its terminator. */
+        matched = false;
+        compareRemaining = remainingOrLength;
+        pathCursor = path;
+        nameCursor = currentEntry->path;
+        while (compareRemaining != 0) {
+          matched = *pathCursor == *nameCursor;
           compareRemaining = compareRemaining + -1;
           pathCursor = pathCursor + 1;
-          entryCursor = (PckEntryHeader *)(entryCursor->path + 1);
-          if (matched) goto code_r0x0040eaa7;
+          nameCursor = nameCursor + 1;
+          if (!matched) break;
         }
         if (matched) {
           foundResult.ebx = mountSlot->fileHandle;
@@ -998,20 +1004,16 @@ code_r0x0040eaa7:
           foundResult.carry = false;
           return foundResult;
         }
-        entryCursor = currentEntry + 1;
+        currentEntry = currentEntry + 1;
         entriesRemaining = entriesRemaining - 1;
-        matched = entriesRemaining == 0;
-        in_EBX = 0;
-        compareRemaining = remainingOrLength;
-        pathCursor = path;
-        currentEntry = entryCursor;
-      } while (!matched);
+      } while (entriesRemaining != 0);
+      failureEntryCount = 0;
     }
     mountSlot = mountSlot + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-LAB_0040ead6:
-  notFoundResult.ebx = in_EBX;
+Package_FindEntryAcrossMounts_NotFound:
+  notFoundResult.ebx = failureEntryCount;
   notFoundResult.eax = codeUnit;
   notFoundResult.carry = true;
   return notFoundResult;
@@ -1048,42 +1050,36 @@ Package_ReadDirectory(EngineFileHandle fileHandle)
       seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0,(void *)fileHandle);
       archiveHeader = g_PackageScratchBuffer;
       statusCode = seekResult.eax;
-      if (seekResult.carry) goto LAB_0040e59f;
+      if (seekResult.carry) goto Package_ReadDirectory_Fail;
       readResult = (*g_FileSystemReadExactCf)(0x200,g_PackageScratchBuffer,(void *)fileHandle);
       statusCode = readResult.eax;
-      if (readResult.carry) goto LAB_0040e59f;
+      if (readResult.carry) goto Package_ReadDirectory_Fail;
       entriesRemaining = *(PckEntryCount *)(archiveHeader + 0xb0);
       mountSlot->entryCount = entriesRemaining;
       distance = 0x200;
-      if (entriesRemaining != 0) goto LAB_0040e5f0;
-      goto LAB_0040e62b;
+      for (; entriesRemaining != 0; entriesRemaining = entriesRemaining - 1) {
+        readResult = (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle);
+        statusCode = readResult.eax;
+        if (readResult.carry) goto Package_ReadDirectory_Fail;
+        packedSizeField = &destination->packedSize;
+        destination->runtimePayloadOffset = distance;
+        destination = destination + 1;
+        distance = distance + *packedSizeField + 0x200;
+        seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
+        statusCode = seekResult.eax;
+        if (seekResult.carry) goto Package_ReadDirectory_Fail;
+      }
+      successResult.carry = false;
+      successResult.valueOrError = statusCode;
+      return successResult;
     }
     mountSlot = mountSlot + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
   statusCode = 0x14;
-LAB_0040e59f:
+Package_ReadDirectory_Fail:
   failureResult.carry = true;
   failureResult.valueOrError = statusCode;
   return failureResult;
-LAB_0040e5f0:
-  readResult = (*g_FileSystemReadExactCf)(0x200,destination,(void *)fileHandle);
-  statusCode = readResult.eax;
-  if (readResult.carry) goto LAB_0040e59f;
-  packedSizeField = &destination->packedSize;
-  destination->runtimePayloadOffset = distance;
-  destination = destination + 1;
-  distance = distance + *packedSizeField + 0x200;
-  seekResult = (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,distance,(void *)fileHandle);
-  statusCode = seekResult.eax;
-  if (seekResult.carry) goto LAB_0040e59f;
-  entriesRemaining = entriesRemaining - 1;
-  if (entriesRemaining == 0) {
-LAB_0040e62b:
-    successResult.carry = false;
-    successResult.valueOrError = statusCode;
-    return successResult;
-  }
-  goto LAB_0040e5f0;
 }
 

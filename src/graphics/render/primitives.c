@@ -44,9 +44,9 @@ GraphicsPrimitiveQueue_RadixSortForRendering
   GraphicsPrimitiveQueueNode *primitiveQueueNodeCursor4;
   GraphicsPrimitivePacket *nextLinkNode;
   GraphicsPrimitivePacket *primitivePacketCursor4;
-  undefined8 mm0PackedValue0;
-  undefined8 mm1PackedValue0;
-  undefined8 mm2PackedValue0;
+  ulonglong mm0PackedValue0;
+  ulonglong mm1PackedValue0;
+  ulonglong mm2PackedValue0;
   GraphicsPrimitivePacket *primitivePacketCursor1;
   uint *sortWordCursor1;
   
@@ -349,7 +349,6 @@ GraphicsPrimitivePacketEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
 
 {
-  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* empty queue (CF set): EAX untouched; callers stop on CF */
   GraphicsPrimitivePacketEaxCf5 successResult;
   GraphicsPrimitivePacketEaxCf5 failureResult;
   GraphicsPrimitivePacket *currentTraversalPacket;
@@ -362,7 +361,8 @@ GraphicsPrimitiveQueue_Begin(GraphicsPrimitiveQueue *queue)
     return successResult;
   }
   failureResult.carry = true;
-  failureResult.packet = in_EAX;
+  /* Empty queue: the original leaves EAX untouched; every caller stops on CF without reading it. */
+  failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
 }
 
@@ -579,7 +579,6 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
   dword textureCoordinate;
   uint textureEntryIndex;
   GraphicsTextureSet *terrainTextureSet;
-  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* queue full (CF set): EAX stale; callers use the packet only with CF clear */
   PackedArgb32 paletteModulationColor;
   GraphicsPrimitivePacket *newPacket;
   GraphicsPrimitivePacketEaxCf5 successResult;
@@ -656,7 +655,8 @@ GraphicsPrimitiveQueue_AppendTerrainSecondarySurfaceTriangleCf
     return successResult;
   }
   failureResult.carry = true;
-  failureResult.packet = in_EAX;
+  /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
+  failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
 }
 
@@ -685,7 +685,6 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
   dword packetIndexOrAttribute;
   dword packetAttribute;
   GraphicsTextureSet *materialTextureSet;
-  GraphicsPrimitivePacket *in_EAX = (GraphicsPrimitivePacket *)0; /* queue full (CF set): EAX stale; callers use the packet only with CF clear */
   PackedArgb32 paletteModulationColor;
   dword *vertexFieldWriteCursor;
   GraphicsPrimitivePacketEaxCf5 successResult;
@@ -748,7 +747,8 @@ GraphicsPrimitiveQueue_AppendTexturedTriangleRegs
     return successResult;
   }
   failureResult.carry = true;
-  failureResult.packet = in_EAX;
+  /* Queue full: the original leaves EAX untouched; callers use the packet only with CF clear. */
+  failureResult.packet = (GraphicsPrimitivePacket *)0;
   return failureResult;
 }
 

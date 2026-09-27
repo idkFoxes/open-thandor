@@ -65,25 +65,29 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ShotDefinitions_ValidateTerrainMaterialReferences(void)
 
 {
-  uint in_EAX;
+  /* EAX: success returns the last index checked (the caller's EAX when the registry is empty); callers
+     test CF only. */
+  TerrainMaterialIndex materialIndex = 0;
   int registrySlotsRemaining;
   int materialIndicesRemaining;
-  ShotDefinition *materialIndexCursor;
+  ShotDefinition *definition;
+  TerrainMaterialIndex *materialIndexCursor;
   ShotDefinition **registryCursor;
   StatusValueEaxCf5 successResult;
   StatusValueEaxCf5 failureResult;
-  
+
   registryCursor = g_ShotDefinitionRegistry;
   registrySlotsRemaining = 0x100;
   do {
-    materialIndexCursor = *registryCursor;
-    if (materialIndexCursor != (ShotDefinition *)0x0) {
+    definition = *registryCursor;
+    if (definition != (ShotDefinition *)0x0) {
+      materialIndexCursor = definition->terrainMaterialIndices31;
       materialIndicesRemaining = 0x1f;
       do {
-        in_EAX = materialIndexCursor->terrainMaterialIndices31[0];
-        materialIndexCursor = (ShotDefinition *)&materialIndexCursor->reservedDword04;
-        if ((0x19 < (int)in_EAX) ||
-           ((-1 < (int)in_EAX && (g_TerrainMaterialTextureSets[in_EAX] == (GraphicsTextureSet *)0x0)
+        materialIndex = *materialIndexCursor;
+        materialIndexCursor = materialIndexCursor + 1;
+        if ((0x19 < materialIndex) ||
+           ((-1 < materialIndex && (g_TerrainMaterialTextureSets[materialIndex] == (GraphicsTextureSet *)0x0)
             ))) {
           (*g_WideNumberFormatUtf16)
                     (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,0x100 - registrySlotsRemaining,g_PackageLastErrorPath);
@@ -98,7 +102,7 @@ ShotDefinitions_ValidateTerrainMaterialReferences(void)
     registrySlotsRemaining = registrySlotsRemaining + -1;
     if (registrySlotsRemaining == 0) {
       successResult.carry = false;
-      successResult.valueOrError = in_EAX;
+      successResult.valueOrError = (dword)materialIndex;
       return successResult;
     }
   } while( true );
@@ -309,7 +313,8 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
   PackageLoadEntryEaxCf5 loadResult;
   SpriteRegisterRelocateEaxCf5 spriteRegisterResult;
   EffectDefinitionLookupEaxCf5 effectLookup;
-  
+  StatusValueEaxCf5 successResult;
+
   registrySlotCursor = g_ShotDefinitionRegistry;
   slotsRemainingOrIndex = 0x100;
   existingLookup = ShotRuntime_FindDefinitionByIdCf(definition->definitionId);
@@ -352,7 +357,31 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
         definition->primaryEffectDefinition = (EffectDefinition *)asset;
         slotsRemainingOrIndex = 0;
         referencesRemaining = 0x1f;
-        goto ShotDefinition_ResolveNextPrimaryEffectReference;
+        do {
+          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                            ((PckEffectDefinitionIdCatalog)
+                             definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex]);
+          asset = (ShotDefinition *)effectLookup.definitionOrError;
+          if (effectLookup.carry) goto ShotDefinition_ReturnReferenceResolutionResult;
+          definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] = (EffectDefinition *)asset;
+          slotsRemainingOrIndex = slotsRemainingOrIndex + 1;
+          referencesRemaining = referencesRemaining + -1;
+        } while (referencesRemaining != 0);
+        slotsRemainingOrIndex = 0;
+        referencesRemaining = 8;
+        do {
+          effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
+                            ((PckEffectDefinitionIdCatalog)
+                             definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex]);
+          asset = (ShotDefinition *)effectLookup.definitionOrError;
+          if (effectLookup.carry) goto ShotDefinition_ReturnReferenceResolutionResult;
+          definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] = (EffectDefinition *)asset;
+          slotsRemainingOrIndex = slotsRemainingOrIndex + 1;
+          referencesRemaining = referencesRemaining + -1;
+        } while (referencesRemaining != 0);
+        successResult.carry = false;
+        successResult.valueOrError = (dword)asset;
+        return successResult;
       }
       registrySlotCursor = registrySlotCursor + 1;
       slotsRemainingOrIndex = slotsRemainingOrIndex + -1;
@@ -364,34 +393,6 @@ ShotDefinition_RegisterAndResolveReferencesCf(ShotDefinition *definition)
     (*g_WideNumberFormatUtf16)
               (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definition->definitionId,g_PackageLastErrorPath);
     asset = (ShotDefinition *)0x4d;
-  }
-  goto ShotDefinition_ReturnReferenceResolutionResult;
-  while( true ) {
-    definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex] = (EffectDefinition *)asset;
-    slotsRemainingOrIndex = slotsRemainingOrIndex + 1;
-    referencesRemaining = referencesRemaining + -1;
-    if (referencesRemaining == 0) break;
-ShotDefinition_ResolveNextPrimaryEffectReference:
-    effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
-                      ((PckEffectDefinitionIdCatalog)
-                       definition->terrainImpactEffectDefinitions31[slotsRemainingOrIndex]);
-    asset = (ShotDefinition *)effectLookup.definitionOrError;
-    if (effectLookup.carry) goto ShotDefinition_ReturnReferenceResolutionResult;
-  }
-  slotsRemainingOrIndex = 0;
-  referencesRemaining = 8;
-  while( true ) {
-    effectLookup = EffectDefinitionRegistry_FindByIdWithErrorCf
-                      ((PckEffectDefinitionIdCatalog)
-                       definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex]);
-    asset = (ShotDefinition *)effectLookup.definitionOrError;
-    if (effectLookup.carry) break;
-    definition->targetClassImpactEffectDefinitions8[slotsRemainingOrIndex] = (EffectDefinition *)asset;
-    slotsRemainingOrIndex = slotsRemainingOrIndex + 1;
-    referencesRemaining = referencesRemaining + -1;
-    if (referencesRemaining == 0) {
-      return THANDOR_BITCAST(qword, StatusValueEaxCf5, ((THANDOR_BITCAST(EffectDefinitionLookupEaxCf5, qword, effectLookup) & 0xFFFFFFFFFFull) & 0xffffffff));
-    }
   }
 ShotDefinition_ReturnReferenceResolutionResult:
   failureResult.carry = true;

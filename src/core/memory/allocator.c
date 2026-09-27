@@ -115,32 +115,26 @@ DwordBlock64Array_ContainsExactRecordCf
 
 {
   int dwordsRemainingInRecord;
-  dword *sourceRecordCursor;
   dword *candidateRecordCursor;
-  undefined1 in_ZF;
-  
+  bool dwordsEqual;
+
   do {
+    /* REPE CMPSD over the 0x40 dwords (the count is nonzero, so ZF is the last comparison) */
     dwordsRemainingInRecord = 0x40;
     candidateRecordCursor = candidateRecord;
     do {
-      sourceRecordCursor = recordArray;
-      if (dwordsRemainingInRecord == 0) break;
       dwordsRemainingInRecord = dwordsRemainingInRecord + -1;
-      sourceRecordCursor = recordArray + 1;
-      in_ZF = *recordArray == *candidateRecordCursor;
-      recordArray = sourceRecordCursor;
+      dwordsEqual = *recordArray == *candidateRecordCursor;
+      recordArray = recordArray + 1;
       candidateRecordCursor = candidateRecordCursor + 1;
-    } while ((bool)in_ZF);
-    if ((bool)in_ZF) {
+    } while (dwordsEqual && (dwordsRemainingInRecord != 0));
+    if (dwordsEqual) {
       return false;
     }
-    recordArray = sourceRecordCursor + dwordsRemainingInRecord;
+    recordArray = recordArray + dwordsRemainingInRecord;
     recordCount = recordCount + -1;
-    in_ZF = 0;
-    if (recordCount == 0) {
-      return true;
-    }
-  } while( true );
+  } while (recordCount != 0);
+  return true;
 }
 
 
@@ -311,7 +305,7 @@ ArenaFreeEaxCf5 __thandor_eax_cf_preserve_ecx_edx ArenaHeap_Free(void *memory)
       corruptBlockResult.eax = ARENA_HEAP_FAILURE_SENTINEL_0x13;
       return corruptBlockResult;
     }
-    *(undefined4 *)((int)memory + -0x1c) = 0xa5a5a5a5;
+    *(dword *)((int)memory + -0x1c) = 0xa5a5a5a5;
     adjacentFreeBlock = *(int **)((int)memory + -0x18);
     if ((adjacentFreeBlock != (int *)0xffffffff) && (adjacentFreeBlock[1] == -0x5a5a5a5b)) {
       *freedBlockHeader = *freedBlockHeader + *adjacentFreeBlock + 0x20;
@@ -484,8 +478,8 @@ void __thandor_void_preserve_eax_ecx_edx Memory_ZeroDwords(MemoryByteCount bytes
   uint dwordsRemaining;
   
   for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
-    *(undefined4 *)destination = 0;
-    destination = (undefined4 *)((int)destination + 4);
+    *(dword *)destination = 0;
+    destination = (dword *)((int)destination + 4);
   }
   return;
 }

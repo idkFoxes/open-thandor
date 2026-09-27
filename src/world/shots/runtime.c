@@ -10,6 +10,36 @@
 
 /* Implementation ownership: world/shots/runtime. */
 
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+static __inline qword ShotTint_UnpackBytesShiftRight(dword value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+static __inline dword ShotTint_PackWordsUnsignedSaturate(qword words)
+
+{
+  ThandorMmx lanes;
+  dword packed;
+  int lane;
+
+  lanes.q = words;
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    packed = packed |
+             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+  }
+  return packed;
+}
+
 /* Address: 0x0052CC60.
    Ownership: world/shots/runtime.
    Purpose: Processes a shot hit against an ArmyRuntimeSlot, updates pairwise faction pressure and relation
@@ -276,17 +306,19 @@ void __thandor_void_preserve_eax_ecx_edx ShotRuntime_RebaseSlotsAfterLoad(void)
       (shotSlot->ownerAndTrajectory).ownerArmyRuntime = rebasedOwnerArmy;
       registryCursor = g_ShotDefinitionRegistry;
       registrySlotsRemaining = 0x100;
-      do {
+      for (;;) {
         registryDefinition = *registryCursor;
         if ((registryDefinition != (ShotDefinition *)0x0) &&
            ((shotSlot->definitionOrSavedId).definition ==
-            (ShotDefinition *)registryDefinition->definitionId))
-        goto ShotRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance;
+            (ShotDefinition *)registryDefinition->definitionId)) break;
         registryCursor = registryCursor + 1;
         registrySlotsRemaining = registrySlotsRemaining + -1;
-      } while (registrySlotsRemaining != 0);
-      (shotSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
-ShotRuntime_RebaseSlotsAfterLoad_CommitResolvedDefinitionAndAdvance:
+        if (registrySlotsRemaining == 0) {
+          /* saved definition no longer registered: drop the shot (definition = last registry entry) */
+          (shotSlot->modelNodeOrSavedOffset).modelNode = (ModelRuntimeNode *)0x0;
+          break;
+        }
+      }
       (shotSlot->definitionOrSavedId).definition = registryDefinition;
     }
     shotSlot = shotSlot + 1;
@@ -325,12 +357,6 @@ ShotRuntimePool_CreateProjectileFromDefinition
   AngleTurn16Stored32 elevationOffsetAngle;
   ShotSecondaryEffectCountdownTicks secondaryEffectInterval;
   PackedArgb32 definitionTintArgb;
-  short tintChannel0;
-  short tintChannel1;
-  short tintChannel2;
-  short tintChannel3;
-  ushort nodeAlphaPair;
-  ushort definitionAlphaPair;
   ShotRuntimeSlot *slotsRemainingOrPool;
   GraphicsPaletteAsset *shotPalette;
   ShotModelRuntimeNodeClassView100 *shotModelNode;
@@ -340,11 +366,7 @@ ShotRuntimePool_CreateProjectileFromDefinition
   Q12 worldXQ12;
   dword directionZOrNeighborhoodMask;
   ShotRuntimeSlot *shotRuntimeCursor;
-  undefined1 nodeTintByte3Or1;
-  undefined1 nodeTintByte2;
-  undefined8 tintProduct;
-  undefined1 definitionTintByte3Or1;
-  undefined1 definitionTintByte2;
+  qword tintProduct;
   ShotLaunchAnglesEaxEdx8 launchAngles;
   WorldObjectRecordEaxCf5 allocatedRecord;
   ModelLookupEntryEaxCf5 lookupEntry;
@@ -448,36 +470,10 @@ ShotRuntimePool_CreateProjectileFromDefinition
   shotModelNode->runtimeFlags = shotModelNode->runtimeFlags | resolvedMasks.runtimeFlags | 0x10;
   nodeTintArgb = UiNode_GetStateTintArgb((UiNodeBase *)shotModelNode);
   definitionTintArgb = shotDefinition->stateTintArgb;
-  nodeTintByte3Or1 = (undefined1)(nodeTintArgb >> 0x18);
-  nodeAlphaPair = CONCAT11(nodeTintByte3Or1,nodeTintByte3Or1);
-  nodeTintByte2 = (undefined1)(nodeTintArgb >> 0x10);
-  nodeTintByte3Or1 = (undefined1)(nodeTintArgb >> 8);
-  definitionTintByte3Or1 = (undefined1)(definitionTintArgb >> 0x18);
-  definitionAlphaPair = CONCAT11(definitionTintByte3Or1,definitionTintByte3Or1);
-  definitionTintByte2 = (undefined1)(definitionTintArgb >> 0x10);
-  definitionTintByte3Or1 = (undefined1)(definitionTintArgb >> 8);
-  tintProduct = pmulhw(CONCAT26(nodeAlphaPair >> 4,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(nodeAlphaPair,nodeTintByte2),
-                                                      CONCAT14(nodeTintByte2,nodeTintArgb)) >> 0x20) >> 4,
-                                    CONCAT22(CONCAT11(nodeTintByte3Or1,nodeTintByte3Or1) >> 4,
-                                             CONCAT11((char)nodeTintArgb,(char)nodeTintArgb) >> 4))),
-                  CONCAT26(definitionAlphaPair >> 4,
-                           CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionTintByte2),CONCAT14(definitionTintByte2,definitionTintArgb)
-                                                     ) >> 0x20) >> 4,
-                                    CONCAT22(CONCAT11(definitionTintByte3Or1,definitionTintByte3Or1) >> 4,
-                                             CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
-  tintChannel0 = (short)tintProduct;
-  tintChannel1 = (short)((ulonglong)tintProduct >> 0x10);
-  tintChannel2 = (short)((ulonglong)tintProduct >> 0x20);
-  tintChannel3 = (short)((ulonglong)tintProduct >> 0x30);
-  shotModelNode->tintArgb =
-       CONCAT13((0 < tintChannel3) * (tintChannel3 < 0x100) * (char)((ulonglong)tintProduct >> 0x30) -
-                (0xff < tintChannel3),
-                CONCAT12((0 < tintChannel2) * (tintChannel2 < 0x100) * (char)((ulonglong)tintProduct >> 0x20) -
-                         (0xff < tintChannel2),
-                         CONCAT11((0 < tintChannel1) * (tintChannel1 < 0x100) * (char)((ulonglong)tintProduct >> 0x10)
-                                  - (0xff < tintChannel1),
-                                  (0 < tintChannel0) * (tintChannel0 < 0x100) * (char)tintProduct - (0xff < tintChannel0))));
+  /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
+  tintProduct = pmulhw(ShotTint_UnpackBytesShiftRight(nodeTintArgb,4),
+                       ShotTint_UnpackBytesShiftRight(definitionTintArgb,4));
+  shotModelNode->tintArgb = ShotTint_PackWordsUnsignedSaturate(tintProduct);
   ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)shotModelNode);
   ModelNodeRuntime_UpdateDepthBinMasks(0,(ModelRuntimeNode *)shotModelNode);
   lookupEntry = ModelLookupTable_ContainsPackedKeyCf(0,3,shotDefinition->ownedNestedResource);

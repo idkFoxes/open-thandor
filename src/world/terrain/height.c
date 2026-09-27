@@ -560,17 +560,14 @@ TerrainTriangle_IntersectRayDistanceCf
   goto TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet;
   planeTermOrProductA = ((longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12 +
           (longlong)(cornerHeight2Q12 - cornerHeight3Q12) * (longlong)gridRayDelta1Q12) -
-          CONCAT44(rayDeltaZQ12 >> 0x14,rayDeltaZQ12 << 0xc);
+          ((longlong)rayDeltaZQ12 << 0xc);
   planeTermOrProductB = (longlong)(cornerHeight1Q12 - cornerHeight3Q12) * (longlong)cellLocalCoord1Q12 +
           (longlong)(cornerHeight2Q12 - cornerHeight3Q12) * (longlong)cellLocalCoord0Q12 +
-          CONCAT44(rayOriginZQ12 - cornerHeight3Q12 >> 0x14,
-                   (rayOriginZQ12 - cornerHeight3Q12) * 0x1000);
-  if (planeTermOrProductB < 0) {
-    if ((planeTermOrProductA < 0) && (-1 < planeTermOrProductB - planeTermOrProductA))
-    goto TerrainTriangle_IntersectRayDistanceCf_BeginFirstTriangleEdgeTestsAfterPlaneCrossing;
-  }
-  else if ((-1 < planeTermOrProductA) && (planeTermOrProductB - planeTermOrProductA < 0)) {
-TerrainTriangle_IntersectRayDistanceCf_BeginFirstTriangleEdgeTestsAfterPlaneCrossing:
+          ((longlong)(rayOriginZQ12 - cornerHeight3Q12) << 0xc);
+  if ((planeTermOrProductB < 0) ?
+      ((planeTermOrProductA < 0) && (-1 < planeTermOrProductB - planeTermOrProductA)) :
+      ((-1 < planeTermOrProductA) && (planeTermOrProductB - planeTermOrProductA < 0))) {
+    /* the ray crosses the first triangle's plane: test its edges */
     rayCrossLocal = (longlong)gridRayDelta1Q12 * (longlong)cellLocalCoord1Q12 -
             (longlong)cellLocalCoord0Q12 * (longlong)gridRayDelta0Q12;
     edgeHighOrCoord0 = (int)(rayCrossLocal >> 0x20);
@@ -596,107 +593,97 @@ TerrainTriangle_IntersectRayDistanceCf_BeginFirstTriangleEdgeTestsAfterPlaneCros
              (uint)CARRY4(productLowOrDivisor,shiftedLowA) +
              ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord0Q12) >> 0x20) <<
               0xc | productLowB >> 0x14) + (uint)CARRY4(edgeSumLowA,shiftedLowB);
-    if (edgeHighOrCoord1 < 0) {
-      if (planeTermOrProductA < 0) {
-TerrainTriangle_IntersectRayDistanceCf_EvaluateFirstTriangleRemainingEdgeConstraints:
-        heightDeltaOrLowWord = cornerHeight3Q12 - cornerHeight2Q12;
-        if ((int)heightDeltaOrLowWord < 0) {
-          planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
-          productLowOrDivisor = (uint)planeTermOrProductB;
-          edgeHighOrCoord0 = (edgeHighOrCoord0 * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductB >> 0x20);
-        }
-        else {
-          planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
-          productLowOrDivisor = (uint)planeTermOrProductB;
-          edgeHighOrCoord0 = edgeHighOrCoord0 * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductB >> 0x20);
-        }
-        planeTermOrProductB = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12;
-        heightDeltaOrLowWord = (uint)planeTermOrProductB;
-        shiftedLowA = heightDeltaOrLowWord * 0x1000;
-        partialSumLow = productLowOrDivisor + shiftedLowA;
-        productLowB = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12);
-        shiftedLowB = productLowB * 0x1000;
-        rateHighOrEdgeSumLow = (int)((ulonglong)planeTermOrProductA >> 0x20) << 0xc | (uint)planeTermOrProductA >> 0x14;
-        rateShiftedWord = (uint)planeTermOrProductA * 0x1000;
-        edgeSumLowA = shiftedLowB + partialSumLow;
-        edgeHighOrCoord0 = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12) >> 0x20)
-                  << 0xc | productLowB >> 0x14) +
-                 edgeHighOrCoord0 + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | heightDeltaOrLowWord >> 0x14) +
-                 (uint)CARRY4(productLowOrDivisor,shiftedLowA) + (uint)CARRY4(shiftedLowB,partialSumLow);
-        if (edgeHighOrCoord0 < 0) {
-          if ((int)rateHighOrEdgeSumLow < 0) {
-            heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
-            combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
-                     (uint)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
-            if (combinedHigh < 0) {
-TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance:
-              combinedHigh = combinedHigh + edgeHighOrCoord0 + (uint)CARRY4(heightDeltaOrLowWord,edgeSumLowA) + edgeHighOrCoord1 +
-                       (uint)CARRY4(heightDeltaOrLowWord + edgeSumLowA,edgeSumLowB);
-              heightDeltaOrLowWord = heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB >> 0xc | combinedHigh * 0x100000;
-              combinedHigh = combinedHigh >> 0xc;
-              if (heightDeltaOrLowWord == 0) {
-                firstTriangleZeroResult.distanceQ12 = 0;
-                firstTriangleZeroResult.carry = false;
-                return firstTriangleZeroResult;
-              }
-              if ((int)heightDeltaOrLowWord < 0) {
-                if (combinedHigh != -1) {
-                  edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
-                  edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
-                  heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
-                  edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
-                  edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
-                }
-              }
-              else if (combinedHigh != 0) {
-                edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
-                edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
-                heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
-                edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
-                edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
-              }
-              edgeHighOrCoord0 = (int)((longlong)CONCAT44(edgeHighOrCoord0,edgeSumLowA) / (longlong)(int)heightDeltaOrLowWord);
-              combinedHigh = cellLocalCoord1Q12 + edgeHighOrCoord0;
-              edgeHighOrCoord1 = (int)((longlong)CONCAT44(edgeHighOrCoord1,edgeSumLowB) / (longlong)(int)heightDeltaOrLowWord);
-              planeTermOrProductB = (longlong)edgeHighOrCoord1 * (longlong)(cornerHeight2Q12 - cornerHeight3Q12);
-              planeTermOrProductA = (longlong)edgeHighOrCoord0 * (longlong)(cornerHeight1Q12 - cornerHeight3Q12);
-              lengthZProduct = (longlong)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
-              lengthYProduct = (longlong)combinedHigh * -1999;
-              firstTriangleHit.distanceQ12 =
-                   FixedMath_Length3(((cornerHeight3Q12 +
-                                      ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)
-                                      ) - rayOriginZQ12) +
-                                     ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
-                                     (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
-                                     (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
-              firstTriangleHit.carry = false;
-              return firstTriangleHit;
+    /* each edge term must have the sign of the plane rate (planeTermOrProductA) */
+    if ((edgeHighOrCoord1 < 0) ? (planeTermOrProductA < 0) : (-1 < planeTermOrProductA)) {
+      heightDeltaOrLowWord = cornerHeight3Q12 - cornerHeight2Q12;
+      if ((int)heightDeltaOrLowWord < 0) {
+        planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+        productLowOrDivisor = (uint)planeTermOrProductB;
+        edgeHighOrCoord0 = (edgeHighOrCoord0 * heightDeltaOrLowWord - (int)rayCrossLocal) + (int)((ulonglong)planeTermOrProductB >> 0x20);
+      }
+      else {
+        planeTermOrProductB = (ulonglong)heightDeltaOrLowWord * (rayCrossLocal & 0xffffffff);
+        productLowOrDivisor = (uint)planeTermOrProductB;
+        edgeHighOrCoord0 = edgeHighOrCoord0 * heightDeltaOrLowWord + (int)((ulonglong)planeTermOrProductB >> 0x20);
+      }
+      planeTermOrProductB = (longlong)(rayOriginZQ12 - cornerHeight3Q12) * (longlong)gridRayDelta0Q12;
+      heightDeltaOrLowWord = (uint)planeTermOrProductB;
+      shiftedLowA = heightDeltaOrLowWord * 0x1000;
+      partialSumLow = productLowOrDivisor + shiftedLowA;
+      productLowB = (uint)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12);
+      shiftedLowB = productLowB * 0x1000;
+      rateHighOrEdgeSumLow = (int)((ulonglong)planeTermOrProductA >> 0x20) << 0xc | (uint)planeTermOrProductA >> 0x14;
+      rateShiftedWord = (uint)planeTermOrProductA * 0x1000;
+      edgeSumLowA = shiftedLowB + partialSumLow;
+      edgeHighOrCoord0 = ((int)((ulonglong)((longlong)rayDeltaZQ12 * (longlong)cellLocalCoord1Q12) >> 0x20)
+                << 0xc | productLowB >> 0x14) +
+               edgeHighOrCoord0 + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | heightDeltaOrLowWord >> 0x14) +
+               (uint)CARRY4(productLowOrDivisor,shiftedLowA) + (uint)CARRY4(shiftedLowB,partialSumLow);
+      if ((edgeHighOrCoord0 < 0) ? ((int)rateHighOrEdgeSumLow < 0) : (-1 < (int)rateHighOrEdgeSumLow)) {
+        heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
+        combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
+                 (uint)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
+        if ((edgeHighOrCoord0 < 0) ? (combinedHigh < 0) : (-1 < combinedHigh)) {
+          /* inside the first triangle: intersection distance */
+          combinedHigh = combinedHigh + edgeHighOrCoord0 + (uint)CARRY4(heightDeltaOrLowWord,edgeSumLowA) + edgeHighOrCoord1 +
+                   (uint)CARRY4(heightDeltaOrLowWord + edgeSumLowA,edgeSumLowB);
+          heightDeltaOrLowWord = heightDeltaOrLowWord + edgeSumLowA + edgeSumLowB >> 0xc | combinedHigh * 0x100000;
+          combinedHigh = combinedHigh >> 0xc;
+          if (heightDeltaOrLowWord == 0) {
+            firstTriangleZeroResult.distanceQ12 = 0;
+            firstTriangleZeroResult.carry = false;
+            return firstTriangleZeroResult;
+          }
+          if ((int)heightDeltaOrLowWord < 0) {
+            if (combinedHigh != -1) {
+              edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
+              edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
+              heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
+              edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
+              edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
             }
           }
-        }
-        else if (-1 < (int)rateHighOrEdgeSumLow) {
-          heightDeltaOrLowWord = (rateShiftedWord - edgeSumLowA) - edgeSumLowB;
-          combinedHigh = (((rateHighOrEdgeSumLow - edgeHighOrCoord0) - (uint)(rateShiftedWord < edgeSumLowA)) - edgeHighOrCoord1) -
-                   (uint)(rateShiftedWord - edgeSumLowA < edgeSumLowB);
-          if (-1 < combinedHigh)
-          goto TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance;
+          else if (combinedHigh != 0) {
+            edgeSumLowB = edgeSumLowB >> 0xc | edgeHighOrCoord1 * 0x100000;
+            edgeSumLowA = edgeSumLowA >> 0xc | edgeHighOrCoord0 * 0x100000;
+            heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh << 0x14;
+            edgeHighOrCoord0 = edgeHighOrCoord0 >> 0xc;
+            edgeHighOrCoord1 = edgeHighOrCoord1 >> 0xc;
+          }
+          /* IDIV of the EDX:EAX pairs */
+          edgeHighOrCoord0 = (int)((longlong)((ulonglong)(uint)edgeHighOrCoord0 << 0x20 | (ulonglong)edgeSumLowA) /
+                                   (longlong)(int)heightDeltaOrLowWord);
+          combinedHigh = cellLocalCoord1Q12 + edgeHighOrCoord0;
+          edgeHighOrCoord1 = (int)((longlong)((ulonglong)(uint)edgeHighOrCoord1 << 0x20 | (ulonglong)edgeSumLowB) /
+                                   (longlong)(int)heightDeltaOrLowWord);
+          planeTermOrProductB = (longlong)edgeHighOrCoord1 * (longlong)(cornerHeight2Q12 - cornerHeight3Q12);
+          planeTermOrProductA = (longlong)edgeHighOrCoord0 * (longlong)(cornerHeight1Q12 - cornerHeight3Q12);
+          lengthZProduct = (longlong)(combinedHigh + (cellLocalCoord0Q12 + edgeHighOrCoord1) * 2) * 0x901;
+          lengthYProduct = (longlong)combinedHigh * -1999;
+          firstTriangleHit.distanceQ12 =
+               FixedMath_Length3(((cornerHeight3Q12 +
+                                  ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)
+                                  ) - rayOriginZQ12) +
+                                 ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
+                                 (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
+                                 (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
+          firstTriangleHit.carry = false;
+          return firstTriangleHit;
         }
       }
     }
-    else if (-1 < planeTermOrProductA)
-    goto TerrainTriangle_IntersectRayDistanceCf_EvaluateFirstTriangleRemainingEdgeConstraints;
   }
   edgeHighOrCoord0 = cellLocalCoord0Q12 + 0x1000;
   edgeHighOrCoord1 = cellLocalCoord1Q12 + 0x1000;
   planeTermOrProductB = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)gridRayDelta0Q12 +
           (longlong)(cornerHeight1Q12 - cornerHeight0Q12) * (longlong)gridRayDelta1Q12 +
-          CONCAT44(rayDeltaZQ12 >> 0x14,rayDeltaZQ12 << 0xc);
+          ((longlong)rayDeltaZQ12 << 0xc);
   productLowOrDivisor = (uint)planeTermOrProductB;
   combinedHigh = (int)((ulonglong)planeTermOrProductB >> 0x20);
   heightDeltaOrLowWord = (cornerHeight0Q12 - rayOriginZQ12) * 0x1000;
   planeTermOrProductA = (longlong)(cornerHeight2Q12 - cornerHeight0Q12) * (longlong)edgeHighOrCoord1 +
           (longlong)(cornerHeight1Q12 - cornerHeight0Q12) * (longlong)edgeHighOrCoord0 +
-          CONCAT44(cornerHeight0Q12 - rayOriginZQ12 >> 0x14,heightDeltaOrLowWord);
+          ((longlong)(cornerHeight0Q12 - rayOriginZQ12) << 0xc); /* low word = heightDeltaOrLowWord */
   edgeHighC = (int)((ulonglong)planeTermOrProductA >> 0x20);
   if (planeTermOrProductA < 0) {
     if ((-1 < planeTermOrProductB) || ((int)((edgeHighC - combinedHigh) - (uint)((uint)planeTermOrProductA < productLowOrDivisor)) < 0))
@@ -759,62 +746,57 @@ TerrainTriangle_IntersectRayDistanceCf_ComputeFirstTriangleIntersectionDistance:
            edgeSumLowA >> 0x14) +
            edgeHighC + ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0xc | productLowB >> 0x14) +
            (uint)CARRY4(shiftedLowA,shiftedLowB) + (uint)CARRY4(edgeSumLowB,partialSumLow);
-  if (combinedHigh < 0) {
-    if ((int)rateShiftedWord < 0) {
-      shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
-      edgeHighC = (((rateShiftedWord - combinedHigh) - (uint)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) -
-               (uint)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow);
-      if (edgeHighC < 0) {
-LAB_00504912:
-        edgeHighC = edgeHighC + combinedHigh + (uint)CARRY4(shiftedLowA,heightDeltaOrLowWord) + edgeHighD +
-                 (uint)CARRY4(shiftedLowA + heightDeltaOrLowWord,rateHighOrEdgeSumLow);
-        productLowOrDivisor = shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow >> 0xc | edgeHighC * 0x100000;
-        edgeHighC = edgeHighC >> 0xc;
-        if (productLowOrDivisor == 0) {
-          secondTriangleZeroResult.distanceQ12 = 0;
-          secondTriangleZeroResult.carry = false;
-          return secondTriangleZeroResult;
-        }
-        if ((int)productLowOrDivisor < 0) {
-          if (edgeHighC != -1) {
-            rateHighOrEdgeSumLow = rateHighOrEdgeSumLow >> 0xc | edgeHighD * 0x100000;
-            heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh * 0x100000;
-            productLowOrDivisor = productLowOrDivisor >> 0xc | edgeHighC << 0x14;
-            combinedHigh = combinedHigh >> 0xc;
-            edgeHighD = edgeHighD >> 0xc;
-          }
-        }
-        else if (edgeHighC != 0) {
+  if ((combinedHigh < 0) ? ((int)rateShiftedWord < 0) : (-1 < (int)rateShiftedWord)) {
+    shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
+    edgeHighC = (((rateShiftedWord - combinedHigh) - (uint)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) -
+             (uint)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow);
+    if ((combinedHigh < 0) ? (edgeHighC < 0) : (-1 < edgeHighC)) {
+      /* inside the second triangle: intersection distance */
+      edgeHighC = edgeHighC + combinedHigh + (uint)CARRY4(shiftedLowA,heightDeltaOrLowWord) + edgeHighD +
+               (uint)CARRY4(shiftedLowA + heightDeltaOrLowWord,rateHighOrEdgeSumLow);
+      productLowOrDivisor = shiftedLowA + heightDeltaOrLowWord + rateHighOrEdgeSumLow >> 0xc | edgeHighC * 0x100000;
+      edgeHighC = edgeHighC >> 0xc;
+      if (productLowOrDivisor == 0) {
+        secondTriangleZeroResult.distanceQ12 = 0;
+        secondTriangleZeroResult.carry = false;
+        return secondTriangleZeroResult;
+      }
+      if ((int)productLowOrDivisor < 0) {
+        if (edgeHighC != -1) {
           rateHighOrEdgeSumLow = rateHighOrEdgeSumLow >> 0xc | edgeHighD * 0x100000;
           heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh * 0x100000;
           productLowOrDivisor = productLowOrDivisor >> 0xc | edgeHighC << 0x14;
           combinedHigh = combinedHigh >> 0xc;
           edgeHighD = edgeHighD >> 0xc;
         }
-        combinedHigh = (int)((longlong)CONCAT44(combinedHigh,heightDeltaOrLowWord) / (longlong)(int)productLowOrDivisor);
-        edgeHighOrCoord1 = edgeHighOrCoord1 - combinedHigh;
-        edgeHighC = (int)((longlong)CONCAT44(edgeHighD,rateHighOrEdgeSumLow) / (longlong)(int)productLowOrDivisor);
-        planeTermOrProductB = (longlong)edgeHighC * (longlong)(cornerHeight1Q12 - cornerHeight0Q12);
-        planeTermOrProductA = (longlong)combinedHigh * (longlong)(cornerHeight2Q12 - cornerHeight0Q12);
-        lengthZProduct = (longlong)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;
-        lengthYProduct = (longlong)edgeHighOrCoord1 * -1999;
-        secondTriangleHit.distanceQ12 =
-             FixedMath_Length3(((cornerHeight0Q12 +
-                                ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)) -
-                               rayOriginZQ12) +
-                               ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
-                               (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
-                               (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
-        secondTriangleHit.carry = false;
-        return secondTriangleHit;
       }
+      else if (edgeHighC != 0) {
+        rateHighOrEdgeSumLow = rateHighOrEdgeSumLow >> 0xc | edgeHighD * 0x100000;
+        heightDeltaOrLowWord = heightDeltaOrLowWord >> 0xc | combinedHigh * 0x100000;
+        productLowOrDivisor = productLowOrDivisor >> 0xc | edgeHighC << 0x14;
+        combinedHigh = combinedHigh >> 0xc;
+        edgeHighD = edgeHighD >> 0xc;
+      }
+      /* IDIV of the EDX:EAX pairs */
+      combinedHigh = (int)((longlong)((ulonglong)(uint)combinedHigh << 0x20 | (ulonglong)heightDeltaOrLowWord) /
+                           (longlong)(int)productLowOrDivisor);
+      edgeHighOrCoord1 = edgeHighOrCoord1 - combinedHigh;
+      edgeHighC = (int)((longlong)((ulonglong)(uint)edgeHighD << 0x20 | (ulonglong)rateHighOrEdgeSumLow) /
+                        (longlong)(int)productLowOrDivisor);
+      planeTermOrProductB = (longlong)edgeHighC * (longlong)(cornerHeight1Q12 - cornerHeight0Q12);
+      planeTermOrProductA = (longlong)combinedHigh * (longlong)(cornerHeight2Q12 - cornerHeight0Q12);
+      lengthZProduct = (longlong)(edgeHighOrCoord1 + (edgeHighOrCoord0 - edgeHighC) * 2) * 0x901;
+      lengthYProduct = (longlong)edgeHighOrCoord1 * -1999;
+      secondTriangleHit.distanceQ12 =
+           FixedMath_Length3(((cornerHeight0Q12 +
+                              ((int)((ulonglong)planeTermOrProductB >> 0x20) << 0x14 | (uint)planeTermOrProductB >> 0xc)) -
+                             rayOriginZQ12) +
+                             ((int)((ulonglong)planeTermOrProductA >> 0x20) << 0x14 | (uint)planeTermOrProductA >> 0xc),
+                             (int)((ulonglong)lengthYProduct >> 0x20) << 0x14 | (uint)lengthYProduct >> 0xc,
+                             (int)((ulonglong)lengthZProduct >> 0x20) << 0x13 | (uint)lengthZProduct >> 0xd);
+      secondTriangleHit.carry = false;
+      return secondTriangleHit;
     }
-  }
-  else if (-1 < (int)rateShiftedWord) {
-    shiftedLowA = (productLowOrDivisor - heightDeltaOrLowWord) - rateHighOrEdgeSumLow;
-    edgeHighC = (((rateShiftedWord - combinedHigh) - (uint)(productLowOrDivisor < heightDeltaOrLowWord)) - edgeHighD) - (uint)(productLowOrDivisor - heightDeltaOrLowWord < rateHighOrEdgeSumLow)
-    ;
-    if (-1 < edgeHighC) goto LAB_00504912;
   }
 TerrainTriangle_IntersectRayDistanceCf_ReturnHeightOrEdgeRejectWithCarrySet:
   rejectResult.carry = true;

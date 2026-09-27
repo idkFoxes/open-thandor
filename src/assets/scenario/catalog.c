@@ -912,17 +912,33 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
                  (word *)&g_ExecutableDirectoryUtf16);
       clientLevelAsset = g_FrontendLoadedLevelAsset;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) != SESSION_NETWORK_ROLE_LOCAL) {
+        /* Client: find the local player among the other players. */
         playerRecord = g_FrontendPlayerRuntimeBlocks + 1;
         otherPlayersRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
-        goto FrontendScenarioSession_CheckNextPlayerForFieldGridRequest;
+        while (g_LocalPlayerRuntimeId != playerRecord->playerRuntimeId) {
+          playerRecord = playerRecord + 1;
+          otherPlayersRemaining = otherPlayersRemaining + -1;
+          if (otherPlayersRemaining == 0) break;
+        }
+        if ((otherPlayersRemaining != 0) && (((playerRecord->factionAssignment).roleStateFlags & 0x10) != 0)) {
+          loadedEntry = Package_LoadEntry((word *)pathOrEncodeBuffer);
+          checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
+          (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax;
+        }
+        else {
+          /* Not found (the record one past the last player is written, as in the original) or the
+             field grid is not available locally: request it through the transfer mailbox. */
+          *(dword *)playerRecord->snapshotPayloadB0_13AF = 0;
+          UiTransferMailbox_MarkUnavailable();
+          g_FrontendScenarioTransferState = 3;
+        }
+        break;
       }
       loadedEntry = Package_LoadEntry((word *)pathOrEncodeBuffer);
       checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
       sourceGrid = (FieldGridAsset *)checkedResult.eax;
       (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (dword)sourceGrid;
       encodedSourceDwords = (dword *)g_PackageScratchBuffer;
-      playerScanBase = g_FrontendPlayerRuntimeBlocks;
-      playersRemaining = g_FrontendPlayerRuntimeBlockCount;
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
         sourceImageSizeBytes = (sourceGrid->common).allocationSizeBytes;
         pathOrEncodeBuffer = g_PackageScratchBuffer + 4;
@@ -939,49 +955,21 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
           outgoingDwordCursor = outgoingDwordCursor + 1;
         }
         UiTransferMailbox_SetOutgoingBuffer(bytes,(dword *)checkedResult.eax);
-        playerScanBase = g_FrontendPlayerRuntimeBlocks;
-        playersRemaining = g_FrontendPlayerRuntimeBlockCount;
       }
       break;
     }
     playerRecord = playerRecord + 1;
     playersToCheck = playersToCheck - 1;
-    playerScanBase = g_FrontendPlayerRuntimeBlocks;
-    playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   } while (playersToCheck != 0);
-  goto joined_r0x00544553;
-  while( true ) {
-    playerRecord = playerRecord + 1;
-    otherPlayersRemaining = otherPlayersRemaining + -1;
-    if (otherPlayersRemaining == 0) break;
-FrontendScenarioSession_CheckNextPlayerForFieldGridRequest:
-    if (g_LocalPlayerRuntimeId == playerRecord->playerRuntimeId) {
-      if (((playerRecord->factionAssignment).roleStateFlags & 0x10) != 0) {
-        loadedEntry = Package_LoadEntry((word *)pathOrEncodeBuffer);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)((dword)loadedEntry.bufferOrError,loadedEntry.carry);
-        (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.eax;
-        playerScanBase = g_FrontendPlayerRuntimeBlocks;
-        playersRemaining = g_FrontendPlayerRuntimeBlockCount;
-        goto joined_r0x00544553;
-      }
-      break;
-    }
-  }
-  playerRecord->snapshotPayloadB0_13AF[0] = 0;
-  playerRecord->snapshotPayloadB0_13AF[1] = 0;
-  playerRecord->snapshotPayloadB0_13AF[2] = 0;
-  playerRecord->snapshotPayloadB0_13AF[3] = 0;
-  UiTransferMailbox_MarkUnavailable();
-  g_FrontendScenarioTransferState = 3;
+  /* Every other player that has the field grid (flag 0x10) becomes ready (flag 8). */
   playerScanBase = g_FrontendPlayerRuntimeBlocks;
-  playersRemaining = g_FrontendPlayerRuntimeBlockCount;
-joined_r0x00544553:
-  while (playerRecord = playerScanBase, playersRemaining = playersRemaining - 1, playersRemaining != 0) {
-    playerScanBase = playerRecord + 1;
-    if ((playerRecord[1].factionAssignment.roleStateFlags & 0x10) != 0) {
-      roleFlags = &playerRecord[1].factionAssignment.roleStateFlags;
+  for (playersRemaining = g_FrontendPlayerRuntimeBlockCount - 1; playersRemaining != 0;
+      playersRemaining = playersRemaining - 1) {
+    playerScanBase = playerScanBase + 1;
+    if ((playerScanBase->factionAssignment.roleStateFlags & 0x10) != 0) {
+      roleFlags = &playerScanBase->factionAssignment.roleStateFlags;
       *roleFlags = *roleFlags | 8;
-      playerRecord[1].runtimeState70 = 0x7fffffff;
+      playerScanBase->runtimeState70 = 0x7fffffff;
     }
   }
   FrontendSession_ReturnToMainPage(selectedLevelIndex,0,0,1);
@@ -1038,13 +1026,14 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
     g_FrontendLoadedCampaignAsset = recordOrEncodeCursor;
     *(int *)(recordOrEncodeCursor + 0xc4) = *(int *)cursorOrSize;
     do {
-      if (*(int *)cursorOrSize == *(int *)(recordOrEncodeCursor + 0x300))
-      goto FrontendScenarioSession_UseSelectedCampaignLevelRecord;
+      if (*(int *)cursorOrSize == *(int *)(recordOrEncodeCursor + 0x300)) break;
       recordOrEncodeCursor = recordOrEncodeCursor + 0x180;
       campaignRecordsRemaining = campaignRecordsRemaining + -1;
     } while (campaignRecordsRemaining != 0);
-    (*g_FatalErrorPrimaryDispatchCf)(0,false);
-FrontendScenarioSession_UseSelectedCampaignLevelRecord:
+    if (campaignRecordsRemaining == 0) {
+      /* No record for the selected level. */
+      (*g_FatalErrorPrimaryDispatchCf)(0,false);
+    }
     if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
        (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
       Resource_Release((void *)(g_FrontendLoadedLevelAsset->header).pathState.
@@ -1247,12 +1236,16 @@ ScenarioCatalog_RebuildLevelRecordListPage
         UiNodeList_UnsuppressActionId(0x203a,firstNode);
         return;
       }
-      goto LAB_00544ffc;
+    }
+    else {
+      UiPointerList_InitializeColumnLayout
+                (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
     }
   }
-  UiPointerList_InitializeColumnLayout
-            (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
-LAB_00544ffc:
+  else {
+    UiPointerList_InitializeColumnLayout
+              (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,missionsList));
+  }
   UiNodeList_SuppressActionId(0x2038,firstNode);
   UiNodeList_SuppressActionId(0x203a,firstNode);
   return;
@@ -1298,7 +1291,7 @@ ScenarioCatalog_RebuildCampaignRecordListPage
     for (; remainingRows != 0; remainingRows = remainingRows - 1) {
       *rowPointerCursor = campaignRecord;
       resolvedText = TextResource_Resolve(*(int *)((int)campaignRecord + 0x50) + 0x2220);
-      *(undefined2 *)((int)campaignRecord + 0x54) = 0x8019;
+      *(word *)((int)campaignRecord + 0x54) = 0x8019;
       *(word **)((int)campaignRecord + 0x56) = resolvedText.eax;
       rowPointerCursor = rowPointerCursor + 1;
       campaignRecord = (void *)((int)campaignRecord + 0x100);
@@ -1313,12 +1306,16 @@ ScenarioCatalog_RebuildCampaignRecordListPage
         UiNodeList_UnsuppressActionId(0x203b,firstNode);
         return;
       }
-      goto LAB_00545113;
+    }
+    else {
+      UiPointerList_InitializeColumnLayout
+                (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
     }
   }
-  UiPointerList_InitializeColumnLayout(0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList))
-  ;
-LAB_00545113:
+  else {
+    UiPointerList_InitializeColumnLayout
+              (0,(void **)0x0,(UiPointerListControl *)FRONTEND_UI(firstNode,campaignsList));
+  }
   UiNodeList_SuppressActionId(0x2038,firstNode);
   UiNodeList_SuppressActionId(0x203b,firstNode);
   return;
@@ -1350,7 +1347,6 @@ ScenarioCatalog_MergeRecordsByName
   sourceRecordsRemaining = sourceByteCount / 0x100;
   destinationRecordsRemaining = existingRecordCount;
   destinationRecordCursor = destinationRecords;
-ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName:
   do {
     dwordsRemaining = 0x10;
     sourceNameCursor = sourceRecords;
@@ -1367,12 +1363,12 @@ ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName:
       destinationRecordCursor = destinationRecordCursor + 1;
       destinationRecordsRemaining = destinationRecordsRemaining - 1;
       recordNamesEqual = destinationRecordsRemaining == 0;
-      if (!recordNamesEqual)
-      goto ScenarioCatalog_MergeRecordsByName_ScanDestinationForMatchingRecordName;
+      if (!recordNamesEqual) continue; /* compare with the next destination record */
+      /* No match: append after the existing records. */
       existingRecordCount = existingRecordCount + 1;
     }
     for (copyDwordsRemaining = 0x40; copyDwordsRemaining != 0; copyDwordsRemaining = copyDwordsRemaining + -1) {
-      *(undefined4 *)destinationRecordCursor->identifier = *(undefined4 *)sourceRecords->identifier;
+      *(dword *)destinationRecordCursor->identifier = *(dword *)sourceRecords->identifier;
       sourceRecords = (ScenarioCatalogRecord *)(sourceRecords->identifier + 2);
       destinationRecordCursor = (ScenarioCatalogRecord *)(destinationRecordCursor->identifier + 2);
     }
@@ -1417,7 +1413,8 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   FatalErrorEaxCf5 checkedResult;
   PckCodecEaxCf5 encodeResult;
   ArenaAllocEaxCf5 allocation;
-  
+  bool levelLoadedLocally;
+
   rootOrRemaining = g_FrontendRootNode;
   stack = (UiPageStackControl *)FRONTEND_UI(g_FrontendRootNode,frontendPageStack);
   WidePath_CombineDirectoryAndLeaf
@@ -1469,6 +1466,8 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
                                    [selectedRecordIndex] -
             (int)g_ScenarioCatalog) - g_ScenarioCatalog->levelRecordsOffset;
     maskWordIndex = byteCountOrOffset >> 0xd;
+    /* Client: load the level locally when the local player's level mask has it, else request it. */
+    levelLoadedLocally = false;
     if (maskWordIndex < 3) {
       rootOrRemaining = g_FrontendPlayerRuntimeBlockCount - 1;
       playerCursor = g_FrontendPlayerRuntimeBlocks;
@@ -1478,7 +1477,7 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
               1 << ((byte)(byteCountOrOffset >> 8) & 0x1f)) != 0) {
             loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
             source = loadedEntry.bufferOrError;
-            if (!loadedEntry.carry) goto FrontendScenarioSession_CommitLoadedLevelAsset;
+            levelLoadedLocally = !loadedEntry.carry;
           }
           break;
         }
@@ -1486,11 +1485,12 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
         playerCursor = playerCursor + 1;
       } while (rootOrRemaining != 0);
     }
-    UiTransferMailbox_MarkUnavailable();
-    g_FrontendScenarioTransferState = 2;
-    source = g_FrontendLoadedLevelAsset;
+    if (!levelLoadedLocally) {
+      UiTransferMailbox_MarkUnavailable();
+      g_FrontendScenarioTransferState = 2;
+      source = g_FrontendLoadedLevelAsset;
+    }
   }
-FrontendScenarioSession_CommitLoadedLevelAsset:
   g_FrontendLoadedLevelAsset = source;
   byteCountOrOffset = ((int)((UiListControl *)FRONTEND_UI(g_FrontendRootNode,missionsList))->rowSlots
                                  [selectedRecordIndex] -

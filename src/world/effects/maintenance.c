@@ -10,6 +10,36 @@
 
 /* Implementation ownership: world/effects/maintenance. */
 
+/* PUNPCKLBW mm,mm then PSRLW mm,shift: the four bytes b of value as the words ((b << 8) | b) >> shift. */
+static __inline qword EffectTint_UnpackBytesShiftRight(dword value,int shift)
+
+{
+  ThandorMmx lanes;
+  int lane;
+
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    lanes.uw[lane] = (word)(((value >> (lane * 8) & 0xff) * 0x101) >> shift);
+  }
+  return lanes.q;
+}
+
+/* PACKUSWB mm,mm (low dword): the four signed words saturated to unsigned bytes. */
+static __inline dword EffectTint_PackWordsUnsignedSaturate(qword words)
+
+{
+  ThandorMmx lanes;
+  dword packed;
+  int lane;
+
+  lanes.q = words;
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    packed = packed |
+             (dword)(lanes.sw[lane] < 0 ? 0 : (0xff < lanes.sw[lane] ? 0xff : lanes.sw[lane])) << (lane * 8);
+  }
+  return packed;
+}
+
 /* Address: 0x0051E790.
    Ownership: world/effects/maintenance.
    Purpose: Binary entry is anchored by g_ArmyRuntimeCallbackTable12[5]@00562DEC. Maintenance table phase
@@ -26,18 +56,8 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
 {
   PackedArgb32 effectTintArgb;
   PackedArgb32 definitionTintArgb;
-  short modulatedBlue;
-  short modulatedGreen;
-  short modulatedRed;
-  short modulatedAlpha;
-  ushort effectAlphaPair;
-  ushort definitionAlphaPair;
   dword primaryOccupancyMask;
-  undefined1 mm0PackedValue0ByteLane1;
-  undefined1 mm0PackedValue0ByteLane2;
-  undefined8 mm0PackedValue0;
-  undefined1 definitionAlphaOrGreenByte;
-  undefined1 definitionRedByte;
+  qword mm0PackedValue0;
   TerrainOccupancyResolvedMasksRegs12 resolvedMasks;
   EffectRuntimeSlot *effectRuntime;
   
@@ -56,40 +76,11 @@ EffectRuntimeMaintenance_RefreshOccupancyFlagsAndTint
   if ((modelNode->tintArgb & 0xff000000) != 0) {
     effectTintArgb = effectRuntime->stateTintArgb;
     definitionTintArgb = ((effectRuntime->definitionOrSavedId).definition)->stateTintArgb;
-    mm0PackedValue0ByteLane1 = (undefined1)(effectTintArgb >> 0x18);
-    effectAlphaPair = CONCAT11(mm0PackedValue0ByteLane1,mm0PackedValue0ByteLane1);
-    mm0PackedValue0ByteLane2 = (undefined1)(effectTintArgb >> 0x10);
-    mm0PackedValue0ByteLane1 = (undefined1)(effectTintArgb >> 8);
-    definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 0x18);
-    definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
-    definitionRedByte = (undefined1)(definitionTintArgb >> 0x10);
-    definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 8);
+    /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
     mm0PackedValue0 =
-         pmulhw(CONCAT26(effectAlphaPair >> 4,
-                         CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,mm0PackedValue0ByteLane2),
-                                                    CONCAT14(mm0PackedValue0ByteLane2,effectTintArgb)) >>
-                                          0x20) >> 4,
-                                  CONCAT22(CONCAT11(mm0PackedValue0ByteLane1,
-                                                    mm0PackedValue0ByteLane1) >> 4,
-                                           CONCAT11((char)effectTintArgb,(char)effectTintArgb) >> 4))),
-                CONCAT26(definitionAlphaPair >> 4,
-                         CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),CONCAT14(definitionRedByte,definitionTintArgb))
-                                          >> 0x20) >> 4,
-                                  CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
-                                           CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
-    modulatedBlue = (short)mm0PackedValue0;
-    modulatedGreen = (short)((ulonglong)mm0PackedValue0 >> 0x10);
-    modulatedRed = (short)((ulonglong)mm0PackedValue0 >> 0x20);
-    modulatedAlpha = (short)((ulonglong)mm0PackedValue0 >> 0x30);
-    modelNode->tintArgb =
-         CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)mm0PackedValue0 >> 0x30) -
-                  (0xff < modulatedAlpha),
-                  CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) *
-                           (char)((ulonglong)mm0PackedValue0 >> 0x20) - (0xff < modulatedRed),
-                           CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
-                                    (char)((ulonglong)mm0PackedValue0 >> 0x10) - (0xff < modulatedGreen),
-                                    (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)mm0PackedValue0 -
-                                    (0xff < modulatedBlue))));
+         pmulhw(EffectTint_UnpackBytesShiftRight(effectTintArgb,4),
+                EffectTint_UnpackBytesShiftRight(definitionTintArgb,4));
+    modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(mm0PackedValue0);
   }
   return;
 }
@@ -159,12 +150,6 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   int *ownerClassRecord;
   dword keyIndex;
   AngleTurn32 previousRotationAngle1;
-  short modulatedBlue;
-  short modulatedGreen;
-  short modulatedRed;
-  short modulatedAlpha;
-  ushort effectAlphaPair;
-  ushort definitionAlphaPair;
   uint frameAgeOrTintValue;
   sdword normalDotMotion;
   uint fadeOutStartTicks;
@@ -174,11 +159,7 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
   GameEntityRuntime *spawnArmyCompletionEntity;
   EffectCompletionLinkedHandlerOwnerColumns104 *linkedHandlerCompletionOwner;
   void *completionOwnerCarrier;
-  undefined1 effectAlphaOrGreenByte;
-  undefined1 effectRedByte;
-  undefined8 modulatedLanes;
-  undefined1 definitionAlphaOrGreenByte;
-  undefined1 definitionRedByte;
+  qword modulatedLanes;
   ModelLookupEntryEaxCf5 lookupResult;
   GraphicsShadingRuntimeRecordEaxCf5 shadingAllocation;
   ArmyRuntimeCreateEaxCf5 armyCreateResult;
@@ -271,37 +252,10 @@ EffectModelRuntimeMaintenance_UpdateLifecycleTintScaleAndTransitions
       else {
         effectOrDefinitionTintArgb = effectSlot->stateTintArgb;
         definitionTintArgb = effectDefinition->stateTintArgb;
-        effectAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 0x18);
-        effectAlphaPair = CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte);
-        effectRedByte = (undefined1)(effectOrDefinitionTintArgb >> 0x10);
-        effectAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 8);
-        definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 0x18);
-        definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
-        definitionRedByte = (undefined1)(definitionTintArgb >> 0x10);
-        definitionAlphaOrGreenByte = (undefined1)(definitionTintArgb >> 8);
-        modulatedLanes = pmulhw(CONCAT26(effectAlphaPair >> 4,
-                                 CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,effectRedByte),
-                                                            CONCAT14(effectRedByte,effectOrDefinitionTintArgb)) >> 0x20) >> 4,
-                                          CONCAT22(CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte) >> 4,
-                                                   CONCAT11((char)effectOrDefinitionTintArgb,(char)effectOrDefinitionTintArgb) >> 4))),
-                        CONCAT26(definitionAlphaPair >> 4,
-                                 CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),
-                                                            CONCAT14(definitionRedByte,definitionTintArgb)) >> 0x20) >> 4,
-                                          CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
-                                                   CONCAT11((char)definitionTintArgb,(char)definitionTintArgb) >> 4))));
-        modulatedBlue = (short)modulatedLanes;
-        modulatedGreen = (short)((ulonglong)modulatedLanes >> 0x10);
-        modulatedRed = (short)((ulonglong)modulatedLanes >> 0x20);
-        modulatedAlpha = (short)((ulonglong)modulatedLanes >> 0x30);
-        modelNode->tintArgb =
-             CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)modulatedLanes >> 0x30) -
-                      (0xff < modulatedAlpha),
-                      CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) * (char)((ulonglong)modulatedLanes >> 0x20) -
-                               (0xff < modulatedRed),
-                               CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
-                                        (char)((ulonglong)modulatedLanes >> 0x10) - (0xff < modulatedGreen),
-                                        (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)modulatedLanes -
-                                        (0xff < modulatedBlue))));
+        /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
+        modulatedLanes = pmulhw(EffectTint_UnpackBytesShiftRight(effectOrDefinitionTintArgb,4),
+                                EffectTint_UnpackBytesShiftRight(definitionTintArgb,4));
+        modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
       }
     }
     if ((modelNode->runtimeFlags & 0x800) != 0) {
@@ -506,37 +460,10 @@ EffectModelRuntimeMaintenance_TransitionType3SpawnArmy:
         effectSlot->stateTintArgb = frameAgeOrTintValue;
         if ((modelNode->runtimeFlags & 4) != 0) {
           effectOrDefinitionTintArgb = effectDefinition->stateTintArgb;
-          effectAlphaOrGreenByte = (undefined1)(frameAgeOrTintValue >> 0x18);
-          effectAlphaPair = CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte);
-          effectRedByte = (undefined1)(frameAgeOrTintValue >> 0x10);
-          effectAlphaOrGreenByte = (undefined1)(frameAgeOrTintValue >> 8);
-          definitionAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 0x18);
-          definitionAlphaPair = CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte);
-          definitionRedByte = (undefined1)(effectOrDefinitionTintArgb >> 0x10);
-          definitionAlphaOrGreenByte = (undefined1)(effectOrDefinitionTintArgb >> 8);
-          modulatedLanes = pmulhw(CONCAT26(effectAlphaPair >> 4,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(effectAlphaPair,effectRedByte),
-                                                              CONCAT14(effectRedByte,frameAgeOrTintValue)) >> 0x20) >> 4
-                                            ,CONCAT22(CONCAT11(effectAlphaOrGreenByte,effectAlphaOrGreenByte) >> 4,
-                                                      CONCAT11((char)frameAgeOrTintValue,(char)frameAgeOrTintValue) >> 4))),
-                          CONCAT26(definitionAlphaPair >> 4,
-                                   CONCAT24((ushort)(CONCAT35(CONCAT21(definitionAlphaPair,definitionRedByte),
-                                                              CONCAT14(definitionRedByte,effectOrDefinitionTintArgb)) >> 0x20) >> 4
-                                            ,CONCAT22(CONCAT11(definitionAlphaOrGreenByte,definitionAlphaOrGreenByte) >> 4,
-                                                      CONCAT11((char)effectOrDefinitionTintArgb,(char)effectOrDefinitionTintArgb) >> 4))));
-          modulatedBlue = (short)modulatedLanes;
-          modulatedGreen = (short)((ulonglong)modulatedLanes >> 0x10);
-          modulatedRed = (short)((ulonglong)modulatedLanes >> 0x20);
-          modulatedAlpha = (short)((ulonglong)modulatedLanes >> 0x30);
-          modelNode->tintArgb =
-               CONCAT13((0 < modulatedAlpha) * (modulatedAlpha < 0x100) * (char)((ulonglong)modulatedLanes >> 0x30) -
-                        (0xff < modulatedAlpha),
-                        CONCAT12((0 < modulatedRed) * (modulatedRed < 0x100) * (char)((ulonglong)modulatedLanes >> 0x20)
-                                 - (0xff < modulatedRed),
-                                 CONCAT11((0 < modulatedGreen) * (modulatedGreen < 0x100) *
-                                          (char)((ulonglong)modulatedLanes >> 0x10) - (0xff < modulatedGreen),
-                                          (0 < modulatedBlue) * (modulatedBlue < 0x100) * (char)modulatedLanes -
-                                          (0xff < modulatedBlue))));
+          /* PUNPCKLBW/PSRLW 4 both tints, PMULHW, PACKUSWB */
+          modulatedLanes = pmulhw(EffectTint_UnpackBytesShiftRight(frameAgeOrTintValue,4),
+                                  EffectTint_UnpackBytesShiftRight(effectOrDefinitionTintArgb,4));
+          modelNode->tintArgb = EffectTint_PackWordsUnsignedSaturate(modulatedLanes);
         }
         ModelNodeRuntime_RebuildTransformsFromRoot((ModelRuntimeNode *)modelNode);
         completionCountdownPtr = &(effectSlot->lifecycleOwnerAndDefinition).ownerAndDefinition.runtimeValue24;

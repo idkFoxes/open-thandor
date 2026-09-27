@@ -274,19 +274,13 @@ FrontendResultsGraph_DrawFactionWeightSumColumn
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pixelCursor = (short)packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
-        if (segmentHeight == 0) goto LAB_005175d0;
-      }
+      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight = segmentHeight + -1;
       } while (segmentHeight != 0);
     }
-LAB_005175d0:
     factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
     if (6 < factionIndex) {
@@ -340,19 +334,13 @@ FrontendResultsGraph_DrawFactionWeightLane0Column
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pixelCursor = (short)packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
-        if (segmentHeight == 0) goto LAB_005176d0;
-      }
+      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight = segmentHeight + -1;
       } while (segmentHeight != 0);
     }
-LAB_005176d0:
     factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
     if (6 < factionIndex) {
@@ -406,19 +394,13 @@ FrontendResultsGraph_DrawFactionWeightLane1Column
     if (segmentHeight != 0) {
       drawnHeight = drawnHeight + segmentHeight;
       packedColor = g_FrontendResultsFactionPackedPixelColors[factionIndex];
-      if (g_FrontendResultsFramebufferBytesPerPixel != 2) {
-        *(short *)pixelCursor = (short)packedColor;
-        pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
-        segmentHeight = segmentHeight + -1;
-        if (segmentHeight == 0) goto LAB_005177d0;
-      }
+      /* The original has a separate entry for bytes-per-pixel != 2, but both paths store 16-bit words. */
       do {
         *(short *)pixelCursor = (short)packedColor;
         pixelCursor = pixelCursor + g_FrontendResultsFramebufferScanlineStrideBytes;
         segmentHeight = segmentHeight + -1;
       } while (segmentHeight != 0);
     }
-LAB_005177d0:
     factionIndex = factionIndex + 1;
     factionWeights = factionWeights + 1;
     if (6 < factionIndex) {

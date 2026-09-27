@@ -49,7 +49,7 @@ LevelAsset_PrepareEndingMoviePathCf(word *currentLevelPath,LevelAssetHeader *ass
               (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,movieNumber,(word *)(u_flm_ende0000_flm_0050df06 + 8));
     sourcePathCursor = g_LevelEndingMovieSourcePath;
     for (; remainingDwordCount != 0; remainingDwordCount = remainingDwordCount + -1) {
-      *(undefined4 *)sourcePathCursor = *(undefined4 *)currentLevelPath;
+      *(dword *)sourcePathCursor = *(dword *)currentLevelPath;
       currentLevelPath = currentLevelPath + 2;
       sourcePathCursor = sourcePathCursor + 2;
     }

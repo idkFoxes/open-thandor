@@ -610,7 +610,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameTechnologyPanel_Rebuild(UiRootNod
       writtenBytes = (*g_WideNumberFormatUtf16)
                          (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,(int)xeniteCost >> 4,
                           g_InGameTechnologyXeniteCostTextUtf16);
-      *(undefined4 *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
+      *(dword *)((int)g_InGameTechnologyXeniteCostTextUtf16 + writtenBytes) = 0x8000;
       (*g_WideNumberFormatUtf16)
                 (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,definitionOrEnergyCost,g_InGameTechnologyEnergyCostTextUtf16);
       packedEnergyColor = definitionOrEnergyCost << 0x10 | costColor >> 0x10;

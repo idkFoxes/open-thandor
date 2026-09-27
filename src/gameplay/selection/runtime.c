@@ -926,13 +926,10 @@ SelectionInfoPanel_InitResources(SelectionInfoEntitySlots *entitySlots)
           patchBytes[3] = 0;
           *(dword *)((loadedResource->common).buildMetadata.assetRelativeAddressAnchor28 + blockCountOrRecordOffset + -0x24) =
                referencePayloadValue;
-          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x2c) = 4
-          ;
-          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x14) = 4
-          ;
-          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.sourceName + tableOffset + 0xc) = 4;
-          *(undefined4 *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x34) = 4
-          ;
+          *(dword *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x2c) = 4;
+          *(dword *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x14) = 4;
+          *(dword *)((int)loadedResource[3].common.buildMetadata.names.sourceName + tableOffset + 0xc) = 4;
+          *(dword *)((int)loadedResource[3].common.buildMetadata.names.producerName + tableOffset + 0x34) = 4;
           patchBytes = loadedResource[2].opaqueTablePayloadBC_1FF + tableOffset + 0x100;
           patchBytes[0] = 4;
           patchBytes[1] = 0;
@@ -1220,21 +1217,14 @@ void __thandor_void_preserve_eax_ecx_edx
 SelectionPointerArray_RemoveFirstMatch(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
-  int entriesRemaining;
-  GameEntityRuntime **selectionEntryCursor;
-  undefined1 in_ZF;
-  
-  entriesRemaining = 0x20;
-  do {
-    selectionEntryCursor = array->entries;
-    if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
-    selectionEntryCursor = (GameEntityRuntime **)((int)array + 4);
-    in_ZF = target == array->entries[0];
-    array = (SelectionPointerArray32 *)selectionEntryCursor;
-  } while (!(bool)in_ZF);
-  if ((bool)in_ZF) {
-    selectionEntryCursor[-1] = (GameEntityRuntime *)0x0;
+  int entryIndex;
+
+  /* REPNE SCASD over the 32 entries; the first match is cleared. */
+  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+    if (array->entries[entryIndex] == target) {
+      array->entries[entryIndex] = (GameEntityRuntime *)0x0;
+      return;
+    }
   }
   return;
 }
@@ -2878,34 +2868,18 @@ SelectionPointerArray_InsertUniqueAndRecenter
           (GameEntityRuntime *entityRuntime,SelectionPointerArray32 *selection)
 
 {
-  int entriesRemaining;
-  GameEntityRuntime **entryCursor;
-  GameEntityRuntime **nextEntryCursor;
-  undefined1 in_ZF;
-  bool slotIsEmpty;
-  
-  entriesRemaining = 0x20;
-  entryCursor = selection->entries;
-  do {
-    if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
-    in_ZF = entityRuntime == *entryCursor;
-    entryCursor = entryCursor + 1;
-  } while (!(bool)in_ZF);
-  if (!(bool)in_ZF) {
-    slotIsEmpty = true;
-    entriesRemaining = 0x20;
-    entryCursor = selection->entries;
-    do {
-      nextEntryCursor = entryCursor;
-      if (entriesRemaining == 0) break;
-      entriesRemaining = entriesRemaining + -1;
-      nextEntryCursor = entryCursor + 1;
-      slotIsEmpty = *entryCursor == (GameEntityRuntime *)0x0;
-      entryCursor = nextEntryCursor;
-    } while (!slotIsEmpty);
-    if (slotIsEmpty) {
-      nextEntryCursor[-1] = entityRuntime;
+  int entryIndex;
+
+  /* Two REPNE SCASD passes: look for entityRuntime, and when absent store it in the first null slot. */
+  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+    if (selection->entries[entryIndex] == entityRuntime) break;
+  }
+  if (entryIndex == 0x20) {
+    for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+      if (selection->entries[entryIndex] == (GameEntityRuntime *)0x0) {
+        selection->entries[entryIndex] = entityRuntime;
+        break;
+      }
     }
   }
   SelectionPointerArray_RecenterOffsetsAroundAveragePosition(selection);
@@ -2976,20 +2950,15 @@ bool __thandor_cf_preserve_eax_ecx_edx
 SelectionPointerArray_ContainsCf(GameEntityRuntime *target,SelectionPointerArray32 *array)
 
 {
-  int entriesRemaining;
-  undefined1 in_ZF;
-  
-  entriesRemaining = 0x20;
-  do {
-    if (entriesRemaining == 0) break;
-    entriesRemaining = entriesRemaining + -1;
-    in_ZF = target == array->entries[0];
-    array = (SelectionPointerArray32 *)((int)array + 4);
-  } while (!(bool)in_ZF);
-  if (!(bool)in_ZF) {
-    return true;
+  int entryIndex;
+
+  /* REPNE SCASD over the 32 entries: CF clear when target was found. */
+  for (entryIndex = 0; entryIndex < 0x20; entryIndex = entryIndex + 1) {
+    if (array->entries[entryIndex] == target) {
+      return false;
+    }
   }
-  return false;
+  return true;
 }
 
 

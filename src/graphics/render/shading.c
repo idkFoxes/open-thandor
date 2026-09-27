@@ -10,6 +10,43 @@
 
 /* Implementation ownership: graphics/render/shading. */
 
+/* MOVD mm,packed; PUNPCKLBW mm,mm; PSRLW mm,shift: every byte b of packed becomes the word lane
+   ((b << 8) | b) >> shift (byte k -> word lane k). */
+static __inline ulonglong Shading_DuplicateBytesToWordLanes(dword packed,int shift)
+{
+  ulonglong lanes;
+  dword laneByte;
+  int lane;
+
+  lanes = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    laneByte = (packed >> (lane * 8)) & 0xff;
+    lanes = lanes | ((ulonglong)((((laneByte << 8) | laneByte) >> shift) & 0xffff) << (lane * 16));
+  }
+  return lanes;
+}
+
+/* PACKUSWB mm,mm; MOVD dword,mm: saturates the four signed word lanes to unsigned bytes
+   (<= 0 -> 0, > 0xff -> 0xff) and packs them into one dword (word lane k -> byte k). */
+static __inline dword Shading_PackWordLanesUnsignedSaturate(ulonglong lanes)
+{
+  dword packed;
+  short laneValue;
+  int lane;
+
+  packed = 0;
+  for (lane = 0; lane < 4; lane = lane + 1) {
+    laneValue = (short)(lanes >> (lane * 16));
+    if (0xff < laneValue) {
+      packed = packed | (0xffu << (lane * 8));
+    }
+    else if (0 < laneValue) {
+      packed = packed | ((dword)laneValue << (lane * 8));
+    }
+  }
+  return packed;
+}
+
 /* Address: 0x004CDD40.
    Ownership: graphics/render/shading.
    Purpose: Handles graphics shading generated texture process renderable hierarchy.
@@ -32,20 +69,6 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   GraphicsProjectedPointPair pointPair1;
   GraphicsProjectedPointPair pointPair2;
   GraphicsProjectedPointPair pointPair3;
-  short shadeA0;
-  short shadeB0;
-  short shadeC0;
-  short shadeA1;
-  short shadeB1;
-  short shadeC1;
-  short shadeA2;
-  short shadeB2;
-  short shadeC2;
-  short shadeA3;
-  short shadeB3;
-  short shadeC3;
-  byte tintAlpha;
-  ushort halfAlphaPair;
   GraphicsWorldCoordinateQ12 sampleWorldZ;
   sdword planeDotOrTextureOffset;
   int radiusScaleOrCoordinate;
@@ -61,12 +84,10 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
   uint intensityC;
   uint heightDeltaOrIntensityA;
   bool lacksGeometry;
-  undefined1 tintGreenHalf;
-  undefined1 tintRedHalf;
-  undefined8 shadedA;
-  undefined8 shadedB;
-  undefined8 shadedC;
-  undefined8 tintLanesOrShadedC;
+  ulonglong shadedA;
+  ulonglong shadedB;
+  ulonglong shadedC;
+  ulonglong tintLanesOrShadedC;
   GraphicsProjectedPointPair pointPair0;
   FieldGridHeightEaxCf5 surfaceHeight;
   GraphicsProjectedBlockEaxCf5 reservedBlocks;
@@ -206,11 +227,10 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.y;
           g_GeneratedTextureScratchRuntime.samples[0xb].worldPoint.z =
                g_GeneratedTextureScratchRuntime.currentModelOriginQ12.z;
-          radiusScaleOrCoordinate = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
-                                       g_GeneratedTextureScratchRuntime.downsampleBorderOffset) >> 8
-                                  ,(g_GraphicsShadingGridHalfSize -
-                                   g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
-                                   0x1000000) /
+          /* EDX:EAX = sign-extended (halfSize - border) << 24, then unsigned DIV (as in the original). */
+          radiusScaleOrCoordinate = (int)((ulonglong)((longlong)(int)(g_GraphicsShadingGridHalfSize -
+                                                   g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
+                                         0x1000000) /
                         (ulonglong)
                         (uint)(g_GeneratedTextureScratchRuntime.projectedMaxX -
                               g_GeneratedTextureScratchRuntime.projectedMinX));
@@ -235,11 +255,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[0] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[1] = 0;
           g_GeneratedTextureScratchRuntime.generatedTextureBasisTransform.basisRow2[2] = 0;
-          radiusScaleOrCoordinate = (int)(CONCAT44((int)(g_GraphicsShadingGridHalfSize -
-                                       g_GeneratedTextureScratchRuntime.downsampleBorderOffset) >> 8
-                                  ,(g_GraphicsShadingGridHalfSize -
-                                   g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
-                                   0x1000000) /
+          radiusScaleOrCoordinate = (int)((ulonglong)((longlong)(int)(g_GraphicsShadingGridHalfSize -
+                                                   g_GeneratedTextureScratchRuntime.downsampleBorderOffset) *
+                                         0x1000000) /
                         (ulonglong)
                         (uint)(g_GeneratedTextureScratchRuntime.projectedMaxY -
                               g_GeneratedTextureScratchRuntime.projectedMinY));
@@ -2121,17 +2139,9 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               projectedBlocks[10].projectedX = projectedBlocks[10].projectedX + -0x1000;
               projectedBlocks[6].projectedX = projectedBlocks[6].projectedX + -0x1000;
               projectedBlocks[0x12].projectedX = projectedBlocks[0x12].projectedX + -0x1000;
-              heightDeltaOrIntensityA = modelNode->tintArgb >> 1;
-              tintMaskOrIntensityB = heightDeltaOrIntensityA | 0xffffff;
-              tintAlpha = (byte)(modelNode->tintArgb >> 0x18);
-              halfAlphaPair = CONCAT11(tintAlpha >> 1,tintAlpha >> 1);
-              tintRedHalf = (undefined1)(tintMaskOrIntensityB >> 0x10);
-              tintGreenHalf = (undefined1)(tintMaskOrIntensityB >> 8);
-              tintLanesOrShadedC = CONCAT26(halfAlphaPair >> 4,
-                                CONCAT24((ushort)(CONCAT35(CONCAT21(halfAlphaPair,tintRedHalf),
-                                                           CONCAT14(tintRedHalf,heightDeltaOrIntensityA)) >> 0x20) >> 4,
-                                         CONCAT22(CONCAT11(tintGreenHalf,tintGreenHalf) >> 4,
-                                                  CONCAT11((char)tintMaskOrIntensityB,(char)tintMaskOrIntensityB) >> 4)));
+              /* Lanes 0..2 = 0x0fff, lane 3 = the halved tint alpha duplicated to a word, >> 4. */
+              tintMaskOrIntensityB = modelNode->tintArgb >> 1 | 0xffffff;
+              tintLanesOrShadedC = Shading_DuplicateBytesToWordLanes(tintMaskOrIntensityB,4);
               heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[0].terrainRayDistanceQ12;
               if ((int)heightDeltaOrIntensityA < 0) {
                 heightDeltaOrIntensityA = 0;
@@ -2156,48 +2166,12 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadeA0 = (short)shadedA;
-              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
-              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
-              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
-              shadeB0 = (short)shadedB;
-              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
-              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
-              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
-              shadeC0 = (short)shadedC;
-              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
-              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
-              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
-              projectedBlocks[0x67].projectedY =
-                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
-                            (0xff < shadeA3),
-                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
-                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
-                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
-                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
-                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
-                                              (0xff < shadeA0))));
-              projectedBlocks[0xb3].projectedY =
-                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
-                            (0xff < shadeB3),
-                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
-                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
-                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
-                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
-                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
-                                              (0xff < shadeB0))));
-              projectedBlocks[0x73].projectedY =
-                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
-                            (0xff < shadeC3),
-                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
-                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
-                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
-                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
-                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
-                                              (0xff < shadeC0))));
+              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              projectedBlocks[0x67].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
+              projectedBlocks[0xb3].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
+              projectedBlocks[0x73].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
               heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[3].terrainRayDistanceQ12;
               if ((int)heightDeltaOrIntensityA < 0) {
                 heightDeltaOrIntensityA = 0;
@@ -2222,48 +2196,12 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadeA0 = (short)shadedA;
-              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
-              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
-              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
-              shadeB0 = (short)shadedB;
-              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
-              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
-              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
-              shadeC0 = (short)shadedC;
-              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
-              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
-              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
-              projectedBlocks[0xab].projectedY =
-                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
-                            (0xff < shadeA3),
-                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
-                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
-                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
-                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
-                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
-                                              (0xff < shadeA0))));
-              projectedBlocks[0x57].projectedY =
-                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
-                            (0xff < shadeB3),
-                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
-                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
-                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
-                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
-                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
-                                              (0xff < shadeB0))));
-              projectedBlocks[0x3b].projectedY =
-                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
-                            (0xff < shadeC3),
-                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
-                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
-                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
-                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
-                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
-                                              (0xff < shadeC0))));
+              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              projectedBlocks[0xab].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
+              projectedBlocks[0x57].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
+              projectedBlocks[0x3b].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
               heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[6].terrainRayDistanceQ12;
               if ((int)heightDeltaOrIntensityA < 0) {
                 heightDeltaOrIntensityA = 0;
@@ -2288,48 +2226,12 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadeA0 = (short)shadedA;
-              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
-              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
-              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
-              shadeB0 = (short)shadedB;
-              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
-              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
-              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
-              shadeC0 = (short)shadedC;
-              shadeC1 = (short)((ulonglong)shadedC >> 0x10);
-              shadeC2 = (short)((ulonglong)shadedC >> 0x20);
-              shadeC3 = (short)((ulonglong)shadedC >> 0x30);
-              projectedBlocks[0x2b].projectedY =
-                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
-                            (0xff < shadeA3),
-                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
-                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
-                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
-                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
-                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
-                                              (0xff < shadeA0))));
-              projectedBlocks[0x47].projectedY =
-                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
-                            (0xff < shadeB3),
-                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
-                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
-                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
-                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
-                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
-                                              (0xff < shadeB0))));
-              projectedBlocks[3].projectedY =
-                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)shadedC >> 0x30) -
-                            (0xff < shadeC3),
-                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
-                                     (char)((ulonglong)shadedC >> 0x20) - (0xff < shadeC2),
-                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
-                                              (char)((ulonglong)shadedC >> 0x10) - (0xff < shadeC1),
-                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)shadedC -
-                                              (0xff < shadeC0))));
+              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              projectedBlocks[0x2b].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
+              projectedBlocks[0x47].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
+              projectedBlocks[3].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedC);
               heightDeltaOrIntensityA = 0x5000 - g_GeneratedTextureScratchRuntime.samples[9].terrainRayDistanceQ12;
               if ((int)heightDeltaOrIntensityA < 0) {
                 heightDeltaOrIntensityA = 0;
@@ -2354,48 +2256,12 @@ GraphicsShadingGeneratedTexture_ProcessRenderableHierarchy
               if (0xff < intensityC) {
                 intensityC = 0xff;
               }
-              shadedA = pmulhw(*(undefined8 *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadedB = pmulhw(*(undefined8 *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              tintLanesOrShadedC = pmulhw(*(undefined8 *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
-              shadeA0 = (short)shadedA;
-              shadeA1 = (short)((ulonglong)shadedA >> 0x10);
-              shadeA2 = (short)((ulonglong)shadedA >> 0x20);
-              shadeA3 = (short)((ulonglong)shadedA >> 0x30);
-              shadeB0 = (short)shadedB;
-              shadeB1 = (short)((ulonglong)shadedB >> 0x10);
-              shadeB2 = (short)((ulonglong)shadedB >> 0x20);
-              shadeB3 = (short)((ulonglong)shadedB >> 0x30);
-              shadeC0 = (short)tintLanesOrShadedC;
-              shadeC1 = (short)((ulonglong)tintLanesOrShadedC >> 0x10);
-              shadeC2 = (short)((ulonglong)tintLanesOrShadedC >> 0x20);
-              shadeC3 = (short)((ulonglong)tintLanesOrShadedC >> 0x30);
-              projectedBlocks[0xb].projectedY =
-                   CONCAT13((0 < shadeA3) * (shadeA3 < 0x100) * (char)((ulonglong)shadedA >> 0x30) -
-                            (0xff < shadeA3),
-                            CONCAT12((0 < shadeA2) * (shadeA2 < 0x100) *
-                                     (char)((ulonglong)shadedA >> 0x20) - (0xff < shadeA2),
-                                     CONCAT11((0 < shadeA1) * (shadeA1 < 0x100) *
-                                              (char)((ulonglong)shadedA >> 0x10) - (0xff < shadeA1),
-                                              (0 < shadeA0) * (shadeA0 < 0x100) * (char)shadedA -
-                                              (0xff < shadeA0))));
-              projectedBlocks[7].projectedY =
-                   CONCAT13((0 < shadeB3) * (shadeB3 < 0x100) * (char)((ulonglong)shadedB >> 0x30) -
-                            (0xff < shadeB3),
-                            CONCAT12((0 < shadeB2) * (shadeB2 < 0x100) *
-                                     (char)((ulonglong)shadedB >> 0x20) - (0xff < shadeB2),
-                                     CONCAT11((0 < shadeB1) * (shadeB1 < 0x100) *
-                                              (char)((ulonglong)shadedB >> 0x10) - (0xff < shadeB1),
-                                              (0 < shadeB0) * (shadeB0 < 0x100) * (char)shadedB -
-                                              (0xff < shadeB0))));
-              projectedBlocks[0x13].projectedY =
-                   CONCAT13((0 < shadeC3) * (shadeC3 < 0x100) * (char)((ulonglong)tintLanesOrShadedC >> 0x30) -
-                            (0xff < shadeC3),
-                            CONCAT12((0 < shadeC2) * (shadeC2 < 0x100) *
-                                     (char)((ulonglong)tintLanesOrShadedC >> 0x20) - (0xff < shadeC2),
-                                     CONCAT11((0 < shadeC1) * (shadeC1 < 0x100) *
-                                              (char)((ulonglong)tintLanesOrShadedC >> 0x10) - (0xff < shadeC1),
-                                              (0 < shadeC0) * (shadeC0 < 0x100) * (char)tintLanesOrShadedC -
-                                              (0xff < shadeC0))));
+              shadedA = pmulhw(*(ulonglong *)(heightDeltaOrIntensityA * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              shadedB = pmulhw(*(ulonglong *)(tintMaskOrIntensityB * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              tintLanesOrShadedC = pmulhw(*(ulonglong *)(intensityC * 8 + THANDOR_ADDR(g_ShadingIntensityScaleMmx,0)),tintLanesOrShadedC);
+              projectedBlocks[0xb].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedA);
+              projectedBlocks[7].projectedY = Shading_PackWordLanesUnsignedSaturate(shadedB);
+              projectedBlocks[0x13].projectedY = Shading_PackWordLanesUnsignedSaturate(tintLanesOrShadedC);
               projectedBlocks[0xc].projectedY =
                    (GraphicsPrimitiveBackendCoordinate)
                    (g_GraphicsShadingTextureSet->entries +
@@ -2630,7 +2496,7 @@ StatusValueEaxCf5 __thandor_eax_cf_preserve_ecx_edx GraphicsIntensityClampTable_
     tableCursor = (char *)(allocResult.eax + 0xffff & 0xffff0000);
     rowsRemaining = 0x100;
     referenceValue = 0;
-    g_GraphicsIntensityClampTableBase = tableCursor;
+    g_GraphicsIntensityClampTableBase = (dword)tableCursor;
     do {
       do {
         inputByte = (char)inputValue;
@@ -2671,7 +2537,6 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
 {
   PackedRgb24 packedColor;
   longlong axisDeltaSquared;
-  ushort highBytePair;
   int remainingHigh;
   uint remainingLowOrSquareLow;
   int axisDelta;
@@ -2679,9 +2544,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
   GraphicsShadingRecordCount recordsRemaining;
   uint remainingLowOrRadiusScale;
   GraphicsShadingRuntimeRecord *shadingRecord;
-  undefined1 colorByteHighOrMid;
-  undefined1 colorByteLow;
-  undefined8 scaledLight;
+  ulonglong scaledLight;
   
   shadingRecord = g_GraphicsShadingCompactRecords;
   for (recordsRemaining = g_GraphicsShadingCompactRecordCount; recordsRemaining != 0; recordsRemaining = recordsRemaining - 1) {
@@ -2709,16 +2572,7 @@ GraphicsShadingRuntime_AccumulateCompactLightingAtPointMmxRegs
             remainingLowOrRadiusScale = *(int *)((int)&shadingRecord->squaredRadiusQ24 + 4) << 0x14 |
                     (uint)shadingRecord->squaredRadiusQ24 >> 0xc;
             if (remainingLowOrRadiusScale != 0) {
-              colorByteHighOrMid = (undefined1)(packedColor >> 0x18);
-              highBytePair = CONCAT11(colorByteHighOrMid,colorByteHighOrMid);
-              colorByteLow = (undefined1)(packedColor >> 0x10);
-              colorByteHighOrMid = (undefined1)(packedColor >> 8);
-              scaledLight = pmulhw(CONCAT26(highBytePair >> 2,
-                                       CONCAT24((ushort)(CONCAT35(CONCAT21(highBytePair,colorByteLow),
-                                                                  CONCAT14(colorByteLow,packedColor)) >> 0x20)
-                                                >> 2,CONCAT22(CONCAT11(colorByteHighOrMid,colorByteHighOrMid) >> 2,
-                                                              CONCAT11((char)packedColor,(char)packedColor) >> 2
-                                                             ))),
+              scaledLight = pmulhw(Shading_DuplicateBytesToWordLanes(packedColor,2),
                               g_PackedLightingLookupTable[(remainingHigh * 0x8000000 | remainingLowOrSquareLow - squareLow >> 5) / remainingLowOrRadiusScale]);
               packedLightAccumulatorMmx = paddusw(packedLightAccumulatorMmx,scaledLight);
             }
@@ -2762,8 +2616,7 @@ GraphicsShadingRuntime_AllocateRecordRegs
           recordCursor->radiusTransitionElapsedTicks = 0;
         }
         else {
-          *(undefined4 *)((int)&recordCursor->squaredRadiusQ24 + 4) = 0;
-          *(undefined4 *)&recordCursor->squaredRadiusQ24 = 0;
+          recordCursor->squaredRadiusQ24 = 0;
           recordCursor->radiusTransitionDurationTicks = transitionDurationTicks;
           recordCursor->radiusTransitionElapsedTicks = 0;
         }
@@ -2815,7 +2668,6 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLi
 
 {
   GraphicsRadiusQ12 targetRadius;
-  undefined4 squaredRadiusHigh;
   GraphicsShadingRecordCount compactCount;
   int recordsRemaining;
   GraphicsShadingRuntimeRecord *sourceRecord;
@@ -2833,10 +2685,8 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingRuntime_RebuildCompactLi
       targetRadius = sourceRecord->targetRadiusQ12;
       compactRecord->packedColorRgbActive = sourceRecord->packedColorRgbActive;
       compactRecord->targetRadiusQ12 = targetRadius;
-      squaredRadiusHigh = *(undefined4 *)((int)&sourceRecord->squaredRadiusQ24 + 4);
       compactCount = compactCount + 1;
-      *(int *)&compactRecord->squaredRadiusQ24 = (int)sourceRecord->squaredRadiusQ24;
-      *(undefined4 *)((int)&compactRecord->squaredRadiusQ24 + 4) = squaredRadiusHigh;
+      compactRecord->squaredRadiusQ24 = sourceRecord->squaredRadiusQ24;
       compactRecord = compactRecord + 1;
     }
     sourceRecord = sourceRecord + 1;
@@ -2932,7 +2782,7 @@ GraphicsShadingRuntime_InitializeGeneratedTextureCf
   allocationCursor = (GraphicsGeneratedTextureAssetOrEntryView200 *)allocResult.eax;
   if (!allocResult.carry) {
     allocationSize = allocationSize >> 2;
-    g_GraphicsShadingGridScratchInterior = (undefined *)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
+    g_GraphicsShadingGridScratchInterior = (pointer)((int)allocationCursor + allocationSize + (gridHalfSize >> 1));
     g_GraphicsShadingGridScratch = allocationCursor;
     for (; allocationSize != 0; allocationSize = allocationSize - 1) {
       (allocationCursor->asset).common.magic = 0;
@@ -3504,24 +3354,24 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
   uint rowBytesRemaining;
   uint rowsRemaining;
   ulonglong *scratchWriteCursor;
-  undefined8 *neighborCursor;
+  ulonglong *neighborCursor;
   longlong *scratchCursor;
   ulonglong *textureWriteCursor;
   ulonglong *textureReadCursor;
   uint neighborStep;
   bool rowContinues;
-  undefined8 weightedSum0;
+  ulonglong weightedSum0;
   ulonglong quad1OrResult0;
-  undefined8 weightedSum1;
+  ulonglong weightedSum1;
   ulonglong quad2OrResult1;
-  undefined8 weightedSum2;
+  ulonglong weightedSum2;
   ulonglong quad3OrResult2;
-  undefined8 weightedSum3;
+  ulonglong weightedSum3;
   ulonglong result3;
-  undefined8 crossSum0;
-  undefined8 crossSum1;
-  undefined8 crossSum2;
-  undefined8 crossSum3;
+  ulonglong crossSum0;
+  ulonglong crossSum1;
+  ulonglong crossSum2;
+  ulonglong crossSum3;
   
   threeBitMask = g_GraphicsShadingMmxPacked3BitPerByteMask;
   neighborStep = g_GraphicsShadingGridHalfSize >> 4;
@@ -3558,66 +3408,66 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
   scratchCursor = (longlong *)g_GraphicsShadingGridScratchInterior;
   do {
     do {
-      weightedSum0 = paddusb(*scratchCursor << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2));
-      weightedSum1 = paddusb(scratchCursor[1] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(scratchCursor[2] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(scratchCursor[3] << 2,*(undefined8 *)((int)scratchCursor + neighborStep * 2 + 0x18));
-      neighborCursor = (undefined8 *)((int)scratchCursor - neighborStep);
-      crossSum0 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep),*neighborCursor);
-      crossSum1 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
-      crossSum2 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 0x10),neighborCursor[2]);
-      crossSum3 = paddusb(*(undefined8 *)((int)scratchCursor + neighborStep + 0x18),neighborCursor[3]);
-      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(*scratchCursor << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2));
+      weightedSum1 = paddusb(scratchCursor[1] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(scratchCursor[2] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(scratchCursor[3] << 2,*(ulonglong *)((int)scratchCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (ulonglong *)((int)scratchCursor - neighborStep);
+      crossSum0 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep),*neighborCursor);
+      crossSum1 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 8),neighborCursor[1]);
+      crossSum2 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 0x10),neighborCursor[2]);
+      crossSum3 = paddusb(*(ulonglong *)((int)scratchCursor + neighborStep + 0x18),neighborCursor[3]);
+      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (undefined8 *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
+      neighborCursor = (ulonglong *)((int)neighborCursor + (neighborStep * 2 - scratchBlockStride));
       crossSum0 = paddusb(crossSum0,*neighborCursor);
       crossSum1 = paddusb(crossSum1,neighborCursor[1]);
       crossSum2 = paddusb(crossSum2,neighborCursor[2]);
       crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x18));
-      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      neighborCursor = (undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
+      neighborCursor = (ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + neighborStep * 2);
       crossSum0 = paddusb(crossSum0,*neighborCursor);
       crossSum1 = paddusb(crossSum1,neighborCursor[1]);
       crossSum2 = paddusb(crossSum2,neighborCursor[2]);
       crossSum3 = paddusb(crossSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep * 2));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep * 2 + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep * 2));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep * 2 + 0x18));
       backtrackOffset = -scratchBlockStride - neighborStep;
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 0x10 + backtrackOffset));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride + 0x18 + backtrackOffset));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 8 + backtrackOffset));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 0x10 + backtrackOffset));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride + 0x18 + backtrackOffset));
       backtrackOffset = (backtrackOffset - neighborStep) - scratchBlockStride;
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 2 + backtrackOffset + 0x18));
       weightedSum0 = paddusb(weightedSum0,crossSum0);
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
@@ -3626,7 +3476,7 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
       weightedSum3 = paddusb(weightedSum3,crossSum3);
-      neighborCursor = (undefined8 *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
+      neighborCursor = (ulonglong *)((int)neighborCursor + neighborStep * 2 + (backtrackOffset - scratchBlockStride));
       weightedSum0 = paddusb(weightedSum0,crossSum0);
       weightedSum1 = paddusb(weightedSum1,crossSum1);
       weightedSum2 = paddusb(weightedSum2,crossSum2);
@@ -3635,27 +3485,27 @@ void __thandor_void_preserve_eax_ecx_edx GraphicsShadingGeneratedTexture_FilterG
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + neighborStep));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + neighborStep + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + neighborStep + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + neighborStep + 0x18));
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
-      neighborCursor = (undefined8 *)((int)neighborCursor - neighborStep);
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + neighborStep));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + neighborStep + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + neighborStep + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + neighborStep + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      neighborCursor = (ulonglong *)((int)neighborCursor - neighborStep);
       weightedSum0 = paddusb(weightedSum0,*neighborCursor);
       weightedSum1 = paddusb(weightedSum1,neighborCursor[1]);
       weightedSum2 = paddusb(weightedSum2,neighborCursor[2]);
       weightedSum3 = paddusb(weightedSum3,neighborCursor[3]);
-      weightedSum0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4));
-      weightedSum1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 8));
-      weightedSum2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
-      weightedSum3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
-      quad1OrResult0 = paddusb(weightedSum0,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
-      quad2OrResult1 = paddusb(weightedSum1,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
-      quad3OrResult2 = paddusb(weightedSum2,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x10));
-      result3 = paddusb(weightedSum3,*(undefined8 *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x18));
+      weightedSum0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4));
+      weightedSum1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 8));
+      weightedSum2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x10));
+      weightedSum3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + 0x18));
+      quad1OrResult0 = paddusb(weightedSum0,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2));
+      quad2OrResult1 = paddusb(weightedSum1,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 8));
+      quad3OrResult2 = paddusb(weightedSum2,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x10));
+      result3 = paddusb(weightedSum3,*(ulonglong *)((int)neighborCursor + scratchBlockStride * 4 + neighborStep * 2 + 0x18));
       *textureWriteCursor = quad1OrResult0;
       textureWriteCursor[1] = quad2OrResult1;
       textureWriteCursor[2] = quad3OrResult2;
@@ -3724,23 +3574,23 @@ GraphicsShadingGeneratedTexture_ReserveFourteenProjectedPointBlocks
   newCountOrFailure.firstBlock = (void *)(usedBlockCount + 0xe);
   if (newCountOrFailure.firstBlock < (void *)*blockPool) {
     blockPool[1] = (uint)newCountOrFailure.firstBlock;
-    reservedResult.firstBlock = usedBlockCount * 0x80 + blockPool[2];
-    blockPool[usedBlockCount * 4 + 9] = reservedResult.firstBlock;
-    blockPool[usedBlockCount * 4 + 0xd] = (byte *)reservedResult.firstBlock + 0x80;
-    blockPool[usedBlockCount * 4 + 0x11] = (byte *)reservedResult.firstBlock + 0x100;
-    blockPool[usedBlockCount * 4 + 0x15] = (byte *)reservedResult.firstBlock + 0x180;
-    blockPool[usedBlockCount * 4 + 0x19] = (byte *)reservedResult.firstBlock + 0x200;
-    blockPool[usedBlockCount * 4 + 0x1d] = (byte *)reservedResult.firstBlock + 0x280;
-    blockPool[usedBlockCount * 4 + 0x21] = (byte *)reservedResult.firstBlock + 0x300;
-    blockPool[usedBlockCount * 4 + 0x25] = (byte *)reservedResult.firstBlock + 0x380;
-    blockPool[usedBlockCount * 4 + 0x29] = (byte *)reservedResult.firstBlock + 0x400;
-    blockPool[usedBlockCount * 4 + 0x2d] = (byte *)reservedResult.firstBlock + 0x480;
-    blockPool[usedBlockCount * 4 + 0x31] = (byte *)reservedResult.firstBlock + 0x500;
-    blockPool[usedBlockCount * 4 + 0x35] = (byte *)reservedResult.firstBlock + 0x580;
-    blockPool[usedBlockCount * 4 + 0x39] = (byte *)reservedResult.firstBlock + 0x600;
-    blockPool[usedBlockCount * 4 + 0x3d] = (byte *)reservedResult.firstBlock + 0x680;
-    *(undefined4 *)((byte *)reservedResult.firstBlock + 0x60) = 0;
-    *(undefined4 *)((byte *)reservedResult.firstBlock + 0x68) = 0x11000;
+    reservedResult.firstBlock = (void *)(usedBlockCount * 0x80 + blockPool[2]);
+    blockPool[usedBlockCount * 4 + 9] = (uint)reservedResult.firstBlock;
+    blockPool[usedBlockCount * 4 + 0xd] = (uint)((byte *)reservedResult.firstBlock + 0x80);
+    blockPool[usedBlockCount * 4 + 0x11] = (uint)((byte *)reservedResult.firstBlock + 0x100);
+    blockPool[usedBlockCount * 4 + 0x15] = (uint)((byte *)reservedResult.firstBlock + 0x180);
+    blockPool[usedBlockCount * 4 + 0x19] = (uint)((byte *)reservedResult.firstBlock + 0x200);
+    blockPool[usedBlockCount * 4 + 0x1d] = (uint)((byte *)reservedResult.firstBlock + 0x280);
+    blockPool[usedBlockCount * 4 + 0x21] = (uint)((byte *)reservedResult.firstBlock + 0x300);
+    blockPool[usedBlockCount * 4 + 0x25] = (uint)((byte *)reservedResult.firstBlock + 0x380);
+    blockPool[usedBlockCount * 4 + 0x29] = (uint)((byte *)reservedResult.firstBlock + 0x400);
+    blockPool[usedBlockCount * 4 + 0x2d] = (uint)((byte *)reservedResult.firstBlock + 0x480);
+    blockPool[usedBlockCount * 4 + 0x31] = (uint)((byte *)reservedResult.firstBlock + 0x500);
+    blockPool[usedBlockCount * 4 + 0x35] = (uint)((byte *)reservedResult.firstBlock + 0x580);
+    blockPool[usedBlockCount * 4 + 0x39] = (uint)((byte *)reservedResult.firstBlock + 0x600);
+    blockPool[usedBlockCount * 4 + 0x3d] = (uint)((byte *)reservedResult.firstBlock + 0x680);
+    ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xc].projectedX = 0;
+    ((GraphicsProjectedPointPair *)reservedResult.firstBlock)[0xd].projectedX = 0x11000;
     reservedResult.carry = false;
     return reservedResult;
   }

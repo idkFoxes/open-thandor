@@ -76,7 +76,12 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
               ((word *)&g_FileSystemCombinedPathScratchUtf16,g_PersistentSettings.path,
                (word *)&g_ExecutableDirectoryUtf16);
     openResult = (*g_FileSystemOpenCf)(0,(word *)&g_FileSystemCombinedPathScratchUtf16);
-    if (openResult.carry) goto PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure;
+    if (openResult.carry) {
+      (*g_MemoryApi.free)(destination);
+      return;
+    }
+    /* The original also continues with EAX = the byte count returned by the path copy below as the
+       file handle (MOV EBX,EAX at 0x00402B90), not the handle from this open. Kept as is. */
     pathCopyResult = RichTextCommandStream_CopyExpandedCf
                       (0x200,g_PersistentSettings.path,(word *)&g_FileSystemCombinedPathScratchUtf16
                       );
@@ -105,7 +110,6 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
     }
   }
   (*g_FileSystemClose)(handle);
-PersistentSettings_Load_FreeTemporaryImageAfterOpenOrReadFailure:
   (*g_MemoryApi.free)(destination);
   return;
 }

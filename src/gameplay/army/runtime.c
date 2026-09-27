@@ -1213,10 +1213,8 @@ ArmyRuntimeClass_UpdateGridBoundEffectsAndModels
 
 {
   int cellColumnOrIndex;
-  dword in_EDX;
   int cellRow;
   FieldCellPackedFlagsAndMaterial supportFlagMask;
-  dword extraout_EDX;
   FieldGridCoordinatesEaxEdx8 gridCoordinates;
   FieldGridAsset *fieldGrid1;
   
@@ -1292,23 +1290,20 @@ ArmyRuntime_ClassCommandHandlerGroupACf
            ((((armySlot1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0 ||
             (((armySlot1->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0xc))))
         {
+          /* Damage the candidate unless the class-13 test misses and the attachment proximity test hits. */
           proximityHit = ArmyRuntime_TestClass13ProximityCandidateCf(armySlot1,armyRuntime);
-          if (!proximityHit) {
-            proximityHit = ArmyRuntime_TestModelAttachmentProximityCf(armySlot1,armyRuntime);
-            if (proximityHit)
-            goto 
-            ArmyRuntime_ClassCommandHandlerGroupACf_AdvanceOwnerScanAfterProximityOrImpactDecision;
+          if ((proximityHit) || (proximityHit = ArmyRuntime_TestModelAttachmentProximityCf(armySlot1,armyRuntime),
+                                 !proximityHit)) {
+            damageAmount = 0x100000;
+            angleOrRadius = FixedMath_Atan2Angle16
+                              ((modelNode1->worldTransform).translation.y -
+                               (referenceNode->worldTransform).translation.y,
+                               (modelNode1->worldTransform).translation.x -
+                               (referenceNode->worldTransform).translation.x);
+            ArmyRuntime_ApplyImpactDamageAndFinalizeState(angleOrRadius,damageAmount,armySlot1);
           }
-          damageAmount = 0x100000;
-          angleOrRadius = FixedMath_Atan2Angle16
-                            ((modelNode1->worldTransform).translation.y -
-                             (referenceNode->worldTransform).translation.y,
-                             (modelNode1->worldTransform).translation.x -
-                             (referenceNode->worldTransform).translation.x);
-          ArmyRuntime_ApplyImpactDamageAndFinalizeState(angleOrRadius,damageAmount,armySlot1);
         }
       }
-ArmyRuntime_ClassCommandHandlerGroupACf_AdvanceOwnerScanAfterProximityOrImpactDecision:
       modelNode1 = (ModelRuntimeNode *)(modelNode1->common).nextNode;
     } while (modelNode1 != (ModelRuntimeNode *)0x0);
   }
@@ -1486,6 +1481,7 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
   GraphicsPixelDimension previewHeight;
   int remainingCount;
   int factionSuffixChar;
+  bool loadFactionGraphics;
   int frontendPlayerRuntimeId;
   ArmyAssetRecordPrefix **registryCursor;
   word *pathCursor;
@@ -1523,8 +1519,25 @@ ArmyRuntime_InitializePoolAndGraphicsCf(void *ownerContext,word *graphicsBasePat
     do {
       MoviePlayback_AdvanceScheduledFrameAndTick();
       factionSuffixChar = 0x30;
-      if (frontendPlayerRuntimeId == 0) {
-ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBindings:
+      /* Slot 0 always loads the "0" graphics; the other slots load theirs (suffix 0-9/A-Z from the faction's
+         graphics variant) only while the faction exists. */
+      loadFactionGraphics = frontendPlayerRuntimeId == 0;
+      if (!loadFactionGraphics) {
+        paletteOrResult = (GraphicsPaletteAsset *)(frontendPlayerRuntimeId * 0x740);
+        MoviePlayback_AdvanceScheduledFrameAndTick();
+        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frontendPlayerRuntimeId] != 0) {
+          factionGraphicsVariant = *(uint *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
+          g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + -1;
+          if (factionGraphicsVariant < 10) {
+            factionSuffixChar = factionGraphicsVariant + 0x30;
+          }
+          else {
+            factionSuffixChar = factionGraphicsVariant + 0x37;
+          }
+          loadFactionGraphics = true;
+        }
+      }
+      if (loadFactionGraphics) {
         *(int *)pathEnd = factionSuffixChar;
         WidePath_SetExtensionCode(0x786667,graphicsBasePath);
         packageResult = Package_LoadEntry(graphicsBasePath);
@@ -1553,21 +1566,6 @@ ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBind
           return initResult;
         }
         g_ArmyGraphicsBindings[frontendPlayerRuntimeId].paletteAsset = paletteOrResult;
-      }
-      else {
-        paletteOrResult = (GraphicsPaletteAsset *)(frontendPlayerRuntimeId * 0x740);
-        MoviePlayback_AdvanceScheduledFrameAndTick();
-        if (g_GameFactionRuntimeImage.tail.factionLifecycleStates[frontendPlayerRuntimeId] != 0) {
-          factionGraphicsVariant = *(uint *)THANDOR_BYTE_AT(g_GameFactionRuntimeImage, frontendPlayerRuntimeId * 0x740 + 0x38);
-          g_MoviePlaybackScheduleCounter = g_MoviePlaybackScheduleCounter + -1;
-          if (factionGraphicsVariant < 10) {
-            factionSuffixChar = factionGraphicsVariant + 0x30;
-          }
-          else {
-            factionSuffixChar = factionGraphicsVariant + 0x37;
-          }
-          goto ArmyRuntime_InitializePoolAndGraphicsCf_LoadCurrentFactionGraphicsPackageAndBindings;
-        }
       }
       frontendPlayerRuntimeId = frontendPlayerRuntimeId + 1;
       MoviePlayback_AdvanceScheduledFrameAndTick();
@@ -1797,42 +1795,42 @@ ArmyRuntime_ResolveShotAimPointCf
   int targetClassRecord;
   longlong deltaYSquared;
   longlong remainingRangeSquared;
-  uint in_EAX;
+  uint visibilityMask;
   dword distanceOrAngle;
   int leadDistance;
   int definitionOrDelta;
   int aimWorldX;
-  int in_ECX;
   dword directionY;
   int aimWorldY;
-  int *in_EDX;
   int aimWorldZ;
   ModelRuntimeNode *modelNode1;
   ShotModeRangeLimitEbxCf5 rangeLimit;
   FixedDirectionXyzRegs12 leadDirection;
-  WorldPositionEaxEcxEdxCf13 resolvedPosition;
-  WorldPositionEaxEcxEdxCf13 invalidPosition;
+  WorldPositionEaxEcxEdxCf13 position;
   GameEntityRuntime *entityRuntime1;
-  
+
+  /* On failure (CF set) the original leaves whatever is in EAX/ECX/EDX at that point (the caller's values or the
+     partial visibility mask / definition pointers). All three callers ignore the coordinates when CF is set, so
+     the failure result carries zeros. */
+  position.worldXQ12 = 0;
+  position.worldYQ12 = 0;
+  position.worldZQ12 = 0;
+  position.carry = true;
   if (((targetState->common).commandTarget.targetFlags & 1) == 0) {
     if (((targetState->common).commandTarget.targetFlags & 2) != 0) {
-      aimWorldX = (targetState->common).commandTarget.targetWorldXQ12;
-      aimWorldY = (targetState->common).commandTarget.targetWorldYQ12;
-      aimWorldZ = (targetState->common).commandTarget.targetWorldZQ12;
-      goto ArmyRuntime_ResolveShotAimPointCf_ReturnResolvedWorldXZWithCarryClear;
+      position.worldXQ12 = (targetState->common).commandTarget.targetWorldXQ12;
+      position.worldYQ12 = (targetState->common).commandTarget.targetWorldYQ12;
+      position.worldZQ12 = (targetState->common).commandTarget.targetWorldZQ12;
+      position.carry = false;
     }
   }
   else {
     entityRuntime1 = (targetState->common).commandTarget.targetEntity;
-    in_EAX = 2;
-    in_ECX = (targetState->common).ownership.ownerIndex * 2;
     if (entityRuntime1 != (GameEntityRuntime *)0x0) {
-      in_EAX = 2 << ((byte)in_ECX & 0x1f);
-      in_EDX = (entityRuntime1->common).ownership.definitionOrClassRecord;
+      visibilityMask = 2u << ((byte)((targetState->common).ownership.ownerIndex * 2) & 0x1f);
       modelNode1 = (entityRuntime1->common).ownership.modelNode;
-      in_ECX = *in_EDX;
-      if ((*(uint *)((entityRuntime1->common).damageState.reserved0C_23 + 0x10) & in_EAX) != 0) {
-        if (*(int *)(in_ECX + 0x4c) == 0x15) {
+      if ((*(uint *)((entityRuntime1->common).damageState.reserved0C_23 + 0x10) & visibilityMask) != 0) {
+        if (*(int *)(*(int *)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x4c) == 0x15) {
           modelNode1 = modelNode1->childNodes[0];
         }
         aimWorldX = (modelNode1->worldTransform).translation.x;
@@ -1867,36 +1865,32 @@ ArmyRuntime_ResolveShotAimPointCf
                 definitionOrDelta == (entityRuntime1->common).pathCoordinate1Q12)) &&
                (definitionOrDelta = definitionOrDelta - (modelNode1->worldTransform).translation.y,
                deltaYSquared = (longlong)definitionOrDelta * (longlong)definitionOrDelta,
-               -1 < (int)(((int)((ulonglong)remainingRangeSquared >> 0x20) - (int)((ulonglong)deltaYSquared >> 0x20)) -
-                         (uint)((uint)remainingRangeSquared < (uint)deltaYSquared)))) {
-              aimWorldX = (entityRuntime1->common).pathCoordinate0Q12;
-              aimWorldY = (entityRuntime1->common).pathCoordinate1Q12;
-              aimWorldZ = (((entityRuntime1->common).ownership.modelNode)->worldTransform).translation.
-                       z + *(int *)(*(int *)(entityRuntime1->common).ownership.
-                                            definitionOrClassRecord + 0x50);
-              goto ArmyRuntime_ResolveShotAimPointCf_ReturnResolvedWorldXZWithCarryClear;
+               -1 < remainingRangeSquared - deltaYSquared)) {
+              /* The target is standing still within lead range: aim at its path position directly. */
+              position.worldXQ12 = (entityRuntime1->common).pathCoordinate0Q12;
+              position.worldYQ12 = (entityRuntime1->common).pathCoordinate1Q12;
+              position.worldZQ12 =
+                   (((entityRuntime1->common).ownership.modelNode)->worldTransform).translation.z +
+                   *(int *)(*(int *)(entityRuntime1->common).ownership.definitionOrClassRecord + 0x50);
+              position.carry = false;
+              return position;
             }
           }
           aimWorldZ = leadDirection.edx + aimWorldZ;
           aimWorldY = directionY + aimWorldY;
           aimWorldX = distanceOrAngle + aimWorldX;
         }
-ArmyRuntime_ResolveShotAimPointCf_ReturnResolvedWorldXZWithCarryClear:
-        resolvedPosition.worldYQ12 = aimWorldY;
-        resolvedPosition.worldXQ12 = aimWorldX;
-        resolvedPosition.worldZQ12 = aimWorldZ;
-        resolvedPosition.carry = false;
-        return resolvedPosition;
+        position.worldXQ12 = aimWorldX;
+        position.worldYQ12 = aimWorldY;
+        position.worldZQ12 = aimWorldZ;
+        position.carry = false;
+        return position;
       }
       (targetState->common).commandTarget.targetEntity = (GameEntityRuntime *)0x0;
       (targetState->common).commandTarget.targetFlags = 0;
     }
   }
-  invalidPosition.worldYQ12 = in_ECX;
-  invalidPosition.worldXQ12 = in_EAX;
-  invalidPosition.carry = true;
-  invalidPosition.worldZQ12 = (Q12)in_EDX;
-  return invalidPosition;
+  return position;
 }
 
 
@@ -2114,7 +2108,8 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
       }
       slotsRemaining = slotsRemaining + -1;
       if (slotsRemaining == 0) {
-        return CONCAT44(0x48000,g_ArmyRuntimeSlots);
+        /* EDX = pool byte size, EAX = pool base. */
+        return (qword)0x48000 << 32 | (dword)g_ArmyRuntimeSlots;
       }
     }
     savedModelRuntimeOffset = (ModelRuntimeSlot *)
@@ -2135,7 +2130,7 @@ RuntimeImagePointerByteSizeEdxEax8 __cdecl ArmyRuntimePool_ConvertPointersToOffs
     armySlot2 = armySlot2 + 1;
     slotsRemaining = slotsRemaining + -1;
   } while (slotsRemaining != 0);
-  return CONCAT44(0x48000,g_ArmyRuntimeSlots);
+  return (qword)0x48000 << 32 | (dword)g_ArmyRuntimeSlots;
 }
 
 
@@ -2225,18 +2220,17 @@ ArmyRuntimeClass_UpdatePositionedSoundsVariantA
         cellMasked = TerrainGrid_TestProjectedCellMaskBits01Cf
                           ((armyRuntime->modelNodeRuntime->worldTransform).translation.y,worldPosition->x,
                            worldRuntime);
-        if (cellMasked)
-        goto 
-        ArmyRuntimeClass_UpdatePositionedSoundsVariantA_ContinueWithSecondaryConfiguredPositionedSound
-        ;
-        SpatialSound_UpdateDesiredPositionedGains
-                  ((soundModelRuntime->positionedSoundLinkState60).positionedSoundMaximumDistanceQ12_7C,
-                   (soundModelRuntime->positionedSoundLinkState60).positionedSoundGainQ15_78,worldPosition,soundSlot);
+        if (!cellMasked) {
+          SpatialSound_UpdateDesiredPositionedGains
+                    ((soundModelRuntime->positionedSoundLinkState60).positionedSoundMaximumDistanceQ12_7C,
+                     (soundModelRuntime->positionedSoundLinkState60).positionedSoundGainQ15_78,worldPosition,
+                     soundSlot);
+        }
       }
     }
+    /* Reload (the original skips this after a masked cell; nothing in between writes it). */
     soundModelRuntime = armyRuntime->modelRuntime;
   }
-ArmyRuntimeClass_UpdatePositionedSoundsVariantA_ContinueWithSecondaryConfiguredPositionedSound:
   soundSlotIndex = (soundModelRuntime->positionedSoundClassState84).positionedSoundSlotIndex0D0;
   if (((soundSlotIndex != 0) && (soundSlotIndex < worldRuntime->dwordArrayCount)) &&
      (worldRuntime->dwordArray != (dword *)0x0)) {
@@ -2865,6 +2859,13 @@ ArmyRuntime_HandleCollisionPartner
    ModelNodeRuntime_RebuildTransformsFromRoot [world/model/hierarchy],
    ModelNodeRuntime_AccumulateTransformedBoundsRecursive [world/model/hierarchy].
 */
+/* One 16-bit MMX lane per pixel byte: PUNPCKLBW mm,mm duplicates each byte into a word, PSRLW 4 scales it. */
+#define ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, byteIndex) \
+  ((ulonglong)((((pixel) >> ((byteIndex) * 8)) & 0xffu) * 0x101u >> 4) << ((byteIndex) * 16))
+#define ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixel) \
+  (ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 3) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 2) | \
+   ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 1) | ARMY_PREVIEW_UNPACK_BYTE_LANE(pixel, 0))
+
 ArmyPreviewTextureEaxCf5 __thandor_eax_cf_preserve_ecx_edx
 ArmyRuntime_RenderPreviewTextureCf
           (GraphicsPixelDimension previewHeight,GraphicsPixelDimension previewWidth,
@@ -2872,7 +2873,7 @@ ArmyRuntime_RenderPreviewTextureCf
           WorldRuntimeContext *worldRuntime)
 
 {
-  undefined8 alphaReciprocal;
+  ulonglong alphaReciprocal;
   ModelRuntimeNode *rootNodeOrSize;
   uint pixelTopLeft;
   uint pixelTopRight;
@@ -2889,24 +2890,16 @@ ArmyRuntime_RenderPreviewTextureCf
   Q12 *destinationPixels;
   ushort topLeftAlphaOrSum0;
   ushort topRightAlphaOrClamp0;
-  undefined1 topLeftByte;
-  undefined1 topLeftByte16;
   ushort bottomLeftAlphaOrSum1;
   ushort bottomRightAlphaOrClamp1;
   ushort channelSum2;
   ushort channelClamp2;
-  undefined8 mm0PackedValue0;
+  ulonglong mm0PackedValue0;
   ushort channelSum3;
   ushort channelClamp3;
-  undefined1 topRightByte;
-  undefined1 topRightByte16;
-  undefined8 mm1PackedValue0;
-  undefined1 bottomLeftByte;
-  undefined1 bottomLeftByte16;
-  undefined8 mm2PackedValue0;
-  undefined1 bottomRightByte;
-  undefined1 bottomRightByte16;
-  undefined8 mm3PackedValue0;
+  ulonglong mm1PackedValue0;
+  ulonglong mm2PackedValue0;
+  ulonglong mm3PackedValue0;
   ArmyRuntimeCreateEaxCf5 createResult;
   GraphicsOffscreenAllocationEaxCf5 offscreenResult;
   ArmyPreviewTextureEaxCf5 successResult;
@@ -2971,58 +2964,23 @@ ArmyRuntime_RenderPreviewTextureCf
           pixelTopRight = sourcePixels[1];
           pixelBottomLeft = sourcePixels[savedPreviewWidth * 2];
           pixelBottomRight = sourcePixels[savedPreviewWidth * 2 + 1];
-          topLeftByte = (undefined1)(pixelTopLeft >> 0x18);
-          topLeftAlphaOrSum0 = CONCAT11(topLeftByte,topLeftByte);
-          topLeftByte16 = (undefined1)(pixelTopLeft >> 0x10);
-          topLeftByte = (undefined1)(pixelTopLeft >> 8);
-          topRightByte = (undefined1)(pixelTopRight >> 0x18);
-          topRightAlphaOrClamp0 = CONCAT11(topRightByte,topRightByte);
-          topRightByte16 = (undefined1)(pixelTopRight >> 0x10);
-          topRightByte = (undefined1)(pixelTopRight >> 8);
-          bottomLeftByte = (undefined1)(pixelBottomLeft >> 0x18);
-          bottomLeftAlphaOrSum1 = CONCAT11(bottomLeftByte,bottomLeftByte);
-          bottomLeftByte16 = (undefined1)(pixelBottomLeft >> 0x10);
-          bottomLeftByte = (undefined1)(pixelBottomLeft >> 8);
-          bottomRightByte = (undefined1)(pixelBottomRight >> 0x18);
-          bottomRightAlphaOrClamp1 = CONCAT11(bottomRightByte,bottomRightByte);
-          bottomRightByte16 = (undefined1)(pixelBottomRight >> 0x10);
-          bottomRightByte = (undefined1)(pixelBottomRight >> 8);
+          /* PUNPCKLBW mm,mm; PSRLW mm,4: each pixel byte b becomes the 16-bit lane (b * 0x101) >> 4. */
           mm0PackedValue0 =
-               pmulhw(CONCAT26(topLeftAlphaOrSum0 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(topLeftAlphaOrSum0,topLeftByte16),
-                                                          CONCAT14(topLeftByte16,pixelTopLeft)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(topLeftByte,topLeftByte) >> 4,
-                                                 CONCAT11((char)pixelTopLeft,(char)pixelTopLeft) >> 4))),
-                      *(undefined8 *)(&g_ArmyPreviewAlphaPremultiplyMmxLut256 + (pixelTopLeft >> 0x18) * 8)
-                     );
+               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopLeft),
+                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopLeft >> 0x18]);
           mm1PackedValue0 =
-               pmulhw(CONCAT26(topRightAlphaOrClamp0 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(topRightAlphaOrClamp0,topRightByte16),
-                                                          CONCAT14(topRightByte16,pixelTopRight)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(topRightByte,topRightByte) >> 4,
-                                                 CONCAT11((char)pixelTopRight,(char)pixelTopRight) >> 4))),
-                      *(undefined8 *)(&g_ArmyPreviewAlphaPremultiplyMmxLut256 + (pixelTopRight >> 0x18) * 8)
-                     );
+               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelTopRight),
+                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelTopRight >> 0x18]);
           mm2PackedValue0 =
-               pmulhw(CONCAT26(bottomLeftAlphaOrSum1 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(bottomLeftAlphaOrSum1,bottomLeftByte16),
-                                                          CONCAT14(bottomLeftByte16,pixelBottomLeft)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(bottomLeftByte,bottomLeftByte) >> 4,
-                                                 CONCAT11((char)pixelBottomLeft,(char)pixelBottomLeft) >> 4))),
-                      *(undefined8 *)(&g_ArmyPreviewAlphaPremultiplyMmxLut256 + (pixelBottomLeft >> 0x18) * 8)
-                     );
+               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomLeft),
+                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomLeft >> 0x18]);
           mm3PackedValue0 =
-               pmulhw(CONCAT26(bottomRightAlphaOrClamp1 >> 4,
-                               CONCAT24((ushort)(CONCAT35(CONCAT21(bottomRightAlphaOrClamp1,bottomRightByte16),
-                                                          CONCAT14(bottomRightByte16,pixelBottomRight)) >> 0x20) >> 4,
-                                        CONCAT22(CONCAT11(bottomRightByte,bottomRightByte) >> 4,
-                                                 CONCAT11((char)pixelBottomRight,(char)pixelBottomRight) >> 4))),
-                      *(undefined8 *)(&g_ArmyPreviewAlphaPremultiplyMmxLut256 + (pixelBottomRight >> 0x18) * 8)
-                     );
-          alphaReciprocal = *(undefined8 *)
-                   (&g_ArmyPreviewAverageAlphaReciprocalMmxLut256 +
-                   ((pixelTopLeft >> 0x18) + (pixelTopRight >> 0x18) + (pixelBottomLeft >> 0x18) + (pixelBottomRight >> 0x18) >> 2) * 8)
-          ;
+               pmulhw(ARMY_PREVIEW_UNPACK_PIXEL_LANES(pixelBottomRight),
+                      ((ulonglong *)&g_ArmyPreviewAlphaPremultiplyMmxLut256)[pixelBottomRight >> 0x18]);
+          alphaReciprocal =
+               ((ulonglong *)&g_ArmyPreviewAverageAlphaReciprocalMmxLut256)
+               [(pixelTopLeft >> 0x18) + (pixelTopRight >> 0x18) + (pixelBottomLeft >> 0x18) +
+                (pixelBottomRight >> 0x18) >> 2];
           topLeftAlphaOrSum0 = ((short)mm0PackedValue0 + (short)mm1PackedValue0 +
                     (short)mm2PackedValue0 + (short)mm3PackedValue0 +
                    (short)g_ArmyPreviewDownsampleAlphaRoundingBiasMmx) * (short)alphaReciprocal;
@@ -3048,14 +3006,9 @@ ArmyRuntime_RenderPreviewTextureCf
           bottomRightAlphaOrClamp1 = bottomLeftAlphaOrSum1 >> 8;
           channelClamp2 = channelSum2 >> 8;
           channelClamp3 = channelSum3 >> 8;
-          *destinationPixels = CONCAT13((channelClamp3 != 0) * (channelClamp3 < 0x100) * (char)(channelSum3 >> 8) -
-                              (0xff < channelClamp3),
-                              CONCAT12((channelClamp2 != 0) * (channelClamp2 < 0x100) * (char)(channelSum2 >> 8) -
-                                       (0xff < channelClamp2),
-                                       CONCAT11((bottomRightAlphaOrClamp1 != 0) * (bottomRightAlphaOrClamp1 < 0x100) *
-                                                (char)(bottomLeftAlphaOrSum1 >> 8) - (0xff < bottomRightAlphaOrClamp1),
-                                                (topRightAlphaOrClamp0 != 0) * (topRightAlphaOrClamp0 < 0x100) *
-                                                (char)(topLeftAlphaOrSum0 >> 8) - (0xff < topRightAlphaOrClamp0))));
+          /* PSRLW 8 leaves every lane <= 0xFF, so PACKUSWB never saturates: it just packs the low bytes. */
+          *destinationPixels = (dword)(byte)channelClamp3 << 24 | (dword)(byte)channelClamp2 << 16 |
+                               (dword)(byte)bottomRightAlphaOrClamp1 << 8 | (dword)(byte)topRightAlphaOrClamp0;
           sourcePixels = sourcePixels + 2;
           destinationPixels = destinationPixels + 1;
           previewWidth = previewWidth - 1;
@@ -3182,11 +3135,9 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
                  (rootNode->modelPayload).worldRotationAngle0,(rootNode->worldTransform).translation.z,
                  (rootNode->worldTransform).translation.y,(rootNode->worldTransform).translation.x,
                  *(EffectDefinition **)(definitionOrCount + 400),worldRuntime);
+      /* Setting 0x20 also skips the attachment tick loop below (the original jumps past it). */
       classStateField = &(modelRuntime->classState).classStateEC;
       *classStateField = *classStateField | 0x20;
-      goto 
-      ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive_ContinueWithTechnologyPaymentAndChildRecursion
-      ;
     }
   }
   if ((((modelRuntime->classState).classStateEC & 0x20) == 0) &&
@@ -3207,9 +3158,6 @@ ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive
       tickCursor = tickCountOrChild;
     }
   }
-
-  ArmyRuntimeHierarchy_UpdateProgressAndClassCallbacksRecursive_ContinueWithTechnologyPaymentAndChildRecursion
-  :
   if ((((modelRuntime->classState).classStateEC & 0x40) != 0) &&
      (factionOrProgress = *(int *)(modelRuntime->reserved100_117 + 8) + g_InGameSimulationStepTicks,
      ((modelRuntime->classState).classStateEC & 1) == 0)) {
@@ -3483,7 +3431,7 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
           SoundAssetIndex soundAssetIndex,WorldRuntimeContext *worldContext)
 
 {
-  undefined4 *voiceSetRef;
+  DirectSoundVoiceSet **voiceSetRef;
   FieldGridDimension gridWidthCells;
   dword capabilityBitIndex;
   int cellColumn;
@@ -3494,8 +3442,8 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
   
   if ((((soundAssetIndex != 0) && (worldContext->dwordArray != (dword *)0x0)) &&
       (soundAssetIndex < worldContext->dwordArrayCount)) &&
-     (voiceSetRef = (undefined4 *)worldContext->dwordArray[soundAssetIndex], voiceSetRef != (undefined4 *)0x0)
-     ) {
+     (voiceSetRef = (DirectSoundVoiceSet **)worldContext->dwordArray[soundAssetIndex],
+     voiceSetRef != (DirectSoundVoiceSet **)0x0)) {
     fieldGrid1 = worldContext->fieldGrid;
     projectedRow = (int)((ulonglong)((longlong)worldYQ12 * -0x20c8cc) >> 0x20) << 0xb |
             (uint)((longlong)worldYQ12 * -0x20c8cc) >> 0x15;
@@ -3513,7 +3461,7 @@ ArmyRuntime_TryPlayMappedTerrainSoundAtWorldPoint
            (0x10 < g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick)) {
           g_GameFactionRuntimeImage.records[capabilityBitIndex].relationTransitionTick = 0;
           (*g_SoundPlayOneShot)
-                    (g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,(DirectSoundVoiceSet *)*voiceSetRef);
+                    (g_SoundEffectsGainQ15,g_SoundEffectsGainQ15,*voiceSetRef);
         }
       }
     }
