@@ -310,8 +310,10 @@ ArmyRuntime_ApplyImpactDamageAndFinalizeState
       armyRuntime->actionVector1Q12 = (Q12)armyRuntime;
       armyRuntime->actionVector2Q12 = 0;
       if (parentModelNode == NULL) {
-        /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A395 / JZ 0x0052A39C), whose ZF is
-           architecturally undefined; the C keeps Ghidra's reading that it still holds the CMP result below. */
+        /* The original tests ZF after IMUL EBX,[EDI+0xC],0x740 (0x0052A395 / JZ 0x0052A39C). ZF is undefined
+           after IMUL on paper; measured on an AMD Zen 3 it is left unchanged, so it still holds the result of the
+           CMP [+0x4C] / CMP [+0x278] tests: the counters are updated unless the army was turned to the impact.
+           The C follows that. */
         rotateToImpact = false;
         if ((((armyRuntime->modelRuntimeOrSavedOffset).modelRuntime)->definitionValue9C_4C == 0) &&
            (rotateToImpact = (armyRuntime->modelRuntimeOrSavedOffset).modelRuntime[1].classLinkState.
@@ -636,8 +638,11 @@ ArmyRuntime_ApplyDamageAndPropagateToParent
         ArmyRuntime_ApplyDamageAndPropagateToParent(-healthValue,(parentModelNode->runtimePayload).armyRuntime)
         ;
       }
-      /* NOTE: without a parent the original goes on at 0x0052A290 and updates the owner faction's
-         relationCounterC/D like ArmyRuntime_ApplyImpactDamageAndFinalizeState; this C omits that path. */
+      /* Without a parent the original goes on at 0x0052A290 to the owner faction's relationCounterC/D update of
+         ArmyRuntime_ApplyImpactDamageAndFinalizeState, but guarded by JZ right after IMUL EBX,[EDI+0xC],0x740
+         (0x0052A29C). IMUL leaves ZF unchanged (measured on an AMD Zen 3) and ZF is still set from
+         TEST EDX,EDX with EDX = parent = 0, so the jump is always taken and the update never runs: the C
+         omits it. */
     }
     else if (maxHealth < armyRuntime->actionVector2Q12) {
       /* a negative damage (repair) never raises the health above maxHealth */
