@@ -559,7 +559,7 @@ static __inline RasterColor Raster_Modulate(RasterColor color, RasterColor texel
     return color;
 }
 
-/* ---- WP1: 16-bit alpha blend with depth write -------------------------------------------- */
+/* ---- Alpha-tested depth write (shared by all families) -------------------------------------------- */
 
 /* Depth rule of the alpha-blended modes that write depth (4/6/12/14 and the textured 20/22/28/30):
    depth is written when the source alpha lane (Q4, as handed to Raster_BlendAlpha) is >= 128, i.e.
