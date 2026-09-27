@@ -13,6 +13,19 @@ The public source tree is currently based on **V537**.
 - [Developer changelog](CHANGELOG.md) — short, impact-sorted notes for actionable gameplay/runtime changes; decompiler cleanup is summarized once per represented submodule.
 - [Full V523 → V537 recovery changelog](CHANGELOG_FULL.md) — complete recovery record across all 104 submodules.
 
+## Building
+
+Requirements: Windows, Visual Studio 2022 or newer with the C++ workload (MSVC x86 and Windows SDK), CMake 3.25+ and Ninja on the `PATH` (a "Developer Command Prompt" is not needed; [`cmake/msvc-x86.cmake`](cmake/msvc-x86.cmake) finds the compiler via `vswhere`).
+
+```bat
+cmake --preset release
+cmake --build --preset release
+```
+
+The result is `cmake-build-msvc-release\thandor.exe` (32-bit). Other presets: `debug`, and `mapped` (maps the original image; only needed for the differential self-tests, which also want `thandor_original.exe` next to the exe). CLion and Visual Studio pick the presets up from [`CMakePresets.json`](CMakePresets.json).
+
+To play, copy `thandor.exe` into a **copy** of an installed Thandor directory (the game data is not part of this repository) and start it there, e.g. `thandor.exe -NOINTRO`.
+
 ## Source tree
 
 This tree is organized as a normal C project: public headers under [`include/thandor`](include/thandor), implementations under [`src`](src), parent headers that aggregate child modules, and per-leaf call graphs under [`docs/callgraphs`](docs/callgraphs).
