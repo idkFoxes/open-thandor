@@ -977,20 +977,15 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void)
 
 
 /* Address: 0x005723F0.
-   Ownership: network/protocol/transfer.
-   Purpose: Dequeues one in-game command into g_FrontendClientPlayerCommandRecords, compacts active 0x20-byte
-   FrontendCommandPacketRecord slots into g_FrontendClientCommandBatchPacketBuffer, and broadcasts either the
-   command batch or state reply. IN-GAME lockstep broadcast: requires every peer's commandSyncPending (+0x50) set,
-   clears them, compacts g_FrontendClientPlayerCommandRecords -> batch buffer, type = (count<<16)|0x20; peers not
-   ready + sendStateReplies -> 0x10022 StatePending. Batch stride 0x20 = docs "32 B / player" (exe_net_cmd_sync.md
-   senior for the ring layout). Typed parameters: p2 sendStateReplies→FrontendBooleanState32_V342. Calling
-   convention, exact VariableStorage serialization, function body bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Local calls: UiTransfer_StagePacketAndSend.
-   Cross-module calls: InGameCommandQueue_DequeueFirstIntoRecord [network/protocol/commands].
+   Host side of the in-game command exchange. When every client (player records 1..n-1) has submitted its
+   command, clears their ready flags, takes the host's own next command into slot 0, packs all non-empty
+   command slots into g_FrontendClientCommandBatchPacketBuffer (at least one record) and sends that
+   COMMAND_BATCH to every client; returns false (CF clear). Otherwise returns true (CF set) and, with
+   notifyWaitingPeers, resends the previous batch to clients that have not submitted yet and COMMAND_WAIT
+   to those that have.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 sendStateReplies)
+FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers)
 
 {
   FrontendPlayerRuntimeBlockCount peersRemaining;
@@ -1000,76 +995,81 @@ FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32
   UiTransferEndpointDescriptor *peerEndpointCursor;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendCommandPacketRecord *batchCursor;
-  
+
+  /* playerRecord[1] below: record 0 is the host itself, only the clients are checked */
   remainingOrBatchCount = g_FrontendPlayerRuntimeBlockCount - 1;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   if (remainingOrBatchCount != 0) {
     do {
       if (playerRecord[1].commandSyncPending == FRONTEND_COMMAND_SYNC_CLEAR) {
-        if (sendStateReplies != 0) {
+        if (notifyWaitingPeers != 0) {
           peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
           peersRemaining = g_FrontendPlayerRuntimeBlockCount;
-          while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
+          while (peersRemaining--, peersRemaining != 0) {
+            /* peerEndpointCursor[1] is the 0x10 bytes after the endpoint, i.e. the same record's
+               commandSyncPending (+0x50) */
             if (peerEndpointCursor[1].addressHeader.packedFamilyAndPort == 0) {
               UiTransfer_StagePacketAndSend
                         (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
             }
             else {
-              g_FrontendPacket10022Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10022;
+              g_FrontendPacket10022Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_WAIT;
               UiTransfer_StagePacketAndSend(peerEndpointCursor,&g_FrontendPacket10022Buffer.header);
             }
+            /* 0x13B endpoints of 0x10 bytes = one 0x13B0-byte player record */
             peerEndpointCursor = peerEndpointCursor + 0x13b;
           }
         }
         return true;
       }
-      remainingOrBatchCount = remainingOrBatchCount + -1;
-      playerRecord = playerRecord + 1;
+      remainingOrBatchCount--;
+      playerRecord++;
     } while (remainingOrBatchCount != 0);
     remainingOrBatchCount = g_FrontendPlayerRuntimeBlockCount - 1;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
       playerRecord[1].commandSyncPending = FRONTEND_COMMAND_SYNC_CLEAR;
-      remainingOrBatchCount = remainingOrBatchCount + -1;
-      playerRecord = playerRecord + 1;
+      remainingOrBatchCount--;
+      playerRecord++;
     } while (remainingOrBatchCount != 0);
   }
-  g_UiTransferSenderContext = g_UiTransferSenderContext + 1;
+  g_UiTransferSenderContext++;
   InGameCommandQueue_DequeueFirstIntoRecord(g_FrontendClientPlayerCommandRecords);
   remainingOrBatchCount = 0;
   commandRecordCursor = g_FrontendClientPlayerCommandRecords;
   batchCursor = g_FrontendClientCommandBatchPacketBuffer;
   peersRemaining = g_FrontendPlayerRuntimeBlockCount;
-  /* Pack every non-empty 0x20-byte command record into the batch. */
+  /* Pack every non-empty 0x20-byte command slot (handler offset != 0) into the batch (REP MOVSD). */
   do {
     if (((commandRecordCursor->command).packedCommandAndPlayerId & 0xffffff00) == 0) {
-      commandRecordCursor = commandRecordCursor + 1;
+      commandRecordCursor++;
     }
     else {
-      for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+      for (dwordCount = 8; dwordCount != 0; dwordCount--) {
         (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
         commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
         batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
       }
-      remainingOrBatchCount = remainingOrBatchCount + 1;
+      remainingOrBatchCount++;
     }
-    peersRemaining = peersRemaining - 1;
+    peersRemaining--;
   } while (peersRemaining != 0);
-  if (remainingOrBatchCount << 0x10 == 0) {
-    /* Nothing pending: send the first record (the local one) as a batch of one. */
+  if (remainingOrBatchCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT == 0) {
+    /* Nothing pending: send the first record (the host's, empty) as a batch of one. */
     commandRecordCursor = g_FrontendClientPlayerCommandRecords;
-    for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+    for (dwordCount = 8; dwordCount != 0; dwordCount--) {
       (batchCursor->header).packedTypeAndUnitCount = (commandRecordCursor->header).packedTypeAndUnitCount;
       commandRecordCursor = (FrontendCommandPacketRecord *)&(commandRecordCursor->header).sequenceToken;
       batchCursor = (FrontendCommandPacketRecord *)&(batchCursor->header).sequenceToken;
     }
     remainingOrBatchCount = 1;
   }
+  /* the first packed record's header doubles as the batch header */
   g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount =
-       remainingOrBatchCount << 0x10 | 0x20;
+       remainingOrBatchCount << FRONTEND_PACKET_UNIT_COUNT_SHIFT | FRONTEND_PACKET_COMMAND_BATCH_TYPE;
   peerEndpointCursor = &g_FrontendPlayerRuntimeBlocks[1].endpoint;
   peersRemaining = g_FrontendPlayerRuntimeBlockCount;
-  while (peersRemaining = peersRemaining - 1, peersRemaining != 0) {
+  while (peersRemaining--, peersRemaining != 0) {
     UiTransfer_StagePacketAndSend
               (peerEndpointCursor,&g_FrontendClientCommandBatchPacketBuffer[0].header);
     peerEndpointCursor = peerEndpointCursor + 0x13b;
@@ -1282,12 +1282,13 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFron
 
 
 /* Address: 0x005722C0.
-   Ownership: network/protocol/transfer.
-   Purpose: Matches packet types 0x10021 and 0x10023 to a frontend player by sender and endpoint identity, marks
-   the player ready, and copies changed eight-dword request state into the per-player synchronization slot.
+   Host side of the in-game command exchange: finds the player the packet came from (sequence token and
+   IPv4 address) and refreshes its timeout. A COMMAND_SUBMIT with a new sender context is stored in that
+   player's command slot and marks the player ready for the next batch; a repeated one (retransmit) and a
+   COMMAND_WAIT_ACK only refresh the timeout.
 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HandleSyncRequest10021AndReply10023
+FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet)
 
 {
@@ -1297,43 +1298,46 @@ FrontendTransfer_HandleSyncRequest10021AndReply10023
   int dwordCount;
   FrontendPlayerRuntimeRecord *playerRecord;
   FrontendCommandPacketRecord *commandRecord;
-  
+
   senderSequenceToken = (packet->packet10000Handshake).header.sequenceToken;
-  if ((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_10021) {
+  if ((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_COMMAND_SUBMIT) {
     playersRemaining = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
-    if ((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_10023) {
+    if ((packet->packet10000Handshake).header.packedTypeAndUnitCount != FRONTEND_PACKET_COMMAND_WAIT_ACK) {
       return;
     }
     while ((senderSequenceToken != playerRecord->peerSequenceToken ||
            (sourceContext->ipv4AddressNetworkOrder != (playerRecord->endpoint).ipv4AddressNetworkOrder)))
     {
-      playersRemaining = playersRemaining - 1;
-      playerRecord = playerRecord + 1;
+      playersRemaining--;
+      playerRecord++;
       if (playersRemaining == 0) {
         return;
       }
     }
-    playerRecord->heartbeatExpiryTicks = 0x100;
+    playerRecord->heartbeatExpiryTicks = FRONTEND_PEER_TIMEOUT_TICKS;
     return;
   }
+  /* the command slots run parallel to the player records */
   commandRecord = g_FrontendClientPlayerCommandRecords;
   playersRemaining = g_FrontendPlayerRuntimeBlockCount;
   playerRecord = g_FrontendPlayerRuntimeBlocks;
   while ((senderSequenceToken != playerRecord->peerSequenceToken ||
          (sourceContext->ipv4AddressNetworkOrder != (playerRecord->endpoint).ipv4AddressNetworkOrder))) {
-    commandRecord = commandRecord + 1;
-    playerRecord = playerRecord + 1;
-    playersRemaining = playersRemaining - 1;
+    commandRecord++;
+    playerRecord++;
+    playersRemaining--;
     if (playersRemaining == 0) {
       return;
     }
   }
   packetSenderContext = (packet->packet10000Handshake).header.senderContext;
-  playerRecord->heartbeatExpiryTicks = 0x100;
+  playerRecord->heartbeatExpiryTicks = FRONTEND_PEER_TIMEOUT_TICKS;
+  /* the client bumps its sender context per new command; an equal one is a retransmit */
   if (packetSenderContext != (commandRecord->header).senderContext) {
     playerRecord->commandSyncPending = FRONTEND_COMMAND_SYNC_PENDING;
-    for (dwordCount = 8; dwordCount != 0; dwordCount = dwordCount + -1) {
+    /* copy the whole 0x20-byte packet, header included, into the slot (REP MOVSD) */
+    for (dwordCount = 8; dwordCount != 0; dwordCount--) {
       (commandRecord->header).packedTypeAndUnitCount =
            (packet->packet10000Handshake).header.packedTypeAndUnitCount;
       packet = (FrontendTransferPacketUnion *)&(packet->packet10000Handshake).header.sequenceToken;
@@ -1345,9 +1349,13 @@ FrontendTransfer_HandleSyncRequest10021AndReply10023
 
 
 /* Address: 0x00572560.
-   Ownership: network/protocol/transfer.
-   Purpose: Walks the high-word count of staged 0x20-byte command records and dispatches each bounded command code
-   with its four verified arguments. Executes staged command records on the local simulation after batch consensus.
+   Host side: executes the command batch it has just broadcast (g_FrontendClientCommandBatchPacketBuffer) on
+   the local simulation, so host and clients run the same commands in the same tick. The high 24 bits of
+   each packed command are the handler's offset from InGameCommandQueue_AppendLocalPlayerCommand, the low
+   8 bits the player id; offsets beyond the handler code region are ignored.
+   Known broken (deferred): THANDOR_CODE_AT adds the original code offset to the address of the compiled
+   InGameCommandQueue_AppendLocalPlayerCommand and bounds it by the image-data stand-in for the original
+   code-region end; neither matches the original code layout, so multiplayer commands do not dispatch.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandRecords(void)
 
@@ -1356,10 +1364,11 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
   uint32_t commandHandlerIndex;
   uint32_t remainingCount;
   FrontendCommandPacketRecord *commandRecord;
-  
+
   commandRecord = g_FrontendClientCommandBatchPacketBuffer;
-  for (remainingCount = g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount >> 0x10;
-      remainingCount != 0; remainingCount = remainingCount - 1) {
+  for (remainingCount = g_FrontendClientCommandBatchPacketBuffer[0].header.packedTypeAndUnitCount >>
+                        FRONTEND_PACKET_UNIT_COUNT_SHIFT;
+      remainingCount != 0; remainingCount--) {
     packedCommand = (commandRecord->command).packedCommandAndPlayerId;
     commandHandlerIndex = packedCommand >> 8;
     if (commandHandlerIndex != 0) {
@@ -1370,22 +1379,23 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_DispatchStagedCommandR
                    (commandRecord->command).payloadDword04);
       }
     }
-    commandRecord = commandRecord + 1;
+    commandRecord++;
   }
   return;
 }
 
 
 /* Address: 0x00572AA0.
-   Ownership: network/protocol/transfer.
-   Purpose: Atomically exchanges the processed flag at 0x0050F0A8 with zero. CF is set when the consumed value was
-   zero and clear when work had been marked processed; EAX is restored.
+   Client side: atomically takes and clears g_FrontendTransferResponsePending, which
+   FrontendNetwork_HandleCommandBatchAndPlayerTimeout sets after executing a new command batch. Returns true
+   (CF set) when no batch arrived, so the in-game tick waits for the host instead of advancing the simulation.
 */
 bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlag(void)
 
 {
   int previousFlag;
-  
+
+  /* an XCHG in the original; spelled out as a plain read and write here */
   previousFlag = g_FrontendTransferResponsePending;
   LOCK();
   g_FrontendTransferResponsePending = 0;

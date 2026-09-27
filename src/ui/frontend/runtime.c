@@ -1374,9 +1374,9 @@ FrontendModelPointerContext_Tick(WorldRuntimeContext *callbackContext)
 
 
 /* Address: 0x00514E40.
-   Ownership: ui/frontend/runtime.
-   Purpose: Copies the selected faction's Q4 resource and progress values into the frontend runtime cache and
-   formats the primary amount into the verified UTF-16 display buffer.
+   Refreshes the HUD resource numbers of the active faction in the in-game root: Xenite and Tritium
+   (current / storage limit), Energy demand / generation capacity, and baseline Energy supply plus the Tritium
+   extraction rate. Q4 amounts are shown as whole units (>> 4); the Xenite amount is also formatted as text.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMetricCache(void)
 
@@ -1384,9 +1384,9 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMet
   XeniteAmountQ4 xeniteStorageLimit;
   TritiumAmountQ4 tritiumStorageLimit;
   int xeniteCurrentDisplay;
-  FactionProgressAmountQ4 progressCurrentQ4;
-  FactionProgressAmountQ4 progressLimitQ4;
-  FactionArmyContributionValue activeArmyScaleValue;
+  FactionProgressAmountQ4 baselineEnergySupplyQ4;
+  FactionProgressAmountQ4 energyGenerationCapacityQ4;
+  FactionArmyContributionValue tritiumExtractionRate;
   InGameRuntimeRootImageC3E4 *runtimeRoot;
   int activeFactionIndex;
   
@@ -1396,24 +1396,25 @@ void __thandor_void_preserve_eax_ecx_edx FrontendRuntime_UpdateCurrentFactionMet
   xeniteCurrentDisplay = (int)g_GameFactionRuntimeImage.records[activeFactionIndex].xeniteCurrentQ4 >> 4;
   g_InGameRuntimeRoot->primaryResourceDisplayCurrent49B4 = xeniteCurrentDisplay;
   runtimeRoot->primaryResourceDisplayLimit49B8 = (int)xeniteStorageLimit >> 4;
+  /* decimal, no fraction digits */
   g_WideNumberFormatUtf16
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,xeniteCurrentDisplay,
              (uint16_t *)&g_FrontendCurrentFactionPrimaryResourceTextUtf16);
   tritiumStorageLimit = g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumStorageLimitQ4;
-  progressCurrentQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].baselineEnergySupplyQ4;
+  baselineEnergySupplyQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].baselineEnergySupplyQ4;
   runtimeRoot->secondaryResourceDisplayCurrent4A4C =
        (int)g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumCurrentQ4 >> 4;
   runtimeRoot->secondaryResourceDisplayLimit4A50 = (int)tritiumStorageLimit >> 4;
-  progressLimitQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].energyGenerationCapacityQ4
-  ;
-  activeArmyScaleValue =
+  energyGenerationCapacityQ4 = g_GameFactionRuntimeImage.records[activeFactionIndex].energyGenerationCapacityQ4;
+  tritiumExtractionRate =
        g_GameFactionRuntimeImage.records[activeFactionIndex].tritiumExtractionRateQ4PerTick;
   runtimeRoot->transientContributionDisplay4AE4 =
        (int)(g_GameFactionRuntimeImage.records[activeFactionIndex].suppliedEnergyDemandQ4 +
             g_GameFactionRuntimeImage.records[activeFactionIndex].unpoweredEnergyDemandQ4) >> 4;
-  runtimeRoot->progressLimitDisplay4AE8 = (int)progressLimitQ4 >> 4;
+  runtimeRoot->progressLimitDisplay4AE8 = (int)energyGenerationCapacityQ4 >> 4;
+  /* the extraction rate is added unshifted, as in the original */
   runtimeRoot->combinedProgressOrArmyScaleDisplay4B28 =
-       ((int)progressCurrentQ4 >> 4) + activeArmyScaleValue;
+       ((int)baselineEnergySupplyQ4 >> 4) + tritiumExtractionRate;
   return;
 }
 
@@ -2543,11 +2544,11 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
 
 
 /* Address: 0x00565A30.
-   Ownership: ui/frontend/runtime.
-   Purpose: Existing post-movie results and UI flow are left untouched.
-   Cross-module calls: Movie_Close [movie/runtime/playback], Movie_Open [movie/runtime/playback],
-   UiPageStack_SetActiveIndex [ui/controls/layout], Movie_AdvanceFrame [movie/runtime/playback],
-   UiNode_InvalidateRoot [ui/core/runtime], UiFrame_ProcessAndPresent [ui/controls/layout].
+   End of a mission: plays the end movie chosen by the current scenario's record in the loaded campaign
+   (flm\endeNNNN.flm for the outcome g_EndMovieSelectionIndex and variant g_EndMovieVariantIndex) on the
+   in-game root, then shows the results page (per-faction scores, elapsed time, level title) until a results
+   button sets UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED. Without an in-game root or end movie path, or when the
+   movie cannot be opened, it only installs the results-screen callbacks.
 */
 void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
 
@@ -2577,11 +2578,13 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
   
   runtimeRoot = g_InGameRuntimeRoot;
   g_GraphicsCursorSetFrame(0);
-  g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
-  if ((runtimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
-     (rootCallbacks = (runtimeRoot->rootUi0000).callbacks, g_EndMoviePath != (uint16_t *)0x0)) {
+  g_CursorVisibilityToken--;
+  if ((runtimeRoot != NULL) &&
+     (rootCallbacks = (runtimeRoot->rootUi0000).callbacks, g_EndMoviePath != NULL)) {
     rootCallbacks->keyboardFallback = EndMovieUiRuntime_DispatchCommandByFlags;
     rootCallbacks->frameUpdate = EndMovieUiRuntime_HandleModeTransition;
+    /* Scenario records (0x180 bytes) as in OldUnitRuntime_RebuildScenarioReplayTables: +0x300 the scenario
+       id, +0x220 / +0x240 the end movie number per outcome for a nonzero / zero variant index. */
     if (g_FrontendLoadedCampaignAsset != 0) {
       countOrActiveFactions = *(int *)(g_FrontendLoadedCampaignAsset + 0xb8);
       recordCursorOrRemaining = g_FrontendLoadedCampaignAsset + 0x200;
@@ -2593,6 +2596,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
           else {
             endMovieNumber = *(int32_t *)(recordCursorOrRemaining + 0x20 + g_EndMovieSelectionIndex * 4);
           }
+          /* four zero-padded digits over the "0000" of flm\ende0000.flm */
           g_WideNumberFormatUtf16
                     (WIDE_FORMAT_PAD_WITH_ZERO,0,4,1,endMovieNumber,(uint16_t *)(u_flm_ende0000_flm_0050df4a + 8))
           ;
@@ -2600,10 +2604,11 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
           break;
         }
         recordCursorOrRemaining = recordCursorOrRemaining + 0x180;
-        countOrActiveFactions = countOrActiveFactions + -1;
+        countOrActiveFactions--;
       } while (countOrActiveFactions != 0);
     }
     Movie_Close();
+    /* clear both buffers to black */
     framebufferAccessFailed = g_GraphicsFramebufferBeginAccess();
     if (!framebufferAccessFailed) {
       g_GraphicsFramebufferFillRectArgb
@@ -2634,41 +2639,45 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         runtimeRoot->activeEndMovieRuntime022C = (MovieRuntime *)frameAdvanceResult.movieOrError;
         runtimeRoot->endMoviePlaybackState0230 = 0;
         g_EndMoviePendingTicks = 0;
+        /* one movie frame per timer tick until the movie ends (or the end-movie flag is cleared elsewhere) */
         do {
           if (g_EndMoviePendingTicks != 0) {
-            g_EndMoviePendingTicks = g_EndMoviePendingTicks - 1;
+            g_EndMoviePendingTicks--;
             frameAdvanceResult = Movie_AdvanceFrame();
             if (frameAdvanceResult.ended) {
-              g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & 0xfffff7ff;
+              g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags & ~UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             }
           }
           UiNode_InvalidateRoot((UiNodeBase *)runtimeRoot);
           UiFrame_ProcessAndPresent();
-        } while ((g_UiCommandRuntimeFlags & 0x800) != 0);
+        } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0);
       }
-      g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+      g_CursorVisibilityToken++;
       UiPageStack_SetActiveIndex(1,&runtimeRoot->endMoviePageStack02F8);
       recordCursorOrRemaining = 7;
       factionLifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
       countOrActiveFactions = 0;
       factionIndex = 1;
+      /* scores of every faction 1..7 that took part (lifecycle state not 0) */
       do {
-        factionLifecycleState = factionLifecycleState + 1;
+        factionLifecycleState++;
         if (*factionLifecycleState != 0) {
-          countOrActiveFactions = countOrActiveFactions + 1;
+          countOrActiveFactions++;
           GameFactionRuntime_RecomputeProgressAndScoreMetrics
                     (factionIndex,&runtimeRoot->worldRuntime0A30);
         }
-        factionIndex = factionIndex + 1;
-        recordCursorOrRemaining = recordCursorOrRemaining + -1;
+        factionIndex++;
+        recordCursorOrRemaining--;
       } while (recordCursorOrRemaining != 0);
       if (countOrActiveFactions != 0) {
+        /* root +0x460, +0x4DC, +0x558: row counts of the three results lists */
         *(int *)(runtimeRoot->opaque034C_08D3 + 0x114) = countOrActiveFactions;
         *(int *)(runtimeRoot->opaque034C_08D3 + 400) = countOrActiveFactions;
         *(int *)(runtimeRoot->opaque034C_08D3 + 0x20c) = countOrActiveFactions;
-        elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 0x12bf) / 0x12c0;
+        /* elapsed minutes of the 80 Hz clock, rounded up, shown as hours and minutes */
+        elapsedTimeUnits = (uint64_t)(g_GameFactionRuntimeImage.tail.periodicClockTick + 4799) / 4800;
         g_LocaleFormatTimeFieldsUtf16
-                  ((uint32_t)(elapsedTimeUnits / 0x3c),(uint32_t)(elapsedTimeUnits % 0x3c),
+                  ((uint32_t)(elapsedTimeUnits / 60),(uint32_t)(elapsedTimeUnits % 60),
                    (uint16_t *)&g_EndGameElapsedTimeScratchUtf16);
         resultsTextResult = TextResource_Resolve(0x21c0);
         resourceId = g_InGameLevelTitleTextResourceIndex + 0x2230;
@@ -2676,6 +2685,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         ;
         levelTitleResult = TextResource_Resolve(resourceId);
         RichTextCommandStream_PatchPayloadBySelector(0,levelTitleResult.text,resultsTextResult.text);
+        /* 0x101B: results continue button; 0x1025: second results button, local games hide it */
         UiNodeList_UnsuppressActionId(0x101b,(UiNodeBase *)runtimeRoot);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
@@ -2683,6 +2693,7 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         }
         remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
         playerBlock = g_FrontendPlayerRuntimeBlocks;
+        /* a host with other players waits for them instead of offering continue */
         if (((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL)
            && (1 < g_FrontendPlayerRuntimeBlockCount)) {
           UiNodeList_SuppressActionId(0x101b,(UiNodeBase *)runtimeRoot);
@@ -2691,19 +2702,21 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
         }
         do {
           (playerBlock->factionAssignment).readyOrWaitState = 0;
-          remainingPlayerBlocks = remainingPlayerBlocks - 1;
-          playerBlock = playerBlock + 1;
+          remainingPlayerBlocks--;
+          playerBlock++;
         } while (remainingPlayerBlocks != 0);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
             SESSION_NETWORK_ROLE_LOCAL) {
+          /* local game: remove the first entry of the list whose count is at root +0x45C (entries from
+             +0x474); the shift copies count - 3 dwords */
           previousResultCount = *(uint32_t *)(runtimeRoot->opaque034C_08D3 + 0x110);
-          *(int *)(runtimeRoot->opaque034C_08D3 + 0x110) = *(int *)(runtimeRoot->opaque034C_08D3 + 0x110) + -1
+          *(int *)(runtimeRoot->opaque034C_08D3 + 0x110) = *(int *)(runtimeRoot->opaque034C_08D3 + 0x110) - 1
           ;
           countOrActiveFactions = previousResultCount - 3;
           if (2 < previousResultCount && countOrActiveFactions != 0) {
             copySource = runtimeRoot->opaque034C_08D3 + 300;
             copyDestination = runtimeRoot->opaque034C_08D3 + 0x128;
-            for (; countOrActiveFactions != 0; countOrActiveFactions = countOrActiveFactions + -1) {
+            for (; countOrActiveFactions != 0; countOrActiveFactions--) {
               *(uint32_t *)copyDestination = *(uint32_t *)copySource;
               copySource = copySource + 4;
               copyDestination = copyDestination + 4;
@@ -2717,17 +2730,17 @@ void __thandor_void_preserve_eax_ecx_edx Frontend_PlaySelectedEndMovie(void)
           {
             FrontendPlayerRuntime_MarkReadyByIdAndUpdateAction101B(0xffffffff);
           }
-        } while ((g_UiCommandRuntimeFlags & 0x1000) == 0);
+        } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED) == 0);
       }
       g_TimerUnregisterPeriodic(FrontendSession_PeriodicTick);
       Movie_Close();
     }
     else {
-      g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+      g_CursorVisibilityToken++;
     }
   }
   else {
-    g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+    g_CursorVisibilityToken++;
   }
   rootCallbacks = (g_InGameRuntimeRoot->rootUi0000).callbacks;
   rootCallbacks->keyboardFallback = InGameHotkeys_DispatchCommandByFlags;

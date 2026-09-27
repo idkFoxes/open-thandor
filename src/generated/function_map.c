@@ -1866,7 +1866,7 @@ const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x00571E40u, (void *)&ArmyAssetRegistry_ClearPreviewTextureCacheAndRefreshSelected},
     {0x00571EC0u, (void *)&FieldGrid_ApplyEncodedUpdateCore},
     {0x00571FE0u, (void *)&FieldGrid_ApplyMaskedRegionCore},
-    {0x005722C0u, (void *)&FrontendTransfer_HandleSyncRequest10021AndReply10023},
+    {0x005722C0u, (void *)&FrontendTransfer_HostHandleCommandSubmitOrWaitAck},
     {0x005723F0u, (void *)&FrontendTransfer_BroadcastPendingCommandBatchAndSyncState},
     {0x00572560u, (void *)&FrontendTransfer_DispatchStagedCommandRecords},
     {0x005725D0u, (void *)&FrontendClientSession_DecrementTimeoutsAndCompactPlayers},

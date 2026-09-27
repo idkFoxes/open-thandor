@@ -47,12 +47,13 @@ static __inline uint32_t WorldLighting_BlendColors
 }
 
 /* Address: 0x00532FA0.
-   Ownership: world/runtime/core.
-   Purpose: Interpolates the level lighting color sets and angular parameters from the current runtime phase,
-   applies the resulting terrain-lighting configuration, and refreshes field-region normals and lighting.
-   Local calls: WorldRuntime_SetTerrainLightingConfiguration, WorldRuntime_RecomputeFieldRegionNormalsAndLighting.
+   Periodic terrain lighting cycle (tick-wheel case 0, plus two session setup paths): when the level
+   defines a cycle duration, the simulation tick's phase in the cycle picks a cosine blend between the
+   level's primary and alternate terrain colour sets and between two packed 16-bit parameter pairs,
+   installs the blended colours and recomputes the terrain normals and lighting with the blended pairs.
+   At phase 0 the blend index is 256 if the cosine table holds exactly 1.0 there: one past the declared
+   256-entry factor tables (as in the original).
 */
-
 void __thandor_void_preserve_eax_ecx_edx
 WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
 
@@ -88,8 +89,9 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
           terrainLightingCycleDurationTicks;
   worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
   if (cycleDurationOrPhase != 0) {
-    cycleDurationOrPhase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 0x10) / cycleDurationOrPhase;
-    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 0x15;
+    /* phase in the cycle as a 16-bit angle; its cosine (Q28, -1..1) becomes a blend index 0..256 */
+    cycleDurationOrPhase = (g_GameFactionRuntimeImage.tail.simulationTick % cycleDurationOrPhase << 16) / cycleDurationOrPhase;
+    blendIndexOrPrimaryValue = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 21;
     primaryColorA =
          ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
          terrainBaseColorArgb;
@@ -144,6 +146,9 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                ((g_InGameLevelRuntimeGlobalBlock.conditionStorage)->levelImage).runtimeTail2E0.
                terrainRampColor12CArgb & 0xff000000,
                mixedColor1A & 0xffffff,mixedColor0B | 0xff000000,mixedColor0A & 0xffffff,worldRuntime);
+    /* Low 16 bits of the pairs: triangular blend over the phase byte (0x80 = half cycle); the value that
+       would lie below the other one gets 0x10000 added, so the blend runs forward through the 16-bit wrap.
+       High 16 bits: the same cosine weight as the colours. */
     phaseByteOrAlternateSize = cycleDurationOrPhase >> 8;
     blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16;
     alternateOriginOrBlendWeight = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
@@ -162,7 +167,7 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
       primaryOriginXWeighted = blendIndexOrPrimaryValue * (phaseByteOrAlternateSize - 0x80);
       alternateOriginXWeighted = alternateOriginOrBlendWeight * (0x80 - (phaseByteOrAlternateSize - 0x80));
     }
-    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 0x15;
+    alternateOriginOrBlendWeight = g_FixedCosQ28[cycleDurationOrPhase] + 0x10000000U >> 21;
     inverseBlendWeight = 0x100 - alternateOriginOrBlendWeight;
     blendIndexOrPrimaryValue = (uint32_t)(uint16_t)(levelConditions->levelImage).runtimeTail2E0.
                            packedFieldRegionHeightHigh16WidthLow16;
@@ -198,7 +203,6 @@ WorldLightingRuntime_UpdateInterpolatedTerrainLighting(void)
                      ((int)&(levelConditions->levelImage).runtimeTail2E0.packedFieldRegionOriginYHigh16XLow16
                      + 2) * alternateOriginOrBlendWeight) >> 8,(uint32_t)(primaryOriginXWeighted + alternateOriginXWeighted) >> 7 & 0xffff,worldRuntime);
   }
-  return;
 }
 
 

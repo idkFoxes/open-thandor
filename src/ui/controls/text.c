@@ -1866,19 +1866,17 @@ UiTooltip_Draw(UiPixelCoordinate clipBottom,UiPixelCoordinate clipRight,UiPixelC
 
 
 /* Address: 0x004B0F90.
-   Ownership: ui/controls/text.
-   Purpose: Pops UI roots until the current root equals the protected global boundary pointer at 004B0E34 or the
-   stack sentinel. CF set from a pop stops the loop; EAX is preserved.
-   Cross-module calls: UiRootStack_Pop [ui/controls/layout].
+   Closes the UI roots of an ending session: pops the front root until the stack is empty; a root that vetoes
+   its close stops the loop and is reported as CF (true). The original also stops at the dword after g_UiRootNode (0x004B0E34, the
+   window texture source), which is never a root, so in practice this pops every root.
 */
 bool __thandor_cf_preserve_eax UiRootStack_PopUntilWindowTextureBoundary(void)
 
 {
-  bool rootWasValid;
   bool popStopped;
-  
+
   while (((GraphicsTextureSourceAsset *)g_UiRootNode != g_UiWindowTextureSource &&
-         (g_UiRootNode != (UiRootNode *)0xffffffff))) {
+         (g_UiRootNode != UI_ROOT_STACK_END))) {
     popStopped = UiRootStack_Pop(g_UiRootNode);
     if (popStopped) {
       return true;

@@ -64,26 +64,20 @@ ModelNodeRuntime_UpdateStateTintRecursive(ModelRuntimeNode *modelNodeRuntime)
 
 
 /* Address: 0x004BE360.
-   Ownership: world/model/hierarchy.
-   Purpose: Starts recursive model-transform rebuilding from the current node or its recorded parent/root pointer.
-   Fire-chain root: rebuilds the world transform chain before kind-2 launch points are transformed. Role: Starts a
-   full model-hierarchy transform rebuild at the root node. Inputs: Root ModelRuntimeNode after local animation,
-   aim, recoil or translation changes. Outputs: Consistent world transforms for root and every child.
-   Local calls: ModelNodeRuntime_ComposeChildTransformsRecursive.
+   Recomputes the world transforms of a model hierarchy after its local animation, aim, recoil or
+   translation changed: composes from the node's parent if it has one, else from the node itself. Only one
+   level is climbed, so callers pass a root node or a direct child of it.
 */
 void __thandor_void_preserve_eax_ecx_edx
 ModelNodeRuntime_RebuildTransformsFromRoot(ModelRuntimeNode *modelNodeRuntime)
 
 {
-  ModelRuntimeNode *parentNode;
-  
-  if (modelNodeRuntime->parentNode == (ModelRuntimeNode *)0x0) {
+  if (modelNodeRuntime->parentNode == NULL) {
     ModelNodeRuntime_ComposeChildTransformsRecursive(modelNodeRuntime);
   }
   else {
     ModelNodeRuntime_ComposeChildTransformsRecursive(modelNodeRuntime->parentNode);
   }
-  return;
 }
 
 

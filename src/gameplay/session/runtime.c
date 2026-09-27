@@ -906,16 +906,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ProcessQueuedSessionNotif
 
 
 /* Address: 0x005641D0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Initializes a new in-game session from a level asset, builds player and UI runtime state, opens the
-   level movie, prepares world, terrain, shading, technology, army, model, shot, effect, and audio resources, and
-   reports failure through CF.
-   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess,
-   InGameRuntime_UpdateSimulationAndNetworkTick.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], UiRuntime_SetSynchronizationHooks
-   [ui/core/runtime], TextResource_Resolve [assets/text/resources], SelectionInfoPanel_InitResources
-   [gameplay/selection/runtime], InGameUiRuntime_InitializeControlTreeResources [ui/ingame/runtime],
-   UiRootStack_Push [ui/controls/layout].
+   Starts a new game on a level: resets the session counters and the per-player blocks, installs the step timer
+   and InGameRuntime_UpdateSimulationAndNetworkTick as the UI synchronization hook, builds the in-game UI root from
+   its template, opens the level movie that plays while loading and loads the level (world, terrain, shading,
+   technologies, units). It then reports itself ready to the other players and keeps drawing the player-status
+   screen while stepping until every player is ready, and finally queues the level's five intro notifications.
+   CF set (failed) returns the error of the failing step.
 */
 NewSessionInitResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,uint16_t *levelMoviePath)
@@ -957,7 +953,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
   GridScratchAllocResult gridScratch;
   NewSessionInitResult failureResult;
   
-  g_UiCommandRuntimeFlags = 0x11;
+  g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
   g_SessionNetworkTickCounter = 1;
   g_HostCommandBatchSyncSentThisInterval = 0;
   g_GameFactionRuntimeImage.tail.simulationTick = 1;
@@ -969,21 +965,23 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
   g_InGameSessionStartedNetworked =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
        SESSION_NETWORK_ROLE_LOCAL;
-  g_TextureDownsampleShift = PersistentSettings_Read(0,0x30);
+  g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
   g_EndMovieSelectionIndex = 0xffffffff;
   g_EndMovieVariantIndex = 0;
-  g_EndMoviePath = (uint16_t *)0x0;
+  g_EndMoviePath = NULL;
+  /* clear the 0x280-byte player-removal packet and all selection blocks (0x10230 dwords) */
   packetCursor = &g_FrontendClientPlayerRemovalPacket10007;
-  for (countOrPlayerId = 0xa0; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
+  for (countOrPlayerId = 0xa0; countOrPlayerId != 0; countOrPlayerId--) {
     (packetCursor->header).packedTypeAndUnitCount = 0;
     packetCursor = (FrontendPlayerRemovalPacket10007 *)&(packetCursor->header).sequenceToken;
   }
   selectionBlockCursor = g_SelectionPlayerBlocks;
   for (countOrPlayerId = 0x10230; remainingPlayers = g_FrontendPlayerRuntimeBlockCount, selectionBlock = g_SelectionPlayerBlocks,
-      frontendPlayer = g_FrontendPlayerRuntimeBlocks, countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
-    (selectionBlockCursor->selection).entries[0] = (GameEntityRuntime *)0x0;
+      frontendPlayer = g_FrontendPlayerRuntimeBlocks, countOrPlayerId != 0; countOrPlayerId--) {
+    (selectionBlockCursor->selection).entries[0] = NULL;
     selectionBlockCursor = (SelectionPlayerRuntimeBlock *)((selectionBlockCursor->selection).entries + 1);
   }
+  /* per player: not ready, command sync pending, fresh timeout; link its selection block and copy the name */
   do {
     countOrPlayerId = frontendPlayer->playerRuntimeId;
     (frontendPlayer->factionAssignment).readyOrWaitState = 0;
@@ -995,51 +993,54 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
     selectionBlock->simulationStepTicks = 1;
     playerNameSource = &frontendPlayer->playerName;
     playerNameDestination = selectionBlock->reserved80B0_8117 + 0x40;
-    for (countOrPlayerId = 0x14; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
+    for (countOrPlayerId = 0x14; countOrPlayerId != 0; countOrPlayerId--) {
       *(uint32_t *)playerNameDestination = *(uint32_t *)playerNameSource->textUtf16;
       playerNameSource = (FrontendPlayerNameUtf16_28 *)(playerNameSource->textUtf16 + 2);
       playerNameDestination = playerNameDestination + 4;
     }
-    remainingPlayers = remainingPlayers - 1;
-    selectionBlock = selectionBlock + 1;
-    frontendPlayer = frontendPlayer + 1;
+    remainingPlayers--;
+    selectionBlock++;
+    frontendPlayer++;
   } while (remainingPlayers != 0);
   g_SessionTransferTimeoutTicks = 0x400;
-  g_InGameNetworkTickCountdown = 4;
+  g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   g_InGameStateTickSpinLock = 0;
-  g_TimerRegisterPeriodic(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
+  g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
   UiRuntime_SetSynchronizationHooks
             (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
+  /* session name = the level title without the characters Windows forbids in file names (at most 31);
+     the first title character is skipped */
   titleTextIndex = (levelAsset->header).titleTextResourceIndex;
   sessionNameClearCursor = &g_InGameSessionNameScratchUtf16;
-  for (countOrPlayerId = 0x20; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
+  for (countOrPlayerId = 0x20; countOrPlayerId != 0; countOrPlayerId--) {
     *sessionNameClearCursor = 0;
-    sessionNameClearCursor = sessionNameClearCursor + 1;
+    sessionNameClearCursor++;
   }
   resolvedTitle = TextResource_Resolve(titleTextIndex + 0x2230);
   titleSource = resolvedTitle.text;
   sessionNameCursor = &g_InGameSessionNameScratchUtf16;
   countOrPlayerId = 0x1f;
   do {
-    titleSource = titleSource + 1;
+    titleSource++;
     titleChar = *titleSource;
     if (titleChar == 0) break;
-    if ((((((titleChar != 0x2a) && (titleChar != 0x3c)) && (titleChar != 0x3e)) &&
-         ((titleChar != 0x22 && (titleChar != 0x2f)))) &&
-        ((titleChar != 0x5c && ((titleChar != 0x2e && (titleChar != 0x3f)))))) &&
-       ((titleChar != 0x3a && (titleChar != 0x7c)))) {
+    if ((((((titleChar != '*') && (titleChar != '<')) && (titleChar != '>')) &&
+         ((titleChar != '"' && (titleChar != '/')))) &&
+        ((titleChar != '\\' && ((titleChar != '.' && (titleChar != '?')))))) &&
+       ((titleChar != ':' && (titleChar != '|')))) {
       *sessionNameCursor = titleChar;
-      sessionNameCursor = sessionNameCursor + 1;
+      sessionNameCursor++;
     }
-    countOrPlayerId = countOrPlayerId + -1;
+    countOrPlayerId--;
   } while (countOrPlayerId != 0);
+  /* 4 MB pool for the world objects (0x4000 records of 0x100 bytes), zeroed */
   allocation = g_MemoryApi.alloc(0x400000);
   rootCursorOrError = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
   if (!allocation.failed) {
     g_RuntimeObjectRebaseBaseMinusOne = rootCursorOrError[-1].opaqueA06C_C3E3 + 0x2377;
     g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
-    for (countOrPlayerId = 0x100000; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
-      (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)0x0;
+    for (countOrPlayerId = 0x100000; countOrPlayerId != 0; countOrPlayerId--) {
+      (rootCursorOrError->rootUi0000).base.nextSibling = NULL;
       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
     }
     statusResult = SelectionInfoPanel_InitResources
@@ -1053,15 +1054,17 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
       if (!allocation.failed) {
         templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
         g_InGameRuntimeRoot = inGameRoot;
-        for (countOrPlayerId = 0x30f9; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
+        /* copy the in-game root template (0x30F9 dwords = 0xC3E4 bytes) */
+        for (countOrPlayerId = 0x30f9; countOrPlayerId != 0; countOrPlayerId--) {
           (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
-          templateCursor = templateCursor + 1;
+          templateCursor++;
           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
         }
         world = &inGameRoot->worldRuntime0A30;
         statusResult = InGameUiRuntime_InitializeControlTreeResources((UiRootNode *)inGameRoot);
         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
         if (!statusResult.failed) {
+          /* world input and command callbacks, camera limits, and the step hook for the world runtime */
           inGameRoot->worldOverlayCallback0B8C =
                InGameWorldOverlay_RebuildOrReleaseTransientMarkers;
           (inGameRoot->worldRuntime0A30).selection.dispatchCommandCallback =
@@ -1124,21 +1127,25 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                   rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelLoad.errorOrValue;
                   if (!levelLoad.failed) {
                     queueRecord = inGameRoot->notificationQueue9E60;
-                    for (countOrPlayerId = 0x20; countOrPlayerId != 0; countOrPlayerId = countOrPlayerId + -1) {
+                    for (countOrPlayerId = 0x20; countOrPlayerId != 0; countOrPlayerId--) {
                       queueRecord->notificationMovieId00 = 0;
                       queueRecord = (InGameNotificationQueueRecord20 *)&queueRecord->priority04;
                     }
                     statusResult = TerrainCompositeTexture_Create();
                     rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                     if (!statusResult.failed) {
+                      /* hold the step off while the world is finished */
                       g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                       g_InGameSimulationStepTicks = 1;
-                      settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
-                      gridHalfSize = PersistentSettings_Read(0x20,0x10);
-                      subresourceCount = PersistentSettings_Read(0x10,0x18);
+                      settingOrFactionToken =
+                           PersistentSettings_Read(0x40,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+                      gridHalfSize = PersistentSettings_Read(0x20,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+                      subresourceCount =
+                           PersistentSettings_Read(0x10,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
                       GraphicsShadingRuntime_InitializeGeneratedTexture
                                 (subresourceCount,gridHalfSize,settingOrFactionToken);
-                      settingOrFactionToken = PersistentSettings_Read(1,0x1c);
+                      /* mirror the shading and mouse/panel options into the world runtime flags */
+                      settingOrFactionToken = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
                       if (settingOrFactionToken == 0) {
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags & 0xfffdffff;
@@ -1147,7 +1154,8 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags | 0x20000;
                       }
-                      settingOrFactionToken = PersistentSettings_Read(0,0x5c);
+                      settingOrFactionToken =
+                           PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
                       if ((settingOrFactionToken & 1) == 0) {
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags & 0xbfffffff;
@@ -1173,7 +1181,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         *worldRuntimeFlags = *worldRuntimeFlags | 0x4000000;
                       }
                       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
-                                     PersistentSettings_Read(0,0x40);
+                                     PersistentSettings_Read(0,PERSISTENT_SETTING_MAP_MOUSE_OPTION_FLAGS);
                       if (((uint32_t)rootCursorOrError & 4) != 0) {
                         UiPageStack_SetActiveIndex(1,&inGameRoot->optionalUiPageStack40AC);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
@@ -1186,6 +1194,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                       subsystemFailed = (bool)InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess
                                                ((uint32_t)(inGameRoot->worldRuntime0A30).fieldGrid);
                       if (!subsystemFailed) {
+                        /* a campaign carries units over from the previous level */
                         if (g_FrontendLoadedCampaignAsset == 0) {
                           OldUnitRuntime_ResetPendingTables();
                         }
@@ -1214,18 +1223,20 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                           UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
                           InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
                           WorldLightingRuntime_UpdateInterpolatedTerrainLighting();
+                          /* report this player as loaded */
                           if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
                               SESSION_NETWORK_ROLE_LOCAL) {
                             FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
                                       (g_LocalPlayerRuntimeId,0,0,0);
                           }
                           else {
-                            InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+                            InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
                           }
                           g_SpinLockRelease(&g_InGameStateTickSpinLock);
                           UiFrame_FlushInputAndResetPendingTicks();
-                          g_GraphicsCursorSetFrame(6);
-                          g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+                          g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
+                          g_CursorVisibilityToken++;
+                          /* show the player-status screen and keep the lockstep running until all are ready */
                           InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                           do {
                             UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
@@ -1234,12 +1245,12 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                             UiFrame_Draw();
                             g_GraphicsFramebufferPresent(g_FramebufferAccess);
                             InGameRuntime_UpdateSimulationAndNetworkTick();
-                          } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
-                          inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
+                          } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
+                          inGameRoot->levelMovieRuntime08D4 = NULL;
                           inGameRoot->playerStatusLayoutMetric093C = 0;
                           UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
                           Movie_Close();
-                          g_GraphicsCursorSetFrame(0);
+                          g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
                           /* Lost load: the original reads the first of five level intro
                              notification movies from conditionStorage+0x324. */
                           notificationMovieId =
@@ -1280,15 +1291,12 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
 
 
 /* Address: 0x00564920.
-   Ownership: gameplay/session/runtime.
-   Purpose: Initializes an in-game session from persisted save state, reconstructs player and world runtime data,
-   restores assets and subsystem state, installs callbacks, and reports failure through CF.
-   Local calls: InGameRuntime_InitializeOptionalSubsystemAlwaysSuccess,
-   InGameRuntime_UpdateSimulationAndNetworkTick.
-   Cross-module calls: PersistentSettings_ReadDword [core/settings/persistent], Package_Mount
-   [assets/package/runtime], Package_LoadEntry [assets/package/runtime], UiRuntime_SetSynchronizationHooks
-   [ui/core/runtime], SelectionInfoPanel_InitResources [gameplay/selection/runtime],
-   InGameUiRuntime_InitializeControlTreeResources [ui/ingame/runtime].
+   Continues a saved game: mounts the save package, takes the session name from its header, loads the campaign
+   and level entries, and then follows the same steps as InGameRuntime_InitializeNewSession, except that the local
+   player is always player 0 of a single block, the world comes from the saved external tables and field grid
+   (InGameLevelRuntime_LoadResourcesAfterExternalTables) instead of a fresh level, and no intro notifications are
+   queued. The package and the level entry are released again at the end. CF set (failed) returns the error of the
+   failing step.
 */
 LoadedSessionInitResult __thandor_eax_cf_preserve_ecx_edx
 InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
@@ -1327,19 +1335,20 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
   InGameRuntimeRootImageC3E4 *mountedPackage;
   FrontendLoadedLevelRuntimeImage370 *loadedLevelAsset;
   
-  g_TextureDownsampleShift = PersistentSettings_Read(0,0x30);
-  mountedPackage = (InGameRuntimeRootImageC3E4 *)0x0;
-  loadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
+  g_TextureDownsampleShift = PersistentSettings_Read(0,PERSISTENT_SETTING_TEXTURE_QUALITY);
+  mountedPackage = NULL;
+  loadedLevelAsset = NULL;
   statusResult = Package_Mount(savePackagePath);
   saveNameSource = g_PackageScratchBuffer;
   mountResult = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
   rootCursorOrError = mountResult;
   if (!statusResult.failed) {
     sessionNameClearCursor = &g_InGameSessionNameScratchUtf16;
-    for (remainingCount = 0x20; remainingCount != 0; remainingCount = remainingCount + -1) {
+    for (remainingCount = 0x20; remainingCount != 0; remainingCount--) {
       *sessionNameClearCursor = 0;
-      sessionNameClearCursor = sessionNameClearCursor + 1;
+      sessionNameClearCursor++;
     }
+    /* the session name is the UTF-16 string at offset 0x100 of the 0x200-byte package header */
     g_FileSystemSeek(FILESYSTEM_SEEK_BEGIN,0,mountResult);
     g_FileSystemReadExact(0x200,saveNameSource,mountResult);
     saveNameSource = saveNameSource + 0x100;
@@ -1349,12 +1358,14 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
     do {
       scanEnd = scanCursor;
       if (remainingCount == 0) break;
-      remainingCount = remainingCount + -1;
+      remainingCount--;
       scanEnd = scanCursor + 2;
       terminatorOrFailure = *(short *)scanCursor == 0;
       scanCursor = scanEnd;
     } while (!terminatorOrFailure);
     if (terminatorOrFailure) {
+      /* scanEnd is just past the terminator: these indices are -6..-3 and -10..-7 in 32-bit arithmetic, i.e.
+         the four characters before the terminator (the file extension) are cut off */
       scanEnd[-0xffffffff00000006] = 0;
       scanEnd[-0xffffffff00000005] = 0;
       scanEnd[-0xffffffff00000004] = 0;
@@ -1368,10 +1379,10 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
       if (0x1f < copyCount) {
         copyCount = 0x1f;
       }
-      for (; copyCount != 0; copyCount = copyCount - 1) {
+      for (; copyCount != 0; copyCount--) {
         *sessionNameCursor = *(short *)saveNameSource;
         saveNameSource = saveNameSource + 2;
-        sessionNameCursor = sessionNameCursor + 1;
+        sessionNameCursor++;
       }
     }
     packageEntry = Package_LoadEntry((uint16_t *)u_campagne_hex_0050e068);
@@ -1383,41 +1394,43 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
     rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelImage;
     mountedPackage = mountResult;
     if (!packageEntry.failed) {
+      /* only one selection block is set up: local player 0 with the saved faction */
       settingOrFactionToken = levelImage->playerSlots[6].aiClassOrMode;
       selectionBlockCursor = g_SelectionPlayerBlocks;
-      for (remainingCount = 0x10230; entitySlots = g_SelectionPlayerBlocks, remainingCount != 0; remainingCount = remainingCount + -1) {
-        (selectionBlockCursor->selection).entries[0] = (GameEntityRuntime *)0x0;
+      for (remainingCount = 0x10230; entitySlots = g_SelectionPlayerBlocks, remainingCount != 0; remainingCount--) {
+        (selectionBlockCursor->selection).entries[0] = NULL;
         selectionBlockCursor = (SelectionPlayerRuntimeBlock *)((selectionBlockCursor->selection).entries + 1);
       }
       g_EndMovieSelectionIndex = 0xffffffff;
       g_EndMovieVariantIndex = 0;
-      g_EndMoviePath = (uint16_t *)0x0;
+      g_EndMoviePath = NULL;
       g_LocalPlayerRuntimeId = 0;
       g_SelectionPlayerRuntimeBlockPointers[0] = g_SelectionPlayerBlocks;
       g_SelectionPlayerBlocks->primaryEntityOrFactionToken8080 = settingOrFactionToken;
       entitySlots->simulationStepTicks = 1;
-      g_UiCommandRuntimeFlags = 0x11;
+      g_UiCommandRuntimeFlags = UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED;
       g_SessionNetworkTickCounter = 1;
       g_HostCommandBatchSyncSentThisInterval = 0;
       g_GameFactionRuntimeImage.tail.simulationTick = 1;
       g_GameFactionRuntimeImage.tail.presentationTick = 0;
       g_InGameSessionNotificationTimeoutTicks = 0;
       g_InGameReadyStateToggleFlags = 0;
-      g_InGameNetworkTickCountdown = 4;
+      g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
       g_InGameStateTickSpinLock = 0;
       g_EndGameResultsCurrentMusicTrackId = 0;
       g_InGameSelectedTechnologyId = TEC_000_BASIC_TECHNOLOGY;
-      g_TimerRegisterPeriodic(0x50,InGameRuntime_PeriodicCountdownAndClockTick);
+      g_TimerRegisterPeriodic(INGAME_PERIODIC_TIMER_HZ,InGameRuntime_PeriodicCountdownAndClockTick);
       UiRuntime_SetSynchronizationHooks
                 (InGameRuntime_UpdateSimulationAndNetworkTick,&g_InGameStateTickSpinLock);
+      /* 4 MB pool for the world objects (0x4000 records of 0x100 bytes), zeroed */
       allocation = g_MemoryApi.alloc(0x400000);
       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)allocation.payloadOrError;
       loadedLevelAsset = levelImage;
       if (!allocation.failed) {
         g_RuntimeObjectRebaseBaseMinusOne = rootCursorOrError[-1].opaqueA06C_C3E3 + 0x2377;
         g_InGameWorldObjectRecords = (WorldObjectRecord *)rootCursorOrError;
-        for (remainingCount = 0x100000; remainingCount != 0; remainingCount = remainingCount + -1) {
-          (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)0x0;
+        for (remainingCount = 0x100000; remainingCount != 0; remainingCount--) {
+          (rootCursorOrError->rootUi0000).base.nextSibling = NULL;
           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
         }
         statusResult = SelectionInfoPanel_InitResources((SelectionInfoEntitySlots *)entitySlots);
@@ -1429,9 +1442,10 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
           if (!allocation.failed) {
             templateCursor = (uint32_t *)&g_InGameRuntimeDefaultImageTemplate;
             g_InGameRuntimeRoot = inGameRoot;
-            for (remainingCount = 0x30f9; remainingCount != 0; remainingCount = remainingCount + -1) {
+            /* copy the in-game root template (0x30F9 dwords = 0xC3E4 bytes) */
+            for (remainingCount = 0x30f9; remainingCount != 0; remainingCount--) {
               (rootCursorOrError->rootUi0000).base.nextSibling = (UiNodeBase *)*templateCursor;
-              templateCursor = templateCursor + 1;
+              templateCursor++;
               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)&(rootCursorOrError->rootUi0000).base.firstChild;
             }
             world = &inGameRoot->worldRuntime0A30;
@@ -1470,7 +1484,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
               WidePath_CombineDirectoryAndLeaf
                         (&g_FrontendScenarioPathScratchUtf16,
                          (uint16_t *)(levelImage->header).opaque100_16F,(uint16_t *)u_level_0050daac);
-              WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
+              WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16); /* "lev" */
               endingMoviePath = LevelAsset_PrepareEndingMoviePath
                                  (savePackagePath,(LevelAssetHeader *)levelImage);
               rootCursorOrError = (InGameRuntimeRootImageC3E4 *)endingMoviePath.moviePath;
@@ -1509,25 +1523,30 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)levelLoad.errorOrValue;
                         if (!levelLoad.failed) {
                           queueRecord = inGameRoot->notificationQueue9E60;
-                          for (remainingCount = 0x20; remainingCount != 0; remainingCount = remainingCount + -1) {
+                          for (remainingCount = 0x20; remainingCount != 0; remainingCount--) {
                             queueRecord->notificationMovieId00 = 0;
                             queueRecord = (InGameNotificationQueueRecord20 *)&queueRecord->priority04;
                           }
                           statusResult = TerrainCompositeTexture_Create();
                           rootCursorOrError = (InGameRuntimeRootImageC3E4 *)statusResult.valueOrError;
                           if (!statusResult.failed) {
+                            /* hold the step off while the world is finished */
                             g_SpinLockAcquire(&g_InGameStateTickSpinLock);
                             UiCatalogGroup48_RebuildGrid((UiNodeBase *)inGameRoot);
                             UiCatalogGroup42_RebuildGrid((UiNodeBase *)inGameRoot);
                             UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
                             InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
                             g_InGameSimulationStepTicks = 1;
-                            settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
-                            gridHalfSize = PersistentSettings_Read(0x20,0x10);
-                            subresourceCount = PersistentSettings_Read(0x10,0x18);
+                            settingOrFactionToken =
+                                 PersistentSettings_Read(0x40,PERSISTENT_SETTING_SHADING_TEXTURE_DIMENSION);
+                            gridHalfSize =
+                                 PersistentSettings_Read(0x20,PERSISTENT_SETTING_SHADING_GRID_HALF_SIZE);
+                            subresourceCount =
+                                 PersistentSettings_Read(0x10,PERSISTENT_SETTING_SHADING_SUBRESOURCE_COUNT);
                             GraphicsShadingRuntime_InitializeGeneratedTexture
                                       (subresourceCount,gridHalfSize,settingOrFactionToken);
-                            settingOrFactionToken = PersistentSettings_Read(1,0x1c);
+                            /* mirror the shading and mouse/panel options into the world runtime flags */
+                            settingOrFactionToken = PersistentSettings_Read(1,PERSISTENT_SETTING_SHADING_ENABLED);
                             if (settingOrFactionToken == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xfffdffff;
@@ -1537,7 +1556,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x20000;
                             }
                             rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
-                                     PersistentSettings_Read(0,0x5c);
+                                     PersistentSettings_Read(0,PERSISTENT_SETTING_MOUSE_LINK_PANEL_OPTION_FLAGS);
                             if (((uint32_t)rootCursorOrError & 1) == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xbfffffff;
@@ -1584,18 +1603,20 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                                   inGameRoot->localNetworkUiStateFlags24E0 =
                                        inGameRoot->localNetworkUiStateFlags24E0 & 0xfffffff7;
                                 }
+                                /* report this player as loaded */
                                 if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK
                                     ) == SESSION_NETWORK_ROLE_LOCAL) {
                                   FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus
                                             (g_LocalPlayerRuntimeId,0,0,0);
                                 }
                                 else {
-                                  InGameCommandQueue_AppendLocalPlayerCommand(0x550,0,0,0);
+                                  InGameCommandQueue_AppendLocalPlayerCommand(INGAME_COMMAND_PLAYER_READY,0,0,0);
                                 }
                                 g_SpinLockRelease(&g_InGameStateTickSpinLock);
                                 UiFrame_FlushInputAndResetPendingTicks();
-                                g_GraphicsCursorSetFrame(6);
-                                g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
+                                g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
+                                g_CursorVisibilityToken++;
+                                /* show the player-status screen and keep the lockstep running until all are ready */
                                 InGamePanel_RebuildPlayerStatusRows(inGameRoot);
                                 do {
                                   UiNode_InvalidateRoot(&inGameRoot->playerStatusNode08E4);
@@ -1604,14 +1625,14 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                                   UiFrame_Draw();
                                   g_GraphicsFramebufferPresent(g_FramebufferAccess);
                                   InGameRuntime_UpdateSimulationAndNetworkTick();
-                                } while ((g_UiCommandRuntimeFlags & 0x10) != 0);
-                                inGameRoot->levelMovieRuntime08D4 = (MovieRuntime *)0x0;
+                                } while ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) != 0);
+                                inGameRoot->levelMovieRuntime08D4 = NULL;
                                 inGameRoot->playerStatusLayoutMetric093C = 0;
                                 UiPageStack_SetActiveIndex(2,&inGameRoot->primaryPageStack017C);
                                 Movie_Close();
                                 Resource_Release(levelImage);
                                 Package_Unmount((EngineFileHandle)mountResult);
-                                g_GraphicsCursorSetFrame(0);
+                                g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_ARROW);
                                 g_TimerRegisterPeriodic
                                           (10,InGameRuntime_ProcessQueuedSessionNotificationTimer);
                                 return THANDOR_BITCAST(uint64_t, LoadedSessionInitResult, ((THANDOR_BITCAST(ArenaAllocResult, uint64_t, allocation) & 0xFFFFFFFFFFull) & 0xffffffff));
@@ -1640,15 +1661,11 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
 
 
 /* Address: 0x005651D0.
-   Ownership: gameplay/session/runtime.
-   Purpose: Unregisters the in-game timer, clears and presents the framebuffer, tears down the active root and
-   world state, closes movie and terrain resources, releases four texture assets, resets registries and input, and
-   decrements the cursor-visibility token.
-   Local calls: InGameRuntime_PublishRootWorldStatePointer, InGameRuntime_ReleaseFactionScratchBuffers.
-   Cross-module calls: GraphicsShadingRuntime_Shutdown [graphics/render/shading],
-   WorldRuntime_ForEachNodeInOwnerListD8 [world/runtime/core], InGameLevelRuntime_ShutdownLoadedAssetResources
-   [gameplay/session/level], UiRootStack_Pop [ui/controls/layout], Movie_Close [movie/runtime/playback],
-   TerrainCompositeTexture_Destroy [world/terrain/visuals].
+   Ends an in-game session (counterpart of InGameRuntime_InitializeNewSession/InitializeLoadedSession): stops the
+   step timer, shows a black screen with the busy cursor, then releases the world (every entity's bindings, the
+   level assets), the in-game UI root, the faction scratch buffers, the object pool, the level movie, the terrain
+   texture and the four panel texture packages, and resets the sprite registry and pending input so the frontend
+   starts clean.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResources(void)
 
@@ -1659,9 +1676,10 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
   
   g_TimerUnregisterPeriodic(InGameRuntime_PeriodicCountdownAndClockTick);
   inGameRoot = g_InGameRuntimeRoot;
-  g_GraphicsCursorSetFrame(6);
+  g_GraphicsCursorSetFrame(GRAPHICS_CURSOR_FRAME_BUSY);
   beginAccessFailed = g_GraphicsFramebufferBeginAccess();
   if (!beginAccessFailed) {
+    /* opaque black over the whole framebuffer */
     g_GraphicsFramebufferFillRectArgb
               (g_FramebufferHeight,g_FramebufferWidth,0,0,g_FramebufferHeight,g_FramebufferWidth,0,0
                ,0xff000000,g_FramebufferAccess);
@@ -1669,21 +1687,21 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
   }
   g_GraphicsFramebufferPresent(g_FramebufferAccess);
   GraphicsShadingRuntime_Shutdown();
-  if (inGameRoot != (InGameRuntimeRootImageC3E4 *)0x0) {
+  if (inGameRoot != NULL) {
     InGameRuntime_PublishRootWorldStatePointer(&inGameRoot->rootUi0000);
     world = &inGameRoot->worldRuntime0A30;
     WorldRuntime_ForEachNodeInOwnerListD8
               (world,WorldRuntimeNode_ReleaseShutdownBindingsCallback,world);
     InGameLevelRuntime_ShutdownLoadedAssetResources(world);
-    if ((inGameRoot->rootUi0000).previousRoot != (UiRootNode *)0x0) {
+    if ((inGameRoot->rootUi0000).previousRoot != NULL) {
       UiRootStack_Pop(&inGameRoot->rootUi0000);
     }
     g_MemoryApi.free(inGameRoot);
-    g_InGameRuntimeRoot = (InGameRuntimeRootImageC3E4 *)0x0;
+    g_InGameRuntimeRoot = NULL;
   }
   InGameRuntime_ReleaseFactionScratchBuffers();
   g_MemoryApi.free(g_InGameWorldObjectRecords);
-  g_InGameWorldObjectRecords = (WorldObjectRecord *)0x0;
+  g_InGameWorldObjectRecords = NULL;
   Movie_Close();
   TerrainCompositeTexture_Destroy();
   g_GraphicsTextureSourceLifecycleCallbacks3.releasePackage(g_InGameDiagramTextureSource);
@@ -1698,7 +1716,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_ShutdownAndReleaseResourc
   SelectionInfoPanel_ShutdownResources();
   SpriteAssetRegistry_Reset();
   UiFrame_FlushInputAndResetPendingTicks();
-  g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
+  g_CursorVisibilityToken--;
   return;
 }
 
@@ -1731,20 +1749,16 @@ void __thandor_void_preserve_eax_ecx InGameRuntime_ReleaseFactionScratchBuffers(
 
 
 /* Address: 0x0050E120.
-   Ownership: gameplay/session/runtime.
-   Purpose: Advances faction tail states, reevaluates the sixty-four scheduled condition records through the
-   verified fourteen-way jump table, processes completion records and end-state effects, and performs the
-   associated field-runtime cleanup paths. InGameConditionRuntimeStorageView800_V287 is a function-specific storage
-   view, not a replacement for the existing InGameConditionRuntime record-array view.
-   [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Retired detached enum dictionary InGameConditionExpressionOpcode after
-   transferring its complete value vocabulary to code annotation. It is not a safe whole-value storage type.
-   Values: 252=INGAME_CONDITION_EXPRESSION_END, 253=INGAME_CONDITION_EXPRESSION_NOT,
-   254=INGAME_CONDITION_EXPRESSION_AND, 255=INGAME_CONDITION_EXPRESSION_OR [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE]
-   Retired detached enum dictionary InGameEndConditionTriggerStateFlags after transferring its complete value
-   vocabulary to code annotation.
-   Cross-module calls: ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive [world/model/hierarchy].
+   The level script, evaluated every 20 simulation steps: first promotes factions that were marked as ending to
+   ended, then re-evaluates the level's 64 scheduled conditions (bit 0 of each record's kind = satisfied: unit
+   counts, resource amounts, map share, countdowns, boolean expressions over other conditions), and finally checks
+   the 16 end triggers. The first active trigger whose condition holds ends its faction: its units are disabled,
+   the local player loses map input when it is theirs, and unless two remaining active factions are still not
+   allied (relation state below 8) the end movie is chosen and UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING ends the
+   session. A trigger with skipArmyDisableWhenOne == 1 goes to the end movie directly.
+   Expression tokens: 0xFC end, 0xFD NOT, 0xFE AND, 0xFF OR, anything else pushes that condition's result bit
+   (the value is a bit stack in kindOrExpressionValue).
 */
-
 void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledRecords(void)
 
 {
@@ -1774,24 +1788,25 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
   remainingCount = 7;
   do {
-    lifecycleState = lifecycleState + 1;
+    lifecycleState++;
     if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING) {
+      /* ENDING_PENDING + 1 = ENDED_OR_TRANSITIONED */
       *lifecycleState = *lifecycleState + FACTION_RUNTIME_LIFECYCLE_ACTIVE;
     }
     levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
-    remainingCount = remainingCount + -1;
+    remainingCount--;
   } while (remainingCount != 0);
   remainingCount = 0x40;
   scheduledCondition = &(g_InGameLevelRuntimeGlobalBlock.conditionStorage)->schedule;
   do {
+    /* clear the satisfied bit, then set it again when the condition holds */
     kindOrExpressionValue = scheduledCondition->conditions[0].statusAndKind.kind;
     scheduledCondition->conditions[0].statusAndKind.kind =
          scheduledCondition->conditions[0].statusAndKind.kind & 0xfffffffe;
-                    // WARNING: Switch is manually overridden
     switch(kindOrExpressionValue & 0xfe) {
     case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION:
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
            (scheduledCondition->conditions[0].payload.operands[0] ==
             *(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc)))
@@ -1800,7 +1815,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
     case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_CLASS_COMMAND_GROUP_A:
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand
              [*(int *)(*(int *)worldNode->runtimePayload + 0x4c)] ==
@@ -1812,7 +1827,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
       goto InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied;
     case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_DEFINITION_AND_RUNTIME_ID:
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (modelRecord = *(int *)((int)worldNode->runtimePayload + 8),
             scheduledCondition->conditions[0].payload.operands[0] == *(uint32_t *)(modelRecord + 0xc))) &&
@@ -1855,7 +1870,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
     case INGAME_SCHEDULED_CONDITION_MATCHING_DEFINITION_AND_RUNTIME_ID_ACTIVE_ENTITY_COUNT_AT_LEAST:
       operandValue = scheduledCondition->conditions[0].payload.operands[1];
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (*(uint32_t *)(*(int *)((int)worldNode->runtimePayload + 8) + 0xc) ==
              scheduledCondition->conditions[0].payload.operands[0])) &&
@@ -1875,7 +1890,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
         cellExtractionFlags = (ResourceExtractionDescriptor32 *)(byteCursor + 0x70);
         byteCursor = byteCursor + 0x80;
         countOrFactionIndex = countOrFactionIndex + ((*cellExtractionFlags & 0xf9) != 0);
-        cellsLeftOrFaction = cellsLeftOrFaction - 1;
+        cellsLeftOrFaction--;
       } while (cellsLeftOrFaction != 0);
       if ((int)scheduledCondition->conditions[0].payload.operands[1] <=
           (int)(((uint64_t)countOrFactionIndex * 100) / (uint64_t)cellCount)) {
@@ -1898,7 +1913,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameConditionRuntime_UpdateScheduledR
       break;
     case INGAME_SCHEDULED_CONDITION_NO_ACTIVE_ENTITY_WITH_CLASS_ID_OUTSIDE_CLASS_COMMAND_GROUP_A:
       for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         if (((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
             (operandValue = *(uint32_t *)(*(int *)worldNode->runtimePayload + 0x4c),
             g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.classCommand[operandValue] !=
@@ -1917,7 +1932,7 @@ InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied:
           while( true ) {
             while( true ) {
               tokenOrShift = *byteCursor;
-              byteCursor = byteCursor + 1;
+              byteCursor++;
               if (tokenOrShift != 0xff) break;
               kindOrExpressionValue = kindOrExpressionValue >> 1 | kindOrExpressionValue & 1;
             }
@@ -1935,7 +1950,7 @@ InGameConditionRuntime_UpdateScheduledRecords_MarkCurrentConditionSatisfied:
     }
 InGameScheduledCondition_AdvanceToNextRecord:
     scheduledCondition = (InGameConditionScheduleImageView480 *)(scheduledCondition->conditions + 1);
-    remainingCount = remainingCount + -1;
+    remainingCount--;
     if (remainingCount == 0) {
       endTrigger = (InGameEndConditionTriggerRecord8 *)(levelConditionStorage->schedule).triggers;
       remainingCount = 0x10;
@@ -1953,7 +1968,7 @@ InGameScheduledCondition_AdvanceToNextRecord:
                  FACTION_RUNTIME_LIFECYCLE_ENDING_PENDING;
             if (endTrigger->skipArmyDisableWhenOne != 1) {
               worldNode = (triggerRoot->worldRuntime0A30).ownerListHead;
-              if (worldNode != (WorldOwnerListNode100 *)0x0) {
+              if (worldNode != NULL) {
                 do {
                   if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
                      (modelRuntime = *(int **)((int)worldNode->runtimePayload + 8),
@@ -1961,24 +1976,27 @@ InGameScheduledCondition_AdvanceToNextRecord:
                     ModelRuntimeHierarchy_ApplyFlags418UnlessBit8Recursive(contextArg,modelRuntime);
                   }
                   worldNode = worldNode->nextNode;
-                } while (worldNode != (WorldOwnerListNode100 *)0x0);
+                } while (worldNode != NULL);
                 g_GameFactionRuntimeImage.records[cellsLeftOrFaction].secondaryArmyAssetCount = 0;
                 g_GameFactionRuntimeImage.records[cellsLeftOrFaction].primaryArmyAssetCount = 0;
               }
               relationRoot = g_InGameRuntimeRoot;
               if (cellsLeftOrFaction == (triggerRoot->worldRuntime0A30).activeFactionRuntimeIndex) {
-                g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x108;
+                g_UiCommandRuntimeFlags =
+                     g_UiCommandRuntimeFlags |
+                     (UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED | UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED);
               }
+              /* the game goes on while two active factions (1..7) are not allied */
               lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
               cellsLeftOrFaction = 1;
               tokenOrShift = 4;
               do {
-                lifecycleState = lifecycleState + 1;
+                lifecycleState++;
                 if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
                   countOrFactionIndex = cellsLeftOrFaction + 1;
                   otherLifecycleState = lifecycleState;
                   do {
-                    otherLifecycleState = otherLifecycleState + 1;
+                    otherLifecycleState++;
                     if ((*otherLifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) &&
                        ((g_GameFactionRuntimeImage.records[countOrFactionIndex].packedRelationStates >>
                          (tokenOrShift & 0x1f) & 0xf) < 8)) {
@@ -1995,15 +2013,18 @@ InGameScheduledCondition_AdvanceToNextRecord:
                       }
                       return;
                     }
-                    countOrFactionIndex = countOrFactionIndex + 1;
+                    countOrFactionIndex++;
                   } while (countOrFactionIndex < 8);
                 }
-                cellsLeftOrFaction = cellsLeftOrFaction + 1;
+                cellsLeftOrFaction++;
                 tokenOrShift = tokenOrShift + 4;
               } while (cellsLeftOrFaction < 7);
               contextArg = &g_InGameRuntimeRoot->worldRuntime0A30;
               cellsLeftOrFaction = (uint32_t)endTrigger->factionRuntimeIndex;
             }
+            /* end movie variant from the local faction's view: the trigger's variant when the ended faction is
+               the local one or one it rates above 3, the other variant when the local faction has not ended and
+               rates it 3 or below, variant 0 when the local faction has ended too (or is unused) */
             countOrFactionIndex = contextArg->activeFactionRuntimeIndex;
             g_EndMovieVariantIndex = (uint32_t)endTrigger->movieVariantSelector;
             if (((countOrFactionIndex != cellsLeftOrFaction) &&
@@ -2022,12 +2043,12 @@ InGameScheduledCondition_AdvanceToNextRecord:
             if (g_EndMovieVariantIndex == 0) {
               g_EndMoviePath = (uint16_t *)u_flm_ende0001_flm_0050df28;
             }
-            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | 0x800;
+            g_UiCommandRuntimeFlags = g_UiCommandRuntimeFlags | UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING;
             return;
           }
         }
-        endTrigger = endTrigger + 1;
-        remainingCount = remainingCount + -1;
+        endTrigger++;
+        remainingCount--;
         if (remainingCount == 0) {
           return;
         }
@@ -2038,20 +2059,22 @@ InGameScheduledCondition_AdvanceToNextRecord:
 
 
 /* Address: 0x00513160.
-   Ownership: gameplay/session/runtime.
-   Purpose: Clears per-frame faction accumulators, decays auxiliary counters, removes transient field-cell flags,
-   computes connected terrain-region contributions, sorts active runtime-capacity records, updates faction capacity
-   and notifications, and refreshes the persistent stat table. [RESOURCE_FUEL_ENERGY_CAPACITY_SEPARATION_CLOSURE]
-   Faction economy owner. FLD 0x0800 connected regions feed Xenite stock/rate/total; FLD 0x1000 regions feed
-   Tritium stock/rate/total. Energy supply = baselineEnergySupplyQ4 + Tritium stock * 0x10, capped by
-   energyGenerationCapacityQ4. [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] Economy scalar domains are versionless
-   canonical types: XeniteAmountQ4, TritiumAmountQ4, EnergyAmountQ4, EnergyDemandQ4 and
-   ResourceExtractionRateQ4PerTick.
-   Cross-module calls: TerrainRegionCollection_CollectConnectedCellsRecursive [world/terrain/editing],
-   InGameNotificationQueue_InsertPriorityRecord [ui/ingame/runtime],
-   GameFactionRuntime_RecomputeProgressAndScoreMetrics [gameplay/faction/runtime].
+   The faction economy, run every 8th simulation step (job 0 of InGameRuntime_UpdateSimulationAndNetworkTick):
+   1. per faction: reset the step's energy demand and extraction rates, decay the pair-pressure matrix by 7/8,
+      count the notification/anchor cooldowns down;
+   2. mining: every connected region of Xenite cells (FIELD_CELL_XENITE_SUPPORT), then of Tritium cells
+      (FIELD_CELL_TRITIUM_SUPPORT), pays its owning factions (rate, stock and total), then stocks are capped at
+      the storage limits;
+   3. energy: all powered models (and the attached parts of models whose class has flag 0x80) are sorted by the
+      priority of their class (g_FactionEnergyAllocationPriorityByModelClass); per faction 7..1 the supply
+      (baselineEnergySupplyQ4 + Tritium stock * 16, capped by energyGenerationCapacityQ4) first covers the fixed
+      demand of its army assets, then the consumers in priority order; consumers left over are flagged unpowered
+      and the local player gets notification 400 (generation capacity too low) or 401 (supply too low), at
+      most every 150 economy runs. The energy used above the baseline burns Tritium;
+   4. every 128 steps the progress/score metrics of factions 1..7 are stored in the stat table
+      (g_GameStatTableImage, shown by the results screen).
+   All amounts are Q4 fixed point.
 */
-
 void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState(void)
 
 {
@@ -2095,6 +2118,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
   factionRecord = g_GameFactionRuntimeImage.records;
   pairPressureRow = g_GameDataAuxState.pairPressureMatrix8x8;
   counterOrValue = 8;
+  /* 1. per-faction resets, decays and cooldowns (anchorCooldown1/2 are the energy notification cooldowns) */
   do {
     factionRecord->suppliedEnergyDemandQ4 = 0;
     factionRecord->unpoweredEnergyDemandQ4 = 0;
@@ -2109,22 +2133,24 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
     pairPressureRow[6] = pairPressureRow[6] * 7 >> 3;
     pairPressureRow[7] = pairPressureRow[7] * 7 >> 3;
     if (factionRecord->anchorCooldown1 != 0) {
-      factionRecord->anchorCooldown1 = factionRecord->anchorCooldown1 - 1;
+      factionRecord->anchorCooldown1--;
     }
     if (factionRecord->anchorCooldown2 != 0) {
-      factionRecord->anchorCooldown2 = factionRecord->anchorCooldown2 - 1;
+      factionRecord->anchorCooldown2--;
     }
     if (factionRecord->primaryAnchorCooldown != 0) {
-      factionRecord->primaryAnchorCooldown = factionRecord->primaryAnchorCooldown - 1;
+      factionRecord->primaryAnchorCooldown--;
     }
     if (factionRecord->anchorCooldown0 != 0) {
-      factionRecord->anchorCooldown0 = factionRecord->anchorCooldown0 - 1;
+      factionRecord->anchorCooldown0--;
     }
-    factionRecord->relationTransitionTick = factionRecord->relationTransitionTick + 1;
+    factionRecord->relationTransitionTick++;
     pairPressureRow = pairPressureRow + 8;
-    factionRecord = factionRecord + 1;
-    counterOrValue = counterOrValue + -1;
+    factionRecord++;
+    counterOrValue--;
   } while (counterOrValue != 0);
+  /* 2. mining: first pass Xenite cells (record offsets +0), second pass Tritium cells (+0x10). Each unvisited
+     region pays every faction listed in the collected entries (faction in bits 13..23, share in bits 24..31) */
   factionFieldGrid = (inGameRoot->worldRuntime0A30).fieldGrid;
   fieldGridWidth = factionFieldGrid->gridWidth;
   cellCountOrValue = fieldGridWidth * factionFieldGrid->gridHeight;
@@ -2137,10 +2163,10 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
     do {
       clearCursor->flagsAndMaterial =
            clearCursor->flagsAndMaterial & ~FIELD_CELL_CONNECTED_REGION_VISITED;
-      counterOrValue = counterOrValue + -1;
+      counterOrValue--;
       cellsRemaining = cellCountOrValue;
       cell = firstCell;
-      clearCursor = clearCursor + 1;
+      clearCursor++;
     } while (counterOrValue != 0);
     do {
       if (((cell->flagsAndMaterial & 0x88016000) == 0) &&
@@ -2168,21 +2194,23 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             *runtimeOrStatCursor = *runtimeOrStatCursor + tickContribution;
             if ((entryCountOrValue != 0) &&
                (rebasedModel = entryCountOrValue + g_ModelRuntimeRebaseDelta, *(int *)(rebasedModel + 4) != 0)) {
+              /* the extracting model shows its current yield */
               *(int *)(rebasedModel + 0x60) = tickContribution;
             }
             entryCursor = entryCursor + 2;
-            remainingRegionEntries = remainingRegionEntries - 1;
+            remainingRegionEntries--;
           } while (remainingRegionEntries != 0);
         }
       }
-      cellsRemaining = cellsRemaining + -1;
-      cell = cell + 1;
+      cellsRemaining--;
+      cell++;
     } while (cellsRemaining != 0);
     requiredOccupancyMask = requiredOccupancyMask * 2;
     resourceOffsetOrValue = resourceOffsetOrValue + 0x10;
     counterOrValue = cellCountOrValue;
     clearCursor = firstCell;
   } while (requiredOccupancyMask == FIELD_CELL_TRITIUM_SUPPORT);
+  /* cap the stocks at the storage limits */
   factionImageCursor = &g_GameFactionRuntimeImage;
   counterOrValue = 8;
   do {
@@ -2195,12 +2223,14 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
       factionImageCursor->records[0].tritiumCurrentQ4 = valueOrFactionIndex;
     }
     factionImageCursor = (GameFactionRuntimeImage *)(factionImageCursor->records + 1);
-    counterOrValue = counterOrValue + -1;
+    counterOrValue--;
   } while (counterOrValue != 0);
+  /* 3. energy consumers, collected into the region scratch buffer as 16-byte entries
+     {runtime, faction, demand, priority}, at most 256 */
   entryCountOrValue = 0;
   entryCursor = g_TerrainRegionCollectionEntries;
   for (worldNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+      worldNode != NULL; worldNode = worldNode->nextNode) {
     if ((worldNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
        (runtimeOrStatCursor = worldNode->runtimePayload, (runtimeOrStatCursor[0x3b] & 0x10U) == 0)) {
       if (runtimeOrStatCursor[0x3d] != 0) {
@@ -2212,14 +2242,14 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         valueOrFactionIndex = runtimeOrStatCursor[0x3d];
         entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + counterOrValue * 4);
         entryCursor[2] = valueOrFactionIndex;
-        entryCountOrValue = entryCountOrValue + 1;
+        entryCountOrValue++;
         entryCursor = entryCursor + 4;
       }
       counterOrValue = runtimeOrStatCursor[3];
       if ((entryCountOrValue < 0x100) && ((*(uint32_t *)(*runtimeOrStatCursor + 0x68) & 0x80) != 0)) {
-        for (; counterOrValue != 0; counterOrValue = counterOrValue + -1) {
+        for (; counterOrValue != 0; counterOrValue--) {
           attachedRuntime = (int *)runtimeOrStatCursor[0x50];
-          if (((attachedRuntime != (int *)0x0) && (attachedRuntime[0x3d] != 0)) && (entryCountOrValue < 0x100)) {
+          if (((attachedRuntime != NULL) && (attachedRuntime[0x3d] != 0)) && (entryCountOrValue < 0x100)) {
             valueOrFactionIndex = *(uint32_t *)(attachedRuntime[2] + 0xc);
             cellCountOrValue = *(int *)(*attachedRuntime + 0x4c);
             *entryCursor = (uint32_t)attachedRuntime;
@@ -2227,7 +2257,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             valueOrFactionIndex = attachedRuntime[0x3d];
             entryCursor[3] = *(uint32_t *)(&g_FactionEnergyAllocationPriorityByModelClass + cellCountOrValue * 4);
             entryCursor[2] = valueOrFactionIndex;
-            entryCountOrValue = entryCountOrValue + 1;
+            entryCountOrValue++;
             entryCursor = entryCursor + 4;
           }
           runtimeOrStatCursor = runtimeOrStatCursor + 8;
@@ -2235,8 +2265,10 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
       }
     }
   }
+  /* without any consumer the whole allocation below is skipped (no army-asset demand, no Tritium burn) */
   if (entryCountOrValue != 0) {
     if (1 < entryCountOrValue) {
+      /* selection sort by priority (entry[3]), highest first; the original swaps with XCHG */
       valueOrFactionIndex = ((uint32_t *)(uintptr_t)g_TerrainRegionCollectionEntries)[3];
       entryCursor = (uint32_t *)(uintptr_t)g_TerrainRegionCollectionEntries + 4; /* 16-byte records: +1 entry */
       counterOrValue = entryCountOrValue - 1;
@@ -2268,30 +2300,32 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             valueOrFactionIndex = supplyOrSwapValue;
           }
           entryCursor = entryCursor + 4;
-          counterOrValue = counterOrValue + -1;
+          counterOrValue--;
         } while (counterOrValue != 0);
         if (factionOrDemand - 1 < 2) break;
         valueOrFactionIndex = sortBaseOrFlags[7];
         entryCursor = sortBaseOrFlags + 8;
         counterOrValue = factionOrDemand - 2;
-        factionOrDemand = factionOrDemand - 1;
+        factionOrDemand--;
         sortBaseOrFlags = sortBaseOrFlags + 4;
       }
     }
+    /* allocate per faction 7..1 (faction 0 gets nothing) */
     valueOrFactionIndex = 7;
     reverseFactionRecord = g_GameFactionRuntimeImage.records + 7;
     do {
       entryCursor = g_TerrainRegionCollectionEntries;
       counterOrValue = 0;
       factionOrDemand = 0;
-      for (remainingArmyAssets = reverseFactionRecord->primaryArmyAssetCount; remainingArmyAssets != 0; remainingArmyAssets = remainingArmyAssets - 1) {
+      /* fixed demand: 1 energy (0x10 Q4) per army asset, 5 (0x50) when its +0x74 field is set */
+      for (remainingArmyAssets = reverseFactionRecord->primaryArmyAssetCount; remainingArmyAssets != 0; remainingArmyAssets--) {
         if (*(int *)(reverseFactionRecord->primaryArmyAssetPointersOrIds[counterOrValue] + 0x74) == 0) {
           factionOrDemand = factionOrDemand + 0x10;
         }
         else {
           factionOrDemand = factionOrDemand + 0x50;
         }
-        counterOrValue = counterOrValue + 1;
+        counterOrValue++;
       }
       supplyOrSwapValue = reverseFactionRecord->tritiumCurrentQ4 * 0x10 +
                reverseFactionRecord->baselineEnergySupplyQ4;
@@ -2305,6 +2339,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
       if (supplyOrSwapValue < factionOrDemand) {
         remainingEnergy = 0;
       }
+      /* consumers of this faction in priority order; runtime +0xEC bit 0 = unpowered */
       do {
         factionOrDemand = entryCursor[2];
         if (valueOrFactionIndex == entryCursor[1]) {
@@ -2325,8 +2360,9 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         }
         levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
         entryCursor = entryCursor + 4;
-        remainingEntries = remainingEntries - 1;
+        remainingEntries--;
       } while (remainingEntries != 0);
+      /* energy above the baseline supply is Tritium burnt (see the end of the loop) */
       factionOrDemand = reverseFactionRecord->suppliedEnergyDemandQ4;
       supplyOrSwapValue = factionOrDemand - reverseFactionRecord->baselineEnergySupplyQ4;
       if (factionOrDemand < reverseFactionRecord->baselineEnergySupplyQ4) {
@@ -2341,13 +2377,13 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
             factionOrDemand + reverseFactionRecord->unpoweredEnergyDemandQ4) {
           if (reverseFactionRecord->anchorCooldown1 == 0) {
             notificationMovieId = 400;
-            reverseFactionRecord->anchorCooldown1 = 0x96;
+            reverseFactionRecord->anchorCooldown1 = 150;
             queueCapacityNotification = true;
           }
         }
         else if (reverseFactionRecord->anchorCooldown2 == 0) {
-          notificationMovieId = 0x191;
-          reverseFactionRecord->anchorCooldown2 = 0x96;
+          notificationMovieId = 401;
+          reverseFactionRecord->anchorCooldown2 = 150;
           queueCapacityNotification = true;
         }
         if (queueCapacityNotification) {
@@ -2356,7 +2392,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
           if (((*(int *)(levelConditionStorage->levelImage).header.opaque100_16F == 0x300074) &&
               (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 4) == 0x5f0030)) &&
              (*(int *)((levelConditionStorage->levelImage).header.opaque100_16F + 8) == 0x750074)) {
-            notificationMovieId = 0x192;
+            notificationMovieId = 402;
             reverseFactionRecord->anchorCooldown1 = 0x7fffffff;
             reverseFactionRecord->anchorCooldown2 = 0x7fffffff;
           }
@@ -2365,10 +2401,12 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
       }
       reverseFactionRecord->tritiumCurrentQ4 =
            reverseFactionRecord->tritiumCurrentQ4 - (supplyOrSwapValue >> 4) * g_InGameSimulationStepTicks;
-      reverseFactionRecord = reverseFactionRecord + -1;
-      valueOrFactionIndex = valueOrFactionIndex - 1;
+      reverseFactionRecord--;
+      valueOrFactionIndex--;
     } while (valueOrFactionIndex != 0);
   }
+  /* 4. every 128 steps: stat table row simulationTick / 128 (0x1000 rows of 7 factions x 2 dwords), the two
+     metrics at record +0x88/+0x8C clamped at zero */
   if ((g_GameFactionRuntimeImage.tail.simulationTick & 0x78) == 0) {
     counterOrValue = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
     worldRuntime = &g_InGameRuntimeRoot->worldRuntime0A30;
@@ -2388,7 +2426,7 @@ void __fastcall InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocation
         }
         *runtimeOrStatCursor = cellCountOrValue;
         runtimeOrStatCursor[1] = resourceOffsetOrValue;
-        entryCountOrValue = entryCountOrValue + 1;
+        entryCountOrValue++;
         counterOrValue = counterOrValue + 0x740;
         runtimeOrStatCursor = runtimeOrStatCursor + 2;
       } while (entryCountOrValue < 8);
@@ -2450,19 +2488,40 @@ InGameRuntime_PublishRootWorldStatePointer(UiRootNode *inGameRoot)
 
 
 /* Address: 0x00565E30.
-   Ownership: gameplay/session/runtime.
-   Purpose: Runs under the gameplay spin lock, advances command and synchronization state, processes host or client
-   transfer records, updates simulation entities and periodic world systems, and dispatches the active tick phase.
-   Table 00566040: 00566060, 00566080, 00566090, 005660A0, 005660F0, 00566100, 00566110, 00566120. The function has
-   no semantic return value; the prior EDX:EAX result was preserved-register noise. It contains, but is broader
-   than, switch(simulationTick & 7). Do not rename the whole function to a narrow wheel-only name.
-   Local calls: InGameConditionRuntime_UpdateScheduledRecords,
-   InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState.
-   Cross-module calls: UiRuntimeRecordRing_DiscardOldest [ui/core/runtime],
-   FrontendTransfer_BroadcastPendingCommandBatchAndSyncState [network/protocol/transfer],
-   FrontendTransfer_HandleSyncRequest10021AndReply10023 [network/protocol/transfer],
-   FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer], UiRuntimeRecordRing_ContainsId
-   [ui/core/runtime], FrontendNetwork_HandleCommandBatchAndPlayerTimeout [network/backend/runtime].
+   One simulation step of the running game: the heart of the game loop. It is not called from a fixed place in
+   the frame; the UI runtime calls it as its synchronization hook (UiRuntime_SetSynchronizationHooks) every time
+   it releases the in-game tick lock, and the loading loops and movie playback call it directly. Pacing therefore
+   happens here: the call is ignored while the lock is held, while the simulation is more than two steps ahead of
+   the renderer (g_InGamePendingSimulationTicks, two are consumed per drawn frame) and until the 80 Hz periodic
+   timer has counted g_InGameNetworkTickCountdown down to zero (at most 20 steps per second).
+
+   Order of one step:
+   1. Network lockstep (every g_SessionNetworkTickInterval steps is an interval boundary):
+      - host: takes in the peers' command submissions (FrontendTransfer_HostHandleCommandSubmitOrWaitAck),
+        broadcasts the collected command batch once every peer has submitted (at the boundary it waits for
+        the peers until then) and at the boundary executes the staged batch
+        (FrontendTransfer_DispatchStagedCommandRecords: player commands take effect here);
+      - client: at the boundary waits for the host's batch and executes it
+        (FrontendNetwork_HandleCommandBatchAndPlayerTimeout);
+      - single player: only the timer pacing. A step that has to wait returns before anything below.
+   2. Nothing more while the session waits for players or is paused (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS,
+      UI_COMMAND_RUNTIME_FLAG_PAUSED); otherwise simulationTick is advanced.
+   3. Per-entity update: every node of the world owner list (models = units and buildings, shots, effects)
+      is dispatched through g_RuntimeMaintenanceCallbackPhases.primaryUpdate[ownerClassId]
+      (ArmyRuntimeMaintenance_UpdateHierarchyAiAndTimers, ShotModelRuntimeMaintenance_UpdateProjectile...,
+      EffectModelRuntimeMaintenance_UpdateLifecycle...): unit hierarchy, AI and timers, projectile motion and
+      hits, effect lifetimes.
+   4. Every 20 steps: the level's scripted conditions and end triggers
+      (InGameConditionRuntime_UpdateScheduledRecords).
+   5. One of eight world jobs by simulationTick & 7, so each runs every 8th step:
+      0 faction economy (resources, energy), faction metric cache, technology sync, terrain lighting;
+      1 and 5 terrain height relaxation (forward / reverse); 2 and 6 faction AI planning;
+      3 field-grid clamp and per-entity terrain state (terrainStateRefresh callbacks);
+      4 influence distance bands; 7 occupancy rebuild (occupancyRebuild and terrainStateRefresh callbacks).
+   While g_UiCommandRuntimeFlags bit 2 (0x04, origin not identified) is set, steps 2-5 are replaced by a
+   reduced update that ignores pause and only
+   re-seats every model on the terrain every second step (g_ArmyPlacementContactKindDispatchTable) and refreshes
+   the influence / classification grids every 16th step.
 */
 void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetworkTick(void)
 
@@ -2472,48 +2531,52 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
   WorldRuntimeContext *worldRuntime;
   WorldOwnerListNode100 *worldNode;
   ModelRuntimeNode *modelNode;
-  bool boolResult;
-  RecordRingDiscardResult discardedRecord;
+  bool callResult;
+  RecordRingDiscardResult ringRecord;
   InGameRuntimeRootImageC3E4 *inGameRoot;
-  
-  boolResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
+
+  callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
-  if (boolResult) {
+  if (callResult) {
     return;
   }
-  if ((g_UiCommandRuntimeFlags & 0x10) == 0) {
+  if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS) == 0) {
+    /* do not run ahead of the renderer by more than a few steps */
     if (2 < (int)g_InGamePendingSimulationTicks) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
-    g_InGamePendingSimulationTicks = g_InGamePendingSimulationTicks + 1;
+    g_InGamePendingSimulationTicks++;
   }
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
+    /* host or single player */
     if (g_InGameNetworkTickCountdown != 0) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
-    g_InGameNetworkTickCountdown = 4;
+    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+        /* interval boundary: the batch must be out before it is executed, else wait for the peers */
         while (g_HostCommandBatchSyncSentThisInterval == 0) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-          if (discardedRecord.empty) {
-            boolResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
-            if (boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+          ringRecord = UiRuntimeRecordRing_DiscardOldest();
+          if (ringRecord.empty) {
+            callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
+            if (callResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
             break;
           }
-          FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
+          FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
         }
         FrontendTransfer_DispatchStagedCommandRecords();
         g_HostCommandBatchSyncSentThisInterval = 0;
       }
       else {
+        /* within the interval: handle sync requests and broadcast the batch as soon as every peer is ready */
         while( true ) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-          if (discardedRecord.empty) break;
-          FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
+          ringRecord = UiRuntimeRecordRing_DiscardOldest();
+          if (ringRecord.empty) break;
+          FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
         }
         if ((g_HostCommandBatchSyncSentThisInterval == 0) &&
-           (boolResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !boolResult)) {
+           (callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(0), !callResult)) {
           g_HostCommandBatchSyncSentThisInterval = 1;
         }
       }
@@ -2521,38 +2584,40 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
   }
   else {
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
-      boolResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
-      if (!boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+      /* client at an interval boundary: wait for the host's command batch, then execute it */
+      callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
+      if (!callResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
       do {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (discardedRecord.empty) break;
-        boolResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
-                           (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
-      } while (!boolResult);
-      boolResult = FrontendTransfer_ConsumeProcessedFlag();
-      if (boolResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
+        ringRecord = UiRuntimeRecordRing_DiscardOldest();
+        if (ringRecord.empty) break;
+        callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
+                          ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
+                           (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
+      } while (!callResult);
+      callResult = FrontendTransfer_ConsumeProcessedFlag();
+      if (callResult) goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
     goto InGameRuntime_ReleaseSimulationTickLockAndReturn;
-    g_InGameNetworkTickCountdown = 4;
+    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
-  g_SessionNetworkTickCounter = g_SessionNetworkTickCounter + 1;
+  g_SessionNetworkTickCounter++;
   if ((g_UiCommandRuntimeFlags & 4) == 0) {
-    if ((g_UiCommandRuntimeFlags & 0x11) == 0) {
-      g_GameFactionRuntimeImage.tail.simulationTick =
-           g_GameFactionRuntimeImage.tail.simulationTick + 1;
+    if ((g_UiCommandRuntimeFlags &
+        (UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS | UI_COMMAND_RUNTIME_FLAG_PAUSED)) == 0) {
+      g_GameFactionRuntimeImage.tail.simulationTick++;
       worldRuntime = &inGameRoot->worldRuntime0A30;
       tickPhase = g_GameFactionRuntimeImage.tail.simulationTick & 7;
+      /* per-entity update of every model, shot and effect, dispatched by owner class */
       for (worldNode = (inGameRoot->worldRuntime0A30).ownerListHead;
-          worldNode != (WorldOwnerListNode100 *)0x0; worldNode = worldNode->nextNode) {
+          worldNode != NULL; worldNode = worldNode->nextNode) {
         (*(&g_RuntimeMaintenanceCallbackPhases.primaryUpdate.army)[worldNode->ownerClassId])
                   (worldRuntime,worldNode);
       }
-      if (g_GameFactionRuntimeImage.tail.simulationTick % 0x14 == 0) {
+      if (g_GameFactionRuntimeImage.tail.simulationTick % 20 == 0) {
         InGameConditionRuntime_UpdateScheduledRecords();
       }
-                    // WARNING: Switch is manually overridden
+      /* the world jobs: one per step, each runs every 8th step */
       switch(tickPhase) {
       case 0:
         InGameRuntime_UpdateFactionResourceExtractionAndEnergyAllocationState();
@@ -2572,12 +2637,12 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
         FieldGrid_ApplyByteClampLookupToCells
                   ((inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex,
                    (inGameRoot->worldRuntime0A30).fieldGrid);
-        if (modelNode != (ModelRuntimeNode *)0x0) {
+        if (modelNode != NULL) {
           do {
             (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
               [modelNode->ownerClassId])(worldRuntime,modelNode);
             modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-          } while (modelNode != (ModelRuntimeNode *)0x0);
+          } while (modelNode != NULL);
           FieldGrid_ApplyByteClampLookupToCells
                     ((inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex,
                      (inGameRoot->worldRuntime0A30).fieldGrid);
@@ -2597,23 +2662,23 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
       case 7:
         worldNode = (inGameRoot->worldRuntime0A30).ownerListHead;
         FieldGrid_ClearOccupancyMaskBits0To6AllCells((inGameRoot->worldRuntime0A30).fieldGrid);
-        if ((g_UiCommandRuntimeFlags & 8) != 0) {
+        if ((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED) != 0) {
           FieldGrid_SetOccupancyMaskByteBit0AllCells
                     ((inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex,
                      (inGameRoot->worldRuntime0A30).fieldGrid);
         }
-        if (worldNode != (WorldOwnerListNode100 *)0x0) {
+        if (worldNode != NULL) {
           do {
             (*(&g_RuntimeMaintenanceCallbackPhases.occupancyRebuild.army)[worldNode->ownerClassId])
                       (worldRuntime,worldNode);
             worldNode = worldNode->nextNode;
-          } while (worldNode != (WorldOwnerListNode100 *)0x0);
+          } while (worldNode != NULL);
           modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime0A30).ownerListHead;
           do {
             (*(&g_RuntimeMaintenanceCallbackPhases.terrainStateRefresh.army)
               [modelNode->ownerClassId])(worldRuntime,modelNode);
             modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode;
-          } while (modelNode != (ModelRuntimeNode *)0x0);
+          } while (modelNode != NULL);
           FieldGrid_ApplyByteClampLookupToCells
                     ((inGameRoot->worldRuntime0A30).activeFactionRuntimeIndex,
                      (inGameRoot->worldRuntime0A30).fieldGrid);
@@ -2624,15 +2689,14 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateSimulationAndNetwor
     }
   }
   else {
+    /* reduced update while flag 0x04 is set (also runs while paused) */
     modelNode = (ModelRuntimeNode *)(inGameRoot->worldRuntime0A30).ownerListHead;
-    g_GameFactionRuntimeImage.tail.simulationTick =
-         g_GameFactionRuntimeImage.tail.simulationTick + 1;
+    g_GameFactionRuntimeImage.tail.simulationTick++;
     if ((g_GameFactionRuntimeImage.tail.simulationTick & 1) == 0) {
-      for (; modelNode != (ModelRuntimeNode *)0x0;
+      for (; modelNode != NULL;
           modelNode = (ModelRuntimeNode *)(modelNode->common).nextNode) {
         if (modelNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
-          modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset
-          ;
+          modelDefinition = (((modelNode->runtimePayload).modelRuntime)->definitionOrSavedId).savedIdOrOffset;
           g_ArmyPlacementContactKindDispatchTable.callbacks[*(int *)(modelDefinition + 0x278)]
                     (*(Q12 *)(modelDefinition + 0x54),(modelNode->worldTransform).translation.y,
                      (modelNode->worldTransform).translation.x,modelNode,

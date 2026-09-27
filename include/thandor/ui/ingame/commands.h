@@ -19,6 +19,20 @@
 #define UI_COMMAND_RUNTIME_FLAG_SESSION_CLOSED 0x10000 /* command 150 with flag bit 1: the session is closed
                                                           (InGameCommand150_HandlePlayerDepartureAndOwnership) */
 #define UI_COMMAND_RUNTIME_FLAG_LOCAL_PLAYER_LEFT 0x20000 /* command 150 reported the local player's departure */
+/* g_UiCommandRuntimeFlags bits that gate the simulation step (InGameRuntime_UpdateSimulationAndNetworkTick) */
+#define UI_COMMAND_RUNTIME_FLAG_PAUSED 0x01 /* toggled once every player agrees (InGameCommandMode_
+                                               TogglePlayerFlagBit0AndReconcileGlobal); set at session start */
+#define UI_COMMAND_RUNTIME_FLAG_LOCAL_FACTION_ENDED 0x08 /* an end trigger ended the local faction
+                                                            (InGameConditionRuntime_UpdateScheduledRecords);
+                                                            the step then sets occupancy bit 0 on every cell */
+#define UI_COMMAND_RUNTIME_FLAG_WAITING_FOR_PLAYERS 0x10 /* set with PAUSED at session start, cleared with it when
+                                                            every player is ready
+                                                            (FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus) */
+#define UI_COMMAND_RUNTIME_FLAG_WORLD_INPUT_DISABLED 0x100 /* set with LOCAL_FACTION_ENDED; the world input
+                                                              handlers (gameplay/input/world.c) then ignore the map */
+/* g_UiCommandRuntimeFlags bit that ends the results screen after the end movie (Frontend_PlaySelectedEndMovie) */
+#define UI_COMMAND_RUNTIME_FLAG_RESULTS_CLOSED 0x1000 /* set by the results buttons (actions 0x101B and 0x1025,
+                                                         ui/ingame/commands.c) */
 
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 

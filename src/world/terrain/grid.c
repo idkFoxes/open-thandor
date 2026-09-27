@@ -2069,16 +2069,13 @@ FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid)
 
 
 /* Address: 0x00503E20.
-   Ownership: world/terrain/grid.
-   Purpose: For every field cell, combines the byte at +0x70 plus the selected channel offset with the current
-   runtime byte at +0x68 through the shared terrain clamp lookup and writes the mapped byte back to +0x68. EAX,
-   ECX, and EDX are preserved or incidental caller state and are not synthetic parameters or normal returns.
-   Consumer of the generated clamp LUT; runs on tick-wheel cases 3 and 7 (T5), mapping each cell's +0x68 runtime
-   byte through the lookup.
+   For every field cell, maps the runtime byte at +0x68 through the 256x256 terrain clamp lookup, keyed by
+   the cell's occupancy byte of the given faction, and writes the result back. Runs on tick-wheel cases 3
+   and 7 after the per-class terrain-state refresh callbacks.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyByteClampLookupToCells
-          (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid)
+          (FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid)
 
 {
   uint8_t *clampLookup;
@@ -2097,9 +2094,11 @@ FieldGrid_ApplyByteClampLookupToCells
     do {
       /* The lookup is 64-KiB aligned: the original loads AH = channel byte, AL = runtime byte into the
          pointer's low word, i.e. indexes the table with (channel << 8) | runtime byte. */
-      mappedRuntimeByte = clampLookup[(uint32_t)currentCell->runtime60_6B[sourceChannelOffset + 0x10] << 8 |
-                                      (uint32_t)currentCell->runtime60_6B[8]];
-      currentCell->runtime60_6B[8] = mappedRuntimeByte;
+      mappedRuntimeByte =
+           clampLookup[(uint32_t)currentCell->runtime60_6B[factionIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK]
+                       << 8 |
+                       (uint32_t)currentCell->runtime60_6B[FIELD_CELL_RUNTIME60_INDEX_RUNTIME_BYTE68]];
+      currentCell->runtime60_6B[FIELD_CELL_RUNTIME60_INDEX_RUNTIME_BYTE68] = mappedRuntimeByte;
       currentCell = currentCell + 1;
       columnsRemaining = columnsRemaining - 1;
     } while (columnsRemaining != 0);
@@ -2534,10 +2533,9 @@ FieldGrid_RaycastTerrainTrianglesAlongDirection
 
 
 /* Address: 0x00505120.
-   Ownership: world/terrain/grid.
-   Purpose: Clears bits 0 through 6 in each byte of every FieldGridCell occupancyMask while preserving each byte
-   high bit. Tick-wheel case 7 head: clears bits 0-6 of every byte of FieldGridCell.occupancyMask (+0x70) before
-   the per-class occupancy-rebuild callbacks repopulate it.
+   Clears the rebuilt bits 0..6 of every faction byte of every cell's occupancyMask, keeping bit 7. Head of
+   tick-wheel case 7, before the per-class occupancy-rebuild callbacks repopulate the mask. The MMX original
+   handles eight cells per step and then exactly three more per row, i.e. it assumes a row width of 8n + 3.
 */
 void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
 
@@ -2549,7 +2547,8 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
   FieldGridCell *blockBaseCell;
   uint64_t occupancyHighBitMask;
   FieldGridCell *currentEightCellBlock;
-  
+
+  /* FIELD_CELL_OCCUPANCY_PERSISTENT_BIT in all eight bytes (0x8080808080808080) */
   occupancyHighBitMask = g_FieldGridOccupancyMmxHighBitMask;
   rowsRemaining = fieldGrid->gridHeight;
   eightCellBlocksPerRow = fieldGrid->gridWidth >> 3;
@@ -2566,24 +2565,26 @@ void FieldGrid_ClearOccupancyMaskBits0To6AllCells(FieldGridAsset *fieldGrid)
       blockBaseCell[5].occupancyMask = blockBaseCell[5].occupancyMask & occupancyHighBitMask;
       blockBaseCell[6].occupancyMask = blockBaseCell[6].occupancyMask & occupancyHighBitMask;
       blockBaseCell[7].occupancyMask = blockBaseCell[7].occupancyMask & occupancyHighBitMask;
+      /* kept as a separate temporary: plain -- compiles to SUB instead of the original ADD -1 */
       blocksRemaining = cellBlocksRemaining - 1;
       cellBlocksRemaining = blocksRemaining;
       currentEightCellBlock = blockBaseCell + 8;
     } while (blocksRemaining != 0);
+    /* the three trailing cells of the row, right after the last block */
     blockBaseCell[8].occupancyMask = blockBaseCell[8].occupancyMask & occupancyHighBitMask;
     blockBaseCell[9].occupancyMask = blockBaseCell[9].occupancyMask & occupancyHighBitMask;
     blockBaseCell[10].occupancyMask = blockBaseCell[10].occupancyMask & occupancyHighBitMask;
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     cellBlocksRemaining = eightCellBlocksPerRow;
-    currentEightCellBlock = blockBaseCell + 0xb;
+    currentEightCellBlock = blockBaseCell + 11;
   } while (rowsRemaining != 0);
   return;
 }
 
 /* Address: 0x00505240.
-   Ownership: world/terrain/grid.
-   Purpose: Sets bit 0 in one selected occupancyMask byte for every cell in a FieldGridAsset. EAX, ECX, and EDX are
-   preserved or incidental caller state and are not synthetic parameters or normal returns.
+   Sets FIELD_CELL_OCCUPANCY_BIT0 in one faction's occupancy byte of every cell. Tick-wheel case 7 calls it
+   for the active faction when bit 3 of g_UiCommandRuntimeFlags is set, right after the rebuild clear, so
+   every cell carries bit 0 for that faction during the rebuild.
 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_SetOccupancyMaskByteBit0AllCells
@@ -2594,19 +2595,20 @@ FieldGrid_SetOccupancyMaskByteBit0AllCells
   FieldGridDimension rowsRemaining;
   FieldGridCell *currentCell;
   FieldGridDimension gridWidth;
-  
+
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight;
   currentCell = fieldGrid->cells;
   columnsRemaining = gridWidth;
   do {
     do {
-      currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] =
-           currentCell->runtime60_6B[occupancyMaskByteIndex + 0x10] | 1;
-      currentCell = currentCell + 1;
-      columnsRemaining = columnsRemaining - 1;
+      currentCell->runtime60_6B[occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] =
+           currentCell->runtime60_6B[occupancyMaskByteIndex + FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK] |
+           FIELD_CELL_OCCUPANCY_BIT0;
+      currentCell++;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = gridWidth;
   } while (rowsRemaining != 0);
   return;
@@ -2974,13 +2976,12 @@ FieldGridCell_ApplyRadialTerrainHeightDeltaAndMaterial
 
 
 /* Address: 0x00505AA0.
-   Ownership: world/terrain/grid.
-   Purpose: Scans interior field cells forward and relaxes six neighboring height pairs toward the selected source
-   sum when the source is nonnegative and its exclusion flag is clear. Live fluid Pass A = simulation tick-wheel
-   case 1 (T5). Gates: source cell skipped when waterSurfaceDelta < 0 or flagsAndMaterial & 0x40000000
-   (SkipSource); neighbor skipped when & 0x20000000 (SkipNeighbor). [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] FLD
-   namespace: 0x40000000 excludes a source cell; 0x20000000 excludes a receiver/neighbor. These masks are persisted
-   FLD flags, not GridScratch class bits.
+   Water flow pass A (tick-wheel case 1): scans the interior cells row by row and pulls the water surface
+   (terrainHeight + waterSurfaceDelta) of the six hexagonal neighbours 1/8 of the way toward the source
+   cell's surface. Sources with negative water or FIELD_CELL_FLUID_SOURCE_EXCLUDED are skipped, receivers
+   with FIELD_CELL_FLUID_RECEIVER_EXCLUDED are left alone.
+   NOTE: the original reads the source from the centre cell itself ([ESI+0x4C] with ESI = centre); this C
+   reads it from centerCell[1], one cell to the right (see the stage-2 notes).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
@@ -2989,80 +2990,79 @@ TerrainGrid_RelaxNeighborHeightsForwardWithSignGate(FieldGridAsset *fieldGrid)
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
-  FieldGridCell *sourceCell;
-  FieldGridCell *cellBeforeSource;
+  FieldGridCell *rowStartCell;
+  FieldGridCell *centerCell;
   FieldGridDimension gridWidth;
   
   gridWidth = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
-  sourceCell = fieldGrid->cells + gridWidth;
+  rowStartCell = fieldGrid->cells + gridWidth;
   do {
     columnsRemaining = gridWidth - 2;
-    cellBeforeSource = sourceCell;
+    centerCell = rowStartCell;
     do {
-      cellBeforeSource = cellBeforeSource + 1;
-      if ((-1 < cellBeforeSource[1].waterSurfaceDelta) &&
-         ((cellBeforeSource[1].flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
+      centerCell++;
+      if ((-1 < centerCell[1].waterSurfaceDelta) &&
+         ((centerCell[1].flagsAndMaterial & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
-             cellBeforeSource[1].waterSurfaceDelta + cellBeforeSource[1].terrainHeight;
-        if ((cellBeforeSource[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
+             centerCell[1].waterSurfaceDelta + centerCell[1].terrainHeight;
+        if ((centerCell[-gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) ==
             0) {
-          cellBeforeSource[-gridWidth].waterSurfaceDelta =
-               cellBeforeSource[-gridWidth].waterSurfaceDelta -
-               ((cellBeforeSource[-gridWidth].waterSurfaceDelta +
-                cellBeforeSource[-gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[-gridWidth].waterSurfaceDelta =
+               centerCell[-gridWidth].waterSurfaceDelta -
+               ((centerCell[-gridWidth].waterSurfaceDelta +
+                centerCell[-gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[1 - gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
+        if ((centerCell[1 - gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
             == 0) {
-          cellBeforeSource[1 - gridWidth].waterSurfaceDelta =
-               cellBeforeSource[1 - gridWidth].waterSurfaceDelta -
-               ((cellBeforeSource[1 - gridWidth].waterSurfaceDelta +
-                cellBeforeSource[1 - gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[1 - gridWidth].waterSurfaceDelta =
+               centerCell[1 - gridWidth].waterSurfaceDelta -
+               ((centerCell[1 - gridWidth].waterSurfaceDelta +
+                centerCell[1 - gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0
+        if ((centerCell[gridWidth].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0
            ) {
-          cellBeforeSource[gridWidth].waterSurfaceDelta =
-               cellBeforeSource[gridWidth].waterSurfaceDelta -
-               ((cellBeforeSource[gridWidth].waterSurfaceDelta +
-                cellBeforeSource[gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[gridWidth].waterSurfaceDelta =
+               centerCell[gridWidth].waterSurfaceDelta -
+               ((centerCell[gridWidth].waterSurfaceDelta +
+                centerCell[gridWidth].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[gridWidth - 1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
+        if ((centerCell[gridWidth - 1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED)
             == 0) {
-          cellBeforeSource[gridWidth - 1].waterSurfaceDelta =
-               cellBeforeSource[gridWidth - 1].waterSurfaceDelta -
-               ((cellBeforeSource[gridWidth - 1].waterSurfaceDelta +
-                cellBeforeSource[gridWidth - 1].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
+          centerCell[gridWidth - 1].waterSurfaceDelta =
+               centerCell[gridWidth - 1].waterSurfaceDelta -
+               ((centerCell[gridWidth - 1].waterSurfaceDelta +
+                centerCell[gridWidth - 1].terrainHeight) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
-          cellBeforeSource[-1].waterSurfaceDelta =
-               cellBeforeSource[-1].waterSurfaceDelta -
-               ((cellBeforeSource[-1].waterSurfaceDelta + cellBeforeSource[-1].terrainHeight) -
+        if ((centerCell[-1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          centerCell[-1].waterSurfaceDelta =
+               centerCell[-1].waterSurfaceDelta -
+               ((centerCell[-1].waterSurfaceDelta + centerCell[-1].terrainHeight) -
                 sourceSurfaceHeightQ12 >> 3);
         }
-        if ((cellBeforeSource[1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
-          cellBeforeSource[1].waterSurfaceDelta =
-               cellBeforeSource[1].waterSurfaceDelta -
-               ((cellBeforeSource[1].waterSurfaceDelta + cellBeforeSource[1].terrainHeight) -
+        if ((centerCell[1].flagsAndMaterial & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          centerCell[1].waterSurfaceDelta =
+               centerCell[1].waterSurfaceDelta -
+               ((centerCell[1].waterSurfaceDelta + centerCell[1].terrainHeight) -
                 sourceSurfaceHeightQ12 >> 3);
         }
       }
-      columnsRemaining = columnsRemaining + -1;
-      cellBeforeSource = cellBeforeSource;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    sourceCell = cellBeforeSource + 2;
-    rowsRemaining = rowsRemaining + -1;
+    rowStartCell = centerCell + 2;
+    rowsRemaining--;
   } while (rowsRemaining != 0);
   return;
 }
 
 
 /* Address: 0x00505BE0.
-   Ownership: world/terrain/grid.
-   Purpose: Scans interior field cells in reverse and relaxes six neighboring height pairs toward the selected
-   source sum when the source is nonnegative and its exclusion flag is clear. Live fluid Pass B = tick-wheel case 5
-   (T5); reverse scan of the Pass A relaxation with identical sign/flag gates.
-   [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Reverse scan of the sign-gated fluid relaxation with the same FLD
-   source-exclusion 0x40000000 and receiver-exclusion 0x20000000 semantics.
+   Water flow pass B (tick-wheel case 5): the same neighbour relaxation as pass A, scanning the interior
+   cells backwards from the bottom-right, so water spreads evenly in both directions over two ticks.
+   Cells are addressed by raw byte offsets (cell size 0x80; +0x48 terrainHeight, +0x4C waterSurfaceDelta,
+   +0x50 flagsAndMaterial; +/-0x80 is the next/previous cell).
+   NOTE: the original reads the source from the centre cell (ESI); this C reads it at -0x34/-0x30/-0x38,
+   i.e. from the cell to the left of the centre (see the stage-2 notes).
 */
 void __thandor_void_preserve_eax_ecx_edx
 TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
@@ -3073,68 +3073,66 @@ TerrainGrid_RelaxNeighborHeightsReverseWithSignGate(FieldGridAsset *fieldGrid)
   int columnsRemaining;
   int rowsRemaining;
   int sourceSurfaceHeightQ12;
-  int sourceCellAddress;
-  int cellAfterSourceAddress;
-  int upperRowCellAddress;
+  int rowStartCellAddress;
+  int centerCellAddress;
+  int upperCellAddress;
   int neighborWaterDeltaAddress;
-  FieldGridDimension gridWidth;
   
   rowLength = fieldGrid->gridWidth;
   rowsRemaining = fieldGrid->gridHeight - 2;
-  sourceCellAddress =
+  rowStartCellAddress =
        (int)fieldGrid + rowLength * -0x80 + (rowLength * fieldGrid->gridHeight + -1) * 0x80 + 0x200;
   do {
     columnsRemaining = rowLength - 2;
-    cellAfterSourceAddress = sourceCellAddress;
+    centerCellAddress = rowStartCellAddress;
     do {
-      cellAfterSourceAddress = cellAfterSourceAddress + -0x80;
-      if ((-1 < *(int *)(cellAfterSourceAddress + -0x34)) &&
-         ((*(uint32_t *)(cellAfterSourceAddress + -0x30) & 0x40000000) == 0)) {
+      centerCellAddress = centerCellAddress - 0x80;
+      if ((-1 < *(int *)(centerCellAddress + -0x34)) &&
+         ((*(uint32_t *)(centerCellAddress + -0x30) & FIELD_CELL_FLUID_SOURCE_EXCLUDED) == 0)) {
         sourceSurfaceHeightQ12 =
-             *(int *)(cellAfterSourceAddress + -0x34) + *(int *)(cellAfterSourceAddress + -0x38);
-        upperRowCellAddress = cellAfterSourceAddress + rowLength * -0x80;
-        if ((*(uint32_t *)(upperRowCellAddress + 0x50) & 0x20000000) == 0) {
-          neighborWaterDeltaAddress = upperRowCellAddress + 0x4c;
+             *(int *)(centerCellAddress + -0x34) + *(int *)(centerCellAddress + -0x38);
+        upperCellAddress = centerCellAddress + rowLength * -0x80;
+        if ((*(uint32_t *)(upperCellAddress + 0x50) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          neighborWaterDeltaAddress = upperCellAddress + 0x4c;
           *(int *)neighborWaterDeltaAddress =
                *(int *)neighborWaterDeltaAddress -
-               ((*(int *)(upperRowCellAddress + 0x4c) + *(int *)(upperRowCellAddress + 0x48)) - sourceSurfaceHeightQ12 >> 3);
+               ((*(int *)(upperCellAddress + 0x4c) + *(int *)(upperCellAddress + 0x48)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint32_t *)(upperRowCellAddress + 0xd0) & 0x20000000) == 0) {
-          *(int *)(upperRowCellAddress + 0xcc) =
-               *(int *)(upperRowCellAddress + 0xcc) -
-               ((*(int *)(upperRowCellAddress + 0xcc) + *(int *)(upperRowCellAddress + 200)) - sourceSurfaceHeightQ12 >> 3);
+        if ((*(uint32_t *)(upperCellAddress + 0xd0) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          *(int *)(upperCellAddress + 0xcc) =
+               *(int *)(upperCellAddress + 0xcc) -
+               ((*(int *)(upperCellAddress + 0xcc) + *(int *)(upperCellAddress + 0xc8)) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint32_t *)(upperRowCellAddress + 0x50 + rowLength * 0x100) & 0x20000000) == 0) {
-          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + 0x4c + rowLength * 0x100);
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + 0x4c + rowLength * 0x100) +
-                               *(int *)(upperRowCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
+        if ((*(uint32_t *)(upperCellAddress + 0x50 + rowLength * 0x100) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperCellAddress + 0x4c + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperCellAddress + 0x4c + rowLength * 0x100) +
+                               *(int *)(upperCellAddress + 0x48 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >> 3
                               );
         }
-        if ((*(uint32_t *)(upperRowCellAddress + -0x30 + rowLength * 0x100) & 0x20000000) == 0) {
-          lowerNeighborWaterDelta = (int *)(upperRowCellAddress + -0x34 + rowLength * 0x100);
-          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperRowCellAddress + -0x34 + rowLength * 0x100) +
-                               *(int *)(upperRowCellAddress + -0x38 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >>
+        if ((*(uint32_t *)(upperCellAddress + -0x30 + rowLength * 0x100) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          lowerNeighborWaterDelta = (int *)(upperCellAddress + -0x34 + rowLength * 0x100);
+          *lowerNeighborWaterDelta = *lowerNeighborWaterDelta - ((*(int *)(upperCellAddress + -0x34 + rowLength * 0x100) +
+                               *(int *)(upperCellAddress + -0x38 + rowLength * 0x100)) - sourceSurfaceHeightQ12 >>
                               3);
         }
-        cellAfterSourceAddress = upperRowCellAddress + rowLength * 0x80;
-        if ((*(uint32_t *)(cellAfterSourceAddress + -0x30) & 0x20000000) == 0) {
-          *(int *)(cellAfterSourceAddress + -0x34) =
-               *(int *)(cellAfterSourceAddress + -0x34) -
-               ((*(int *)(cellAfterSourceAddress + -0x34) + *(int *)(cellAfterSourceAddress + -0x38)
+        centerCellAddress = upperCellAddress + rowLength * 0x80;
+        if ((*(uint32_t *)(centerCellAddress + -0x30) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          *(int *)(centerCellAddress + -0x34) =
+               *(int *)(centerCellAddress + -0x34) -
+               ((*(int *)(centerCellAddress + -0x34) + *(int *)(centerCellAddress + -0x38)
                 ) - sourceSurfaceHeightQ12 >> 3);
         }
-        if ((*(uint32_t *)(cellAfterSourceAddress + 0xd0) & 0x20000000) == 0) {
-          *(int *)(cellAfterSourceAddress + 0xcc) =
-               *(int *)(cellAfterSourceAddress + 0xcc) -
-               ((*(int *)(cellAfterSourceAddress + 0xcc) + *(int *)(cellAfterSourceAddress + 200)) -
+        if ((*(uint32_t *)(centerCellAddress + 0xd0) & FIELD_CELL_FLUID_RECEIVER_EXCLUDED) == 0) {
+          *(int *)(centerCellAddress + 0xcc) =
+               *(int *)(centerCellAddress + 0xcc) -
+               ((*(int *)(centerCellAddress + 0xcc) + *(int *)(centerCellAddress + 0xc8)) -
                 sourceSurfaceHeightQ12 >> 3);
         }
       }
-      columnsRemaining = columnsRemaining + -1;
-      cellAfterSourceAddress = cellAfterSourceAddress;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
-    sourceCellAddress = cellAfterSourceAddress + -0x100;
-    rowsRemaining = rowsRemaining + -1;
+    rowStartCellAddress = centerCellAddress + -0x100;
+    rowsRemaining--;
   } while (rowsRemaining != 0);
   return;
 }

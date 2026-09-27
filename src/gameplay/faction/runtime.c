@@ -116,13 +116,12 @@ GameFactionRuntime_ResetPairwiseRelationState
 
 
 /* Address: 0x00565320.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Rebuilds the fixed old-unit secondary masks and spatial replay records from the selected campaign
-   scenario and active world entities, or clears the tables when no matching scenario data is available.
-   Local calls: OldUnitRuntime_ResetPendingTables.
-   Cross-module calls: FixedMath_Length2 [core/math/fixed].
+   Mission carry-over after a session ends: finds the current scenario's record in the loaded campaign and,
+   for the outcome selected by g_EndMovieSelectionIndex, stores each faction's technology masks (8 dwords) in
+   the old-unit secondary table and every unit standing inside its faction's exit zone as a primary record,
+   moved by the scenario's per-faction offset. OldUnitRuntime_MergeMasksAndReplayRecords applies both in the
+   next mission. Without a matching scenario both tables are cleared.
 */
-
 void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
 
 {
@@ -134,7 +133,7 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   uint32_t skipMaskBits;
   int copyCountOrAnchorY;
   int scenarioRecord;
-  int groupFieldCursorOrOffsetY;
+  int factionFieldCursorOrOffsetY;
   /* The original multiplies a stale caller ESI by the active faction index here; the loop then walks
      all eight 0x740-byte faction records, which only stays inside the table from records[0]. */
   int staleCallerEsi = 0;
@@ -143,7 +142,9 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
   bool scenarioFound;
 
   scenarioFound = false;
-  if ((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
+  /* Campaign asset: +0xB8 scenario count, +0xC4 current scenario id; scenario records of 0x180 bytes whose
+     id is at +0x300 relative to the record pointer. */
+  if ((g_InGameRuntimeRoot != NULL) &&
      (sourceOrRecordCursor = (uint32_t *)((int)g_GameFactionRuntimeImage.records[0].technologyMasks256Bits +
                          staleCallerEsi *
                          (g_InGameRuntimeRoot->worldRuntime0A30).activeFactionRuntimeIndex),
@@ -156,45 +157,53 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
         break;
       }
       scenarioRecord = scenarioRecord + 0x180;
-      remainingOrWorldY = remainingOrWorldY + -1;
+      remainingOrWorldY--;
     } while (remainingOrWorldY != 0);
   }
   if (!scenarioFound) {
     OldUnitRuntime_ResetPendingTables();
     return;
   }
-  groupFieldCursorOrOffsetY = scenarioRecord + 0x200;
+  /* Per-faction dword arrays of the scenario record (indexed by faction): +0x260 exit-zone centre X,
+     +0x280 centre Y, +0x2A0 radius, +0x2C0 destination X, +0x2E0 destination Y. +0x304 and +0x308 hold
+     one carry-over and one skip bit per outcome. */
+  factionFieldCursorOrOffsetY = scenarioRecord + 0x200;
   carryOverMaskBits = *(uint32_t *)(scenarioRecord + 0x304) >> ((uint8_t)g_EndMovieSelectionIndex & 0x1f);
   skipMaskBits = *(uint32_t *)(scenarioRecord + 0x308) >> ((uint8_t)g_EndMovieSelectionIndex & 0x1f);
   secondaryTableCursor = g_OldUnitSecondaryTable;
   /* Eight groups, one per faction record. The masks are not shifted per group (as in the original). */
-  for (remainingOrWorldY = 8; remainingOrWorldY != 0; remainingOrWorldY = remainingOrWorldY + -1) {
+  for (remainingOrWorldY = 8; remainingOrWorldY != 0; remainingOrWorldY--) {
     if (((skipMaskBits & 1) == 0) && ((carryOverMaskBits & 1) != 0) &&
-        (((*(int *)(groupFieldCursorOrOffsetY + 0x60) != 0 || (*(int *)(groupFieldCursorOrOffsetY + 0x80) != 0)) ||
-          (*(int *)(groupFieldCursorOrOffsetY + 0xc0) != 0)) ||
-         ((*(int *)(groupFieldCursorOrOffsetY + 0xe0) != 0 || (*(int *)(groupFieldCursorOrOffsetY + 0xa0) != 0))))) {
-      for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY = copyCountOrAnchorY + -1) {
+        (((*(int *)(factionFieldCursorOrOffsetY + 0x60) != 0 || (*(int *)(factionFieldCursorOrOffsetY + 0x80) != 0)) ||
+          (*(int *)(factionFieldCursorOrOffsetY + 0xc0) != 0)) ||
+         ((*(int *)(factionFieldCursorOrOffsetY + 0xe0) != 0 || (*(int *)(factionFieldCursorOrOffsetY + 0xa0) != 0))))) {
+      for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY--) {
         *secondaryTableCursor = *sourceOrRecordCursor;
-        sourceOrRecordCursor = sourceOrRecordCursor + 1;
-        secondaryTableCursor = secondaryTableCursor + 1;
+        sourceOrRecordCursor++;
+        secondaryTableCursor++;
       }
     }
     else {
       if ((skipMaskBits & 1) == 0) {
-        for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY = copyCountOrAnchorY + -1) {
+        for (copyCountOrAnchorY = 8; copyCountOrAnchorY != 0; copyCountOrAnchorY--) {
           *secondaryTableCursor = 0;
-          secondaryTableCursor = secondaryTableCursor + 1;
+          secondaryTableCursor++;
         }
       }
       sourceOrRecordCursor = sourceOrRecordCursor + 8;
     }
+    /* on to the next faction record's technology masks */
     sourceOrRecordCursor = sourceOrRecordCursor + 0x1c8;
-    groupFieldCursorOrOffsetY = groupFieldCursorOrOffsetY + 4;
+    factionFieldCursorOrOffsetY = factionFieldCursorOrOffsetY + 4;
   }
-  if (((g_InGameRuntimeRoot != (InGameRuntimeRootImageC3E4 *)0x0) &&
+  /* Primary records (8 dwords each, at most 0x200): [0] army asset id, [1] faction, [2] X, [3] Y,
+     [4] rotation angle. */
+  if (((g_InGameRuntimeRoot != NULL) &&
       (ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead, (skipMaskBits & 1) == 0)) &&
      (g_OldUnitRecordCount = 0, sourceOrRecordCursor = g_OldUnitPrimaryTable, (carryOverMaskBits & 1) != 0)) {
-    for (; ownerNode != (WorldOwnerListNode100 *)0x0; ownerNode = ownerNode->nextNode) {
+    for (; ownerNode != NULL; ownerNode = ownerNode->nextNode) {
+      /* runtimePayload + 8: the unit state (+0x0C faction, +0xA0 army asset id). Only a unit with a
+         zero dword at runtimePayload + 0xF0 is committed as a record. */
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (unitFactionOrAssetId = *(uint32_t *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc),
           0 < *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) &&
@@ -202,17 +211,17 @@ void __fastcall OldUnitRuntime_RebuildScenarioReplayTables(void)
                                     *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4) - ownerNode->worldXQ12),
          (int)distanceToAnchor <= *(int *)(scenarioRecord + 0x2a0 + unitFactionOrAssetId * 4))) {
         remainingOrWorldY = ownerNode->worldYQ12;
-        groupFieldCursorOrOffsetY = *(int *)(scenarioRecord + 0x2e0 + unitFactionOrAssetId * 4);
+        factionFieldCursorOrOffsetY = *(int *)(scenarioRecord + 0x2e0 + unitFactionOrAssetId * 4);
         copyCountOrAnchorY = *(int *)(scenarioRecord + 0x280 + unitFactionOrAssetId * 4);
         sourceOrRecordCursor[2] = (ownerNode->worldXQ12 + *(int *)(scenarioRecord + 0x2c0 + unitFactionOrAssetId * 4)) -
                      *(int *)(scenarioRecord + 0x260 + unitFactionOrAssetId * 4);
-        sourceOrRecordCursor[3] = (remainingOrWorldY + groupFieldCursorOrOffsetY) - copyCountOrAnchorY;
+        sourceOrRecordCursor[3] = (remainingOrWorldY + factionFieldCursorOrOffsetY) - copyCountOrAnchorY;
         sourceOrRecordCursor[1] = unitFactionOrAssetId;
         if (*(int *)((int)ownerNode->runtimePayload + 0xf0) == 0) {
           unitFactionOrAssetId = *(uint32_t *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xa0);
           sourceOrRecordCursor[4] = ownerNode->modelLocalRotationAngle2;
           *sourceOrRecordCursor = unitFactionOrAssetId;
-          g_OldUnitRecordCount = g_OldUnitRecordCount + 1;
+          g_OldUnitRecordCount++;
           sourceOrRecordCursor = sourceOrRecordCursor + 8;
           if (0x1ff < g_OldUnitRecordCount) {
             return;
@@ -359,12 +368,10 @@ GameFactionRuntime_GetPackedStateNibble
 
 
 /* Address: 0x00513D70.
-   Ownership: gameplay/faction/runtime.
-   Purpose: Traverses unordered faction pairs 1 through 7. For pairwise relation states 8, 9, or 10, finds the
-   first asymmetric technology bit and unlocks the corresponding missing technologies in both factions, then
-   rebuilds the other-player UI slots.
-   Cross-module calls: Technology_UnlockForFaction [gameplay/technology/runtime],
-   InGameOtherPlayerCommand_RebuildTargetEntries [ui/ingame/runtime].
+   Technology exchange between related factions: for every unordered pair of factions 1..7 whose relation
+   state is 8, 9 or 10, the lowest technology only the source faction has and the lowest technology only the
+   other faction has are swapped (each side unlocks the other's). A pair where either side has nothing the
+   other lacks exchanges nothing. Afterwards the other-player command entries are rebuilt.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
@@ -381,12 +388,14 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
   int sourceRecordBase;
   
   sourceRecordBase = THANDOR_ADDR(g_GameFactionRuntimeImage,0x740);
-  for (sourceFactionIndex = 1; sourceFactionIndex < 7; sourceFactionIndex = sourceFactionIndex + 1) {
-    /* otherRecordBase trails the other faction's record by one record (0x740 bytes). */
+  for (sourceFactionIndex = 1; sourceFactionIndex < 7; sourceFactionIndex++) {
+    /* otherRecordBase trails the other faction's record by one record (0x740 bytes), so +0x780 is the
+       other record's packedRelationStates (+0x40) and +0xE20 its technologyMasks256Bits (+0x6E0). */
     otherRecordBase = sourceRecordBase;
     for (otherFactionIndex = sourceFactionIndex + 1; otherFactionIndex < 8;
-        otherFactionIndex = otherFactionIndex + 1) {
-      switch(*(uint32_t *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * '\x04' & 0x1fU) & 0xf) {
+        otherFactionIndex++) {
+      /* the other faction's relation-state nibble towards the source faction */
+      switch(*(uint32_t *)(otherRecordBase + 0x780) >> ((char)sourceFactionIndex * 4 & 0x1fU) & 0xf) {
       case 8:
       case 9:
       case 10:
@@ -401,7 +410,7 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
           carryBit = (int)bitMask >> 0x1f;
           bitMask = bitMask << 1 | -carryBit;
           maskWordIndex = maskWordIndex + (-carryBit != 0);
-          sourceTechnologyIndex = sourceTechnologyIndex + 1;
+          sourceTechnologyIndex++;
         } while (maskWordIndex < 8);
         if (maskWordIndex < 8) {
           /* First technology the other faction has and the source one lacks; swap the pair. */
@@ -418,7 +427,7 @@ GameFactionRuntime_SynchronizeTechnologiesForRelationStates8To10(void)
             carryBit = (int)bitMask >> 0x1f;
             bitMask = bitMask << 1 | -carryBit;
             maskWordIndex = maskWordIndex + (-carryBit != 0);
-            otherTechnologyIndex = otherTechnologyIndex + 1;
+            otherTechnologyIndex++;
           } while (maskWordIndex < 8);
         }
       }

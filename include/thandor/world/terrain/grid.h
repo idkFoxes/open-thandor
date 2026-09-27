@@ -14,6 +14,29 @@
 /* Submodule: world/terrain/grid. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Field-grid cell flag bits (FieldGridCell.flagsAndMaterial, +0x50) beyond the generated
+   FieldCellPackedFlagsAndMaterial enum. FieldGrid_InitializeRuntimeCellsAndBoundaryFlags sets the four
+   map-edge bits on the outermost ring of cells; neighbour loops test them before touching a neighbour. */
+#define FIELD_CELL_LAST_ROW_BOUNDARY 0x80000000u
+#define FIELD_CELL_GRID_EDGE_MASK                                                                  \
+  (FIELD_CELL_LAST_ROW_BOUNDARY | FIELD_CELL_LAST_COLUMN_BOUNDARY | FIELD_CELL_FIRST_ROW_BOUNDARY | \
+   FIELD_CELL_FIRST_COLUMN_BOUNDARY) /* 0x88006000 */
+
+/* FieldGridCell.occupancyMask (+0x70) holds one occupancy byte per faction slot 0..7 (the tick wheel
+   indexes it with WorldRuntimeContext.activeFactionRuntimeIndex). Bit meanings inside a byte as far as
+   the tick-wheel code shows them: */
+#define FIELD_CELL_OCCUPANCY_BIT0 0x01            /* set/cleared grid-wide for one faction by the Bit0 helpers */
+#define FIELD_CELL_OCCUPANCY_REBUILT_BITS 0x7f    /* bits 0..6: cleared before every occupancy rebuild */
+#define FIELD_CELL_OCCUPANCY_PERSISTENT_BIT 0x80  /* bit 7: survives the rebuild clear */
+#define FIELD_CELL_OCCUPANCY_PRESENCE_BITS 0xf9   /* bits that count as "faction present" (1 and 2 excluded) */
+/* a byte mask moved into the faction slot's byte of the 64-bit occupancyMask */
+#define FIELD_CELL_OCCUPANCY_SLOT_MASK(bits,factionSlot) ((uint64_t)(bits) << ((factionSlot) * 8))
+
+/* FieldGridCell.runtime60_6B spans +0x60..+0x6B; code indexes through it past its end, so these are the
+   array indices of the fields it reaches. */
+#define FIELD_CELL_RUNTIME60_INDEX_RUNTIME_BYTE68 8      /* +0x68: runtime class byte */
+#define FIELD_CELL_RUNTIME60_INDEX_OCCUPANCY_MASK 0x10   /* +0x70: occupancyMask byte 0 */
+
 /* 0x00505930 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyRadialTerrainHeightDeltaAndRefreshSurface
@@ -153,7 +176,7 @@ FieldGrid_RebuildCellLookupPointers(FieldGridAsset *fieldGrid);
 /* 0x00503E20 */
 void __thandor_void_preserve_eax_ecx_edx
 FieldGrid_ApplyByteClampLookupToCells
-          (FieldGridByteOffset sourceChannelOffset,FieldGridAsset *fieldGrid);
+          (FieldGridByteOffset factionIndex,FieldGridAsset *fieldGrid);
 
 /* 0x00503E80 */
 void __thandor_void_preserve_eax_ecx_edx

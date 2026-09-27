@@ -118,9 +118,10 @@ UiRuntime_OpenFourValueDialog
 
 
 /* Address: 0x004AEF00.
-   Ownership: ui/core/runtime.
-   Purpose: Acquires the UI runtime-ring lock and advances the 256-entry read index. CF clear means one record was
-   discarded; CF set means the ring was empty.
+   Takes the oldest received network packet out of the receive ring (under the ring lock) and returns
+   pointers to it and to its sender endpoint. The slot is released, not copied, so the data stays valid only
+   until the receiver wraps around to it again. empty (CF set) when nothing was pending; then both values
+   are the read index.
 */
 RecordRingDiscardResult __thandor_eax_edx_cf_preserve_ecx
 UiRuntimeRecordRing_DiscardOldest(void)
@@ -130,16 +131,16 @@ UiRuntimeRecordRing_DiscardOldest(void)
   uint32_t readIndex;
   RecordRingDiscardResult discardedResult;
   RecordRingDiscardResult emptyResult;
-  
+
   g_SpinLockAcquire(&g_UiRuntimeRecordRingLock);
   readIndex = g_UiRuntimeRecordReadIndex;
   if (g_UiRuntimeRecordWriteIndex != g_UiRuntimeRecordReadIndex) {
     nextReadIndex = g_UiRuntimeRecordReadIndex + 1;
     discardedResult.payloadOrReadIndex = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
     discardedResult.endpointOrReadIndex =
-         g_UiRuntimeRecordReadIndex * 0x80 + g_UiRuntimeAuxiliaryBuffer8000;
+         g_UiRuntimeRecordReadIndex * UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE + g_UiRuntimeAuxiliaryBuffer8000;
     g_UiRuntimeRecordReadIndex = nextReadIndex;
-    if (0xff < nextReadIndex) {
+    if (UI_RUNTIME_RECORD_RING_LAST_INDEX < nextReadIndex) {
       g_UiRuntimeRecordReadIndex = 0;
     }
     g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
@@ -182,32 +183,32 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void)
 
 
 /* Address: 0x004AF050.
-   Ownership: ui/core/runtime.
-   Purpose: Try-locks the ring and scans pending 0x100-byte records for recordId. CF set means a match; CF clear
-   means absent or lock unavailable.
+   Returns true (CF set) when a pending received packet carries sessionToken in its header, i.e. when the
+   host of this session has sent something. The in-game client tick uses it to skip processing until the
+   host's packets are there. Returns false when nothing matches or the ring lock is busy (it only try-locks).
 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sequenceToken)
+UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken)
 
 {
   uint32_t ringIndex;
   UiRuntimeRecord *recordCursor;
   bool lockUnavailable;
-  
+
   lockUnavailable = g_SpinLockTryAcquire(&g_UiRuntimeRecordRingLock);
   if (!lockUnavailable) {
     if (g_UiRuntimeRecordReadIndex != g_UiRuntimeRecordWriteIndex) {
       recordCursor = g_UiRuntimeRecordRing + g_UiRuntimeRecordReadIndex;
       ringIndex = g_UiRuntimeRecordReadIndex;
       while( true ) {
-        if (sequenceToken == (recordCursor->packetHeader).sequenceToken) {
+        if (sessionToken == (recordCursor->packetHeader).sequenceToken) {
           g_SpinLockRelease(&g_UiRuntimeRecordRingLock);
           return true;
         }
-        ringIndex = ringIndex + 1;
-        recordCursor = recordCursor + 1;
+        ringIndex++;
+        recordCursor++;
         if (ringIndex == g_UiRuntimeRecordWriteIndex) break;
-        if (0xff < ringIndex) {
+        if (UI_RUNTIME_RECORD_RING_LAST_INDEX < ringIndex) {
           /* wrap around the 256-entry ring */
           ringIndex = 0;
           recordCursor = g_UiRuntimeRecordRing;
@@ -222,9 +223,9 @@ UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sequenceToken)
 
 
 /* Address: 0x004AF0F0.
-   Ownership: ui/core/runtime.
-   Purpose: Installs the runtime frame lock pointer and the optional callback passed to SpinLockReleaseAndInvoke.
-   Passing two null pointers disables external synchronization.
+   Installs the spin lock the UI input and layout code takes around each frame, and the callback run after
+   that lock is released (SpinLockReleaseAndInvoke), so UI work is serialised with the active state tick
+   (frontend or in-game). Passing two null pointers disables the synchronisation.
 */
 void __thandor_preserve_eax_edx
 UiRuntime_SetSynchronizationHooks

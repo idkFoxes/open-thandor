@@ -18,6 +18,20 @@
    requested transfer cannot be served; UiTransferMailbox_GetReceivedBuffer reports it like an empty mailbox. */
 #define UI_TRANSFER_MAILBOX_UNAVAILABLE ((void *)0xffffffff)
 
+/* In-game lockstep command exchange. packedTypeAndUnitCount holds the packet type in the low word and the
+   number of 0x20-byte units in the high word. Each tick interval the host collects one command record per
+   client (COMMAND_SUBMIT), then broadcasts all records as one COMMAND_BATCH; every peer executes the batch.
+   A client that still lacks the batch gets it again, a client whose command already arrived gets
+   COMMAND_WAIT and answers COMMAND_WAIT_ACK, which only refreshes its timeout on the host. */
+#define FRONTEND_PACKET_TYPE_MASK 0xffff
+#define FRONTEND_PACKET_UNIT_COUNT_SHIFT 16
+#define FRONTEND_PACKET_COMMAND_BATCH_TYPE 0x20             /* host -> clients; unit count = command records */
+#define FRONTEND_PACKET_COMMAND_SUBMIT FRONTEND_PACKET_10021   /* client -> host: its next command record */
+#define FRONTEND_PACKET_COMMAND_WAIT FRONTEND_PACKET_10022     /* host -> client: command received, batch pending */
+#define FRONTEND_PACKET_COMMAND_WAIT_ACK FRONTEND_PACKET_10023 /* client -> host: answer to COMMAND_WAIT */
+/* Reload value of a peer's heartbeatExpiryTicks and of g_SessionTransferTimeoutTicks on every packet. */
+#define FRONTEND_PEER_TIMEOUT_TICKS 0x100
+
 /* 0x004AEB10 */
 void __thandor_void_preserve_eax_ecx_edx UiTransferMailbox_ServiceAndRetransmitTimer(void);
 
@@ -64,7 +78,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendPacket10006(void);
 
 /* 0x005723F0 */
 bool __thandor_cf_preserve_eax_ecx_edx
-FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 sendStateReplies);
+FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(FrontendBooleanState32 notifyWaitingPeers);
 
 /* 0x00572920 */
 void __thandor_void_preserve_eax_ecx_edx FrontendTransfer_SendCommandBatchRequest10021(void);
@@ -93,7 +107,7 @@ bool __thandor_cf_preserve_eax_ecx_edx FrontendTransfer_ConsumeProcessedFlagFron
 
 /* 0x005722C0 */
 void __thandor_void_preserve_eax_ecx_edx
-FrontendTransfer_HandleSyncRequest10021AndReply10023
+FrontendTransfer_HostHandleCommandSubmitOrWaitAck
           (NetworkSessionContext *sourceContext,FrontendTransferPacketUnion *packet);
 
 /* 0x00572560 */

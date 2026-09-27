@@ -11,115 +11,118 @@
 /* Implementation ownership: gameplay/ai/planning. */
 
 /* Address: 0x00514350.
-   Ownership: gameplay/ai/planning.
-   Purpose: Runs the faction-planning dispatcher for active AI factions, derives decayed per-class capacity values,
-   accumulates cross-faction model costs from active runtime objects, and rebuilds the verified per-faction
-   capacity maxima. Tick-wheel cases 2/6. Contains THE STOCK-INCOME READ: channel = instance+0x5C with a SINGLE
-   deref (def copy definitionValueBC_5C, ~0 on disk), crediting +0x100 to faction base+0x720+ch*4.
-   Local calls: AiRuntime_DispatchFactionPlanningPhase.
+   Runs the planning phase for every active AI faction (1..7, a faction without a player block) and scales its
+   terrain contribution by the game speed, then rebuilds the per-faction AI pressure table: each of the eight
+   pressure channels decays to about 3/4, every runtime model adds 0x100 to the channel of its definition
+   (+0x5C, stock data ~0) for each other faction flagged in its faction mask, and the channel maximum is stored.
+   Called on tick-wheel cases 2 and 6.
 */
 void __fastcall AiFactionRuntime_RebuildPlanningCapacityState(void)
 
 {
   GameSpeedQ8 currentGameSpeedQ8;
   int factionIndexOrScratch;
-  int remainingOrPressureValue;
+  int remainingFactionsOrPressureValue;
   FrontendPlayerRuntimeBlockCount remainingPlayerBlocks;
   FrontendPlayerRuntimeRecord *playerBlock;
-  uint32_t nextIndexOrFactionBit;
-  uint32_t pressureIndexOrFaction;
-  GameFactionRuntimeRecord *factionRecordPressureTarget;
-  GameFactionRuntimeRecord *factionRecordPlanning;
-  GameFactionRuntimeRecord *factionRecordDecay;
-  GameFactionRuntimeRecord *factionRecordMaxScan;
+  uint32_t nextChannelOrFactionBit;
+  uint32_t channelOrFactionIndex;
+  GameFactionRuntimeRecord *pressureTargetRecord;
+  GameFactionRuntimeRecord *planningRecord;
+  GameFactionRuntimeRecord *decayRecord;
+  GameFactionRuntimeRecord *maximumScanRecord;
   FactionRuntimeLifecycleObservedState *lifecycleState;
   WorldOwnerListNode100 *ownerNode;
   
-  factionRecordPlanning = g_GameFactionRuntimeImage.records;
+  planningRecord = g_GameFactionRuntimeImage.records;
   lifecycleState = g_GameFactionRuntimeImage.tail.factionLifecycleStates;
-  remainingOrPressureValue = 7;
+  remainingFactionsOrPressureValue = 7;
   factionIndexOrScratch = 1;
   do {
     remainingPlayerBlocks = g_FrontendPlayerRuntimeBlockCount;
     playerBlock = g_FrontendPlayerRuntimeBlocks;
-    lifecycleState = lifecycleState + 1;
-    factionRecordPlanning = factionRecordPlanning + 1;
-    factionRecordPlanning->terrainContributionScaleQ8 = 0x100;
+    lifecycleState++;
+    planningRecord++;
+    planningRecord->terrainContributionScaleQ8 = 0x100; /* 1.0 in Q8 */
     currentGameSpeedQ8 = g_GameFactionRuntimeImage.tail.gameSpeedQ8;
     if (*lifecycleState == FACTION_RUNTIME_LIFECYCLE_ACTIVE) {
       /* Only factions without a player block are AI-controlled. */
       do {
         if (factionIndexOrScratch == (playerBlock->factionAssignment).factionAssignmentIndex) break;
-        playerBlock = playerBlock + 1;
-        remainingPlayerBlocks = remainingPlayerBlocks - 1;
+        playerBlock++;
+        remainingPlayerBlocks--;
       } while (remainingPlayerBlocks != 0);
       if (remainingPlayerBlocks == 0) {
         AiRuntime_DispatchFactionPlanningPhase(factionIndexOrScratch,(WorldRuntimeContext *)g_InGameRuntimeRoot);
-        factionRecordPlanning->terrainContributionScaleQ8 = currentGameSpeedQ8;
+        planningRecord->terrainContributionScaleQ8 = currentGameSpeedQ8;
       }
     }
-    factionIndexOrScratch = factionIndexOrScratch + 1;
-    remainingOrPressureValue = remainingOrPressureValue + -1;
-    if (remainingOrPressureValue == 0) {
-      factionRecordDecay = g_GameFactionRuntimeImage.records + 1;
+    factionIndexOrScratch++;
+    remainingFactionsOrPressureValue--;
+    if (remainingFactionsOrPressureValue == 0) {
+      /* Decay: value = ((value * 3 + 1) >> 2) + 1, two channels per step. */
+      decayRecord = g_GameFactionRuntimeImage.records + 1;
       factionIndexOrScratch = 7;
-      pressureIndexOrFaction = 0;
+      channelOrFactionIndex = 0;
       do {
         do {
-          nextIndexOrFactionBit = pressureIndexOrFaction + 2;
-          factionRecordDecay->aiPressureValues[pressureIndexOrFaction] =
-               (factionRecordDecay->aiPressureValues[pressureIndexOrFaction] * 3 + 1U >> 2) + 1;
-          factionRecordDecay->aiPressureValues[pressureIndexOrFaction + 1] =
-               (factionRecordDecay->aiPressureValues[pressureIndexOrFaction + 1] * 3 + 1U >> 2) + 1;
-          pressureIndexOrFaction = nextIndexOrFactionBit;
-        } while (nextIndexOrFactionBit < 8);
-        factionRecordDecay->maximumAiPressure = 0;
-        pressureIndexOrFaction = 0;
-        factionRecordDecay = factionRecordDecay + 1;
-        factionIndexOrScratch = factionIndexOrScratch + -1;
+          nextChannelOrFactionBit = channelOrFactionIndex + 2;
+          decayRecord->aiPressureValues[channelOrFactionIndex] =
+               ((decayRecord->aiPressureValues[channelOrFactionIndex] * 3 + 1U) >> 2) + 1;
+          decayRecord->aiPressureValues[channelOrFactionIndex + 1] =
+               ((decayRecord->aiPressureValues[channelOrFactionIndex + 1] * 3 + 1U) >> 2) + 1;
+          channelOrFactionIndex = nextChannelOrFactionBit;
+        } while (nextChannelOrFactionBit < 8);
+        decayRecord->maximumAiPressure = 0;
+        channelOrFactionIndex = 0;
+        decayRecord++;
+        factionIndexOrScratch--;
       } while (factionIndexOrScratch != 0);
       ownerNode = (g_InGameRuntimeRoot->worldRuntime0A30).ownerListHead;
-      if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+      if (ownerNode != NULL) {
         do {
           if (ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+            /* runtimePayload is the ModelRuntimeSlot: +0 its definition (+0x5C = pressure channel), +8 a
+               state block with the owning faction at +0x0C and a faction mask at +0x50 (bit 3 + 2 * (f - 1)
+               for faction f). */
             factionIndexOrScratch = *(int *)((int)ownerNode->runtimePayload + 8);
             if (*(int *)(factionIndexOrScratch + 0xc) != 0) {
-              remainingOrPressureValue = *(int *)(*(int *)ownerNode->runtimePayload + 0x5c);
-              nextIndexOrFactionBit = 8;
-              pressureIndexOrFaction = 1;
-              factionRecordPressureTarget = g_GameFactionRuntimeImage.records;
+              remainingFactionsOrPressureValue = *(int *)(*(int *)ownerNode->runtimePayload + 0x5c);
+              nextChannelOrFactionBit = 8;
+              channelOrFactionIndex = 1;
+              pressureTargetRecord = g_GameFactionRuntimeImage.records;
               do {
-                factionRecordPressureTarget = factionRecordPressureTarget + 1;
-                if (((*(uint32_t *)(factionIndexOrScratch + 0x50) & nextIndexOrFactionBit) != 0) && (pressureIndexOrFaction != *(uint32_t *)(factionIndexOrScratch + 0xc))) {
-                  factionRecordPressureTarget->aiPressureValues[remainingOrPressureValue] =
-                       factionRecordPressureTarget->aiPressureValues[remainingOrPressureValue] + 0x100;
+                pressureTargetRecord++;
+                if (((*(uint32_t *)(factionIndexOrScratch + 0x50) & nextChannelOrFactionBit) != 0) && (channelOrFactionIndex != *(uint32_t *)(factionIndexOrScratch + 0xc))) {
+                  pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] =
+                       pressureTargetRecord->aiPressureValues[remainingFactionsOrPressureValue] + 0x100;
                 }
-                nextIndexOrFactionBit = nextIndexOrFactionBit << 2;
-                pressureIndexOrFaction = pressureIndexOrFaction + 1;
-              } while (pressureIndexOrFaction < 8);
+                nextChannelOrFactionBit = nextChannelOrFactionBit << 2;
+                channelOrFactionIndex++;
+              } while (channelOrFactionIndex < 8);
             }
           }
           ownerNode = ownerNode->nextNode;
-        } while (ownerNode != (WorldOwnerListNode100 *)0x0);
-        factionRecordMaxScan = g_GameFactionRuntimeImage.records + 1;
+        } while (ownerNode != NULL);
+        maximumScanRecord = g_GameFactionRuntimeImage.records + 1;
         factionIndexOrScratch = 7;
-        pressureIndexOrFaction = 0;
+        channelOrFactionIndex = 0;
         do {
           do {
-            remainingOrPressureValue = factionRecordMaxScan->aiPressureValues[pressureIndexOrFaction + 1];
-            if (factionRecordMaxScan->maximumAiPressure <
-                factionRecordMaxScan->aiPressureValues[pressureIndexOrFaction]) {
-              factionRecordMaxScan->maximumAiPressure =
-                   factionRecordMaxScan->aiPressureValues[pressureIndexOrFaction];
+            remainingFactionsOrPressureValue = maximumScanRecord->aiPressureValues[channelOrFactionIndex + 1];
+            if (maximumScanRecord->maximumAiPressure <
+                maximumScanRecord->aiPressureValues[channelOrFactionIndex]) {
+              maximumScanRecord->maximumAiPressure =
+                   maximumScanRecord->aiPressureValues[channelOrFactionIndex];
             }
-            pressureIndexOrFaction = pressureIndexOrFaction + 2;
-            if (factionRecordMaxScan->maximumAiPressure < remainingOrPressureValue) {
-              factionRecordMaxScan->maximumAiPressure = remainingOrPressureValue;
+            channelOrFactionIndex = channelOrFactionIndex + 2;
+            if (maximumScanRecord->maximumAiPressure < remainingFactionsOrPressureValue) {
+              maximumScanRecord->maximumAiPressure = remainingFactionsOrPressureValue;
             }
-          } while (pressureIndexOrFaction < 8);
-          pressureIndexOrFaction = 0;
-          factionRecordMaxScan = factionRecordMaxScan + 1;
-          factionIndexOrScratch = factionIndexOrScratch + -1;
+          } while (channelOrFactionIndex < 8);
+          channelOrFactionIndex = 0;
+          maximumScanRecord++;
+          factionIndexOrScratch--;
         } while (factionIndexOrScratch != 0);
       }
       return;

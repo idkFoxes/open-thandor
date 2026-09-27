@@ -354,15 +354,13 @@ GridReachability_RebuildConnectedRegionAroundWorldPoint
 
 
 /* Address: 0x00533620.
-   Ownership: world/pathing/grid.
-   Purpose: Rebuilds grid-scratch classification masks from field-cell material, height, and neighbor state;
-   incorporates active runtime footprints; performs connected-region fills; and normalizes the resulting
-   classification bands. [FIELD_GRID_STORAGE_NAMESPACE_DB_CLOSURE] Builds state/classification bits in separately
-   allocated 8-byte GridScratchCell_V419 records. Terrain class bits 24..30 overlap FLD numeric bit positions but
-   are not FLD flagsAndMaterial state and must never be written back there by semantic inference.
-   [VERSIONLESS_CANONICAL_DATATYPE_CLOSURE] GridScratchCell.stateMask now uses the versionless GridScratchStateMask
-   enum; GridScratch bits 24..30 remain a storage namespace distinct from FLD flagsAndMaterial.
-   Local calls: GridScratch_FloodFillConnectedCellsRegs.
+   Rebuilds the terrain classification of the scratch grid (4x4 scratch cells per field cell): clears the
+   faction and class bits, derives terrain class bits 24..30 from water depth and slope of each field cell
+   and faction presence bits 1..7 from its occupancy bytes, and marks map-edge cells GRID_SCRATCH_BLOCKED.
+   Then every class-24 area is grown by one field cell, and each runtime model flood-fills the region it stands
+   in; cells no model can reach get classes 28..30 resp. 25..27 so they count as unreachable. The class
+   bits are a scratch-only namespace and never written back to FieldGridCell.flagsAndMaterial.
+   The dilation pass reads four scratch rows before the first and after the last row, as in the original.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *worldRuntime)
@@ -393,42 +391,51 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
   countOrWaterDeltaOrColumn = fieldGridWidth * rowsRemaining;
   scratchCursor = g_GridScratchPrimary;
   do {
-    scratchCursor->stateMask = scratchCursor->stateMask & 0xffff01;
-    scratchCursor[1].stateMask = scratchCursor[1].stateMask & 0xffff01;
-    scratchCursor[2].stateMask = scratchCursor[2].stateMask & 0xffff01;
-    scratchCursor[3].stateMask = scratchCursor[3].stateMask & 0xffff01;
-    scratchCursor[4].stateMask = scratchCursor[4].stateMask & 0xffff01;
-    scratchCursor[5].stateMask = scratchCursor[5].stateMask & 0xffff01;
-    scratchCursor[6].stateMask = scratchCursor[6].stateMask & 0xffff01;
-    scratchCursor[7].stateMask = scratchCursor[7].stateMask & 0xffff01;
-    scratchCursor[8].stateMask = scratchCursor[8].stateMask & 0xffff01;
-    scratchCursor[9].stateMask = scratchCursor[9].stateMask & 0xffff01;
-    scratchCursor[10].stateMask = scratchCursor[10].stateMask & 0xffff01;
-    scratchCursor[0xb].stateMask = scratchCursor[0xb].stateMask & 0xffff01;
-    scratchCursor[0xc].stateMask = scratchCursor[0xc].stateMask & 0xffff01;
-    scratchCursor[0xd].stateMask = scratchCursor[0xd].stateMask & 0xffff01;
-    scratchCursor[0xe].stateMask = scratchCursor[0xe].stateMask & 0xffff01;
-    scratchCursor[0xf].stateMask = scratchCursor[0xf].stateMask & 0xffff01;
+    scratchCursor->stateMask = scratchCursor->stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[1].stateMask = scratchCursor[1].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[2].stateMask = scratchCursor[2].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[3].stateMask = scratchCursor[3].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[4].stateMask = scratchCursor[4].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[5].stateMask = scratchCursor[5].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[6].stateMask = scratchCursor[6].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[7].stateMask = scratchCursor[7].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[8].stateMask = scratchCursor[8].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[9].stateMask = scratchCursor[9].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[10].stateMask = scratchCursor[10].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[11].stateMask = scratchCursor[11].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[12].stateMask = scratchCursor[12].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[13].stateMask = scratchCursor[13].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[14].stateMask = scratchCursor[14].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
+    scratchCursor[15].stateMask = scratchCursor[15].stateMask & GRID_SCRATCH_REBUILD_KEEP_BITS;
     scratchWidth = g_GridScratchWidth;
-    scratchCursor = scratchCursor + 0x10;
-    countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+    scratchCursor = scratchCursor + 16;
+    countOrWaterDeltaOrColumn--;
   } while (countOrWaterDeltaOrColumn != 0);
   fieldCell = fieldGridAsset->cells;
   columnsRemaining = fieldGridWidth;
   scratchCursor = g_GridScratchPrimary;
   do {
     do {
-      cellClassMask = ((uint32_t)((fieldCell->occupancyMask & 0xf900) != 0) +
-              ((uint32_t)((fieldCell->occupancyMask & 0xf90000) != 0) +
-              ((uint32_t)((fieldCell->occupancyMask & 0xf9000000) != 0) +
-              ((uint32_t)((fieldCell->occupancyMask & 0xf900000000) != 0) +
-              ((uint32_t)((fieldCell->occupancyMask & 0xf90000000000) != 0) +
-              ((uint32_t)((fieldCell->occupancyMask & 0xf9000000000000) != 0) +
-              (uint32_t)((fieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2) * 2) *
-              2) * 2;
+      /* bit n set when faction slot n (1..7) is present on this field cell */
+      cellClassMask =
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,1)) != 0) +
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,2)) != 0) +
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,3)) != 0) +
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,4)) != 0) +
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,5)) != 0) +
+           ((uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,6)) != 0) +
+           (uint32_t)((fieldCell->occupancyMask &
+                       FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,7)) != 0) * 2) * 2) * 2) * 2) *
+           2) * 2) * 2;
       countOrWaterDeltaOrColumn = fieldCell->waterSurfaceDelta;
-      triangle0Angle = (int)fieldCell->triangle0NormalAngles >> 0x10;
-      angleOrCountOrRow = (int)fieldCell->triangle1NormalAngles >> 0x10;
+      triangle0Angle = (int)fieldCell->triangle0NormalAngles >> 16;
+      angleOrCountOrRow = (int)fieldCell->triangle1NormalAngles >> 16;
       if (countOrWaterDeltaOrColumn <= g_GridTerrainClassBit24MaxWaterSurfaceDelta) {
         cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
       }
@@ -466,8 +473,8 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
         cellClassMask = cellClassMask | GRID_SCRATCH_TERRAIN_CLASS_BIT30;
       }
       cellFlags = fieldCell->flagsAndMaterial;
-      if ((cellFlags & 0x88006000) != 0) {
-        cellClassMask = cellClassMask | 0x80000000;
+      if ((cellFlags & FIELD_CELL_GRID_EDGE_MASK) != 0) {
+        cellClassMask = cellClassMask | GRID_SCRATCH_BLOCKED;
       }
       if ((cellFlags & FIELD_CELL_FIRST_ROW_BOUNDARY) == 0) {
         scratchCursor[scratchWidth * -2 + 2].stateMask = scratchCursor[scratchWidth * -2 + 2].stateMask | cellClassMask;
@@ -497,8 +504,8 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
         scratchCursor[-1].stateMask = scratchCursor[-1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
-        scratchCursor[scratchWidth * 2 + -1].stateMask = scratchCursor[scratchWidth * 2 + -1].stateMask | cellClassMask;
-        scratchCursor[scratchWidth * 2 + -2].stateMask = scratchCursor[scratchWidth * 2 + -2].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 - 1].stateMask = scratchCursor[scratchWidth * 2 - 1].stateMask | cellClassMask;
+        scratchCursor[scratchWidth * 2 - 2].stateMask = scratchCursor[scratchWidth * 2 - 2].stateMask | cellClassMask;
       }
       scratchCursor->stateMask = scratchCursor->stateMask | cellClassMask;
       scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
@@ -513,7 +520,7 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
       scratchCursor[1].stateMask = scratchCursor[1].stateMask | cellClassMask;
       scratchCursor[2].stateMask = scratchCursor[2].stateMask | cellClassMask;
       scratchCursor[3].stateMask = scratchCursor[3].stateMask | cellClassMask;
-      if ((cellFlags & 0x80000000) == 0) {
+      if ((cellFlags & FIELD_CELL_LAST_ROW_BOUNDARY) == 0) {
         scratchCursor[scratchWidth].stateMask = scratchCursor[scratchWidth].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 1].stateMask = scratchCursor[scratchWidth + 1].stateMask | cellClassMask;
         scratchCursor[scratchWidth + 2].stateMask = scratchCursor[scratchWidth + 2].stateMask | cellClassMask;
@@ -522,16 +529,16 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
         if ((cellFlags & FIELD_CELL_FIRST_COLUMN_BOUNDARY) == 0) {
           scratchCursor[scratchWidth - 1].stateMask = scratchCursor[scratchWidth - 1].stateMask | cellClassMask;
           scratchCursor[scratchWidth - 2].stateMask = scratchCursor[scratchWidth - 2].stateMask | cellClassMask;
-          scratchCursor[scratchWidth * 2 + -1].stateMask = scratchCursor[scratchWidth * 2 + -1].stateMask | cellClassMask;
+          scratchCursor[scratchWidth * 2 - 1].stateMask = scratchCursor[scratchWidth * 2 - 1].stateMask | cellClassMask;
         }
       }
       scratchStride = g_GridScratchWidth;
       scratchCursor = scratchCursor + scratchWidth * -3 + 4;
-      fieldCell = fieldCell + 1;
-      columnsRemaining = columnsRemaining - 1;
+      fieldCell++;
+      columnsRemaining--;
     } while (columnsRemaining != 0);
     scratchCursor = scratchCursor + scratchWidth * 3;
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = fieldGridWidth;
   } while (rowsRemaining != 0);
   angleOrCountOrRow = g_GridScratchHeight * g_GridScratchWidth;
@@ -540,16 +547,16 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
   do {
     scratchCursor[scratchStride * 4].stateMask =
          scratchCursor[scratchStride * 4].stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-    if (((scratchCursor[scratchStride * 4].stateMask & 0x80000000) == 0) &&
+    if (((scratchCursor[scratchStride * 4].stateMask & GRID_SCRATCH_BLOCKED) == 0) &&
        (((scratchCursor[scratchStride * 4].stateMask | scratchCursor->stateMask | scratchCursor[4].stateMask |
-          scratchCursor[scratchStride * 4 + -4].stateMask | scratchCursor[scratchStride * 4 + 4].stateMask |
-          scratchCursor[scratchStride * 8 + -4].stateMask | scratchCursor[scratchStride * 8].stateMask) &
+          scratchCursor[scratchStride * 4 - 4].stateMask | scratchCursor[scratchStride * 4 + 4].stateMask |
+          scratchCursor[scratchStride * 8 - 4].stateMask | scratchCursor[scratchStride * 8].stateMask) &
         GRID_SCRATCH_TERRAIN_CLASS_BIT24) != 0)) {
       scratchCursor[scratchStride * 4].stateMask =
            scratchCursor[scratchStride * 4].stateMask | GRID_SCRATCH_TRAVERSAL_VISITED;
     }
-    scratchCursor = scratchCursor + 1;
-    countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+    scratchCursor++;
+    countOrWaterDeltaOrColumn--;
     promoteCursor = g_GridScratchPrimary;
   } while (countOrWaterDeltaOrColumn != 0);
   do {
@@ -557,11 +564,15 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
       promoteCursor->stateMask = promoteCursor->stateMask | GRID_SCRATCH_TERRAIN_CLASS_BIT24;
       promoteCursor->stateMask = promoteCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
     }
-    angleOrCountOrRow = angleOrCountOrRow + -1;
-    promoteCursor = promoteCursor + 1;
+    angleOrCountOrRow--;
+    promoteCursor++;
   } while (angleOrCountOrRow != 0);
+  /* Flood-fill from every placed runtime model: the +0x08 record of its payload must have a non-zero
+     +0x0C, and its model definition's placement contact kind (+0x278, the ArmyPlacementContact dispatch
+     index) must not be 1. The world point is projected into the skewed scratch grid: row from Y, column
+     from X minus half the row term, both rounded (+0x800 >> 10). */
   ownerNode = worldRuntime->ownerListHead;
-  if (ownerNode != (WorldOwnerListNode100 *)0x0) {
+  if (ownerNode != NULL) {
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
           (*(int *)(*(int *)((int)ownerNode->runtimePayload + 8) + 0xc) != 0)) &&
@@ -574,12 +585,13 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
         if (((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
            ((countOrWaterDeltaOrColumn < (int)g_GridScratchWidth && (angleOrCountOrRow < (int)g_GridScratchHeight)))) {
           GridScratch_FloodFillConnectedCellsRegs
-                    (0xf0000001,g_GridScratchWidth << 3,
+                    (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT30 | GRID_SCRATCH_TERRAIN_CLASS_BIT29 |
+                     GRID_SCRATCH_TERRAIN_CLASS_BIT28 | GRID_SCRATCH_TRAVERSAL_VISITED,g_GridScratchWidth << 3,
                      g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
         }
       }
       ownerNode = ownerNode->nextNode;
-    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+    } while (ownerNode != NULL);
     countOrWaterDeltaOrColumn = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
     do {
@@ -592,9 +604,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
              GRID_SCRATCH_TERRAIN_CLASS_BIT28);
       }
       scratchCursor->stateMask = scratchCursor->stateMask & ~GRID_SCRATCH_TRAVERSAL_VISITED;
-      scratchCursor = scratchCursor + 1;
-      countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+      scratchCursor++;
+      countOrWaterDeltaOrColumn--;
     } while (countOrWaterDeltaOrColumn != 0);
+    /* second flood fill from the same models, this time for classes 25..27 */
     ownerNode = worldRuntime->ownerListHead;
     do {
       if (((ownerNode->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) &&
@@ -608,12 +621,13 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
         if ((((-1 < countOrWaterDeltaOrColumn) && (angleOrCountOrRow = (int)(scaledRowTerm * 2 + 0x800) >> 10, -1 < angleOrCountOrRow)) &&
             (countOrWaterDeltaOrColumn < (int)g_GridScratchWidth)) && (angleOrCountOrRow < (int)g_GridScratchHeight)) {
           GridScratch_FloodFillConnectedCellsRegs
-                    (0x8e000001,g_GridScratchWidth << 3,
+                    (GRID_SCRATCH_BLOCKED | GRID_SCRATCH_TERRAIN_CLASS_BIT27 | GRID_SCRATCH_TERRAIN_CLASS_BIT26 |
+                     GRID_SCRATCH_TERRAIN_CLASS_BIT25 | GRID_SCRATCH_TRAVERSAL_VISITED,g_GridScratchWidth << 3,
                      g_GridScratchPrimary + angleOrCountOrRow * g_GridScratchWidth + countOrWaterDeltaOrColumn);
         }
       }
       ownerNode = ownerNode->nextNode;
-    } while (ownerNode != (WorldOwnerListNode100 *)0x0);
+    } while (ownerNode != NULL);
     countOrWaterDeltaOrColumn = g_GridScratchWidth * g_GridScratchHeight;
     scratchCursor = g_GridScratchPrimary;
     do {
@@ -625,11 +639,10 @@ GridScratch_RebuildTerrainAndRuntimeClassificationMasks(WorldRuntimeContext *wor
              (GRID_SCRATCH_TERRAIN_CLASS_BIT27|GRID_SCRATCH_TERRAIN_CLASS_BIT26|
              GRID_SCRATCH_TERRAIN_CLASS_BIT25);
       }
-      scratchCursor = scratchCursor + 1;
-      countOrWaterDeltaOrColumn = countOrWaterDeltaOrColumn + -1;
+      scratchCursor++;
+      countOrWaterDeltaOrColumn--;
     } while (countOrWaterDeltaOrColumn != 0);
   }
-  return;
 }
 
 
@@ -722,9 +735,8 @@ GridScratch_AllocateForFieldGrid(FieldGridAsset *fieldGrid)
 
 
 /* Address: 0x00533360.
-   Ownership: world/pathing/grid.
-   Purpose: Releases the auxiliary, primary, and secondary grid scratch allocations through the engine memory API,
-   then clears all three global pointers.
+   Frees the path-cost queue and both scratch grids allocated by GridScratch_AllocateForFieldGrid and
+   clears the three pointers, so a later session starts without stale buffers.
 */
 void __thandor_preserve_eax GridScratch_ReleaseBuffers(void)
 
@@ -732,18 +744,16 @@ void __thandor_preserve_eax GridScratch_ReleaseBuffers(void)
   g_MemoryApi.free(g_GridPathCostQueueBegin);
   g_MemoryApi.free(g_GridScratchPrimary);
   g_MemoryApi.free(g_GridScratchSecondary);
-  g_GridPathCostQueueBegin = (GridScratchCell **)0x0;
-  g_GridScratchPrimary = (GridScratchCell *)0x0;
-  g_GridScratchSecondary = (GridScratchCell *)0x0;
-  return;
+  g_GridPathCostQueueBegin = NULL;
+  g_GridScratchPrimary = NULL;
+  g_GridScratchSecondary = NULL;
 }
 
 
 /* Address: 0x00533400.
-   Ownership: world/pathing/grid.
-   Purpose: Builds a compact mask from FieldGridCell occupancy bytes and OR-propagates it into neighboring entries
-   of g_GridScratchPrimary, skipping rejected terrain cells. Tick-wheel case 7 tail: dilates the rebuilt occupancy
-   mask into the neighborhood scratch grid.
+   Tail of tick-wheel case 7: after the occupancy rebuild, turns each non-edge field cell's occupancy bytes
+   of faction slots 1..7 into scratch bits 1..7 and ORs them into the cell's 4x4 scratch block and a ring of
+   surrounding scratch cells, so faction presence is dilated into the scratch grid used by pathing.
 */
 void __thandor_void_preserve_eax_ecx_edx
 GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
@@ -752,14 +762,13 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
   uint32_t *lowerScratchCursor;
   FieldGridDimension columnsRemaining;
   FieldGridCell *currentFieldCell;
-  uint32_t *scratchCellCursor;
+  uint32_t *scratchCellCursor; /* dword view of the 8-byte scratch cells: [2n] = stateMask of cell n */
   uint32_t *propagatedScratchCursor;
   FieldGridDimension rowsRemaining;
   FieldGridDimension gridWidth;
-  uint32_t propagatedOccupancyGroupMask;
+  uint32_t factionPresenceMask;
   uint32_t scratchWidth;
   uint32_t *nextScratchCellCursor;
-  FieldGridCell *nextFieldCell;
   
   scratchWidth = g_GridScratchWidth;
   gridWidth = fieldGrid->gridWidth;
@@ -771,90 +780,97 @@ GridScratch_PropagateFieldOccupancyMaskNeighborhood(FieldGridAsset *fieldGrid)
     do {
       /* the original advances first and tests [ESI-0x30]: the flags of the current cell */
       nextScratchCellCursor = scratchCellCursor + 8;
-      if ((currentFieldCell->flagsAndMaterial & 0x88006000) == 0) {
-        propagatedOccupancyGroupMask =
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf900) != 0) +
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf90000) != 0) +
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf9000000) != 0) +
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf900000000) != 0) +
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf90000000000) != 0) +
-             ((uint32_t)((currentFieldCell->occupancyMask & 0xf9000000000000) != 0) +
-             (uint32_t)((currentFieldCell->occupancyMask & 0xf900000000000000) != 0) * 2) * 2) * 2) * 2)
+      if ((currentFieldCell->flagsAndMaterial & FIELD_CELL_GRID_EDGE_MASK) == 0) {
+        factionPresenceMask =
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,1)) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,2)) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,3)) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,4)) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,5)) != 0) +
+             ((uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,6)) != 0) +
+             (uint32_t)((currentFieldCell->occupancyMask &
+                         FIELD_CELL_OCCUPANCY_SLOT_MASK(FIELD_CELL_OCCUPANCY_PRESENCE_BITS,7)) != 0) * 2) * 2) * 2) * 2)
              * 2) * 2) * 2;
         scratchCellCursor[scratchWidth * -4 + 4] =
-             scratchCellCursor[scratchWidth * -4 + 4] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -4 + 4] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -4 + 6] =
-             scratchCellCursor[scratchWidth * -4 + 6] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -4 + 6] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -2 + 2] =
-             scratchCellCursor[scratchWidth * -2 + 2] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -2 + 2] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -2 + 4] =
-             scratchCellCursor[scratchWidth * -2 + 4] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -2 + 4] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -2 + 6] =
-             scratchCellCursor[scratchWidth * -2 + 6] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -2 + 6] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -4 + 8] =
-             scratchCellCursor[scratchWidth * -4 + 8] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -4 + 8] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -2 + 8] =
-             scratchCellCursor[scratchWidth * -2 + 8] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -2 + 8] | factionPresenceMask;
         scratchCellCursor[scratchWidth * -2 + 10] =
-             scratchCellCursor[scratchWidth * -2 + 10] | propagatedOccupancyGroupMask;
-        scratchCellCursor[8] = scratchCellCursor[8] | propagatedOccupancyGroupMask;
-        scratchCellCursor[10] = scratchCellCursor[10] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * -2 + 10] | factionPresenceMask;
+        scratchCellCursor[8] = scratchCellCursor[8] | factionPresenceMask;
+        scratchCellCursor[10] = scratchCellCursor[10] | factionPresenceMask;
         scratchCellCursor[scratchWidth * 2 + 8] =
-             scratchCellCursor[scratchWidth * 2 + 8] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * 2 + 8] | factionPresenceMask;
         scratchCellCursor[scratchWidth * 2 + 10] =
-             scratchCellCursor[scratchWidth * 2 + 10] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * 2 + 10] | factionPresenceMask;
         scratchCellCursor[scratchWidth * 4 + 8] =
-             scratchCellCursor[scratchWidth * 4 + 8] | propagatedOccupancyGroupMask;
-        *scratchCellCursor = *scratchCellCursor | propagatedOccupancyGroupMask;
-        scratchCellCursor[2] = scratchCellCursor[2] | propagatedOccupancyGroupMask;
-        scratchCellCursor[4] = scratchCellCursor[4] | propagatedOccupancyGroupMask;
-        scratchCellCursor[6] = scratchCellCursor[6] | propagatedOccupancyGroupMask;
+             scratchCellCursor[scratchWidth * 4 + 8] | factionPresenceMask;
+        *scratchCellCursor = *scratchCellCursor | factionPresenceMask;
+        scratchCellCursor[2] = scratchCellCursor[2] | factionPresenceMask;
+        scratchCellCursor[4] = scratchCellCursor[4] | factionPresenceMask;
+        scratchCellCursor[6] = scratchCellCursor[6] | factionPresenceMask;
         propagatedScratchCursor = scratchCellCursor + scratchWidth * 2;
-        propagatedScratchCursor[-2] = propagatedScratchCursor[-2] | propagatedOccupancyGroupMask;
+        propagatedScratchCursor[-2] = propagatedScratchCursor[-2] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2 + -2] =
-             propagatedScratchCursor[scratchWidth * 2 + -2] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2 + -2] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2 + -4] =
-             propagatedScratchCursor[scratchWidth * 2 + -4] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2 + -4] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 4 + -2] =
-             propagatedScratchCursor[scratchWidth * 4 + -2] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 4 + -2] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 4 + -4] =
-             propagatedScratchCursor[scratchWidth * 4 + -4] | propagatedOccupancyGroupMask;
-        *propagatedScratchCursor = *propagatedScratchCursor | propagatedOccupancyGroupMask;
-        propagatedScratchCursor[2] = propagatedScratchCursor[2] | propagatedOccupancyGroupMask;
-        propagatedScratchCursor[4] = propagatedScratchCursor[4] | propagatedOccupancyGroupMask;
-        propagatedScratchCursor[6] = propagatedScratchCursor[6] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 4 + -4] | factionPresenceMask;
+        *propagatedScratchCursor = *propagatedScratchCursor | factionPresenceMask;
+        propagatedScratchCursor[2] = propagatedScratchCursor[2] | factionPresenceMask;
+        propagatedScratchCursor[4] = propagatedScratchCursor[4] | factionPresenceMask;
+        propagatedScratchCursor[6] = propagatedScratchCursor[6] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2] =
-             propagatedScratchCursor[scratchWidth * 2] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2 + 2] =
-             propagatedScratchCursor[scratchWidth * 2 + 2] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2 + 2] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2 + 4] =
-             propagatedScratchCursor[scratchWidth * 2 + 4] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2 + 4] | factionPresenceMask;
         propagatedScratchCursor[scratchWidth * 2 + 6] =
-             propagatedScratchCursor[scratchWidth * 2 + 6] | propagatedOccupancyGroupMask;
+             propagatedScratchCursor[scratchWidth * 2 + 6] | factionPresenceMask;
         lowerScratchCursor = propagatedScratchCursor + scratchWidth * 4;
-        *lowerScratchCursor = *lowerScratchCursor | propagatedOccupancyGroupMask;
-        lowerScratchCursor[2] = lowerScratchCursor[2] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[4] = lowerScratchCursor[4] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[6] = lowerScratchCursor[6] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 2] = lowerScratchCursor[scratchWidth * 2] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 2 + 2] = lowerScratchCursor[scratchWidth * 2 + 2] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 2 + 4] = lowerScratchCursor[scratchWidth * 2 + 4] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 4] = lowerScratchCursor[scratchWidth * 4] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 4 + 2] = lowerScratchCursor[scratchWidth * 4 + 2] | propagatedOccupancyGroupMask;
-        lowerScratchCursor[scratchWidth * 2 + -2] = lowerScratchCursor[scratchWidth * 2 + -2] | propagatedOccupancyGroupMask
+        *lowerScratchCursor = *lowerScratchCursor | factionPresenceMask;
+        lowerScratchCursor[2] = lowerScratchCursor[2] | factionPresenceMask;
+        lowerScratchCursor[4] = lowerScratchCursor[4] | factionPresenceMask;
+        lowerScratchCursor[6] = lowerScratchCursor[6] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 2] = lowerScratchCursor[scratchWidth * 2] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 2 + 2] = lowerScratchCursor[scratchWidth * 2 + 2] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 2 + 4] = lowerScratchCursor[scratchWidth * 2 + 4] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 4] = lowerScratchCursor[scratchWidth * 4] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 4 + 2] = lowerScratchCursor[scratchWidth * 4 + 2] | factionPresenceMask;
+        lowerScratchCursor[scratchWidth * 2 + -2] = lowerScratchCursor[scratchWidth * 2 + -2] | factionPresenceMask
         ;
-        lowerScratchCursor[scratchWidth * 2 + -4] = lowerScratchCursor[scratchWidth * 2 + -4] | propagatedOccupancyGroupMask
+        lowerScratchCursor[scratchWidth * 2 + -4] = lowerScratchCursor[scratchWidth * 2 + -4] | factionPresenceMask
         ;
-        lowerScratchCursor[scratchWidth * 4 + -2] = lowerScratchCursor[scratchWidth * 4 + -2] | propagatedOccupancyGroupMask
+        lowerScratchCursor[scratchWidth * 4 + -2] = lowerScratchCursor[scratchWidth * 4 + -2] | factionPresenceMask
         ;
         nextScratchCellCursor = lowerScratchCursor + scratchWidth * -6 + 8;
       }
       scratchCellCursor = nextScratchCellCursor;
-      columnsRemaining = columnsRemaining - 1;
-      currentFieldCell = currentFieldCell + 1;
+      columnsRemaining--;
+      currentFieldCell++;
     } while (columnsRemaining != 0);
     scratchCellCursor = scratchCellCursor + scratchWidth * 6;
-    rowsRemaining = rowsRemaining - 1;
+    rowsRemaining--;
     columnsRemaining = gridWidth;
   } while (rowsRemaining != 0);
   return;

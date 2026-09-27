@@ -19,7 +19,7 @@ digraph thandor {
   "FrontendTransfer_HandleSessionListAndJoinAckPackets" [label="0x0054E260\nFrontendTransfer_HandleSessionListAndJoinAckPackets"];
   "FrontendTransfer_TickRequestTimeoutAndResetPage" [label="0x0054EF30\nFrontendTransfer_TickRequestTimeoutAndResetPage"];
   "FrontendTransfer_ConsumeProcessedFlagFrontend" [label="0x0054FBA0\nFrontendTransfer_ConsumeProcessedFlagFrontendCf"];
-  "FrontendTransfer_HandleSyncRequest10021AndReply10023" [label="0x005722C0\nFrontendTransfer_HandleSyncRequest10021AndReply10023"];
+  "FrontendTransfer_HostHandleCommandSubmitOrWaitAck" [label="0x005722C0\nFrontendTransfer_HostHandleCommandSubmitOrWaitAck"];
   "FrontendTransfer_DispatchStagedCommandRecords" [label="0x00572560\nFrontendTransfer_DispatchStagedCommandRecords"];
   "FrontendTransfer_ConsumeProcessedFlag" [label="0x00572AA0\nFrontendTransfer_ConsumeProcessedFlagCf"];
   "UiTransfer_TransformPacketBlocks" [label="0x00407160\nUiTransfer_TransformPacketBlocks"];

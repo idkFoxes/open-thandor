@@ -14,6 +14,11 @@
 /* Submodule: ui/core/runtime. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* Receive ring of network packets (g_UiRuntimeRecordRing, 0x100-byte UiRuntimeRecord slots) with a parallel
+   array of 0x80-byte sender-endpoint slots (g_UiRuntimeAuxiliaryBuffer8000); indices wrap after 256. */
+#define UI_RUNTIME_RECORD_RING_LAST_INDEX 0xff
+#define UI_RUNTIME_RECORD_ENDPOINT_SLOT_SIZE 0x80
+
 /* 0x004228F0 */
 bool __thandor_cf_preserve_eax_ecx_edx UiRootCallbacks_Free(UiRootNode *root);
 
@@ -41,7 +46,7 @@ bool __thandor_cf_preserve_eax_ecx_edx UiRuntimeRecordRing_HasPending(void);
 
 /* 0x004AF050 */
 bool __thandor_cf_preserve_eax_ecx_edx
-UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sequenceToken);
+UiRuntimeRecordRing_ContainsId(UiTransferSequenceToken sessionToken);
 
 /* 0x004AF0F0 */
 void __thandor_preserve_eax_edx

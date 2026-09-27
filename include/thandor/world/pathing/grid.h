@@ -14,6 +14,16 @@
 /* Submodule: world/pathing/grid. */
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
+/* GridScratchCell.stateMask bits beyond the generated GridScratchStateMask enum. The scratch grid has 4x4
+   cells per field cell. Bits 1..7 are set when faction slot 1..7 occupies the source field cell (bit n =
+   slot n, from the FIELD_CELL_OCCUPANCY_PRESENCE_BITS of occupancy byte n); bits 8..23 are the radial
+   distance bands written by the world/pathing/influence writers. */
+#define GRID_SCRATCH_LOW_DISTANCE_BANDS 0x0000ff00u  /* bits 8..15 */
+#define GRID_SCRATCH_HIGH_DISTANCE_BANDS 0x00ff0000u /* bits 16..23 */
+#define GRID_SCRATCH_DISTANCE_BANDS (GRID_SCRATCH_LOW_DISTANCE_BANDS | GRID_SCRATCH_HIGH_DISTANCE_BANDS)
+#define GRID_SCRATCH_BLOCKED 0x80000000u         /* bit 31: map-edge field cell; projected tests reject it */
+#define GRID_SCRATCH_REBUILD_KEEP_BITS 0x00ffff01 /* visited bit and the distance bands survive the terrain rebuild */
+
 /* 0x005349D0 */
 PathingDestinationResult
 EntityPathing_ResolveDestinationAndRebuildRoutes

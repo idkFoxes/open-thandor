@@ -152,8 +152,9 @@ void __thandor_void_preserve_eax_ecx_edx GridInfluence_RemoveNoOp(GameEntityRunt
 
 
 /* Address: 0x00535A30.
-   Ownership: world/pathing/influence.
-   Purpose: Handles grid influence clear distance bands and refresh entities.
+   Clears the low and high distance bands (scratch bits 8..23) of every scratch cell, then lets every runtime
+   model re-add its influence through the gridInfluenceAdd handler of its runtime class. Runs on tick-wheel
+   case 4 and, on the other simulation-tick path, every 16th tick.
 */
 void __thandor_preserve_eax
 GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entityListHead)
@@ -161,42 +162,42 @@ GridInfluence_ClearDistanceBandsAndRefreshEntities(WorldOwnerListNode100 *entity
 {
   int cellsRemaining;
   int nextCellsRemaining;
-  uint32_t *scratchRecordCursor;
+  uint32_t *scratchRecordCursor; /* dword view of the 8-byte scratch cells: [2n] = stateMask of cell n */
   bool fullBlockRemaining;
   
   cellsRemaining = g_GridScratchWidth * g_GridScratchHeight;
   scratchRecordCursor = &g_GridScratchPrimary->stateMask;
   do {
-    *scratchRecordCursor = *scratchRecordCursor & 0xff0000ff;
-    scratchRecordCursor[2] = scratchRecordCursor[2] & 0xff0000ff;
-    scratchRecordCursor[4] = scratchRecordCursor[4] & 0xff0000ff;
-    scratchRecordCursor[6] = scratchRecordCursor[6] & 0xff0000ff;
-    scratchRecordCursor[8] = scratchRecordCursor[8] & 0xff0000ff;
-    scratchRecordCursor[10] = scratchRecordCursor[10] & 0xff0000ff;
-    scratchRecordCursor[0xc] = scratchRecordCursor[0xc] & 0xff0000ff;
-    scratchRecordCursor[0xe] = scratchRecordCursor[0xe] & 0xff0000ff;
-    scratchRecordCursor[0x10] = scratchRecordCursor[0x10] & 0xff0000ff;
-    scratchRecordCursor[0x12] = scratchRecordCursor[0x12] & 0xff0000ff;
-    scratchRecordCursor[0x14] = scratchRecordCursor[0x14] & 0xff0000ff;
-    scratchRecordCursor[0x16] = scratchRecordCursor[0x16] & 0xff0000ff;
-    scratchRecordCursor[0x18] = scratchRecordCursor[0x18] & 0xff0000ff;
-    scratchRecordCursor[0x1a] = scratchRecordCursor[0x1a] & 0xff0000ff;
-    scratchRecordCursor[0x1c] = scratchRecordCursor[0x1c] & 0xff0000ff;
-    scratchRecordCursor[0x1e] = scratchRecordCursor[0x1e] & 0xff0000ff;
-    scratchRecordCursor = scratchRecordCursor + 0x20;
-    nextCellsRemaining = cellsRemaining + -0x10;
-    fullBlockRemaining = 0xf < cellsRemaining;
+    *scratchRecordCursor = *scratchRecordCursor & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[2] = scratchRecordCursor[2] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[4] = scratchRecordCursor[4] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[6] = scratchRecordCursor[6] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[8] = scratchRecordCursor[8] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[10] = scratchRecordCursor[10] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[12] = scratchRecordCursor[12] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[14] = scratchRecordCursor[14] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[16] = scratchRecordCursor[16] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[18] = scratchRecordCursor[18] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[20] = scratchRecordCursor[20] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[22] = scratchRecordCursor[22] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[24] = scratchRecordCursor[24] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[26] = scratchRecordCursor[26] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[28] = scratchRecordCursor[28] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor[30] = scratchRecordCursor[30] & ~GRID_SCRATCH_DISTANCE_BANDS;
+    scratchRecordCursor = scratchRecordCursor + 32;
+    nextCellsRemaining = cellsRemaining - 16;
+    fullBlockRemaining = 15 < cellsRemaining;
     cellsRemaining = nextCellsRemaining;
   } while (nextCellsRemaining != 0 && fullBlockRemaining);
-  for (; entityListHead != (WorldOwnerListNode100 *)0x0; entityListHead = entityListHead->nextNode)
+  for (; entityListHead != NULL; entityListHead = entityListHead->nextNode)
   {
     if (entityListHead->ownerClassId == WORLD_OWNER_RUNTIME_MODEL) {
+      /* +0x4C of the definition record is its ModelRuntimeClassId */
       (*g_ArmyRuntimeOrderHandlerMatrix11Columns24Classes.gridInfluenceAdd
         [*(int *)((int)(((GameEntityRuntime *)entityListHead->runtimePayload)->common).ownership.definitionOrClassRecord +
                  0x4c)])(entityListHead->runtimePayload);
     }
   }
-  return;
 }
 
 

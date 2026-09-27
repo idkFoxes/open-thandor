@@ -331,22 +331,18 @@ FrontendSessionList_DecrementExpiryAndCompactRows
 
 
 /* Address: 0x00565670.
-   Ownership: ui/frontend/session.
-   Purpose: Periodic frontend/session callback recovered from a stale data block. It advances network or local
-   simulation timing and increments g_EndMoviePendingTicks when ending-movie playback is active. The broader
-   session behavior is documented without forcing a movie-only name.
-   Cross-module calls: FrontendTransfer_DispatchStagedCommandRecords [network/protocol/transfer],
-   UiRuntimeRecordRing_DiscardOldest [ui/core/runtime], FrontendTransfer_HandleSyncRequest10021AndReply10023
-   [network/protocol/transfer], FrontendTransfer_BroadcastPendingCommandBatchAndSyncState
-   [network/protocol/transfer], UiRuntimeRecordRing_ContainsId [ui/core/runtime],
-   FrontendNetwork_HandleCommandBatchAndPlayerTimeout [network/backend/runtime].
+   Synchronization hook and movie-rate timer while the end movie plays (installed by
+   InGameRuntime_RunSessionUntilExit and Frontend_PlaySelectedEndMovie): keeps the network lockstep of
+   InGameRuntime_UpdateSimulationAndNetworkTick running without simulating, so peers do not time out, and counts
+   one due movie frame in g_EndMoviePendingTicks per step. The host executes the staged command batch at each
+   interval boundary and broadcasts the next one half an interval later; a client waits for the host's batch.
 */
 void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
 
 {
   InGameRuntimeRootImageC3E4 *inGameRoot;
   bool callResult;
-  RecordRingDiscardResult discardedRecord;
+  RecordRingDiscardResult ringRecord;
   
   callResult = g_SpinLockTryAcquire(&g_InGameStateTickSpinLock);
   inGameRoot = g_InGameRuntimeRoot;
@@ -356,7 +352,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     if (g_InGameNetworkTickCountdown != 0)
     goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
-    g_InGameNetworkTickCountdown = 4;
+    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
       if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
         FrontendTransfer_DispatchStagedCommandRecords();
@@ -364,14 +360,15 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
       else if ((g_SessionNetworkTickCounter % g_SessionNetworkTickInterval) * 2 ==
                g_SessionNetworkTickInterval) {
         while( true ) {
-          discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-          if (discardedRecord.empty) break;
-          FrontendTransfer_HandleSyncRequest10021AndReply10023
-                    ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
-                     (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
+          ringRecord = UiRuntimeRecordRing_DiscardOldest();
+          if (ringRecord.empty) break;
+          FrontendTransfer_HostHandleCommandSubmitOrWaitAck
+                    ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
+                     (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
         }
         callResult = FrontendTransfer_BroadcastPendingCommandBatchAndSyncState(1);
         if (callResult) {
+          /* not every peer has synced yet: retry on the next timer tick */
           g_InGameNetworkTickCountdown = 1;
           goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
         }
@@ -380,26 +377,27 @@ void __thandor_void_preserve_eax_ecx_edx FrontendSession_PeriodicTick(void)
   }
   else {
     if (g_SessionNetworkTickCounter % g_SessionNetworkTickInterval == 0) {
+      /* client at an interval boundary: wait until the host's command batch has arrived */
       callResult = UiRuntimeRecordRing_ContainsId(g_FrontendSessionToken);
       if (!callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
       do {
-        discardedRecord = UiRuntimeRecordRing_DiscardOldest();
-        if (discardedRecord.empty) break;
+        ringRecord = UiRuntimeRecordRing_DiscardOldest();
+        if (ringRecord.empty) break;
         callResult = FrontendNetwork_HandleCommandBatchAndPlayerTimeout
-                          ((NetworkSessionContext *)discardedRecord.endpointOrReadIndex,
-                           (FrontendTransferPacketUnion *)discardedRecord.payloadOrReadIndex);
+                          ((NetworkSessionContext *)ringRecord.endpointOrReadIndex,
+                           (FrontendTransferPacketUnion *)ringRecord.payloadOrReadIndex);
       } while (!callResult);
       callResult = FrontendTransfer_ConsumeProcessedFlag();
       if (callResult) goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
     }
     else if (g_InGameNetworkTickCountdown != 0)
     goto FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn;
-    g_InGameNetworkTickCountdown = 4;
+    g_InGameNetworkTickCountdown = INGAME_TIMER_TICKS_PER_SIMULATION_STEP;
   }
-  g_SessionNetworkTickCounter = g_SessionNetworkTickCounter + 1;
-  if (((g_UiCommandRuntimeFlags & 0x800) != 0) &&
-     (inGameRoot->activeEndMovieRuntime022C != (MovieRuntime *)0x0)) {
-    g_EndMoviePendingTicks = g_EndMoviePendingTicks + 1;
+  g_SessionNetworkTickCounter++;
+  if (((g_UiCommandRuntimeFlags & UI_COMMAND_RUNTIME_FLAG_END_MOVIE_PENDING) != 0) &&
+     (inGameRoot->activeEndMovieRuntime022C != NULL)) {
+    g_EndMoviePendingTicks++;
   }
 FrontendSession_PeriodicTick_ReleaseStateTickLockAndReturn:
   g_SpinLockRelease(&g_InGameStateTickSpinLock);

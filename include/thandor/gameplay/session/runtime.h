@@ -12,6 +12,15 @@
 #include <thandor/core/contracts.h>
 
 /* Submodule: gameplay/session/runtime. */
+
+/* Timer rate of InGameRuntime_PeriodicCountdownAndClockTick (TimerSystem_RegisterPeriodic takes a frequency). */
+#define INGAME_PERIODIC_TIMER_HZ 80
+/* Reload value of g_InGameNetworkTickCountdown: the periodic timer counts it down, and a simulation step only
+   runs at zero, so the game advances at most 80 / 4 = 20 steps per second. */
+#define INGAME_TIMER_TICKS_PER_SIMULATION_STEP 4
+/* Command code (InGameCommandQueue_AppendLocalPlayerCommand) with which a player reports its level as loaded;
+   single player calls its handler FrontendPlayerRuntime_IncrementReadyCountAndResolveConsensus directly. */
+#define INGAME_COMMAND_PLAYER_READY 0x550
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x00564F70 */

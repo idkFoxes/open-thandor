@@ -21,6 +21,10 @@
 /* UDP port (host byte order) the frontend passes to g_NetworkBackendSlot2 (open and bind) for every session. */
 #define NETWORK_GAME_UDP_PORT 929
 
+/* In-game notice shown when the host removes a player (FRONTEND_PACKET_10007_PLAYER_REMOVAL); the player's
+   name is patched into it. Earlier notes tie it to the network timeout ("Zeitueberschreitung") path. */
+#define TEXT_ID_NETWORK_PLAYER_REMOVED 0xFF00
+
 /* Functions are grouped by semantic ownership; address comments are executable virtual addresses. */
 
 /* 0x0054EF60 */

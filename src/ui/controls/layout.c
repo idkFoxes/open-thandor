@@ -1661,13 +1661,9 @@ UiContainer_LayoutWithOptionalWindowHeaderOffset(UiResizableWindowControl *contr
 
 
 /* Address: 0x004AF680.
-   Ownership: ui/controls/layout.
-   Purpose: Pumps messages under the UI lock, invokes the active UiRootNode frame callback, ticks capture/focus
-   nodes, and advances the delayed tooltip countdown. Typed parameters: p0 stopMessageCode→UiStopMessageCode_V343.
-   Calling convention, complete VariableStorage serialization, function bytes, control flow, globals, locals, and
-   executable data remain unchanged.
-   Cross-module calls: UiTree_AdvanceSpriteButtonAnimations [ui/controls/buttons], UiTooltip_TickCountdown
-   [ui/controls/text], DirectInputMouse_RefreshDeviceIfIdle [platform/input/devices].
+   One UI frame step under the UI frame lock: pumps Win32 messages, then runs every pending frame tick
+   (sprite-button animations and frame callback of the front root, tick of the pointer-capture and
+   keyboard-focus nodes, tooltip countdown) and refreshes the DirectInput mouse every 48 calls.
 */
 void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessageCode)
 
@@ -1685,27 +1681,28 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
   } while ((stopMessageCode != 0) && (g_UiPendingFrameTicks == 0));
   ticksToRun = g_UiPendingFrameTicks;
   g_UiPendingFrameTicks = 0;
-  for (; ticksToRun != 0; ticksToRun = ticksToRun - 1) {
+  for (; ticksToRun != 0; ticksToRun--) {
     frontRoot = g_UiRootNode;
-    if (frontRoot != (UiRootNode *)0xffffffff) {
+    if (frontRoot != UI_ROOT_STACK_END) {
       UiTree_AdvanceSpriteButtonAnimations(&frontRoot->base);
       rootCallbacks = frontRoot->callbacks;
-      if (rootCallbacks->frameUpdate != (UiRootFrameCallback *)0x0) {
+      if (rootCallbacks->frameUpdate != NULL) {
         rootCallbacks->frameUpdate(frontRoot);
       }
     }
     if (g_UiPointerCaptureTarget != (UiNodeBase *)0xffffffff) {
       g_UiPointerCaptureTarget->vtable->tick(g_UiPointerCaptureTarget);
     }
+    /* the focus node ticks only once when it also holds the pointer capture */
     if ((g_UiKeyboardFocusNode != (UiNodeBase *)0xffffffff) &&
        (g_UiKeyboardFocusNode != g_UiPointerCaptureTarget)) {
       g_UiKeyboardFocusNode->vtable->tick(g_UiKeyboardFocusNode);
     }
     UiTooltip_TickCountdown();
   }
-  g_DirectInputMouseRefreshCountdown = g_DirectInputMouseRefreshCountdown - 1;
+  g_DirectInputMouseRefreshCountdown--;
   if (g_DirectInputMouseRefreshCountdown == 0) {
-    g_DirectInputMouseRefreshCountdown = 0x30;
+    g_DirectInputMouseRefreshCountdown = 48;
     DirectInputMouse_RefreshDeviceIfIdle();
   }
   g_SpinLockReleaseAndInvoke
@@ -1715,10 +1712,8 @@ void __thandor_void_preserve_eax_ecx UiFrame_Update(UiStopMessageCode stopMessag
 
 
 /* Address: 0x004AF7E0.
-   Ownership: ui/controls/layout.
-   Purpose: Draws the root stack from back to front using each node's drawClipped method, then draws the visible
-   tooltip.
-   Cross-module calls: UiTooltip_Draw [ui/controls/text].
+   Draws the UI root stack from the bottom root up to the front root, each clipped to its rectangle within
+   the framebuffer, and the tooltip on top.
 */
 void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
 
@@ -1730,41 +1725,43 @@ void __thandor_void_preserve_eax_ecx_edx UiFrame_Draw(void)
   UiRootNode *roots[ROOT_LIMIT];
   UiRootNode *root;
   int count;
-  int clipRight;
-  int clipBottom;
   int clipLeft;
   int clipTop;
+  int clipRight;
+  int clipBottom;
 
-  if (g_UiRootNode == (UiRootNode *)0xffffffff) {
+  if (g_UiRootNode == UI_ROOT_STACK_END) {
     return;
   }
   count = 0;
-  for (root = g_UiRootNode; (root != (UiRootNode *)0xffffffff) && (count < ROOT_LIMIT);
+  for (root = g_UiRootNode; (root != UI_ROOT_STACK_END) && (count < ROOT_LIMIT);
        root = root->previousRoot) {
     roots[count] = root;
-    count = count + 1;
+    count++;
   }
   while (count != 0) {
-    count = count - 1;
+    count--;
     root = roots[count];
-    clipRight = (root->base).left;
-    clipBottom = (root->base).top;
-    clipLeft = (root->base).right;
-    clipTop = (root->base).bottom;
-    if (clipRight < 0) {
-      clipRight = 0;
+    clipLeft = (root->base).left;
+    clipTop = (root->base).top;
+    clipRight = (root->base).right;
+    clipBottom = (root->base).bottom;
+    if (clipLeft < 0) {
+      clipLeft = 0;
     }
-    if (clipBottom < 0) {
-      clipBottom = 0;
+    if (clipTop < 0) {
+      clipTop = 0;
     }
-    if ((int)g_FramebufferWidth < clipLeft) {
-      clipLeft = g_FramebufferWidth;
+    if ((int)g_FramebufferWidth < clipRight) {
+      clipRight = g_FramebufferWidth;
     }
-    if ((int)g_FramebufferHeight < clipTop) {
-      clipTop = g_FramebufferHeight;
+    if ((int)g_FramebufferHeight < clipBottom) {
+      clipBottom = g_FramebufferHeight;
     }
-    if ((clipRight < clipLeft) && (clipBottom < clipTop)) {
-      (*((root->base).vtable)->drawClipped)(clipTop,clipLeft,clipBottom,clipRight,&root->base);
+    if ((clipLeft < clipRight) && (clipTop < clipBottom)) {
+      /* drawClipped takes (bottom, right, top, left, node); the draw methods name these parameters
+         clipTop, clipLeft, clipBottom, clipRight. */
+      (*((root->base).vtable)->drawClipped)(clipBottom,clipRight,clipTop,clipLeft,&root->base);
     }
   }
   UiTooltip_Draw(g_FramebufferHeight,g_FramebufferWidth,0,0);

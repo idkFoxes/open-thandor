@@ -410,15 +410,13 @@ void __thandor_void_preserve_eax_ecx FrontendNetwork_TickDisconnectTimeoutAndRes
 
 
 /* Address: 0x00572710.
-   Ownership: network/backend/runtime.
-   Purpose: Handles validated frontend packet types 0x20, 0x10022, and 0x10007. It dispatches bounded 0x20-byte
-   command records, emits reply 0x10023, or removes a timed-out 0x13B0-byte player block after localized message
-   0xFF00. CF is set only after processing a new command batch. In-game recv: (n<<16)|0x20 batches + per-peer
-   timeout tracking (host-leave Zeitueberschreitung path, exe_net_host_timeout.md).
-   Cross-module calls: FrontendTransfer_SendCommandBatchRequest10021 [network/protocol/transfer],
-   UiTransfer_StagePacketAndSend [network/protocol/transfer], TextResource_Resolve [assets/text/resources],
-   RichTextCommandStream_PatchPayloadBySelector [assets/text/richtext], InGameRecentTextHistory_InsertAndRebuild8
-   [ui/ingame/runtime].
+   Client side of the in-game command exchange, for one received packet from the host of this session. A
+   new COMMAND_BATCH is executed and answered with the client's next COMMAND_SUBMIT (returns true, CF set);
+   a repeated batch (same sender context) resends the last submit. COMMAND_WAIT is answered with
+   COMMAND_WAIT_ACK, and a player-removal packet drops that player's record and shows a notice. Every
+   packet from the host refreshes the session timeout.
+   Command dispatch through THANDOR_CODE_AT is known to be broken (deferred), see
+   FrontendTransfer_DispatchStagedCommandRecords.
 */
 bool __thandor_cf_preserve_eax_ecx_edx
 FrontendNetwork_HandleCommandBatchAndPlayerTimeout
@@ -433,45 +431,49 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeout
   FrontendPlayerRuntimeRecord *nextPlayerRecord;
   FrontendPlayerRuntimeRecord *playerRecord;
   TextResolveResult resolvedText;
-  
-  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & 0xffff) == 0x20) &&
+
+  if (((((packet->packet10000Handshake).header.packedTypeAndUnitCount & FRONTEND_PACKET_TYPE_MASK) ==
+        FRONTEND_PACKET_COMMAND_BATCH_TYPE) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       sessionContext->ipv4AddressNetworkOrder)) {
     packetSenderContext = (packet->packet10000Handshake).header.senderContext;
-    g_SessionTransferTimeoutTicks = 0x100;
+    g_SessionTransferTimeoutTicks = FRONTEND_PEER_TIMEOUT_TICKS;
+    /* g_FrontendSelectedPlayerToken holds the sender context of the last executed batch */
     if (packetSenderContext != g_FrontendSelectedPlayerToken) {
-      remainingCommands = (packet->packet10000Handshake).header.packedTypeAndUnitCount >> 0x10;
+      remainingCommands =
+           (packet->packet10000Handshake).header.packedTypeAndUnitCount >> FRONTEND_PACKET_UNIT_COUNT_SHIFT;
       g_FrontendSelectedPlayerToken = packetSenderContext;
+      /* the batch is an array of 0x20-byte command records; the first header is the batch header */
       do {
-        commandHandlerIndex = (packet->packet10000Handshake).protocolMagic2931 >> 8;
+        commandHandlerIndex = (packet->command10011Or10021).command.packedCommandAndPlayerId >> 8;
         if (commandHandlerIndex != 0) {
           if (THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex) < (unsigned char *)&InGameCommandHandlerCodeRegionEnd) {
             (*(CommandQueueHandlerProc *)THANDOR_CODE_AT(InGameCommandQueue_AppendLocalPlayerCommand, commandHandlerIndex))
-                      ((packet->packet10000Handshake).protocolMagic2931 & 0xff,
-                       (packet->packet20002PlayerDescriptor).playerDescriptorPayload[1],
-                       (packet->packet20002PlayerDescriptor).playerDescriptorPayload[0],
-                       (packet->packet20002PlayerDescriptor).reserved14);
+                      ((packet->command10011Or10021).command.packedCommandAndPlayerId & 0xff,
+                       (packet->command10011Or10021).command.payloadDword0C,
+                       (packet->command10011Or10021).command.payloadDword08,
+                       (packet->command10011Or10021).command.payloadDword04);
           }
         }
-        packet = (FrontendTransferPacketUnion *)
-                 ((packet->packet50001SessionAdvertisement).sessionTitleUtf16 + 4);
-        remainingCommands = remainingCommands - 1;
+        packet = (FrontendTransferPacketUnion *)(&packet->command10011Or10021 + 1);
+        remainingCommands--;
       } while (remainingCommands != 0);
       FrontendTransfer_SendCommandBatchRequest10021();
       g_FrontendTransferResponsePending = 1;
       return true;
     }
+    /* the host resent the batch, so it has not received our submit: send it again */
     UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10021Buffer.header);
     return false;
   }
-  if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount == FRONTEND_PACKET_10022) &&
+  if ((((packet->packet10000Handshake).header.packedTypeAndUnitCount == FRONTEND_PACKET_COMMAND_WAIT) &&
       (g_FrontendSessionToken == (packet->packet10000Handshake).header.sequenceToken)) &&
      (g_FrontendSelectedNetworkEndpoint.ipv4AddressNetworkOrder ==
       sessionContext->ipv4AddressNetworkOrder)) {
-    g_SessionTransferTimeoutTicks = 0x100;
-    g_FrontendPacket10023Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_10023;
+    g_SessionTransferTimeoutTicks = FRONTEND_PEER_TIMEOUT_TICKS;
+    g_FrontendPacket10023Buffer.header.packedTypeAndUnitCount = FRONTEND_PACKET_COMMAND_WAIT_ACK;
     UiTransfer_StagePacketAndSend
               (&g_FrontendSelectedNetworkEndpoint,&g_FrontendPacket10023Buffer.header);
     return false;
@@ -484,23 +486,25 @@ FrontendNetwork_HandleCommandBatchAndPlayerTimeout
     remainingPlayers = g_FrontendPlayerRuntimeBlockCount;
     playerRecord = g_FrontendPlayerRuntimeBlocks;
     do {
-      if ((packet->packet10000Handshake).protocolMagic2931 == playerRecord->playerRuntimeId) {
-        resolvedText = TextResource_Resolve(0xff00);
+      if ((packet->playerRemoval10007).removedPlayerToken == playerRecord->playerRuntimeId) {
+        resolvedText = TextResource_Resolve(TEXT_ID_NETWORK_PLAYER_REMOVED);
         RichTextCommandStream_PatchPayloadBySelector(0,&playerRecord->playerName,resolvedText.text);
         InGameRecentTextHistory_InsertAndRebuild8(resolvedText.text);
         if (remainingPlayers - 1 != 0) {
+          /* close the gap: move the following records down by one (REP MOVSD) */
           nextPlayerRecord = playerRecord + 1;
-          for (dwordCount = (remainingPlayers - 1) * 0x4ec; dwordCount != 0; dwordCount = dwordCount + -1) {
+          for (dwordCount = (remainingPlayers - 1) * (sizeof(FrontendPlayerRuntimeRecord) / 4); dwordCount != 0;
+              dwordCount--) {
             playerRecord->runtimeState00 = nextPlayerRecord->runtimeState00;
             nextPlayerRecord = (FrontendPlayerRuntimeRecord *)&nextPlayerRecord->peerSequenceToken;
             playerRecord = (FrontendPlayerRuntimeRecord *)&playerRecord->peerSequenceToken;
           }
         }
-        g_FrontendPlayerRuntimeBlockCount = g_FrontendPlayerRuntimeBlockCount - 1;
+        g_FrontendPlayerRuntimeBlockCount--;
         return false;
       }
-      playerRecord = playerRecord + 1;
-      remainingPlayers = remainingPlayers - 1;
+      playerRecord++;
+      remainingPlayers--;
     } while (remainingPlayers != 0);
     return false;
   }
