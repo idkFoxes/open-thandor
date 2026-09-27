@@ -151,7 +151,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -207,7 +207,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -263,7 +263,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -319,7 +319,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
                  ArmyAssetRegistry_ResolveOrCreatePreviewTextureCf(g_UiCommandModeGArmyAssetId);
         INGAME_UI_FIELD(uiRoot,unitPlacementPreviewImage,0x54,struct UiNodeVtable *) = modeGPreviewTexture;
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-        hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
         InGameSelectionDetailPanel_Rebuild();
       }
@@ -433,7 +433,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select0((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption0));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -447,7 +447,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select1((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption1));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -461,7 +461,7 @@ InGameUiRootKeyboardFallback_DispatchCommandByCodeAndModifierFlagsCf
       InGameCommandModeG_Select3((UiSelectableControl *)INGAME_UI(uiRoot,editorModeTabUnitPlacement));
       InGameCommandModeA_Select2((UiSpriteButtonControl *)INGAME_UI(uiRoot,unitPlacementOption2));
       foundArmyAsset = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-      hoverRecordResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+      hoverRecordResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
       g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)hoverRecordResult.valueOrError;
       InGameSelectionDetailPanel_Rebuild();
     }
@@ -5218,12 +5218,12 @@ InGameUiCommand_SaveFieldAndLevelAssetImages
   saveStatus = FieldGrid_SaveAssetImageFromRuntimeStateCf
                     ((uint32_t *)(g_InGameRuntimeRoot->worldRuntime0A30).fieldGrid);
   if (saveStatus.failed) {
-    (*g_FatalErrorRuntimeDispatchCf)(saveStatus.valueOrError,true);
+    FatalError_ReportIfFailed(saveStatus.valueOrError,true);
   }
   saveStatus = InGameLevelRuntime_SaveLevelAssetImageFromWorldStateCf
                     ((InGameLevelSaveWorldView *)&runtimeRoot->worldRuntime0A30);
   if (saveStatus.failed) {
-    (*g_FatalErrorRuntimeDispatchCf)(saveStatus.valueOrError,true);
+    FatalError_ReportIfFailed(saveStatus.valueOrError,true);
   }
   return;
 }
@@ -5513,7 +5513,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSelectionDetailPanel_Rebuild(void
         }
         foundArmyAsset = ArmyAssetRegistry_FindByIdCf((lastSelectedEntity->common).runtimeIdentityOrArmyAssetId)
         ;
-        armyAssetResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
+        armyAssetResult = FatalError_ExitIfFailed((uint32_t)foundArmyAsset.recordOrError,foundArmyAsset.notFound);
         UiPageStack_SetActiveIndex(1,stack);
         detailValue = *(uint32_t *)(armyAssetResult.valueOrError + 0x1c);
         workValue = ModelRuntimeHierarchy_SumMetric3C((int *)lastSelectedEntity);

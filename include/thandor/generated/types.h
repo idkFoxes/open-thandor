@@ -5033,7 +5033,7 @@ typedef uint32_t UiListRowIndex;
 
 typedef uint16_t UiTechnologyValueTextBuffer16Utf16[16];
 
-typedef uint32_t PersistentSettingsDwordValue;
+typedef uint32_t PersistentSettingsValue;
 
 typedef uint32_t MovieFrameIndex;
 

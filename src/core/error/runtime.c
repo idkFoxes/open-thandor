@@ -98,7 +98,7 @@ FatalErrorRuntime_DispatchPendingErrorCf(uint32_t errorOrValue,bool carryIn)
     return passThroughResult;
   }
   if (g_FatalErrorUiRootTemplate == (UiRootNode *)0x0) {
-    dispatchResult = (*g_FatalErrorPrimaryDispatchCf)(errorOrValue,true);
+    dispatchResult = FatalError_ExitIfFailed(errorOrValue,true);
     errorOrValue = dispatchResult.valueOrError;
   }
   stream = (uint16_t *)errorOrValue;

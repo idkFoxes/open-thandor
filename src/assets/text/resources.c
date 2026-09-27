@@ -82,7 +82,7 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
   scanLimitOrSlotCount = 0x21;
   do {
     textureLoadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)pathUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
+    checkedResult = FatalError_ExitIfFailed((uint32_t)textureLoadResult.textureSource,textureLoadResult.failed);
     *textureSourceSlot = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
     pathCursor = pathUtf16;
     do {
@@ -97,10 +97,10 @@ void __thandor_void_preserve_eax_ecx_edx FontRuntime_Init(void)
     remainingSources = remainingSources + -1;
     if (remainingSources == 0) {
       allocResult = (*g_MemoryApi.alloc)(0x4000);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+      checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
       g_FontRuntimeBuffer = (uint8_t *)checkedResult.valueOrError;
       allocResult = (*g_MemoryApi.alloc)(0x8000);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+      checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
       g_TextResourceOverrides = (TextResourceOverrideTable *)checkedResult.valueOrError;
       overrideSlot = g_TextResourceOverrides;
       for (scanLimitOrSlotCount = 0x2000; scanLimitOrSlotCount != 0; scanLimitOrSlotCount = scanLimitOrSlotCount + -1) {

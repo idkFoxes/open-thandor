@@ -139,7 +139,7 @@ UiDisplayModeAction_ApplyFourValueDialogAndReopenSettings(UiNodeBase *sourceNode
   g_CursorVisibilityToken = g_CursorVisibilityToken + -1;
   UiFrame_ProcessAndPresentWithLockTransition();
   modeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,modeHeight,modeWidth);
-  (*g_FatalErrorPrimaryDispatchCf)(modeResult.valueOrError,modeResult.failed);
+  FatalError_ExitIfFailed(modeResult.valueOrError,modeResult.failed);
   root = g_UiRootNode;
   do {
     scaledAnchor = (uint64_t)g_FramebufferWidth * (uint64_t)(root->base).rightAnchorQ31;
@@ -312,9 +312,9 @@ UiDisplayModeAction_ApplyPendingMode(UiNodeBase *sourceNode)
     pendingModeResult = (*g_GraphicsDisplayModeHook)(pendingAdapterIndex,pendingBitsPerPixel,pendingModeHeight,pendingModeWidth);
     if (pendingModeResult.failed) {
       restoreModeResult = (*g_GraphicsDisplayModeHook)(currentAdapterIndex,currentBitsPerPixel,pendingWidthOrCurrentHeight,pendingHeightOrCurrentWidth);
-      (*g_FatalErrorPrimaryDispatchCf)(restoreModeResult.valueOrError,restoreModeResult.failed);
+      FatalError_ExitIfFailed(restoreModeResult.valueOrError,restoreModeResult.failed);
       g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-      (*g_FatalErrorRuntimeDispatchCf)(pendingModeResult.valueOrError,true);
+      FatalError_ReportIfFailed(pendingModeResult.valueOrError,true);
       return;
     }
     UiRootStack_Relayout();

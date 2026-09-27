@@ -347,24 +347,24 @@ void __thandor_void_preserve_eax_ecx_edx FrontendDisplaySettings_ApplyMode(void 
                      persistentSelection.width);
   if (selectedModeResult.failed) {
     restoredModeResult = (*g_GraphicsDisplayModeHook)(previousAdapterIndex,colorBitsCounterOrParentLink + 0xfU & 0xfffffff0,previousHeight,previousWidth);
-    (*g_FatalErrorPrimaryDispatchCf)(restoredModeResult.valueOrError,restoredModeResult.failed);
+    FatalError_ExitIfFailed(restoredModeResult.valueOrError,restoredModeResult.failed);
     g_CursorVisibilityToken = g_CursorVisibilityToken + 1;
-    (*g_FatalErrorRuntimeDispatchCf)(selectedModeResult.valueOrError,true);
+    FatalError_ReportIfFailed(selectedModeResult.valueOrError,true);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    adapterIndex = PersistentSettings_ReadDword(1,0);
+    adapterIndex = PersistentSettings_Read(1,0);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-         PersistentSettings_ReadDword(0x280,4);
+         PersistentSettings_Read(0x280,4);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-         PersistentSettings_ReadDword(0x1e0,8);
+         PersistentSettings_Read(0x1e0,8);
     g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-    bitsPerPixel = PersistentSettings_ReadDword(0x10,0xc);
+    bitsPerPixel = PersistentSettings_Read(0x10,0xc);
     FrontendDisplaySettingsPage_UpdateModeActionAvailability(control);
     return;
   }
-  PersistentSettings_WriteDword(selectedAdapterIndex,0);
-  PersistentSettings_WriteDword(selectedWidth,4);
-  PersistentSettings_WriteDword(selectedHeight,8);
-  PersistentSettings_WriteDword(selectedBitsPerPixel,0xc);
+  PersistentSettings_Write(selectedAdapterIndex,0);
+  PersistentSettings_Write(selectedWidth,4);
+  PersistentSettings_Write(selectedHeight,8);
+  PersistentSettings_Write(selectedBitsPerPixel,0xc);
   UiRootStack_Relayout();
   (*g_GraphicsTextureSourceConvertPaletteEntries)
             ((GraphicsPaletteTextureSourceAsset *)g_FrontendMenuTextureSource);
@@ -434,7 +434,7 @@ FrontendNetworkSettings_SetPlayerName(UiTextEditControl *control)
     UiNodeList_UnsuppressActionId(0x2001,&firstNode->base);
     FrontendNetworkSettings_UpdateAction2002AvailabilityAndPublish
               ((FrontendNetworkSettingsControlView250 *)&firstNode[0x96].activationSound);
-    PersistentSettings_WriteDwords(0x28,(uint32_t *)control->textPrefix6C,0x60);
+    PersistentSettings_WriteBlock(0x28,(uint32_t *)control->textPrefix6C,0x60);
     sourceDwordCursor = (uint32_t *)control->textPrefix6C;
     playerNameDwordCursor = (void *)g_FrontendLocalPlayerNameUtf16;
     for (remainingDwords = 10; remainingDwords != 0; remainingDwords = remainingDwords + -1) {
@@ -467,7 +467,7 @@ FrontendGameplaySettings_SetGameSpeedPercent(UiSettingsValueControl *control)
   else {
     FrontendCommandQueue_EnqueueLocalPlayerCommand(0x300,0,0,control->boundValue);
   }
-  PersistentSettings_WriteDword(control->boundValue,0x44);
+  PersistentSettings_Write(control->boundValue,0x44);
   return;
 }
 
@@ -484,10 +484,10 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  optionFlags = PersistentSettings_Read(0,0x40);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 4;
@@ -495,7 +495,7 @@ FrontendGameplaySettings_SetRightButtonDoesNotScroll(UiSelectableControl *contro
   else {
     value = optionFlags & 0xfffffffb;
   }
-  PersistentSettings_WriteDword(value,0x40);
+  PersistentSettings_Write(value,0x40);
   return;
 }
 
@@ -510,7 +510,7 @@ void __thandor_preserve_eax
 FrontendGameplaySettings_SetCameraScrollStep(UiSettingsValueControl *control)
 
 {
-  PersistentSettings_WriteDword(control->boundValue,0x48);
+  PersistentSettings_Write(control->boundValue,0x48);
   return;
 }
 
@@ -527,10 +527,10 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  optionFlags = PersistentSettings_Read(0,0x40);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 1;
@@ -538,7 +538,7 @@ FrontendGameplaySettings_SetAutomaticZoomOff(UiSelectableControl *control)
   else {
     value = optionFlags & 0xfffffffe;
   }
-  PersistentSettings_WriteDword(value,0x40);
+  PersistentSettings_Write(value,0x40);
   return;
 }
 
@@ -555,10 +555,10 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x40);
+  optionFlags = PersistentSettings_Read(0,0x40);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 2;
@@ -566,7 +566,7 @@ FrontendGameplaySettings_SetAutomaticRotationOff(UiSelectableControl *control)
   else {
     value = optionFlags & 0xfffffffd;
   }
-  PersistentSettings_WriteDword(value,0x40);
+  PersistentSettings_Write(value,0x40);
   return;
 }
 
@@ -585,10 +585,10 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  optionFlags = PersistentSettings_Read(0,0x5c);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 1;
@@ -598,7 +598,7 @@ FrontendGameplaySettings_SetLinkRotationZoom(UiSelectableControl *control)
     value = optionFlags & 0xfffffffe;
     UiNodeList_UnsuppressActionId(0x203f,(control->base).parent);
   }
-  PersistentSettings_WriteDword(value,0x5c);
+  PersistentSettings_Write(value,0x5c);
   return;
 }
 
@@ -617,10 +617,10 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  optionFlags = PersistentSettings_Read(0,0x5c);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 2;
@@ -630,7 +630,7 @@ FrontendGameplaySettings_SetLinkRotationTilt(UiSelectableControl *control)
     value = optionFlags & 0xfffffffd;
     UiNodeList_UnsuppressActionId(0x203e,(control->base).parent);
   }
-  PersistentSettings_WriteDword(value,0x5c);
+  PersistentSettings_Write(value,0x5c);
   return;
 }
 
@@ -647,10 +647,10 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
 
 {
   uint32_t optionFlags;
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   bool isSelected;
   
-  optionFlags = PersistentSettings_ReadDword(0,0x5c);
+  optionFlags = PersistentSettings_Read(0,0x5c);
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
   if (isSelected) {
     value = optionFlags | 4;
@@ -658,7 +658,7 @@ FrontendGameplaySettings_SetHidePanel(UiSelectableControl *control)
   else {
     value = optionFlags & 0xfffffffb;
   }
-  PersistentSettings_WriteDword(value,0x5c);
+  PersistentSettings_Write(value,0x5c);
   return;
 }
 
@@ -683,13 +683,13 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
     compactLayoutFlags = &FRONTEND_UI_FIELD(frontendRoot,menuRoomModelView,0x4C,int32_t);
     *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
-  persistedValue = PersistentSettings_ReadDword(0,0x40);
+  persistedValue = PersistentSettings_Read(0,0x40);
   UiSelectableControl_SetSelected
             (persistedValue & 1,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoZoomOffCheckbox));
   UiSelectableControl_SetSelected
             (persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,autoRotationOffCheckbox));
   UiSelectableControl_SetSelected(persistedValue & 4,(UiSelectableControl *)FRONTEND_UI(frontendRoot,hidePanelCheckbox));
-  persistedValue = PersistentSettings_ReadDword(0,0x5c);
+  persistedValue = PersistentSettings_Read(0,0x5c);
   if ((persistedValue & 1) != 0) {
     UiNodeList_SuppressActionId(0x203f,&frontendRoot->base);
   }
@@ -699,7 +699,7 @@ FrontendGameplaySettingsPage_InitializeFromPersistentSettings(UiRootNode *fronte
     UiNodeList_SuppressActionId(0x203e,&frontendRoot->base);
   }
   UiSelectableControl_SetSelected(persistedValue & 2,(UiSelectableControl *)FRONTEND_UI(frontendRoot,linkRotationTiltCheckbox));
-  persistedValue = PersistentSettings_ReadDword(0x20,0x48);
+  persistedValue = PersistentSettings_Read(0x20,0x48);
   FRONTEND_UI_FIELD(frontendRoot,scrollSpeedSlider,0x58,uint32_t) = persistedValue;
   return;
 }
@@ -731,7 +731,7 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
     FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) =
          FRONTEND_UI_FIELD(frontendUi,menuRoomModelView,0x4C,uint32_t) | 0x2000;
   }
-  persistedValue = PersistentSettings_ReadDword(1,0x1c);
+  persistedValue = PersistentSettings_Read(1,0x1c);
   UiSelectableControl_SetSelected(persistedValue,&source->shadingEnabledControl);
   parentCursorOrSelectedRow = (source->base).parent;
   firstNode = source;
@@ -745,8 +745,8 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
   else {
     UiNodeList_UnsuppressActionId(0x2015,&firstNode->base);
   }
-  persistedValue = PersistentSettings_ReadDword(0x20,0x10);
-  shadingDepthQuarter = PersistentSettings_ReadDword(0x10,0x18);
+  persistedValue = PersistentSettings_Read(0x20,0x10);
+  shadingDepthQuarter = PersistentSettings_Read(0x10,0x18);
   shadingDepth = shadingDepthQuarter * 4;
   if (persistedValue == 0x20) {
     parentCursorOrSelectedRow = (UiNodeBase *)&source->shadingResolutionRows;
@@ -773,7 +773,7 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth128),
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth64),
       FRONTEND_UI(frontendUi,shadingLevelGrid32Depth32));
-  persistedValue = PersistentSettings_ReadDword(1,0x30);
+  persistedValue = PersistentSettings_Read(1,0x30);
   if (persistedValue == 0) {
     parentCursorOrSelectedRow = (UiNodeBase *)((source->textureResolutionRows).rows + 2);
   }
@@ -787,7 +787,7 @@ FrontendGraphicsSettings_OpenAndSynchronize(FrontendGraphicsRuntimeSettingsPageS
       FRONTEND_UI(frontendUi,textureQualityHigh),
       FRONTEND_UI(frontendUi,textureQualityMedium),
       FRONTEND_UI(frontendUi,textureQualityLow));
-  persistedValue = PersistentSettings_ReadDword(0x10000,0x34);
+  persistedValue = PersistentSettings_Read(0x10000,0x34);
   source->polygonResolutionLodThresholdQ8 = persistedValue;
   return;
 }
@@ -815,15 +815,15 @@ FrontendAudioSettings_OpenAndSynchronize
     compactLayoutFlags = &THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->pageRoot.nodeFlags;
     *compactLayoutFlags = *compactLayoutFlags | 0x2000;
   }
-  audioFlags = PersistentSettings_ReadDword(3,0x20);
+  audioFlags = PersistentSettings_Read(3,0x20);
   UiSelectableControl_SetSelected(audioFlags & 1,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & 2,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicEnabledControl);
   UiSelectableControl_SetSelected(audioFlags & 4,&THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->reverseStereoControl);
-  gainValue = PersistentSettings_ReadDword(0x8000,0x24);
+  gainValue = PersistentSettings_Read(0x8000,0x24);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->soundEffectsGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_ReadDword(0x8000,0x28);
+  gainValue = PersistentSettings_Read(0x8000,0x28);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->movieDefaultAudioGainControl).currentValue = gainValue;
-  gainValue = PersistentSettings_ReadDword(0x8000,0x2c);
+  gainValue = PersistentSettings_Read(0x8000,0x2c);
   (THANDOR_CONTAINER_OF(settingsSourceNode, FrontendPersistentSettingsPage417C, sourceNode)->musicGainControl).currentValue = gainValue;
   parentCursor = settingsSourceNode->parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
@@ -884,7 +884,7 @@ FrontendShadingSettings_SetEnabled(UiSelectableControl *control)
   else {
     UiNodeList_UnsuppressActionId(0x2015,&control->base);
   }
-  PersistentSettings_WriteDword(isSelected & 1,0x1c);
+  PersistentSettings_Write(isSelected & 1,0x1c);
   return;
 }
 
@@ -908,9 +908,9 @@ FrontendShadingSettings_ApplyLevel(UiSelectableControl *control)
   
   shadingGridSize = ((UiNumericPairTextButton *)control)->firstValue;
   shadingDepthQuarter = (uint32_t)((UiNumericPairTextButton *)control)->secondValue >> 2;
-  PersistentSettings_WriteDword((int)shadingGridSize * 2,0x14);
-  PersistentSettings_WriteDword((PersistentSettingsDwordValue)shadingGridSize,0x10);
-  PersistentSettings_WriteDword(shadingDepthQuarter,0x18);
+  PersistentSettings_Write((int)shadingGridSize * 2,0x14);
+  PersistentSettings_Write((PersistentSettingsValue)shadingGridSize,0x10);
+  PersistentSettings_Write(shadingDepthQuarter,0x18);
   /* The parent is the frontend template's shadingLevelGroup (+0x385C). */
   shadingLevelGroup = (control->base).parent;
   if (shadingGridSize == 0x20) {
@@ -953,10 +953,10 @@ void __thandor_preserve_eax
 FrontendModelSettings_SetLodDepthThresholdQ8(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x34);
+  PersistentSettings_Write(value,0x34);
   g_ModelLodDepthThresholdQ8 = value;
   return;
 }
@@ -996,7 +996,7 @@ FrontendTextureSettings_SetQuality(UiSelectableControl *control)
       THANDOR_UI_AT((control->base).parent,0x114) /* textureQualityHigh */,
       THANDOR_UI_AT((control->base).parent,0xb4) /* textureQualityMedium */,
       THANDOR_UI_AT((control->base).parent,0x54) /* textureQualityLow */);
-  PersistentSettings_WriteDword(qualityLevel,0x30);
+  PersistentSettings_Write(qualityLevel,0x30);
   g_TextureDownsampleShift = qualityLevel >> 1;
   (*g_GraphicsRebuildAllStagingTextures)();
   return;
@@ -1023,8 +1023,8 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   bool isSelected;
   
   isSelected = (bool)UiSelectableControl_IsSelectedCf(control);
-  audioFlags = PersistentSettings_ReadDword(3,0x20);
-  PersistentSettings_WriteDword((uint32_t)isSelected | audioFlags & 0xfffffffe,0x20);
+  audioFlags = PersistentSettings_Read(3,0x20);
+  PersistentSettings_Write((uint32_t)isSelected | audioFlags & 0xfffffffe,0x20);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -1054,18 +1054,18 @@ FrontendAudioSettings_SetEffectsEnabled(UiSelectableControl *control)
   }
   effectsGain = 0;
   if (isSelected) {
-    effectsGain = PersistentSettings_ReadDword(0x8000,0x24);
+    effectsGain = PersistentSettings_Read(0x8000,0x24);
   }
   movieDefaultGain = 0;
   g_UiSoundGainQ15 = effectsGain;
   g_SoundEffectsGainQ15 = effectsGain;
   if (isSelected) {
-    movieDefaultGain = PersistentSettings_ReadDword(0x8000,0x28);
+    movieDefaultGain = PersistentSettings_Read(0x8000,0x28);
   }
   movieAlternateGain = 0;
   g_MovieDefaultAudioGainQ15 = movieDefaultGain;
   if (isSelected) {
-    movieAlternateGain = PersistentSettings_ReadDword(0x8000,0x4c);
+    movieAlternateGain = PersistentSettings_Read(0x8000,0x4c);
   }
   g_MovieAlternateAudioGainQ15 = movieAlternateGain;
   return;
@@ -1116,7 +1116,7 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
       else {
         g_FrontendMusicVoiceSet = musicVoiceSet;
         Resource_Release(musicSample);
-        gainOrAudioFlags = PersistentSettings_ReadDword(0x8000,0x2c);
+        gainOrAudioFlags = PersistentSettings_Read(0x8000,0x2c);
         playResult = (*g_SoundPlayLooping)(gainOrAudioFlags,gainOrAudioFlags,musicVoiceSet);
         activeMusicBuffer = playResult.soundBuffer;
         if (playResult.failed) {
@@ -1135,9 +1135,9 @@ FrontendAudioSettings_SetMusicEnabled(UiSelectableControl *control)
     g_FrontendMusicActiveBuffer = (IDirectSoundBuffer *)0x0;
     g_FrontendMusicVoiceSet = (DirectSoundVoiceSet *)0x0;
   }
-  gainOrAudioFlags = PersistentSettings_ReadDword(3,0x20);
+  gainOrAudioFlags = PersistentSettings_Read(3,0x20);
   newAudioFlags = musicEnabledBit | gainOrAudioFlags & 0xfffffffd;
-  PersistentSettings_WriteDword(newAudioFlags,0x20);
+  PersistentSettings_Write(newAudioFlags,0x20);
   parentCursor = (control->base).parent;
   while (parentCursor != (UiNodeBase *)0xffffffff) {
     control = (UiSelectableControl *)(control->base).parent;
@@ -1192,9 +1192,9 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
     reverseStereoBit = 4;
     reverseStereoMask = -1;
   }
-  currentAudioFlags = PersistentSettings_ReadDword(3,0x20);
+  currentAudioFlags = PersistentSettings_Read(3,0x20);
   g_ReverseStereoMask = reverseStereoMask;
-  PersistentSettings_WriteDword(reverseStereoBit | currentAudioFlags & 0xfffffffb,0x20);
+  PersistentSettings_Write(reverseStereoBit | currentAudioFlags & 0xfffffffb,0x20);
   return;
 }
 
@@ -1209,10 +1209,10 @@ FrontendAudioSettings_SetReverseStereo(UiSelectableControl *control)
 void __thandor_preserve_eax FrontendAudioSettings_SetEffectsGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x24);
+  PersistentSettings_Write(value,0x24);
   g_SoundEffectsGainQ15 = value;
   g_UiSoundGainQ15 = value;
   return;
@@ -1229,10 +1229,10 @@ void __thandor_preserve_eax
 FrontendAudioSettings_SetMovieDefaultGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x28);
+  PersistentSettings_Write(value,0x28);
   g_MovieDefaultAudioGainQ15 = value;
   return;
 }
@@ -1249,10 +1249,10 @@ void __thandor_preserve_eax
 FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x4c);
+  PersistentSettings_Write(value,0x4c);
   g_MovieAlternateAudioGainQ15 = value;
   return;
 }
@@ -1268,11 +1268,11 @@ FrontendAudioSettings_SetMovieAlternateGain(UiSettingsValueControl *control)
 void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   uint32_t musicGainQ15;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x2c);
+  PersistentSettings_Write(value,0x2c);
   (*g_SoundSetVoiceGains)(value,value,g_FrontendMusicActiveBuffer);
   return;
 }
@@ -1287,10 +1287,10 @@ void __thandor_preserve_eax FrontendAudioSettings_SetMusicGain(UiSettingsValueCo
 void __thandor_preserve_eax FrontendNetworkSettings_SetPlayerCount(UiSettingsValueControl *control)
 
 {
-  PersistentSettingsDwordValue value;
+  PersistentSettingsValue value;
   
   value = control->boundValue;
-  PersistentSettings_WriteDword(value,0x3c);
+  PersistentSettings_Write(value,0x3c);
   (*g_WideNumberFormatUtf16)
             (WIDE_FORMAT_WRITE_TERMINATOR,0,10,1,value,
              (uint16_t *)&g_FrontendNetworkPlayerCountTextUtf16);
@@ -1322,7 +1322,7 @@ void __thandor_preserve_eax FrontendNetworkSettings_SetGameName(UiTextEditContro
   }
   else {
     UiNodeList_UnsuppressActionId(0x2004,&firstNode->base);
-    PersistentSettings_WriteDwords(0x28,(uint32_t *)control->textPrefix6C,0x88);
+    PersistentSettings_WriteBlock(0x28,(uint32_t *)control->textPrefix6C,0x88);
   }
   return;
 }
@@ -1922,11 +1922,11 @@ FrontendDisplaySettingsPage_UpdateModeActionAvailability(UiNodeBase *frontendRoo
       FRONTEND_UI(frontendRoot,displayAdapterOption3),
       FRONTEND_UI(frontendRoot,displayAdapterOption2),
       FRONTEND_UI(frontendRoot,displayAdapterOption1));
-  persistedValue = PersistentSettings_ReadDword(1,0);
+  persistedValue = PersistentSettings_Read(1,0);
   if ((((persistedValue == adapterIndex) &&
-       (persistedValue = PersistentSettings_ReadDword(0x280,4), persistedValue == pendingWidth)) &&
-      (persistedValue = PersistentSettings_ReadDword(0x1e0,8), persistedValue == pendingHeight)) &&
-     (persistedValue = PersistentSettings_ReadDword(0x10,0xc), persistedValue == bitsPerPixel)) {
+       (persistedValue = PersistentSettings_Read(0x280,4), persistedValue == pendingWidth)) &&
+      (persistedValue = PersistentSettings_Read(0x1e0,8), persistedValue == pendingHeight)) &&
+     (persistedValue = PersistentSettings_Read(0x10,0xc), persistedValue == bitsPerPixel)) {
     UiNodeList_SuppressActionId(0x2031,frontendRoot);
     return;
   }

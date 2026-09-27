@@ -504,7 +504,7 @@ This file owns runtime synchronization primitives within shared low-level runtim
 
 [Source](../src/core/settings/persistent.c) · [Header](../include/thandor/core/settings/persistent.h) · [Call graph](callgraphs/core/settings/persistent.md) · [Graphviz](callgraphs/core/settings/persistent.dot) · [Full changelog](../CHANGELOG_FULL.md#module-core-settings-persistent)
 
-This file owns persistent settings storage within shared low-level runtime services. Dominant function families: `PersistentSettings_*` (6). Representative entry points: `PersistentSettings_Flush`, `PersistentSettings_Load`, `PersistentSettings_ReadDword`.
+This file owns persistent settings storage within shared low-level runtime services. Dominant function families: `PersistentSettings_*` (6). Representative entry points: `PersistentSettings_Flush`, `PersistentSettings_Load`, `PersistentSettings_Read`.
 
 **Direct callers:** 8 module(s), 85 cross-module call edge(s).
 

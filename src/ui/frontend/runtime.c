@@ -179,7 +179,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
                   *(uint32_t *)(encodeCursorOrSize + -4) = g_ScenarioCatalogUsedBytes;
                   encodeResult = PckCodec_EncodeHuffmanRle
                                      (destinationCapacityBytes,encodeCursorOrSize,statusOrByteCount,(uint8_t *)source);
-                  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+                  checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
                   UiTransferMailbox_SetOutgoingBuffer(checkedResult.valueOrError + 4,encodeCursorOrSize + -4);
                 }
               }
@@ -248,7 +248,7 @@ FrontendMainLoop_ProcessFrameAndPendingPageAction:
             sessionRunResult = InGameRuntime_RunSessionUntilExit
                                ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,0,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
+            FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -301,7 +301,7 @@ FrontendMainLoop_AdvanceCampaignAfterSession:
             sessionRunResult = InGameRuntime_RunSessionUntilExit
                                ((LevelAssetRuntimeImagePrefix370 *)g_FrontendLoadedLevelAsset,1,
                                 (uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-            (*g_FatalErrorPrimaryDispatchCf)(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
+            FatalError_ExitIfFailed(sessionRunResult.exitCodeOrError,sessionRunResult.failed);
             PersistentSettings_Flush();
             UiFrame_FlushInputAndResetPendingTicks();
             g_FrontendScenarioInitializationCount = 0;
@@ -354,7 +354,7 @@ FrontendScenario_InitializeSelectedLevel:
       Resource_Release(g_FrontendLoadedLevelAsset);
       g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
       packageLoadResult = Package_LoadEntry((uint16_t *)&g_FrontendScenarioPathScratchUtf16);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
+      checkedResult = FatalError_ExitIfFailed((uint32_t)packageLoadResult.bufferOrError,packageLoadResult.failed);
       g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
       encodeCursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.
                 assetRelativeAddressAnchor28 +
@@ -378,17 +378,17 @@ FrontendScenario_InitializeSelectedLevel:
         encodeResult = PckCodec_EncodeHuffmanRle
                            (0x7fffe8,encodeCursorOrSize,(loadedLevelAsset->header).common.allocationSizeBytes,
                             (uint8_t *)loadedLevelAsset);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+        checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
         statusOrByteCount = checkedResult.valueOrError;
         *(uint32_t *)(transferSourceBytes + 8) = statusOrByteCount;
         encodeResult = PckCodec_EncodeFieldGrid
                            (0x7fffe8 - statusOrByteCount,encodeCursorOrSize + statusOrByteCount,
                             (sourceGrid->common).allocationSizeBytes,sourceGrid);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+        checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
         *(uint32_t *)(transferSourceBytes + 0xc) = checkedResult.valueOrError;
         encodeCursorOrSize = encodeCursorOrSize + statusOrByteCount + (checkedResult.valueOrError - (int)transferSourceBytes);
         allocResult = (*g_MemoryApi.alloc)((uint32_t)encodeCursorOrSize);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocResult.payloadOrError,allocResult.failed);
+        checkedResult = FatalError_ExitIfFailed(allocResult.payloadOrError,allocResult.failed);
         transferDwordCursor = (uint32_t *)checkedResult.valueOrError;
         for (remainingDwords = (uint32_t)encodeCursorOrSize >> 2; remainingDwords != 0; remainingDwords = remainingDwords - 1) {
           *transferDwordCursor = *(uint32_t *)transferSourceBytes;
@@ -2345,13 +2345,13 @@ FrontendUiAction2011_Handler(FrontendDisplaySettingsPageOptionState1010 *source)
        0x10;
   (source->resolutionRows).rows[9].height = modeValue;
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  adapterIndex = PersistentSettings_ReadDword(1,0);
+  adapterIndex = PersistentSettings_Read(1,0);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.width =
-       PersistentSettings_ReadDword(0x280,4);
+       PersistentSettings_Read(0x280,4);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.height =
-       PersistentSettings_ReadDword(0x1e0,8);
+       PersistentSettings_Read(0x1e0,8);
   g_FrontendUiDisplayModeAndTaskAssignmentScratch.displayEnumeration.persistentSelection.
-  bitsPerPixel = PersistentSettings_ReadDword(0x10,0xc);
+  bitsPerPixel = PersistentSettings_Read(0x10,0xc);
   FrontendDisplaySettingsPage_UpdateModeActionAvailability((UiNodeBase *)source);
   return;
 }
@@ -2472,10 +2472,10 @@ FrontendUiAction200F_Handler(FrontendNetworkSetupPageBackendListPtr backendList)
   (*g_NetworkBackendSlot1)();
   staleBackendIndex = selectedBackendIndex;
   setSessionResult = (*g_NetworkBackendSlot0)(selectedBackendIndex);
-  fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(setSessionResult.valueOrError,setSessionResult.failed);
+  fatalCheckResult = FatalError_ReportIfFailed(setSessionResult.valueOrError,setSessionResult.failed);
   if (!fatalCheckResult.failed) {
     openBindResult = (*g_NetworkBackendSlot2)(0x3a1);
-    fatalCheckResult = (*g_FatalErrorRuntimeDispatchCf)(openBindResult.valueOrError,openBindResult.failed);
+    fatalCheckResult = FatalError_ReportIfFailed(openBindResult.valueOrError,openBindResult.failed);
     if (!fatalCheckResult.failed) {
       endpointSourceDwordCursor = (uint32_t *)&g_NetworkLocalEndpointDescriptor16;
       endpointDestinationDwordCursor = (uint32_t *)&g_FrontendNetworkEndpointScratch;
@@ -2758,7 +2758,7 @@ FrontendInitResult __thandor_eax_cf_preserve_ecx_edx Frontend_Init(RomRecordId i
   typedef uint32_t FrontendModelPointerResolvedActionProc
           (uint32_t,uint32_t,uint32_t,int,struct ModelRuntimeNode *,struct FrontendModelPointerContextRuntimeState118 *);
 
-  settingValue = PersistentSettings_ReadDword(0,0x30);
+  settingValue = PersistentSettings_Read(0,0x30);
   g_TextureDownsampleShift = settingValue >> 1;
   playerBlock = g_FrontendPlayerRuntimeBlocks;
   remainingBlockCount = g_FrontendPlayerRuntimeBlockCount;
@@ -2855,7 +2855,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
               }
               FrontendMenu_BindSharedResources(frontendUiState);
               UiRootStack_Push(&g_UiRootCallbacks_0053DA70,(UiRootNode *)frontendUiState);
-              settingValue = PersistentSettings_ReadDword(3,0x20);
+              settingValue = PersistentSettings_Read(3,0x20);
               musicBuffer = g_FrontendMusicActiveBuffer;
               if ((settingValue & 2) != 0) {
                 sampleLoadResult = Resource_Load((uint16_t *)u_sound_music00_sam_00545c4e);
@@ -2871,7 +2871,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                   else {
                     g_FrontendMusicVoiceSet = musicVoiceSet;
                     Resource_Release(loadedSample);
-                    settingValue = PersistentSettings_ReadDword(0x8000,0x2c);
+                    settingValue = PersistentSettings_Read(0x8000,0x2c);
                     playResult = (*g_SoundPlayLooping)(settingValue,settingValue,musicVoiceSet);
                     musicBuffer = playResult.soundBuffer;
                     if (playResult.failed) {
@@ -2959,7 +2959,7 @@ Frontend_Init_ContinueWithCentralRomAndRuntimeInitialization:
                     settingsCopySourceDwordsB = settingsCopySourceDwordsB + 1;
                     settingsCopyDestDwordsB = settingsCopyDestDwordsB + 1;
                   }
-                  settingValue = PersistentSettings_ReadDword(4,0x3c);
+                  settingValue = PersistentSettings_Read(4,0x3c);
                   *(uint32_t *)(frontendUiState->opaqueGap50C0_514B + 0x80) = settingValue;
                   UiFrame_FlushInputAndResetPendingTicks();
                   (*g_SpinLockAcquire)(&g_FrontendStateTickSpinLock);

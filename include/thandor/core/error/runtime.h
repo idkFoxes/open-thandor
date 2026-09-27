@@ -13,7 +13,17 @@
 
 /* Submodule: core/error/runtime. */
 
-/* Error codes handed to the fatal-error dispatcher (g_FatalErrorPrimaryDispatchCf); the code selects
+/* The two fatal-error handlers, installed by ErrorSystem_Init. Both take a value and a failure flag:
+   without the flag they return the value unchanged; with it they treat the value as an error code or
+   message and handle it.
+   FatalError_ExitIfFailed: always FatalError_Exit, which shows the message box, shuts down and exits.
+   FatalError_ReportIfFailed: FatalError_Exit until the UI error state exists
+   (ErrorRuntime_InstallUiHandlerAndAllocateState), then FatalErrorRuntime_DispatchPendingErrorCf, which
+   shows the error in a modal in-game dialog and returns. */
+#define FatalError_ExitIfFailed(valueOrError, failed) ((*g_FatalErrorPrimaryDispatchCf)((valueOrError), (failed)))
+#define FatalError_ReportIfFailed(valueOrError, failed) ((*g_FatalErrorRuntimeDispatchCf)((valueOrError), (failed)))
+
+/* Error codes handed to the fatal-error dispatcher (FatalError_ExitIfFailed); the code selects
    the message text. Named as they are found. */
 #define FATAL_ERROR_CPU_WITHOUT_MMX 0x51 /* ProcessEntry: CPUID reports no MMX (see CPU_DetectFeatures) */
 

@@ -469,7 +469,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
   
   (*g_MemoryApi.free)(g_ScenarioCatalog);
   allocation = (*g_MemoryApi.alloc)(0x30000);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+  checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
   catalog = (ScenarioCatalogHeader *)checkedResult.valueOrError;
   g_ScenarioCatalogUsedBytes = 0x18;
   g_ScenarioCatalog = catalog;
@@ -576,7 +576,7 @@ void __thandor_void_preserve_eax_ecx_edx ScenarioCatalog_Rebuild(void)
       openResult = (*g_FileSystemOpenCf)
                          (FILESYSTEM_OPEN_EXCLUSIVE_SHARE,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16
                          );
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(openResult.handleOrError,openResult.failed);
+      checkedResult = FatalError_ExitIfFailed(openResult.handleOrError,openResult.failed);
       handle = (void *)checkedResult.valueOrError;
       handleToClose = handle;
       (*g_FileSystemSeekCf)(FILESYSTEM_SEEK_BEGIN,0x100,handle);
@@ -654,7 +654,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
         allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         changedLevelMask[1] = 0;
         changedLevelMask[2] = 0;
         changedLevelMask[3] = 0;
@@ -711,7 +711,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
         allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
         PckCodec_DecodeHuffmanRle
                   (payloadSizeBytes,(uint8_t *)g_FrontendLoadedLevelAsset,received.byteCount - 4,(uint8_t *)(receivedDwords + 1));
@@ -733,7 +733,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
       if (!received.unavailable) {
         payloadSizeBytes = *receivedDwords;
         allocation = (*g_MemoryApi.alloc)(payloadSizeBytes);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.valueOrError
         ;
         PckCodec_DecodeFieldGrid
@@ -763,13 +763,13 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
         allocation = (*g_MemoryApi.alloc)(*receivedDwords);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
         PckCodec_DecodeHuffmanRle
                   (*receivedDwords,(uint8_t *)g_FrontendLoadedLevelAsset,receivedDwords[3],(uint8_t *)(receivedDwords + 6));
         streamOrRecordCursor = (uint8_t *)((int)(receivedDwords + 6) + receivedDwords[3]);
         allocation = (*g_MemoryApi.alloc)(receivedDwords[1]);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         g_FrontendLoadedCampaignAsset = (uint8_t *)checkedResult.valueOrError;
         PckCodec_DecodeHuffmanRle(receivedDwords[1],g_FrontendLoadedCampaignAsset,receivedDwords[4],streamOrRecordCursor);
         levelAsset = g_FrontendLoadedLevelAsset;
@@ -783,7 +783,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrSelectedId,
                    (uint16_t *)&g_ExecutableDirectoryUtf16);
         allocation = (*g_MemoryApi.alloc)(receivedDwords[2]);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.valueOrError;
         PckCodec_DecodeFieldGrid(receivedDwords[2],(FieldGridAsset *)checkedResult.valueOrError,receivedDwords[5],streamOrRecordCursor + payloadSizeBytes);
         if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
@@ -825,7 +825,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
         Resource_Release(g_FrontendLoadedLevelAsset);
         g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
         allocation = (*g_MemoryApi.alloc)(*receivedDwords);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         levelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
         g_FrontendLoadedLevelAsset = levelAsset;
         PckCodec_DecodeHuffmanRle(*receivedDwords,(uint8_t *)levelAsset,receivedDwords[2],(uint8_t *)(receivedDwords + 4));
@@ -837,7 +837,7 @@ void __thandor_void_preserve_eax_ecx_edx FrontendScenarioTransfer_ProcessReceive
                   ((uint16_t *)&g_LevelResourcePathScratchUtf16,(uint16_t *)levelPathOrSelectedId,
                    (uint16_t *)&g_ExecutableDirectoryUtf16);
         allocation = (*g_MemoryApi.alloc)(receivedDwords[1]);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.valueOrError;
         PckCodec_DecodeFieldGrid
                   (receivedDwords[1],(FieldGridAsset *)checkedResult.valueOrError,receivedDwords[3],
@@ -922,7 +922,7 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
         }
         if ((otherPlayersRemaining != 0) && (((playerRecord->factionAssignment).roleStateFlags & 0x10) != 0)) {
           loadedEntry = Package_LoadEntry((uint16_t *)pathOrEncodeBuffer);
-          checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
+          checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
           (clientLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = checkedResult.valueOrError;
         }
         else {
@@ -935,7 +935,7 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
         break;
       }
       loadedEntry = Package_LoadEntry((uint16_t *)pathOrEncodeBuffer);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
+      checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
       sourceGrid = (FieldGridAsset *)checkedResult.valueOrError;
       (levelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid = (uint32_t)sourceGrid;
       encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
@@ -944,10 +944,10 @@ FrontendScenarioSession_LoadOrRequestFieldGrid(UiListRowIndex selectedLevelIndex
         pathOrEncodeBuffer = g_PackageScratchBuffer + 4;
         *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceImageSizeBytes;
         encodeResult = PckCodec_EncodeFieldGrid(0x7ffffc,pathOrEncodeBuffer,sourceImageSizeBytes,sourceGrid);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+        checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
         bytes = checkedResult.valueOrError + 4;
         allocation = (*g_MemoryApi.alloc)(bytes);
-        checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+        checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
         outgoingDwordCursor = (uint32_t *)checkedResult.valueOrError;
         for (dwordsRemaining = bytes >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
           *outgoingDwordCursor = *encodedSourceDwords;
@@ -1019,7 +1019,7 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
                (uint16_t *)u_level_0050dab8);
     WidePath_SetExtensionCode(0x6e6763,&g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
+    checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
     recordOrEncodeCursor = (uint8_t *)checkedResult.valueOrError;
     cursorOrSize = recordOrEncodeCursor + 0xb4;
     campaignRecordsRemaining = *(int *)(recordOrEncodeCursor + 0xb8);
@@ -1032,7 +1032,7 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
     } while (campaignRecordsRemaining != 0);
     if (campaignRecordsRemaining == 0) {
       /* No record for the selected level. */
-      (*g_FatalErrorPrimaryDispatchCf)(0,false);
+      FatalError_ExitIfFailed(0,false);
     }
     if ((g_FrontendLoadedLevelAsset != (FrontendLoadedLevelRuntimeImage370 *)0x0) &&
        (0xffff < (g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid)) {
@@ -1046,7 +1046,7 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
               );
     WidePath_SetExtensionCode(0x76656c,&g_FrontendScenarioPathScratchUtf16);
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
+    checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
     g_FrontendLoadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
     cursorOrSize = (g_FrontendLoadedLevelAsset->header).common.buildMetadata.assetRelativeAddressAnchor28
              + ((g_FrontendLoadedLevelAsset->header).pathState.levelPathOffsetOrLoadedFieldGrid -
@@ -1071,23 +1071,23 @@ FrontendScenarioSession_LoadOrRequestCampaignBundle
       encodeResult = PckCodec_EncodeHuffmanRle
                          (0x7fffe8,recordOrEncodeCursor,(source->header).common.allocationSizeBytes,(uint8_t *)source
                          );
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+      checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       encodedLevelBytes = checkedResult.valueOrError;
       *(uint32_t *)(transferBundleBytes + 0xc) = encodedLevelBytes;
       recordOrEncodeCursor = recordOrEncodeCursor + encodedLevelBytes;
       encodeResult = PckCodec_EncodeHuffmanRle
                          (0x7fffe8 - encodedLevelBytes,recordOrEncodeCursor,*(PckDecodedByteCount *)(cursorOrSize + 4),cursorOrSize);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+      checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       encodedCampaignBytes = checkedResult.valueOrError;
       *(uint32_t *)(transferBundleBytes + 0x10) = encodedCampaignBytes;
       encodeResult = PckCodec_EncodeFieldGrid
                          ((0x7fffe8 - encodedLevelBytes) - encodedCampaignBytes,recordOrEncodeCursor + encodedCampaignBytes,
                           (sourceGrid->common).allocationSizeBytes,sourceGrid);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+      checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       *(uint32_t *)(transferBundleBytes + 0x14) = checkedResult.valueOrError;
       cursorOrSize = recordOrEncodeCursor + encodedCampaignBytes + (checkedResult.valueOrError - (int)transferBundleBytes);
       allocation = (*g_MemoryApi.alloc)((uint32_t)cursorOrSize);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+      checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
       transferCopyDestination = (uint32_t *)checkedResult.valueOrError;
       for (dwordsRemaining = (uint32_t)cursorOrSize >> 2; dwordsRemaining != 0; dwordsRemaining = dwordsRemaining - 1) {
         *transferCopyDestination = *(uint32_t *)transferBundleBytes;
@@ -1438,7 +1438,7 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
   *roleFlags = *roleFlags | 2;
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
     loadedEntry = Package_LoadEntry(&g_FrontendScenarioPathScratchUtf16);
-    checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
+    checkedResult = FatalError_ExitIfFailed((uint32_t)loadedEntry.bufferOrError,loadedEntry.failed);
     encodedSourceDwords = (uint32_t *)g_PackageScratchBuffer;
     source = (FrontendLoadedLevelRuntimeImage370 *)checkedResult.valueOrError;
     if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_HOST) != SESSION_NETWORK_ROLE_LOCAL) {
@@ -1447,10 +1447,10 @@ FrontendScenarioSession_LoadOrRequestLevelAsset
       g_FrontendLoadedLevelAsset = source;
       *(PckDecodedByteCount *)g_PackageScratchBuffer = sourceSizeBytes;
       encodeResult = PckCodec_EncodeHuffmanRle(0x7ffffc,destination,sourceSizeBytes,(uint8_t *)source);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(encodeResult.byteCountOrError,encodeResult.failed);
+      checkedResult = FatalError_ExitIfFailed(encodeResult.byteCountOrError,encodeResult.failed);
       byteCountOrOffset = checkedResult.valueOrError + 4;
       allocation = (*g_MemoryApi.alloc)(byteCountOrOffset);
-      checkedResult = (*g_FatalErrorPrimaryDispatchCf)(allocation.payloadOrError,allocation.failed);
+      checkedResult = FatalError_ExitIfFailed(allocation.payloadOrError,allocation.failed);
       outgoingDwordCursor = (uint32_t *)checkedResult.valueOrError;
       for (maskWordIndex = byteCountOrOffset >> 2; maskWordIndex != 0; maskWordIndex = maskWordIndex - 1) {
         *outgoingDwordCursor = *encodedSourceDwords;

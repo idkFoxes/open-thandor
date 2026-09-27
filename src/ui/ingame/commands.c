@@ -127,7 +127,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameCommandModeG_Select3(UiSelectable
   UiCommandModeG_ApplyRawColorVariant(node);
   UiCommandModeG_ClearNodeFlag02000000(node);
   armyAssetLookup = ArmyAssetRegistry_FindByIdCf(g_UiCommandModeGArmyAssetId);
-  checkedAssetLookup = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)armyAssetLookup.recordOrError,armyAssetLookup.notFound);
+  checkedAssetLookup = FatalError_ExitIfFailed((uint32_t)armyAssetLookup.recordOrError,armyAssetLookup.notFound);
   g_UiHoverSelectionRecord = (UiCommandRuntimeRecordPrefix *)checkedAssetLookup.valueOrError;
   InGameSelectionDetailPanel_Rebuild();
   return;

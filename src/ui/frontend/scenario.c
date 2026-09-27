@@ -179,7 +179,7 @@ FrontendMissionBriefingPage_Initialize(UiRootNode *frontendRoot)
   MovieFrameResult firstFrame;
   
   if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_CLIENT) == SESSION_NETWORK_ROLE_LOCAL) {
-    savedSettingValue = PersistentSettings_ReadDword(100,0x44);
+    savedSettingValue = PersistentSettings_Read(100,0x44);
     FRONTEND_UI_FIELD(frontendRoot,gameSpeedSlider,0x58,uint32_t) = savedSettingValue;
   }
   UiPageStack_SetActiveIndex(0xc,(UiPageStackControl *)FRONTEND_UI(frontendRoot,frontendPageStack));

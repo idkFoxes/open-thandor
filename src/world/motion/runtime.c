@@ -27,7 +27,7 @@ WorldRuntime_ApplyEdgeScrollAndGetCursorFrame(WorldRuntimeContext *worldRuntime)
   uint32_t rightStepOrScreenDeltaX;
   uint32_t screenDeltaY;
   
-  edgeScrollStep = PersistentSettings_ReadDword(0x20,0x48);
+  edgeScrollStep = PersistentSettings_Read(0x20,0x48);
   rightStepOrScreenDeltaX = 0;
   if (g_CursorOverflowRight != 0) {
     rightStepOrScreenDeltaX = edgeScrollStep;

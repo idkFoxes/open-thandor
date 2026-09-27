@@ -611,7 +611,7 @@ StatusResult __cdecl Graphics_Init(void)
         (cursorOrResult->adapterGuid).Data1 = 0;
         cursorOrResult = (GraphicsAdapterRecord *)&(cursorOrResult->adapterGuid).Data2;
       }
-      optionResult = CommandLine_FindOption(7,s_D3DALL_00578078);
+      optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionD3dAll,g_CommandLineOptionD3dAll);
       g_GraphicsEnumerateAllDevicesFlag = g_GraphicsEnumerateAllDevicesFlag + optionResult.notFound;
       allocResult = (*g_MemoryApi.alloc)(0x800);
       cursorOrResult = (GraphicsAdapterRecord *)allocResult.payloadOrError;
@@ -625,8 +625,8 @@ StatusResult __cdecl Graphics_Init(void)
           g_GraphicsDisplayModes = (GraphicsDisplayMode *)allocResult.payloadOrError;
           /* Glide is optional, unless -GLIDE asks for it */
           glideResult = Glide3_InitAndEnumerate();
-          if ((glideResult.failed) && (optionResult = CommandLine_FindOption(6,s_GLIDE_0057ee84), !optionResult.notFound)) {
-            (*g_FatalErrorPrimaryDispatchCf)(glideResult.valueOrError,true);
+          if ((glideResult.failed) && (optionResult = CommandLine_FindOption(sizeof g_CommandLineOptionGlide,g_CommandLineOptionGlide), !optionResult.notFound)) {
+            FatalError_ExitIfFailed(glideResult.valueOrError,true);
           }
           moduleLoad = DynDLL_Load(dynapi_2);
           adapterOrModule = (GraphicsAdapterRecord *)moduleLoad.moduleOrError;

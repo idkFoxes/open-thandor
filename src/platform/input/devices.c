@@ -129,9 +129,9 @@ StatusResult __thandor_eax_cf_preserve_ecx_edx DirectInputMouse_Init(void)
   
   initStage = 0;
   dllLoadResult = DynDLL_Load(dynapi_3);
-  fatalCheckResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
+  fatalCheckResult = FatalError_ExitIfFailed((uint32_t)dllLoadResult.moduleOrError,dllLoadResult.failed);
   procResolveResult = DynAPI_Resolve(&pDirectInputCreateA,(HINSTANCE)fatalCheckResult.valueOrError,dynapi_19);
-  (*g_FatalErrorPrimaryDispatchCf)((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
+  FatalError_ExitIfFailed((uint32_t)procResolveResult.procedureOrError,procResolveResult.failed);
   SetCursor((HCURSOR)0x0);
   directInputResult = (*pDirectInputCreateA)(g_hInstance,0x300,&g_DirectInput,(TH_LEGACY_LPVOID)0x0);
   if (directInputResult == 0) {

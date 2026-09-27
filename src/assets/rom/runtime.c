@@ -220,7 +220,7 @@ void __thandor_void_preserve_eax_ecx FrontendRomTransition_ProcessPendingRecord(
                        worldRuntime);
     if ((!splineStillRunning) && (g_FrontendRomTransitionPendingCount = 0, -1 < (int)recordId)) {
       activateResult = FrontendRomTransition_ActivateRecordByIdCf(recordId,worldRuntime);
-      (*g_FatalErrorPrimaryDispatchCf)(activateResult.valueOrError,activateResult.failed);
+      FatalError_ExitIfFailed(activateResult.valueOrError,activateResult.failed);
     }
   }
   (*g_SpinLockRelease)(&g_FrontendStateTickSpinLock);

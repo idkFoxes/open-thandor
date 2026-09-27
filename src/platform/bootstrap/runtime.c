@@ -62,41 +62,41 @@ void __cdecl ProcessEntry(void)
         Locale_Init();
         ErrorSystem_Init();
         if (g_CpuFeatureFlags == 0) {
-          (*g_FatalErrorPrimaryDispatchCf)(FATAL_ERROR_CPU_WITHOUT_MMX,true);
+          FatalError_ExitIfFailed(FATAL_ERROR_CPU_WITHOUT_MMX,true);
         }
         statusResult = DynAPI_Bootstrap();
-        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.failed);
+        fatalResult = FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
         /* TimerSystem_Init only installs the timer procs and always clears CF */
         TimerSystem_Init();
-        fatalResult = (*g_FatalErrorPrimaryDispatchCf)(fatalResult.valueOrError,false);
+        fatalResult = FatalError_ExitIfFailed(fatalResult.valueOrError,false);
         statusResult = Graphics_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.failed);
+        FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
         statusResult = DirectInputMouse_Init();
-        (*g_FatalErrorPrimaryDispatchCf)(statusResult.valueOrError,statusResult.failed);
+        FatalError_ExitIfFailed(statusResult.valueOrError,statusResult.failed);
         soundResult = DirectSound_Init();
         Thandor_Log("DirectSound_Init: %s", soundResult.failed ? "failed (continuing without sound)" : "ok");
         if (soundResult.failed) {
           /* without a sound device the game only stops when -SOUND demands sound */
-          soundOption = CommandLine_FindOption(sizeof s_SOUND_00582f28,s_SOUND_00582f28);
+          soundOption = CommandLine_FindOption(sizeof g_CommandLineOptionSound,g_CommandLineOptionSound);
           if (!soundOption.notFound) {
-            (*g_FatalErrorPrimaryDispatchCf)(soundResult.valueOrError,true);
+            FatalError_ExitIfFailed(soundResult.valueOrError,true);
           }
         }
         networkResult = Network_Init();
         /* Network_Init returns 0 with CF clear (xor eax,eax) on success and an error code with CF
            set otherwise; Ghidra dropped its CF and passed the stale carry of the sound block. */
-        (*g_FatalErrorPrimaryDispatchCf)(networkResult,networkResult != 0);
+        FatalError_ExitIfFailed(networkResult,networkResult != 0);
         PersistentSettings_Load();
         displayWidth = 640;
         displayHeight = 480;
-        bitsPerPixel = PersistentSettings_ReadDword(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
-        adapterIndex = PersistentSettings_ReadDword(0,PERSISTENT_SETTING_ADAPTER_INDEX);
+        bitsPerPixel = PersistentSettings_Read(16,PERSISTENT_SETTING_BITS_PER_PIXEL);
+        adapterIndex = PersistentSettings_Read(0,PERSISTENT_SETTING_ADAPTER_INDEX);
         if (g_GraphicsAdapterCount <= adapterIndex) {
           adapterIndex = 0;
         }
         displayModeResult =
              (*g_GraphicsDisplayModeHook)(adapterIndex,bitsPerPixel,displayHeight,displayWidth);
-        (*g_FatalErrorPrimaryDispatchCf)(displayModeResult.valueOrError,displayModeResult.failed);
+        FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
         UiRuntime_Initialize();
         Game_Run();
         Runtime_Shutdown();
@@ -558,33 +558,33 @@ void __cdecl Game_Run(void)
   FrontendMainLoopResult mainLoopResult;
   
   cursorFrameResult = (*g_GraphicsCursorSetFrame)(0);
-  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(cursorFrameResult.errorCode,cursorFrameResult.failed);
+  fatalResult = FatalError_ExitIfFailed(cursorFrameResult.errorCode,cursorFrameResult.failed);
   dispatchCarry = fatalResult.failed;
   renderingInitResult = GameRuntime_InitializeSpatialAudioAndRenderingCf();
-  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(renderingInitResult.valueOrError,renderingInitResult.failed);
+  fatalResult = FatalError_ExitIfFailed(renderingInitResult.valueOrError,renderingInitResult.failed);
   dispatchCarry = fatalResult.failed;
   loadResultOrWidth = Game_LoadCoreAssets();
   Thandor_Log("Game_LoadCoreAssets -> 0x%08X", loadResultOrWidth);
   /* 0 with CF clear on success, an error code with CF set otherwise */
-  fatalResult = (*g_FatalErrorPrimaryDispatchCf)(loadResultOrWidth,loadResultOrWidth != 0);
+  fatalResult = FatalError_ExitIfFailed(loadResultOrWidth,loadResultOrWidth != 0);
   /* keeps EAX: a movie that cannot start is reported with the previous value */
   dispatchCarry = Game_PlayIntroMovies();
-  (*g_FatalErrorPrimaryDispatchCf)(fatalResult.valueOrError,dispatchCarry);
+  FatalError_ExitIfFailed(fatalResult.valueOrError,dispatchCarry);
   PersistentSettings_Load();
-  loadResultOrWidth = PersistentSettings_ReadDword(0x280,4);
-  displayHeight = PersistentSettings_ReadDword(0x1e0,8);
-  bitDepth = PersistentSettings_ReadDword(0x10,0xc);
+  loadResultOrWidth = PersistentSettings_Read(0x280,4);
+  displayHeight = PersistentSettings_Read(0x1e0,8);
+  bitDepth = PersistentSettings_Read(0x10,0xc);
   if (((loadResultOrWidth != 0x280) || (displayHeight != 0x1e0)) || (bitDepth != 0x10)) {
-    adapterIndex = PersistentSettings_ReadDword(0,0);
+    adapterIndex = PersistentSettings_Read(0,0);
     if (g_GraphicsAdapterCount <= adapterIndex) {
       adapterIndex = 0;
     }
     displayModeResult = (*g_GraphicsDisplayModeHook)(adapterIndex,bitDepth,displayHeight,loadResultOrWidth);
-    (*g_FatalErrorPrimaryDispatchCf)(displayModeResult.valueOrError,displayModeResult.failed);
-    PersistentSettings_WriteDword(g_ActiveGraphicsAdapterIndex,0);
+    FatalError_ExitIfFailed(displayModeResult.valueOrError,displayModeResult.failed);
+    PersistentSettings_Write(g_ActiveGraphicsAdapterIndex,0);
   }
   mainLoopResult = Frontend_MainLoop(1);
-  (*g_FatalErrorPrimaryDispatchCf)(mainLoopResult.errorOrValue,mainLoopResult.failed);
+  FatalError_ExitIfFailed(mainLoopResult.errorOrValue,mainLoopResult.failed);
   (*g_NetworkBackendSlot3)();
   (*g_NetworkBackendSlot1)();
   return;
@@ -907,28 +907,28 @@ Game_LoadCoreAssets_BindDebugOverlayTextAndContinueRemainingAssetLoad:
                 }
                 textResolveResult = TextResource_Resolve(0x2402);
                 RichTextCommandStream_BindTextureSource(g_CursorSourceAsset,textResolveResult.text);
-                settingsOrBufferBase = PersistentSettings_ReadDword(3,0x20);
+                settingsOrBufferBase = PersistentSettings_Read(3,0x20);
                 uiSoundGain = 0;
                 if ((settingsOrBufferBase & 1) != 0) {
-                  uiSoundGain = PersistentSettings_ReadDword(0x8000,0x24);
+                  uiSoundGain = PersistentSettings_Read(0x8000,0x24);
                 }
                 movieGain = 0;
                 g_UiSoundGainQ15 = uiSoundGain;
                 g_SoundEffectsGainQ15 = uiSoundGain;
                 if ((settingsOrBufferBase & 1) != 0) {
-                  movieGain = PersistentSettings_ReadDword(0x8000,0x28);
+                  movieGain = PersistentSettings_Read(0x8000,0x28);
                 }
                 alternateMovieGain = 0;
                 g_MovieDefaultAudioGainQ15 = movieGain;
                 if ((settingsOrBufferBase & 1) != 0) {
-                  alternateMovieGain = PersistentSettings_ReadDword(0x8000,0x4c);
+                  alternateMovieGain = PersistentSettings_Read(0x8000,0x4c);
                 }
                 g_ReverseStereoMask = 0;
                 if ((settingsOrBufferBase & 4) != 0) {
                   g_ReverseStereoMask = 0xffffffff;
                 }
                 g_MovieAlternateAudioGainQ15 = alternateMovieGain;
-                g_ModelLodDepthThresholdQ8 = PersistentSettings_ReadDword(g_ReverseStereoMask,0x34);
+                g_ModelLodDepthThresholdQ8 = PersistentSettings_Read(g_ReverseStereoMask,0x34);
                 status = AiRuntime_InitWorkspace();
                 if (status.failed) {
                   return status.valueOrError;
@@ -1383,7 +1383,7 @@ bool __thandor_cf_preserve_eax_ecx_edx Game_PlayIntroMovies(void)
     (*g_GraphicsFramebufferEndAccess)();
     (*g_GraphicsFramebufferPresent)(g_FramebufferAccess);
   }
-  noIntroOption = (*g_CommandLineFindOption)(8,s_NOINTRO_00573064);
+  noIntroOption = (*g_CommandLineFindOption)(sizeof g_CommandLineOptionNoIntro,g_CommandLineOptionNoIntro);
   if (noIntroOption.notFound) {
     while( true ) {
       openResult = Movie_Open(1,(uint16_t *)u_flm_intro0_flm_00573046);

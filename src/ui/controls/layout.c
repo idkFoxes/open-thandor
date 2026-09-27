@@ -1255,13 +1255,13 @@ void __thandor_preserve_eax UiWindowResources_Init(void)
   TextPageLoadResult pageLoadResult;
   
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)((uint16_t *)u_engine_win_gfx_004b0f06);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.textureSource,loadResult.failed);
+  checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
   g_UiWindowTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   loadResult = (*g_GraphicsTextureSourceLoadPackageAsset)(u_engine_winclass_gfx_004b0eb8);
-  checkedResult = (*g_FatalErrorPrimaryDispatchCf)((uint32_t)loadResult.textureSource,loadResult.failed);
+  checkedResult = FatalError_ExitIfFailed((uint32_t)loadResult.textureSource,loadResult.failed);
   g_UiWindowClassTextureSource = (GraphicsTextureSourceAsset *)checkedResult.valueOrError;
   pageLoadResult = TextResourcePage_Load(1,(uint16_t *)u_texte_winclass_str_004b0ee0);
-  (*g_FatalErrorPrimaryDispatchCf)(pageLoadResult.errorOrValue,pageLoadResult.failed);
+  FatalError_ExitIfFailed(pageLoadResult.errorOrValue,pageLoadResult.failed);
   UiActionHandlers_SetPageCf(0,(UiActionHandlerPage *)&g_UiRootStackActionHandlerPage);
   g_UiRootNode = (UiRootNode *)0xffffffff;
   return;

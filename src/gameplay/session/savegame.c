@@ -124,7 +124,7 @@ InGameSaveGameAction_DeleteSelectedSaveAndRefreshCatalog
                (uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     carryIn = WidePath_SetExtensionCode(0x657673,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
     errorOrValue = (*g_FileSystemDeleteCf)(0,(uint16_t *)&g_ScenarioCatalogPathScratchUtf16);
-    (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,carryIn);
+    FatalError_ReportIfFailed(errorOrValue,carryIn);
     InGameSaveGamePage_RebuildCatalog((UiNodeBase *)(saveGamePageControl + -0x760));
   }
   return;
@@ -312,7 +312,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameSaveGame_SaveSelectedOrTypedName(
                      &g_ScenarioCatalogPathScratchUtf16);
   saveCarry = (uint32_t)(saveStatus & 1);
   (*g_GraphicsCursorSetFrame)(0);
-  (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,(saveCarry & 1) != 0);
+  FatalError_ReportIfFailed(errorOrValue,(saveCarry & 1) != 0);
   UiSelectableControl_SetSelected
             (0,(UiSelectableControl *)THANDOR_UI_SIBLING(saveButton,InGameUiImage,saveGameSaveButton,inGameMenuButton));
   InGameSettingsPage_ToggleAndSynchronizeControls

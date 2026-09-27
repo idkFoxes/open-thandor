@@ -22,7 +22,7 @@ void __thandor_preserve_eax PersistentSettings_Flush(void)
 
 {
   if (g_PersistentSettings.image != (PersistentSettingsImage *)0x0) {
-    PersistentSettings_WriteDword(g_LocaleCountryCodeOverride,0x38);
+    PersistentSettings_Write(g_LocaleCountryCodeOverride,0x38);
     if (g_PersistentSettings.dirtyWriteCount != 0) {
       FileSystem_WriteBufferToPathCf(200,g_PersistentSettings.image,g_PersistentSettings.path);
       g_PersistentSettings.dirtyWriteCount = 0;
@@ -123,14 +123,14 @@ void __thandor_void_preserve_eax_ecx PersistentSettings_Load(void)
    function body bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 uint32_t __thandor_eax_preserve_ecx_edx
-PersistentSettings_ReadDword
-          (PersistentSettingsDwordValue defaultValue,
+PersistentSettings_Read
+          (PersistentSettingsValue defaultValue,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if ((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
      (settingsOffsetBytes + 4 <= g_PersistentSettings.loadedByteCount)) {
-    defaultValue = *(PersistentSettingsDwordValue *)
+    defaultValue = *(PersistentSettingsValue *)
                     ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50));
   }
   return defaultValue;
@@ -163,7 +163,7 @@ PersistentSettings_GetRegionOrFallback
    copy increments dirtyWriteCount once even when bytes are unchanged. loadedByteCount is not extended.
 */
 void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_WriteDwords
+PersistentSettings_WriteBlock
           (PersistentSettingsByteCount regionByteCount,uint32_t *source,
           PersistentSettingsByteOffset settingsOffsetBytes)
 
@@ -198,15 +198,15 @@ PersistentSettings_WriteDwords
    bytes, control flow, globals, locals, and executable data remain unchanged.
 */
 void __thandor_void_preserve_eax_ecx_edx
-PersistentSettings_WriteDword
-          (PersistentSettingsDwordValue value,PersistentSettingsByteOffset settingsOffsetBytes)
+PersistentSettings_Write
+          (PersistentSettingsValue value,PersistentSettingsByteOffset settingsOffsetBytes)
 
 {
   if (((g_PersistentSettings.image != (PersistentSettingsImage *)0x0) &&
       (settingsOffsetBytes + 4 < 0xc9)) &&
-     (*(PersistentSettingsDwordValue *)
+     (*(PersistentSettingsValue *)
        ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50)) != value)) {
-    *(PersistentSettingsDwordValue *)
+    *(PersistentSettingsValue *)
      ((g_PersistentSettings.image)->reserved50_5B + (settingsOffsetBytes - 0x50)) = value;
     g_PersistentSettings.dirtyWriteCount = g_PersistentSettings.dirtyWriteCount + 1;
   }

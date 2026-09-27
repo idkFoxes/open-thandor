@@ -254,7 +254,7 @@ FrontendNetworkSetup_CommitSelectedBackendAndInitializeClientPage:
     }
     backendIndex = backendIndex + 1;
     if (g_NetworkBackendInstanceCount <= backendIndex) {
-      (*g_FatalErrorRuntimeDispatchCf)(errorOrValue,true);
+      FatalError_ReportIfFailed(errorOrValue,true);
       if ((g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) ==
           SESSION_NETWORK_ROLE_LOCAL) {
         FrontendSession_ReturnToMainPage(g_LocalPlayerRuntimeId,0,0,0);

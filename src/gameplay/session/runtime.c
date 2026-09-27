@@ -249,7 +249,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
     }
     if ((g_UiCommandRuntimeFlags & 4) == 0) {
       TerrainDirectionTable_AdvanceAndRebuildVectors();
-      cursorFrameOrScratch = PersistentSettings_ReadDword(3,0x20);
+      cursorFrameOrScratch = PersistentSettings_Read(3,0x20);
       if ((cursorFrameOrScratch & 1) != 0) {
         if ((currentPresentationTick & 7) == 0) {
           SpatialSoundPool_ClearDesiredGains();
@@ -274,7 +274,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
         else {
           g_InGameEffectsEnabled = g_InGameEffectsEnabled - 1;
           if (g_InGameEffectsEnabled == 0) {
-            cursorFrameOrScratch = PersistentSettings_ReadDword(0x8000,0x24);
+            cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x24);
             candidateFrameOrScore = Random_NextPrimary();
             playVoiceResult = (*g_SoundPlayOneShot)
                                (cursorFrameOrScratch,cursorFrameOrScratch,
@@ -285,7 +285,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
           }
         }
       }
-      cursorFrameOrScratch = PersistentSettings_ReadDword(3,0x20);
+      cursorFrameOrScratch = PersistentSettings_Read(3,0x20);
       levelConditionStorage = g_InGameLevelRuntimeGlobalBlock.conditionStorage;
       if ((cursorFrameOrScratch & 2) != 0) {
         if (g_InGameMusicEnabled == 0) {
@@ -315,7 +315,7 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
             } while (nextTrackIndex < 4);
             if (cursorFrameOrScratch != 0) {
               selectedMusicTrackId = (levelConditionStorage->levelImage).runtimeTail2E0.musicSampleNumbers[bestTrackOrSecondsLeft];
-              cursorFrameOrScratch = PersistentSettings_ReadDword(0x8000,0x2c);
+              cursorFrameOrScratch = PersistentSettings_Read(0x8000,0x2c);
               g_EndGameResultsCurrentMusicTrackId = selectedMusicTrackId;
               playVoiceResult = (*g_SoundPlayOneShot)
                                  (cursorFrameOrScratch,cursorFrameOrScratch,
@@ -335,22 +335,22 @@ EndGameResultsUiRuntime_UpdateAndHandleInputCf(EndGameResultsRuntimeView44C4 *en
       }
       InterpolationStateTable_Advance256ByTicks(g_InGameSimulationStepTicks);
       if (g_KeyboardSpecialKeyDown[0x14] != 0) {
-        cursorFrameOrScratch = PersistentSettings_ReadDword(0x20,0x48);
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
         WorldRuntime_TranslateCameraByScreenDelta(0,-cursorFrameOrScratch,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x16] != 0) {
-        cursorFrameOrScratch = PersistentSettings_ReadDword(0x20,0x48);
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
         WorldRuntime_TranslateCameraByScreenDelta(0,cursorFrameOrScratch,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x11] != 0) {
-        cursorFrameOrScratch = PersistentSettings_ReadDword(0x20,0x48);
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
         WorldRuntime_TranslateCameraByScreenDelta(-cursorFrameOrScratch,0,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
       if (g_KeyboardSpecialKeyDown[0x19] != 0) {
-        cursorFrameOrScratch = PersistentSettings_ReadDword(0x20,0x48);
+        cursorFrameOrScratch = PersistentSettings_Read(0x20,0x48);
         WorldRuntime_TranslateCameraByScreenDelta(cursorFrameOrScratch,0,worldRuntime);
         WorldRuntime_RecomputeMotionEndpointAgainstFieldSurface(worldRuntime);
       }
@@ -761,7 +761,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
     break;
   }
   case 0x5676a0: {
-    uint32_t settings = PersistentSettings_ReadDword(0,0x40);
+    uint32_t settings = PersistentSettings_Read(0,0x40);
     UiPageStackControl *stack = (UiPageStackControl *)INGAME_UI(rt,sidePanelStack);
     if (UiPageStack_ActivePageNotInListCf(stack).pageIndex != 0) {
       UiPageStack_SetActiveIndex(0,stack);
@@ -778,7 +778,7 @@ InGameHotkeys_DispatchCommandByFlagsCf
       settings = settings | 4;
     }
     UiContainer_LayoutChildren((UiNodeBase *)rt);
-    PersistentSettings_WriteDword(settings,0x40);
+    PersistentSettings_Write(settings,0x40);
     break;
   }
   case 0x5677e0: { /* screenshot */
@@ -976,7 +976,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
   g_InGameSessionStartedNetworked =
        (g_SessionNetworkRoleFlags & SESSION_NETWORK_ROLE_NETWORKED_MASK) !=
        SESSION_NETWORK_ROLE_LOCAL;
-  g_TextureDownsampleShift = PersistentSettings_ReadDword(0,0x30);
+  g_TextureDownsampleShift = PersistentSettings_Read(0,0x30);
   g_EndMovieSelectionIndex = 0xffffffff;
   g_EndMovieVariantIndex = 0;
   g_EndMoviePath = (uint16_t *)0x0;
@@ -1140,12 +1140,12 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                     if (!statusResult.failed) {
                       (*g_SpinLockAcquire)(&g_InGameStateTickSpinLock);
                       g_InGameSimulationStepTicks = 1;
-                      settingOrFactionToken = PersistentSettings_ReadDword(0x40,0x14);
-                      gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
-                      subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
+                      settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
+                      gridHalfSize = PersistentSettings_Read(0x20,0x10);
+                      subresourceCount = PersistentSettings_Read(0x10,0x18);
                       GraphicsShadingRuntime_InitializeGeneratedTextureCf
                                 (subresourceCount,gridHalfSize,settingOrFactionToken);
-                      settingOrFactionToken = PersistentSettings_ReadDword(1,0x1c);
+                      settingOrFactionToken = PersistentSettings_Read(1,0x1c);
                       if (settingOrFactionToken == 0) {
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags & 0xfffdffff;
@@ -1154,7 +1154,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags | 0x20000;
                       }
-                      settingOrFactionToken = PersistentSettings_ReadDword(0,0x5c);
+                      settingOrFactionToken = PersistentSettings_Read(0,0x5c);
                       if ((settingOrFactionToken & 1) == 0) {
                         worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                         *worldRuntimeFlags = *worldRuntimeFlags & 0xbfffffff;
@@ -1180,7 +1180,7 @@ InGameRuntime_InitializeNewSession(LevelAssetRuntimeImagePrefix370 *levelAsset,u
                         *worldRuntimeFlags = *worldRuntimeFlags | 0x4000000;
                       }
                       rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
-                                     PersistentSettings_ReadDword(0,0x40);
+                                     PersistentSettings_Read(0,0x40);
                       if (((uint32_t)rootCursorOrError & 4) != 0) {
                         UiPageStack_SetActiveIndex(1,&inGameRoot->optionalUiPageStack40AC);
                         rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
@@ -1334,7 +1334,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
   InGameRuntimeRootImageC3E4 *mountedPackage;
   FrontendLoadedLevelRuntimeImage370 *loadedLevelAsset;
   
-  g_TextureDownsampleShift = PersistentSettings_ReadDword(0,0x30);
+  g_TextureDownsampleShift = PersistentSettings_Read(0,0x30);
   mountedPackage = (InGameRuntimeRootImageC3E4 *)0x0;
   loadedLevelAsset = (FrontendLoadedLevelRuntimeImage370 *)0x0;
   statusResult = Package_Mount(savePackagePath);
@@ -1529,12 +1529,12 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                             UiCommandSpriteVariantA_RebuildGrid((UiNodeBase *)inGameRoot);
                             InGameOtherPlayerCommand_RebuildTargetEntries((UiNodeBase *)inGameRoot);
                             g_InGameSimulationStepTicks = 1;
-                            settingOrFactionToken = PersistentSettings_ReadDword(0x40,0x14);
-                            gridHalfSize = PersistentSettings_ReadDword(0x20,0x10);
-                            subresourceCount = PersistentSettings_ReadDword(0x10,0x18);
+                            settingOrFactionToken = PersistentSettings_Read(0x40,0x14);
+                            gridHalfSize = PersistentSettings_Read(0x20,0x10);
+                            subresourceCount = PersistentSettings_Read(0x10,0x18);
                             GraphicsShadingRuntime_InitializeGeneratedTextureCf
                                       (subresourceCount,gridHalfSize,settingOrFactionToken);
-                            settingOrFactionToken = PersistentSettings_ReadDword(1,0x1c);
+                            settingOrFactionToken = PersistentSettings_Read(1,0x1c);
                             if (settingOrFactionToken == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xfffdffff;
@@ -1544,7 +1544,7 @@ InGameRuntime_InitializeLoadedSession(uint16_t *savePackagePath)
                               *worldRuntimeFlags = *worldRuntimeFlags | 0x20000;
                             }
                             rootCursorOrError = (InGameRuntimeRootImageC3E4 *)
-                                     PersistentSettings_ReadDword(0,0x5c);
+                                     PersistentSettings_Read(0,0x5c);
                             if (((uint32_t)rootCursorOrError & 1) == 0) {
                               worldRuntimeFlags = &(inGameRoot->worldRuntime0A30).runtimeFlags;
                               *worldRuntimeFlags = *worldRuntimeFlags & 0xbfffffff;
@@ -2425,7 +2425,7 @@ void __thandor_void_preserve_eax_ecx_edx InGameRuntime_UpdateCursorGridAndViewSc
                     ((g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionYQ12,
                      (g_InGameRuntimeRoot->worldRuntime0A30).motion.targetPositionXQ12);
   inGameRoot->fieldGridPosition9A6C = THANDOR_BITCAST(FieldGridCoordinatesEaxEdx8, FixedPlanarPointEdxEax8, cursorGridPosition);
-  viewSettings = PersistentSettings_ReadDword(0,0x40);
+  viewSettings = PersistentSettings_Read(0,0x40);
   committedDistance = (inGameRoot->worldRuntime0A30).motion.committedDistanceQ12;
   if ((viewSettings & 2) == 0) {
     *(AngleTurn32 *)(inGameRoot->opaque9A74_9B4B + 4) =

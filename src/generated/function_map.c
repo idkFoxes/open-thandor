@@ -10,10 +10,10 @@
 const ThandorFunctionMapEntry g_ThandorFunctionMap[] = {
     {0x00402B00u, (void *)&PersistentSettings_Load},
     {0x00402C00u, (void *)&PersistentSettings_Flush},
-    {0x00402C50u, (void *)&PersistentSettings_ReadDword},
-    {0x00402C80u, (void *)&PersistentSettings_WriteDword},
+    {0x00402C50u, (void *)&PersistentSettings_Read},
+    {0x00402C80u, (void *)&PersistentSettings_Write},
     {0x00402CC0u, (void *)&PersistentSettings_GetRegionOrFallback},
-    {0x00402CF0u, (void *)&PersistentSettings_WriteDwords},
+    {0x00402CF0u, (void *)&PersistentSettings_WriteBlock},
     {0x00402D30u, (void *)&WideText_CopyCodeUnits},
     {0x00402D50u, (void *)&WideNumber_FormatUtf16},
     {0x00402F70u, (void *)&Locale_MapTelephoneCountryCodeToRegionTagPacked},

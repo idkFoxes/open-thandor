@@ -2761,8 +2761,8 @@ typedef struct ImageData_00572AB0 {
     uint16_t at_u_gfx_panel_stat_gfx_00573002[19]; /* 00573002 u_gfx_panel_stat_gfx_00573002 */
     uint16_t at_u_engine_pcx_fnc_00573028[15]; /* 00573028 u_engine_pcx_fnc_00573028 */
     uint16_t at_u_flm_intro0_flm_00573046[15]; /* 00573046 u_flm_intro0_flm_00573046 */
-    char at_s_NOINTRO_00573064[8]; /* 00573064 s_NOINTRO_00573064 */
-    uint8_t at_s_NOINTRO_00573064_padding[4];
+    char at_g_CommandLineOptionNoIntro[8]; /* 00573064 g_CommandLineOptionNoIntro */
+    uint8_t at_g_CommandLineOptionNoIntro_padding[4];
 } ImageData_00572AB0;
 extern ImageData_00572AB0 g_ImageData_00572AB0;
 
@@ -3373,8 +3373,8 @@ typedef struct ImageData_00577BFC {
     SoftwareFramebufferAccess at_g_DisplayFramebufferAccess; /* 00578060 g_DisplayFramebufferAccess */
     uint32_t at_g_ActiveTextureUploads; /* 00578070 g_ActiveTextureUploads */
     uint32_t at_g_GraphicsEnumerateAllDevicesFlag; /* 00578074 g_GraphicsEnumerateAllDevicesFlag */
-    char at_s_D3DALL_00578078[7]; /* 00578078 s_D3DALL_00578078 */
-    uint8_t at_s_D3DALL_00578078_padding[1];
+    char at_g_CommandLineOptionD3dAll[7]; /* 00578078 g_CommandLineOptionD3dAll */
+    uint8_t at_g_CommandLineOptionD3dAll_padding[1];
 } ImageData_00577BFC;
 extern ImageData_00577BFC g_ImageData_00577BFC;
 
@@ -3431,8 +3431,8 @@ typedef struct ImageData_0057ECC8 {
     GraphicsTextureResource * at_g_GlideResidentTextureHead; /* 0057EE78 g_GlideResidentTextureHead */
     int32_t at_g_GlideSecondBufferOffset; /* 0057EE7C g_GlideSecondBufferOffset */
     uint8_t * at_g_GlideSecondBufferBase; /* 0057EE80 g_GlideSecondBufferBase */
-    char at_s_GLIDE_0057ee84[6]; /* 0057EE84 s_GLIDE_0057ee84 */
-    uint8_t at_s_GLIDE_0057ee84_padding[6];
+    char at_g_CommandLineOptionGlide[6]; /* 0057EE84 g_CommandLineOptionGlide */
+    uint8_t at_g_CommandLineOptionGlide_padding[6];
 } ImageData_0057ECC8;
 extern ImageData_0057ECC8 g_ImageData_0057ECC8;
 
@@ -3448,7 +3448,7 @@ typedef struct ImageData_00582ED8 {
     uint8_t at_WaveFormat_PCM_22050_Stereo16_rest_tail[2];
     DSBUFFERDESC_DX6 at_PrimarySoundBufferDesc; /* 00582F10 PrimarySoundBufferDesc */
     DirectSoundVoiceSet ** at_g_DirectSoundVoiceSetRegistry; /* 00582F24 g_DirectSoundVoiceSetRegistry */
-    char at_s_SOUND_00582f28[6]; /* 00582F28 s_SOUND_00582f28 */
+    char at_g_CommandLineOptionSound[6]; /* 00582F28 g_CommandLineOptionSound */
     int32_t at_g_DirectSoundGainAttenuation[129]; /* 00582F2E g_DirectSoundGainAttenuation */
     uint32_t at_g_DirectSoundGainAttenuation_rest[3]; /* beyond the declared type */
     uint8_t at_g_DirectSoundGainAttenuation_rest_tail[2];
@@ -4946,7 +4946,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00573002 ((uintptr_t)&g_ImageData_00572AB0.at_u_gfx_panel_stat_gfx_00573002)
 #define THANDOR_IMAGE_0x00573028 ((uintptr_t)&g_ImageData_00572AB0.at_u_engine_pcx_fnc_00573028)
 #define THANDOR_IMAGE_0x00573046 ((uintptr_t)&g_ImageData_00572AB0.at_u_flm_intro0_flm_00573046)
-#define THANDOR_IMAGE_0x00573064 ((uintptr_t)&g_ImageData_00572AB0.at_s_NOINTRO_00573064)
+#define THANDOR_IMAGE_0x00573064 ((uintptr_t)&g_ImageData_00572AB0.at_g_CommandLineOptionNoIntro)
 #define THANDOR_IMAGE_0x00573ef0 ((uintptr_t)&g_ImageData_00573EE8.at_g_DynamicModules)
 #define THANDOR_IMAGE_0x00573f70 ((uintptr_t)&g_ImageData_00573EE8.at_g_DynamicModuleCount)
 #define THANDOR_IMAGE_0x00573f74 ((uintptr_t)&g_ImageData_00573EE8.at_g_BootstrapApiBindings)
@@ -5201,7 +5201,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00578060 ((uintptr_t)&g_ImageData_00577BFC.at_g_DisplayFramebufferAccess)
 #define THANDOR_IMAGE_0x00578070 ((uintptr_t)&g_ImageData_00577BFC.at_g_ActiveTextureUploads)
 #define THANDOR_IMAGE_0x00578074 ((uintptr_t)&g_ImageData_00577BFC.at_g_GraphicsEnumerateAllDevicesFlag)
-#define THANDOR_IMAGE_0x00578078 ((uintptr_t)&g_ImageData_00577BFC.at_s_D3DALL_00578078)
+#define THANDOR_IMAGE_0x00578078 ((uintptr_t)&g_ImageData_00577BFC.at_g_CommandLineOptionD3dAll)
 #define THANDOR_IMAGE_0x0057ecd0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideEnumerationResolutionQuery)
 #define THANDOR_IMAGE_0x0057ece0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSelectedResolutionQuery)
 #define THANDOR_IMAGE_0x0057ecf0 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideRefreshRatesHz)
@@ -5243,7 +5243,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x0057ee78 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideResidentTextureHead)
 #define THANDOR_IMAGE_0x0057ee7c ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondBufferOffset)
 #define THANDOR_IMAGE_0x0057ee80 ((uintptr_t)&g_ImageData_0057ECC8.at_g_GlideSecondBufferBase)
-#define THANDOR_IMAGE_0x0057ee84 ((uintptr_t)&g_ImageData_0057ECC8.at_s_GLIDE_0057ee84)
+#define THANDOR_IMAGE_0x0057ee84 ((uintptr_t)&g_ImageData_0057ECC8.at_g_CommandLineOptionGlide)
 #define THANDOR_IMAGE_0x00582ee0 ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSound)
 #define THANDOR_IMAGE_0x00582ee4 ((uintptr_t)&g_ImageData_00582ED8.at_g_PrimarySoundBuffer)
 #define THANDOR_IMAGE_0x00582ee8 ((uintptr_t)&g_ImageData_00582ED8.at_g_PrimaryVolume)
@@ -5251,7 +5251,7 @@ extern ImageData_005873BC g_ImageData_005873BC;
 #define THANDOR_IMAGE_0x00582ef0 ((uintptr_t)&g_ImageData_00582ED8.at_WaveFormat_PCM_22050_Stereo16)
 #define THANDOR_IMAGE_0x00582f10 ((uintptr_t)&g_ImageData_00582ED8.at_PrimarySoundBufferDesc)
 #define THANDOR_IMAGE_0x00582f24 ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSoundVoiceSetRegistry)
-#define THANDOR_IMAGE_0x00582f28 ((uintptr_t)&g_ImageData_00582ED8.at_s_SOUND_00582f28)
+#define THANDOR_IMAGE_0x00582f28 ((uintptr_t)&g_ImageData_00582ED8.at_g_CommandLineOptionSound)
 #define THANDOR_IMAGE_0x00582f2e ((uintptr_t)&g_ImageData_00582ED8.at_g_DirectSoundGainAttenuation)
 #define THANDOR_IMAGE_0x00583d60 ((uintptr_t)&g_ImageData_00583D28.at_g_NetworkBackendMode)
 #define THANDOR_IMAGE_0x00583d64 ((uintptr_t)&g_ImageData_00583D28.at_g_WinSockStartupData)
